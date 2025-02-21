@@ -1,0 +1,92 @@
+<template>
+  <v-col class="d-flex justify-end">
+    <v-btn
+      color="blue-lighten-2"
+      variant="text"
+      @click="$emit('upvote', selectedUser.user_id)"
+      stacked
+    >
+      <v-badge
+        :content="selectedUser.upvotes_count"
+        color="transparent"
+        overlap
+        class="mr-2"
+      >
+        <v-icon class="mt-2">mdi-thumb-up</v-icon>
+      </v-badge>
+    </v-btn>
+    <v-btn
+      color="red-lighten-2"
+      variant="text"
+      @click="$emit('downvote', selectedUser.user_id)"
+      stacked
+    >
+      <v-badge
+        :content="selectedUser.downvotes_count"
+        color="transparent"
+        overlap
+        class="mr-2"
+      >
+        <v-icon class="mt-2">mdi-thumb-down</v-icon>
+      </v-badge>
+    </v-btn>
+
+    <v-btn
+      :color="selectedUser.isBlocked ? 'green' : 'red'"
+      variant="text"
+      @click="$emit('favorite', selectedUser.user_id)"
+      stacked
+    >
+      <v-icon
+        :icon="selectedUser.isBlocked ? 'mdi-star' : 'mdi-star-outline'"
+      ></v-icon>
+    </v-btn>
+
+    <v-tooltip :text="blockTooltipText" location="bottom">
+      <template v-slot:activator="{ props }">
+        <v-btn
+          :color="selectedUser.isBlocked ? 'green' : 'red'"
+          variant="text"
+          v-bind="props"
+          class="mt-4"
+          @click="$emit('toggleBlockUser')"
+        >
+          <v-icon
+            :icon="selectedUser.isBlocked ? 'mdi-cancel' : 'mdi-cancel'"
+          ></v-icon>
+        </v-btn>
+      </template>
+    </v-tooltip>
+  </v-col>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+
+const props = defineProps<{
+  selectedUser: {
+    displayname: string;
+    tagline: string;
+    bio: string;
+    age: number;
+    gender_id: number;
+    country_name: string;
+    user_id: string;
+    profile_id: number;
+    isBlocked: boolean;
+    upvotes_count: number;
+    downvotes_count: number;
+  };
+  currentUser: {
+    id: string;
+  };
+}>();
+
+const blockTooltipText = computed(() => {
+  return props.selectedUser?.isBlocked ? "Unblock User" : "Block User";
+});
+</script>
+
+<style scoped>
+/* Add any necessary styling here */
+</style>

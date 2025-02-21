@@ -1,0 +1,46 @@
+<template>
+  <v-container fluid>
+    <HomeRow1 />
+
+    <!-- Display the loading spinner if the page is loading -->
+    <v-row justify="center" align="center" v-if="isLoading">
+      <v-col cols="12" class="text-center">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+        ></v-progress-circular>
+      </v-col>
+    </v-row>
+
+    <!-- Conditional rendering based on authentication status -->
+    <v-row v-else>
+      <!-- If the user is authenticated, show ChatContainer5 -->
+      <template v-if="isAuthenticated">
+        <v-col cols="12">
+          <ChatContainer />
+        </v-col>
+      </template>
+
+      <!-- <template v-else>
+        <HomeMain />
+        <NewsContainer />
+      </template> -->
+    </v-row>
+  </v-container>
+</template>
+
+<script setup>
+import { useAuthStore } from "@/stores/authStore";
+
+const authStore = useAuthStore();
+const isAuthenticated = ref(false);
+const isLoading = ref(true);
+
+onMounted(async () => {
+  await authStore.checkAuth();
+  isAuthenticated.value = authStore.user !== null;
+  isLoading.value = false;
+});
+</script>
+
+<style scoped></style>
