@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin
+Disallow: /_nuxt
+Disallow: /loginemail
+Disallow: /login
+Disallow: /privacy
+Disallow: /terms
+Disallow: /cdn-cgi
