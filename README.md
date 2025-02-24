@@ -1,18 +1,18 @@
 # NuxtChat Starter
 
 <div align="center"> 
-  <img src="/public/screenshots/ImChattyDemo.gif" alt="demo" />
+  <img src="/public/screenshots/NuxtChatDemo.gif" alt="demo" />
 </div>
 
 <!-- About the Project -->
 # :notebook_with_decorative_cover: About the Project
 ## :star2: What is this
 
-ImChatty is an open-source chat platform that allows users to chat **anonymously with real people and AI personas**.  
+NuxtChat is an open-source chat platform that allows users to chat **anonymously with real people and AI personas**.  
 It's designed to provide a **secure, fun, and interactive** chat experience while maintaining privacy.
 
 
-## :star1: Features
+## :star: Features
 - 🏆 **AI-powered conversations** - Talk with AI-powered personalities  
 - 👥 **Anonymous or Registered Users** - Stay anonymous or create an account  
 - 🔒 **Privacy-first** - No forced logins, no tracking  
@@ -139,3 +139,6 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 Oliver W Jones - [Our site](https://oliverwjones.com)
 
 Project Link: [https://github.com/jefhild/NuxtChat](https://github.com/jefhild/NuxtChat)
+
+💡 Enjoy chatting with AI & real people! 🚀
+🌟 Star this repo if you like this project! ⭐
