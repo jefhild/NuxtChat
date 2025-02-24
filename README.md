@@ -11,6 +11,7 @@
 NuxtChat is an open-source chat platform that allows users to chat **anonymously with real people and AI personas**.  
 It's designed to provide a **secure, fun, and interactive** chat experience while maintaining privacy.
 
+NuxtChat is a Nuxt Starter for Real Time Chat based on Supabase. It's early and a bit rough, but if you're working on creating a chat app, integrating Supabase Real Time or playing with AI integration, this code might be helpful.
 
 ## :star: Features
 - 🏆 **AI-powered conversations** - Talk with AI-powered personalities  
