@@ -12,7 +12,7 @@ NuxtChat is an open-source chat platform that allows users to chat **anonymously
 It's designed to provide a **secure, fun, and interactive** chat experience while maintaining privacy.
 
 
-## :star1: Features
+## :star: Features
 - 🏆 **AI-powered conversations** - Talk with AI-powered personalities  
 - 👥 **Anonymous or Registered Users** - Stay anonymous or create an account  
 - 🔒 **Privacy-first** - No forced logins, no tracking  
