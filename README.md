@@ -28,17 +28,37 @@ NuxtChat is a Nuxt Starter for Real Time Chat based on Supabase. It's early and 
   <img src="/public/screenshots/chatHarryPotter.png" alt="Chat with Harry Potter" width="400px" />
 </div>
 
-<!-- Env Variables -->
-### :key: Environment Variables
-To run this project, you will need to add the following environment variables to your .env file
- - `SUPABASE_URL`
- - `SUPABASE_KEY`
- - `SUPABASE_BUCKET`
- - `SUPABASE_REDIRECT`
- - `OPENAI_API_KEY`
-
 <!-- Getting Started -->
-## 	:toolbox: Getting Started
+## :toolbox: Getting Started
+
+ <!--Pre requisites-->
+### Prerequisites
+In order to follow along with this installation, you’ll need access to a Supabase database, an OpenAI account, and the API keys that come with it. This guide assumes that you already have an account on both platforms.
+
+If you don’t have an account and would like to set one up yourself, you can follow one of our guides on [How To Install NuxtChat](#).
+
+<!-- Installation -->
+
+### :key: Installation
+
+To run this project, you will need to add the following environment variables to your .env file. You can access these keys in your supabase database settings and OpenAI account keys
+
+-  `SUPABASE_URL`
+
+-  `SUPABASE_KEY`
+
+-  `SUPABASE_BUCKET`
+
+-  `SUPABASE_REDIRECT`
+
+-  `OPENAI_API_KEY`
+
+<!-- Database creation and initialisation -->
+### :file_folder: Database creation and initialisation
+The repository provides `create.sql` and `init.sql` scripts, which you can execute using the Supabase SQL Editor.
+
+### :question: Need any help 
+If you need any help with getting started, please consult our [How To Install NuxtChat](#) guide.
 
 <!-- Run Locally -->
 ### :running: Run Locally
