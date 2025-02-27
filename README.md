@@ -29,7 +29,7 @@ NuxtChat is a Nuxt Starter for Real Time Chat based on Supabase. It's early and 
 </div>
 
 <!-- Getting Started -->
-## :toolbox: Getting Started
+## :toolbox: Getting Started - Step by Step Guide on how to configure NuxtChat locally
 
  <!--Pre requisites-->
 ### Prerequisites
@@ -37,31 +37,8 @@ In order to follow along with this installation, you’ll need access to a Supab
 
 If you don’t have an account and would like to set one up yourself, you can follow one of our guides on [How To Install NuxtChat](#).
 
-<!-- Installation -->
-
-### :key: Installation
-
-To run this project, you will need to add the following environment variables to your .env file. You can access these keys in your supabase database settings and OpenAI account keys
-
--  `SUPABASE_URL`
-
--  `SUPABASE_KEY`
-
--  `SUPABASE_BUCKET`
-
--  `SUPABASE_REDIRECT`
-
--  `OPENAI_API_KEY`
-
-<!-- Database creation and initialisation -->
-### :file_folder: Database creation and initialisation
-The repository provides `create.sql` and `init.sql` scripts, which you can execute using the Supabase SQL Editor.
-
-### :question: Need any help 
-If you need any help with getting started, please consult our [How To Install NuxtChat](#) guide.
-
-<!-- Run Locally -->
-### :running: Run Locally
+<!-- Cloning the project -->
+### Step 1) Cloning
 Clone the project
 
 ```bash
@@ -74,7 +51,26 @@ Go to the project directory
   cd NuxtChat
 ```
 
-### :gear: Installation
+### :key: Step 2) Setup .env
+To run this project, you will need to add the following environment variables to your `.env` file. You can access these keys in your supabase database settings and OpenAI account keys
+
+-  `SUPABASE_URL`
+
+-  `SUPABASE_KEY`
+
+-  `SUPABASE_BUCKET`
+
+-  `SUPABASE_REDIRECT`
+
+-  `OPENAI_API_KEY`
+
+Create a `.env` file and add the environment variables listed above.
+
+<!-- Database creation and initialisation -->
+### :file_folder: Step 3) Database creation and initialisation
+The repository provides `create.sql`, `functions.sql` and `init.sql` scripts, which you can execute using the Supabase SQL Editor.
+
+### Step 4) Install the server dependencies
 Make sure to install the project's dependencies:
 
 ```bash
@@ -91,7 +87,7 @@ yarn install
 bun install
 ```
 
-### Development Server
+### Step 5) The Development Server
 
 Start the development server on `http://localhost:3000`:
 
@@ -109,39 +105,8 @@ yarn dev
 bun run dev
 ```
 
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
+### :question: Need any help 
+If you need any help with getting started, please consult our [How To Install NuxtChat](#) guide.
 
 <!-- Contributing -->
 ## :wave: Contributing
