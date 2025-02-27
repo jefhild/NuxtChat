@@ -64,7 +64,7 @@ CREATE TABLE public.countries (
 
 -- Table for storing descriptions
 CREATE TABLE public.descriptions (
-  id INTEGER NOT NULL DEFAULT nextval('looking_for_id_seq'::regclass),
+  id INTEGER NOT NULL,
   name TEXT NOT NULL,
   icon TEXT NULL,
   tooltip TEXT NULL,

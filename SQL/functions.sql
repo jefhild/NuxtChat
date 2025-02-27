@@ -15,11 +15,12 @@ BEGIN
 	WHERE is_anonymous = true
 	AND last_active_at < NOW() - INTERVAL '1 hour';
 END;
+$$LANGUAGE plpgsql;
 
 --PLPGSQL function to downvote a user
 CREATE OR REPLACE FUNCTION downvote_profile(
   target_user_id UUID,
-  voter_user_id UUID,
+  voter_user_id UUID
 ) RETURNS VOID AS $$
 DECLARE
   existing_vote_type TEXT;
