@@ -70,21 +70,14 @@ Create a `.env` file and add the environment variables listed above.
 ### :file_folder: Step 3) Database creation and initialisation
 The repository provides `create.sql`, `functions.sql` and `init.sql` scripts, which you can execute using the Supabase SQL Editor.
 
+First, copy the contents of the `create.sql` file and paste and run the query in the Supabase SQL Editor. After that, execute the `functions.sql` and lastly the `init.sql` file.
+
 ### Step 4) Install the server dependencies
 Make sure to install the project's dependencies:
 
 ```bash
 # npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
 ### Step 5) The Development Server
@@ -94,15 +87,6 @@ Start the development server on `http://localhost:3000`:
 ```bash
 # npm
 npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
 ### :question: Need any help 
