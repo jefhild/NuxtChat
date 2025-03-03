@@ -1,14 +1,9 @@
 <template>
   <v-card class="mx-auto mb-3" max-width="700">
     <v-card-title v-if="userProfile">
-      <v-row no-gutters class="mb-0"
-        ><v-col cols="3">
+      <v-row no-gutters class="mb-0"><v-col cols="3">
           <!-- {{ userProfile}} -->
-          <ProfilePhoto2
-            :editable="isEditable"
-            :userId="userProfile.user_id"
-            @updateAvatarUrl="updateAvatarUrl"
-          />
+          <ProfilePhoto2 :editable="isEditable" :userId="userProfile.user_id" @updateAvatarUrl="updateAvatarUrl" />
           <!-- <LookingForMenu
             :userProfile="userProfile"
             @lookingForUpdated="refreshLookingForDisplay"
@@ -28,16 +23,10 @@
             {{ userProfile.site_url }}
           </h5>
           <p class="mt-3">
-            <LookingForDisplay
-              :key="displayKey"
-              :userId="userProfile.user_id"
-            />
+            <LookingForDisplay :key="displayKey" :userId="userProfile.user_id" />
           </p>
           <p class="mt-2">
-            <LookingForMenu
-              :userProfile="userProfile"
-              @lookingForUpdated="refreshLookingForDisplay"
-            />
+            <LookingForMenu :userProfile="userProfile" @lookingForUpdated="refreshLookingForDisplay" />
           </p>
           <!-- <p class="mt-3">
             <DescriptionDisplay :descriptionIcons="selectedDescriptionIcons" />
@@ -54,50 +43,30 @@
     </v-card-title>
 
     <v-card-text v-if="userProfile">
-      <v-row class="mt-6" v-if="isEditable"
-        ><v-col cols="4">
-          <ProfileDisplayName2
-            :displayName="userProfile.displayname"
-            :isEditable="isEditable"
-            @updateDisplayName="updateDisplayName"
-            @validation="updateFormValidity"
-          />
+      <v-row class="mt-6" v-if="isEditable"><v-col cols="4">
+          <ProfileDisplayName2 :displayName="userProfile.displayname" :isEditable="isEditable"
+            @updateDisplayName="updateDisplayName" @validation="updateFormValidity" />
         </v-col>
         <v-col cols="4">
-          <ProfileTagLine
-            :tagLine="userProfile.tagline ?? '...'"
-            :isEditable="isEditable"
-            @updateTagLine="updateTagLine"
-          />
+          <ProfileTagLine :tagLine="userProfile.tagline ?? '...'" :isEditable="isEditable"
+            @updateTagLine="updateTagLine" />
         </v-col>
         <v-col cols="4">
-          <ProfileSite
-            :siteUrl="userProfile.site_url ?? ''"
-            :isEditable="isEditable"
-            @updateSite="updateSite"
-          />
+          <ProfileSite :siteUrl="userProfile.site_url ?? ''" :isEditable="isEditable" @updateSite="updateSite" />
         </v-col>
       </v-row>
     </v-card-text>
     <v-card-text v-if="userProfile">
       <v-row>
         <v-col cols="12" md="4">
-          <v-row
-            ><v-col v-if="!isEditable" cols="auto" class="mt-1">
-              <label>Status:</label></v-col
-            ><v-col>
-              <StatusSelection
-                :selectedStatus="userProfile?.status_id ?? 1"
-                :status="status"
-                :isEditable="isEditable"
-                @updateStatus="updateStatus" /></v-col
-          ></v-row>
+          <v-row><v-col v-if="!isEditable" cols="auto" class="mt-1">
+              <label>Status:</label></v-col><v-col>
+              <StatusSelection :selectedStatus="userProfile?.status_id ?? 1" :status="status" :isEditable="isEditable"
+                @updateStatus="updateStatus" />
+            </v-col></v-row>
         </v-col>
         <v-col cols="12" md="4">
-          <v-row
-            ><v-col v-if="!isEditable" cols="auto" class="mt-1"
-              ><label>Gender:</label></v-col
-            ><v-col>
+          <v-row><v-col v-if="!isEditable" cols="auto" class="mt-1"><label>Gender:</label></v-col><v-col>
               <!-- {{ selectedGender }} -->
 
               <!-- <GenderSelection
@@ -114,118 +83,68 @@
                 @validation="handleValidation"
               /> -->
 
-              <GenderSelection
-                v-model="selectedGender"
-                :genders="genders"
-                :isEditable="isEditable"
-                @validation="handleGenderValidation"
-              /> </v-col
-          ></v-row>
+              <GenderSelection v-model="selectedGender" :genders="genders" :isEditable="isEditable"
+                @validation="handleGenderValidation" />
+            </v-col></v-row>
         </v-col>
         <v-col cols="12" md="4">
-          <v-row
-            ><v-col v-if="!isEditable" cols="auto" class="mt-1"
-              ><label>Age:</label></v-col
-            ><v-col>
-              <ProfileAge
-                :age="userProfile.age ?? 18"
-                :isEditable="isEditable"
-                @updateAge="updateAge" /></v-col
-          ></v-row>
+          <v-row><v-col v-if="!isEditable" cols="auto" class="mt-1"><label>Age:</label></v-col><v-col>
+              <ProfileAge :age="userProfile.age ?? 18" :isEditable="isEditable" @updateAge="updateAge" />
+            </v-col></v-row>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12">
-          <LocationSelection
-            :selectedCountry="userProfile.country"
-            :selectedState="userProfile.state"
-            :selectedCity="userProfile.city"
-            :countries="countries"
-            :states="states"
-            :cities="cities"
-            :isEditable="isEditable"
-            @updateCountry="updateCountry"
-            @updateState="updateState"
-            @updateCity="updateCity"
-          />
+          <LocationSelection :selectedCountry="userProfile.country" :selectedState="userProfile.state"
+            :selectedCity="userProfile.city" :countries="countries" :states="states" :cities="cities"
+            :isEditable="isEditable" @updateCountry="updateCountry" @updateState="updateState"
+            @updateCity="updateCity" />
         </v-col>
       </v-row>
       <v-row>
         <v-col>
           <label>About Me:</label>
-          <ProfileBio
-            :bio="userProfile.bio ?? ''"
-            :isEditable="isEditable"
-            @updateBio="updateBio"
-          />
+          <ProfileBio :bio="userProfile.bio ?? ''" :isEditable="isEditable" @updateBio="updateBio" />
         </v-col>
       </v-row>
     </v-card-text>
     <v-card-text v-if="userProfile">
       <v-row>
         <v-col cols="8">
-          <v-btn
-            color="primary"
-            :disabled="!isFormValid"
-            @click="toggleEditMode"
-          >
+          <v-btn color="primary" :disabled="!isFormValid" @click="toggleEditMode">
             {{ isEditable ? "Save" : "Edit" }}
           </v-btn>
-          <v-btn
-            class="ml-4"
-            color="secondary"
-            v-if="isEditable"
-            @click="cancelEdit"
-          >
+          <v-btn class="ml-4" color="secondary" v-if="isEditable" @click="cancelEdit">
             Cancel
           </v-btn>
         </v-col>
         <v-col cols="4" class="d-flex justify-end">
-          <v-btn color="primary" :disabled="!isFormValid" @click="gotoChat()"
-            >Go to Chat</v-btn
-          >
+          <v-btn color="primary" :disabled="!isFormValid" @click="gotoChat()">Go to Chat</v-btn>
         </v-col>
       </v-row>
-      <v-row
-        ><v-col>
-          <v-btn
-            v-if="!isMarkedForDeletion"
-            flat
-            variant="text"
-            @click="deleteDialog = true"
-            class="text-link-btn"
-          >
+      <v-row>
+        <v-col>
+          <v-btn v-if="!isMarkedForDeletion" flat variant="text" @click="deleteDialog = true" class="text-link-btn">
             Delete My Account
           </v-btn>
-          <v-btn
-            v-else
-            flat
-            variant="text"
-            @click="deleteDialog = true"
-            class="text-link-btn"
-          >
+          <v-btn v-else flat variant="text" @click="deleteDialog = true" class="text-link-btn">
             Restore Account
           </v-btn>
         </v-col>
         <v-col align="right">
-          <v-btn
-            flat
-            variant="text"
-            color="blue"
-            @click="router.push(`/profiles/${userProfile.user_id}`)"
-            class="text-link-btn"
-            >Public Profile
-          </v-btn></v-col
-        ></v-row
-      >
+          <v-btn flat variant="text" color="blue" @click="router.push(`/profiles/${userProfile.user_id}`)"
+            class="text-link-btn">Public Profile
+          </v-btn>
+        </v-col>
+        <v-btn color="primary" @click="linkAccountDialog = true">
+          Link an account
+        </v-btn>
+      </v-row>
     </v-card-text>
     <v-card-text v-else>
       <v-row>
         <v-col cols="12">
-          <v-progress-circular
-            indeterminate
-            color="primary"
-          ></v-progress-circular>
+          <v-progress-circular indeterminate color="primary"></v-progress-circular>
           <span>Loading...</span>
         </v-col>
       </v-row>
@@ -233,38 +152,42 @@
   </v-card>
 
   <v-dialog v-model="deleteDialog" width="auto">
-    <v-card
-      max-width="400"
-      prepend-icon="mdi-account-remove"
-      title="Delete My Account"
-    >
+    <v-card max-width="400" prepend-icon="mdi-account-remove" title="Delete My Account">
       <v-card-text>
         <v-row justify="center">
-          <v-col class="text-center"
-            >Are you sure you want to delete your account? This action cannot be
-            undone.</v-col
-          ></v-row
-        >
+          <v-col class="text-center">Are you sure you want to delete your account? This action cannot be
+            undone.</v-col></v-row>
       </v-card-text>
 
       <template v-slot:actions>
-        <v-btn
-          v-if="!isMarkedForDeletion"
-          color="primary"
-          text
-          @click="confirmDelete"
-          >Confirm</v-btn
-        >
-        <v-btn v-else color="primary" text @click="cancelDelete"
-          >Restore Account</v-btn
-        >
+        <v-btn v-if="!isMarkedForDeletion" color="primary" text @click="confirmDelete">Confirm</v-btn>
+        <v-btn v-else color="primary" text @click="cancelDelete">Restore Account</v-btn>
         <v-spacer></v-spacer>
-        <v-btn
-          class="ms-auto"
-          text="Cancel"
-          @click="deleteDialog = false"
-        ></v-btn>
+        <v-btn class="ms-auto" text="Cancel" @click="deleteDialog = false"></v-btn>
       </template>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="linkAccountDialog" width="auto">
+    <v-card title="Link an account">
+      <v-card-text>
+        <v-row>
+          <v-col justify="center">
+            Please pick a provider
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="4">
+            <v-btn color="primary" @click="checkEmail">Email</v-btn>
+          </v-col>
+          <v-col cols="4">
+            <v-btn color="primary" @click="checkGoogle">Google</v-btn>
+          </v-col>
+          <v-col cols="4">
+            <v-btn color="primary" @click="checkFacebook">Facebook</v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
     </v-card>
   </v-dialog>
 </template>
@@ -322,6 +245,7 @@ const {
 const displayKey = ref(Date.now());
 const isFormValid = ref(true);
 const deleteDialog = ref(false);
+const linkAccountDialog = ref(false);
 const isMarkedForDeletion = ref(false);
 
 const updateFormValidity = (isValid) => {
@@ -675,7 +599,38 @@ const cancelDelete = async () => {
   } catch (error) {
     console.error("Error deleting account:", error.message);
   }
+}; 
+
+const checkGoogle = async () => {
+  try
+  {
+    await authStore.checkAuthGoogle();
+  } catch (error)
+  {
+    console.error("Error submitting form:", error);
+  }
 };
+
+const checkFacebook = async () => {
+  try
+  {
+    await authStore.checkAuthFacebook();
+  } catch (error)
+  {
+    console.error("Error submitting form:", error);
+  }
+};
+
+const checkEmail = async () => {
+  try
+  {
+    await authStore.checkAuthEmail();
+  } catch (error)
+  {
+    console.error("Error submitting form:", error);
+  }
+};
+
 </script>
 
 <style scoped>

@@ -1,5 +1,5 @@
 <template>
-	<v-card max-width="400">
+	<v-card>
 		<v-card-text>
 			<v-row justify="center" no-gutters>
 				<v-col class="text-center">
@@ -13,18 +13,18 @@
 										index === currentQuestionIndex && message.role === 'bot',
 								},
 							]">
-								{{ message.text }}
+								{{ (currentQuestionIndex + 1) + "/" + questions.length + " - " +  message.text }}
 							</p>
 						</div>
 					</v-container>
 					<v-text-field v-if="showInputField" ref="inputField" variant="outlined" v-model="userInput"
-						@keyup.enter="sendMessage" placeholder="Type your response..." :disabled="isLoading" />
+						@keyup.enter="sendMessage" placeholder="Type your response..." :disabled="isLoading"
+						append-inner-icon="mdi-send" @click:append-inner="sendMessage" />
 				</v-col>
 			</v-row>
 		</v-card-text>
 
 		<template v-slot:actions>
-			<v-btn color="primary" text @click="emitCloseDialog">Close</v-btn>
 			<v-spacer></v-spacer>
 			<v-btn v-if="showCreateProfileButton" color="red" @click="submitToDatabase">
 				Create Profile
@@ -55,8 +55,6 @@ const { classifyGender } = useGenderMapper();
 const { classifyStatus } = useStatusMapper();
 const { classifyAge } = useAgeMapper();
 const { getAvatarUrl } = useAvatarMapper();
-
-const emit = defineEmits(["closeDialog"]);
 
 // State variables
 const messages = ref([]);
@@ -172,7 +170,7 @@ const validateResponse = async (index, input) =>
 									- If the input is a sentence requesting a pseudonym (e.g., "I want my pseudonym to be X"), extract only the single-word pseudonym.  
 									- If the input itself is already a multi-word pseudonym (e.g., "Dark Lord"), return this exact error message: "Your pseudonym must be a single word."  
 									- If the input contains hate speech or inappropriate words, return an error message explaining why.  
-									- Otherwise, return only the valid pseudonym, with no additional text.  
+									- Otherwise, return only the valid pseudonym, with no additional text, no "" and no punctuation.  
 										User input: ${input}`,
 						currentResponses: userResponses.value,
 						currentQuestionIndex: currentQuestionIndex.value,
@@ -198,6 +196,7 @@ const validateResponse = async (index, input) =>
 					}
 
 					// Check if the username already exists
+					console.log("Checking if username exists:", userPseudo);
 					if (await checkUsernameExists(userPseudo))
 					{
 						return {
@@ -444,14 +443,7 @@ const submitToDatabase = async () =>
 	{
 		isLoading.value = false;
 		router.push("/settings");
-		emitCloseDialog();
 	}
-};
-
-// Close the dialog
-const emitCloseDialog = () =>
-{
-	emit("closeDialog");
 };
 </script>
 
