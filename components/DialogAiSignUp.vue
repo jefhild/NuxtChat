@@ -4,6 +4,14 @@
 			<v-container class="chat-container">
 				<!-- Display the conversation -->
 				<transition-group name="chat" tag="div" v-if="messages.length">
+					<!--User response-->
+					<div v-if="userInputValue" class="chat-bubble user-message">
+						<v-avatar size="24" class="user-avatar">
+							<v-img src="/images/avatars/anonymous.png" />
+						</v-avatar>
+						{{ userInputValue }} 
+					</div>
+
 					<p v-for="(message, index) in messages" :key="message.id" :class="[
 								'chat-bubble',
 								message.role === 'bot' ? 'bot-message' : 'user-message',
@@ -44,13 +52,10 @@
 		</v-col>
 	</v-row>
 	<v-row>
-		<template v-slot:actions>
-			<v-spacer></v-spacer>
-			<v-btn v-if="showCreateProfileButton" color="red" @click="submitToDatabase">
-				Create Profile
-			</v-btn>
-			<v-btn v-else class="ms-auto" text @click="sendMessage"> Send </v-btn>
-		</template>
+		<v-spacer></v-spacer>
+		<v-btn v-if="showCreateProfileButton" color="red" @click="submitToDatabase">
+			Create Profile
+		</v-btn>
 	</v-row>
 </template>
 
@@ -70,6 +75,7 @@ const mappedDisplayName = ref(null);
 const mappedGender = ref(null);
 const mappedStatus = ref(null);
 const mappedAge = ref(null);
+const mappedBio = ref(null);
 
 const { classifyGender } = useGenderMapper();
 const { classifyStatus } = useStatusMapper();
@@ -83,7 +89,7 @@ const questions = ref([
 	"Are you a man, a woman, or something else?",
 	"How old are you?",
 	"Are you married, single, separated, or maybe it's complicated?",
-	"What are your interests?",
+	"Give us some keywords so we could generate a bio for you.",
 ]);
 const userResponses = ref({
 	name: "",
@@ -93,6 +99,7 @@ const userResponses = ref({
 	bio: "",
 });
 const userInput = ref("");
+const userInputValue = ref("");
 const currentQuestionIndex = ref(0);
 const showCreateProfileButton = ref(false);
 const showInputField = ref(true); // Determines the visibility of the input field
@@ -241,7 +248,7 @@ const validateResponse = async (index, input) =>
 		case 1: //Gender validation
 			const gender = classifyGender(input);
 			mappedGender.value = gender;
-			if (mappedGender.value === 3) { return { valid: false, error: "Please enter a real gender or \"other\""}; }
+			if (mappedGender.value === 4) { return { valid: false, error: "Please enter a real gender or \"other\""}; }
 			userResponses.value.sex = input;
 			return { valid: true };
 
@@ -287,14 +294,15 @@ const validateResponse = async (index, input) =>
 
 		case 4: //Bio validation
 			const bio = input.trim();
-			if (bio.length < 150) {
-				return { valid: false, error: "Your bio must be at least 150 characters long." };
+
+			if (bio.split(" ").length < 5){
+				return { valid: false, error: "You must at least give out 5 keywords"};
 			}
 
 			payload = {
-				userMessage: `Here is the user input for the bio: ${bio}. Validate it. 
-				If it contains innapropriate information or any hatfeul content, return the word and only the word "error". 
-				Otherwise, answer with a reformulation of what the user has inputted.`,
+				userMessage: `Based on the following keywords provided by the user: "${bio}" , 
+				generate a short and engaging three-sentence biography that captures their personality, interests, and background. Speak in the first person as if you were the user.
+				If in any way the user input is inappropriate, hateful or contains any kind of inappropriate content, return the word and only the word "inappropriate".`,
 				currentResponses: userResponses.value,
 				currentQuestionIndex: currentQuestionIndex.value,
 				questions: questions.value,
@@ -309,12 +317,13 @@ const validateResponse = async (index, input) =>
 
 				if (response.success && response.aiResponse)
 				{
-					if (response.aiResponse.trim().split(" ").length <= 1)
+					if (response.aiResponse.trim() == "inappropriate")
 					{
-						return { valid: false, error: response.aiResponse };
+						return { valid: false, error: "Please re-enter other keywords" };
 					}
 
-					userResponses.value.bio = bio;
+					mappedBio.value = response.aiResponse.trim();
+					console.log("Mapped Bio:", mappedBio.value); 
 					return { valid: true };
 				}
 
@@ -390,11 +399,9 @@ const sendMessage = async () =>
 		return;
 	}
 
-	const userInputValue = userInput.value.trim(); // Store user input
-
 	// Prepare payload for AI API
 	const payload = {
-		userMessage: userInputValue,
+		userMessage: userInput.value.trim(),
 		currentResponses: userResponses.value,
 		currentQuestionIndex: currentQuestionIndex.value,
 		questions: questions.value,
@@ -409,22 +416,28 @@ const sendMessage = async () =>
 
 		if (response.success && response.aiResponse)
 		{
-			const aiResponse = response.aiResponse;
-			userResponses.value[currentKey] = userInputValue; // Save user input for the questions
+			var aiResponse = response.aiResponse;
+			userResponses.value[currentKey] = userInput.value.trim(); // Save user input for the questions
 			
 
-			console.log("User responses:", userResponses.value);
 			// Determine the next question or finish
 			const nextQuestion =
 				currentQuestionIndex.value < questions.value.length - 1
 					? questions.value[currentQuestionIndex.value + 1]
 					: "";
 
+			if (currentQuestionIndex.value === specificQuestionIndex)
+			{
+				console.log("in here");
+				// Store the AI response for the specific question
+				aiResponse = "Here is your generated bio (feel free to change it in your profile settings):" + mappedBio.value;
+			}
+
 			// Update messages and input visibility
 			updateMessages(aiResponse, nextQuestion);
 
 			// Move to the next question if applicable
-			if (currentQuestionIndex.value < questions.value.length - 1)
+			if (currentQuestionIndex.value != specificQuestionIndex)
 			{
 				currentQuestionIndex.value++;
 			} else
@@ -442,6 +455,7 @@ const sendMessage = async () =>
 		updateMessages("Failed to fetch AI response. Please try again.", "");
 	} finally
 	{
+		userInputValue.value = userInput.value.trim(); // Store user input
 		isLoading.value = false;
 		isTyping.value = false;
 		userInput.value = ""; // Clear input for the next question
@@ -466,7 +480,7 @@ const submitToDatabase = async () =>
 			displayName: mappedDisplayName.value,
 			age: mappedAge.value,
 			avatarUrl: avatarUrl,
-			bio: userResponses.value.bio,
+			bio: mappedBio.value,
 			selectedGender: mappedGender.value,
 			selectedStatus: mappedStatus.value,
 		});

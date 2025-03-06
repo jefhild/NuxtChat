@@ -14,7 +14,9 @@ export default function useGenderMapper() {
     if (words.some((word) => femaleKeywords.includes(word))) return 2;
 
     // Default to "Other"
-    return 3;
+    if (words.some((word) => word === "other")) return 3;
+    
+    return 4;
   };
 
   return { classifyGender };
