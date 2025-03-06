@@ -20,17 +20,6 @@
                     <v-btn
                       class="text-blue"
                       variant="plain"
-                      @click="selectedModel = 'LoginAi'"
-                    >
-                      <h2 class="green--text-h2">With AI</h2></v-btn
-                    ></v-col
-                  ></v-row
-                >
-                <v-row no-gutters
-                  ><v-col>
-                    <v-btn
-                      class="text-blue"
-                      variant="plain"
                       @click="selectedModel = 'LoginGoogle'"
                     >
                       <h2 class="green--text-h2">With Google</h2>

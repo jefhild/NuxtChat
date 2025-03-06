@@ -222,6 +222,7 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
   } catch (error) {
     console.error("Error fetching chat messages:", error);
   }
+  refreshData();
 };
 
 const markMessagesAsRead = async (receiverUserId, senderUserId) => {
@@ -260,6 +261,7 @@ const handleRealtimeMessages = (payload) => {
       if (!messageExists) {
         messages.value.push(newRow); // Add the new message to the array
         scrollToBottom(); // Ensure the chat scrolls to the bottom when a new message is added
+        markMessagesAsRead(newRow.receiver_id, newRow.sender_id); // Mark the message as read
       }
     }
   }
@@ -283,7 +285,7 @@ onMounted(async () => {
     selectedUser,
     (newUser, oldUser) => {
       if (newUser && newUser !== oldUser) {
-        loadChatMessages(newUser.user_id, authStore.user?.id);
+        loadChatMessages(authStore.user?.id,newUser.user_id);
       }
     },
     { immediate: true }
