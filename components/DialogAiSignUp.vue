@@ -1,29 +1,49 @@
 <template>
-	<v-card>
-		<v-card-text>
-			<v-row justify="center" no-gutters>
-				<v-col class="text-center">
-					<v-container>
-						<!-- Display the conversation -->
-						<div v-if="messages.length">
-							<p v-for="(message, index) in messages" :key="message.id" :class="[
-								message.role,
+	<v-row justify="center" no-gutters>
+		<v-col class="text-center">
+			<v-container class="chat-container">
+				<!-- Display the conversation -->
+				<transition-group name="chat" tag="div" v-if="messages.length">
+					<p v-for="(message, index) in messages" :key="message.id" :class="[
+								'chat-bubble',
+								message.role === 'bot' ? 'bot-message' : 'user-message',
 								{
 									'current-question':
 										index === currentQuestionIndex && message.role === 'bot',
 								},
 							]">
-								{{ (currentQuestionIndex + 1) + "/" + questions.length + " - " +  message.text }}
-							</p>
-						</div>
-					</v-container>
-					<v-text-field v-if="showInputField" ref="inputField" variant="outlined" v-model="userInput"
-						@keyup.enter="sendMessage" placeholder="Type your response..." :disabled="isLoading"
-						append-inner-icon="mdi-send" @click:append-inner="sendMessage" />
-				</v-col>
-			</v-row>
-		</v-card-text>
+						{{ (currentQuestionIndex + 1) + "/" + questions.length + " - " + message.text }}
 
+						<v-avatar size="32" class="bot-avatar">
+							<v-img src="/robot.png" />
+						</v-avatar>
+					</p>
+				</transition-group>
+
+				<div v-if="showUserBubble" class="chat-bubble user-message">
+					<v-avatar size="24" class="user-avatar">
+						<v-img src="/images/avatars/anonymous.png" />
+					</v-avatar>
+					{{ userInput }}
+				</div>
+
+				<!-- Typing Indicator -->
+				<div v-if="isTyping" class="typing-indicator bot-message">
+					<v-avatar size="32" class="bot-avatar">
+						<v-img src="/robot.png" />
+					</v-avatar>
+					<div class="dots">
+						<span></span><span></span><span></span>
+					</div>
+				</div>
+
+			</v-container>
+			<v-text-field v-if="showInputField" ref="inputField" variant="outlined" v-model="userInput"
+				@keyup.enter="sendMessage" placeholder="Type your response..." :disabled="isLoading"
+				append-inner-icon="mdi-send" @click:append-inner="sendMessage" />
+		</v-col>
+	</v-row>
+	<v-row>
 		<template v-slot:actions>
 			<v-spacer></v-spacer>
 			<v-btn v-if="showCreateProfileButton" color="red" @click="submitToDatabase">
@@ -31,7 +51,7 @@
 			</v-btn>
 			<v-btn v-else class="ms-auto" text @click="sendMessage"> Send </v-btn>
 		</template>
-	</v-card>
+	</v-row>
 </template>
 
 <script setup>
@@ -76,6 +96,8 @@ const userInput = ref("");
 const currentQuestionIndex = ref(0);
 const showCreateProfileButton = ref(false);
 const showInputField = ref(true); // Determines the visibility of the input field
+const isTyping = ref(false);
+const showUserBubble = ref(false);
 
 const questionKeyMap = {
 	0: "name",
@@ -265,8 +287,14 @@ const validateResponse = async (index, input) =>
 
 		case 4: //Bio validation
 			const bio = input.trim();
+			if (bio.length < 150) {
+				return { valid: false, error: "Your bio must be at least 150 characters long." };
+			}
+
 			payload = {
-				userMessage: `Here is the user input for the bio: ${bio}. Validate it. If it contains innapropriate information or any hatfeul content, return an error message to retry. Otherwise, asnwer with only the word "okay".`,
+				userMessage: `Here is the user input for the bio: ${bio}. Validate it. 
+				If it contains innapropriate information or any hatfeul content, return the word and only the word "error". 
+				Otherwise, answer with a reformulation of what the user has inputted.`,
 				currentResponses: userResponses.value,
 				currentQuestionIndex: currentQuestionIndex.value,
 				questions: questions.value,
@@ -281,7 +309,7 @@ const validateResponse = async (index, input) =>
 
 				if (response.success && response.aiResponse)
 				{
-					if (response.aiResponse.trim().split(" ").length > 1)
+					if (response.aiResponse.trim().split(" ").length <= 1)
 					{
 						return { valid: false, error: response.aiResponse };
 					}
@@ -327,6 +355,8 @@ const specificQuestionIndex = 4; // Specify the index of the question to store A
 const sendMessage = async () =>
 {
 	isLoading.value = true;
+	isTyping.value = true;
+	showUserBubble.value = true;
 	if (!userInput.value.trim())
 	{
 		console.warn("User input is empty. Aborting.");
@@ -354,12 +384,13 @@ const sendMessage = async () =>
 			questions.value[currentQuestionIndex.value]
 		);
 		userInput.value = ""; // Clear input for retry
+		showUserBubble.value = false;
 		isLoading.value = false;
+		isTyping.value = false;
 		return;
 	}
 
 	const userInputValue = userInput.value.trim(); // Store user input
-	userInput.value = ""; // Clear input for the next question
 
 	// Prepare payload for AI API
 	const payload = {
@@ -412,6 +443,9 @@ const sendMessage = async () =>
 	} finally
 	{
 		isLoading.value = false;
+		isTyping.value = false;
+		userInput.value = ""; // Clear input for the next question
+		showUserBubble.value = false;
 	}
 };
 
@@ -448,33 +482,156 @@ const submitToDatabase = async () =>
 </script>
 
 <style scoped>
-/* Base styles for messages */
-p.bot {
-	background-color: #f0f4f8;
-	/* Light blue background for AI responses */
-	color: #333;
-	/* Dark text for contrast */
-	padding: 10px;
-	border-radius: 8px;
-	margin: 5px 0;
-	text-align: left;
+.chat-container {
+	max-width: auto;
+	padding: 16px;
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(10px);
 }
 
-p.user {
-	background-color: #e1ffe1;
-	/* Light green background for user responses */
-	color: #333;
-	/* Dark text for contrast */
-	padding: 10px;
-	border-radius: 8px;
-	margin: 5px 0;
+.chat-bubble {
+	display: flex;
+	align-items: left;
+	gap: 10px;
+	padding: 12px;
+	margin: 8px 0;
+	border-radius: 10px;
+	max-width: 80%;
+	font-size: 16px;
+	position: relative;
+}
+
+.bot-message {
+	color: black;
 	text-align: right;
+	margin-left: auto;
+	max-width: fit-content;
+	display: flex;
+	align-items: center;
+	padding : 2%;
+	border-radius: 10px;
+	word-wrap: break-word;
+	white-space: pre-wrap;
+	position: relative;
 }
 
-/* Highlight for the current question */
-p.current-question {
-	border: 2px solid #4caf50;
-	/* Green border to highlight the active question */
-	font-weight: bold;
+.bot-message::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	right: -10px;
+	/* Position the tail to the right of the bubble */
+	width: 0;
+	height: 0;
+	border-left: 11px solid rgba(0, 150, 255, 0.2);
+	/* Tail color */
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid transparent;
+	transform: translateY(-50%);
 }
+
+.user-message {
+	color: black;
+	text-align: left;
+	max-width: fit-content;
+	padding: 2%;
+	border-radius: 10px;
+	word-wrap: break-word;
+	white-space: pre-wrap;
+	position: relative;
+}
+
+.user-message::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: -10px;
+	/* Position the tail to the left of the bubble */
+	width: 0;
+	height: 0;
+	border-right: 10px solid rgba(70, 169, 101, 0.2);
+	/* Tail color */
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid transparent;
+	transform: translateY(-50%);
+}
+
+.bot-avatar {
+	background-color: rgba(0, 150, 255, 0.6);
+	padding: 4px;
+}
+
+.user-avatar{
+	background-color: rgba(70, 169, 101, 0.6);
+	padding: 4px;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 10px 0;
+	padding: 10px;
+	border-radius: 10px;
+	width: fit-content;
+	margin-left: auto;
+}
+
+.dots span {
+	width: 8px;
+	height: 8px;
+	margin: 0 2px;
+	background: black;
+	border-radius: 50%;
+	display: inline-block;
+	animation: blink 1.5s infinite ease-in-out both;
+}
+
+.dots span:nth-child(1) {
+	animation-delay: 0s;
+}
+
+.dots span:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+.dots span:nth-child(3) {
+	animation-delay: 0.4s;
+}
+
+@keyframes blink {
+	0% {
+		opacity: 0.3;
+	}
+
+	50% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0.3;
+	}
+}
+
+.chat-enter-active {
+	animation: slide-in 0.4s ease-out;
+}
+
+.chat-move {
+	transition: transform 0.4s ease;
+}
+
+@keyframes slide-in {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
 </style>
