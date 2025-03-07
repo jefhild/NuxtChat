@@ -458,7 +458,6 @@ const updateStatus = (newStatusId) => {
 
 const updateBio = (newBio) => {
   userProfile.value.bio = newBio;
-  console.log("new bio: ", userProfile.value.bio);
 };
 
 const updateDisplayName = (newDisplayName) => {
@@ -484,8 +483,6 @@ const updateAge = (newAge) => {
 const toggleEditMode = async () => {
   if (isEditable.value) {
     try {
-      console.log("userProfile.value bio: ", userProfile.value.bio);
-      console.log("originalBio.value: ", originalBio.value);
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -516,7 +513,6 @@ const toggleEditMode = async () => {
       originalAvatarUrl.value = userProfile.value.avatar_url;
       originalSiteUrl.value = userProfile.value.site_url;
 
-      //.location.reload();
     } catch (error) {
       console.error("Error updating profile:", error);
     }
@@ -541,9 +537,7 @@ const toggleEditMode = async () => {
       await fetchCities(userProfile.value.state_id);
     }
   }
-  console.log("iseditable: ", isEditable.value);
   isEditable.value = !isEditable.value;
-  console.log("isEditable: ", isEditable.value);
 };
 
 const cancelEdit = () => {

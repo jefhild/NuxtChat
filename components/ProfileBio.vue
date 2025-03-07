@@ -30,6 +30,7 @@ const localBio = ref(props.bio);
 watch(() => props.bio, (newBio) =>
 {
   localBio.value = newBio;
+  bio.value = newBio;
 });
 
 const emits = defineEmits(['updateBio']);
