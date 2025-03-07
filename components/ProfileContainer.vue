@@ -137,9 +137,9 @@
             class="text-link-btn">Public Profile
           </v-btn>
         </v-col>
-        <v-btn color="primary" @click="linkAccountDialog = true">
+        <!-- <v-btn color="primary" @click="linkAccountDialog = true">
           Link an account
-        </v-btn>
+        </v-btn> -->
       </v-row>
     </v-card-text>
     <v-card-text v-else>
