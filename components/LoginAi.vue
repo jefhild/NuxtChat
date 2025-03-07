@@ -1,10 +1,5 @@
 <template>
   <v-container class="myfont text-center">
-    <v-row>
-      <v-col cols="12">
-        <h1>NuxtChat</h1>
-      </v-col>
-    </v-row>
     <v-row class=" pt-15 d-flex align-center justify-center text-center">
       <v-col cols="12">
         <DialogAiSignUp />

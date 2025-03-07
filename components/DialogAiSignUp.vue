@@ -1,62 +1,80 @@
 <template>
-	<v-row justify="center" no-gutters>
-		<v-col class="text-center">
-			<v-container class="chat-container">
-				<!-- Display the conversation -->
-				<transition-group name="chat" tag="div" v-if="messages.length">
-					<!--User response-->
-					<div v-if="userInputValue" class="chat-bubble user-message">
-						<v-avatar size="24" class="user-avatar">
-							<v-img src="/images/avatars/anonymous.png" />
-						</v-avatar>
-						{{ userInputValue }} 
-					</div>
+	<v-card>
+		<v-card-title class="headline font-weight-bold text-center mb-4" style="color: #FF5722;">Create Your Anonymous
+			Profile</v-card-title>
+		<v-card-text>
+			<p class="pb-4">
+				Welcome to our platform! We are excited to get to know you better. Please follow the
+				instructions below to create your anonymous profile.
+			</p>
 
-					<p v-for="(message, index) in messages" :key="message.id" :class="[
-								'chat-bubble',
-								message.role === 'bot' ? 'bot-message' : 'user-message',
-								{
-									'current-question':
-										index === currentQuestionIndex && message.role === 'bot',
-								},
-							]">
-						{{ (currentQuestionIndex + 1) + "/" + questions.length + " - " + message.text }}
+			<v-row v-if="submittingtoDatabase" justify="center" no-gutters>
+				<v-col class="text-center">
+					<v-progress-circular indeterminate color="primary" size="64" />
+				</v-col>
+			</v-row>
+			<v-row v-else justify="center" no-gutters>
+				<v-col class="text-center">
+					<v-container class="chat-container">
+						<v-progress-linear :model-value="((currentQuestionIndex ) / questions.length) * 100" color="light-blue" height="10" rounded
+							style="width: 100%;" />
+						<!-- Display the conversation -->
+						<transition-group name="chat" tag="div" v-if="messages.length">
+							<!--User response-->
+							<div v-if="userInputValue" class="chat-bubble user-message">
+								<v-avatar size="24" class="user-avatar">
+									<v-img src="/images/avatars/anonymous.png" />
+								</v-avatar>
+								{{ userInputValue }}
+							</div>
 
-						<v-avatar size="32" class="bot-avatar">
-							<v-img src="/robot.png" />
-						</v-avatar>
-					</p>
-				</transition-group>
+							<p v-for="(message, index) in messages" :key="message.id" :class="[
+						'chat-bubble',
+						message.role === 'bot' ? 'bot-message' : 'user-message',
+						{
+							'current-question':
+								index === currentQuestionIndex && message.role === 'bot',
+						},
+					]">
+								{{ message.text }}
 
-				<div v-if="showUserBubble" class="chat-bubble user-message">
-					<v-avatar size="24" class="user-avatar">
-						<v-img src="/images/avatars/anonymous.png" />
-					</v-avatar>
-					{{ userInput }}
-				</div>
+								<v-avatar size="32" class="bot-avatar">
+									<v-img src="/robot.png" />
+								</v-avatar>
+							</p>
+						</transition-group>
 
-				<!-- Typing Indicator -->
-				<div v-if="isTyping" class="typing-indicator bot-message">
-					<v-avatar size="32" class="bot-avatar">
-						<v-img src="/robot.png" />
-					</v-avatar>
-					<div class="dots">
-						<span></span><span></span><span></span>
-					</div>
-				</div>
+						<div v-if="showUserBubble" class="chat-bubble user-message">
+							<v-avatar size="24" class="user-avatar">
+								<v-img src="/images/avatars/anonymous.png" />
+							</v-avatar>
+							{{ userInput }}
+						</div>
 
-			</v-container>
-			<v-text-field v-if="showInputField" ref="inputField" variant="outlined" v-model="userInput"
-				@keyup.enter="sendMessage" placeholder="Type your response..." :disabled="isLoading"
-				append-inner-icon="mdi-send" @click:append-inner="sendMessage" />
-		</v-col>
-	</v-row>
-	<v-row>
-		<v-spacer></v-spacer>
-		<v-btn v-if="showCreateProfileButton" color="red" @click="submitToDatabase">
-			Create Profile
-		</v-btn>
-	</v-row>
+						<!-- Typing Indicator -->
+						<div v-if="isTyping" class="typing-indicator bot-message">
+							<v-avatar size="32" class="bot-avatar">
+								<v-img src="/robot.png" />
+							</v-avatar>
+							<div class="dots">
+								<span></span><span></span><span></span>
+							</div>
+						</div>
+
+					</v-container>
+					<v-text-field v-if="showInputField" ref="inputField" variant="outlined" v-model="userInput"
+						@keyup.enter="sendMessage" placeholder="Type your response..." :disabled="isLoading"
+						append-inner-icon="mdi-send" @click:append-inner="sendMessage" />
+				</v-col>
+			</v-row>
+			<v-row>
+				<v-spacer></v-spacer>
+				<v-btn v-if="showCreateProfileButton" color="red" @click="submitToDatabase">
+					Create Profile
+				</v-btn>
+			</v-row>
+		</v-card-text>
+	</v-card>
 </template>
 
 <script setup>
@@ -70,6 +88,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const supabase = useSupabaseClient();
 const isLoading = ref(false);
+const submittingtoDatabase = ref(false);
 const inputField = ref(null); // Reference to the input field
 const mappedDisplayName = ref(null);
 const mappedGender = ref(null);
@@ -466,6 +485,7 @@ const sendMessage = async () =>
 // Submit data to the database
 const submitToDatabase = async () =>
 {
+	submittingtoDatabase.value = true;
 	isLoading.value = true;
 	try
 	{
