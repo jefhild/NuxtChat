@@ -105,6 +105,7 @@
         <v-col>
           <label>About Me:</label>
           <ProfileBio :bio="userProfile.bio ?? ''" :isEditable="isEditable" @updateBio="updateBio" />
+          <v-btn v-if="isEditable" color="primary" @click="generateBioDialog = true">Generate a bio</v-btn>
         </v-col>
       </v-row>
     </v-card-text>
@@ -168,8 +169,12 @@
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="linkAccountDialog" width="auto">
-    <LinkAccount/>
+  <v-dialog v-model="linkAccountDialog" width="auto" transition="dialog-transition">
+    <LinkAccount />
+  </v-dialog>
+
+  <v-dialog v-model="generateBioDialog" max-width="600" transition="dialog-transition">
+    <GenerateBioDialog v-model="generateBioDialog" @updateBio="updateBio" />
   </v-dialog>
 </template>
 
@@ -227,6 +232,7 @@ const displayKey = ref(Date.now());
 const isFormValid = ref(true);
 const deleteDialog = ref(false);
 const linkAccountDialog = ref(false);
+const generateBioDialog = ref(false);
 const isMarkedForDeletion = ref(false);
 
 const updateFormValidity = (isValid) => {
@@ -452,6 +458,7 @@ const updateStatus = (newStatusId) => {
 
 const updateBio = (newBio) => {
   userProfile.value.bio = newBio;
+  console.log("new bio: ", userProfile.value.bio);
 };
 
 const updateDisplayName = (newDisplayName) => {
@@ -477,6 +484,8 @@ const updateAge = (newAge) => {
 const toggleEditMode = async () => {
   if (isEditable.value) {
     try {
+      console.log("userProfile.value bio: ", userProfile.value.bio);
+      console.log("originalBio.value: ", originalBio.value);
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -506,6 +515,8 @@ const toggleEditMode = async () => {
       originalCityId.value = userProfile.value.city_id;
       originalAvatarUrl.value = userProfile.value.avatar_url;
       originalSiteUrl.value = userProfile.value.site_url;
+
+      //.location.reload();
     } catch (error) {
       console.error("Error updating profile:", error);
     }
@@ -530,7 +541,9 @@ const toggleEditMode = async () => {
       await fetchCities(userProfile.value.state_id);
     }
   }
+  console.log("iseditable: ", isEditable.value);
   isEditable.value = !isEditable.value;
+  console.log("isEditable: ", isEditable.value);
 };
 
 const cancelEdit = () => {

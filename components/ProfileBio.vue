@@ -1,7 +1,7 @@
 <template>
   <v-textarea
     v-if="isEditable"
-    v-model="bio"
+    v-model="localBio"
     label="Bio"
     rows="5"
     outlined
@@ -24,6 +24,12 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+});
+
+const localBio = ref(props.bio);
+watch(() => props.bio, (newBio) =>
+{
+  localBio.value = newBio;
 });
 
 const emits = defineEmits(['updateBio']);

@@ -1,5 +1,10 @@
 <template>
-	<v-row justify="center" no-gutters>
+	<v-row v-if="submittingtoDatabase" justify="center" no-gutters>
+		<v-col class="text-center">
+			<v-progress-circular indeterminate color="primary" size="64" />
+		</v-col>
+	</v-row>
+	<v-row v-else justify="center" no-gutters>
 		<v-col class="text-center">
 			<v-container class="chat-container">
 				<!-- Display the conversation -->
@@ -9,17 +14,17 @@
 						<v-avatar size="24" class="user-avatar">
 							<v-img src="/images/avatars/anonymous.png" />
 						</v-avatar>
-						{{ userInputValue }} 
+						{{ userInputValue }}
 					</div>
 
 					<p v-for="(message, index) in messages" :key="message.id" :class="[
-								'chat-bubble',
-								message.role === 'bot' ? 'bot-message' : 'user-message',
-								{
-									'current-question':
-										index === currentQuestionIndex && message.role === 'bot',
-								},
-							]">
+						'chat-bubble',
+						message.role === 'bot' ? 'bot-message' : 'user-message',
+						{
+							'current-question':
+								index === currentQuestionIndex && message.role === 'bot',
+						},
+					]">
 						{{ (currentQuestionIndex + 1) + "/" + questions.length + " - " + message.text }}
 
 						<v-avatar size="32" class="bot-avatar">
@@ -70,6 +75,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const supabase = useSupabaseClient();
 const isLoading = ref(false);
+const submittingtoDatabase = ref(false);
 const inputField = ref(null); // Reference to the input field
 const mappedDisplayName = ref(null);
 const mappedGender = ref(null);
@@ -466,6 +472,7 @@ const sendMessage = async () =>
 // Submit data to the database
 const submitToDatabase = async () =>
 {
+	submittingtoDatabase.value = true;
 	isLoading.value = true;
 	try
 	{
