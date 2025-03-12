@@ -338,8 +338,14 @@ const sendMessage = async () => {
       return;
     }
 
+    let isAI = false;
+
+    if (selectedUser.value.provider === "ChatGPT") {
+      isAI = true;
+    }
+
     // If the selected user is AI, check interaction limit
-    if (selectedUser.value.is_ai) {
+    if (isAI) {
       const canContinue = await checkAiInteractionLimit();
       if (!canContinue) {
         showRegistrationPrompt();
@@ -377,11 +383,10 @@ const sendMessage = async () => {
           read: data[0].read,
           sender: userProfile.value.displayname, // Assuming current user's displayname is needed
         });
-
         scrollToBottom(); // Ensure the chat scrolls to the bottom when a new message is added
 
         // If the selected user is an AI, generate a response by calling the local API
-        if (selectedUser.value.is_ai) {
+        if (isAI) {
           const aiResponse = await fetchAiResponse(userMessage, selectedUser);
           // console.log("fetching response from AI:", aiResponse);
           if (aiResponse) {
@@ -455,7 +460,6 @@ const sendMessage = async () => {
 
 // Helper function to call the local API endpoint
 const fetchAiResponse = async (message, aiuser) => {
-  console.log("aiuserid:", aiuser.value.displayname);
 
   const userPayload = {
     aiUser: aiuser.value.displayname,
@@ -463,6 +467,7 @@ const fetchAiResponse = async (message, aiuser) => {
     userMessage: message,
     userGender: userProfile.value?.gender,
     userAge: userProfile.value?.age,
+    messages: messages.value.slice(-10),
   };
 
   console.log("Sending payload:", userPayload); // Debug log to verify payload

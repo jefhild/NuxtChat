@@ -730,23 +730,22 @@ export const useAuthStore = defineStore("authStore", {
     },
 
     async trackPresence(userId) {
-      const supabase = useSupabaseClient();
-      await supabase
-        .from("presence")
-        .upsert({ user_id: userId, status: "online", last_active: new Date() });
+      this.updatePresence(userId, "online")
 
       // not sure about this...
       window.addEventListener("beforeunload", () =>
         this.updatePresence(userId, "offline")
       );
 
-      this.presenceInterval = setInterval(
-        () => this.updatePresence(userId, "online"),
-        30000
+      this.inactivityCheckInterval = setInterval(() => 
+        this.checkInactivityForAllUsers(), 
+        60000
       );
     },
 
     async updatePresence(userId, status) {
+     //console.log("updatepresence : ");
+     //console.log("status : ",status);
       const supabase = useSupabaseClient();
       const { error } = await supabase
         .from("presence")
@@ -770,21 +769,53 @@ export const useAuthStore = defineStore("authStore", {
       return data.last_active;
     },
 
-    async checkInactivity() {
-      if (this.user && this.user.isAnonymous) {
-        const lastActive = await this.fetchLastActive(this.user.id);
-        if (lastActive) {
-          const now = new Date();
-          const lastActiveDate = new Date(lastActive);
-          const timeDifference = (now - lastActiveDate) / (1000 * 60 * 60); // Convert ms to hours
-          if (timeDifference >= 1) {
-            await this.logout();
-          }
+    async stopTracking()
+    {
+      if (this.inactivityCheckInterval)
+      {
+        clearInterval(this.inactivityCheckInterval);
+      }
+    },
+
+    async checkInactivityForAllUsers()
+    {
+      console.log("checking inactivity for ALL users")
+      const supabase = useSupabaseClient();
+
+      // Get all online users
+      const { data: onlineUsers, error } = await supabase
+        .from("presence")
+        .select("user_id, last_active")
+        .eq("status", "online"); 
+
+      if (error)
+      {
+        console.error("Error fetching online users:", error);
+        return;
+      }
+
+      const now = new Date();
+
+      for (const user of onlineUsers)
+      {
+        const lastActiveDate = new Date(user.last_active);
+        lastActiveDate.setHours(lastActiveDate.getHours() + 1);
+        const timeDifference = (now - lastActiveDate) / 1000; // Convert to seconds
+
+        //console.log("now", now);
+        //console.log("lastactive", lastActiveDate);
+        //console.log("timedfference", timeDifference)
+        //console.log("checkinactivityallusers");
+        //30 minutes 
+        if (timeDifference > 1800)
+        {
+          await this.updatePresence(user.user_id, "offline");
         }
       }
     },
 
     async logout() {
+      console.log("logout");
       if (this.user) {
         await this.updatePresence(this.user.id, "offline");
       }
