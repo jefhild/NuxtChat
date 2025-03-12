@@ -17,18 +17,16 @@ jobs:
         run: |
           echo "${{ secrets.SSH_KEY }}" > ssh_key
           chmod 600 ssh_key
-
-      - name: Debug SSH Key
-        run: |
-          echo "${{ secrets.SSH_KEY }}" | wc -c
+          eval "$(ssh-agent -s)"
+          ssh-add ssh_key
 
       - name: Test SSH connection
         run: |
-          ssh -o StrictHostKeyChecking=no -i ssh_key root@37.27.95.239 'echo SSH connection successful'
+          ssh -o StrictHostKeyChecking=no root@37.27.95.239 'echo SSH connection successful'
 
       - name: Run deployment script on server
         run: |
-          ssh -o StrictHostKeyChecking=no -i ssh_key root@37.27.95.239 '
+          ssh -o StrictHostKeyChecking=no root@37.27.95.239 '
             cd /var/www/imchatty/imchatty &&
             git pull origin main &&
             bash deploy.sh
