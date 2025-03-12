@@ -15,7 +15,7 @@ jobs:
 
       - name: Set up SSH key
         run: |
-          echo "${{ secrets.SSH_KEY }}" | base64 --decode > ssh_key
+          echo "${{ secrets.SSH_KEY }}" | sed 's/\\n/\n/g' > ssh_key
           chmod 600 ssh_key
           eval "$(ssh-agent -s)"
           ssh-add ssh_key
