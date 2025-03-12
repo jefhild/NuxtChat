@@ -18,6 +18,10 @@ jobs:
           echo "${{ secrets.SSH_KEY }}" > ssh_key
           chmod 600 ssh_key
 
+      - name: Debug SSH Key
+        run: |
+          echo "${{ secrets.SSH_KEY }}" | wc -c
+
       - name: Test SSH connection
         run: |
           ssh -o StrictHostKeyChecking=no -i ssh_key root@37.27.95.239 'echo SSH connection successful'
