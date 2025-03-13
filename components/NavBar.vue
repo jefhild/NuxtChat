@@ -86,7 +86,7 @@ const confirmLogout = async () => {
   router.push("/logout"); // Redirect to the logout page
 };
 
-onMounted();
+// onMounted(async () => {});
 </script>
 
 <style scoped>
