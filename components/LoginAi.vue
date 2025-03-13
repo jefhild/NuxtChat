@@ -1,17 +1,14 @@
 <template>
-  <v-container class="myfont text-center">
-    <v-row class=" pt-15 d-flex align-center justify-center text-center">
-      <v-col cols="12">
+  <v-container class="myfont d-flex align-center justify-center text-center" >
+    <v-row class="mt-4 justify-center">
+      <v-col cols="12" md="6">
         <DialogAiSignUp />
       </v-col>
-
     </v-row>
   </v-container>
 </template>
 
-
 <script setup>
-
 const isAgeConfirmed = ref(false);
 const isFormValid = ref(false); // New reactive variable for form validity
 
@@ -24,7 +21,7 @@ updateFormValidity();
 </script>
 
 <style scoped>
-.myfont{
+.myfont {
   font-family: "poppins", sans-serif;
 }
 </style>
