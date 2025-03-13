@@ -65,7 +65,7 @@ import { useAuthStore } from "@/stores/authStore";
 const router = useRouter();
 const authStore = useAuthStore();
 const logoutDialog = ref(false);
-const isAuthenticated = computed(() => authStore.user !== null);
+const isAuthenticated = computed(() => !!authStore.user);
 
 // Computed property for the profile name in the navbar
 const navProfileName = computed(() => authStore.userProfile?.displayname || "");
