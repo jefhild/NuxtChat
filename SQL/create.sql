@@ -260,3 +260,12 @@ create table public.votes (
   constraint fk_profile foreign KEY (profile_id) references profiles (id) on delete CASCADE,
   constraint fk_user foreign KEY (user_id) references auth.users (id) on delete CASCADE
 ) TABLESPACE pg_default;
+
+--Table to get feedback from users
+create table public.feedback (
+  user_id uuid not null,
+  feedback_text text null,
+  created_at timestamp without time zone null default now(),
+  constraint feedback_pkey primary key (user_id),
+  constraint feedback_user_id_fkey foreign KEY (user_id) references auth.users (id) on delete CASCADE
+) TABLESPACE pg_default;

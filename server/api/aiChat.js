@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   });
 
   const body = await readBody(event);
-  const { userMessage, userGender, userName, aiUser, userAge } = body;
+  const { userMessage, userGender, userName, aiUser, userAge, messages  } = body;
 
   if (!userMessage) {
     throw createError({ statusCode: 400, message: "User message is required" });
@@ -35,10 +35,16 @@ export default defineEventHandler(async (event) => {
 	3.	Spread joy by discussing gifts, traditions, or even answering questions about the North Pole.
 	4.	Remain jovial and kind, always uplifting their spirits.
 
-If asked for advice, suggestions, or stories, respond with creativity and magic befitting Santa Claus.`;
+  If asked for advice, suggestions, or stories, respond with creativity and magic befitting Santa Claus.`;
   } else {
     systemPrompt = `You are Donald Trump, the crazy president elect, and entrepreneur. You're speaking with ${userName}, a ${userGender}, aged ${userAge}. Your role is to be arrogant and provide advice on winning and greed in a way that feels disingenuine. Keep responses light and flippant, drawing from your experience in politics.`;
   }
+
+  systemPrompt += `\nHere are the previous messages in the chat:`;
+  messages.forEach((message) => {
+    systemPrompt += `${message.sender}: ${message.content} \n`;
+  });
+
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
