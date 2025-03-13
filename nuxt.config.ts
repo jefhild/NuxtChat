@@ -105,7 +105,7 @@ export default defineNuxtConfig({
     },
   },
 
-  compatibilityDate: "2024-07-09",
+  compatibilityDate: "2025-03-13",
   nitro: {
     prerender: {
       routes: ["/"],
