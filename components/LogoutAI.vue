@@ -18,8 +18,9 @@
                 <!-- Display the conversation -->
                 <transition-group name="chat" tag="div">
                   <p class="chat-bubble bot-message" :key="'bot-message'" v-if="mounted">
-                    Can I know your opinion on how I can make my website better
-                    <v-avatar size="32" class="bot-avatar">
+                    If you could improve one thing about this site, what would it be?
+                   <v-avatar size="32"
+                      class="bot-avatar">
                       <v-img src="/robot.png" />
                     </v-avatar>
                   </p>
@@ -69,7 +70,7 @@ const inputField = ref(null);
 const userInput = ref("");
 const isTyping = ref(false);
 const showUserBubble = ref(false);
-const aiMessage = ref("Thank you for your support! 🤖👋");
+const aiMessage = ref("Great! I'll forward that to my creator… if they ever listen to me.");
 const mounted = ref(false);
 
 const logoutJokes = [
@@ -86,14 +87,9 @@ const logoutJokes = [
 ];
 
 const redirectToLogin = async () => {
-  await nextTick(); // Ensure that DOM updates are completed
   try {
     const navigationResult = await router.push('/');
-    if (navigationResult) {
-      console.log("Redirected to login page successfully.", navigationResult);
-    }else{
-      console.error("Failed to redirect to login pageeeeeeeeeeeee.", navigationResult);
-    }
+    window.location.reload();
   } catch (error) {
     console.error("Failed to redirect to login page:", error);
   }
@@ -126,7 +122,7 @@ const sendMessage = async () => {
   height: 100%;
   width: 100%;
   border-radius: 20px;
-  border: 2px solid #f0f0f0;
+  border: 2px solid gray;
 }
 
 .chat-container {

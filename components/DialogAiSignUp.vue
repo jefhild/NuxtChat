@@ -1,5 +1,5 @@
 <template>
-  <v-card width="650" align-center justify-center>
+  <v-card width="650" class="mx-auto">
     <v-card-title class="headline text-center mb-4">Create Your Anonymous Profile</v-card-title>
     <v-card-text>
       <p class="pb-4">
