@@ -814,6 +814,21 @@ export const useAuthStore = defineStore("authStore", {
       }
     },
 
+    async insertFeedback(feedback) {
+      const supabase = useSupabaseClient();
+      const { error } = await supabase
+      .from("feedback")
+      .insert([
+        {
+          feedback_text: feedback,
+        },
+      ]);
+
+      if (error) {
+      console.error("Error inserting feedback:", error);
+      }
+    },
+
     async logout() {
       console.log("logout");
       if (this.user) {

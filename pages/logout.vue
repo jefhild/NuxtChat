@@ -6,16 +6,11 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col class="green--text-h1 text-center">
-        Bye, we hope you're enjoying
-        <span class="imchattyLogo">imchatty</span>.</v-col
-      >
-    </v-row>
-    <v-row>
       <v-col cols="12">
         <!-- <HomeMain /> -->
-        <NewsContainer /> </v-col
-    ></v-row>
+         <LogoutAI />
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
