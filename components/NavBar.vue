@@ -68,7 +68,7 @@ const logoutDialog = ref(false);
 const isAuthenticated = computed(() => !!authStore.user);
 
 // Computed property for the profile name in the navbar
-const navProfileName = computed(() => authStore.userProfile?.displayname || "");
+// const navProfileName = computed(() => authStore.userProfile?.displayname || "");
 const navProfileUserId = computed(() => authStore.userProfile?.user_id);
 
 function scrollToTop() {
@@ -86,7 +86,7 @@ const confirmLogout = async () => {
   router.push("/logout"); // Redirect to the logout page
 };
 
-onMounted(async () => {});
+onMounted();
 </script>
 
 <style scoped>
