@@ -24,9 +24,9 @@
       ><NuxtLink to="/">imchatty</NuxtLink></v-app-bar-title
     >
     <v-spacer></v-spacer>
-    <v-btn to="/signin" @click="scrollToTop">Sign in</v-btn>
-    <v-btn to="/about">About Us</v-btn>
-        <v-btn to="/freechat">Free Chat</v-btn>
+         <v-btn @click="navigate('/signin')">Sign in</v-btn>
+         <v-btn @click="navigate('/about')">About Us</v-btn>
+         <v-btn @click="navigate('/freechat')">Free Chat</v-btn>
   </v-app-bar>
 
   <v-dialog v-model="logoutDialog" width="auto">
@@ -65,14 +65,15 @@ import { useAuthStore } from "@/stores/authStore";
 const router = useRouter();
 const authStore = useAuthStore();
 const logoutDialog = ref(false);
-const isAuthenticated = computed(() => authStore.user !== null);
+const isAuthenticated = computed(() => !!authStore.user);
 
 // Computed property for the profile name in the navbar
-const navProfileName = computed(() => authStore.userProfile?.displayname || "");
+// const navProfileName = computed(() => authStore.userProfile?.displayname || "");
 const navProfileUserId = computed(() => authStore.userProfile?.user_id);
 
-function scrollToTop() {
+function navigate(path) {
   window.scrollTo({ top: 0, behavior: "smooth" });
+  router.push(path)
 }
 
 // Function to show the logout confirmation dialog
@@ -86,7 +87,7 @@ const confirmLogout = async () => {
   router.push("/logout"); // Redirect to the logout page
 };
 
-onMounted(async () => {});
+// onMounted(async () => {});
 </script>
 
 <style scoped>
