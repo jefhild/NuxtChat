@@ -7,20 +7,33 @@
           <p class="mt-3">
             Come back anytime. We're excited to have you back.
           </p>
-          <v-btn color="black" dark class="mt-4" @click="redirectToLogin">Go to the Home Page</v-btn>
         </v-col>
       </v-row>
+
       <v-row align="center" justify="center" class="mt-12">
-        <v-col cols="12" md="6" class="animation-container">
+        <v-col cols="10" md="10" class="animation-container">
           <v-row justify="center" no-gutters>
             <v-col class="text-center">
               <v-container class="chat-container">
                 <!-- Display the conversation -->
                 <transition-group name="chat" tag="div">
-                  <p class="chat-bubble bot-message" :key="'bot-message'" v-if="mounted">
-                    If you could improve one thing about this site, what would it be?
-                   <v-avatar size="32"
-                      class="bot-avatar">
+                  <!--User response-->
+                  <div v-if="!showUserBubble && aiResponse" class="chat-bubble user-message">
+                    <v-avatar size="24" class="user-avatar">
+                      <v-img src="/images/avatars/anonymous.png" />
+                    </v-avatar>
+                    {{ previosUserInput }}
+                  </div>
+
+                  <p class="chat-bubble bot-message" :key="'bot-message'" v-if="aiResponse">
+                    {{aiResponse}}
+                    <v-avatar size="32" class="bot-avatar">
+                      <v-img src="/robot.png" />
+                    </v-avatar>
+                  </p>
+                  <p class="chat-bubble bot-message" :key="'bot-message'" v-if="mounted && questions[currentQuestionIndex]">
+                    {{ questions[currentQuestionIndex] }}
+                    <v-avatar size="32" class="bot-avatar">
                       <v-img src="/robot.png" />
                     </v-avatar>
                   </p>
@@ -28,7 +41,10 @@
 
 
                 <div v-if="showUserBubble" class="chat-bubble user-message">
-                  {{ userInput }}
+                  <v-avatar size="24" class="user-avatar">
+                    <v-img src="/images/avatars/anonymous.png" />
+                  </v-avatar>
+                  {{ previosUserInput }}
                 </div>
                 <!-- Typing Indicator -->
                 <div v-if="isTyping" class="typing-indicator bot-message">
@@ -38,19 +54,19 @@
                   </v-avatar>
                 </div>
 
-                <p v-if="submittingtoDatabase && !isTyping" class="chat-bubble bot-message">
-                  {{ aiMessage }}
-                  <v-avatar size="32" class="bot-avatar">
-                    <v-img src="/robot.png" />
-                  </v-avatar>
-                </p>
               </v-container>
-              <v-text-field v-if="!submittingtoDatabase" ref="inputField" variant="outlined" v-model="userInput"
+              <v-text-field v-if="!submittingtoDatabase" variant="outlined" v-model="userInput"
                 @keyup.enter="sendMessage" placeholder="Type your response..." append-inner-icon="mdi-send"
                 @click:append-inner="sendMessage" />
 
             </v-col>
           </v-row>
+        </v-col>
+      </v-row>
+      <!-- Home button -->
+      <v-row>
+        <v-col cols="12" align="center">
+          <v-btn color="primary" dark class="mt-4" @click="redirectToLogin">Go to the Home Page</v-btn>
         </v-col>
       </v-row>
     </v-container>
@@ -66,11 +82,13 @@ const router = useRouter();
 const authStore = useAuthStore();
 const joke = ref("");
 const submittingtoDatabase = ref(false);
-const inputField = ref(null);
 const userInput = ref("");
+const previosUserInput = ref("");
+const currentQuestionIndex  = ref(0);
 const isTyping = ref(false);
 const showUserBubble = ref(false);
-const aiMessage = ref("Great! I'll forward that to my creator… if they ever listen to me.");
+const aiResponse = ref("");
+const triviaQuestion = ref("");
 const mounted = ref(false);
 
 const logoutJokes = [
@@ -86,10 +104,16 @@ const logoutJokes = [
   "Remember: Logging out is just a temporary breakpoint in our friendship! 🛑👨‍💻",
 ];
 
+const questions = [
+  "Would you like to play a quick game before you go?",
+  "",
+  "One last question : If you could improve one thing about this site, what would it be?",
+];
+
 const redirectToLogin = async () => {
   try {
     const navigationResult = await router.push('/');
-    window.location.reload();
+    //window.location.reload();
   } catch (error) {
     console.error("Failed to redirect to login page:", error);
   }
@@ -102,17 +126,98 @@ onMounted(() => {
 
 const sendMessage = async () => {
   isTyping.value = true;
+  previosUserInput.value = userInput.value;
+  userInput.value = "";
   showUserBubble.value = true;
-  submittingtoDatabase.value = true;
-  if (!userInput.value.trim())
-  {
-    console.warn("User input is empty. Aborting.");
-    return;
+  switch (currentQuestionIndex.value) {
+    case 0:
+        //ask ai to create trivia question if answer yes 
+      try{
+        const response = await $fetch("/api/aiTrivia", {
+          method: "POST",
+          body: {
+            userInput: `I asked the user if they wanted to play a game. Based on their response: "${previosUserInput.value}", return ONLY one of the following:  
+                        - A real random trivia question that the user can answer if the user said yes in any way (e.g., "yes", "sure", "okay", "why not", "let's do it").  
+                        - The word "Okay" if the user said no or anything unrelated.  
+                        Do not include any explanations, just return the trivia question or "Okay".`,
+          },
+        });
+
+        //If theres an answer back from the AI
+        if (response.success && response.aiResponse)
+        {
+          if (response.aiResponse === "Okay")
+          {
+            aiResponse.value = "Okay! Maybe next time! ";
+            currentQuestionIndex.value++;
+          }
+          else
+          {
+            triviaQuestion.value = response.aiResponse;
+            aiResponse.value = "Okay! Here's a trivia question for you! : " + response.aiResponse;
+          }
+        }
+      }catch (error){
+        console.error("Failed to create trivia question:", error);
+      }
+      break;
+ 
+    case 1: 
+      try
+      {
+        aiResponse.value = "";
+        const response = await $fetch("/api/aiTrivia", {
+          method: "POST",
+          body: {
+            userInput: `I asked the user this trivia question : "${triviaQuestion.value}". Based on their response: "${previosUserInput.value}", return ONLY one of the following:  
+                        - the word "okay" if the user answered the trivia question correctly.  
+                        - The word sentence sayin "Incorrect! The correct answer is: ..." (... being the correct answert to the question) if the user answered the trivia question incorrectly or said anything unrelated.
+                        Do not include any explanations, just return "Okay" or the sentence starting with "Incorrect".`,
+          },
+        });
+
+        //If theres an answer back from the AI
+        if (response.success && response.aiResponse)
+        {
+          if(response.aiResponse.includes("Incorrect"))
+          { 
+            aiResponse.value = response.aiResponse;
+          }
+          else
+          {
+            aiResponse.value = "Correct! Great job!";
+          }
+        }
+      } catch (error)
+      {
+        console.error("Failed to verify trivia answer:", error);
+      }
+      break;
+    
+    case 2: 
+      if (!previosUserInput.value.trim())
+      {
+        aiResponse.value = "Try again!";
+        showUserBubble.value = false;
+        isTyping.value = false;
+        console.warn("User input is empty. Aborting.");
+        return;
+      }
+      
+      submittingtoDatabase.value = true;
+      await authStore.insertFeedback(previosUserInput.value);
+      
+    
+      aiResponse.value = "Thanks! I'll sure to send it to my boss... if I had one! 😅";  
+      break;
+  
+    default:
+      break;
   }
 
-  await authStore.insertFeedback(userInput.value);
-
- isTyping.value = false;
+  showUserBubble.value = false;
+  currentQuestionIndex.value++;
+  isTyping.value = false;
 };
 </script>
 

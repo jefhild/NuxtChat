@@ -1,6 +1,6 @@
 <template>
   <v-container class="myfont text-center pa-0">
-    <v-row class="mt-16 justify-center mx-auto">
+    <v-row class="mt-16" align-content="center">
         <DialogAiSignUp />
     </v-row>
   </v-container>

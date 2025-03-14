@@ -6,12 +6,12 @@
         Please follow the instructions below to create your anonymous profile.
       </p>
 
-      <v-row v-if="submittingtoDatabase" justify="center" no-gutters>
+      <v-row v-if="submittingtoDatabase" no-gutters>
         <v-col class="text-center">
           <v-progress-circular indeterminate color="primary" size="64" />
         </v-col>
       </v-row>
-      <v-row v-else justify="center" no-gutters>
+      <v-row v-else no-gutters>
         <v-col class="text-center">
           <v-container class="chat-container">
             <v-progress-linear :model-value="(currentQuestionIndex / questions.length) * 100" color="light-blue"
@@ -159,25 +159,6 @@ const focusInput = async () => {
   if (inputField.value) {
     inputField.value.focus();
   }
-};
-
-const validateAIResponse = (responseText) => {
-  const invalidPatterns = [
-    /\b(can you clarify|could you clarify|please clarify)\b/i,
-    /\b(do you mean|did you mean)\b/i,
-    /\b(or\b.+?\?)$/i, // Matches "or ..." questions at the end
-  ];
-
-  for (const pattern of invalidPatterns) {
-    if (pattern.test(responseText)) {
-      return {
-        valid: false,
-        error:
-          "The AI response included follow-up questions or suggestions. Please try again.",
-      };
-    }
-  }
-  return { valid: true };
 };
 
 // Validate user response

@@ -1,6 +1,8 @@
 <template>
   <v-layout class="rounded rounded-md">
-    <NavBar />
+    <ClientOnly>
+      <NavBar />
+    </ClientOnly>
     <v-main>
       <slot />
       <Footer />
