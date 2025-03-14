@@ -1,5 +1,5 @@
 <template>
-  <v-layout class="rounded rounded-md">
+  <v-layout>
     <ClientOnly>
       <NavBar />
     </ClientOnly>
@@ -10,3 +10,7 @@
   </v-layout>
 </template>
 <script setup></script>
+
+<style scoped>
+
+</style>
