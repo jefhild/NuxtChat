@@ -19,9 +19,9 @@
       <NuxtLink to="/">imchatty</NuxtLink>
     </v-app-bar-title>
     <v-spacer></v-spacer>
-    <v-btn @click="navigate('/signin')">Sign in</v-btn>
-    <v-btn @click="navigate('/about')">About Us</v-btn>
-    <v-btn @click="navigate('/freechat')">Free Chat</v-btn>
+         <v-btn @click="navigate('/signin')">Sign in</v-btn>
+         <v-btn @click="navigate('/about')">About Us</v-btn>
+         <v-btn @click="navigate('/freechat')">Free Chat</v-btn>
   </v-app-bar>
 
   <v-dialog v-model="logoutDialog" width="auto">
@@ -53,8 +53,7 @@ const isAuthenticated = computed(() => !!authStore.user);
 // const navProfileName = computed(() => authStore.userProfile?.displayname || "");
 const navProfileUserId = computed(() => authStore.userProfile?.user_id);
 
-function navigate(path)
-{
+function navigate(path) {
   window.scrollTo({ top: 0, behavior: "smooth" });
   router.push(path)
 }
