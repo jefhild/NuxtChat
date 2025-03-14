@@ -5,10 +5,10 @@
         <HomeRow1 />
       </v-col>
     </v-row>
-    <v-row>
-      <v-col cols="12">
-        <!-- <HomeMain /> -->
-         <LogoutAI />
+    
+    <v-row class="mt-16" justify="center">
+      <v-col cols="11" md="8" lg="8">
+      <LogoutAI />
       </v-col>
     </v-row>
   </v-container>

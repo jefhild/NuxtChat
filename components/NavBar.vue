@@ -1,15 +1,10 @@
 <template>
-  <v-app-bar
-    scroll-behavior="hide"
-    scroll-threshold="61"
-    image="/images/bkg/tiediebkg.webp"
-    v-if="isAuthenticated"
-  >
+  <v-app-bar scroll-behavior="hide" scroll-threshold="61" image="/images/bkg/tiediebkg.webp" v-if="isAuthenticated">
     <InactivityChecker />
 
-    <v-app-bar-title class="siteTitle"
-      ><NuxtLink to="/">imchatty</NuxtLink></v-app-bar-title
-    >
+    <v-app-bar-title class="siteTitle">
+      <NuxtLink to="/">imchatty</NuxtLink>
+    </v-app-bar-title>
 
     <template v-slot:append>
       <OnlineStatus v-if="navProfileUserId" :userId="navProfileUserId" />
@@ -20,9 +15,9 @@
   </v-app-bar>
 
   <v-app-bar image="/images/bkg/tiediebkg.webp" v-else>
-    <v-app-bar-title class="siteTitle"
-      ><NuxtLink to="/">imchatty</NuxtLink></v-app-bar-title
-    >
+    <v-app-bar-title class="siteTitle">
+      <NuxtLink to="/">imchatty</NuxtLink>
+    </v-app-bar-title>
     <v-spacer></v-spacer>
          <v-btn @click="navigate('/signin')">Sign in</v-btn>
          <v-btn @click="navigate('/about')">About Us</v-btn>
@@ -30,30 +25,17 @@
   </v-app-bar>
 
   <v-dialog v-model="logoutDialog" width="auto">
-    <v-card
-      max-width="400"
-      prepend-icon="mdi-account-remove"
-      title="Logout Of My Account"
-    >
+    <v-card max-width="400" prepend-icon="mdi-account-remove" title="Logout Of My Account">
       <v-card-text>
         <v-row justify="center">
-          <v-col class="text-center"
-            >Are you sure you want to logout?</v-col
-          ></v-row
-        >
+          <v-col class="text-center">Are you sure you want to logout?</v-col></v-row>
       </v-card-text>
 
       <template v-slot:actions>
-        <v-btn color="primary" text @click="confirmLogout"
-          >Confirm Logout</v-btn
-        >
+        <v-btn color="primary" text @click="confirmLogout">Confirm Logout</v-btn>
 
         <v-spacer></v-spacer>
-        <v-btn
-          class="ms-auto"
-          text="Cancel"
-          @click="logoutDialog = false"
-        ></v-btn>
+        <v-btn class="ms-auto" text="Cancel" @click="logoutDialog = false"></v-btn>
       </template>
     </v-card>
   </v-dialog>
@@ -77,12 +59,14 @@ function navigate(path) {
 }
 
 // Function to show the logout confirmation dialog
-const showLogoutDialog = () => {
+const showLogoutDialog = () =>
+{
   logoutDialog.value = true;
 };
 
 // Function to handle logout confirmation
-const confirmLogout = async () => {
+const confirmLogout = async () =>
+{
   logoutDialog.value = false;
   router.push("/logout"); // Redirect to the logout page
 };
