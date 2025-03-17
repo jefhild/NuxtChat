@@ -1,7 +1,11 @@
 <template>
 	<HomeRow1 />
 	<div v-if="!isAuthenticated">
-		<LoginAi />
+		<v-row class="mt-16" justify="center" >
+			<v-col cols="11" md="8" lg="8">
+				<LoginAi />
+			</v-col>
+		</v-row>
 	</div>
 	<div v-else>
 		<v-fade-transition mode="out-in">
@@ -15,7 +19,8 @@
 								<v-btn to="/chat" class="mt-4">Chat <v-icon right>mdi-arrow-right</v-icon></v-btn>
 							</v-col>
 							<v-col>
-								<v-btn to="/settings" class="mt-4">Settings <v-icon right>mdi-arrow-right</v-icon></v-btn>
+								<v-btn to="/settings" class="mt-4">Settings <v-icon
+										right>mdi-arrow-right</v-icon></v-btn>
 							</v-col>
 						</v-row>
 					</v-col>

@@ -739,7 +739,7 @@ export const useAuthStore = defineStore("authStore", {
 
       this.inactivityCheckInterval = setInterval(() => 
         this.checkInactivityForAllUsers(), 
-        60000
+        1800000 
       );
     },
 
