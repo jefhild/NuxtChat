@@ -17,7 +17,7 @@
           <v-tabs-window v-model="tab" v-if="!isLoading">
             <v-tabs-window-item :value="1">
               <template v-if="!isLoading && user?.id">
-                <ProfileContainer />
+                <ProfileContainer :first="first" />
               </template>
               <template v-else>
                 <p>Loading...</p>
@@ -62,9 +62,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, defineProps } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 // import Upvotes from "@/components/Upvotes.vue";
+
+const props = defineProps({
+  first: Boolean,
+});
 
 const tab = ref(1);
 const authStore = useAuthStore();

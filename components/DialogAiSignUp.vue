@@ -395,7 +395,6 @@ const sendMessage = async () => {
           : "";
 
       if (currentQuestionIndex.value === specificQuestionIndex) {
-        console.log("in here");
         // Store the AI response for the specific question
         aiResponse =
           "Here is your generated bio (feel free to change it in your profile settings):" +
@@ -451,7 +450,7 @@ const submitToDatabase = async () => {
     console.error("Error during profile creation:", error);
   } finally {
     isLoading.value = false;
-    router.push("/settings");
+    router.push({ path: "/settings", query: { first: true} });
   }
 };
 </script>
