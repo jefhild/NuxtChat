@@ -1,9 +1,9 @@
 <template>
-  <v-layout>
+  <v-layout class="fill-height">
     <ClientOnly>
       <NavBar />
     </ClientOnly>
-    <v-main>
+    <v-main class="d-flex flex-column">
       <slot />
       <Footer />
     </v-main>
@@ -12,5 +12,7 @@
 <script setup></script>
 
 <style scoped>
-
+.fill-height {
+  min-height: 100vh;
+}
 </style>
