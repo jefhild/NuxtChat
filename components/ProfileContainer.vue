@@ -1,5 +1,27 @@
 <template>
-  <v-card class="mx-auto mb-3" max-width="700">
+  <v-card v-if="isFirst" max-width="700" justify-center
+    class="mx-auto my-5 ml-10 mr-10 ml-md-auto mr-md-auto ml-sm-10 mr-sm-10">
+    <v-card-text>
+      <v-row no-gutters>
+        <v-col cols="12" class="d-flex flex-column align-center">
+          <p>Would you like to finish creating your profile, see your profile, or go to chat?</p>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12" sm="4" class="d-flex justify-center">
+          <v-btn color="primary" @click="finishProfileDialog = true">Finish Profile</v-btn>
+        </v-col>
+        <v-col cols="12" sm="4" class="d-flex justify-center">
+          <v-btn color="secondary" @click="isFirst = false">See Profile</v-btn>
+        </v-col>
+        <v-col cols="12" sm="4" class="d-flex justify-center">
+          <v-btn color="primary" @click="router.push('/chat')">Go to Chat</v-btn>
+        </v-col>
+      </v-row>
+    </v-card-text>
+  </v-card>
+
+  <v-card v-else class="mx-auto mb-3" max-width="700">
     <v-card-title v-if="userProfile">
       <v-row no-gutters class="mb-0"><v-col cols="3">
           <!-- {{ userProfile}} -->
@@ -43,15 +65,16 @@
     </v-card-title>
 
     <v-card-text v-if="userProfile">
-      <v-row class="mt-6" v-if="isEditable"><v-col cols="4">
+      <v-row class="mt-6" v-if="isEditable">
+        <v-col cols="12" md="4">
           <ProfileDisplayName2 :displayName="userProfile.displayname" :isEditable="isEditable"
             @updateDisplayName="updateDisplayName" @validation="updateFormValidity" />
         </v-col>
-        <v-col cols="4">
+        <v-col cols="12" md="4">
           <ProfileTagLine :tagLine="userProfile.tagline ?? '...'" :isEditable="isEditable"
             @updateTagLine="updateTagLine" />
         </v-col>
-        <v-col cols="4">
+        <v-col cols="12" md="4">
           <ProfileSite :siteUrl="userProfile.site_url ?? ''" :isEditable="isEditable" @updateSite="updateSite" />
         </v-col>
       </v-row>
@@ -176,12 +199,22 @@
   <v-dialog v-model="generateBioDialog" max-width="600" transition="dialog-transition">
     <GenerateBioDialog v-model="generateBioDialog" @updateBio="updateBio" />
   </v-dialog>
+
+  <v-dialog v-model="finishProfileDialog" :overlay="false" max-width="500px" transition="dialog-transition">
+    <FinishProfile @updateIsFirst="updateIsFirst"/>
+  </v-dialog>
 </template>
 
 <script setup>
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useLocationManager } from "@/composables/useLocationManager";
+
+const props = defineProps({
+  first: Boolean,
+});
+
+const isFirst = ref(props.first);
 
 const router = useRouter();
 const route = useRoute();
@@ -233,6 +266,7 @@ const isFormValid = ref(true);
 const deleteDialog = ref(false);
 const linkAccountDialog = ref(false);
 const generateBioDialog = ref(false);
+const finishProfileDialog = ref(false);
 const isMarkedForDeletion = ref(false);
 
 const updateFormValidity = (isValid) => {
@@ -458,6 +492,12 @@ const updateStatus = (newStatusId) => {
 
 const updateBio = (newBio) => {
   userProfile.value.bio = newBio;
+};
+
+const updateIsFirst = (newIsFirst) => {
+  isFirst.value = newIsFirst;
+  finishProfileDialog.value = false;
+  router.push("/");
 };
 
 const updateDisplayName = (newDisplayName) => {
