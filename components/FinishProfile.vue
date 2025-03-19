@@ -66,6 +66,8 @@
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
 
+const emit = defineEmits(["updateIsFirst"]);
+
 const router = useRouter();
 const authStore = useAuthStore();
 const previosUserInput = ref("");
@@ -99,7 +101,6 @@ const questionKeyMap = {
 };
 
 const sendMessage = async () => {
-	console.log("User Input: ", userInput.value);
 	isTyping.value = true;
 	previosUserInput.value = userInput.value;
 	userInput.value = "";
@@ -155,7 +156,6 @@ const sendMessage = async () => {
 		//If theres an answer back from the AI
 		if (response.success && response.aiResponse)
 		{
-			console.log("AI Response: ", response.aiResponse);
 			//If hateful speech
 			if (response.aiResponse.startsWith("Error"))
 			{
@@ -212,23 +212,20 @@ const sendMessage = async () => {
 	if (currentQuestionIndex.value == 3)
 	{
 		submittingtoDatabase.value = true;
-		console.log("lets submit to the database");
-		console.log("mappedURL: ", mappedURL.value.trim());
-		console.log("mappedInterests: ", mappedInterests.value.trim());
-		console.log("mappedTag: ", mappedTagline.value.trim());
 
 		const interestsArray = mappedInterests.value.trim().split(",");
 
 		await authStore.updateUserProfileWithDetails({
 			tagline: mappedTagline.value.trim(),
-			lookingFor: interestsArray,
-			urlBusiness: mappedURL.value.trim(),
+			interests: interestsArray,
+			businessUrl: mappedURL.value.trim(),
 		});
 
-		router.push("/");
-		submittingtoDatabase.value = false;
+		emit("updateIsFirst", false);
 	}
 };
+
+
 
 onMounted(() =>
 {

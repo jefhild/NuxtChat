@@ -13,5 +13,4 @@
 // this page shouldn't be crawled by search engines
 const route = useRoute();
 const first = route.query.first || false;
-console.log("first: ", first);
 </script>

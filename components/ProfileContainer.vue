@@ -201,7 +201,7 @@
   </v-dialog>
 
   <v-dialog v-model="finishProfileDialog" :overlay="false" max-width="500px" transition="dialog-transition">
-    <FinishProfile />
+    <FinishProfile @updateIsFirst="updateIsFirst"/>
   </v-dialog>
 </template>
 
@@ -492,6 +492,12 @@ const updateStatus = (newStatusId) => {
 
 const updateBio = (newBio) => {
   userProfile.value.bio = newBio;
+};
+
+const updateIsFirst = (newIsFirst) => {
+  isFirst.value = newIsFirst;
+  finishProfileDialog.value = false;
+  router.push("/");
 };
 
 const updateDisplayName = (newDisplayName) => {

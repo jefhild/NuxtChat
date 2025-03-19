@@ -734,20 +734,19 @@ export const useAuthStore = defineStore("authStore", {
       const supabase = useSupabaseClient();
       const { data, error } = await supabase
         .from("profiles")
-        .update({ tagline: tagline }) // newTagline should be a string
+        .update({ tagline: tagline })
         .eq("id", this.userProfile.id);
 
       if (businessUrl) {
         const { data, error } = await supabase
           .from("profiles")
-          .update({ site_url: businessUrl }) // newTagline should be a string
+          .update({ site_url: businessUrl })
           .eq("id", this.userProfile.id);
       }
 
       if (interests) {
         for (const interest of interests) {
-          const id = await this.getLookingForId(interest);
-          console.log("interest id: ", id);
+          const id = await this.getLookingForId(interest.trim());
           const { data, error } = await supabase
             .from("user_looking_for")
             .insert({ user_id: this.user.id, looking_for_id: id });
