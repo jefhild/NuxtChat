@@ -136,10 +136,13 @@ const offlineUsers = ref([]);
 const activeChats = ref([]);
 const filters = ref({ gender_id: null });
 let realtimeMessages = null;
+let onlineUsersCheck = null;
 // const registrationDialog = ref(false);
 const dialogVisible = ref(false);
 const userEmail = ref("");
 const showAIUsers = ref(false); // State to toggle between Users and UsersAI
+
+
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { onlineData, fetchOnlineUsers } = useFetchOnlineUsers(user);
@@ -243,6 +246,8 @@ const markMessagesAsRead = async (receiverUserId, senderUserId) => {
   } catch (error) {
     console.error("Error marking messages as read:", error);
   }
+  document.title = `Chat | ImChatty `;
+
 };
 
 const handleRealtimeMessages = (payload) => {
@@ -267,6 +272,21 @@ const handleRealtimeMessages = (payload) => {
   }
 };
 
+const subscribeToPresenceUpdates = () =>
+  {
+  onlineUsersCheck = supabase
+      .channel("public.presence")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "presence" }, // Listen to any change in presence table
+        async () =>
+        {
+          await fetchOnlineUsers(filters.value);
+        }
+      )
+      .subscribe();
+  };
+
 onMounted(async () => {
   await authStore.checkAuth();
   user.value = authStore.user;
@@ -276,6 +296,7 @@ onMounted(async () => {
   fetchOnlineUsers(filters.value);
   fetchOfflineUsers(filters.value);
   fetchActiveChats();
+  subscribeToPresenceUpdates();
 
   // await loadBlockedUsers();
   loadBlockedUsers(); // Load blocked users for the current user
@@ -320,6 +341,11 @@ onMounted(async () => {
       console.log("Subscribed to real-time updates for messages");
     }
   }
+});
+
+onUnmounted(() =>
+{
+  if (onlineUsersCheck) supabase.removeChannel(onlineUsersCheck);
 });
 
 // Select user to chat with
@@ -600,7 +626,7 @@ watch(aiData, (newData) => {
 // Watch the data from composable and update onlineUsers
 watch(onlineData, (newData) => {
   onlineUsers.value = newData;
-});
+}); 
 
 // Watch the data from composable and update onlineUsers
 watch(offlineData, (newData) => {
