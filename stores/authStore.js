@@ -729,6 +729,49 @@ export const useAuthStore = defineStore("authStore", {
       }
     },
 
+    async updateUserProfileWithDetails({ tagline, interests, businessUrl })
+    {
+      const supabase = useSupabaseClient();
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ tagline: tagline })
+        .eq("id", this.userProfile.id);
+
+      if (businessUrl) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .update({ site_url: businessUrl })
+          .eq("id", this.userProfile.id);
+      }
+
+      if (interests) {
+        for (const interest of interests) {
+          const id = await this.getLookingForId(interest.trim());
+          const { data, error } = await supabase
+            .from("user_looking_for")
+            .insert({ user_id: this.user.id, looking_for_id: id });
+        
+          if (error) {console.error("Error inserting user looking for:", error);}
+        }
+      }
+    },
+
+    async getLookingForId(name) {
+      const supabase = useSupabaseClient();
+      const { data, error } = await supabase
+        .from("looking_for")
+        .select("id")
+        .eq("name", name)
+        .single();
+
+      if (error) {
+        console.error("Error fetching looking for ID:", error);
+        return null;
+      }
+
+      return data.id;
+    },
+
     async trackPresence(userId) {
       this.updatePresence(userId, "online")
 
@@ -739,7 +782,7 @@ export const useAuthStore = defineStore("authStore", {
 
       this.inactivityCheckInterval = setInterval(() => 
         this.checkInactivityForAllUsers(), 
-        60000
+        1800000 
       );
     },
 

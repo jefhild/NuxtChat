@@ -19,7 +19,6 @@
       ></v-row
     >
 
-  
     <v-row
       ><v-col>
         <h4>Who We Are</h4>
@@ -30,7 +29,8 @@
           deeper into real-time database and presence technology, AI chatbots
           and LLM's. We're using Imchatty as a dynamic sandbox for testing and
           development. We'd love to see how far we can push this technology and
-          if we can build something useful.
+          if we can build something useful. You'll find the Open Source code for
+          this site <a href="https://github.com/jefhild/NuxtChat">here</a>.
         </p></v-col
       ></v-row
     >

@@ -1,9 +1,7 @@
 <template>
-  <v-container class="myfont d-flex align-center justify-center text-center" >
-    <v-row class="mt-4 justify-center">
-      <v-col cols="12" md="6">
+  <v-container class="myfont text-center pa-0">
+    <v-row class="mt-16" align-content="center">
         <DialogAiSignUp />
-      </v-col>
     </v-row>
   </v-container>
 </template>
