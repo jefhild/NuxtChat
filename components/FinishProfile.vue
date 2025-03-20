@@ -66,10 +66,10 @@
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
 
-const emit = defineEmits(["updateIsFirst"]);
+const emit = defineEmits(["closeDialog"]);
 
-const router = useRouter();
 const authStore = useAuthStore();
+
 const previosUserInput = ref("");
 const currentQuestionIndex = ref(0);
 const isTyping = ref(false);
@@ -81,24 +81,20 @@ const mounted = ref(false);
 const mappedTagline = ref("");
 const mappedURL = ref(""); 
 const mappedInterests = ref("");
-const userResponses = ref({
-	tagline: "",
-	lookingFor: "",
-	urlBusiness: "",
+const userResponses = ref({});
+
+const props = defineProps({
+	infoLeft: {
+		type: Array,
+		required: true,
+	},
 });
 
+const infoLeft = props.infoLeft;
 
-const questions = ref([
-	"What would you like your tagline to be ?",
-	"What are you looking for on this website ?",
-	"Would you like to promote your business ? If so, please enter your business website URL.",
-]);
+const questions = ref([]);
 
-const questionKeyMap = {
-	0: "tagline",
-	1: "lookingFor",
-	2: "urlBusiness",
-};
+const questionKeyMap = {};
 
 const sendMessage = async () => {
 	isTyping.value = true;
@@ -108,37 +104,34 @@ const sendMessage = async () => {
 
 	var userMessage;
 
-	switch (currentQuestionIndex.value)
+	const currentKey = questionKeyMap[currentQuestionIndex.value];
+
+	const userPrompts = {
+		tagline: `Extract a tagline from the user input.
+      - If the input is a sentence requesting a tagline (e.g., "I want my tagline to be X"), extract only tagline.
+      - If the input contains hate speech or inappropriate words, return an error message starting with "Error:...".
+      - Otherwise, return only the valid tagline, with no additional text, no quotes, and no punctuation.
+      User input: ${previosUserInput.value}`,
+
+		interests: `Extract user interests. Possible interests: Love, Fun, Nothing Serious, Men, Women, Friends.
+      - If the user input shows any of these interests, return only the valid ones separated by a comma (e.g., "Love, Friends").
+      - If no valid interests are detected, return "Nothing Serious".
+      - If input contains hate speech, return an error message starting with "Error:...".
+      Otherwise, return only valid interests without extra text, quotes, or punctuation.
+      User input: ${previosUserInput.value}`,
+
+		site_url: `Extract a URL from user input.
+      - If the input includes a request for a URL (e.g., "I want my website to be X"), extract only the URL.
+      - If the input says they don't want to share a URL, return "No URL".
+      - If input contains hate speech, return an error message starting with "Error:...".
+      Otherwise, return only the valid URL or "No URL" without extra text, quotes, or punctuation.
+      User input: ${previosUserInput.value}`,
+	};
+
+	if (!userPrompts[currentKey])
 	{
-		case 0: //Tagline
-			userMessage =  `Extract a tagline from the user input.  
-							- If the input is a sentence requesting a tagline (e.g., "I want my tagline to be X"), extract only tagline.  
-							- If the input contains hate speech or inappropriate words, return an error message starting with "Error:..." explaining why.  
-							- Otherwise, return only the valid tagline, with no additional text, no "" and no punctuation.  
-							User input: ${previosUserInput.value}`;
-			break;
-
-		case 1: //Looking for
-			userMessage = `Extract information from the user input. I want to extract information about what the user is looking for on my website.
-						   I have different interests : Love, Fun, Nothing Serious, Men, Women , Friends.
-						    - If the user input shows any of these interests, return only the valid interests seperated by a comma (Example : Love, Nothing Serious, Friends).
-							- If the user input doesn't show any valid interests, return "No interests".
-							- If the input contains hate speech or inappropriate words, return an error message starting with "Error:..." explaining why.
-							Otherwise, return only the valid interests seperated by a comma, with no additional text and no "" and nothing else.
-							User input: ${previosUserInput.value}`;
-			break;
-
-		case 2: //Url for business
-			userMessage =  `Extract a URL from the user input.  
-							- If the input is a sentence requesting a URL (e.g., "I want my website to be X"), extract only the URL.  
-							- If the input contains hate speech or inappropriate words, return an error message starting with "Error:..." explaining why.  
-							- If the input is a the user saying that they don't want to promote their business, return "No URL".
-							- Otherwise, return only the valid URL or "No URL", with no additional text, no "" and no punctuation.  
-								User input: ${previosUserInput.value}`;
-			break;
-
-		default:
-			break;
+		console.error("Invalid question key:", currentKey);
+		return;
 	}
 
 	try
@@ -146,17 +139,18 @@ const sendMessage = async () => {
 		const response = await $fetch("/api/aiRegistration", {
 			method: "POST",
 			body: {
-				userMessage: userMessage,
+				userMessage: userPrompts[currentKey],
 				currentResponses: userResponses.value,
 				currentQuestionIndex: currentQuestionIndex.value,
 				questions: questions.value,
 			},
 		});
 
+
 		//If theres an answer back from the AI
 		if (response.success && response.aiResponse)
 		{
-			//If hateful speech
+			//If hateful speech or inappropriate words are detected
 			if (response.aiResponse.startsWith("Error"))
 			{
 				aiResponse.value = response.aiResponse;
@@ -165,20 +159,18 @@ const sendMessage = async () => {
 				return;
 			}
 
-			if(currentQuestionIndex.value == 0)
-			{
-				mappedTagline.value = response.aiResponse;
-			}
+			// Dynamically update the mapped values based on the current question
+			const mappedValues = {
+				tagline: () => (mappedTagline.value = response.aiResponse),
+				interests: () => (mappedInterests.value = response.aiResponse),
+				site_url: () => (mappedURL.value = response.aiResponse === "No URL" ? "" : response.aiResponse),
+			};
 
-			if (response.aiResponse != "No interests" && currentQuestionIndex.value == 1)
-			{
-				mappedInterests.value = response.aiResponse;
-			}
-
-			if (response.aiResponse != "No URL" && currentQuestionIndex.value == 2)
-			{
-				mappedURL.value = response.aiResponse;
-			}
+			if (mappedValues[currentKey]) mappedValues[currentKey]();
+			
+			console.log("mappedTagline: ", mappedTagline.value);
+			console.log("mappedInterests: ", mappedInterests.value);
+			console.log("mappedURL: ", mappedURL.value);
 		}
 	}catch(errorFirst){console.error(errorFirst);}
 
@@ -189,8 +181,6 @@ const sendMessage = async () => {
 		currentQuestionIndex: currentQuestionIndex.value,
 		questions: questions.value,
 	};
-
-	const currentKey = questionKeyMap[currentQuestionIndex.value];
 
 	try
 	{
@@ -209,38 +199,59 @@ const sendMessage = async () => {
 	showUserBubble.value = false;
 	isTyping.value = false;
 	currentQuestionIndex.value++;
-	if (currentQuestionIndex.value == 3)
+	if (currentQuestionIndex.value == questions.value.length)
 	{
 		submittingtoDatabase.value = true;
 
-		const interestsArray = mappedInterests.value.trim().split(",");
+		if (infoLeft.includes("tagline"))
+		{
+			await authStore.updateTagline(mappedTagline.value.trim());
+		}
 
-		await authStore.updateUserProfileWithDetails({
-			tagline: mappedTagline.value.trim(),
-			interests: interestsArray,
-			businessUrl: mappedURL.value.trim(),
-		});
+		if (infoLeft.includes("interests"))
+		{
+			const interestsArray = mappedInterests.value.trim().split(",");
+			await authStore.updateInterests(interestsArray);
+		}
 
-		emit("updateIsFirst", false);
+		if (infoLeft.includes("site_url"))
+		{
+			await authStore.updateSiteURL(mappedURL.value.trim());
+		}
+
+		emit("closeDialog");
 	}
 };
 
 
-
-onMounted(() =>
-{
+onMounted(() => {
 	mounted.value = true;
+
+	let questionIndex = 0;
+
+	const questionMap = {
+		tagline: "Your tagline is a short phrase that represents you. It could be a quote, a fun fact, or a quick description of who you are. What would you like yours to be?",
+		interests: "What brings you to this website? Are you here to chat, make new friends?",
+		site_url: "If you have a personal website or social profile you'd like to share, enter the link below.",
+	};
+
+	infoLeft.forEach((key) =>
+	{
+		if (questionMap[key])
+		{
+			questions.value.push(questionMap[key]);
+			questionKeyMap[questionIndex++] = key;
+			userResponses.value[key] = ""; // Initialize response
+		}
+	});
+
+	console.log(questionKeyMap);
+	console.log(questionKeyMap[currentQuestionIndex.value]);	
+	console.log("user responses: ", userResponses.value);
 });
 </script>
 
 <style scoped>
-.chat-container {
-	max-width: auto;
-	padding: 16px;
-	background: rgba(255, 255, 255, 0.1);
-	backdrop-filter: blur(10px);
-}
-
 .chat-bubble {
 	display: flex;
 	align-items: left;

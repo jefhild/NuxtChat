@@ -450,7 +450,7 @@ const submitToDatabase = async () => {
     console.error("Error during profile creation:", error);
   } finally {
     isLoading.value = false;
-    router.push({ path: "/settings", query: { first: true} });
+    router.push("/settings");
   }
 };
 </script>

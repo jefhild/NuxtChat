@@ -1,27 +1,12 @@
 <template>
-  <v-card v-if="isFirst" max-width="700" justify-center
+  <v-card v-if="!isFinished" max-width="700" justify-center
     class="mx-auto my-5 ml-10 mr-10 ml-md-auto mr-md-auto ml-sm-10 mr-sm-10">
-    <v-card-text>
-      <v-row no-gutters>
-        <v-col cols="12" class="d-flex flex-column align-center">
-          <p>Would you like to finish creating your profile, see your profile, or go to chat?</p>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12" sm="4" class="d-flex justify-center">
-          <v-btn color="primary" @click="finishProfileDialog = true">Finish Profile</v-btn>
-        </v-col>
-        <v-col cols="12" sm="4" class="d-flex justify-center">
-          <v-btn color="secondary" @click="isFirst = false">See Profile</v-btn>
-        </v-col>
-        <v-col cols="12" sm="4" class="d-flex justify-center">
-          <v-btn color="primary" @click="router.push('/chat')">Go to Chat</v-btn>
-        </v-col>
-      </v-row>
-    </v-card-text>
+    <v-col cols="12" class="d-flex justify-center">
+      <v-btn color="primary" block height="30px" @click="finishProfileDialog = true">Finish Profile</v-btn>
+    </v-col>
   </v-card>
 
-  <v-card v-else class="mx-auto mb-3" max-width="700">
+  <v-card class="mx-auto mb-3" max-width="700">
     <v-card-title v-if="userProfile">
       <v-row no-gutters class="mb-0"><v-col cols="3">
           <!-- {{ userProfile}} -->
@@ -48,7 +33,8 @@
             <LookingForDisplay :key="displayKey" :userId="userProfile.user_id" />
           </p>
           <p class="mt-2">
-            <LookingForMenu :userProfile="userProfile" @lookingForUpdated="refreshLookingForDisplay" />
+            <LookingForMenu :userProfile="userProfile" :refreshLookingForMenu="refreshLookingForMenu"
+              @lookingForUpdated="refreshLookingForDisplay" />
           </p>
           <!-- <p class="mt-3">
             <DescriptionDisplay :descriptionIcons="selectedDescriptionIcons" />
@@ -201,7 +187,7 @@
   </v-dialog>
 
   <v-dialog v-model="finishProfileDialog" :overlay="false" max-width="500px" transition="dialog-transition">
-    <FinishProfile @updateIsFirst="updateIsFirst"/>
+    <FinishProfile :infoLeft="infoLeft" @closeDialog="closeFinishProfileDialog" />
   </v-dialog>
 </template>
 
@@ -209,12 +195,6 @@
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useLocationManager } from "@/composables/useLocationManager";
-
-const props = defineProps({
-  first: Boolean,
-});
-
-const isFirst = ref(props.first);
 
 const router = useRouter();
 const route = useRoute();
@@ -235,6 +215,9 @@ const genders = ref([
 const status = ref([]);
 
 const isEditable = ref(false);
+const isFinished = ref(false);
+const infoLeft = ref([{}]);
+const refreshLookingForMenu = ref(false);
 const originalGenderId = ref(null);
 const originalStatusId = ref(null);
 const originalAge = ref(null);
@@ -274,8 +257,10 @@ const updateFormValidity = (isValid) => {
   isFormValid.value = isValid;
 };
 
-const refreshLookingForDisplay = () => {
+const refreshLookingForDisplay = async () => {
+  refreshLookingForMenu.value = !refreshLookingForMenu.value;
   displayKey.value = Date.now(); // Change key to force refresh
+  checkIfFinished();
 };
 
 const requiredAgeRule = (value) => {
@@ -414,7 +399,28 @@ onMounted(async () => {
   if (route.query.edit === "true") {
     isEditable.value = true;
   }
+
+  await checkIfFinished();
 });
+
+const checkIfFinished = async () =>
+{
+  const hasInterests = await authStore.hasInterests();
+
+  isFinished.value = userProfile.value.tagline && userProfile.value.site_url && hasInterests;
+  infoLeft.value = []; // Clear the array
+
+  const fields = {
+    tagline: userProfile.value.tagline,
+    site_url: userProfile.value.site_url,
+    interests: hasInterests,
+  };
+
+  Object.entries(fields).forEach(([key, value]) =>
+  {
+    if (!value) infoLeft.value.push(key);
+  });
+};
 
 const updateCountry = (newCountryName) => {
   selectedCountry.value = newCountryName;
@@ -494,10 +500,10 @@ const updateBio = (newBio) => {
   userProfile.value.bio = newBio;
 };
 
-const updateIsFirst = (newIsFirst) => {
-  isFirst.value = newIsFirst;
+const closeFinishProfileDialog = async () => {
   finishProfileDialog.value = false;
-  router.push("/");
+  await refreshLookingForDisplay();
+  await checkIfFinished();
 };
 
 const updateDisplayName = (newDisplayName) => {
@@ -578,6 +584,7 @@ const toggleEditMode = async () => {
     }
   }
   isEditable.value = !isEditable.value;
+  await checkIfFinished();
 };
 
 const cancelEdit = () => {
