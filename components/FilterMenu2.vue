@@ -162,9 +162,12 @@ const fetchOnlineRowCount = () => {
   getOnlineRowCount();
 };
 
-onMounted(async () => {
+
+onMounted(() =>
+{
   fetchOnlineRowCount();
 });
+
 </script>
 
 <style scoped>
