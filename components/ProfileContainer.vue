@@ -416,6 +416,7 @@ const checkIfFinished = async () =>
     interests: hasInterests,
   };
 
+
   Object.entries(fields).forEach(([key, value]) =>
   {
     if (!value) infoLeft.value.push(key);

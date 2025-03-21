@@ -195,6 +195,7 @@ export const useAuthStore = defineStore("authStore", {
       }
     },
 
+    
     async checkAuthGoogle() {
       const supabase = useSupabaseClient();
       const { data: sessionData, error: sessionError } =
