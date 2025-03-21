@@ -729,30 +729,42 @@ export const useAuthStore = defineStore("authStore", {
       }
     },
 
-    async updateUserProfileWithDetails({ tagline, interests, businessUrl })
-    {
+    async updateTagline(tagline) {
       const supabase = useSupabaseClient();
       const { data, error } = await supabase
         .from("profiles")
         .update({ tagline: tagline })
         .eq("id", this.userProfile.id);
 
-      if (businessUrl) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .update({ site_url: businessUrl })
-          .eq("id", this.userProfile.id);
+      if (error) {
+        console.error("Error updating tagline:", error);
       }
+    },
 
-      if (interests) {
-        for (const interest of interests) {
-          const id = await this.getLookingForId(interest.trim());
-          const { data, error } = await supabase
-            .from("user_looking_for")
-            .insert({ user_id: this.user.id, looking_for_id: id });
-        
-          if (error) {console.error("Error inserting user looking for:", error);}
-        }
+    async updateSiteURL(siteUrl) {
+      const supabase = useSupabaseClient();
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ site_url: siteUrl })
+        .eq("id", this.userProfile.id);
+
+      if (error)
+      {
+        console.error("Error updating site url:", error);
+      }
+    },
+
+    //Interests is an array of the interest names
+    async updateInterests(interests)
+    {
+      const supabase = useSupabaseClient();
+      for (const interest of interests) {
+        const id = await this.getLookingForId(interest.trim());
+        const { data, error } = await supabase
+          .from("user_looking_for")
+          .insert({ user_id: this.user.id, looking_for_id: id });
+      
+        if (error) {console.error("Error inserting user looking for:", error);}
       }
     },
 
@@ -770,6 +782,25 @@ export const useAuthStore = defineStore("authStore", {
       }
 
       return data.id;
+    },
+
+    async hasInterests() {
+      const supabase = useSupabaseClient();
+      const { data, error } = await supabase
+      .from("user_looking_for")
+      .select("*")
+      .eq("user_id", this.user.id);
+
+      if (error) {
+      console.error("Error fetching user interests:", error);
+      return false;
+      }
+
+      if (!data || data.length === 0) {
+        return false;
+      }
+
+      return true;
     },
 
     async trackPresence(userId) {

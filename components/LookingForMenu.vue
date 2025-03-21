@@ -86,6 +86,18 @@ const props = defineProps({
       return value && value.user_id !== undefined && value.user_id !== null;
     },
   },
+  refreshLookingForMenu: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+//Refresh the menu for when finishProfileDialog closes 
+watch(() => props.refreshLookingForMenu, async () => {
+  lookingForOptions.value = await fetchLookingForOptions();
+  userLookingForIds.value = await fetchUserLookingFor(
+    props.userProfile.user_id
+  );
 });
 
 async function fetchLookingForOptions() {
