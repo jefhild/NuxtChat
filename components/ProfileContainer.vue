@@ -1,4 +1,11 @@
 <template>
+  <v-card v-if="!isFinished" max-width="700" justify-center
+    class="mx-auto my-5 ml-10 mr-10 ml-md-auto mr-md-auto ml-sm-10 mr-sm-10">
+    <v-col cols="12" class="d-flex justify-center">
+      <v-btn color="primary" block height="30px" @click="finishProfileDialog = true">Finish Profile</v-btn>
+    </v-col>
+  </v-card>
+
   <v-card class="mx-auto mb-3" max-width="700">
     <v-card-title v-if="userProfile">
       <v-row no-gutters class="mb-0"><v-col cols="3">
@@ -26,7 +33,8 @@
             <LookingForDisplay :key="displayKey" :userId="userProfile.user_id" />
           </p>
           <p class="mt-2">
-            <LookingForMenu :userProfile="userProfile" @lookingForUpdated="refreshLookingForDisplay" />
+            <LookingForMenu :userProfile="userProfile" :refreshLookingForMenu="refreshLookingForMenu"
+              @lookingForUpdated="refreshLookingForDisplay" />
           </p>
           <!-- <p class="mt-3">
             <DescriptionDisplay :descriptionIcons="selectedDescriptionIcons" />
@@ -43,15 +51,16 @@
     </v-card-title>
 
     <v-card-text v-if="userProfile">
-      <v-row class="mt-6" v-if="isEditable"><v-col cols="4">
+      <v-row class="mt-6" v-if="isEditable">
+        <v-col cols="12" md="4">
           <ProfileDisplayName2 :displayName="userProfile.displayname" :isEditable="isEditable"
             @updateDisplayName="updateDisplayName" @validation="updateFormValidity" />
         </v-col>
-        <v-col cols="4">
+        <v-col cols="12" md="4">
           <ProfileTagLine :tagLine="userProfile.tagline ?? '...'" :isEditable="isEditable"
             @updateTagLine="updateTagLine" />
         </v-col>
-        <v-col cols="4">
+        <v-col cols="12" md="4">
           <ProfileSite :siteUrl="userProfile.site_url ?? ''" :isEditable="isEditable" @updateSite="updateSite" />
         </v-col>
       </v-row>
@@ -176,6 +185,10 @@
   <v-dialog v-model="generateBioDialog" max-width="600" transition="dialog-transition">
     <GenerateBioDialog v-model="generateBioDialog" @updateBio="updateBio" />
   </v-dialog>
+
+  <v-dialog v-model="finishProfileDialog" :overlay="false" max-width="500px" transition="dialog-transition">
+    <FinishProfile :infoLeft="infoLeft" @closeDialog="closeFinishProfileDialog" />
+  </v-dialog>
 </template>
 
 <script setup>
@@ -202,6 +215,9 @@ const genders = ref([
 const status = ref([]);
 
 const isEditable = ref(false);
+const isFinished = ref(false);
+const infoLeft = ref([{}]);
+const refreshLookingForMenu = ref(false);
 const originalGenderId = ref(null);
 const originalStatusId = ref(null);
 const originalAge = ref(null);
@@ -233,6 +249,7 @@ const isFormValid = ref(true);
 const deleteDialog = ref(false);
 const linkAccountDialog = ref(false);
 const generateBioDialog = ref(false);
+const finishProfileDialog = ref(false);
 const isMarkedForDeletion = ref(false);
 
 const updateFormValidity = (isValid) => {
@@ -240,8 +257,10 @@ const updateFormValidity = (isValid) => {
   isFormValid.value = isValid;
 };
 
-const refreshLookingForDisplay = () => {
+const refreshLookingForDisplay = async () => {
+  refreshLookingForMenu.value = !refreshLookingForMenu.value;
   displayKey.value = Date.now(); // Change key to force refresh
+  checkIfFinished();
 };
 
 const requiredAgeRule = (value) => {
@@ -380,7 +399,29 @@ onMounted(async () => {
   if (route.query.edit === "true") {
     isEditable.value = true;
   }
+
+  await checkIfFinished();
 });
+
+const checkIfFinished = async () =>
+{
+  const hasInterests = await authStore.hasInterests();
+
+  isFinished.value = userProfile.value.tagline && userProfile.value.site_url && hasInterests;
+  infoLeft.value = []; // Clear the array
+
+  const fields = {
+    tagline: userProfile.value.tagline,
+    site_url: userProfile.value.site_url,
+    interests: hasInterests,
+  };
+
+
+  Object.entries(fields).forEach(([key, value]) =>
+  {
+    if (!value) infoLeft.value.push(key);
+  });
+};
 
 const updateCountry = (newCountryName) => {
   selectedCountry.value = newCountryName;
@@ -458,6 +499,12 @@ const updateStatus = (newStatusId) => {
 
 const updateBio = (newBio) => {
   userProfile.value.bio = newBio;
+};
+
+const closeFinishProfileDialog = async () => {
+  finishProfileDialog.value = false;
+  await refreshLookingForDisplay();
+  await checkIfFinished();
 };
 
 const updateDisplayName = (newDisplayName) => {
@@ -538,6 +585,7 @@ const toggleEditMode = async () => {
     }
   }
   isEditable.value = !isEditable.value;
+  await checkIfFinished();
 };
 
 const cancelEdit = () => {

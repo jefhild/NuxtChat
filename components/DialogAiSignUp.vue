@@ -2,9 +2,9 @@
   <v-card width="650" class="mx-auto">
     <v-card-title class="headline text-center mb-4">Create Your Anonymous Profile</v-card-title>
     <v-card-text>
-      <p class="pb-4">
+      <!-- <p class="pb-4">
         Please follow the instructions below to create your anonymous profile.
-      </p>
+      </p> -->
 
       <v-row v-if="submittingtoDatabase" no-gutters>
         <v-col class="text-center">
@@ -395,7 +395,6 @@ const sendMessage = async () => {
           : "";
 
       if (currentQuestionIndex.value === specificQuestionIndex) {
-        console.log("in here");
         // Store the AI response for the specific question
         aiResponse =
           "Here is your generated bio (feel free to change it in your profile settings):" +
