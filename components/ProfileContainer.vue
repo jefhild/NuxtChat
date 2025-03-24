@@ -425,6 +425,7 @@ const checkIfFinished = async () =>
     interests: userHasInterests,
   };
 
+
   Object.entries(fields).forEach(([key, value]) =>
   {
     if (!value) infoLeft.value.push(key);
