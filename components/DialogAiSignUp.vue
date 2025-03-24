@@ -79,9 +79,11 @@ import useGenderMapper from "@/composables/useGenderMapper";
 import useStatusMapper from "@/composables/useStatusMapper";
 import useAvatarMapper from "@/composables/useAvatarMapper";
 
+const { checkDisplayNameExists } = useDb();
+
+
 const authStore = useAuthStore();
 const router = useRouter();
-const supabase = useSupabaseClient();
 const isLoading = ref(false);
 const submittingtoDatabase = ref(false);
 const inputField = ref(null); // Reference to the input field
@@ -315,17 +317,8 @@ const validateResponse = async (index, input) => {
 };
 const checkUsernameExists = async (displayName) => {
   try {
-    const { data, error } = await supabase
-      .from("profiles") // Replace with your table name
-      .select("displayname", { head: false }) // Select the correct field
-      .eq("displayname", displayName) // Match on displayname
-      .limit(1) // Limit to one row
-      .maybeSingle(); // Fetch a single row
-
-    if (error && error.code !== "PGRST116") {
-      console.error("Error checking displayname:", error);
-      return false;
-    }
+    const { data, error } = await checkDisplayNameExists(displayName);
+    if (error) { return false;}
 
     return !!data; // Return true if displayname exists, false otherwise
   } catch (err) {
