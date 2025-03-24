@@ -10,7 +10,7 @@
               v-if="
                 selectedGender !== null ||
                 selectedAge[0] !== 18 ||
-                selectedAge[1] !== 70
+                selectedAge[1] !== 100
               "
               color="red"
               dot
@@ -115,11 +115,11 @@ import { useOnlineRowCount } from "@/composables/useOnlineRowCount";
 const { rowCount, getOnlineRowCount, loading, error } = useOnlineRowCount();
 const menu = ref(false);
 const selectedGender = ref(null);
-const selectedAge = ref([18, 70]); // Default age range
+const selectedAge = ref([18, 100]); // Default age range
 
 const props = defineProps({
   userProfile: {
-    type: Object,
+      type: Object,
     required: true,
     validator(value) {
       return value && value.user_id !== undefined && value.user_id !== null;

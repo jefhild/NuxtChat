@@ -1,5 +1,10 @@
 <template>
-	<v-card>
+	<v-card class="myfont">
+		<v-progress-linear :model-value="(currentQuestionIndex / questions.length) * 100" color="light-blue" height="10"
+			rounded style="width: 100%" />
+		<v-card-title class="text-center text-subtitle-1">
+			Let's finish setting up your profile - you have {{ questions.length - currentQuestionIndex }} left
+		</v-card-title>
 		<v-card-text>
 			<v-row align="center" justify="center">
 				<v-col cols="10" md="10" class="animation-container">
@@ -56,20 +61,25 @@
 				</v-col>
 			</v-row>
 		</v-card-text>
+		<v-card-actions class="pr-4 pb-4">
+			<v-btn color="red" @click="closeDialog"> SKIP </v-btn>
+		</v-card-actions>
 		<!-- Circular Progress Bar Overlay -->
-		<v-overlay v-model="submittingtoDatabase" contained class="align-center justify-center" persistent>
-			<v-progress-circular color="primary" indeterminate size="64" />
-		</v-overlay>
+			<v-overlay v-model="submittingtoDatabase" contained class="align-center justify-center" persistent>
+				<v-progress-circular color="primary" indeterminate size="64" />
+			</v-overlay>
 	</v-card>
 </template>
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
+const { updateTagline, updateSiteURL, updateInterests } = useDb();
 
 const emit = defineEmits(["closeDialog"]);
 
 const authStore = useAuthStore();
 
+const userProfile = authStore.userProfile;
 const previosUserInput = ref("");
 const currentQuestionIndex = ref(0);
 const isTyping = ref(false);
@@ -102,8 +112,6 @@ const sendMessage = async () => {
 	userInput.value = "";
 	showUserBubble.value = true;
 
-	var userMessage;
-
 	const currentKey = questionKeyMap[currentQuestionIndex.value];
 
 	const userPrompts = {
@@ -124,7 +132,7 @@ const sendMessage = async () => {
       - If the input includes a request for a URL (e.g., "I want my website to be X"), extract only the URL.
       - If the input says they don't want to share a URL, return "No URL".
       - If input contains hate speech, return an error message starting with "Error:...".
-      Otherwise, return only the valid URL or "No URL" without extra text, quotes, or punctuation.
+      Otherwise, return only the valid URL or "No URL" without extra text,"", quotes, or punctuation.
       User input: ${previosUserInput.value}`,
 	};
 
@@ -168,9 +176,9 @@ const sendMessage = async () => {
 
 			if (mappedValues[currentKey]) mappedValues[currentKey]();
 			
-			console.log("mappedTagline: ", mappedTagline.value);
+			/*console.log("mappedTagline: ", mappedTagline.value);
 			console.log("mappedInterests: ", mappedInterests.value);
-			console.log("mappedURL: ", mappedURL.value);
+			console.log("mappedURL: ", mappedURL.value);*/
 		}
 	}catch(errorFirst){console.error(errorFirst);}
 
@@ -205,22 +213,28 @@ const sendMessage = async () => {
 
 		if (infoLeft.includes("tagline"))
 		{
-			await authStore.updateTagline(mappedTagline.value.trim());
+			await updateTagline(mappedTagline.value.trim(), userProfile.user_id);
+			userProfile.tagline = mappedTagline.value.trim();
 		}
 
 		if (infoLeft.includes("interests"))
 		{
 			const interestsArray = mappedInterests.value.trim().split(",");
-			await authStore.updateInterests(interestsArray);
+			await updateInterests(interestsArray, userProfile.user_id);
 		}
 
 		if (infoLeft.includes("site_url"))
 		{
-			await authStore.updateSiteURL(mappedURL.value.trim());
+			await updateSiteURL(mappedURL.value.trim(), userProfile.user_id);
+			userProfile.site_url = mappedURL.value.trim();
 		}
 
-		emit("closeDialog");
+		closeDialog();
 	}
+};
+
+const closeDialog = async () => {
+	emit("closeDialog");
 };
 
 
@@ -245,13 +259,17 @@ onMounted(() => {
 		}
 	});
 
-	console.log(questionKeyMap);
+	/*console.log(questionKeyMap);
 	console.log(questionKeyMap[currentQuestionIndex.value]);	
-	console.log("user responses: ", userResponses.value);
+	console.log("user responses: ", userResponses.value);*/
 });
 </script>
 
 <style scoped>
+.myfont {
+	font-family: "poppins", sans-serif;
+}
+
 .chat-bubble {
 	display: flex;
 	align-items: left;

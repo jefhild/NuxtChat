@@ -1,11 +1,4 @@
 <template>
-  <v-card v-if="!isFinished" max-width="700" justify-center
-    class="mx-auto my-5 ml-10 mr-10 ml-md-auto mr-md-auto ml-sm-10 mr-sm-10">
-    <v-col cols="12" class="d-flex justify-center">
-      <v-btn color="primary" block height="30px" @click="finishProfileDialog = true">Finish Profile</v-btn>
-    </v-col>
-  </v-card>
-
   <v-card class="mx-auto mb-3" max-width="700">
     <v-card-title v-if="userProfile">
       <v-row no-gutters class="mb-0"><v-col cols="3">
@@ -114,9 +107,17 @@
         <v-col>
           <label>About Me:</label>
           <ProfileBio :bio="userProfile.bio ?? ''" :isEditable="isEditable" @updateBio="updateBio" />
-          <v-btn v-if="isEditable" color="primary" @click="generateBioDialog = true">Generate a bio</v-btn>
+          <v-btn v-if="isEditable" color="primary" @click="openGenerateBioDialog">Generate a bio</v-btn>
         </v-col>
       </v-row>
+
+      <v-row>
+        <v-col>
+          <v-btn v-if="!isFinished && isEditable" color="primary" @click="openFinishProfileDialog">Finish
+             Profile</v-btn>
+        </v-col>
+      </v-row>
+
     </v-card-text>
     <v-card-text v-if="userProfile">
       <v-row>
@@ -196,9 +197,10 @@ import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useLocationManager } from "@/composables/useLocationManager";
 
+const { getStatuses, getGenders, updateGender, hasInterests, updateProfile, authUpdateProfile } = useDb();
+
 const router = useRouter();
 const route = useRoute();
-const supabase = useSupabaseClient();
 const authStore = useAuthStore();
 const user = ref(authStore.user);
 const userProfile = ref(authStore.userProfile);
@@ -306,8 +308,7 @@ const gotoChat = async () => {
 
 const fetchGenders = async () => {
   try {
-    const { data, error } = await supabase.from("genders").select("*");
-    if (error) throw error;
+    const data = await getGenders();
 
     // Check if data is null or empty and set the default value if necessary
     if (data && data.length > 0) {
@@ -325,8 +326,7 @@ const fetchGenders = async () => {
 
 const fetchStatus = async () => {
   try {
-    const { data, error } = await supabase.from("status").select("*");
-    if (error) throw error;
+    const data = await getStatuses();
 
     // Check if data is null or empty and set the default value if necessary
     if (data && data.length > 0) {
@@ -401,19 +401,28 @@ onMounted(async () => {
   }
 
   await checkIfFinished();
+  finishProfileDialog.value = !isFinished.value;
 });
+
+const openFinishProfileDialog = async () => {
+  finishProfileDialog.value = true;
+};
+
+const openGenerateBioDialog = async () => {
+  generateBioDialog.value = true;
+};
 
 const checkIfFinished = async () =>
 {
-  const hasInterests = await authStore.hasInterests();
+  const userHasInterests = await hasInterests(userProfile.value.user_id);
 
-  isFinished.value = userProfile.value.tagline && userProfile.value.site_url && hasInterests;
+  isFinished.value = userProfile.value.tagline && userProfile.value.site_url && userHasInterests;
   infoLeft.value = []; // Clear the array
 
   const fields = {
     tagline: userProfile.value.tagline,
     site_url: userProfile.value.site_url,
-    interests: hasInterests,
+    interests: userHasInterests,
   };
 
 
@@ -469,28 +478,17 @@ const handleGenderValidation = (isValid) => {
   console.log("handleGenderValidation: ", isValid);
 };
 
-const updateGender = async (newGenderId) => {
+const updateTheGender = async (newGenderId) => {
   userProfile.value.gender_id = newGenderId;
 
   // Update Supabase only if editable
   if (isEditable.value) {
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ gender_id: newGenderId })
-        .eq("id", userProfile.value.id);
-
-      if (error) {
-        console.error("Error updating gender in Supabase:", error);
-      }
-    } catch (error) {
-      console.error("Error in gender update:", error);
-    }
+   await updateGender(newGenderId, userProfile.value.user_id);
   }
 };
 
 watch(selectedGender, (newGenderId) => {
-  updateGender(newGenderId);
+  updateTheGender(newGenderId);
 });
 
 const updateStatus = (newStatusId) => {
@@ -499,6 +497,7 @@ const updateStatus = (newStatusId) => {
 
 const updateBio = (newBio) => {
   userProfile.value.bio = newBio;
+  generateBioDialog.value = false;
 };
 
 const closeFinishProfileDialog = async () => {
@@ -530,23 +529,17 @@ const updateAge = (newAge) => {
 const toggleEditMode = async () => {
   if (isEditable.value) {
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          displayname: userProfile.value.displayname,
-          tagline: userProfile.value.tagline,
-          gender_id: userProfile.value.gender_id,
-          status_id: userProfile.value.status_id,
-          age: userProfile.value.age,
-          bio: userProfile.value.bio,
-          country_id: userProfile.value.country_id,
-          state_id: userProfile.value.state_id,
-          city_id: userProfile.value.city_id,
-          avatar_url: userProfile.value.avatar_url,
-          site_url: userProfile.value.site_url,
-        })
-        .eq("id", userProfile.value.id);
-      if (error) throw error;
+      await updateProfile(userProfile.value.displayname,
+                    userProfile.value.tagline,
+                    userProfile.value.gender_id,
+                    userProfile.value.status_id,
+                    userProfile.value.age,
+                    userProfile.value.bio,
+                    userProfile.value.country_id,
+                    userProfile.value.state_id,
+                    userProfile.value.city_id,
+                    userProfile.value.avatar_url,
+                    userProfile.value.site_url);
 
       originalGenderId.value = userProfile.value.gender_id;
       originalStatusId.value = userProfile.value.status_id;
@@ -605,16 +598,8 @@ const cancelEdit = () => {
 
 const confirmDelete = async () => {
   try {
-    const { data, error } = await supabase.auth.updateUser({
-      data: { delete_me: true, delete_requested_at: null },
-    });
+    await authUpdateProfile(true, null);
     isMarkedForDeletion.value = true;
-    if (error) {
-      console.error("Error updating user metadata:", error);
-    } else {
-      console.log("User marked for deletion:", data);
-      deleteDialog.value = false;
-    }
   } catch (error) {
     console.error("Error deleting account:", error.message);
   }
@@ -622,16 +607,8 @@ const confirmDelete = async () => {
 
 const cancelDelete = async () => {
   try {
-    const { data, error } = await supabase.auth.updateUser({
-      data: { delete_me: false, delete_requested_at: new Date().toISOString() },
-    });
+    await authUpdateProfile(false, new Date().toISOString());
     isMarkedForDeletion.value = false;
-    if (error) {
-      console.error("Error updating user metadata:", error);
-    } else {
-      console.log("User marked for deletion:", data);
-      deleteDialog.value = false;
-    }
   } catch (error) {
     console.error("Error deleting account:", error.message);
   }

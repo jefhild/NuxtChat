@@ -16,7 +16,6 @@ const resetInactivityTimer = async () =>
   }
 };
 
-
 const initializeInactivityTimer = () =>
 {
   resetInactivityTimer();
