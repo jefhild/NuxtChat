@@ -35,6 +35,7 @@ Your role is strictly to respond to the current question:
 "${currentQuestion}"
 
 Do NOT ask follow-up questions or introduce new suggestions beyond what is explicitly asked in the predefined question. Keep your response concise and focused on the specific input provided by the user. Your goal is to guide the user through the predefined questions without introducing additional steps.
+Do NOT answer with any information on the upcoming questions or the overall process.
 `;
 
   try {

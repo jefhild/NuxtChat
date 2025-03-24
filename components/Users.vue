@@ -41,6 +41,8 @@
 </template>
 
 <script setup>
+const supabase = useSupabaseClient();
+
 const props = defineProps({
   onlineUsers: Array,
   offlineUsers: Array,
@@ -49,6 +51,34 @@ const props = defineProps({
   updateFilters: Function,
 });
 
+onMounted(() =>
+{
+  subscribeToNewMessages();
+});
+
+onUnmounted(() =>
+{
+  supabase.channel("messages").unsubscribe();
+});
+
+const subscribeToNewMessages = () =>
+{
+  supabase
+    .channel("public.messages")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages" },
+      async (payload) =>
+      {
+
+        if (payload.new.receiver_id === props.userProfile.user_id)
+        {
+          document.title = `Chat | ImChatty (${unreadMessageCount.value})`;
+        }
+      }
+    )
+    .subscribe();
+};
 
 const tab = ref(1);
 const emit = defineEmits(["user-selected", "chat-deleted", "refresh-data"]);

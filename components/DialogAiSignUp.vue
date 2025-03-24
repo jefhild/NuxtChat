@@ -2,9 +2,9 @@
   <v-card width="650" class="mx-auto">
     <v-card-title class="headline text-center mb-4">Create Your Anonymous Profile</v-card-title>
     <v-card-text>
-      <p class="pb-4">
+      <!-- <p class="pb-4">
         Please follow the instructions below to create your anonymous profile.
-      </p>
+      </p> -->
 
       <v-row v-if="submittingtoDatabase" no-gutters>
         <v-col class="text-center">
@@ -79,9 +79,11 @@ import useGenderMapper from "@/composables/useGenderMapper";
 import useStatusMapper from "@/composables/useStatusMapper";
 import useAvatarMapper from "@/composables/useAvatarMapper";
 
+const { checkDisplayNameExists } = useDb();
+
+
 const authStore = useAuthStore();
 const router = useRouter();
-const supabase = useSupabaseClient();
 const isLoading = ref(false);
 const submittingtoDatabase = ref(false);
 const inputField = ref(null); // Reference to the input field
@@ -315,17 +317,8 @@ const validateResponse = async (index, input) => {
 };
 const checkUsernameExists = async (displayName) => {
   try {
-    const { data, error } = await supabase
-      .from("profiles") // Replace with your table name
-      .select("displayname", { head: false }) // Select the correct field
-      .eq("displayname", displayName) // Match on displayname
-      .limit(1) // Limit to one row
-      .maybeSingle(); // Fetch a single row
-
-    if (error && error.code !== "PGRST116") {
-      console.error("Error checking displayname:", error);
-      return false;
-    }
+    const { data, error } = await checkDisplayNameExists(displayName);
+    if (error) { return false;}
 
     return !!data; // Return true if displayname exists, false otherwise
   } catch (err) {
@@ -395,7 +388,6 @@ const sendMessage = async () => {
           : "";
 
       if (currentQuestionIndex.value === specificQuestionIndex) {
-        console.log("in here");
         // Store the AI response for the specific question
         aiResponse =
           "Here is your generated bio (feel free to change it in your profile settings):" +

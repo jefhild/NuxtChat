@@ -145,8 +145,40 @@ const confirmDelete = async () => {
 const selectUser = (user) => {
   if (user) {
     selectedUser.value = user;
+    user.unread_count = 0;
     emit("user-selected", user);
   }
+};
+
+onMounted(() =>
+{
+  subscribeToNewMessages();
+});
+
+const subscribeToNewMessages = () =>
+{
+  supabase
+    .channel("messages")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages" },
+      (payload) =>
+      {
+        console.log("New message received:", payload);
+
+        // Find the sender in the users array
+        const sender = props.users.find(
+          (user) => user.user_id === payload.new.sender_id
+        );
+
+        // If the message is for the current user, update the unread count
+        if (sender)
+        {
+          sender.unread_count = (sender.unread_count || 0) + 1;
+        }
+      }
+    )
+    .subscribe();
 };
 </script>
 

@@ -1,4 +1,5 @@
 <template>
+  
   <v-container>
     <v-row>
       <v-col>
@@ -62,9 +63,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, defineProps } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 // import Upvotes from "@/components/Upvotes.vue";
+
 
 const tab = ref(1);
 const authStore = useAuthStore();
