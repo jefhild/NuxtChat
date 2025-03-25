@@ -14,34 +14,24 @@ interface Profile {
 
 export function useBlockedProfiles(userId: string) {
   const blockedProfiles = ref<Profile[]>([]);
-  const client = useSupabaseClient();
+  const { getBlockedProfiles, unblockUser } = useDb();
 
   const fetchBlockedProfiles = async () => {
     if (userId) {
-      const { data, error } = await client.rpc("get_blocked_profiles", {
-        blocker_id: userId,
-      });
+      const data = await getBlockedProfiles(userId);
 
-      if (error) {
-        console.error("Error fetching blocked profiles:", error);
-      } else {
+      if (data) {
         blockedProfiles.value = data as Profile[];
       }
     }
   };
 
   // Method to unblock a user directly using Supabase's client
-  const unblockUser = async (blockedUserId: string) => {
+  const unblockAUser = async (blockedUserId: string) => {
     if (userId) {
-      const { error } = await client
-        .from("blocked_users")
-        .delete()
-        .eq("user_id", userId)
-        .eq("blocked_user_id", blockedUserId); // Use blocked_user_id instead of profile_id
+      const error  = await unblockUser(userId, blockedUserId);
 
-      if (error) {
-        console.error("Error unblocking user:", error);
-      } else {
+      if (!error) {
         // Remove the unblocked profile from the list using user_id
         blockedProfiles.value = blockedProfiles.value.filter(
           (profile) => profile.user_id !== blockedUserId
@@ -56,6 +46,6 @@ export function useBlockedProfiles(userId: string) {
   return {
     blockedProfiles,
     fetchBlockedProfiles,
-    unblockUser, // Expose the unblock method
+    unblockAUser, // Expose the unblock method
   };
 }

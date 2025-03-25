@@ -1,15 +1,10 @@
 export function useBlockedUsers(user) {
-  const supabase = useSupabaseClient();
+  const { getUserBlockedProfiles } = useDb();
   const blockedUsers = ref([]);
 
   const loadBlockedUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from("blocked_users")
-        .select("blocked_user_id")
-        .eq("user_id", user.value.id);
-
-      if (error) throw error;
+      const data = await getUserBlockedProfiles(user.value.id);
 
       blockedUsers.value = data.map((item) => item.blocked_user_id);
       // console.log("Blocked users:", blockedUsers.value);

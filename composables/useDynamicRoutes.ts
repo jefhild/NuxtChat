@@ -3,23 +3,17 @@ import { createClient } from "@supabase/supabase-js";
 
 // Function to fetch dynamic routes from Supabase
 export async function getAllDynamicRoutes() {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_KEY;
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  const { getRegisteredUsersIds } = useDb();
 
   try {
-    const { data: profiles, error } = await supabase
-      .from("profiles")
-      .select("user_id")
-      .neq("avatar_url", "")
-      .neq("provider", "anonymous");
+    const { data: profiles, error } = await getRegisteredUsersIds();
 
     if (error) {
       console.error("Error fetching profiles:", error);
       return []; // Return an empty array in case of error
     }
 
-    const routes = profiles.map((profile) => `/profiles/${profile.user_id}`);
+    const routes = profiles ? profiles.map((profile) => `/profiles/${profile.user_id}`) : [];
     // console.log("Fetched dynamic routes:", routes);
     return routes; // Ensure an array is always returned
   } catch (error) {

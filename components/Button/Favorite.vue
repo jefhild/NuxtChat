@@ -25,13 +25,13 @@
 </template>
 
 <script setup>
-// Ensure Supabase client is initialized
 import { useAuthStore } from "@/stores/authStore"; // Replace with your actual store path
+
+const { getCountUserFavorites, deleteFavorite, insertFavorite } = useDb();
 
 // Initialize stores and utilities
 const authStore = useAuthStore();
 const router = useRouter();
-const supabase = useSupabaseClient();
 
 // Props
 const props = defineProps({
@@ -52,14 +52,11 @@ const checkAuthStatus = () => {
 // Fetch favorite status for the profile
 const fetchFavoriteStatus = async () => {
   if (isAuthenticated.value && props.profile) {
-    const { count } = await supabase
-      .from("favorites")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", authStore.user.id)
-      .eq("favorite_user_id", props.profile.user_id);
 
+    const count = await getCountUserFavorites(authStore.user.id,props.profile.user_id);
     isFavorite.value = count > 0;
     console.log("Favorite status:", isFavorite.value);
+
   } else {
     console.log("User not authenticated or profile missing");
   }
@@ -72,18 +69,11 @@ const handleFavoriteToggle = async () => {
     loginDialog.value = true;
   } else {
     if (isFavorite.value) {
-      await supabase
-        .from("favorites")
-        .delete()
-        .eq("user_id", authStore.user.id)
-        .eq("favorite_user_id", props.profile.user_id);
+      await deleteFavorite(authStore.user.id, props.profile.user_id);
     } else {
       console.log("Adding favorite");
 
-      await supabase.from("favorites").insert({
-        user_id: authStore.user.id,
-        favorite_user_id: props.profile.user_id,
-      });
+      await insertFavorite(authStore.user.id, props.profile.user_id);
     }
     isFavorite.value = !isFavorite.value;
   }

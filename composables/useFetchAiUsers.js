@@ -1,7 +1,7 @@
 // composables/useFetchOnlineUsers.js
 
 export function useFetchAiUsers(user) {
-  const supabase = useSupabaseClient();
+  const { getAiProfiles } = useDb();
 
   // Reactive states
   const aiData = ref([]);
@@ -21,25 +21,22 @@ export function useFetchAiUsers(user) {
 
     // console.log("Age Range: ", min_age, max_age); // Debug log
 
-    const response = await supabase.rpc("fetch_ai_profiles", {
-      logged_in_user_id: user.value?.id,
-      gender_filter: gender_id,
-      min_age: min_age,
-      max_age: max_age,
-      is_ai_filter: true,
-
-    });
+    const {data, errorDb} = await getAiProfiles(user.value?.id, gender_id, min_age, max_age);
 
     loading.value = false; // Reset loading state after the fetch
 
-    if (response.error) {
-      console.error("Error fetching online users:", response.error);
-      error.value = response.error;
-      aiData.value = []; // Clear data in case of error
-    } else {
-      aiData.value = response.data; // Set the fetched data
-      // console.log("Fetched online users:", response.data); // Debug log
+    if (errorDb)
+    {
+      error.value = errorDb;
+      aiData.value = [];
     }
+    else
+    {
+      aiData.value = data;
+    }
+
+    data ? aiData.value = data : aiData.value = []; // Set the fetched data
+    errorDb ? error.value = errorDb : error.value = null; // Set the error if there is
   };
 
   // Return reactive states and methods
