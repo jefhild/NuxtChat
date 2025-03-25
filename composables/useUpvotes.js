@@ -10,7 +10,7 @@ export function useUpvotes(userId) {
   // Function to fetch upvoted profiles from db
   const fetchUpvotes = async () => {
     if (userId) {
-      const data = getUserUpvotedProfiles(userId);
+      const data = await getUserUpvotedProfiles(userId);
 
       if (data){
         upvotedProfiles.value = data; // Type assertion is not needed in JavaScript
