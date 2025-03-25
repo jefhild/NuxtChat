@@ -115,12 +115,15 @@
 <script setup>
 import { ref, watch, onMounted, nextTick } from "vue";
 const route = useRoute();
+const router = useRouter();
 import { useAuthStore } from "@/stores/authStore";
 import { useFetchAiUsers } from "@/composables/useFetchAiUsers";
 import { useFetchOnlineUsers } from "@/composables/useFetchOnlineUsers";
 import { useFetchOfflineUsers } from "@/composables/useFetchOfflineUsers";
 import { useFetchActiveChats } from "@/composables/useFetchActiveChats";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
+
+const { getAIInteractionCount, getCurrentAIInteractionCount, getMessagesBetweenUsers, updateMessagesAsRead, updateAIInteractionCount, insertMessage, insertInteractionCount } = useDb();
 
 const supabase = useSupabaseClient();
 const authStore = useAuthStore();
@@ -182,16 +185,7 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
   }
 
   try {
-    const { data, error } = await supabase
-      .from("messages")
-      .select(
-        "id, sender_id, receiver_id, content, created_at, read, profiles!messages_sender_id_fkey(displayname)"
-      )
-      .or(
-        `and(sender_id.eq.${senderUserId},receiver_id.eq.${receiverUserId}),and(sender_id.eq.${receiverUserId},receiver_id.eq.${senderUserId})`
-      );
-
-    if (error) throw error;
+    const data = await getMessagesBetweenUsers(senderUserId, receiverUserId);
 
     // Filter out messages from/to blocked users
     const filteredMessages = data.filter(
@@ -216,7 +210,7 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
       read: msg.read,
     }));
 
-    console.log("Fetched and mapped messages:", messages.value);
+    //console.log("Fetched and mapped messages:", messages.value);
 
     scrollToBottom(); // Ensure the chat scrolls to the bottom after loading messages
 
@@ -229,23 +223,9 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
 };
 
 const markMessagesAsRead = async (receiverUserId, senderUserId) => {
-  try {
-    // console.log("receiverUserId:", receiverUserId);
-    // console.log("senderUserId:", senderUserId);
+  
+  await updateMessagesAsRead(receiverUserId, senderUserId);
 
-    const { error } = await supabase
-      .from("messages")
-      .update({ read: true })
-      .eq("receiver_id", receiverUserId)
-      .eq("sender_id", senderUserId)
-      .eq("read", false); // Ensures only unread messages are affected
-
-    if (error) throw error;
-
-    console.log("Messages marked as read");
-  } catch (error) {
-    console.error("Error marking messages as read:", error);
-  }
   document.title = `Chat | ImChatty `;
 
 };
@@ -383,19 +363,9 @@ const sendMessage = async () => {
     const userMessage = newMessage.value.trim();
 
     try {
-      // Insert the user's message into the messages table
-      const { data, error } = await supabase
-        .from("messages")
-        .insert({
-          sender_id: senderUserId,
-          receiver_id: receiverUserId,
-          content: userMessage,
-        })
-        .select("*");
+      const data = await insertMessage(receiverUserId, senderUserId, userMessage);
 
-      if (error) {
-        console.error("Error sending message:", error);
-      } else if (data && data.length > 0) {
+      if (data && data.length > 0) {
         // console.log("Message sent successfully:", data);
         newMessage.value = ""; // Reset the message input field
 
@@ -417,18 +387,8 @@ const sendMessage = async () => {
           // console.log("fetching response from AI:", aiResponse);
           if (aiResponse) {
             // Insert the AI response into the messages table
-            const { data: aiData, error: aiError } = await supabase
-              .from("messages")
-              .insert({
-                sender_id: receiverUserId, // AI as the sender
-                receiver_id: senderUserId, // Original user as the receiver
-                content: aiResponse,
-              })
-              .select("*");
-
-            if (aiError) {
-              console.error("Error storing AI response:", aiError);
-            } else if (aiData && aiData.length > 0) {
+            const aiData = await insertMessage(senderUserId, receiverUserId, aiResponse);
+            if (aiData && aiData.length > 0) {
               console.log("AI response stored successfully:", aiData);
 
               // Push the AI response to the messages array for immediate UI update
@@ -447,30 +407,12 @@ const sendMessage = async () => {
           }
 
           // Increment AI interaction count after a successful AI response
-          const { data: interactionData, error: updateError } = await supabase
-            .from("user_ai_interactions")
-            .select("interaction_count")
-            .eq("user_id", senderUserId)
-            .single();
+          const interactionData = await getAIInteractionCount(senderUserId);
 
-          if (updateError) {
-            console.error(
-              "Error fetching interaction count for update:",
-              updateError
-            );
-          } else {
+          if (interactionData) {
             const newCount = interactionData.interaction_count + 1;
-            const { error: updateInteractionError } = await supabase
-              .from("user_ai_interactions")
-              .update({ interaction_count: newCount })
-              .eq("user_id", senderUserId);
 
-            if (updateInteractionError) {
-              console.error(
-                "Error updating interaction count:",
-                updateInteractionError
-              );
-            }
+            await updateAIInteractionCount(senderUserId, newCount);
           }
         }
       } else {
@@ -531,23 +473,14 @@ const checkAiInteractionLimit = async () => {
     // console.log("authStore.user.is_anonymous:", authStore.user.is_anonymous);
 
     // Fetch the current interaction count for the user from Supabase
-    const { data, error } = await supabase
-      .from("user_ai_interactions")
-      .select("interaction_count")
-      .eq("user_id", authStore.user?.id)
-      .single();
+    const { data, error } = await getCurrentAIInteractionCount(authStore.user?.id);
 
     if (error) {
       if (error.code === "PGRST116") {
         console.log("User not found in user_ai_interactions, adding new user.");
 
         // Insert a new row with the initial interaction count set to 1
-        const { insertError } = await supabase
-          .from("user_ai_interactions")
-          .insert({
-            user_id: authStore.user?.id,
-            interaction_count: 1,
-          });
+        const insertError = await insertInteractionCount(authStore.user?.id,1);
 
         if (insertError) {
           console.error(
@@ -584,6 +517,7 @@ const showRegistrationPrompt = () => {
   dialogVisible.value = true;
 };
 
+/*
 // Function to submit the registration form
 const submitRegistration = async () => {
   if (!userEmail.value) {
@@ -599,7 +533,7 @@ const submitRegistration = async () => {
 // Function to close the dialog without action
 const closeRegistrationDialog = () => {
   registrationDialog.value = false;
-};
+};*/
 
 const toggleUsers = (aiView) => {
   showAIUsers.value = aiView;

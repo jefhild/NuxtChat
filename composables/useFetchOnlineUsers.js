@@ -1,8 +1,9 @@
 // composables/useFetchOnlineUsers.js
 
-export function useFetchOnlineUsers(user) {
-  const supabase = useSupabaseClient();
+import OnlineUsers from "~/components/OnlineUsers.vue";
 
+export function useFetchOnlineUsers(user) {
+  const { getOnlineProfiles } = useDb();
   // Reactive states
   const onlineData = ref([]);
   const error = ref(null);
@@ -21,23 +22,20 @@ export function useFetchOnlineUsers(user) {
 
     // console.log("Age Range: ", min_age, max_age); // Debug log
 
-    const response = await supabase.rpc("fetch_online_profiles", {
-      logged_in_user_id: user.value?.id,
-      gender_filter: gender_id,
-      min_age: min_age,
-      max_age: max_age,
-    });
+    const { data, errorDb } = await getOnlineProfiles(user.value?.id, gender_id, min_age, max_age);
 
     loading.value = false; // Reset loading state after the fetch
 
-    if (response.error) {
-      console.error("Error fetching online users:", response.error);
-      error.value = response.error;
-      onlineData.value = []; // Clear data in case of error
-    } else {
-      onlineData.value = response.data; // Set the fetched data
-      // console.log("Fetched online users:", response.data); // Debug log
+    if(errorDb)
+    {
+      error.value = errorDb;
+      onlineData.value = [];
     }
+    else
+    {
+      onlineData.value = data;
+    }
+      
   };
 
   // Return reactive states and methods

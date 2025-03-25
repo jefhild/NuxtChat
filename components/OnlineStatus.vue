@@ -23,7 +23,7 @@ const props = defineProps({
   },
 });
 
-const supabase = useSupabaseClient();
+const { getUserStatus, updateStatus } = useDb();
 const isOnline = ref(false);
 const loading = ref(false);
 
@@ -41,16 +41,11 @@ watch(
 );
 
 const fetchStatus = async () => {
-  const { data, error } = await supabase
-    .from("presence")
-    .select("status")
-    .eq("user_id", props.userId)
-    .single();
+  const data = await getUserStatus(props.userId); 
 
-  if (error) {
-    console.error("Error fetching status:", error);
-  } else {
-    isOnline.value = data.status === "online";
+
+  if (data) {
+    isOnline.value = data.status === 'online'
   }
 };
 
@@ -60,12 +55,6 @@ const toggleStatus = async () => {
 };
 
 const updateStatusInDatabase = async (status) => {
-  const { error } = await supabase
-    .from("presence")
-    .upsert({ user_id: props.userId, status: status ? "online" : "offline" });
-
-  if (error) {
-    console.error("Error updating status:", error);
-  }
+  await updateStatus(props.userId, status);
 };
 </script>

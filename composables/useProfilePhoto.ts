@@ -1,8 +1,8 @@
 import { ref } from "vue";
-import { useSupabaseClient, useRuntimeConfig } from "#imports";
+import { useRuntimeConfig } from "#imports";
 
 export function useProfilePhoto() {
-  const supabase = useSupabaseClient();
+  const { getUserProfilePhoto, updateProfilePhoto, uploadProfilePhoto } = useDb();
   const config = useRuntimeConfig();
   const photopath = ref("");
   const genderId = ref(0);
@@ -25,33 +25,34 @@ export function useProfilePhoto() {
   };
 
   const getProfilePhoto = async (userId: string) => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("avatar_url, gender_id")
-      .eq("user_id", userId)
-      .single();
+    const { data, error } = await getUserProfilePhoto(userId);
 
     if (error) {
       console.error("Error fetching profile data:", error);
       return "";
     }
 
-    genderId.value = data.gender_id;
-
-    if (!data.avatar_url) {
-      switch (genderId.value) {
-        case 1:
-          return "/images/avatars/ai/male_avatar_1.webp";
-        case 2:
-          return "/images/avatars/ai/female_avatar_1.webp";
-        case 3:
-          return "/images/avatars/ai/trans_avatar_1.webp";
-        default:
-          return "/images/avatars/ai/trans_avatar_1.webp";
+    if (data) {
+      genderId.value = data.gender_id;
+      if (!data.avatar_url)
+      {
+        switch (genderId.value)
+        {
+          case 1:
+            return "/images/avatars/ai/male_avatar_1.webp";
+          case 2:
+            return "/images/avatars/ai/female_avatar_1.webp";
+          case 3:
+            return "/images/avatars/ai/trans_avatar_1.webp";
+          default:
+            return "/images/avatars/ai/trans_avatar_1.webp";
+        }
+      } else
+      {
+        return data.avatar_url;
       }
-    } else {
-      return data.avatar_url;
     }
+    return "";
   };
 
   const uploadImage = async (userId: string, emit: Function) => {
@@ -60,9 +61,7 @@ export function useProfilePhoto() {
     const fileName = `${userId}`;
     const filePath = `profile-images/${fileName}`;
 
-    const { data, error } = await supabase.storage
-      .from("profile-images")
-      .upload(filePath, file.value, { upsert: true });
+    const error = await uploadProfilePhoto(filePath, file.value); 
 
     if (error) {
       console.error("Error uploading file:", error);
@@ -71,10 +70,7 @@ export function useProfilePhoto() {
 
     const publicURL = `${config.public.SUPABASE_BUCKET}${filePath}`;
 
-    const { error: updateError } = await supabase
-      .from<Profile>("profiles")
-      .update({ avatar_url: publicURL })
-      .eq("user_id", userId);
+    const updateError = await updateProfilePhoto(publicURL, userId);
 
     if (updateError) {
       console.error("Error updating profile:", updateError);
@@ -85,10 +81,7 @@ export function useProfilePhoto() {
   };
 
   const deletePhoto = async (userId: string) => {
-    const { error } = await supabase
-      .from<Profile>("profiles")
-      .update({ avatar_url: null })
-      .eq("user_id", userId);
+    const error = await updateProfilePhoto(null, userId);
 
     if (error) {
       console.error("Error deleting photo:", error);

@@ -76,7 +76,7 @@ const menu = ref(false);
 const lookingForOptions = ref([]);
 const userLookingForIds = ref([]);
 
-const supabase = useSupabaseClient();
+const { getInterests, getInterestsIds, insertUserInterest, deleteUserInterest } = useDb();
 
 const props = defineProps({
   userProfile: {
@@ -101,9 +101,7 @@ watch(() => props.refreshLookingForMenu, async () => {
 });
 
 async function fetchLookingForOptions() {
-  const { data: lookingForOptionsData, error: lookingForError } = await supabase
-    .from("looking_for")
-    .select("*");
+  const { data: lookingForOptionsData, error: lookingForError } = await getInterests();
 
   if (lookingForError) {
     console.error("Error fetching looking for options:", lookingForError);
@@ -114,10 +112,7 @@ async function fetchLookingForOptions() {
 }
 
 async function fetchUserLookingFor(userId) {
-  const { data: userLookingFor, error: userLookingForError } = await supabase
-    .from("user_looking_for")
-    .select("looking_for_id")
-    .eq("user_id", userId);
+  const { data: userLookingFor, error: userLookingForError } = await getInterestsIds(userId); 
 
   if (userLookingForError) {
     console.error("Error fetching user looking for:", userLookingForError);
@@ -135,14 +130,12 @@ onMounted(async () => {
 });
 
 const toggleLookingFor = async (lookingForId, value) => {
+  console.log("Toggle looking for:", lookingForId, value);
   if (value) {
     // Add to userLookingForIds and insert into database
     if (!userLookingForIds.value.includes(lookingForId)) {
       userLookingForIds.value.push(lookingForId);
-      const { error } = await supabase.from("user_looking_for").insert({
-        user_id: props.userProfile.user_id,
-        looking_for_id: lookingForId,
-      });
+      const error = await insertUserInterest(props.userProfile.user_id, lookingForId);
 
       if (error) {
         console.error("Error inserting looking for:", error);
@@ -158,10 +151,7 @@ const toggleLookingFor = async (lookingForId, value) => {
       userLookingForIds.value = userLookingForIds.value.filter(
         (id) => id !== lookingForId
       );
-      const { error } = await supabase.from("user_looking_for").delete().match({
-        user_id: props.userProfile.user_id,
-        looking_for_id: lookingForId,
-      });
+      const { error } = await deleteUserInterest(props.userProfile.user_id, lookingForId); 
 
       if (error) {
         console.error("Error deleting looking for:", error);

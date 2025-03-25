@@ -128,7 +128,7 @@ const props = defineProps({
   showAIUsers: Boolean, // Accept the current state as a prop
 });
 
-const emit = defineEmits(["filter-changed"]);
+const emit = defineEmits(["filter-changed","toggle-users"]);
 const genders = [
   { text: "Male", value: 1 },
   { text: "Female", value: 2 },

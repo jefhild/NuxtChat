@@ -15,8 +15,9 @@
 
 <script setup lang="ts">
 const props = defineProps<{ userId: string }>();
-const supabase = useSupabaseClient();
 const lookingForIcons = ref<Icon[]>([]);
+
+const { getInterestsIds, getInterestsIcons } = useDb();
 
 interface Icon {
   id: number;
@@ -28,24 +29,18 @@ interface Icon {
 
 async function fetchUserLookingForIcons(userId: string) {
   // Fetch the looking_for_ids for the user
-  const { data: userLookingFor, error: userLookingForError } = await supabase
-    .from("user_looking_for")
-    .select("looking_for_id")
-    .eq("user_id", userId);
+  const { data: userLookingFor, error: userLookingForError } = await getInterestsIds(userId);
 
-  if (userLookingForError) {
+  if (userLookingForError)
+  {
     console.error("Error fetching user looking for:", userLookingForError);
     return [];
   }
 
-  const lookingForIds = userLookingFor.map((item) => item.looking_for_id);
+  const lookingForIds = userLookingFor ? userLookingFor.map((item) => item.looking_for_id) : [];
 
   // Fetch the icons from the looking_for table
-  const { data: lookingForOptions, error: lookingForOptionsError } =
-    await supabase
-      .from("looking_for")
-      .select("id, name, icon, tooltip, color")
-      .in("id", lookingForIds);
+  const { data: lookingForOptions, error: lookingForOptionsError } = await getInterestsIcons(lookingForIds);
 
   if (lookingForOptionsError) {
     console.error(
@@ -55,7 +50,7 @@ async function fetchUserLookingForIcons(userId: string) {
     return [];
   }
 
-  return lookingForOptions;
+  return lookingForOptions ? lookingForOptions : [];
 }
 
 onMounted(async () => {

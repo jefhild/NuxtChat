@@ -77,6 +77,8 @@ import {
 } from "/utils/userUtils";
 
 import { useAuthStore } from "@/stores/authStore";
+const { insertBlockedUser, deleteChatWithUser } = useDb();
+
 const authStore = useAuthStore();
 const myUserId = ref(authStore.user);
 const deleteDialog = ref(false);
@@ -102,35 +104,21 @@ const confirmDelete = async () => {
   if (checkboxBlockUser.value) {
     console.log("Block user");
 
-    const { error } = await supabase.from("blocked_users").insert({
-      user_id: myUserId.value.id,
-      blocked_user_id: selectedUserForDelete.value.user_id,
-    });
-
-    if (error) {
-      console.error("Error blocking user:", error);
-    } else {
-      console.log("User blocked");
-    }
+    await insertBlockedUser(myUserId.value.user_id, selectedUserForDelete.value.user_id);
   }
 
   try {
-    const { data, error } = await supabase
-      .from("messages")
-      .delete()
-      .or(
-        `and(receiver_id.eq.${selectedUserForDelete.value.user_id},sender_id.eq.${myUserId.value.id}),and(receiver_id.eq.${myUserId.value.id},sender_id.eq.${selectedUserForDelete.value.user_id})`
-      );
+    const error = await deleteChatWithUser(myUserId.value.id, selectedUserForDelete.value.user_id);
 
-    if (error) {
+    if (error)
+    {
       console.error("Error deleting messages:", error);
       return;
     }
 
     console.log("Messages deleted:");
 
-
-   emit("chat-deleted");
+    emit("chat-deleted");
 
 
 

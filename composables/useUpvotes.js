@@ -5,18 +5,14 @@ import { ref } from "vue";
 export function useUpvotes(userId) {
   // Define a reactive reference to store the upvoted profiles
   const upvotedProfiles = ref([]);
-  const client = useSupabaseClient();
+  const { getUserUpvotedProfiles, deleteUpvoteFromUser } = useDb();
 
-  // Function to fetch upvoted profiles from Supabase
+  // Function to fetch upvoted profiles from db
   const fetchUpvotes = async () => {
     if (userId) {
-      const { data, error } = await client.rpc("get_upvoted_profiles", {
-        upvoter_id: userId,
-      });
+      const data = getUserUpvotedProfiles(userId);
 
-      if (error) {
-        console.error("Error fetching upvoted profiles:", error);
-      } else {
+      if (data){
         upvotedProfiles.value = data; // Type assertion is not needed in JavaScript
         console.log("Upvoted profiles:", upvotedProfiles.value);
       }
@@ -26,15 +22,9 @@ export function useUpvotes(userId) {
   // Function to remove a user from the upvoted profiles
   const unupvoteUser = async (upvotedProfileId) => {
     if (userId) {
-      const { error } = await client
-        .from("votes")
-        .delete()
-        .eq("user_id", userId)
-        .eq("profile_id", upvotedProfileId);
+      const error = await deleteUpvoteFromUser(userId, upvotedProfileId);
 
-      if (error) {
-        console.error("Error unblocking user:", error);
-      } else {
+      if (!error) {
         // Filter out the profile from the list using its ID
         upvotedProfiles.value = upvotedProfiles.value.filter(
           (profile) => profile.profile_id !== upvotedProfileId
