@@ -12,6 +12,7 @@ const resetInactivityTimer = async () =>
 { 
   if (authStore.user)
   {
+    console.log("User is active");
     const { updatePresence } = useDb();
     await updatePresence(authStore.user.id, "online");
   }

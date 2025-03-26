@@ -632,13 +632,10 @@ export const useAuthStore = defineStore("authStore", {
     async logout()
     {
       console.log("logout");
-      if (this.user)
-      {
-        const { updatePresence } = useDb();
-        await updatePresence(this.user.id, "offline");
-      }
+      const { updatePresence } = useDb();
+      await updatePresence(this.user.id, "offline");
       const { authSignOut } = useDb();
-      const error = await authSignOut();
+      const { error } = authSignOut;
       if (error)
       {
         console.error("Error during logout:", error.message);
@@ -649,7 +646,6 @@ export const useAuthStore = defineStore("authStore", {
         this.clearCookies();
       }
     },
-
     setUser(user)
     {
       this.user = user;

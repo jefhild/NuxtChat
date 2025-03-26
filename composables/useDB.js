@@ -973,28 +973,6 @@ export const useDb = () =>
     return error;
   };
 
-  const trackPresence = async (userId) => {
-    await updatePresence(userId, "online");
-
-    // not sure about this...
-    window.addEventListener("beforeunload", async () =>
-      await updatePresence(userId, "offline")
-    );
-
-    inactivityCheckInterval = setInterval(() =>
-      this.checkInactivityForAllUsers(),
-      1800000 // 30 minutes
-    );
-  };
-
-  const stopTracking = async () => 
-  {
-    if (inactivityCheckInterval)
-    {
-      clearInterval(inactivityCheckInterval);
-    }
-  };
-
   const checkInactivityForAllUsers = async () =>
   {
     console.log("checking inactivity for ALL users")
@@ -1028,6 +1006,28 @@ export const useDb = () =>
       {
         await updatePresence(user.user_id, "offline");
       }
+    }
+  };
+
+  const trackPresence = async (userId) => {
+    await updatePresence(userId, "online");
+
+    // not sure about this...
+    window.addEventListener("beforeunload", async () =>
+      await updatePresence(userId, "offline")
+    );
+
+    inactivityCheckInterval = setInterval(async() =>
+      await checkInactivityForAllUsers(),
+      1800000 // 30 minutes
+    );
+  };
+
+  const stopTracking = async () => 
+  {
+    if (inactivityCheckInterval)
+    {
+      clearInterval(inactivityCheckInterval);
     }
   };
 
@@ -1070,9 +1070,12 @@ export const useDb = () =>
 
   /*Others*/
   const authSignOut = async () => {
-    const error = await supabase.auth.signOut();
-    if (error) throw error;
-    return error;
+    console.log("auth Signing out");
+    const { error } = await supabase.auth.signOut();
+    if (error){
+      console.error("Error signing out:", error);
+    }
+    return { error };
   };
 
   const signInWithOtp = async (email) =>
