@@ -661,7 +661,6 @@ const updateAge = (newAge) => {
 };
 
 const toggleEditMode = async () => {
-  console.log("userprofile: ", userProfile.value);
   if (isEditable.value) {
     try {
       await updateProfile( userProfile.value.user_id,

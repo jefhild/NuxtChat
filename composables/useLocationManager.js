@@ -3,7 +3,7 @@ import { ref, watchEffect } from "vue";
 
 export function useLocationManager(initialCountry, initialState) {
 
-  const { getCountries, getStates, getCities } = useDb();
+  const { getCountries, getStatesFromCountryName, getCities } = useDb();
 
   const countries = ref([]);
   const states = ref([]);
@@ -19,7 +19,7 @@ export function useLocationManager(initialCountry, initialState) {
 
   const fetchStates = async (country) => {
     //  console.log("fetchStates", country);
-    states.value = await getStates(country);
+    states.value = await getStatesFromCountryName(country);
   // console.log("fetchStates", data);
   };
 
