@@ -274,6 +274,7 @@ const validateResponse = async (index, input) => {
       const status = classifyStatus(input);
       mappedStatus.value = status;
       userResponses.value.status = input;
+      console.log("User Input Status:", userResponses.value.status);
       return { valid: true };
 
     case 4: //Bio validation
@@ -411,11 +412,12 @@ const sendMessage = async () => {
     console.error("Error fetching AI response:", error);
     updateMessages("Failed to fetch AI response. Please try again.", "");
   } finally {
-    userInputValue.value = userInput.value.trim(); // Store user input
+   
     isLoading.value = false;
     isTyping.value = false;
-    userInput.value = ""; // Clear input for the next question
     showUserBubble.value = false;
+    userInputValue.value = userInput.value.trim(); // Store user input
+    userInput.value = ""; // Clear input for the next question
   }
 };
 
@@ -581,12 +583,19 @@ const submitToDatabase = async () => {
   }
 }
 
-.chat-enter-active {
-  animation: slide-in 0.4s ease-out;
+.chat-enter-from {
+  opacity: 0;
+  transform: translateX(100px);
+  /* depuis la droite */
 }
 
-.chat-move {
-  transition: transform 0.4s ease;
+.chat-enter-active {
+  transition: all 0.4s ease;
+}
+
+.chat-enter-to {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 @keyframes slide-in {
