@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-const supabase = useSupabaseClient();
+const { signInWithOtp } = useDb();
 const config = useRuntimeConfig();
 
 const loading = ref(false);
@@ -94,15 +94,7 @@ const updateFormValidity = () => {
 const handleLogin = async () => {
   try {
     loading.value = true;
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.value,
-      options: {
-        // emailRedirectTo: "https://imchatty.com/loginemail",
-        // emailRedirectTo: "http://localhost:3000/loginemail",
-        emailRedirectTo: config.public.SUPABASE_REDIRECT,
-      },
-    });
-    if (error) throw error;
+    await signInWithOtp(email.value);
     // alert("Check your email for the login link!");
     successMessage.value = true;
   } catch (error) {

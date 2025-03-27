@@ -37,15 +37,11 @@
 
 const aiProfiles = ref([]);
 const profileLimit = 5;
-const supabase = useSupabaseClient();
+const { getMostPopularAiProfiles } = useDb();
 
 // Fetch data during SSR
-const { data, error } = await supabase.rpc("get_most_popular_ai_profiles", {
-  profile_limit: profileLimit,
-});
-if (error) {
-  console.error("Error fetching popular ai profiles:", error);
-} else {
+const data = await getMostPopularAiProfiles(profileLimit);
+if (data) {
   aiProfiles.value = data;
   // console.log("aiProfiles", aiProfiles.value);
 }

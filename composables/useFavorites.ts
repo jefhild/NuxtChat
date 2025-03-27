@@ -15,17 +15,13 @@ interface Profile {
 export function useFavorites(userId: string) {
   
   const favoriteProfiles = ref<Profile[]>([]);
-  const client = useSupabaseClient();
+  const { getUserFavoriteProfiles, deleteFavorite } = useDb();
 
   const fetchFavorites = async () => {
     if (userId) {
-      const { data, error } = await client.rpc("get_favorite_profiles", {
-        current_user_id: userId,
-      });
+      const data = await getUserFavoriteProfiles(userId);
 
-      if (error) {
-        console.error("Error fetching blocked profiles:", error);
-      } else {
+      if (data) {
         favoriteProfiles.value = data as Profile[];
       }
     }
@@ -34,15 +30,9 @@ export function useFavorites(userId: string) {
   // Method to unblock a user directly using Supabase's client
   const unfavoriteUser = async (favoriteUserId: string) => {
     if (userId) {
-      const { error } = await client
-        .from("favorites")
-        .delete()
-        .eq("user_id", userId)
-        .eq("favorite_user_id", favoriteUserId); // Use blocked_user_id instead of profile_id
+      const error = await deleteFavorite(userId, favoriteUserId);
 
-      if (error) {
-        console.error("Error unblocking user:", error);
-      } else {
+      if (!error) {
         // Remove the unblocked profile from the list using user_id
         favoriteProfiles.value = favoriteProfiles.value.filter(
           (profile) => profile.user_id !== favoriteUserId

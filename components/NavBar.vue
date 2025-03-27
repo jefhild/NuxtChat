@@ -1,5 +1,6 @@
 <template>
   <v-app-bar scroll-behavior="hide" scroll-threshold="61" image="/images/bkg/tiediebkg.webp" v-if="isAuthenticated">
+    
     <InactivityChecker />
 
     <v-app-bar-title class="siteTitle">
@@ -70,8 +71,6 @@ const confirmLogout = async () =>
   logoutDialog.value = false;
   router.push("/logout"); // Redirect to the logout page
 };
-
-// onMounted(async () => {});
 </script>
 
 <style scoped>

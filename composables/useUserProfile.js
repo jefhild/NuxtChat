@@ -3,7 +3,7 @@ import { ref } from "vue";
 export function useUserProfile() {
   const profile = ref(null);
   const error = ref(null); // Also track errors
-  const supabase = useSupabaseClient(); // Ensure Supabase client is initialized
+  const { getUserProfileFunctionFromId } = useDb();
 
   const fetchUserProfile = async (userId) => {
     if (!userId) {
@@ -12,25 +12,14 @@ export function useUserProfile() {
       return null; // Return null if no userId is provided
     }
 
-    const { data, error: supabaseError } = await supabase.rpc(
-      "get_user_profile",
-      {
-        p_user_id: userId,
-      }
-    );
-
-    if (supabaseError) {
-      console.error(
-        "Error fetching user profile with RPC:",
-        supabaseError.message
-      );
-      error.value = supabaseError.message;
-      return null; // Return null in case of error
-    }
+    const data = await getUserProfileFunctionFromId(userId);
 
     if (data) {
       profile.value = data[0];
       return data[0]; // Return the fetched profile
+    }else {
+      error.value = "Error fetching user profile"
+      return null; // Return null in case of error
     }
 
     return null; // In case data is undefined or empty

@@ -14,9 +14,6 @@
 </template>
 
 <script setup>
-
-
-const supabase = useSupabaseClient();
 const errorMessages = ref([]);
 const isValid = ref(false);
 
@@ -33,6 +30,7 @@ const props = defineProps({
   },
 });
 
+const { getUserFromName } = useDb();
 
 const emits = defineEmits(["updateDisplayName", "validation"]);
 
@@ -106,14 +104,7 @@ const validateDisplayName = async () => {
   }
 
   try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, displayname")
-      .eq("displayname", name);
-
-    if (error) {
-      throw error;
-    }
+    const data = await getUserFromName(name);
 
     if (data.length > 0) {
       errorMessages.value.push("Display name is already taken");

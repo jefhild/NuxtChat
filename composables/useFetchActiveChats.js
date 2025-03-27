@@ -1,7 +1,7 @@
 // composables/useFetchActiveChats.js
 
 export function useFetchActiveChats(user) {
-  const supabase = useSupabaseClient();
+  const { getActiveChats } = useDb();
   // Reactive states
   const activeChatsData = ref([]);
   const error = ref(null);
@@ -10,23 +10,21 @@ export function useFetchActiveChats(user) {
   const fetchActiveChats = async () => {
     // loading.value = true; // Set loading state to true
 
-    const response = await supabase.rpc("fetch_active_chats", {
-      logged_in_user_id: user.value?.id,
-    });
+    const data = await getActiveChats(user.value?.id);
+      
 
     // loading.value = false; // Reset loading state after the fetch
 
-    if (response.error) {
-      console.error("Error fetching active chats:", response.error);
-      error.value = response.error;
-      activeChatsData.value = []; // Clear active chats in case of error
-    } else {
+    if (data) {
       // Sort active chats so that users with unread messages are at the top
-      const sortedData = response.data.sort(
+      const sortedData = data.sort(
         (a, b) => b.unread_count - a.unread_count
       );
       activeChatsData.value = sortedData; // Set the sorted data to activeChats
       // console.log("Active chats:", sortedData);
+    } else {
+      error.value = "Failed to fetch active chats";
+      activeChatsData.value = []; // Clear active chats in case of error
     }
   };
 

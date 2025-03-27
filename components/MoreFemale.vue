@@ -78,15 +78,13 @@ import { ref, onMounted } from "vue";
 const activePanels = ref([0]);
 const femaleProfiles = ref([]);
 const profileLimit = 10;
-const supabase = useSupabaseClient();
+
+const {getRecentFemales} = useDb();
 
 // Fetch data during SSR
-const { data, error } = await supabase.rpc("get_recent_females", {
-  profile_limit: profileLimit,
-});
-if (error) {
-  console.error("Error fetching popular profiles:", error);
-} else {
+const data = await getRecentFemales(profileLimit);
+
+if (data) {
   femaleProfiles.value = data;
 }
 

@@ -130,9 +130,9 @@ const sendMessage = async () => {
 
 		site_url: `Extract a URL from user input.
       - If the input includes a request for a URL (e.g., "I want my website to be X"), extract only the URL.
-      - If the input says they don't want to share a URL, return "No URL".
+      - If the input says they don't want to share a URL, return "No URL" without the "".
       - If input contains hate speech, return an error message starting with "Error:...".
-      Otherwise, return only the valid URL or "No URL" without extra text,"", quotes, or punctuation.
+      Otherwise, return only the valid URL or "No URL" without "" or extra text, quotes, or punctuation.
       User input: ${previosUserInput.value}`,
 	};
 

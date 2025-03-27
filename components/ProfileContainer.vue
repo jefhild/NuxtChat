@@ -443,25 +443,6 @@ const gotoChat = async () => {
   }
 };
 
-// const fetchGenders = async () => {
-//   try {
-//     const { data, error } = await supabase.from("genders").select("*");
-//     if (error) throw error;
-
-//     // Check if data is null or empty and set the default value if necessary
-//     if (data && data.length > 0) {
-//       genders.value = data;
-//       // console.log("genders.value ", genders.value)
-//     } else {
-//       genders.value = defaultGenderId; // Replace with your actual default gender value
-//     }
-//   } catch (error) {
-//     console.error("Error fetching genders:", error);
-//     // Optionally set default value on error
-//     genders.value = defaultGenderId; // Replace with your actual;
-//   }
-// };
-
 const fetchGenders = async () => {
   try {
     const data = await getGenders();
@@ -571,8 +552,7 @@ const openGenerateBioDialog = async () => {
 const checkIfFinished = async () => {
   const userHasInterests = await hasInterests(userProfile.value.user_id);
 
-  isFinished.value =
-    userProfile.value.tagline && userProfile.value.site_url && userHasInterests;
+  isFinished.value = userProfile.value.tagline && userHasInterests;
   infoLeft.value = []; // Clear the array
 
   const fields = {
@@ -635,7 +615,7 @@ const handleGenderValidation = (isValid) => {
 const updateTheGender = async (newGenderId) => {
   userProfile.value.gender_id = newGenderId;
 
-  // Update Supabase only if editable
+  // Update database only if editable
   if (isEditable.value) {
     await updateGender(newGenderId, userProfile.value.user_id);
   }
@@ -683,19 +663,18 @@ const updateAge = (newAge) => {
 const toggleEditMode = async () => {
   if (isEditable.value) {
     try {
-      await updateProfile(
-        userProfile.value.displayname,
-        userProfile.value.tagline,
-        userProfile.value.gender_id,
-        userProfile.value.status_id,
-        userProfile.value.age,
-        userProfile.value.bio,
-        userProfile.value.country_id,
-        userProfile.value.state_id,
-        userProfile.value.city_id,
-        userProfile.value.avatar_url,
-        userProfile.value.site_url
-      );
+      await updateProfile( userProfile.value.user_id,
+                    userProfile.value.displayname,
+                    userProfile.value.tagline,
+                    userProfile.value.gender_id,
+                    userProfile.value.status_id,
+                    userProfile.value.age,
+                    userProfile.value.bio,
+                    userProfile.value.country_id,
+                    userProfile.value.state_id,
+                    userProfile.value.city_id,
+                    userProfile.value.avatar_url,
+                    userProfile.value.site_url);
 
       originalGenderId.value = userProfile.value.gender_id;
       originalStatusId.value = userProfile.value.status_id;
