@@ -70,7 +70,6 @@ const subscribeToNewMessages = () =>
       { event: "INSERT", schema: "public", table: "messages" },
       async (payload) =>
       {
-
         if (payload.new.receiver_id === props.userProfile.user_id)
         {
           document.title = `Chat | ImChatty (${unreadMessageCount.value})`;

@@ -487,6 +487,8 @@ export const useAuthStore = defineStore("authStore", {
     {
       await this.getRawLocationData();
       const locationData = this.userLocation;
+      console.log("locationData: ", locationData);
+      console.log("userLocation: ", this.userLocation);
 
       try
       {
@@ -494,7 +496,8 @@ export const useAuthStore = defineStore("authStore", {
         // Fetch country data
         const { data: countryData, error: countryError } = await getCountryByIsoCode(locationData.country_code);
 
-
+        console.log("locdata: ",locationData.country_code );
+        console.log("countryData: ", countryData);
         if (countryError || !countryData)
         {
           console.error("Error fetching country data:", countryError);
@@ -502,8 +505,8 @@ export const useAuthStore = defineStore("authStore", {
         }
 
         // Fetch state data
-        const { getStateByNameAndCountry } = useDb();
-        let { data: stateData, error: stateError } = await getStateByNameAndCountry(locationData.region, countryData.id);
+        const { getStateByCodeAndCountry } = useDb();
+        let { data: stateData, error: stateError } = await getStateByCodeAndCountry(locationData.region_code, countryData.id);
 
         if (stateError || !stateData)
         {
@@ -579,8 +582,8 @@ export const useAuthStore = defineStore("authStore", {
 
     async setDefaultStateData(countryId)
     {
-      const { getStateFromCountryId } = useDb();
-      const { data: randomStateData, error } = await getStateFromCountryId(countryId);
+      const { getStatesFromCountryId } = useDb();
+      const { data: randomStateData, error } = await getStatesFromCountryId(countryId);
 
       if (error || !randomStateData)
       {

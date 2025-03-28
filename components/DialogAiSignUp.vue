@@ -274,7 +274,6 @@ const validateResponse = async (index, input) => {
       const status = classifyStatus(input);
       mappedStatus.value = status;
       userResponses.value.status = input;
-      console.log("User Input Status:", userResponses.value.status);
       return { valid: true };
 
     case 4: //Bio validation
@@ -305,7 +304,6 @@ const validateResponse = async (index, input) => {
           }
 
           mappedBio.value = response.aiResponse.trim();
-          console.log("Mapped Bio:", mappedBio.value);
           return { valid: true };
         }
       } catch (error) {
@@ -357,10 +355,11 @@ const sendMessage = async () => {
       validation.error,
       questions.value[currentQuestionIndex.value]
     );
-    userInput.value = ""; // Clear input for retry
-    showUserBubble.value = false;
     isLoading.value = false;
     isTyping.value = false;
+    showUserBubble.value = false;
+    userInputValue.value = userInput.value.trim(); // Store user input
+    userInput.value = ""; // Clear input for the next question
     return;
   }
 

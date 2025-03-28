@@ -11,7 +11,7 @@ export const useDb = () =>
     const { data, error } = await supabase
       .from("countries")
       .select("*")
-      .eq("iso2", locationData.country_code)
+      .eq("iso2", isoCode)
       .single();
 
     return { data, error };
@@ -24,11 +24,11 @@ export const useDb = () =>
     return data;
   };
 
-  const getStateByNameAndCountry = async (regionName, countryId) => {
+  const getStateByCodeAndCountry = async (regionCode, countryId) => {
     const { data , error } = await supabase
       .from("states")
       .select("*")
-      .eq("name", regionName)
+      .eq("state_code", regionCode)
       .eq("country_id", countryId)
       .single();
 
@@ -938,6 +938,29 @@ export const useDb = () =>
     return true;
   };
 
+  const hasUsername = async (userId) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("user_id", userId)
+      .single();
+
+    console.log("Checking username:", data);
+
+    if (error)
+    {
+      console.error("Error fetching username:", error);
+      return false;
+    }
+
+    if (!data || data.length === 0)
+    {
+      return false;
+    }
+
+    return true;
+
+  };
   const upvoteUserProfile = async (targetUserId, voterUserId) =>{
     const { error } = await supabase.rpc("upvote_profile", {
       target_user_id: targetUserId,
@@ -1129,7 +1152,7 @@ export const useDb = () =>
   return {
     getCountryByIsoCode,
     getCountries,
-    getStateByNameAndCountry,
+    getStateByCodeAndCountry,
     getStatesFromCountryId,
     getStatesFromCountryName,
     getCityByNameAndState,
@@ -1199,6 +1222,7 @@ export const useDb = () =>
 
     checkDisplayNameExists,
     hasInterests,
+    hasUsername,
     upvoteUserProfile,
     downvoteUserProfile,
     uploadProfilePhoto,

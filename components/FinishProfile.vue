@@ -247,7 +247,10 @@ onMounted(() => {
 		tagline: "Your tagline is a short phrase that represents you. It could be a quote, a fun fact, or a quick description of who you are. What would you like yours to be?",
 		interests: "What brings you to this website? Are you here to chat, make new friends?",
 		site_url: "If you have a personal website or social profile you'd like to share, enter the link below.",
+		provider: "Enter an email address to register your account and have full access to the site.",
 	};
+
+	console.log("infoLeft: ", infoLeft);
 
 	infoLeft.forEach((key) =>
 	{
