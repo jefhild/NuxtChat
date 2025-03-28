@@ -2,8 +2,6 @@
 import { defineStore } from "pinia";
 import { useUserProfile } from "~/composables/useUserProfile";
 
-const { getUserFromName, authGetUser, authGetSession, signInAnonymously, signInWithOAuth, linkIdentity, authMarkUserAsAnonymous } = useDb();
-
 export const useAuthStore = defineStore("authStore", {
   state: () => ({
     user: null,
@@ -19,6 +17,7 @@ export const useAuthStore = defineStore("authStore", {
   actions: {
     async checkAuth()
     {
+      const {authGetUser} = useDb();
       const { data, error } = await authGetUser();
       // console.log("inside checkAuth - user: ", data);
 
@@ -35,6 +34,7 @@ export const useAuthStore = defineStore("authStore", {
 
     async checkAuthEmail()
     {
+      const { authGetUser } = useDb();
       const { data, error } = await authGetUser();
       // console.log("inside checkAuth - user: ", data);
 
@@ -61,6 +61,7 @@ export const useAuthStore = defineStore("authStore", {
       bio
     })
     {
+      const { authGetUser} = useDb();
 
       try
       {
@@ -78,6 +79,7 @@ export const useAuthStore = defineStore("authStore", {
           this.setUser(currentUser.user);
         } else
         {
+          const { signInAnonymously } = useDb();
           // Step 2: If no authenticated user, create an anonymous user
           const { data: userData, error: userError } = await signInAnonymously();
 
@@ -90,8 +92,8 @@ export const useAuthStore = defineStore("authStore", {
           if (userData.user)
           {
             this.setUser(userData.user);
+            const { authMarkUserAsAnonymous } = useDb();
             authMarkUserAsAnonymous();
-            // await this.trackPresence(userData.user.id);
           }
         }
 
@@ -131,7 +133,6 @@ export const useAuthStore = defineStore("authStore", {
       bio
     })
     {
-
       try
       {
         // Try creating the user profile
@@ -151,6 +152,7 @@ export const useAuthStore = defineStore("authStore", {
         {
           console.error("Display Name already exists:", displayName);
 
+          const { getUserFromName } = useDb();
           // Step 5: Fetch the existing profile with the display name
           const { data: existingProfile } = await getUserFromName(displayName); 
           
@@ -180,12 +182,14 @@ export const useAuthStore = defineStore("authStore", {
 
     async checkAuthGoogle()
     {
+      const { authGetSession } = useDb();
       const { data: sessionData, error: sessionError } = await authGetSession();
 
       if (!sessionData?.session)
       {
         console.log("No active session. Initiating Google OAuth...");
 
+        const { signInWithOAuth } = useDb();
         // Redirect to Google's OAuth
         await signInWithOAuth("google", `/login`);
         // Execution stops here due to redirection
@@ -194,6 +198,7 @@ export const useAuthStore = defineStore("authStore", {
 
       console.log("Session detected. Linking Google identity...");
 
+      const { linkIdentity } = useDb();
       const { data, error } = await linkIdentity("google",`/login`);
 
       if (error)
@@ -209,6 +214,7 @@ export const useAuthStore = defineStore("authStore", {
         return;
       }
 
+      const { authGetUser } = useDb();
       // If no redirect occurs (unlikely but possible), continue here
       const { data: userData, error: userError } = await authGetUser();
 
@@ -239,8 +245,6 @@ export const useAuthStore = defineStore("authStore", {
 
     async updateUserProfileAfterLinking({ email, provider })
     {
-      const supabase = useSupabaseClient();
-
       if (!this.user?.id || !this.userProfile)
       {
         console.error("No user or userProfile found for updating profile.");
@@ -249,20 +253,10 @@ export const useAuthStore = defineStore("authStore", {
 
       try
       {
+        const { updateUsername, updateProvider } = useDb();
         // Perform a partial update to avoid overwriting existing profile data
-        const { error } = await supabase
-          .from("profiles")
-          .update({
-            username: email, // Update the email/username
-            provider, // Update the provider
-          })
-          .eq("user_id", this.user.id);
-
-        if (error)
-        {
-          console.error("Error updating user profile with Google data:", error);
-          throw error;
-        }
+        await updateUsername(email, this.user.id,);
+        await updateProvider(provider, this.user.id,);
 
         console.log("User profile updated successfully with Google data.");
       } catch (error)
@@ -274,14 +268,9 @@ export const useAuthStore = defineStore("authStore", {
 
     async checkAuthFacebook()
     {
-      const supabase = useSupabaseClient();
+      const { signInWithOAuth } = useDb();
       // console.log("inside checkAuthGoogle - displayName: ");
-      const { data: userData, error } = await supabase.auth.signInWithOAuth({
-        provider: "facebook",
-        options: {
-          redirectTo: `https://imchatty.com/loginfacebook`,
-        },
-      });
+      await signInWithOAuth("facebook", `/loginfacebook`);
       // console.log("checkAuthFacebook - userData: ", userData);
       // console.log("checkAuthFacebook - error: ", error);
     },
@@ -316,8 +305,7 @@ export const useAuthStore = defineStore("authStore", {
 
     async fetchUserProfileGoogle()
     {
-      const supabase = useSupabaseClient();
-
+      const { authGetUser } = useDb();
       // Fetch the authenticated user
       const { data: userData, error: userError } = await authGetUser();
 
@@ -336,13 +324,8 @@ export const useAuthStore = defineStore("authStore", {
       this.user = userData.user;
 
       // Fetch the user profile
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          "*, genders(id, name), regions(id,name), subregions(id,name), countries(id,name), states(id,name), cities(id,name)"
-        )
-        .eq("user_id", this.user.id)
-        .single();
+      const { getUserProfileFromId } = useDb();
+      const { data, error } = await getUserProfileFromId(this.user.id);
 
       if (error)
       {
@@ -353,13 +336,7 @@ export const useAuthStore = defineStore("authStore", {
             await this.createUserProfile();
 
             // Fetch the profile again after creation
-            const { data: newProfile, error: newProfileError } = await supabase
-              .from("profiles")
-              .select(
-                "*, genders(id, name), regions(id,name), subregions(id,name), countries(id,name), states(id,name), cities(id,name)"
-              )
-              .eq("user_id", this.user.id)
-              .single();
+            const { data: newProfile, error: newProfileError } = await getUserProfileFromId(this.user.id);
 
             if (newProfileError)
             {
@@ -384,10 +361,10 @@ export const useAuthStore = defineStore("authStore", {
         this.userProfile = data;
       }
     },
+
     async fetchUserProfileFacebook()
     {
-      const supabase = useSupabaseClient();
-
+      const { authGetUser } = useDb();
       // Fetch the authenticated user
       const { data: userData, error: userError } = await authGetUser();
 
@@ -406,13 +383,8 @@ export const useAuthStore = defineStore("authStore", {
       this.user = userData.user;
 
       // Fetch the user profile
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          "*, genders(id, name), regions(id,name), subregions(id,name), countries(id,name), states(id,name), cities(id,name)"
-        )
-        .eq("user_id", this.user.id)
-        .single();
+      const { getUserProfileFromId } = useDb();
+      const { data, error } = await getUserProfileFromId(this.user.id);
 
       if (error)
       {
@@ -423,13 +395,7 @@ export const useAuthStore = defineStore("authStore", {
             await this.createUserProfile();
 
             // Fetch the profile again after creation
-            const { data: newProfile, error: newProfileError } = await supabase
-              .from("profiles")
-              .select(
-                "*, genders(id, name), regions(id,name), subregions(id,name), countries(id,name), states(id,name), cities(id,name)"
-              )
-              .eq("user_id", this.user.id)
-              .single();
+            const { data: newProfile, error: newProfileError } = await getUserProfileFromId(this.user.id);
 
             if (newProfileError)
             {
@@ -468,13 +434,8 @@ export const useAuthStore = defineStore("authStore", {
       // this.user = userData.user;
 
       // Fetch the user profile
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          "*, genders(id, name), regions(id,name), subregions(id,name), countries(id,name), states(id,name), cities(id,name)"
-        )
-        .eq("user_id", userId)
-        .single();
+      const { getUserProfileFromId } = useDb();
+      const { data, error } = await getUserProfileFromId(userId);
 
       // console.log("profile data: ", data);
 
@@ -487,13 +448,7 @@ export const useAuthStore = defineStore("authStore", {
             await this.createUserProfile();
 
             // Fetch the profile again after creation
-            const { data: newProfile, error: newProfileError } = await supabase
-              .from("profiles")
-              .select(
-                "*, genders(id, name), regions(id,name), subregions(id,name), countries(id,name), states(id,name), cities(id,name)"
-              )
-              .eq("user_id", this.user.id)
-              .single();
+            const { data: newProfile, error: newProfileError } = await getUserProfileFromId(userId);
 
             if (newProfileError)
             {
@@ -530,19 +485,19 @@ export const useAuthStore = defineStore("authStore", {
       bio
     })
     {
-      const supabase = useSupabaseClient();
       await this.getRawLocationData();
       const locationData = this.userLocation;
+      console.log("locationData: ", locationData);
+      console.log("userLocation: ", this.userLocation);
 
       try
       {
+        const { getCountryByIsoCode } = useDb();
         // Fetch country data
-        const { data: countryData, error: countryError } = await supabase
-          .from("countries")
-          .select("*")
-          .eq("iso2", locationData.country_code)
-          .single();
+        const { data: countryData, error: countryError } = await getCountryByIsoCode(locationData.country_code);
 
+        console.log("locdata: ",locationData.country_code );
+        console.log("countryData: ", countryData);
         if (countryError || !countryData)
         {
           console.error("Error fetching country data:", countryError);
@@ -550,12 +505,8 @@ export const useAuthStore = defineStore("authStore", {
         }
 
         // Fetch state data
-        let { data: stateData, error: stateError } = await supabase
-          .from("states")
-          .select("*")
-          .eq("name", locationData.region)
-          .eq("country_id", countryData.id)
-          .single();
+        const { getStateByCodeAndCountry } = useDb();
+        let { data: stateData, error: stateError } = await getStateByCodeAndCountry(locationData.region_code, countryData.id);
 
         if (stateError || !stateData)
         {
@@ -564,12 +515,8 @@ export const useAuthStore = defineStore("authStore", {
         }
 
         // Fetch city data
-        let { data: cityData, error: cityError } = await supabase
-          .from("cities")
-          .select("*")
-          .eq("name", locationData.city)
-          .eq("state_id", stateData ? stateData.id : null)
-          .single();
+        const { getCityByNameAndState } = useDb();
+        let { data: cityData, error: cityError } = await getCityByNameAndState(locationData.city, stateData ? stateData.id : null);
 
         if (cityError || !cityData)
         {
@@ -577,30 +524,12 @@ export const useAuthStore = defineStore("authStore", {
           cityData = await this.setDefaultCityData(countryData.id);
         }
 
-
-
         // Insert user profile data
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert([
-            {
-              gender_id: selectedGender,
-              status_id: selectedStatus,
-              age: age,
-              country_id: countryData.id,
-              state_id: stateData ? stateData.id : null,
-              city_id: cityData ? cityData.id : null,
-              username: this.user ? this.user.email : null,
-              avatar_url: avatarUrl,
-              user_id: this.user.id,
-              provider: "anonymous",
-              displayname: displayName,
-              ip: locationData.ip,
-              site_url: null,
-              bio: bio,
-            },
-          ])
-          .single();
+        const { insertProfile } = useDb();
+        const { error: profileError } = await insertProfile(
+          selectedGender, selectedStatus, age, countryData.id, stateData ? stateData.id : null, cityData ? cityData.id : null,
+          this.user ? this.user.email : null, avatarUrl, this.user.id, "anonymous", displayName, locationData.ip, null, bio
+        ); 
 
         if (profileError)
         {
@@ -610,40 +539,16 @@ export const useAuthStore = defineStore("authStore", {
 
         // console.log("lookingForIds: ", userLookingForIds);
         // Insert userLookingForIds into user_looking_for table
-        const lookingForInserts = userLookingForIds.map((lookingForId) => ({
-          user_id: this.user.id,
-          looking_for_id: lookingForId,
-        }));
-        const { error: lookingForError } = await supabase
-          .from("user_looking_for")
-          .insert(lookingForInserts);
-
-        if (lookingForError)
-        {
-          console.error(
-            "Error inserting into user_looking_for:",
-            lookingForError
-          );
-          throw lookingForError;
-        }
+        const { insertUserInterest } = useDb();
+        userLookingForIds.forEach(async (lookingForId) => {
+          await insertUserInterest(this.user.id, lookingForId);
+        });
 
         // Insert userDescriptionIds into user_descriptions table
-        const descriptionInserts = userDescriptionIds.map((descriptionId) => ({
-          user_id: this.user.id,
-          descriptions_id: descriptionId,
-        }));
-        const { error: descriptionError } = await supabase
-          .from("user_descriptions")
-          .insert(descriptionInserts);
-
-        if (descriptionError)
-        {
-          console.error(
-            "Error inserting into user_descriptions:",
-            descriptionError
-          );
-          throw descriptionError;
-        }
+        const { insertUserDescription } = useDb();
+        userDescriptionIds.forEach(async (descriptionId) => {
+          await insertUserDescription(this.user.id, descriptionId);
+        });
 
         console.log("User profile and preferences created successfully");
       } catch (err)
@@ -677,13 +582,8 @@ export const useAuthStore = defineStore("authStore", {
 
     async setDefaultStateData(countryId)
     {
-      const supabase = useSupabaseClient();
-      const { data: randomStateData, error } = await supabase
-        .from("states")
-        .select("*")
-        .eq("country_id", countryId)
-        .limit(1)
-        .single();
+      const { getStatesFromCountryId } = useDb();
+      const { data: randomStateData, error } = await getStatesFromCountryId(countryId);
 
       if (error || !randomStateData)
       {
@@ -700,12 +600,8 @@ export const useAuthStore = defineStore("authStore", {
 
     async setDefaultCityData(countryId)
     {
-      const supabase = useSupabaseClient();
-      const { data: randomCityData, error } = await supabase
-        .from("cities")
-        .select("*")
-        .eq("country_id", countryId)
-        .limit(1);
+      const { getCitiesFromCountryId } = useDb();
+      const { data: randomCityData, error } = await getCitiesFromCountryId(countryId);
 
       if (error || !randomCityData || randomCityData.length === 0)
       {
@@ -736,133 +632,13 @@ export const useAuthStore = defineStore("authStore", {
       }
     },
 
-    async updateUserProfile(updates)
-    {
-      const supabase = useSupabaseClient();
-
-      // Sanitize updates to only include valid columns
-      const validKeys = ["bio", "gender_id", "avatar_url"]; // Add all the valid column names here
-      const sanitizedUpdates = Object.keys(updates)
-        .filter((key) => validKeys.includes(key))
-        .reduce((obj, key) =>
-        {
-          obj[key] = updates[key];
-          return obj;
-        }, {});
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .update(sanitizedUpdates)
-        .eq("id", this.userProfile.id);
-
-      if (error)
-      {
-        console.error("Error updating user profile:", error);
-      } else
-      {
-        this.userProfile = { ...this.userProfile, ...sanitizedUpdates };
-        // console, log("authStore.updateUserProfile:", this.userProfile);
-      }
-    },
-
-    async trackPresence(userId)
-    {
-      this.updatePresence(userId, "online")
-
-      // not sure about this...
-      window.addEventListener("beforeunload", () =>
-        this.updatePresence(userId, "offline")
-      );
-
-      this.inactivityCheckInterval = setInterval(() =>
-        this.checkInactivityForAllUsers(),
-        1800000
-      );
-    },
-
-    async updatePresence(userId, status)
-    {
-      //console.log("updatepresence : ");
-      //console.log("status : ",status);
-      const supabase = useSupabaseClient();
-      const { error } = await supabase
-        .from("presence")
-        .upsert({ user_id: userId, status, last_active: new Date() });
-
-      if (error) console.error("Error updating presence:", error);
-    },
-
-    async fetchLastActive(userId)
-    {
-      const supabase = useSupabaseClient();
-      const { data, error } = await supabase
-        .from("presence")
-        .select("last_active")
-        .eq("user_id", userId)
-        .single();
-
-      if (error)
-      {
-        console.error("Error fetching last active time:", error.message);
-        return null;
-      }
-      return data.last_active;
-    },
-
-    async stopTracking()
-    {
-      if (this.inactivityCheckInterval)
-      {
-        clearInterval(this.inactivityCheckInterval);
-      }
-    },
-
-    async checkInactivityForAllUsers()
-    {
-      console.log("checking inactivity for ALL users")
-      const supabase = useSupabaseClient();
-
-      // Get all online users
-      const { data: onlineUsers, error } = await supabase
-        .from("presence")
-        .select("user_id, last_active")
-        .eq("status", "online");
-
-      if (error)
-      {
-        console.error("Error fetching online users:", error);
-        return;
-      }
-
-      const now = new Date();
-
-      for (const user of onlineUsers)
-      {
-        const lastActiveDate = new Date(user.last_active);
-        lastActiveDate.setHours(lastActiveDate.getHours() + 1);
-        const timeDifference = (now - lastActiveDate) / 1000; // Convert to seconds
-
-        //console.log("now", now);
-        //console.log("lastactive", lastActiveDate);
-        //console.log("timedfference", timeDifference)
-        //console.log("checkinactivityallusers");
-        //30 minutes 
-        if (timeDifference > 1800)
-        {
-          await this.updatePresence(user.user_id, "offline");
-        }
-      }
-    },
-
     async logout()
     {
       console.log("logout");
-      if (this.user)
-      {
-        await this.updatePresence(this.user.id, "offline");
-      }
-      const supabase = useSupabaseClient();
-      const { error } = await supabase.auth.signOut();
+      const { updatePresence } = useDb();
+      await updatePresence(this.user.id, "offline");
+      const { authSignOut } = useDb();
+      const { error } = authSignOut;
       if (error)
       {
         console.error("Error during logout:", error.message);
@@ -873,7 +649,6 @@ export const useAuthStore = defineStore("authStore", {
         this.clearCookies();
       }
     },
-
     setUser(user)
     {
       this.user = user;

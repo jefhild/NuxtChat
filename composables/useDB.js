@@ -1,10 +1,21 @@
 export const useDb = () =>
 {
   const supabase = useSupabaseClient();
+  let inactivityCheckInterval = null;
 
   /*---------------*/
   /* Get functions */
   /*---------------*/
+
+  const getCountryByIsoCode = async (isoCode) => {
+    const { data, error } = await supabase
+      .from("countries")
+      .select("*")
+      .eq("iso2", isoCode)
+      .single();
+
+    return { data, error };
+  };
 
   const getCountries = async () => {
     const { data, error } = await supabase.from("countries").select("*");
@@ -13,8 +24,29 @@ export const useDb = () =>
     return data;
   };
 
+  const getStateByCodeAndCountry = async (regionCode, countryId) => {
+    const { data , error } = await supabase
+      .from("states")
+      .select("*")
+      .eq("state_code", regionCode)
+      .eq("country_id", countryId)
+      .single();
 
-  const getStates = async(country) => {
+    return { data, error };
+  };
+
+  const getStatesFromCountryId = async (countryId) => {
+    const { data , error } = await supabase
+      .from("states")
+      .select("*")
+      .eq("country_id", countryId)
+      .limit(1)
+      .single();
+
+    return { data, error };
+  };
+
+  const getStatesFromCountryName = async(country) => {
     const { data, error } = await supabase
       .from("states")
       .select("*")
@@ -24,6 +56,26 @@ export const useDb = () =>
     return data;
   };
 
+  const getCitiesFromCountryId = async (countryId) => {
+    const { data , error } = await supabase
+      .from("cities")
+      .select("*")
+      .eq("country_id", countryId)
+      .limit(1);
+
+    return { data, error };
+  };
+
+  const getCityByNameAndState = async (cityName, stateId) => {
+    const { data, error } = await supabase
+      .from("cities")
+      .select("*")
+      .eq("name", cityName)
+      .eq("state_id", stateId)
+      .single();
+
+    return { data, error };
+  };
 
   const getCities = async (state) => {
     const { data, error } = await supabase
@@ -190,6 +242,18 @@ export const useDb = () =>
   };
 
   const getUserProfileFromId = async (userId) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select(
+        "*, genders(id, name), regions(id,name), subregions(id,name), countries(id,name), states(id,name), cities(id,name)"
+      )
+      .eq("user_id", userId)
+      .single();
+
+      return { data, error };
+  };
+
+  const getUserProfileFunctionFromId = async (userId) => {
     const { data, error } = await supabase.rpc(
       "get_user_profile",
       {
@@ -436,6 +500,34 @@ export const useDb = () =>
   /* Update functions */
   /*------------------*/
 
+  const updateUsername = async (username, userId) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        username: username, // Update the email/username
+      })
+      .eq("user_id", userId);
+
+    if (error)
+    {
+      console.error("Error updating status:", error);
+    }
+  };
+
+  const updateProvider = async (provider, userId) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        provider: provider, // Update the email/username
+      })
+      .eq("user_id", userId);
+
+    if (error)
+    {
+      console.error("Error updating status:", error);
+    }
+  };
+
   const updateBio = async (bio, userId) => {
     const { error } = await supabase
       .from("profiles")
@@ -580,10 +672,48 @@ export const useDb = () =>
     }
   };
 
+  const updatePresence = async  (userId, status) => {
+    const { error } = await supabase
+      .from("presence")
+      .upsert({ user_id: userId, status, last_active: new Date() });
+
+    if (error) console.error("Error updating presence:", error);
+  };
+
 
   /*------------------*/
   /* Insert functions */
   /*------------------*/
+
+  const insertProfile = async (genderId, statusId, age, countryId, stateId, cityId, username, avatarUrl, userId, provider, displayname, ip, siteUrl, bio) => {
+    const { error } = await supabase
+      .from("profiles")
+      .insert([
+        {
+          gender_id: genderId,
+          status_id: statusId,
+          age: age,
+          country_id: countryId,
+          state_id: stateId,
+          city_id: cityId,
+          username: username,
+          avatar_url: avatarUrl,
+          user_id: userId,
+          provider: provider,
+          displayname: displayname,
+          ip: ip,
+          site_url: siteUrl,
+          bio: bio,
+        },
+      ])
+      .single();
+
+    if (error)
+    {
+      console.error("Error inserting profile:", error);
+    } 
+      return error;
+  };
 
   const insertMessage = async (receiverId, senderId, message) =>{
     const { data, error } = await supabase
@@ -664,6 +794,20 @@ export const useDb = () =>
     if (error)
     {
       console.error("Error inserting user interest:", error);
+    }
+
+    return error;
+  };
+
+  const insertUserDescription = async (userId, descriptionId) => {
+    const { error } = await supabase.from("user_descriptions").insert({
+      user_id: userId,
+      descriptions_id: descriptionId,
+    });
+
+    if (error)
+    {
+      console.error("Error inserting description:", error);
     }
 
     return error;
@@ -794,6 +938,29 @@ export const useDb = () =>
     return true;
   };
 
+  const hasUsername = async (userId) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("user_id", userId)
+      .single();
+
+    console.log("Checking username:", data);
+
+    if (error)
+    {
+      console.error("Error fetching username:", error);
+      return false;
+    }
+
+    if (!data || data.length === 0)
+    {
+      return false;
+    }
+
+    return true;
+
+  };
   const upvoteUserProfile = async (targetUserId, voterUserId) =>{
     const { error } = await supabase.rpc("upvote_profile", {
       target_user_id: targetUserId,
@@ -827,7 +994,65 @@ export const useDb = () =>
       .upload(filePath, file, { upsert: true });
 
     return error;
-  }
+  };
+
+  const checkInactivityForAllUsers = async () =>
+  {
+    console.log("checking inactivity for ALL users")
+
+    // Get all online users
+    const { data: onlineUsers, error } = await supabase
+      .from("presence")
+      .select("user_id, last_active")
+      .eq("status", "online");
+
+    if (error)
+    {
+      console.error("Error fetching online users:", error);
+      return;
+    }
+
+    const now = new Date();
+
+    for (const user of onlineUsers)
+    {
+      const lastActiveDate = new Date(user.last_active);
+      lastActiveDate.setHours(lastActiveDate.getHours() + 1);
+      const timeDifference = (now - lastActiveDate) / 1000; // Convert to seconds
+
+      //console.log("now", now);
+      //console.log("lastactive", lastActiveDate);
+      //console.log("timedfference", timeDifference)
+      //console.log("checkinactivityallusers");
+      //30 minutes 
+      if (timeDifference > 1800)
+      {
+        await updatePresence(user.user_id, "offline");
+      }
+    }
+  };
+
+  const trackPresence = async (userId) => {
+    await updatePresence(userId, "online");
+
+    // not sure about this...
+    window.addEventListener("beforeunload", async () =>
+      await updatePresence(userId, "offline")
+    );
+
+    inactivityCheckInterval = setInterval(async() =>
+      await checkInactivityForAllUsers(),
+      1800000 // 30 minutes
+    );
+  };
+
+  const stopTracking = async () => 
+  {
+    if (inactivityCheckInterval)
+    {
+      clearInterval(inactivityCheckInterval);
+    }
+  };
 
   /*----------------*/
   /* Auth functions */
@@ -835,14 +1060,12 @@ export const useDb = () =>
   /*Get*/
   const authGetUser = async () => {
     //console.log("Getting user");
-    const supabase = useSupabaseClient();
     const { data, error } = await supabase.auth.getUser();
 
     return { data, error };
   }
 
   const authGetSession = async () => {
-    const supabase = useSupabaseClient();
     const { data , error } =
       await supabase.auth.getSession();
 
@@ -853,7 +1076,6 @@ export const useDb = () =>
   const authUpdateProfile = async (deleteMe, deleteRequestedAt) =>
   {
     //console.log("Updating user metadata");
-    const supabase = useSupabaseClient();
     const { data, error } = await supabase.auth.updateUser({
       data: { delete_me: deleteMe, delete_requested_at: deleteRequestedAt },
     });
@@ -870,9 +1092,17 @@ export const useDb = () =>
 
 
   /*Others*/
+  const authSignOut = async () => {
+    console.log("auth Signing out");
+    const { error } = await supabase.auth.signOut();
+    if (error){
+      console.error("Error signing out:", error);
+    }
+    return { error };
+  };
+
   const signInWithOtp = async (email) =>
   {
-    const supabase = useSupabaseClient();
     const { error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
@@ -886,14 +1116,12 @@ export const useDb = () =>
 
   const signInAnonymously = async () => {
     //console.log("Signing in anonymously");
-    const supabase = useSupabaseClient();
     const { data , error } = await supabase.auth.signInAnonymously();
 
     return { data, error };
   };
 
   const signInWithOAuth = async (provider, redirectTo) => {
-    const supabase = useSupabaseClient();
     await supabase.auth.signInWithOAuth({
       provider: provider,
       options: {
@@ -903,7 +1131,6 @@ export const useDb = () =>
   }; 
 
   const linkIdentity = async (provider, redirectTo) => {
-    const supabase = useSupabaseClient();
     const { data, error } = await supabase.auth.linkIdentity({
       provider: provider,
       options: {
@@ -916,7 +1143,6 @@ export const useDb = () =>
 
   const authMarkUserAsAnonymous = async () => {
     //console.log("Marking user as anonymous");
-    const supabase = useSupabaseClient();
     await supabase.auth.updateUser({
       user_metadata: { isAnonymous: true },
     });
@@ -924,8 +1150,13 @@ export const useDb = () =>
 
 
   return {
+    getCountryByIsoCode,
     getCountries,
-    getStates,
+    getStateByCodeAndCountry,
+    getStatesFromCountryId,
+    getStatesFromCountryName,
+    getCityByNameAndState,
+    getCitiesFromCountryId,
     getCities,
     getUserStatus,
     getStatuses,
@@ -940,6 +1171,7 @@ export const useDb = () =>
     getDescriptions,
     getUserFromName,
     getUserProfileFromId,
+    getUserProfileFunctionFromId,
     getUserProfilePhoto,
     getRegisteredUsersIds,
     getAllUsersIdsWithoutAvatar,
@@ -959,6 +1191,8 @@ export const useDb = () =>
     getActiveChats,
     getUserUpvotedProfiles,
 
+    updateUsername,
+    updateProvider,
     updateBio,
     updateStatus,
     updateGender,
@@ -969,13 +1203,16 @@ export const useDb = () =>
     updateProfile,
     updateMessagesAsRead,
     updateAIInteractionCount,
+    updatePresence,
 
+    insertProfile,
     insertMessage,
     insertFeedback,
     insertBlockedUser,
     insertInteractionCount,
     insertFavorite,
     insertUserInterest,
+    insertUserDescription,
 
     deleteChatWithUser,
     deleteFavorite,
@@ -985,13 +1222,18 @@ export const useDb = () =>
 
     checkDisplayNameExists,
     hasInterests,
+    hasUsername,
     upvoteUserProfile,
     downvoteUserProfile,
     uploadProfilePhoto,
+    trackPresence,
+    stopTracking,
+    checkInactivityForAllUsers,
 
     authGetUser,
     authGetSession,
     authUpdateProfile,
+    authSignOut,
     signInWithOtp,
     signInAnonymously,
     signInWithOAuth,

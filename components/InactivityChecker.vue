@@ -12,7 +12,8 @@ const resetInactivityTimer = async () =>
 { 
   if (authStore.user)
   {
-    await authStore.updatePresence(authStore.user.id, "online");
+    const { updatePresence } = useDb();
+    await updatePresence(authStore.user.id, "online");
   }
 };
 
@@ -25,21 +26,24 @@ const initializeInactivityTimer = () =>
   window.addEventListener("scroll", resetInactivityTimer);
 };
 
-onMounted(() =>
+onMounted(async () =>
 {
   initializeInactivityTimer();
   if (authStore.user?.id)
   {
-    authStore.trackPresence(authStore.user.id);
+    const { trackPresence } = useDb();
+    await trackPresence(authStore.user.id);
   }
 });
 
-onUnmounted(() =>
+onUnmounted(async () =>
 {
   window.removeEventListener("mousemove", resetInactivityTimer);
   window.removeEventListener("keydown", resetInactivityTimer);
   window.removeEventListener("click", resetInactivityTimer);
   window.removeEventListener("scroll", resetInactivityTimer);
-  authStore.stopTracking();
+
+  const { stopTracking } = useDb();
+  await stopTracking();
 });
 </script>

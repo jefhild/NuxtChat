@@ -3,7 +3,7 @@ import { ref } from "vue";
 export function useUserProfile() {
   const profile = ref(null);
   const error = ref(null); // Also track errors
-  const { getUserProfileFromId } = useDb();
+  const { getUserProfileFunctionFromId } = useDb();
 
   const fetchUserProfile = async (userId) => {
     if (!userId) {
@@ -12,7 +12,7 @@ export function useUserProfile() {
       return null; // Return null if no userId is provided
     }
 
-    const data = await getUserProfileFromId(userId);
+    const data = await getUserProfileFunctionFromId(userId);
 
     if (data) {
       profile.value = data[0];
