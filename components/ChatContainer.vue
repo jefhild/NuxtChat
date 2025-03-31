@@ -25,7 +25,7 @@
           v-if="!showAIUsers"
           @user-selected="selectUser"
           :onlineUsers="arrayOnlineUsers"
-          :offlineUsers="offlineUsers"
+          :offlineUsers="arrayOfflineUsers"
           :activeChats="activeChats"
           :userProfile="userProfile"
           :updateFilters="updateFilters"
@@ -136,7 +136,6 @@ const selectedUser = ref(null);
 const chatContainer = ref(null);
 const messages = ref([]); // Reactive state
 const aiUsers = ref([]);
-const offlineUsers = ref([]);
 const activeChats = ref([]);
 const filters = ref({ gender_id: null });
 let realtimeMessages = null;
@@ -148,7 +147,7 @@ const showAIUsers = ref(false); // State to toggle between Users and UsersAI
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
-const { offlineData, fetchOfflineUsers } = useFetchOfflineUsers(user);
+const { arrayOfflineUsers, fetchOfflineUsers } = useFetchOfflineUsers(user);
 const { activeChatsData, fetchActiveChats } = useFetchActiveChats(user);
 const { blockedUsers, loadBlockedUsers } = useBlockedUsers(user);
 
@@ -260,6 +259,7 @@ watch(() => presenceStore.onlineUsers, async (newVal) =>
   }
 
   await fetchOnlineUsers(filters.value, presenceStore.onlineUsers, userProfile.value.user_id);
+  await fetchOfflineUsers(filters.value, presenceStore.onlineUsers, userProfile.value.user_id);
 });
 
 onMounted(async () => {
@@ -268,7 +268,6 @@ onMounted(async () => {
   userProfile.value = authStore.userProfile;
   showAIUsers.value = route.query.user === "ai";
   fetchAiUsers(filters.value);
-  fetchOfflineUsers(filters.value);
   fetchActiveChats();
 
   // await loadBlockedUsers();
@@ -535,21 +534,15 @@ const updateFilters = async (newFilters) => {
   // console.log("Filters updated:", newFilters); // Debug log
   filters.value = newFilters;
   fetchAiUsers(filters.value);
-  fetchOfflineUsers(filters.value);
   fetchActiveChats();
 };
 
-// Watch the data from composable and update onlineUsers
+// Watch the data from composable 
 watch(aiData, (newData) => {
   aiUsers.value = newData;
 });
 
-// Watch the data from composable and update onlineUsers
-watch(offlineData, (newData) => {
-  offlineUsers.value = newData;
-});
-
-// Watch the data from composable and update onlineUsers
+// Watch the data from composable
 watch(activeChatsData, (newData) => {
   activeChats.value = newData;
 });
@@ -557,7 +550,6 @@ watch(activeChatsData, (newData) => {
 const refreshData = async () => {
   // console.log("refreshData"); // Debug log
   fetchAiUsers(filters.value);
-  fetchOfflineUsers(filters.value);
   fetchActiveChats();
 };
 </script>

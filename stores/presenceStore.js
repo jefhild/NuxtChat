@@ -12,6 +12,7 @@ export const usePresenceStore = defineStore('presenceStore', {
     {
       // console.log("Setting online users in store:", users);
       this.onlineUsers = users;
+      console.log("Online users in store:", this.onlineUsers);
     },
 
     triggerPresenceChange()

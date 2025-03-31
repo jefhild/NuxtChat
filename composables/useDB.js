@@ -307,8 +307,7 @@ export const useDb = () =>
     const { data , error } = await supabase
       .from("profiles")
       .select("user_id")
-      .neq("avatar_url", "")
-      .neq("provider", "anonymous");
+      .neq("username", "");
 
       return { data, error};
   };  
