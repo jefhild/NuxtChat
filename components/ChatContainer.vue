@@ -24,7 +24,7 @@
         <Users
           v-if="!showAIUsers"
           @user-selected="selectUser"
-          :onlineUsers="onlineUsers"
+          :onlineUsers="arrayOnlineUsers"
           :offlineUsers="offlineUsers"
           :activeChats="activeChats"
           :userProfile="userProfile"
@@ -116,10 +116,11 @@
 import { ref, watch, onMounted, nextTick } from "vue";
 const route = useRoute();
 const router = useRouter();
+import { usePresenceStore } from '@/stores/presenceStore';
 import { useAuthStore } from "@/stores/authStore";
 import { useFetchAiUsers } from "@/composables/useFetchAiUsers";
-import { useFetchOnlineUsers } from "@/composables/useFetchOnlineUsers";
 import { useFetchOfflineUsers } from "@/composables/useFetchOfflineUsers";
+import { useFetchOnlineUsers } from "@/composables/useFetchOnlineUsers";
 import { useFetchActiveChats } from "@/composables/useFetchActiveChats";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
 
@@ -127,28 +128,26 @@ const { getAIInteractionCount, getCurrentAIInteractionCount, getMessagesBetweenU
 
 const supabase = useSupabaseClient();
 const authStore = useAuthStore();
+const presenceStore = usePresenceStore();
 const user = ref(authStore.user);
 const userProfile = ref(authStore.userProfile);
 const newMessage = ref("");
 const selectedUser = ref(null);
 const chatContainer = ref(null);
 const messages = ref([]); // Reactive state
-const onlineUsers = ref([]);
 const aiUsers = ref([]);
 const offlineUsers = ref([]);
 const activeChats = ref([]);
 const filters = ref({ gender_id: null });
 let realtimeMessages = null;
-let onlineUsersCheck = null;
 // const registrationDialog = ref(false);
 const dialogVisible = ref(false);
 const userEmail = ref("");
 const showAIUsers = ref(false); // State to toggle between Users and UsersAI
 
 
-
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
-const { onlineData, fetchOnlineUsers } = useFetchOnlineUsers(user);
+const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
 const { offlineData, fetchOfflineUsers } = useFetchOfflineUsers(user);
 const { activeChatsData, fetchActiveChats } = useFetchActiveChats(user);
 const { blockedUsers, loadBlockedUsers } = useBlockedUsers(user);
@@ -252,20 +251,16 @@ const handleRealtimeMessages = (payload) => {
   }
 };
 
-const subscribeToPresenceUpdates = () =>
+watch(() => presenceStore.onlineUsers, async (newVal) => 
+{
+  if (!newVal.length)
   {
-  onlineUsersCheck = supabase
-      .channel("public.presence")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "presence" }, // Listen to any change in presence table
-        async () =>
-        {
-          await fetchOnlineUsers(filters.value);
-        }
-      )
-      .subscribe();
-  };
+    arrayOnlineUsers.value = [];
+    return;
+  }
+
+  await fetchOnlineUsers(filters.value, presenceStore.onlineUsers, userProfile.value.user_id);
+});
 
 onMounted(async () => {
   await authStore.checkAuth();
@@ -273,10 +268,8 @@ onMounted(async () => {
   userProfile.value = authStore.userProfile;
   showAIUsers.value = route.query.user === "ai";
   fetchAiUsers(filters.value);
-  fetchOnlineUsers(filters.value);
   fetchOfflineUsers(filters.value);
   fetchActiveChats();
-  subscribeToPresenceUpdates();
 
   // await loadBlockedUsers();
   loadBlockedUsers(); // Load blocked users for the current user
@@ -321,11 +314,6 @@ onMounted(async () => {
       console.log("Subscribed to real-time updates for messages");
     }
   }
-});
-
-onUnmounted(() =>
-{
-  if (onlineUsersCheck) supabase.removeChannel(onlineUsersCheck);
 });
 
 // Select user to chat with
@@ -380,7 +368,7 @@ const sendMessage = async () => {
           sender: userProfile.value.displayname, // Assuming current user's displayname is needed
         });
         scrollToBottom(); // Ensure the chat scrolls to the bottom when a new message is added
-
+ 
         // If the selected user is an AI, generate a response by calling the local API
         if (isAI) {
           const aiResponse = await fetchAiResponse(userMessage, selectedUser);
@@ -547,7 +535,6 @@ const updateFilters = async (newFilters) => {
   // console.log("Filters updated:", newFilters); // Debug log
   filters.value = newFilters;
   fetchAiUsers(filters.value);
-  fetchOnlineUsers(filters.value);
   fetchOfflineUsers(filters.value);
   fetchActiveChats();
 };
@@ -556,11 +543,6 @@ const updateFilters = async (newFilters) => {
 watch(aiData, (newData) => {
   aiUsers.value = newData;
 });
-
-// Watch the data from composable and update onlineUsers
-watch(onlineData, (newData) => {
-  onlineUsers.value = newData;
-}); 
 
 // Watch the data from composable and update onlineUsers
 watch(offlineData, (newData) => {
@@ -575,7 +557,6 @@ watch(activeChatsData, (newData) => {
 const refreshData = async () => {
   // console.log("refreshData"); // Debug log
   fetchAiUsers(filters.value);
-  fetchOnlineUsers(filters.value);
   fetchOfflineUsers(filters.value);
   fetchActiveChats();
 };
