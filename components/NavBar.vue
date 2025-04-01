@@ -1,14 +1,14 @@
 <template>
   <v-app-bar scroll-behavior="hide" scroll-threshold="61" image="/images/bkg/tiediebkg.webp" v-if="isAuthenticated">
-    
-    <InactivityChecker />
+
+    <!--<InactivityChecker /> -->
 
     <v-app-bar-title class="siteTitle">
       <NuxtLink to="/">imchatty</NuxtLink>
     </v-app-bar-title>
 
     <template v-slot:append>
-      <OnlineStatus v-if="navProfileUserId" :userId="navProfileUserId" />
+      <OnlineStatus v-if="navProfileUserId"  />
       <v-btn prepend-icon="mdi-chat" to="/chat">Chat</v-btn>
       <v-btn prepend-icon="mdi-cog" to="/settings">Settings</v-btn>
       <v-btn @click="showLogoutDialog">Logout</v-btn>
@@ -20,9 +20,9 @@
       <NuxtLink to="/">imchatty</NuxtLink>
     </v-app-bar-title>
     <v-spacer></v-spacer>
-         <v-btn @click="navigate('/signin')">Sign in</v-btn>
-         <v-btn @click="navigate('/about')">About Us</v-btn>
-         <v-btn @click="navigate('/freechat')">Free Chat</v-btn>
+    <v-btn @click="navigate('/signin')">Sign in</v-btn>
+    <v-btn @click="navigate('/about')">About Us</v-btn>
+    <v-btn @click="navigate('/freechat')">Free Chat</v-btn>
   </v-app-bar>
 
   <v-dialog v-model="logoutDialog" width="auto">

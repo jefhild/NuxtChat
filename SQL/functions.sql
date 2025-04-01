@@ -794,3 +794,68 @@ BEGIN
   WHERE p.user_id = p_user_id;
 END;
 $$ LANGUAGE plpgsql;
+
+--PLPGSQL function to fetch filtered profiles by IDs
+CREATE OR REPLACE FUNCTION fetch_filtered_profiles_by_ids(
+  user_ids uuid[],
+  logged_in_user_id uuid,
+  gender_filter integer DEFAULT NULL,
+  min_age integer DEFAULT NULL,
+  max_age integer DEFAULT NULL,
+  is_ai_filter BOOLEAN DEFAULT false
+)
+RETURNS TABLE (
+  profile_id uuid,
+  user_id uuid,
+  displayname text,
+  tagline text,
+  bio text,
+  age integer,
+  country_id integer,
+  country_name text,
+  state_name text,
+  gender_id integer,
+  provider text,
+  avatar_url text,
+  emoji text,
+  upvotes_count integer,
+  downvotes_count integer,
+  is_favorite boolean
+)
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    p.id AS profile_id,
+    p.user_id,
+    p.displayname,
+    p.tagline,
+    p.bio,
+    p.age,
+    p.country_id,
+    c.name AS country_name,
+    s.name AS state_name,
+    p.gender_id,
+    p.provider,
+    p.avatar_url,
+    c.emoji,
+    p.upvotes_count,
+    p.downvotes_count,
+    CASE 
+      WHEN f.favorite_user_id IS NOT NULL THEN true 
+      ELSE false 
+    END AS is_favorite
+  FROM profiles p
+  JOIN countries c ON p.country_id = c.id
+  JOIN states s ON p.state_id = s.id
+  LEFT JOIN blocked_users b ON p.user_id = b.blocked_user_id AND b.user_id = logged_in_user_id
+  LEFT JOIN favorites f ON p.user_id = f.favorite_user_id AND f.user_id = logged_in_user_id
+  WHERE p.user_id = ANY(user_ids)
+    AND p.user_id != logged_in_user_id
+    AND b.blocked_user_id IS NULL
+    AND (gender_filter IS NULL OR p.gender_id = gender_filter)
+    AND (min_age IS NULL OR p.age >= min_age)
+    AND (max_age IS NULL OR p.age <= max_age)
+    AND p.is_ai = is_ai_filter;  -- Apply is_ai_filter
+END;
+$$ LANGUAGE plpgsql;

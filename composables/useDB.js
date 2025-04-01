@@ -87,7 +87,7 @@ export const useDb = () =>
     return data;
   };
 
-  const getUserStatus = async (userId) => {
+  /*const getUserStatus = async (userId) => {
     const { data, error } = await supabase
       .from("presence")
       .select("status")
@@ -100,7 +100,7 @@ export const useDb = () =>
     }
 
     return data;
-  };
+  };*/
 
   const getStatuses = async () =>{
     const { data, error } = await supabase.from("status").select("*");
@@ -226,6 +226,28 @@ export const useDb = () =>
       return { data, error };
   };
 
+  const getUsersFromIds = async (userIds = [], genderId, minAge, maxAge, userId) =>
+  {
+    if (!userIds.length) return [];
+
+    const { data, error } = await supabase.rpc("fetch_filtered_profiles_by_ids", {
+      user_ids: userIds,
+      logged_in_user_id: userId,
+      gender_filter: genderId,
+      min_age: minAge,
+      max_age: maxAge,
+    });
+
+    if (error)
+    {
+      console.error("Error fetching online profiles:", error.message);
+      return [];
+    }
+
+    // console.log("Fetched users from IDs:", data);
+    return {data, error};
+  };
+
   const getUserFromName = async (displayName) => {
     const { data, error } = await supabase
       .from("profiles")
@@ -285,8 +307,7 @@ export const useDb = () =>
     const { data , error } = await supabase
       .from("profiles")
       .select("user_id")
-      .neq("avatar_url", "")
-      .neq("provider", "anonymous");
+      .neq("username", "");
 
       return { data, error};
   };  
@@ -378,16 +399,16 @@ export const useDb = () =>
   };
 
 
-  const getOnlineUserCount = async () => {
+  /*const getOnlineUserCount = async () => {
     const { count, error: supabaseError } = await supabase
-      .from("presence") // Fixed table name
+      .from("presence")
       .select("*", { count: "exact", head: true })
-      .eq("status", "online"); // Fixed column name and value
+      .eq("status", "online");
 
     if (supabaseError) throw supabaseError;
 
     return count;
-  };
+  };*/
 
   const getMostPopularProfiles = async (profileLimit) => {
     const { data, error } = await supabase.rpc("get_most_popular_profiles", { profile_limit: profileLimit });
@@ -672,12 +693,15 @@ export const useDb = () =>
     }
   };
 
-  const updatePresence = async  (userId, status) => {
-    const { error } = await supabase
+  const updatePresence = async (userId, status) => {
+   const { error } = await supabase
       .from("presence")
-      .upsert({ user_id: userId, status, last_active: new Date() });
+      .upsert({ user_id: userId, status });
 
-    if (error) console.error("Error updating presence:", error);
+    console.log("Updating presence:", userId,status);
+    /*if (error) {
+      console.error("Error updating presence:", error);
+    }*/ 
   };
 
 
@@ -1033,8 +1057,6 @@ export const useDb = () =>
   };
 
   const trackPresence = async (userId) => {
-    await updatePresence(userId, "online");
-
     // not sure about this...
     window.addEventListener("beforeunload", async () =>
       await updatePresence(userId, "offline")
@@ -1158,7 +1180,7 @@ export const useDb = () =>
     getCityByNameAndState,
     getCitiesFromCountryId,
     getCities,
-    getUserStatus,
+    //getUserStatus,
     getStatuses,
     getGenders,
     getLookingForId,
@@ -1169,6 +1191,7 @@ export const useDb = () =>
     getInterestsIds,
     getInterestsIcons,
     getDescriptions,
+    getUsersFromIds,
     getUserFromName,
     getUserProfileFromId,
     getUserProfileFunctionFromId,
@@ -1180,7 +1203,7 @@ export const useDb = () =>
     getAiProfiles,
     getOfflineProfiles,
     getOnlineProfiles,
-    getOnlineUserCount,
+    //getOnlineUserCount,
     getMostPopularProfiles,
     getRecentProfiles,
     getMostPopularAiProfiles,

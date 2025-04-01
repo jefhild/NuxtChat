@@ -82,7 +82,6 @@ const subscribeToNewMessages = () =>
 const tab = ref(1);
 const emit = defineEmits(["user-selected", "chat-deleted", "refresh-data"]);
 
-// let presenceChannel = null;
 const unreadMessageCount = ref(0);
 const activeChats = toRef(props, "activeChats"); // Make the prop reactive
 // Watch for changes in activeChats prop with deep watch

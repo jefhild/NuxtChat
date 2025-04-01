@@ -635,8 +635,8 @@ export const useAuthStore = defineStore("authStore", {
     async logout()
     {
       console.log("logout");
-      const { updatePresence } = useDb();
-      await updatePresence(this.user.id, "offline");
+      // const { updatePresence } = useDb();
+      // await updatePresence(this.user.id, "offline");
       const { authSignOut } = useDb();
       const { error } = authSignOut;
       if (error)
@@ -645,6 +645,8 @@ export const useAuthStore = defineStore("authStore", {
         return;
       } else
       {
+        const presenceStore = usePresenceStore();
+        await presenceStore.leavePresenceChannel();
         this.clearUser();
         this.clearCookies();
       }
