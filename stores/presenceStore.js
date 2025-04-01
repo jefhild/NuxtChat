@@ -18,24 +18,20 @@ export const usePresenceStore = defineStore('presenceStore', {
     setOnlineUsers(users)
     {
       this.onlineUsers = users;
-      console.log("Setting online users in store:", this.onlineUsers);
     },
 
     async addOnlineUser(user)
     {
-      console.log("Adding online user");
       const exists = this.onlineUsers.some(u => u.userId === user.userId);
       if (!exists)
       {
         this.onlineUsers.push(user);
-        console.log("User does not exist, adding:", this.onlineUsers);
       }
     },
 
     async removeOnlineUser(userId)
     {
       this.onlineUsers = this.onlineUsers.filter(u => u.userId !== userId);
-      console.log("Removing online user",this.onlineUsers)
     },
 
     async updateUserStatus(status){
