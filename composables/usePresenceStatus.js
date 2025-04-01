@@ -3,8 +3,8 @@ import { usePresenceStore } from '@/stores/presenceStore';
 
 export const statusOptions = [
   { label: 'Online', value: 'online', icon: 'mdi-checkbox-blank-circle', color: 'green' },
-  { label: 'Away', value: 'away', icon: 'mdi-clock-outline', color: 'orange' },
-  { label: 'Do Not Disturb', value: 'dnd', icon: 'mdi-minus-circle-outline', color: 'red' },
+  { label: 'Away', value: 'away', icon: 'mdi-clock', color: 'orange' },
+  { label: 'Do Not Disturb', value: 'dnd', icon: 'mdi-minus-circle', color: 'red' },
 ];
 
 export const usePresenceStatus = () =>
