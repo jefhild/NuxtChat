@@ -4,7 +4,6 @@ export const usePresenceChannel = (userId) =>
 {
 	const supabase = useSupabaseClient();
 	const presenceStore = usePresenceStore();
-	let lastOnlineUsers = [];
 
 	const channel = supabase.channel("presence:global", {
 		config: {
@@ -12,10 +11,17 @@ export const usePresenceChannel = (userId) =>
 		},
 	});
 
+	let isFirstSync = true;
 	channel
 		.on("presence", { event: "sync" }, () =>
 		{
 			const state = channel.presenceState();
+
+			//We ignore the first sync event because the current user isn't tracked yet
+			if(isFirstSync){
+				isFirstSync = false;
+				return;
+			} 
 
 			// Get the current online users and their statuses
 			const usersWithStatus = Object.entries(state).map(([userId, metas]) =>
@@ -26,33 +32,28 @@ export const usePresenceChannel = (userId) =>
 				};
 			});
 
-			// Check if the online user IDs have changed
-			const hasChanged = JSON.stringify(usersWithStatus) !== JSON.stringify(lastOnlineUsers);
-			if (hasChanged)
-			{
-				presenceStore.setOnlineUsers(usersWithStatus); // full data, not just IDs
-				lastOnlineUsers = usersWithStatus;
-			}
-			
+			presenceStore.setOnlineUsers(usersWithStatus); // full data, not just IDs
 		})
-		.on("presence", { event: "join" }, ({ key }) =>
+		.on("presence", { event: "join" }, ({ key, newPresences }) =>
 		{
 			if (key !== userId)
 			{ 
-				presenceStore.triggerPresenceChange();
+				const status = newPresences[0]?.status || 'online';
+				presenceStore.addOnlineUser({ userId: key, status });
 			}
 		})
-		.on("presence", { event: "leave" }, ({ key }) =>
+		.on("presence", { event: "leave" }, async  ({ key }) =>
 		{
 			if (key !== userId)
 			{
-				presenceStore.triggerPresenceChange();
+				await presenceStore.removeOnlineUser(key);
 			}
 		})
 		.subscribe(async (status) =>
 		{
 			if (status === "SUBSCRIBED")
 			{
+				console.log("Subscribed to presence channel");
 				await channel.track({ 
 					online_at: new Date().toISOString(),
 					status: 'online'
