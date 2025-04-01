@@ -1,61 +1,39 @@
 <template>
-  <v-tooltip text="Toggle online status" location="top" v-if="!loading">
+  <v-menu offset-y v-if="!loading">
     <template v-slot:activator="{ props }">
-      <!-- <v-btn v-bind="props">Tooltip</v-btn> -->
-      <v-btn
-        v-bind="props"
-        size="small"
-        :color="isOnline ? 'green' : 'red'"
-        :icon="
-          isOnline ? 'mdi-power-plug-outline' : 'mdi-power-plug-off-outline'
-        "
-       @click=""
-   
-      ></v-btn> 
-      <!-- @click="toggleStatus"-->
+      <v-btn v-bind="props" size="small" :color="statusColor(userId)" :icon="statusIcon(userId)"></v-btn>
     </template>
-  </v-tooltip>
+
+    <v-list>
+      <v-list-item v-for="option in statusOptions" :key="option.value" @click="setStatus(option.value)">
+        <v-list-item-title>
+          <v-icon :color="option.color" size="small" class="mr-2">{{ option.icon }}</v-icon>
+          {{ option.label }}
+        </v-list-item-title>
+      </v-list-item>
+    </v-list>
+  </v-menu>
 </template>
 
 <script setup>
 
 import { usePresenceStore } from '@/stores/presenceStore';
+import { usePresenceStatus } from '@/composables/usePresenceStatus';
 
-const presenceStore = usePresenceStore();
 const authStore = useAuthStore();
-
-const isOnline = ref(false);
+const presenceStore = usePresenceStore();
 const loading = ref(false);
+const userId = ref('');
 
-onMounted(async () => {
-  loading.value = true;
-  await fetchStatus();
-  loading.value = false;
-});
+const {statusOptions, statusColor, statusIcon } = usePresenceStatus();
 
-
-watch(() => presenceStore.onlineUsers, async () => 
+const setStatus = async (newStatus) =>
 {
-  loading.value = true;
-  await fetchStatus();
-  loading.value = false;
+  await presenceStore.updateUserStatus(newStatus);
+};
+
+onMounted(() =>
+{
+  userId.value = authStore.userProfile.user_id;
 });
-
-const fetchStatus = async () => {
-  const data = presenceStore.onlineUsers.includes(authStore.user.id);
-
-  if (data) {
-    data ? (isOnline.value = true) : (isOnline.value = false);
-  }
-};
-
-/*
-const toggleStatus = async () => {
-  isOnline.value = !isOnline.value;
-  await updateStatusInDatabase(isOnline.value);
-};
-
-const updateStatusInDatabase = async (status) => {
-  await updateStatus(props.userId, status);
-};*/
 </script>

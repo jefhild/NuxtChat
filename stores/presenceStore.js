@@ -5,14 +5,21 @@ export const usePresenceStore = defineStore('presenceStore', {
     onlineUsers: [],
     presenceChanged: false,
     channel: null,
+    status: 'online', 
   }),
+
+  getters: {
+    userIdsOnly: (state) => state.onlineUsers.map(user => user.userId),
+
+    userStatusMap: (state) =>
+      Object.fromEntries(state.onlineUsers.map(u => [u.userId, u.status])),
+  },
 
   actions: {
     setOnlineUsers(users)
     {
       // console.log("Setting online users in store:", users);
       this.onlineUsers = users;
-      console.log("Online users in store:", this.onlineUsers);
     },
 
     triggerPresenceChange()
@@ -24,6 +31,18 @@ export const usePresenceStore = defineStore('presenceStore', {
     {
       this.presenceChanged = false;
     },
+
+    async updateUserStatus(status){
+      if (this.channel)
+      {
+        this.status = status;
+        await this.channel.track({
+          online_at: new Date().toISOString(),
+          status: status
+        });
+      }
+    },
+
     setChannel(c)
     {
       this.channel = c;
