@@ -2,8 +2,7 @@ import { defineStore } from 'pinia';
 
 export const usePresenceStore = defineStore('presenceStore', {
   state: () => ({
-    onlineUsers: [],
-    presenceChanged: false,
+    onlineUsers: [], // [{ userId: 'user1', status: 'online' }, ...]
     channel: null,
     status: 'online', 
   }),
@@ -18,18 +17,21 @@ export const usePresenceStore = defineStore('presenceStore', {
   actions: {
     setOnlineUsers(users)
     {
-      // console.log("Setting online users in store:", users);
       this.onlineUsers = users;
     },
 
-    triggerPresenceChange()
+    async addOnlineUser(user)
     {
-      this.presenceChanged = true;
+      const exists = this.onlineUsers.some(u => u.userId === user.userId);
+      if (!exists)
+      {
+        this.onlineUsers.push(user);
+      }
     },
 
-    resetPresenceChange()
+    async removeOnlineUser(userId)
     {
-      this.presenceChanged = false;
+      this.onlineUsers = this.onlineUsers.filter(u => u.userId !== userId);
     },
 
     async updateUserStatus(status){
