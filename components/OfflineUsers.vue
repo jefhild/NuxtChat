@@ -1,24 +1,15 @@
 <template>
   <v-container fluid>
     <v-card-text>
-      <v-virtual-scroll
-        :items="users"
-        height="300"
-        item-height="10"
-      >
+      <v-virtual-scroll :items="users" height="300" item-height="10">
         <template v-slot:default="{ item: user }">
-          <v-list-item
-            @click="selectUser(user)"
-          >
+          <v-list-item @click="selectUser(user)">
             <template v-slot:prepend>
-              <v-icon
-                :color="getGenderColor(user.gender_id)"
-                :icon="getAvatarIcon(user.gender_id)"
-                size="small"
-              ></v-icon>
-              <v-avatar
-                :image="getAvatar(user.avatar_url, user.gender_id)"
-              ></v-avatar>
+              <v-icon :color="getGenderColor(user.gender_id)" :icon="getAvatarIcon(user.gender_id)"
+                size="small"></v-icon>
+              <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
+              <v-icon size="small" color="grey" icon="mdi-circle"
+                class="align-self-end" />
             </template>
             <v-list-item-title :class="getGenderColorClass(user.gender_id)">
               {{ user.displayname }}

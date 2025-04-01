@@ -7,13 +7,13 @@ import { useAuthStore } from "@/stores/authStore";
 import { onMounted, onUnmounted } from "vue";
 
 const authStore = useAuthStore();
+const { updatePresence } = useDb();
 
 const resetInactivityTimer = async () =>
 { 
   if (authStore.user)
   {
-    console.log("User is active");
-    const { updatePresence } = useDb();
+    console.log("User is active", authStore.user.id);
     await updatePresence(authStore.user.id, "online");
   }
 };
