@@ -26,12 +26,14 @@
 
 <script setup>
 import { usePresenceStatus } from '@/composables/usePresenceStatus';
-import {
-  getAvatarIcon,
-  getAvatar,
-  getGenderColor,
-  getGenderColorClass,
-} from "/utils/userUtils";
+// import {
+//   getAvatarIcon,
+//   getAvatar,
+//   getGenderColor,
+//   getGenderColorClass,
+// } from "/utils/userUtils";
+
+import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
 
 const props = defineProps({
   users: Array,

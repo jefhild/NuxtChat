@@ -66,7 +66,8 @@
 
 <script lang="ts" setup>
 import { useBlockedProfiles } from "@/composables/useBlockedProfiles";
-import { getAvatar } from "@/utils/userUtils"; // Import the helper function
+// import { getAvatar } from "@/utils/userUtils"; // Import the helper function
+import { getAvatar } from "@/composables/useUserUtils";
 
 // interface Profile {
 //   profile_id: string;

@@ -1,4 +1,5 @@
-// src/userUtils.js
+// composables/useUserUtils.js
+
 export const getAvatarIcon = (gender_id) => {
   switch (gender_id) {
     case 1:
