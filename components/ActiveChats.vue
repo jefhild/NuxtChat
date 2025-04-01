@@ -13,6 +13,12 @@
               <v-avatar
                 :image="getAvatar(user.avatar_url, user.gender_id)"
               ></v-avatar>
+              <v-icon
+                size="small"
+                :color="statusColor(user.user_id)"
+                :icon="statusIcon(user.user_id)"
+                class="align-self-end"
+              />
             </template>
             <v-list-item-title :class="getGenderColorClass(user.gender_id)">
               {{ user.displayname }}
@@ -69,13 +75,15 @@
 </template>
 
 <script setup>
-import {
-  getAvatarIcon,
-  getAvatar,
-  getGenderColor,
-  getGenderColorClass,
-} from "/utils/userUtils";
+// import {
+//   getAvatarIcon,
+//   getAvatar,
+//   getGenderColor,
+//   getGenderColorClass,
+// } from "/utils/userUtils";
 
+import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
+import { usePresenceStatus } from "@/composables/usePresenceStatus";
 import { useAuthStore } from "@/stores/authStore";
 const { insertBlockedUser, deleteChatWithUser } = useDb();
 
@@ -104,14 +112,19 @@ const confirmDelete = async () => {
   if (checkboxBlockUser.value) {
     console.log("Block user");
 
-    await insertBlockedUser(myUserId.value.user_id, selectedUserForDelete.value.user_id);
+    await insertBlockedUser(
+      myUserId.value.user_id,
+      selectedUserForDelete.value.user_id
+    );
   }
 
   try {
-    const error = await deleteChatWithUser(myUserId.value.id, selectedUserForDelete.value.user_id);
+    const error = await deleteChatWithUser(
+      myUserId.value.id,
+      selectedUserForDelete.value.user_id
+    );
 
-    if (error)
-    {
+    if (error) {
       console.error("Error deleting messages:", error);
       return;
     }
@@ -119,14 +132,11 @@ const confirmDelete = async () => {
     console.log("Messages deleted:");
 
     emit("chat-deleted");
-
-
-
   } catch (error) {
     console.error("Unexpected error deleting messages:", error);
   }
   // emit("update-active-chats");
-  
+
   deleteDialog.value = false;
 };
 
@@ -138,20 +148,17 @@ const selectUser = (user) => {
   }
 };
 
-onMounted(() =>
-{
+onMounted(() => {
   subscribeToNewMessages();
 });
 
-const subscribeToNewMessages = () =>
-{
+const subscribeToNewMessages = () => {
   supabase
     .channel("messages")
     .on(
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "messages" },
-      (payload) =>
-      {
+      (payload) => {
         console.log("New message received:", payload);
 
         // Find the sender in the users array
@@ -160,14 +167,15 @@ const subscribeToNewMessages = () =>
         );
 
         // If the message is for the current user, update the unread count
-        if (sender)
-        {
+        if (sender) {
           sender.unread_count = (sender.unread_count || 0) + 1;
         }
       }
     )
     .subscribe();
 };
+
+const { statusColor, statusIcon } = usePresenceStatus();
 </script>
 
 <style scoped>

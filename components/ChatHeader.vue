@@ -46,18 +46,19 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from "@/stores/authStore";
+// import { useAuthStore } from "@/stores/authStore";
 
-import {
-  getAvatar,
-  getAvatarIcon,
-  getGenderColor,
-  getGenderColorClass,
-} from "@/utils/userUtils";
+// import {
+//   getAvatar,
+//   getAvatarIcon,
+//   getGenderColor,
+//   getGenderColorClass,
+// } from "@/utils/userUtils";
+import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
 
 const { insertBlockedUser, insertFavorite, unblockUser, deleteFavorite, upvoteUserProfile, downvoteUserProfile} = useDb();
 
-const authStore = useAuthStore();
+// const authStore = useAuthStore();
 // const tooltipText = ref("View profile of the user");
 
 const props = defineProps<{

@@ -35,12 +35,15 @@
 </template>
 
 <script setup>
-import {
-  getAvatarIcon,
-  getAvatar,
-  getGenderColor,
-  getGenderColorClass,
-} from "/utils/userUtils";
+// import {
+//   getAvatarIcon,
+//   getAvatar,
+//   getGenderColor,
+//   getGenderColorClass,
+// } from "/utils/userUtils";
+
+// do I need this?
+import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
 
 const props = defineProps({
   users: Array,

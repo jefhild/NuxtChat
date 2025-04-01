@@ -66,8 +66,8 @@
 
 <script lang="ts" setup>
 import { useFavorites } from "@/composables/useFavorites";
-import { getAvatar } from "@/utils/userUtils"; // Import the helper function
-
+// import { getAvatar } from "@/utils/userUtils"; 
+import { getAvatar } from "@/composables/useUserUtils";
 
 const props = defineProps<{ userId: string }>();
 

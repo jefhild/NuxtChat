@@ -5,14 +5,10 @@
         <template v-slot:default="{ item: user }">
           <v-list-item @click="selectUser(user)">
             <template v-slot:prepend>
-              <v-icon
-                :color="getGenderColor(user.gender_id)"
-                :icon="getAvatarIcon(user.gender_id)"
-                size="small"
-              ></v-icon>
-              <v-avatar
-                :image="getAvatar(user.avatar_url, user.gender_id)"
-              ></v-avatar>
+              <v-icon :color="getGenderColor(user.gender_id)" :icon="getAvatarIcon(user.gender_id)"
+                size="small"></v-icon>
+              <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
+              <v-icon size="small" :color="statusColor(user.user_id)" :icon="statusIcon(user.user_id)" class="align-self-end"/>
             </template>
             <v-list-item-title :class="getGenderColorClass(user.gender_id)">
               {{ user.displayname }}
@@ -29,17 +25,22 @@
 </template>
 
 <script setup>
-import {
-  getAvatarIcon,
-  getAvatar,
-  getGenderColor,
-  getGenderColorClass,
-} from "/utils/userUtils";
+import { usePresenceStatus } from '@/composables/usePresenceStatus';
+// import {
+//   getAvatarIcon,
+//   getAvatar,
+//   getGenderColor,
+//   getGenderColorClass,
+// } from "/utils/userUtils";
+
+import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
 
 const props = defineProps({
   users: Array,
   filters: Object,
 });
+
+const { statusColor, statusIcon } = usePresenceStatus();
 
 const emit = defineEmits(["user-selected"]);
 const selectedUser = ref(null);

@@ -66,7 +66,8 @@
 
 <script lang="ts" setup>
 import { useUpvotes } from "@/composables/useUpvotes";
-import { getAvatar } from "@/utils/userUtils";
+// import { getAvatar } from "@/utils/userUtils";
+import { getAvatar } from "@/composables/useUserUtils";
 
 const props = defineProps<{ userId: string }>();
 

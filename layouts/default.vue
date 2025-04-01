@@ -9,7 +9,25 @@
     </v-main>
   </v-layout>
 </template>
-<script setup></script>
+<script setup>
+import { useAuthStore } from '@/stores/authStore';
+import { usePresenceChannel } from '@/composables/usePresenceChannel';
+
+const authStore = useAuthStore();
+
+watch(
+  () => authStore.user?.id,
+  (userId) =>
+  {
+    if (userId)
+    {
+      usePresenceChannel(userId); // 🔥 track presence!
+    }
+  },
+  { immediate: true }
+);
+</script>
+
 
 <style scoped>
 .fill-height {
