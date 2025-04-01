@@ -250,16 +250,18 @@ const handleRealtimeMessages = (payload) => {
   }
 };
 
-watch(() => presenceStore.onlineUsers, async (newVal) => 
+watch(() => presenceStore.userIdsOnly, async (newVal) => 
 {
+  //console.log("Presence store updated:", newVal); // Debug log
   if (!newVal.length)
   {
     arrayOnlineUsers.value = [];
     return;
   }
 
-  await fetchOnlineUsers(filters.value, presenceStore.onlineUsers, userProfile.value.user_id);
-  await fetchOfflineUsers(filters.value, presenceStore.onlineUsers, userProfile.value.user_id);
+  //console.log("Online users:", newVal); // Debug log
+  await fetchOnlineUsers(filters.value, newVal, userProfile.value.user_id);
+  await fetchOfflineUsers(filters.value, newVal, userProfile.value.user_id);
 });
 
 onMounted(async () => {
@@ -267,6 +269,10 @@ onMounted(async () => {
   user.value = authStore.user;
   userProfile.value = authStore.userProfile;
   showAIUsers.value = route.query.user === "ai";
+
+  //Have to do them at least once on mount because if we go to another page and come back, we need to fetch the data again
+  await fetchOnlineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
+  await fetchOfflineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
   fetchAiUsers(filters.value);
   fetchActiveChats();
 
