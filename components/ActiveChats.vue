@@ -5,20 +5,15 @@
         <template v-slot:default="{ item: user }">
           <v-list-item @click="selectUser(user)">
             <template v-slot:prepend>
-              <v-icon
-                :color="getGenderColor(user.gender_id)"
-                :icon="getAvatarIcon(user.gender_id)"
-                size="small"
-              ></v-icon>
-              <v-avatar
-                :image="getAvatar(user.avatar_url, user.gender_id)"
-              ></v-avatar>
-              <v-icon
-                size="small"
-                :color="statusColor(user.user_id)"
-                :icon="statusIcon(user.user_id)"
-                class="align-self-end"
-              />
+              <v-icon :color="getGenderColor(user.gender_id)" :icon="getAvatarIcon(user.gender_id)"
+                size="small"></v-icon>
+
+              <div class="avatar-wrapper">
+                <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
+                <v-icon size="small" :color="statusColor(user.user_id)" :icon="statusIcon(user.user_id)"
+                  class="status-badge" />
+              </div>
+
             </template>
             <v-list-item-title :class="getGenderColorClass(user.gender_id)">
               {{ user.displayname }}
@@ -46,29 +41,16 @@
     <v-card max-width="400" prepend-icon="mdi-message" title="Delete This Chat">
       <v-card-text>
         <v-row justify="center">
-          <v-col class="text-center"
-            >Are you sure you want to delete this chat? This action cannot be
-            undone.</v-col
-          ></v-row
-        >
+          <v-col class="text-center">Are you sure you want to delete this chat? This action cannot be
+            undone.</v-col></v-row>
       </v-card-text>
-      <v-card-text
-        ><v-row
-          ><v-col
-            ><v-checkbox
-              v-model="checkboxBlockUser"
-              label="Block this user?"
-            ></v-checkbox></v-col></v-row
-      ></v-card-text>
+      <v-card-text><v-row><v-col><v-checkbox v-model="checkboxBlockUser"
+              label="Block this user?"></v-checkbox></v-col></v-row></v-card-text>
 
       <template v-slot:actions>
         <v-btn color="primary" text @click="confirmDelete()">Confirm</v-btn>
         <v-spacer></v-spacer>
-        <v-btn
-          class="ms-auto"
-          text="Cancel"
-          @click="deleteDialog = false"
-        ></v-btn>
+        <v-btn class="ms-auto" text="Cancel" @click="deleteDialog = false"></v-btn>
       </template>
     </v-card>
   </v-dialog>
@@ -181,5 +163,18 @@ const { statusColor, statusIcon } = usePresenceStatus();
 <style scoped>
 .unread-count {
   color: red;
+}
+
+.avatar-wrapper {
+  position: relative;
+}
+
+.status-badge {
+  position: absolute;
+  bottom: 0px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 }
 </style>
