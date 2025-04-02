@@ -1,6 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 import { getAllDynamicRoutes } from "./composables/useDynamicRoutes";
+// import { getRegisteredUsersIds } from "@/lib/supabaseHelpers";
+
 
 export default defineNuxtConfig({
   // devtools: { enabled: true },
