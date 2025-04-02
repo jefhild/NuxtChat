@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 export const usePresenceStore = defineStore('presenceStore', {
   state: () => ({
     onlineUsers: [], // [{ userId: 'user1', status: 'online' }, ...]
+    presenceRefs: {}, // { userId: presence_ref }
     channel: null,
     status: 'online', 
   }),
@@ -20,24 +21,44 @@ export const usePresenceStore = defineStore('presenceStore', {
       this.onlineUsers = users;
     },
 
-    async addOnlineUser(user)
+    async addOnlineUser(user, presenceRef)
     {
-      const exists = this.onlineUsers.some(u => u.userId === user.userId);
-      if (!exists)
+      //find the index of the user in the onlineUsers array
+      const index = this.onlineUsers.findIndex(u => u.userId === user.userId);
+
+      //if the user is already in the array, update their status
+      if (index !== -1)
+      {
+        this.onlineUsers[index].status = user.status;
+      } else //add to the array
       {
         this.onlineUsers.push(user);
       }
+
+      // console.log("presnce refs befor ejoin:", this.presenceRefs);
+      
+      //if the user is already in the presenceRefs object, update their presence_ref
+      this.presenceRefs[user.userId] = presenceRef;
+      
+      // console.log("Presence refs join:", this.presenceRefs);
     },
 
     async removeOnlineUser(userId)
     {
       this.onlineUsers = this.onlineUsers.filter(u => u.userId !== userId);
+      // console.log("presnce refs befor leave:", this.presenceRefs);
+      
+      delete this.presenceRefs[userId];
+      // console.log("Presence refs leave:", this.presenceRefs);
+
     },
 
     async updateUserStatus(status){
       if (this.channel)
       {
         this.status = status;
+
+        console.log("Tracking user with status:", status);
         await this.channel.track({
           online_at: new Date().toISOString(),
           status: status
@@ -63,6 +84,7 @@ export const usePresenceStore = defineStore('presenceStore', {
       } finally {
         this.channel = null;
         this.onlineUsers = [];
+        this.presenceRefs = {};
       }
       
     },

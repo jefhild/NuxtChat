@@ -116,7 +116,7 @@
 import { usePresenceStore } from '@/stores/presenceStore';
 const presenceStore = usePresenceStore();
 const rowCount = ref(presenceStore.onlineUsers.length); // Initialize with the current online users count
-watch(() => presenceStore.onlineUsers, (newVal) =>
+watch(() => presenceStore.userIdsOnly, (newVal) =>
 {
   rowCount.value = newVal.length;
 });

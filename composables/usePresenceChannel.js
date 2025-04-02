@@ -11,43 +11,55 @@ export const usePresenceChannel = (userId) =>
 		},
 	});
 
-	let isFirstSync = true;
+	const syncs = ref(0);
 	channel
 		.on("presence", { event: "sync" }, () =>
 		{
-			const state = channel.presenceState();
-
 			//We ignore the first sync event because the current user isn't tracked yet
-			if(isFirstSync){
-				isFirstSync = false;
+			if(syncs.value == 0){
+				syncs.value++;
 				return;
 			} 
 
-			// Get the current online users and their statuses
-			const usersWithStatus = Object.entries(state).map(([userId, metas]) =>
-			{
-				return {
-					userId,
-					status: metas[0]?.status || "online", // fallback to 'online'
-				};
-			});
+			if (syncs.value == 1) {
+				syncs.value++;
+				const state = channel.presenceState();
+				// Get the current online users and their statuses
+				const usersWithStatus = Object.entries(state).map(([userId, metas]) =>
+				{
+					return {
+						userId,
+						status: metas[0]?.status || "online", // fallback to 'online'
+					};
+				});
 
-			presenceStore.setOnlineUsers(usersWithStatus); // full data, not just IDs
+				console.log("sync");
+				presenceStore.setOnlineUsers(usersWithStatus); // full data, not just IDs	
+				Object.entries(state).forEach(([userId, metas]) =>
+				{
+					presenceStore.presenceRefs[userId] = metas[0]?.presence_ref;
+				});
+			}
+			
 		})
 		.on("presence", { event: "join" }, ({ key, newPresences }) =>
 		{
-			if (key !== userId)
-			{ 
-				const status = newPresences[0]?.status || 'online';
-				presenceStore.addOnlineUser({ userId: key, status });
-			}
+			const meta = newPresences[0];
+			const status = meta?.status || 'online';
+			const presenceRef = meta?.presence_ref;
+
+			presenceStore.addOnlineUser({ userId: key, status }, presenceRef);
 		})
-		.on("presence", { event: "leave" }, async  ({ key }) =>
+		.on("presence", { event: "leave" }, async  ({ key, leftPresences }) =>
 		{
-			if (key !== userId)
+			const leftRef = leftPresences[0]?.presence_ref;
+
+			if (presenceStore.presenceRefs[key] !== leftRef)
 			{
-				await presenceStore.removeOnlineUser(key);
+				return;
 			}
+
+			await presenceStore.removeOnlineUser(key);
 		})
 		.subscribe(async (status) =>
 		{
