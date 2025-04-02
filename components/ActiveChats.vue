@@ -10,6 +10,7 @@
 
               <div class="avatar-wrapper">
                 <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
+                <v-icon color="white" size="x-small" class="status-badge">mdi-circle</v-icon>
                 <v-icon size="small" :color="statusColor(user.user_id)" :icon="statusIcon(user.user_id)"
                   class="status-badge" />
               </div>
@@ -175,6 +176,5 @@ const { statusColor, statusIcon } = usePresenceStatus();
   right: -2px;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
 }
 </style>
