@@ -52,7 +52,7 @@
 import { ref } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 
-const supabase = useSupabaseClient();
+const { getInterests, getDescriptions, updateProfilePhoto } = useDb();
 // Track the current step
 const authStore = useAuthStore();
 const currentStep = ref(1);
@@ -167,10 +167,7 @@ const handleProfileCreation = async () => {
 const updateAvatarUrl = async () => {
   if (authStore.userProfile?.avatar_url !== avatarUrl.value) {
     try {
-      await supabase
-        .from("profiles")
-        .update({ avatar_url: avatarUrl.value })
-        .eq("user_id", authStore.user?.id);
+      await updateProfilePhoto(avatarUrl.value, authStore.user?.id);
       authStore.userProfile.avatar_url = avatarUrl.value; // Update local state
     } catch (error) {
       console.error("Error updating avatar URL:", error);
@@ -262,13 +259,9 @@ onMounted(async () => {
   isAuthenticated.value = authStore.user !== null;
   // console.log("isAuthenticated:", isAuthenticated.value); // Debug to check if this evaluates correctly
 
-  const { data: lookingForOptionsData, optionsError } = await supabase
-    .from("looking_for")
-    .select("*");
+  const { data: lookingForOptionsData, optionsError } = await getInterests();
 
-  const { data: descriptionOptionsData, descriptionsError } = await supabase
-    .from("descriptions")
-    .select("*");
+  const { data: descriptionOptionsData, descriptionsError } = await getDescriptions();
 
   if (!optionsError || !descriptionsError) {
     lookingForOptions.value = lookingForOptionsData;

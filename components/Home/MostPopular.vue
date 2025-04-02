@@ -240,19 +240,14 @@ import { ref, onMounted } from "vue";
 const activePanels = ref([0]);
 const popularProfiles = ref([]);
 const profileLimit = 5;
-const supabase = useSupabaseClient();
+const { getMostPopularProfiles } = useDb();
 
 // Fetch data during SSR
-const { data, error } = await supabase.rpc("get_most_popular_profiles", {
-  profile_limit: profileLimit,
-});
-if (error) {
-  console.error("Error fetching popular profiles:", error);
-} else {
+const data = getMostPopularProfiles(profileLimit);
+
+if (data) {
   popularProfiles.value = data;
 }
-
-
 
 // Function to format the 'created' column
 const formatCreated = (created) => {

@@ -26,10 +26,11 @@
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
+const { updateBio } = useDb();
+
 const emit = defineEmits(["updateBio"]);
 
 const router = useRouter();
-const supabase = useSupabaseClient();
 const authStore = useAuthStore();
 const userProfile = ref(authStore.userProfile);
 
@@ -64,13 +65,8 @@ const generateBio = async () =>
       
       userProfile.value.bio = response.aiResponse;
 
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          bio: userProfile.value.bio,
-        })
-        .eq("id", userProfile.value.id);
-      if (error) throw error;
+      await updateBio(userProfile.value.bio, userProfile.value.user_id); 
+
       emit("updateBio", userProfile.value.bio);
     }
 

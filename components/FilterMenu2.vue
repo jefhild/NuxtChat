@@ -111,8 +111,15 @@
 </template>
 
 <script setup>
-import { useOnlineRowCount } from "@/composables/useOnlineRowCount";
-const { rowCount, getOnlineRowCount, loading, error } = useOnlineRowCount();
+
+
+import { usePresenceStore } from '@/stores/presenceStore';
+const presenceStore = usePresenceStore();
+const rowCount = ref(presenceStore.onlineUsers.length); // Initialize with the current online users count
+watch(() => presenceStore.userIdsOnly, (newVal) =>
+{
+  rowCount.value = newVal.length;
+});
 const menu = ref(false);
 const selectedGender = ref(null);
 const selectedAge = ref([18, 100]); // Default age range
@@ -128,7 +135,7 @@ const props = defineProps({
   showAIUsers: Boolean, // Accept the current state as a prop
 });
 
-const emit = defineEmits(["filter-changed"]);
+const emit = defineEmits(["filter-changed","toggle-users"]);
 const genders = [
   { text: "Male", value: 1 },
   { text: "Female", value: 2 },
@@ -157,16 +164,6 @@ const saveFilters = () => {
   applyFilters();
   menu.value = false; // Close the menu
 };
-
-const fetchOnlineRowCount = () => {
-  getOnlineRowCount();
-};
-
-
-onMounted(() =>
-{
-  fetchOnlineRowCount();
-});
 
 </script>
 

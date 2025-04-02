@@ -2,7 +2,8 @@ import { ref, watchEffect } from "vue";
 
 
 export function useLocationManager(initialCountry, initialState) {
-  const supabase = useSupabaseClient();
+
+  const { getCountries, getStatesFromCountryName, getCities } = useDb();
 
   const countries = ref([]);
   const states = ref([]);
@@ -13,30 +14,18 @@ export function useLocationManager(initialCountry, initialState) {
   const selectedCity = ref(null);
 
   const fetchCountries = async () => {
-    const { data, error } = await supabase.from("countries").select("*");
-    if (error) throw error;
-    countries.value = data;
+    countries.value = await getCountries();
   };
 
   const fetchStates = async (country) => {
     //  console.log("fetchStates", country);
-    const { data, error } = await supabase
-      .from("states")
-      .select("*")
-      .eq("country_name", country);
-    if (error) throw error;
-    states.value = data;
+    states.value = await getStatesFromCountryName(country);
   // console.log("fetchStates", data);
   };
 
   const fetchCities = async (state) => {
     // console.log("fetchCities", state);
-    const { data, error } = await supabase
-      .from("cities")
-      .select("*")
-      .eq("state_name", state);
-    if (error) throw error;
-    cities.value = data;
+    cities.value = await getCities(state);
     // console.log("fetchCities", data);
   };
 

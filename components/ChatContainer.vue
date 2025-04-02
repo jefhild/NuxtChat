@@ -24,8 +24,8 @@
         <Users
           v-if="!showAIUsers"
           @user-selected="selectUser"
-          :onlineUsers="onlineUsers"
-          :offlineUsers="offlineUsers"
+          :onlineUsers="arrayOnlineUsers"
+          :offlineUsers="arrayOfflineUsers"
           :activeChats="activeChats"
           :userProfile="userProfile"
           :updateFilters="updateFilters"
@@ -115,38 +115,39 @@
 <script setup>
 import { ref, watch, onMounted, nextTick } from "vue";
 const route = useRoute();
+const router = useRouter();
+import { usePresenceStore } from '@/stores/presenceStore';
 import { useAuthStore } from "@/stores/authStore";
 import { useFetchAiUsers } from "@/composables/useFetchAiUsers";
-import { useFetchOnlineUsers } from "@/composables/useFetchOnlineUsers";
 import { useFetchOfflineUsers } from "@/composables/useFetchOfflineUsers";
+import { useFetchOnlineUsers } from "@/composables/useFetchOnlineUsers";
 import { useFetchActiveChats } from "@/composables/useFetchActiveChats";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
 
+const { getAIInteractionCount, getCurrentAIInteractionCount, getMessagesBetweenUsers, updateMessagesAsRead, updateAIInteractionCount, insertMessage, insertInteractionCount } = useDb();
+
 const supabase = useSupabaseClient();
 const authStore = useAuthStore();
+const presenceStore = usePresenceStore();
 const user = ref(authStore.user);
 const userProfile = ref(authStore.userProfile);
 const newMessage = ref("");
 const selectedUser = ref(null);
 const chatContainer = ref(null);
 const messages = ref([]); // Reactive state
-const onlineUsers = ref([]);
 const aiUsers = ref([]);
-const offlineUsers = ref([]);
 const activeChats = ref([]);
 const filters = ref({ gender_id: null });
 let realtimeMessages = null;
-let onlineUsersCheck = null;
 // const registrationDialog = ref(false);
 const dialogVisible = ref(false);
 const userEmail = ref("");
 const showAIUsers = ref(false); // State to toggle between Users and UsersAI
 
 
-
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
-const { onlineData, fetchOnlineUsers } = useFetchOnlineUsers(user);
-const { offlineData, fetchOfflineUsers } = useFetchOfflineUsers(user);
+const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
+const { arrayOfflineUsers, fetchOfflineUsers } = useFetchOfflineUsers(user);
 const { activeChatsData, fetchActiveChats } = useFetchActiveChats(user);
 const { blockedUsers, loadBlockedUsers } = useBlockedUsers(user);
 
@@ -182,16 +183,7 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
   }
 
   try {
-    const { data, error } = await supabase
-      .from("messages")
-      .select(
-        "id, sender_id, receiver_id, content, created_at, read, profiles!messages_sender_id_fkey(displayname)"
-      )
-      .or(
-        `and(sender_id.eq.${senderUserId},receiver_id.eq.${receiverUserId}),and(sender_id.eq.${receiverUserId},receiver_id.eq.${senderUserId})`
-      );
-
-    if (error) throw error;
+    const data = await getMessagesBetweenUsers(senderUserId, receiverUserId);
 
     // Filter out messages from/to blocked users
     const filteredMessages = data.filter(
@@ -216,7 +208,7 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
       read: msg.read,
     }));
 
-    console.log("Fetched and mapped messages:", messages.value);
+    //console.log("Fetched and mapped messages:", messages.value);
 
     scrollToBottom(); // Ensure the chat scrolls to the bottom after loading messages
 
@@ -229,23 +221,9 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
 };
 
 const markMessagesAsRead = async (receiverUserId, senderUserId) => {
-  try {
-    // console.log("receiverUserId:", receiverUserId);
-    // console.log("senderUserId:", senderUserId);
+  
+  await updateMessagesAsRead(receiverUserId, senderUserId);
 
-    const { error } = await supabase
-      .from("messages")
-      .update({ read: true })
-      .eq("receiver_id", receiverUserId)
-      .eq("sender_id", senderUserId)
-      .eq("read", false); // Ensures only unread messages are affected
-
-    if (error) throw error;
-
-    console.log("Messages marked as read");
-  } catch (error) {
-    console.error("Error marking messages as read:", error);
-  }
   document.title = `Chat | ImChatty `;
 
 };
@@ -272,31 +250,31 @@ const handleRealtimeMessages = (payload) => {
   }
 };
 
-const subscribeToPresenceUpdates = () =>
+watch(() => presenceStore.userIdsOnly, async (newVal) => 
+{
+  //console.log("Presence store updated:", newVal); // Debug log
+  if (!newVal.length)
   {
-  onlineUsersCheck = supabase
-      .channel("public.presence")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "presence" }, // Listen to any change in presence table
-        async () =>
-        {
-          await fetchOnlineUsers(filters.value);
-        }
-      )
-      .subscribe();
-  };
+    arrayOnlineUsers.value = [];
+    return;
+  }
+
+  //console.log("Online users:", newVal); // Debug log
+  await fetchOnlineUsers(filters.value, newVal, userProfile.value.user_id);
+  await fetchOfflineUsers(filters.value, newVal, userProfile.value.user_id);
+});
 
 onMounted(async () => {
   await authStore.checkAuth();
   user.value = authStore.user;
   userProfile.value = authStore.userProfile;
   showAIUsers.value = route.query.user === "ai";
+
+  //Have to do them at least once on mount because if we go to another page and come back, we need to fetch the data again
+  await fetchOnlineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
+  await fetchOfflineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
   fetchAiUsers(filters.value);
-  fetchOnlineUsers(filters.value);
-  fetchOfflineUsers(filters.value);
   fetchActiveChats();
-  subscribeToPresenceUpdates();
 
   // await loadBlockedUsers();
   loadBlockedUsers(); // Load blocked users for the current user
@@ -343,11 +321,6 @@ onMounted(async () => {
   }
 });
 
-onUnmounted(() =>
-{
-  if (onlineUsersCheck) supabase.removeChannel(onlineUsersCheck);
-});
-
 // Select user to chat with
 const selectUser = (user) => {
   // console.log("Selected user (ChatContainer):", user);
@@ -383,19 +356,9 @@ const sendMessage = async () => {
     const userMessage = newMessage.value.trim();
 
     try {
-      // Insert the user's message into the messages table
-      const { data, error } = await supabase
-        .from("messages")
-        .insert({
-          sender_id: senderUserId,
-          receiver_id: receiverUserId,
-          content: userMessage,
-        })
-        .select("*");
+      const data = await insertMessage(receiverUserId, senderUserId, userMessage);
 
-      if (error) {
-        console.error("Error sending message:", error);
-      } else if (data && data.length > 0) {
+      if (data && data.length > 0) {
         // console.log("Message sent successfully:", data);
         newMessage.value = ""; // Reset the message input field
 
@@ -410,25 +373,15 @@ const sendMessage = async () => {
           sender: userProfile.value.displayname, // Assuming current user's displayname is needed
         });
         scrollToBottom(); // Ensure the chat scrolls to the bottom when a new message is added
-
+ 
         // If the selected user is an AI, generate a response by calling the local API
         if (isAI) {
           const aiResponse = await fetchAiResponse(userMessage, selectedUser);
           // console.log("fetching response from AI:", aiResponse);
           if (aiResponse) {
             // Insert the AI response into the messages table
-            const { data: aiData, error: aiError } = await supabase
-              .from("messages")
-              .insert({
-                sender_id: receiverUserId, // AI as the sender
-                receiver_id: senderUserId, // Original user as the receiver
-                content: aiResponse,
-              })
-              .select("*");
-
-            if (aiError) {
-              console.error("Error storing AI response:", aiError);
-            } else if (aiData && aiData.length > 0) {
+            const aiData = await insertMessage(senderUserId, receiverUserId, aiResponse);
+            if (aiData && aiData.length > 0) {
               console.log("AI response stored successfully:", aiData);
 
               // Push the AI response to the messages array for immediate UI update
@@ -447,30 +400,12 @@ const sendMessage = async () => {
           }
 
           // Increment AI interaction count after a successful AI response
-          const { data: interactionData, error: updateError } = await supabase
-            .from("user_ai_interactions")
-            .select("interaction_count")
-            .eq("user_id", senderUserId)
-            .single();
+          const interactionData = await getAIInteractionCount(senderUserId);
 
-          if (updateError) {
-            console.error(
-              "Error fetching interaction count for update:",
-              updateError
-            );
-          } else {
+          if (interactionData) {
             const newCount = interactionData.interaction_count + 1;
-            const { error: updateInteractionError } = await supabase
-              .from("user_ai_interactions")
-              .update({ interaction_count: newCount })
-              .eq("user_id", senderUserId);
 
-            if (updateInteractionError) {
-              console.error(
-                "Error updating interaction count:",
-                updateInteractionError
-              );
-            }
+            await updateAIInteractionCount(senderUserId, newCount);
           }
         }
       } else {
@@ -531,23 +466,14 @@ const checkAiInteractionLimit = async () => {
     // console.log("authStore.user.is_anonymous:", authStore.user.is_anonymous);
 
     // Fetch the current interaction count for the user from Supabase
-    const { data, error } = await supabase
-      .from("user_ai_interactions")
-      .select("interaction_count")
-      .eq("user_id", authStore.user?.id)
-      .single();
+    const { data, error } = await getCurrentAIInteractionCount(authStore.user?.id);
 
     if (error) {
       if (error.code === "PGRST116") {
         console.log("User not found in user_ai_interactions, adding new user.");
 
         // Insert a new row with the initial interaction count set to 1
-        const { insertError } = await supabase
-          .from("user_ai_interactions")
-          .insert({
-            user_id: authStore.user?.id,
-            interaction_count: 1,
-          });
+        const insertError = await insertInteractionCount(authStore.user?.id,1);
 
         if (insertError) {
           console.error(
@@ -584,6 +510,7 @@ const showRegistrationPrompt = () => {
   dialogVisible.value = true;
 };
 
+/*
 // Function to submit the registration form
 const submitRegistration = async () => {
   if (!userEmail.value) {
@@ -599,7 +526,7 @@ const submitRegistration = async () => {
 // Function to close the dialog without action
 const closeRegistrationDialog = () => {
   registrationDialog.value = false;
-};
+};*/
 
 const toggleUsers = (aiView) => {
   showAIUsers.value = aiView;
@@ -613,27 +540,15 @@ const updateFilters = async (newFilters) => {
   // console.log("Filters updated:", newFilters); // Debug log
   filters.value = newFilters;
   fetchAiUsers(filters.value);
-  fetchOnlineUsers(filters.value);
-  fetchOfflineUsers(filters.value);
   fetchActiveChats();
 };
 
-// Watch the data from composable and update onlineUsers
+// Watch the data from composable 
 watch(aiData, (newData) => {
   aiUsers.value = newData;
 });
 
-// Watch the data from composable and update onlineUsers
-watch(onlineData, (newData) => {
-  onlineUsers.value = newData;
-}); 
-
-// Watch the data from composable and update onlineUsers
-watch(offlineData, (newData) => {
-  offlineUsers.value = newData;
-});
-
-// Watch the data from composable and update onlineUsers
+// Watch the data from composable
 watch(activeChatsData, (newData) => {
   activeChats.value = newData;
 });
@@ -641,8 +556,6 @@ watch(activeChatsData, (newData) => {
 const refreshData = async () => {
   // console.log("refreshData"); // Debug log
   fetchAiUsers(filters.value);
-  fetchOnlineUsers(filters.value);
-  fetchOfflineUsers(filters.value);
   fetchActiveChats();
 };
 </script>

@@ -1,15 +1,13 @@
 // composables/useFetchOnlineUsers.js
-
-export function useFetchOnlineUsers(user) {
-  const supabase = useSupabaseClient();
-
+export function useFetchOnlineUsers() {
+  const { getUsersFromIds } = useDb();
   // Reactive states
-  const onlineData = ref([]);
+  const arrayOnlineUsers = ref([]);
   const error = ref(null);
   const loading = ref(false);
 
   // Method to fetch online users
-  const fetchOnlineUsers = async (filters) => {
+  const fetchOnlineUsers = async (filters, arrayOfUserIds, userId) => {
     const { gender_id, age_range } = filters;
     // console.log("Fetching online users with filters:", filters); // Debug log
     loading.value = true; // Set loading state to true
@@ -21,28 +19,29 @@ export function useFetchOnlineUsers(user) {
 
     // console.log("Age Range: ", min_age, max_age); // Debug log
 
-    const response = await supabase.rpc("fetch_online_profiles", {
-      logged_in_user_id: user.value?.id,
-      gender_filter: gender_id,
-      min_age: min_age,
-      max_age: max_age,
-    });
+
+    const { data, errorDb } = await getUsersFromIds(arrayOfUserIds, gender_id, min_age, max_age, userId);
 
     loading.value = false; // Reset loading state after the fetch
 
-    if (response.error) {
-      console.error("Error fetching online users:", response.error);
-      error.value = response.error;
-      onlineData.value = []; // Clear data in case of error
-    } else {
-      onlineData.value = response.data; // Set the fetched data
-      // console.log("Fetched online users:", response.data); // Debug log
+    if(errorDb)
+    {
+      error.value = errorDb;
+      arrayOnlineUsers.value = [];
     }
+    else
+    {
+      arrayOnlineUsers.value = data;
+    }
+
+    // console.log("Fetched online users:", arrayOnlineUsers.value); // Debug log
+    
+      
   };
 
   // Return reactive states and methods
   return {
-    onlineData,
+    arrayOnlineUsers,
     fetchOnlineUsers,
   };
 }

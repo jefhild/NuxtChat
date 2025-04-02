@@ -5,7 +5,7 @@
         <v-row no-gutters>
           <v-col>
             <p class="text-center green-text-poppins mb-2">
-              {{ rowCount }} users online
+              <!-- {{ rowCount }} users online -->
             </p>
             <v-card>
               <v-card-title
@@ -76,16 +76,9 @@
 </template>
 
 <script setup>
-import { useOnlineRowCount } from "@/composables/useOnlineRowCount";
-
-const { rowCount, getOnlineRowCount } = useOnlineRowCount();
 const highlight = ref(false);
 
 const selectedModel = ref("LoginGoogle");
-
-const fetchOnlineRowCount = () => {
-  getOnlineRowCount();
-};
 
 const switchModel = (model) => {
   selectedModel.value = model;
@@ -95,10 +88,6 @@ const switchModel = (model) => {
     highlight.value = true;
   });
 };
-
-onMounted(() => {
-  fetchOnlineRowCount();
-});
 </script>
 
 <style scoped>

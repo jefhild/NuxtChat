@@ -66,7 +66,8 @@
 
 <script lang="ts" setup>
 import { useBlockedProfiles } from "@/composables/useBlockedProfiles";
-import { getAvatar } from "@/utils/userUtils"; // Import the helper function
+// import { getAvatar } from "@/utils/userUtils"; // Import the helper function
+import { getAvatar } from "@/composables/useUserUtils";
 
 // interface Profile {
 //   profile_id: string;
@@ -82,7 +83,7 @@ import { getAvatar } from "@/utils/userUtils"; // Import the helper function
 
 const props = defineProps<{ userId: string }>();
 
-const { blockedProfiles, unblockUser } = useBlockedProfiles(props.userId);
+const { blockedProfiles, unblockAUser } = useBlockedProfiles(props.userId);
 
 const getProfileImage = (avatar_url: string | null, gender_id: number) => {
   return getAvatar(avatar_url, gender_id);
@@ -90,7 +91,7 @@ const getProfileImage = (avatar_url: string | null, gender_id: number) => {
 
 // Method to handle unblock button click
 const handleUnblock = (userId: string) => {
-  unblockUser(userId);
+  unblockAUser(userId);
 };
 </script>
 

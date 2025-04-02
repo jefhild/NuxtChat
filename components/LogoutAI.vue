@@ -77,6 +77,8 @@
 import { useAuthStore } from "@/stores/authStore";
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+const { insertFeedback } = useDb();
+
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -205,7 +207,7 @@ const sendMessage = async () => {
       }
       
       submittingtoDatabase.value = true;
-      await authStore.insertFeedback(previosUserInput.value);
+      await insertFeedback(previosUserInput.value);
       
     
       aiResponse.value = "Thanks! I'll sure to send it to my boss... if I had one! 😅";  

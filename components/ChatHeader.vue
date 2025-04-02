@@ -46,16 +46,19 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from "@/stores/authStore";
+// import { useAuthStore } from "@/stores/authStore";
 
-import {
-  getAvatar,
-  getAvatarIcon,
-  getGenderColor,
-  getGenderColorClass,
-} from "@/utils/userUtils";
+// import {
+//   getAvatar,
+//   getAvatarIcon,
+//   getGenderColor,
+//   getGenderColorClass,
+// } from "@/utils/userUtils";
+import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
 
-const authStore = useAuthStore();
+const { insertBlockedUser, insertFavorite, unblockUser, deleteFavorite, upvoteUserProfile, downvoteUserProfile} = useDb();
+
+// const authStore = useAuthStore();
 // const tooltipText = ref("View profile of the user");
 
 const props = defineProps<{
@@ -79,7 +82,6 @@ const props = defineProps<{
   };
 }>();
 
-const supabase = useSupabaseClient();
 const hasUpvoted = ref(false);
 const hasDownvoted = ref(false);
 watch(
@@ -103,26 +105,16 @@ const toggleBlockUser = async () => {
   const { user_id, isBlocked } = props.selectedUser;
 
   if (isBlocked) {
-    const { error } = await supabase
-      .from("blocked_users")
-      .delete()
-      .eq("user_id", props.currentUser.id)
-      .eq("blocked_user_id", user_id);
+    const { data, error } = await unblockUser(props.currentUser.id, user_id);
 
-    if (error) {
-      console.error("Error unblocking user:", error);
-    } else {
+    if ( !error ) {
       props.selectedUser.isBlocked = false;
       console.log("User unblocked");
     }
   } else {
-    const { error } = await supabase
-      .from("blocked_users")
-      .insert({ user_id: props.currentUser.id, blocked_user_id: user_id });
-
-    if (error) {
-      console.error("Error blocking user:", error);
-    } else {
+    const error = await insertBlockedUser(props.currentUser.id, user_id);
+    
+    if ( !error ) {
       props.selectedUser.isBlocked = true;
       console.log("User blocked");
     }
@@ -136,26 +128,16 @@ const toggleFavorite = async () => {
   const { user_id, is_favorite } = props.selectedUser;
 
   if (is_favorite) {
-    const { error } = await supabase
-      .from("favorites")
-      .delete()
-      .eq("user_id", props.currentUser.id)
-      .eq("favorite_user_id", user_id);
+    const error = await deleteFavorite(props.currentUser.id, user_id); 
 
-    if (error) {
-      console.error("Error removing favorite:", error);
-    } else {
+    if (!error) {
       props.selectedUser.is_favorite = false;
       console.log("Favorite removed");
     }
   } else {
-    const { error } = await supabase
-      .from("favorites")
-      .insert({ user_id: props.currentUser.id, favorite_user_id: user_id });
+    const error = await insertFavorite(props.currentUser.id, user_id);
 
-    if (error) {
-      console.error("Error adding favorite:", error);
-    } else {
+    if ( !error ) {
       props.selectedUser.is_favorite = true;
       console.log("Favorite added");
     }
@@ -170,14 +152,9 @@ const upvote = async (targetUserId: string) => {
 
   const voterUserId = props.currentUser.id;
 
-  const { error } = await supabase.rpc("upvote_profile", {
-    target_user_id: targetUserId,
-    voter_user_id: voterUserId,
-  });
+  const error = await upvoteUserProfile(targetUserId, voterUserId);
 
-  if (error) {
-    console.error("Error upvoting profile:", error.message);
-  } else {
+  if (!error) {
     console.log("Profile upvoted successfully");
     if (props.selectedUser) {
       props.selectedUser.upvotes_count += 1; // Update the upvotes count locally
@@ -194,14 +171,9 @@ const downvote = async (targetUserId: string) => {
 
   const voterUserId = props.currentUser.id;
 
-  const { error } = await supabase.rpc("downvote_profile", {
-    target_user_id: targetUserId,
-    voter_user_id: voterUserId,
-  });
+  const error = await downvoteUserProfile(targetUserId, voterUserId);
 
-  if (error) {
-    console.error("Error downvoting profile:", error.message);
-  } else {
+  if(!error) {
     console.log("Profile downvoted successfully");
     if (props.selectedUser) {
       props.selectedUser.downvotes_count += 1; // Update the downvotes count locally

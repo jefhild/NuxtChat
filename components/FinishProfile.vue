@@ -130,9 +130,9 @@ const sendMessage = async () => {
 
 		site_url: `Extract a URL from user input.
       - If the input includes a request for a URL (e.g., "I want my website to be X"), extract only the URL.
-      - If the input says they don't want to share a URL, return "No URL".
+      - If the input says they don't want to share a URL, return "No URL" without the "".
       - If input contains hate speech, return an error message starting with "Error:...".
-      Otherwise, return only the valid URL or "No URL" without extra text,"", quotes, or punctuation.
+      Otherwise, return only the valid URL or "No URL" without "" or extra text, quotes, or punctuation.
       User input: ${previosUserInput.value}`,
 	};
 
@@ -247,7 +247,10 @@ onMounted(() => {
 		tagline: "Your tagline is a short phrase that represents you. It could be a quote, a fun fact, or a quick description of who you are. What would you like yours to be?",
 		interests: "What brings you to this website? Are you here to chat, make new friends?",
 		site_url: "If you have a personal website or social profile you'd like to share, enter the link below.",
+		provider: "Enter an email address to register your account and have full access to the site.",
 	};
+
+	console.log("infoLeft: ", infoLeft);
 
 	infoLeft.forEach((key) =>
 	{
