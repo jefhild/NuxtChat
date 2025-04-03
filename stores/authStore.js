@@ -46,7 +46,7 @@ export const useAuthStore = defineStore("authStore", {
       } else
       {
         this.clearUser();
-        if (error) console.error("Check auth error:", error.message);
+        if (error) console.error("Check auth error email:", error.message);
       }
     },
 

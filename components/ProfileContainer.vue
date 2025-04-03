@@ -351,7 +351,7 @@ const {
   getGenders,
   updateGender,
   hasInterests,
-  hasUsername,
+  hasEmail,
   updateProfile,
   authUpdateProfile,
 } = useDb();
@@ -552,18 +552,18 @@ const openGenerateBioDialog = async () => {
 
 const checkIfFinished = async () => {
   const userHasInterests = await hasInterests(userProfile.value.user_id);
-  const userHasUsername = await hasUsername(userProfile.value.user_id);
-  console.log("userHasInterests: ", userHasInterests);
-  console.log("userHasUsername: ", userHasUsername);
-  //...........Createuserhasemail
-  isFinished.value = userProfile.value.tagline && userHasInterests && hasUsername;
+  const userHasEmail = await hasEmail(userProfile.value.user_id);
+  // console.log("userHasInterests: ", userHasInterests);
+  // console.log("userHasEmail: ", userHasEmail);
+
+  isFinished.value = userProfile.value.tagline && userHasInterests && userHasEmail;
   infoLeft.value = []; // Clear the array
 
   const fields = {
     tagline: userProfile.value.tagline,
     site_url: userProfile.value.site_url,
     interests: userHasInterests,
-    provider: userHasUsername,
+    email: userHasEmail,
   };
 
   Object.entries(fields).forEach(([key, value]) => {
