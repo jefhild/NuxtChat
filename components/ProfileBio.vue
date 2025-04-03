@@ -7,17 +7,15 @@
     outlined
   ></v-textarea>
   <div v-else>
-    <!-- <label>Bio:</label> -->
-    <p class="text-h6">{{ bio }}</p>
+    <p class="bio-paragraph">{{ bio }}</p>
   </div>
 </template>
 
 <script setup>
-
 const props = defineProps({
   bio: {
     type: String,
-    default: '',
+    default: "",
     required: true,
   },
   isEditable: {
@@ -26,20 +24,28 @@ const props = defineProps({
   },
 });
 const bio = ref(props.bio);
-watch(() => props.bio, (newBio) =>
-{
-  bio.value = newBio;
-});
+watch(
+  () => props.bio,
+  (newBio) => {
+    bio.value = newBio;
+  }
+);
 
-const emits = defineEmits(['updateBio']);
-
-
+const emits = defineEmits(["updateBio"]);
 
 watch(bio, (newBio) => {
-  emits('updateBio', newBio);
+  emits("updateBio", newBio);
 });
 </script>
 
-<style>
-/* Add any additional styles if needed */
+<style scoped>
+.bio-paragraph {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #374151; /* Tailwind's gray-700 */
+  font-style: italic;
+  border-left: 4px solid #d1d5db; /* Tailwind's gray-300 */
+  padding-left: 1rem;
+  text-align: justify;
+}
 </style>
