@@ -1,4 +1,4 @@
-import { getRegisteredUsersIds } from "../lib/supabaseHelpers"; // Adjust path as needed
+import { getRegisteredUsersIds } from "../lib/supabaseHelpers"; 
 
 export async function getAllDynamicRoutes() {
   try {

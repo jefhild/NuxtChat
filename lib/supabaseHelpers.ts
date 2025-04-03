@@ -6,6 +6,5 @@ const supabase = createClient(
 );
 
 export async function getRegisteredUsersIds() {
-
-  return await supabase.from("profiles").select("user_id").neq("username","");
+  return await supabase.from("profiles").select("user_id");
 }
