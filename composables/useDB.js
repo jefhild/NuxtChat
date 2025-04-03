@@ -1,6 +1,7 @@
 export const useDb = () =>
 {
   const supabase = useSupabaseClient();
+  const config = useRuntimeConfig()
   let inactivityCheckInterval = null;
 
   /*---------------*/
@@ -736,7 +737,7 @@ export const useDb = () =>
     {
       console.error("Error inserting profile:", error);
     } 
-      return error;
+    return error;
   };
 
   const insertMessage = async (receiverId, senderId, message) =>{
@@ -962,29 +963,22 @@ export const useDb = () =>
     return true;
   };
 
-  const hasUsername = async (userId) => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("user_id", userId)
-      .single();
+  const hasEmail = async (userId) =>
+  {
+    const { data, error } = await authGetUser();
 
-    console.log("Checking username:", data);
-
-    if (error)
+    if (error || !data?.user)
     {
-      console.error("Error fetching username:", error);
+      console.error("❌ Could not fetch user:", error?.message);
       return false;
     }
 
-    if (!data || data.length === 0)
-    {
-      return false;
-    }
+    const user = data.user;
+    const hasEmailLinked = !!user.email && user.email_confirmed_at !== null;
 
-    return true;
-
+    return hasEmailLinked;
   };
+
   const upvoteUserProfile = async (targetUserId, voterUserId) =>{
     const { error } = await supabase.rpc("upvote_profile", {
       target_user_id: targetUserId,
@@ -1084,12 +1078,24 @@ export const useDb = () =>
     //console.log("Getting user");
     const { data, error } = await supabase.auth.getUser();
 
+    // console.log("User data:", data);
     return { data, error };
   }
 
   const authGetSession = async () => {
     const { data , error } =
       await supabase.auth.getSession();
+
+    return { data, error };
+  };
+
+  const authRefreshSession = async () => {
+    const { data, error } = await supabase.auth.refreshSession();
+
+    if (error)
+    {
+      console.error("Error refreshing session:", error);
+    }
 
     return { data, error };
   };
@@ -1152,16 +1158,30 @@ export const useDb = () =>
     });
   }; 
 
-  const linkIdentity = async (provider, redirectTo) => {
+  const linkIdentity = async ({ provider, email, redirectTo }) =>{
+    console.log("Linking identity with provider:", provider);
     const { data, error } = await supabase.auth.linkIdentity({
-      provider: provider,
+      provider,
       options: {
-        redirectTo: redirectTo,
+        ...(email && { email }),     // Only include email if it's defined
+        redirectTo,
       },
     });
 
-    return {data, error};
+    return { data, error };
   };
+
+  const updateUserEmail = async (mappedEmail) => {
+    const { data, error } = await supabase.auth.updateUser({ email: mappedEmail });
+
+    if (error)
+    {
+      console.error("Error updating email:", error);
+    }
+
+    return { data, error };
+  }; 
+
 
   const authMarkUserAsAnonymous = async () => {
     //console.log("Marking user as anonymous");
@@ -1245,7 +1265,7 @@ export const useDb = () =>
 
     checkDisplayNameExists,
     hasInterests,
-    hasUsername,
+    hasEmail,
     upvoteUserProfile,
     downvoteUserProfile,
     uploadProfilePhoto,
@@ -1255,12 +1275,14 @@ export const useDb = () =>
 
     authGetUser,
     authGetSession,
+    authRefreshSession,
     authUpdateProfile,
     authSignOut,
     signInWithOtp,
     signInAnonymously,
     signInWithOAuth,
     linkIdentity,
+    updateUserEmail,
     authMarkUserAsAnonymous,
   };
 };
