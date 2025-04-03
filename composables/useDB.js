@@ -304,14 +304,14 @@ export const useDb = () =>
       return { data, error};
   };
 
-  // const getRegisteredUsersIds = async () => {
-  //   const { data , error } = await supabase
-  //     .from("profiles")
-  //     .select("user_id")
-  //     .neq("username", "");
+  const getRegisteredUsersIds = async () => {
+    const { data , error } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .neq("username", "");
 
-  //     return { data, error};
-  // };  
+      return { data, error};
+  };  
 
   const getAllUsersIdsWithoutAvatar = async () => {
     const { data, error } = await supabase
