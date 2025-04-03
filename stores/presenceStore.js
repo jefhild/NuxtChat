@@ -58,7 +58,7 @@ export const usePresenceStore = defineStore('presenceStore', {
       {
         this.status = status;
 
-        console.log("Tracking user with status:", status);
+        // console.log("Tracking user with status:", status);
         await this.channel.track({
           online_at: new Date().toISOString(),
           status: status
