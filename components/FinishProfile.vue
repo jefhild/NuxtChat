@@ -64,16 +64,12 @@
 		<v-card-actions class="pr-4 pb-4">
 			<v-btn color="red" @click="closeDialog"> SKIP </v-btn>
 		</v-card-actions>
-		<!-- Circular Progress Bar Overlay -->
-			<v-overlay v-model="submittingtoDatabase" contained class="align-center justify-center" persistent>
-				<v-progress-circular color="primary" indeterminate size="64" />
-			</v-overlay>
 	</v-card>
 </template>
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
-const { updateTagline, updateSiteURL, updateInterests } = useDb();
+const { updateTagline, updateSiteURL, updateInterests, updateUserEmail } = useDb();
 
 const emit = defineEmits(["closeDialog"]);
 
@@ -91,6 +87,7 @@ const mounted = ref(false);
 const mappedTagline = ref("");
 const mappedURL = ref(""); 
 const mappedInterests = ref("");
+const mappedEmail = ref("");
 const userResponses = ref({});
 
 const props = defineProps({
@@ -134,6 +131,12 @@ const sendMessage = async () => {
       - If input contains hate speech, return an error message starting with "Error:...".
       Otherwise, return only the valid URL or "No URL" without "" or extra text, quotes, or punctuation.
       User input: ${previosUserInput.value}`,
+
+		email: `Extract an email address from user input.
+	  - If the input includes a request for an email (e.g., "I want my email to be X"), extract only the email.
+	  - If the input contains hate speech, or anything that isn't an email address return an error message starting with "Error:...".
+	  Otherwise, return only the valid email without any extra text, quotes, "", or punctuation.
+	  User input: ${previosUserInput.value}`,
 	};
 
 	if (!userPrompts[currentKey])
@@ -172,6 +175,7 @@ const sendMessage = async () => {
 				tagline: () => (mappedTagline.value = response.aiResponse),
 				interests: () => (mappedInterests.value = response.aiResponse),
 				site_url: () => (mappedURL.value = response.aiResponse === "No URL" ? "" : response.aiResponse),
+				email: () => (mappedEmail.value = response.aiResponse),
 			};
 
 			if (mappedValues[currentKey]) mappedValues[currentKey]();
@@ -179,6 +183,7 @@ const sendMessage = async () => {
 			/*console.log("mappedTagline: ", mappedTagline.value);
 			console.log("mappedInterests: ", mappedInterests.value);
 			console.log("mappedURL: ", mappedURL.value);*/
+			console.log("mappedEmail: ", mappedEmail.value);
 		}
 	}catch(errorFirst){console.error(errorFirst);}
 
@@ -229,17 +234,34 @@ const sendMessage = async () => {
 			userProfile.site_url = mappedURL.value.trim();
 		}
 
+		if (infoLeft.includes("email"))
+		{
+			const { error } = await updateUserEmail( mappedEmail.value.trim());
+
+			//link the email to the user account
+			if (error)
+			{
+				console.error("Error linking email: ", error);
+				aiResponse.value = "Oops! Something went wrong. Please try again.";
+				return;
+			}else{
+				aiResponse.value = "Check your email for the confirm link! (It may be in your spam folder.)";
+			}
+		}
+
 		closeDialog();
 	}
 };
 
 const closeDialog = async () => {
+	await new Promise(resolve => setTimeout(resolve, 4000));
 	emit("closeDialog");
 };
 
 
 onMounted(() => {
 	mounted.value = true;
+	console.log("userprofile: ", userProfile);
 
 	let questionIndex = 0;
 
@@ -247,7 +269,7 @@ onMounted(() => {
 		tagline: "Your tagline is a short phrase that represents you. It could be a quote, a fun fact, or a quick description of who you are. What would you like yours to be?",
 		interests: "What brings you to this website? Are you here to chat, make new friends?",
 		site_url: "If you have a personal website or social profile you'd like to share, enter the link below.",
-		provider: "Enter an email address to register your account and have full access to the site.",
+		email: "Enter an email address to register your account and have full access to the site.",
 	};
 
 	console.log("infoLeft: ", infoLeft);
@@ -262,9 +284,9 @@ onMounted(() => {
 		}
 	});
 
-	/*console.log(questionKeyMap);
-	console.log(questionKeyMap[currentQuestionIndex.value]);	
-	console.log("user responses: ", userResponses.value);*/
+	// console.log(questionKeyMap);
+	// console.log(questionKeyMap[currentQuestionIndex.value]);	
+	// console.log("user responses: ", userResponses.value);
 });
 </script>
 
