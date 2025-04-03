@@ -100,22 +100,6 @@
             ><v-col v-if="!isEditable" cols="auto" class="mt-1"
               ><label>Gender:</label></v-col
             ><v-col>
-              <!-- {{ selectedGender }} -->
-
-              <!-- <GenderSelection
-                :selectedGender="userProfile.gender_id"
-                :genders="genders"
-                :isEditable="isEditable"
-                @updateGender="updateGender" /> -->
-
-              <!-- <GenderSelection
-                v-model="selectedGender"
-                :selectedGender="selectedGender"
-                :genders="genders"
-                :isEditable="isEditable"
-                @validation="handleValidation"
-              /> -->
-
               <GenderSelection
                 v-model="selectedGender"
                 :genders="genders"
@@ -153,7 +137,7 @@
           />
         </v-col>
       </v-row>
-      <v-row no-gutters>
+      <v-row >
         <v-col><label>About Me:</label> </v-col>
         <v-col align="right">
           <v-btn
@@ -167,8 +151,6 @@
         > </v-row
       ><v-row no-gutters>
         <v-col>
-          <!-- <label>About Me:</label> -->
-
           <ProfileBio
             :bio="userProfile.bio ?? ''"
             :isEditable="isEditable"
