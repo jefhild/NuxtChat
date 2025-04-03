@@ -7,10 +7,6 @@
     <v-row justify="center">
       <v-col cols="12" md="8">
         <v-card class="mx-auto" max-width="400" v-if="profile">
-          <!-- <ProfilePhoto2
-            :userId="profile.user_id"
-          /> -->
-
           <v-img
             height="200px"
             :src="profile?.avatar_url || getPlaceholderImage(profile?.gender)"
@@ -48,8 +44,8 @@
             <v-row v-if="profile.bio"
               ><v-col class="text-h6">About Me:</v-col></v-row
             >
-            <v-row v-if="profile.bio" no-gutters>
-              <v-col class="ml-2">{{ profile?.bio }}</v-col></v-row
+            <v-row v-if="profile.bio">
+              <v-col class="bio-paragraph">{{ profile?.bio }}</v-col></v-row
             >
           </v-card-text>
           <v-card-actions
@@ -236,5 +232,15 @@ onMounted(async () => {
 .subtitle-2 {
   font-size: 1rem;
   color: #9e9e9e;
+}
+
+.bio-paragraph {
+  font-size: 1rem;
+  line-height: 1.25;
+  color: #374151; /* Tailwind's gray-700 */
+  font-style: italic;
+  border-left: 4px solid #d1d5db; /* Tailwind's gray-300 */
+  padding-left: 1rem;
+  text-align: justify;
 }
 </style>
