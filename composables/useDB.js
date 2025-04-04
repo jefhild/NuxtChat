@@ -587,8 +587,8 @@ export const useDb = () =>
 
   const updateTagline = async (tagline, userId) =>
   {
-    console.log("Updating tagline:", tagline);
-    console.log("User ID:", userId);
+    // console.log("Updating tagline:", tagline);
+    // console.log("User ID:", userId);
 
     const { data, error } = await supabase
       .from('profiles')
@@ -602,18 +602,23 @@ export const useDb = () =>
   };
 
   const updateProfilePhoto = async (avatarUrl, userId) => {
-    const error = await supabase
-      .from < Profile > ("profiles")
+    const status = await supabase
+      .from("profiles")
       .update({ avatar_url: avatarUrl })
       .eq("user_id", userId);
 
-    return error;
+    if (status && status.status !== 204)
+    {
+      console.error("Error deleting chat:", error);
+    }
+
+    return status;
   };
 
   const updateSiteURL = async (siteUrl, userId) =>
   {
-    console.log("Updating url:", siteUrl);
-    console.log("User ID:", userId);
+    // console.log("Updating url:", siteUrl);
+    // console.log("User ID:", userId);
     const { error } = await supabase
       .from('profiles')
       .update({ site_url: siteUrl })
@@ -1077,17 +1082,10 @@ export const useDb = () =>
   const authGetUser = async () => {
     //console.log("Getting user");
     const { data, error } = await supabase.auth.getUser();
-
     // console.log("User data:", data);
     return { data, error };
   }
 
-  const authGetSession = async () => {
-    const { data , error } =
-      await supabase.auth.getSession();
-
-    return { data, error };
-  };
 
   const authRefreshSession = async () => {
     const { data, error } = await supabase.auth.refreshSession();
@@ -1274,7 +1272,6 @@ export const useDb = () =>
     checkInactivityForAllUsers,
 
     authGetUser,
-    authGetSession,
     authRefreshSession,
     authUpdateProfile,
     authSignOut,

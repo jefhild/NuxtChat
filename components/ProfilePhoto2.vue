@@ -1,17 +1,10 @@
 <template>
   <v-row no-gutters>
     <v-col class="d-flex flex-column align-center">
-      <v-btn v-if="editable" variant="text" color="blue" @click="openDialog"
-        >Add Photo</v-btn
-      >
+      <v-btn v-if="editable" variant="text" color="blue" @click="openDialog">Add Photo</v-btn>
       <div class="photo-container">
         <NuxtImg :src="photopath" class="cover-image" />
-        <v-btn
-          v-if="photopath && editable"
-          icon
-          class="delete-btn"
-          @click="handleDeletePhoto"
-        >
+        <v-btn v-if="photopath && editable" icon class="delete-btn" @click="handleDeletePhoto">
           <v-icon size="small">mdi-delete</v-icon>
         </v-btn>
       </div>
@@ -35,6 +28,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useProfilePhoto } from "@/composables/useProfilePhoto";
+
+const { hasEmail } = useDb();
+const isRegistered = ref(false);
 
 const props = defineProps({
   userId: {
@@ -77,7 +73,12 @@ const uploadPhoto = async () => {
   dialog.value = false; // Close the dialog after the image is uploaded
 };
 
-onMounted(loadProfilePhoto);
+
+onMounted(async () => {
+  await loadProfilePhoto();
+
+  isRegistered.value = await hasEmail(props.userId);
+ } );
 </script>
 
 <style scoped>

@@ -12,22 +12,24 @@
 						<v-col class="text-center">
 							<v-container class="chat-container">
 								<!-- Display the conversation -->
-								<transition-group name="chat" tag="div">
-									<!--User response-->
-									<div v-if="!showUserBubble && aiResponse" class="chat-bubble user-message">
-										<v-avatar size="24" class="user-avatar">
-											<v-img src="/images/avatars/anonymous.png" />
-										</v-avatar>
-										{{ previosUserInput }}
-									</div>
 
-									<p class="chat-bubble bot-message" :key="'bot-message'" v-if="aiResponse">
+								<!--User response-->
+								<div v-if="!showUserBubble && aiResponse " class="chat-bubble user-message">
+									<v-avatar size="24" class="user-avatar">
+										<v-img src="/images/avatars/anonymous.png" />
+									</v-avatar>
+									{{ previosUserInput }}
+								</div>
+
+								<transition-group name="chat" tag="div">
+									<p class="chat-bubble bot-message" :key="'aiResponse-' + currentQuestionIndex"
+										v-if="aiResponse">
 										{{ aiResponse }}
 										<v-avatar size="32" class="bot-avatar">
 											<v-img src="/robot.png" />
 										</v-avatar>
 									</p>
-									<p class="chat-bubble bot-message" :key="'bot-message'"
+									<p class="chat-bubble bot-message" :key="'question-' + currentQuestionIndex"
 										v-if="mounted && questions[currentQuestionIndex]">
 										{{ questions[currentQuestionIndex] }}
 										<v-avatar size="32" class="bot-avatar">
@@ -61,8 +63,8 @@
 				</v-col>
 			</v-row>
 		</v-card-text>
-		<v-card-actions class="pr-4 pb-4">
-			<v-btn color="red" @click="closeDialog"> SKIP </v-btn>
+		<v-card-actions v-if="!isDone" class="pr-4 pb-4">
+			<v-btn color="red" @click="() => nextQuestion()"> SKIP </v-btn>
 		</v-card-actions>
 	</v-card>
 </template>
@@ -89,6 +91,7 @@ const mappedURL = ref("");
 const mappedInterests = ref("");
 const mappedEmail = ref("");
 const userResponses = ref({});
+const isDone = ref(false);
 
 const props = defineProps({
 	infoLeft: {
@@ -103,11 +106,33 @@ const questions = ref([]);
 
 const questionKeyMap = {};
 
+const nextQuestion = async(aiAnswer = "Let's move on") =>
+{
+	currentQuestionIndex.value++;
+	aiResponse.value = aiAnswer; 
+	if (currentQuestionIndex.value >= questions.value.length )
+	{
+		isDone.value = true;
+		// console.log("All questions answered. Closing dialog.");
+		await new Promise(resolve => setTimeout(resolve, 3000));
+		emit("closeDialog");
+	}
+
+	submittingtoDatabase.value = false;
+};
+
 const sendMessage = async () => {
 	isTyping.value = true;
 	previosUserInput.value = userInput.value;
 	userInput.value = "";
 	showUserBubble.value = true;
+	if (previosUserInput.value.trim() === "")
+	{
+		aiResponse.value = "Please enter a valid response.";
+		showUserBubble.value = false;
+		isTyping.value = false;
+		return;
+	}
 
 	const currentKey = questionKeyMap[currentQuestionIndex.value];
 
@@ -129,7 +154,7 @@ const sendMessage = async () => {
       - If the input includes a request for a URL (e.g., "I want my website to be X"), extract only the URL.
       - If the input says they don't want to share a URL, return "No URL" without the "".
       - If input contains hate speech, return an error message starting with "Error:...".
-      Otherwise, return only the valid URL or "No URL" without "" or extra text, quotes, or punctuation.
+      Otherwise, return only the valid URL or No URL "", extra text, quotes, or punctuation.
       User input: ${previosUserInput.value}`,
 
 		email: `Extract an email address from user input.
@@ -174,7 +199,7 @@ const sendMessage = async () => {
 			const mappedValues = {
 				tagline: () => (mappedTagline.value = response.aiResponse),
 				interests: () => (mappedInterests.value = response.aiResponse),
-				site_url: () => (mappedURL.value = response.aiResponse === "No URL" ? "" : response.aiResponse),
+				site_url: () => (mappedURL.value = response.aiResponse === "No URL" || '"No URL"' ? "" : response.aiResponse),
 				email: () => (mappedEmail.value = response.aiResponse),
 			};
 
@@ -183,18 +208,19 @@ const sendMessage = async () => {
 			/*console.log("mappedTagline: ", mappedTagline.value);
 			console.log("mappedInterests: ", mappedInterests.value);
 			console.log("mappedURL: ", mappedURL.value);*/
-			console.log("mappedEmail: ", mappedEmail.value);
+			// console.log("mappedEmail: ", mappedEmail.value);
 		}
 	}catch(errorFirst){console.error(errorFirst);}
 
 	// Prepare payload for AI API
 	const payload = {
-		userMessage: previosUserInput.value.trim(),
+		userMessage: `user message : "` + previosUserInput.value.trim() + `". One quick thing to add. If the question is about the site URL, no matter what the user says, say okay we'll add that to the profile.`,
 		currentResponses: userResponses.value,
 		currentQuestionIndex: currentQuestionIndex.value,
 		questions: questions.value,
 	};
 
+	let aiAnswer = "";
 	try
 	{
 		const response = await $fetch("/api/aiRegistration", {
@@ -204,64 +230,70 @@ const sendMessage = async () => {
 
 		if (response.success && response.aiResponse)
 		{
-			aiResponse.value = response.aiResponse;
+			aiAnswer = response.aiResponse;
 			userResponses.value[currentKey] = previosUserInput.value.trim();
 		}
 	}catch(error){console.error("error fetching ai response: ", error)}
 
 	showUserBubble.value = false;
 	isTyping.value = false;
-	currentQuestionIndex.value++;
-	if (currentQuestionIndex.value == questions.value.length)
+	submittingtoDatabase.value = true;
+	
+	if (currentKey === "tagline")
 	{
-		submittingtoDatabase.value = true;
-
-		if (infoLeft.includes("tagline"))
-		{
-			await updateTagline(mappedTagline.value.trim(), userProfile.user_id);
-			userProfile.tagline = mappedTagline.value.trim();
-		}
-
-		if (infoLeft.includes("interests"))
-		{
-			const interestsArray = mappedInterests.value.trim().split(",");
-			await updateInterests(interestsArray, userProfile.user_id);
-		}
-
-		if (infoLeft.includes("site_url"))
-		{
-			await updateSiteURL(mappedURL.value.trim(), userProfile.user_id);
-			userProfile.site_url = mappedURL.value.trim();
-		}
-
-		if (infoLeft.includes("email"))
-		{
-			const { error } = await updateUserEmail( mappedEmail.value.trim());
-
-			//link the email to the user account
-			if (error)
-			{
-				console.error("Error linking email: ", error);
-				aiResponse.value = "Oops! Something went wrong. Please try again.";
-				return;
-			}else{
-				aiResponse.value = "Check your email for the confirm link! (It may be in your spam folder.)";
-			}
-		}
-
-		closeDialog();
+		await updateTagline(mappedTagline.value.trim(), userProfile.user_id);
+		userProfile.tagline = mappedTagline.value.trim();
 	}
-};
 
-const closeDialog = async () => {
-	await new Promise(resolve => setTimeout(resolve, 4000));
-	emit("closeDialog");
-};
+	if (currentKey === "interests")
+	{
+		const interestsArray = mappedInterests.value.trim().split(",");
+		await updateInterests(interestsArray, userProfile.user_id);
+	}
 
+	if (currentKey === "site_url")
+	{
+		await updateSiteURL(mappedURL.value.trim(), userProfile.user_id);
+		userProfile.site_url = mappedURL.value.trim();
+	}
+
+	if (currentKey === "email")
+	{
+		aiResponse.value = "Linking your email to your account...";
+		currentQuestionIndex.value++;
+		//check if real email address
+		const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+		if (!emailRegex.test(mappedEmail.value.trim()))
+		{
+			aiResponse.value = "Please enter a valid email address.";
+			submittingtoDatabase.value = false;
+			currentQuestionIndex.value--;
+			return;
+		}
+		
+		const { error } = await updateUserEmail(mappedEmail.value.trim());
+
+		//link the email to the user account
+		if (error)
+		{
+			console.error("Error linking email: ", error);
+			aiResponse.value = "Oops! Something went wrong. Please try again.";
+			submittingtoDatabase.value = false;
+			currentQuestionIndex.value--;
+			return;
+		} else
+		{
+			aiAnswer = "Check your email for the confirm link! (It may be in your spam folder.)";
+		}
+		currentQuestionIndex.value--;
+	}
+
+	await nextQuestion(aiAnswer);
+};
 
 onMounted(() => {
 	mounted.value = true;
-	console.log("userprofile: ", userProfile);
+	// console.log("userprofile: ", userProfile);
 
 	let questionIndex = 0;
 
@@ -406,6 +438,21 @@ onMounted(() => {
 	animation-delay: 0.4s;
 }
 
+.chat-enter-from {
+	opacity: 0;
+	transform: translateX(100px);
+	/* depuis la droite */
+}
+
+.chat-enter-active {
+	transition: all 0.4s ease;
+}
+
+.chat-enter-to {
+	opacity: 1;
+	transform: translateX(0);
+}
+
 @keyframes blink {
 	0% {
 		opacity: 0.3;
@@ -418,14 +465,6 @@ onMounted(() => {
 	100% {
 		opacity: 0.3;
 	}
-}
-
-.chat-enter-active {
-	animation: slide-in 0.4s ease-out;
-}
-
-.chat-move {
-	transition: transform 0.4s ease;
 }
 
 @keyframes slide-in {
