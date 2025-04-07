@@ -13,7 +13,7 @@
     :error-messages="genderErrorMessage"
   />
   <v-row v-else>
-    <v-col class="text-h6">{{ selectedGenderLabel }}</v-col>
+    <v-col class="gender-label">{{ selectedGenderLabel }}</v-col>
   </v-row>
 </template>
 
@@ -73,3 +73,14 @@ const validateGender = () => {
   }
 };
 </script>
+
+<style scoped>
+.gender-label {
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: #1b2029;
+  font-style: italic;
+  padding-left: 1rem;
+  text-align: justify;
+}
+</style>

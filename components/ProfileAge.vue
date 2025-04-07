@@ -10,9 +10,8 @@
     variant="underlined"
   />
   <v-row v-else>
-    <v-col class="text-h6">{{ age }}</v-col></v-row>
-
-
+    <v-col class="age-label">{{ age }}</v-col></v-row
+  >
 </template>
 
 <script setup>
@@ -43,7 +42,9 @@ const getAgeList = () => {
 
 // Rule to check if age is provided
 const requiredAgeRule = (value) => {
-  return value !== null && value !== undefined && value !== "" || "Age is required";
+  return (
+    (value !== null && value !== undefined && value !== "") || "Age is required"
+  );
 };
 
 watch(age, (newAge) => {
@@ -51,6 +52,13 @@ watch(age, (newAge) => {
 });
 </script>
 
-<style>
-/* Add any additional styles if needed */
+<style scoped>
+.age-label {
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: #1b2029;
+  font-style: italic;
+  padding-left: 1rem;
+  text-align: justify;
+}
 </style>
