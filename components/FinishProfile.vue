@@ -14,12 +14,17 @@
 								<!-- Display the conversation -->
 
 								<!--User response-->
-								<div v-if="!showUserBubble && aiResponse " class="chat-bubble user-message">
-									<v-avatar size="24" class="user-avatar">
-										<v-img src="/images/avatars/anonymous.png" />
-									</v-avatar>
-									{{ previosUserInput }}
-								</div>
+								<transition name="user-bubble">
+									<div v-if="!showUserBubble && aiResponse"
+										:key="'previousUserInput-' + currentQuestionIndex"
+										class="chat-bubble user-message">
+										<v-avatar size="24" class="user-avatar">
+											<v-img src="/images/avatars/anonymous.png" />
+										</v-avatar>
+										{{ previosUserInput }}
+									</div>
+								</transition>
+
 
 								<transition-group name="chat" tag="div">
 									<p class="chat-bubble bot-message" :key="'aiResponse-' + currentQuestionIndex"
@@ -73,7 +78,7 @@
 import { useAuthStore } from "@/stores/authStore";
 const { updateTagline, updateSiteURL, updateInterests, updateUserEmail } = useDb();
 
-const emit = defineEmits(["closeDialog"]);
+const emit = defineEmits(["closeDialog", "lookingForUpdated"]);
 
 const authStore = useAuthStore();
 
@@ -249,6 +254,8 @@ const sendMessage = async () => {
 	{
 		const interestsArray = mappedInterests.value.trim().split(",");
 		await updateInterests(interestsArray, userProfile.user_id);
+		userProfile.looking_for = interestsArray;
+		emit("lookingForUpdated");
 	}
 
 	if (currentKey === "site_url")
@@ -304,7 +311,7 @@ onMounted(() => {
 		email: "Enter an email address to register your account and have full access to the site.",
 	};
 
-	console.log("infoLeft: ", infoLeft);
+	// console.log("infoLeft: ", infoLeft);
 
 	infoLeft.forEach((key) =>
 	{
@@ -449,6 +456,20 @@ onMounted(() => {
 }
 
 .chat-enter-to {
+	opacity: 1;
+	transform: translateX(0);
+}
+
+.user-bubble-enter-from {
+	opacity: 0;
+	transform: translateX(-100px);
+}
+
+.user-bubble-enter-active {
+	transition: all 0.4s ease;
+}
+
+.user-bubble-enter-to {
 	opacity: 1;
 	transform: translateX(0);
 }
