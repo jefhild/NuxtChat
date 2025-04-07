@@ -1,9 +1,8 @@
 <template>
-  
   <v-container>
     <v-row>
       <v-col>
-        <v-card>
+        <v-card class="border-0 elevation-0">
           <v-tabs
             v-model="tab"
             align-tabs="center"
@@ -66,7 +65,6 @@
 import { ref, onMounted, defineProps } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 // import Upvotes from "@/components/Upvotes.vue";
-
 
 const tab = ref(1);
 const authStore = useAuthStore();
