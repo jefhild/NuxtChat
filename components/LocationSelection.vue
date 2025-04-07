@@ -14,8 +14,10 @@
         ></v-select>
 
         <v-row v-else
-          ><v-col cols="auto" class="mt-1"><label>Country:</label></v-col>
-          <v-col class="text-h6">{{ selectedCountry }}</v-col>
+          ><v-col cols="auto" class="mt-1"
+            ><label class="font-weight-bold">Country:</label></v-col
+          >
+          <v-col class="location-label">{{ selectedCountry }}</v-col>
         </v-row>
       </v-col>
       <v-col cols="12" md="4">
@@ -31,8 +33,10 @@
         ></v-select>
 
         <v-row v-else
-          ><v-col cols="auto" class="mt-1"><label>State:</label></v-col>
-          <v-col class="text-h6">{{ selectedState }}</v-col>
+          ><v-col cols="auto" class="mt-1"
+            ><label class="font-weight-bold">State:</label></v-col
+          >
+          <v-col class="location-label">{{ selectedState }}</v-col>
         </v-row>
       </v-col>
       <v-col cols="12" md="4">
@@ -47,9 +51,11 @@
         ></v-select>
 
         <v-row v-else
-          ><v-col cols="auto" class="mt-1"><label>City:</label></v-col>
+          ><v-col cols="auto" class="mt-1"
+            ><label class="font-weight-bold">City:</label></v-col
+          >
 
-          <v-col class="text-h6">{{ selectedCity }}</v-col>
+          <v-col class="location-label">{{ selectedCity }}</v-col>
         </v-row>
       </v-col>
     </v-row>
@@ -122,5 +128,12 @@ watch(selectedCity, (newValue) => {
 </script>
 
 <style>
-/* Add any additional styles if needed */
+.location-label {
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: #1b2029;
+  font-style: italic;
+  padding-left: 1rem;
+  text-align: justify;
+}
 </style>

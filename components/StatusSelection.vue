@@ -11,11 +11,7 @@
     />
     <div v-else>
       <v-row>
-        <!-- <v-col cols="auto" class="mt-1"
-          ><v-icon>{{ selectedStatusIcon }}</v-icon> 
-          </v-col
-        > -->
-        <v-col class="text-h6"> {{ selectedStatusLabel }} </v-col></v-row
+        <v-col class="status-label"> {{ selectedStatusLabel }} </v-col></v-row
       >
     </div>
   </div>
@@ -46,10 +42,10 @@ const selectedStatusLabel = computed(() => {
   return status ? status.name : "";
 });
 
-const selectedStatusIcon = computed(() => {
-  const status = props.status.find((s) => s.id === selectedStatus.value);
-  return status ? status.icon : "";
-});
+// const selectedStatusIcon = computed(() => {
+//   const status = props.status.find((s) => s.id === selectedStatus.value);
+//   return status ? status.icon : "";
+// });
 
 const updateStatus = () => {
   emits("updateStatus", selectedStatus.value);
@@ -58,6 +54,13 @@ const updateStatus = () => {
 watch(selectedStatus, updateStatus);
 </script>
 
-<style>
-/* Add any additional styles if needed */
+<style scoped>
+.status-label {
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: #1b2029;
+  font-style: italic;
+  padding-left: 1rem;
+  text-align: justify;
+}
 </style>
