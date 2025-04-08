@@ -29,7 +29,6 @@
                   v-for="profile in upvotedMeProfiles"
                   :key="profile.profile_id"
                   :profile="profile"
-                  hide-unupvote
                   class="mb-2"
                 />
               </div>
