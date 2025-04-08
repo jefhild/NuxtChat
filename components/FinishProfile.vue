@@ -70,6 +70,7 @@
 		</v-card-text>
 		<v-card-actions v-if="!isDone" class="pr-4 pb-4">
 			<v-btn color="red" @click="() => nextQuestion()"> {{ skipButtonText }} </v-btn>
+			 <v-btn  v-if="urlQuestion" @click="dismissSitePrompt">Don't Ask Again</v-btn>
 		</v-card-actions>
 	</v-card>
 </template>
@@ -81,6 +82,7 @@ const { updateTagline, updateSiteURL, updateInterests, updateUserEmail } = useDb
 const emit = defineEmits(["closeDialog", "lookingForUpdated"]);
 
 const authStore = useAuthStore();
+
 
 const userProfile = authStore.userProfile;
 const previosUserInput = ref("");
@@ -97,6 +99,7 @@ const mappedInterests = ref("");
 const mappedEmail = ref("");
 const userResponses = ref({});
 const isDone = ref(false); 
+const urlQuestion = ref(false);
 const skipButtonText = ref("SKIP");
 
 
@@ -113,13 +116,17 @@ const questions = ref([]);
 
 const questionKeyMap = {};
 
+const dismissSitePrompt = () => {
+  localStorage.setItem("skipSiteURLPrompt", "true");
+  nextQuestion();
+};
+
 const nextQuestion = async(aiAnswer = "Let's move on", sendMessage = false) =>
 {
+	urlQuestion.value = false;
 	currentQuestionIndex.value++;
 	aiResponse.value = aiAnswer; 
 
-	console.log("currentQuestionIndex.value: ", currentQuestionIndex.value);
-	console.log("questkeymaplength: ", questions.value.length);
 	if ( currentQuestionIndex.value === questions.value.length - 1 )
 	{
 		skipButtonText.value = "CLOSE";
@@ -134,6 +141,9 @@ const nextQuestion = async(aiAnswer = "Let's move on", sendMessage = false) =>
 		}
 		emit("closeDialog");
 	}
+
+	if(questionKeyMap[currentQuestionIndex.value] === "site_url")
+		urlQuestion.value = true;
 
 	submittingtoDatabase.value = false;
 };
@@ -338,6 +348,8 @@ onMounted(() => {
 	// console.log(questionKeyMap);
 	// console.log(questionKeyMap[currentQuestionIndex.value]);	
 	// console.log("user responses: ", userResponses.value);
+	if(questionKeyMap[currentQuestionIndex.value] === "site_url")
+		urlQuestion.value = true;
 });
 </script>
 
