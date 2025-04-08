@@ -5,16 +5,33 @@ import { ref } from "vue";
 export function useUpvotes(userId) {
   // Define a reactive reference to store the upvoted profiles
   const upvotedProfiles = ref([]);
-  const { getUserUpvotedProfiles, deleteUpvoteFromUser } = useDb();
+  const upvotedMeProfiles = ref([]);
+  const {
+    getUserUpvotedProfiles,
+    getUserUpvotedMeProfiles,
+    deleteUpvoteFromUser,
+  } = useDb();
 
   // Function to fetch upvoted profiles from db
   const fetchUpvotes = async () => {
     if (userId) {
       const data = await getUserUpvotedProfiles(userId);
 
-      if (data){
+      if (data) {
         upvotedProfiles.value = data; // Type assertion is not needed in JavaScript
-        console.log("Upvoted profiles:", upvotedProfiles.value);
+        // console.log("Upvoted profiles:", upvotedProfiles.value);
+      }
+    }
+  };
+
+  // Function to fetch upvoted profiles from db
+  const fetchMyUpvotes = async () => {
+    if (userId) {
+      const data = await getUserUpvotedMeProfiles(userId);
+
+      if (data) {
+        upvotedMeProfiles.value = data; // Type assertion is not needed in JavaScript
+        // console.log("Upvoted me:", upvotedProfiles.value);
       }
     }
   };
@@ -35,11 +52,14 @@ export function useUpvotes(userId) {
 
   // Fetch profiles initially when the composable is used
   fetchUpvotes();
+  fetchMyUpvotes();
 
   // Return the reactive data and methods
   return {
     upvotedProfiles,
+    upvotedMeProfiles,
     fetchUpvotes,
+    fetchMyUpvotes,
     unupvoteUser,
   };
 }

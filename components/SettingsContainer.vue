@@ -1,9 +1,8 @@
 <template>
-  
   <v-container>
     <v-row>
       <v-col>
-        <v-card>
+        <v-card class="border-0 elevation-0">
           <v-tabs
             v-model="tab"
             align-tabs="center"
@@ -43,11 +42,12 @@
               </template>
             </v-tabs-window-item>
             <v-tabs-window-item :value="4">
-              <v-row
-                ><v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis"
+              <!-- <v-row
+                >
+                <v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis"
                   >Registered Users Only</v-col
-                ></v-row
-              >
+                >
+              </v-row> -->
               <template v-if="!isLoading && user?.id">
                 <Upvotes :userId="user.id" />
               </template>
@@ -66,7 +66,6 @@
 import { ref, onMounted, defineProps } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 // import Upvotes from "@/components/Upvotes.vue";
-
 
 const tab = ref(1);
 const authStore = useAuthStore();

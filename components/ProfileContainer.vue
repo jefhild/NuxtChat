@@ -40,16 +40,6 @@
               @lookingForUpdated="refreshLookingForDisplay"
             />
           </p>
-          <!-- <p class="mt-3">
-            <DescriptionDisplay :descriptionIcons="selectedDescriptionIcons" />
-          </p>
-          <p class="mt-2">
-                <DescriptionMenu
-                  :descriptionOptions="descriptionOptions"
-                  :userDescriptionIds="userDescriptionIds"
-                  @update:userDescriptionIds="updateDescriptionIds"
-                />
-          </p> -->
         </v-col>
       </v-row>
     </v-card-title>
@@ -85,7 +75,7 @@
         <v-col cols="12" md="4">
           <v-row
             ><v-col v-if="!isEditable" cols="auto" class="mt-1">
-              <label>Status:</label></v-col
+              <label class="font-weight-bold">Status:</label></v-col
             ><v-col>
               <StatusSelection
                 :selectedStatus="userProfile?.status_id ?? 1"
@@ -98,7 +88,7 @@
         <v-col cols="12" md="4">
           <v-row
             ><v-col v-if="!isEditable" cols="auto" class="mt-1"
-              ><label>Gender:</label></v-col
+              ><label class="font-weight-bold">Gender:</label></v-col
             ><v-col>
               <GenderSelection
                 v-model="selectedGender"
@@ -111,7 +101,7 @@
         <v-col cols="12" md="4">
           <v-row
             ><v-col v-if="!isEditable" cols="auto" class="mt-1"
-              ><label>Age:</label></v-col
+              ><label class="font-weight-bold">Age:</label></v-col
             ><v-col>
               <ProfileAge
                 :age="userProfile.age ?? 18"
@@ -138,7 +128,7 @@
         </v-col>
       </v-row>
       <v-row >
-        <v-col><label>About Me:</label> </v-col>
+        <v-col><label class="font-weight-bold">About Me:</label> </v-col>
         <v-col align="right">
           <v-btn
             v-if="isEditable"
@@ -319,6 +309,7 @@
     <FinishProfile
       :infoLeft="infoLeft"
       @closeDialog="closeFinishProfileDialog"
+      @lookingForUpdated="refreshLookingForDisplay"
     />
   </v-dialog>
 </template>
@@ -399,6 +390,7 @@ const updateFormValidity = (isValid) => {
 };
 
 const refreshLookingForDisplay = async () => {
+  // console.log("refreshLookingForDisplay called");
   refreshLookingForMenu.value = !refreshLookingForMenu.value;
   displayKey.value = Date.now(); // Change key to force refresh
   checkIfFinished();
@@ -522,6 +514,7 @@ onMounted(async () => {
 
   await checkIfFinished();
   finishProfileDialog.value = !isFinished.value;
+  // console.log("userprofile.value: ", userProfile.value);
 });
 
 const openFinishProfileDialog = async () => {

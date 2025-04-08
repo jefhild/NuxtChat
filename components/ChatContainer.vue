@@ -15,7 +15,6 @@
           :showAIUsers="showAIUsers"
           @toggle-users="toggleUsers"
           @filter-changed="updateFilters"
-          
         /> </v-col
     ></v-row>
     <v-row>
@@ -116,7 +115,7 @@
 import { ref, watch, onMounted, nextTick } from "vue";
 const route = useRoute();
 const router = useRouter();
-import { usePresenceStore } from '@/stores/presenceStore';
+import { usePresenceStore } from "@/stores/presenceStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useFetchAiUsers } from "@/composables/useFetchAiUsers";
 import { useFetchOfflineUsers } from "@/composables/useFetchOfflineUsers";
@@ -124,7 +123,15 @@ import { useFetchOnlineUsers } from "@/composables/useFetchOnlineUsers";
 import { useFetchActiveChats } from "@/composables/useFetchActiveChats";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
 
-const { getAIInteractionCount, getCurrentAIInteractionCount, getMessagesBetweenUsers, updateMessagesAsRead, updateAIInteractionCount, insertMessage, insertInteractionCount } = useDb();
+const {
+  getAIInteractionCount,
+  getCurrentAIInteractionCount,
+  getMessagesBetweenUsers,
+  updateMessagesAsRead,
+  updateAIInteractionCount,
+  insertMessage,
+  insertInteractionCount,
+} = useDb();
 
 const supabase = useSupabaseClient();
 const authStore = useAuthStore();
@@ -143,7 +150,6 @@ let realtimeMessages = null;
 const dialogVisible = ref(false);
 const userEmail = ref("");
 const showAIUsers = ref(false); // State to toggle between Users and UsersAI
-
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
@@ -221,11 +227,9 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
 };
 
 const markMessagesAsRead = async (receiverUserId, senderUserId) => {
-  
   await updateMessagesAsRead(receiverUserId, senderUserId);
 
   document.title = `Chat | ImChatty `;
-
 };
 
 const handleRealtimeMessages = (payload) => {
@@ -250,19 +254,20 @@ const handleRealtimeMessages = (payload) => {
   }
 };
 
-watch(() => presenceStore.userIdsOnly, async (newVal) => 
-{
-  //console.log("Presence store updated:", newVal); // Debug log
-  if (!newVal.length)
-  {
-    arrayOnlineUsers.value = [];
-    return;
-  }
+watch(
+  () => presenceStore.userIdsOnly,
+  async (newVal) => {
+    //console.log("Presence store updated:", newVal); // Debug log
+    if (!newVal.length) {
+      arrayOnlineUsers.value = [];
+      return;
+    }
 
-  //console.log("Online users:", newVal); // Debug log
-  await fetchOnlineUsers(filters.value, newVal, userProfile.value.user_id);
-  await fetchOfflineUsers(filters.value, newVal, userProfile.value.user_id);
-});
+    //console.log("Online users:", newVal); // Debug log
+    await fetchOnlineUsers(filters.value, newVal, userProfile.value.user_id);
+    await fetchOfflineUsers(filters.value, newVal, userProfile.value.user_id);
+  }
+);
 
 onMounted(async () => {
   await authStore.checkAuth();
@@ -271,8 +276,16 @@ onMounted(async () => {
   showAIUsers.value = route.query.user === "ai";
 
   //Have to do them at least once on mount because if we go to another page and come back, we need to fetch the data again
-  await fetchOnlineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
-  await fetchOfflineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
+  await fetchOnlineUsers(
+    filters.value,
+    presenceStore.userIdsOnly,
+    userProfile.value.user_id
+  );
+  await fetchOfflineUsers(
+    filters.value,
+    presenceStore.userIdsOnly,
+    userProfile.value.user_id
+  );
   fetchAiUsers(filters.value);
   fetchActiveChats();
 
@@ -284,7 +297,7 @@ onMounted(async () => {
     selectedUser,
     (newUser, oldUser) => {
       if (newUser && newUser !== oldUser) {
-        loadChatMessages(authStore.user?.id,newUser.user_id);
+        loadChatMessages(authStore.user?.id, newUser.user_id);
       }
     },
     { immediate: true }
@@ -356,7 +369,11 @@ const sendMessage = async () => {
     const userMessage = newMessage.value.trim();
 
     try {
-      const data = await insertMessage(receiverUserId, senderUserId, userMessage);
+      const data = await insertMessage(
+        receiverUserId,
+        senderUserId,
+        userMessage
+      );
 
       if (data && data.length > 0) {
         // console.log("Message sent successfully:", data);
@@ -373,14 +390,18 @@ const sendMessage = async () => {
           sender: userProfile.value.displayname, // Assuming current user's displayname is needed
         });
         scrollToBottom(); // Ensure the chat scrolls to the bottom when a new message is added
- 
+
         // If the selected user is an AI, generate a response by calling the local API
         if (isAI) {
           const aiResponse = await fetchAiResponse(userMessage, selectedUser);
           // console.log("fetching response from AI:", aiResponse);
           if (aiResponse) {
             // Insert the AI response into the messages table
-            const aiData = await insertMessage(senderUserId, receiverUserId, aiResponse);
+            const aiData = await insertMessage(
+              senderUserId,
+              receiverUserId,
+              aiResponse
+            );
             if (aiData && aiData.length > 0) {
               console.log("AI response stored successfully:", aiData);
 
@@ -421,7 +442,6 @@ const sendMessage = async () => {
 
 // Helper function to call the local API endpoint
 const fetchAiResponse = async (message, aiuser) => {
-
   const userPayload = {
     aiUser: aiuser.value.displayname,
     userName: userProfile.value?.displayname,
@@ -466,14 +486,16 @@ const checkAiInteractionLimit = async () => {
     // console.log("authStore.user.is_anonymous:", authStore.user.is_anonymous);
 
     // Fetch the current interaction count for the user from Supabase
-    const { data, error } = await getCurrentAIInteractionCount(authStore.user?.id);
+    const { data, error } = await getCurrentAIInteractionCount(
+      authStore.user?.id
+    );
 
     if (error) {
       if (error.code === "PGRST116") {
         console.log("User not found in user_ai_interactions, adding new user.");
 
         // Insert a new row with the initial interaction count set to 1
-        const insertError = await insertInteractionCount(authStore.user?.id,1);
+        const insertError = await insertInteractionCount(authStore.user?.id, 1);
 
         if (insertError) {
           console.error(
@@ -543,7 +565,7 @@ const updateFilters = async (newFilters) => {
   fetchActiveChats();
 };
 
-// Watch the data from composable 
+// Watch the data from composable
 watch(aiData, (newData) => {
   aiUsers.value = newData;
 });

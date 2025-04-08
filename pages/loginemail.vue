@@ -28,13 +28,12 @@ import { useAuthStore } from "@/stores/authStore";
 const authStore = useAuthStore();
 const router = useRouter();
 const isLoading = ref(true);
-const { authGetSession, authRefreshSession } = useDb();
+const { authGetUser, authRefreshSession } = useDb();
 
 onMounted(async () => {
-  console.log("login onMounted  ");
 
-  //try and refresh the session
-  const {data: sessionData} = await authGetSession();
+  //try and refresh the sessio
+  const { data: sessionData } = await authGetUser();
 
   if (!sessionData.session) {
     await authRefreshSession();

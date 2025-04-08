@@ -182,10 +182,10 @@ export const useAuthStore = defineStore("authStore", {
 
     async checkAuthGoogle()
     {
-      const { authGetSession } = useDb();
-      const { data: sessionData, error: sessionError } = await authGetSession();
+      const { authGetUser } = useDb();
+      const { data: userData1, error: userError1 } = await authGetUser();
 
-      if (!sessionData?.session)
+      if (userError1 || !userData1?.user)
       {
         console.log("No active session. Initiating Google OAuth...");
 
@@ -214,7 +214,6 @@ export const useAuthStore = defineStore("authStore", {
         return;
       }
 
-      const { authGetUser } = useDb();
       // If no redirect occurs (unlikely but possible), continue here
       const { data: userData, error: userError } = await authGetUser();
 
