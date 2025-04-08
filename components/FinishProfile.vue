@@ -113,12 +113,14 @@ const questions = ref([]);
 
 const questionKeyMap = {};
 
-const nextQuestion = async(aiAnswer = "Let's move on") =>
+const nextQuestion = async(aiAnswer = "Let's move on", sendMessage = false) =>
 {
 	currentQuestionIndex.value++;
 	aiResponse.value = aiAnswer; 
 
-	if ( currentQuestionIndex.value === questionKeyMap.value.length - 1 )
+	console.log("currentQuestionIndex.value: ", currentQuestionIndex.value);
+	console.log("questkeymaplength: ", questions.value.length);
+	if ( currentQuestionIndex.value === questions.value.length - 1 )
 	{
 		skipButtonText.value = "CLOSE";
 	} 
@@ -127,7 +129,9 @@ const nextQuestion = async(aiAnswer = "Let's move on") =>
 	{
 		isDone.value = true;
 		// console.log("All questions answered. Closing dialog.");
-		await new Promise(resolve => setTimeout(resolve, 3000));
+		if(sendMessage){
+			await new Promise(resolve => setTimeout(resolve, 3000));
+		}
 		emit("closeDialog");
 	}
 
@@ -303,7 +307,7 @@ const sendMessage = async () => {
 		currentQuestionIndex.value--;
 	}
 
-	await nextQuestion(aiAnswer);
+	await nextQuestion(aiAnswer,true);
 };
 
 onMounted(() => {
