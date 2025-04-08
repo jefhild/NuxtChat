@@ -1,5 +1,11 @@
 <template>
-  <v-card class="pa-2 mb-2 d-flex align-center" flat>
+  <v-card
+    class="pa-2 mb-2 d-flex align-center"
+    flat
+    hover
+    @click="goToProfile(profile.user_id)"
+    style="cursor: pointer"
+  >
     <!-- Avatar with overlaid icon -->
     <div class="avatar-wrapper mr-3">
       <NuxtImg
@@ -19,13 +25,9 @@
     <!-- Info -->
     <div class="flex-grow-1">
       <div class="font-weight-medium text-truncate">
-        <v-btn
-          variant="plain"
-          :to="`/profiles/${profile.user_id}`"
-          class="pa-0 text-left"
-        >
+        <span class="text-medium-emphasis font-weight-medium">
           {{ profile.displayname }} ({{ profile.age }})
-        </v-btn>
+        </span>
       </div>
       <div class="text-body-2 text-truncate">
         {{ profile.country }} {{ profile.country_emoji }}
@@ -47,6 +49,8 @@
 </template>
 
 <script setup lang="ts">
+const router = useRouter();
+
 import {
   getAvatar,
   getGenderColor,
@@ -60,6 +64,10 @@ defineProps<{
 
 const getProfileImage = (avatar_url: string | null, gender_id: number) => {
   return getAvatar(avatar_url, gender_id);
+};
+
+const goToProfile = (userId: string) => {
+  router.push(`/profiles/${userId}`);
 };
 </script>
 
