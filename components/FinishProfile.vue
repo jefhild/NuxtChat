@@ -69,7 +69,7 @@
 			</v-row>
 		</v-card-text>
 		<v-card-actions v-if="!isDone" class="pr-4 pb-4">
-			<v-btn color="red" @click="() => nextQuestion()"> SKIP </v-btn>
+			<v-btn color="red" @click="() => nextQuestion()"> {{ skipButtonText }} </v-btn>
 		</v-card-actions>
 	</v-card>
 </template>
@@ -96,7 +96,9 @@ const mappedURL = ref("");
 const mappedInterests = ref("");
 const mappedEmail = ref("");
 const userResponses = ref({});
-const isDone = ref(false);
+const isDone = ref(false); 
+const skipButtonText = ref("SKIP");
+
 
 const props = defineProps({
 	infoLeft: {
@@ -115,6 +117,12 @@ const nextQuestion = async(aiAnswer = "Let's move on") =>
 {
 	currentQuestionIndex.value++;
 	aiResponse.value = aiAnswer; 
+
+	if ( currentQuestionIndex.value === questionKeyMap.value.length - 1 )
+	{
+		skipButtonText.value = "CLOSE";
+	} 
+
 	if (currentQuestionIndex.value >= questions.value.length )
 	{
 		isDone.value = true;

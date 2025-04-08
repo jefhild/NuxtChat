@@ -133,6 +133,21 @@ export const useDb = () =>
     return data.id;
   };
 
+  const getAvatarDecorationFromId = async (id) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("avatar_decoration_url")
+      .eq("user_id", id)
+      .maybeSingle();
+
+    if (error)
+    {
+      console.error("Error fetching avatar decoration:", error);
+    }
+
+    return data.avatar_decoration_url;
+  };
+
   const getMessagesBetweenUsers = async (senderUserId, receiverUserId) =>{
     const { data, error } = await supabase
       .from("messages")
@@ -517,6 +532,28 @@ export const useDb = () =>
     return data;
   };
 
+  const getAllAvatarDecorations = async () => {
+    const config = useRuntimeConfig();
+    const { data, error } = await supabase
+      .storage
+      .from('avatar-decorations')
+      .list('decorations', {
+        limit: 100,
+        sortBy: { column: 'name', order: 'asc' },
+      });
+
+    if (error)
+    {
+      console.error('Error loading decorations:', error.message);
+      return [];
+    }
+
+    return data.map(file => ({
+      name: file.name,
+      url: `${config.public.SUPABASE_URL}/storage/v1/object/public/avatar-decorations/decorations/${file.name}`,
+    }));
+  };
+
 
   /*------------------*/
   /* Update functions */
@@ -709,6 +746,20 @@ export const useDb = () =>
       console.error("Error updating presence:", error);
     }*/ 
   };
+
+  const updateAvatarDecoration = async (userId, avatarDecUrl) =>{
+    console.log("in db",userId, avatarDecUrl);
+    const { error } = await supabase 
+    .from("profiles")
+    .update({ avatar_decoration_url: avatarDecUrl })
+    .eq("user_id", userId);
+
+
+    if (error && error.status !== 204)
+    {
+      console.error("Error deleting chat:", error);
+    }
+  }
 
 
   /*------------------*/
@@ -1202,6 +1253,7 @@ export const useDb = () =>
     getStatuses,
     getGenders,
     getLookingForId,
+    getAvatarDecorationFromId,
     getMessagesBetweenUsers,
     getAIInteractionCount,
     getCurrentAIInteractionCount,
@@ -1231,6 +1283,7 @@ export const useDb = () =>
     getUserFavoriteProfiles,
     getActiveChats,
     getUserUpvotedProfiles,
+    getAllAvatarDecorations,
 
     updateUsername,
     updateProvider,
@@ -1245,6 +1298,7 @@ export const useDb = () =>
     updateMessagesAsRead,
     updateAIInteractionCount,
     updatePresence,
+    updateAvatarDecoration,
 
     insertProfile,
     insertMessage,
