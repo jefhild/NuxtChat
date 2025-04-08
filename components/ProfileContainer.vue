@@ -309,6 +309,7 @@
     <FinishProfile
       :infoLeft="infoLeft"
       @closeDialog="closeFinishProfileDialog"
+      @lookingForUpdated="refreshLookingForDisplay"
     />
   </v-dialog>
 </template>
@@ -389,6 +390,7 @@ const updateFormValidity = (isValid) => {
 };
 
 const refreshLookingForDisplay = async () => {
+  // console.log("refreshLookingForDisplay called");
   refreshLookingForMenu.value = !refreshLookingForMenu.value;
   displayKey.value = Date.now(); // Change key to force refresh
   checkIfFinished();
@@ -512,6 +514,7 @@ onMounted(async () => {
 
   await checkIfFinished();
   finishProfileDialog.value = !isFinished.value;
+  // console.log("userprofile.value: ", userProfile.value);
 });
 
 const openFinishProfileDialog = async () => {
