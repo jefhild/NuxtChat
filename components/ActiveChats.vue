@@ -180,10 +180,10 @@ const { statusColor, statusIcon } = usePresenceStatus();
 
 .avatar-decoration {
   position: absolute;
-  top: -3px;
+  top: -4px;
   left: 50%;
   transform: translateX(-50%);
-  width: 50px;
+  width: 49px;
   pointer-events: none;
   z-index: 2;
   object-fit: contain;

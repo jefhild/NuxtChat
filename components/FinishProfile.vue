@@ -102,7 +102,6 @@ const isDone = ref(false);
 const urlQuestion = ref(false);
 const skipButtonText = ref("SKIP");
 
-
 const props = defineProps({
 	infoLeft: {
 		type: Array,

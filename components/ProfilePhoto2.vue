@@ -75,7 +75,7 @@ const handleDeletePhoto = async () => {
 
 const loadProfilePhoto = async () => {
   photopath.value = await getProfilePhoto(props.userId);
-  console.log("photopath.value", photopath.value);
+  // console.log("photopath.value", photopath.value);
   avatarDecorationURL.value = await getAvatarDecorationFromId(
     props.userId
   );
@@ -101,8 +101,8 @@ onMounted(async () => {
 
 <style scoped>
 .cover-image {
-  width: 130px;
-  height: 130px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -124,10 +124,10 @@ onMounted(async () => {
 
 .avatar-decoration {
   position: absolute;
-  top: -10px;
+  top: -13px;
   left: 50%;
   transform: translateX(-50%);
-  width: 150px;
+  width: 145px;
   pointer-events: none;
   object-fit: contain;
 }

@@ -61,7 +61,7 @@ export function useProfilePhoto() {
     const fileName = `${userId}`;
     const filePath = `profile-images/${fileName}`;
 
-    console.log("info", fileName, filePath, file.value);
+    // console.log("info", fileName, filePath, file.value);
 
     const { error } = await uploadProfilePhoto(filePath, file.value); 
 
@@ -70,9 +70,9 @@ export function useProfilePhoto() {
       return;
     }
 
-    console.log("File uploaded successfully to storage:", filePath);
+    // console.log("File uploaded successfully to storage:", filePath);
 
-    const publicURL = `${config.public.SUPABASE_BUCKET}${filePath}`;
+    const publicURL = `${config.public.SUPABASE_BUCKET}profile-images/${filePath}`;
 
     const updateError = await updateProfilePhoto(publicURL, userId);
 
