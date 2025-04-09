@@ -863,3 +863,32 @@ BEGIN
     AND p.is_ai = is_ai_filter;  -- Apply is_ai_filter
 END;
 $$ LANGUAGE plpgsql;
+
+
+--PLPGSQL Function to fetch users who favorited me
+create or replace function public.get_users_who_favorited_me(input_user_id uuid)
+returns table (
+  user_id uuid,
+  displayname text,
+  avatar_url text,
+  gender_id integer,
+  age integer,
+  country text,
+  country_emoji text
+)
+language sql
+as $$
+  select distinct on (f.user_id)
+    f.user_id,
+    p.displayname,
+    p.avatar_url,
+    p.gender_id,
+    p.age,
+    c.name as country,
+    c.emoji as country_emoji
+  from favorites f
+  join profiles p on f.user_id = p.user_id
+  left join countries c on p.country_id = c.id
+  where f.favorite_user_id = input_user_id
+  order by f.user_id, f.created_at desc;
+$$;

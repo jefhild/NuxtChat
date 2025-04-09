@@ -8,13 +8,8 @@
             <v-col cols="12" md="6">
               <p>I Upvoted</p>
               <div v-if="upvotedProfiles.length > 0">
-                <ProfileCard
-                  v-for="profile in upvotedProfiles"
-                  :key="profile.profile_id"
-                  :profile="profile"
-                  hide-unupvote
-                  class="mb-2"
-                />
+                <ProfileCard v-for="profile in upvotedProfiles" :key="profile.profile_id" :profile="profile" hide-un
+                  class="mb-2" type="upvote" icon="mdi-thumb-down" @unupvote="handleUnupvote" />
               </div>
               <v-card v-else class="d-flex flex-column align-center">
                 <v-card-title>No upvoted users found</v-card-title>
@@ -25,12 +20,8 @@
             <v-col cols="12" md="6">
               <p>Upvoted Me</p>
               <div v-if="upvotedMeProfiles.length > 0">
-                <ProfileCard
-                  v-for="profile in upvotedMeProfiles"
-                  :key="profile.profile_id"
-                  :profile="profile"
-                  class="mb-2"
-                />
+                <ProfileCard v-for="profile in upvotedMeProfiles" :key="profile.profile_id" :profile="profile"
+                  class="mb-2" type="upvote" icon="mdi-thumb-down" @unupvote="handleUnupvote" />
               </div>
             </v-col>
           </v-row>
@@ -48,18 +39,12 @@
 
 <script lang="ts" setup>
 import { useUpvotes } from "@/composables/useUpvotes";
-// import { getAvatar } from "@/utils/userUtils";
-import { getAvatar } from "@/composables/useUserUtils";
 
 const props = defineProps<{ userId: string }>();
 
 const { upvotedProfiles, upvotedMeProfiles, unupvoteUser } = useUpvotes(
   props.userId
 );
-
-const getProfileImage = (avatar_url: string | null, gender_id: number) => {
-  return getAvatar(avatar_url, gender_id);
-};
 
 // Method to handle unfavorite button click
 const handleUnupvote = (profileId: string) => {
