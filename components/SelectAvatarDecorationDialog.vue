@@ -70,7 +70,6 @@ onMounted(async () => {
 const handleDecorationClick = (url: string) =>
 {
 	selectedDecoration.value = url;
-	console.log("clicked", selectedDecoration.value);
 };
 
 const selectDecoration = async () =>
@@ -94,8 +93,8 @@ const closeDialog = () => {
 }
 
 .cover-image {
-	width: 70px;
-	height: 70px;
+	width: 67px;
+	height:67px;
 	border-radius: 50%;
 	object-fit: cover;
 }
@@ -124,7 +123,7 @@ const closeDialog = () => {
 
 .avatar-decoration {
 	position: absolute;
-	top: -5px;
+	top: -7px;
 	left: 50%;
 	transform: translateX(-50%);
 	width: 80px;

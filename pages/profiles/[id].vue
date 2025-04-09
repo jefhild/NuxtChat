@@ -1,36 +1,33 @@
 <template>
   <v-container fluid>
-    <v-row
-      ><v-col> <HomeRow1 /> </v-col
-    ></v-row>
+    <v-row><v-col>
+        <HomeRow1 />
+      </v-col></v-row>
     <!-- {{ profile }} -->
     <v-row justify="center">
       <v-col cols="12" md="8">
         <v-card class="mx-auto" max-width="400" v-if="profile">
-          <v-img
-            height="200px"
-            :src="profile?.avatar_url || getPlaceholderImage(profile?.gender)"
-            cover
-          ></v-img>
+
+          <div class="avatar-wrapper">
+            <NuxtImg :src="profile.avatar_url" height="200" width="200"
+              class="rounded-circle cover-image mx-auto d-block ma-9" />
+
+            <NuxtImg :src="avatarDecoration" v-if="avatarDecoration" class="avatar-decoration" />
+          </div>
+
 
           <v-card-title>
-            <v-row
-              ><v-col
-                ><h1 class="text-h5">
+            <v-row><v-col>
+                <h1 class="text-h5">
                   {{ profile?.displayname }}, {{ profile?.age }}
-                </h1></v-col
-              ></v-row
-            >
+                </h1>
+              </v-col></v-row>
           </v-card-title>
 
           <v-card-subtitle>
-            <v-row
-              ><v-col>{{ profile?.tagline }}</v-col
-              ><v-col class="justify-end d-flex align-center"
-                >{{ profile?.status }}, {{ profile?.country }}
-                {{ profile?.country_emoji }}</v-col
-              ></v-row
-            >
+            <v-row><v-col>{{ profile?.tagline }}</v-col><v-col class="justify-end d-flex align-center">{{
+                profile?.status }}, {{ profile?.country }}
+                {{ profile?.country_emoji }}</v-col></v-row>
           </v-card-subtitle>
 
           <v-card-text>
@@ -41,63 +38,35 @@
             <v-row v-if="profile?.looking_for?.length" no-gutters>
               <v-col class="ml-2">{{ profile?.looking_for.join(", ") }}</v-col>
             </v-row>
-            <v-row v-if="profile.bio"
-              ><v-col class="text-h6">About Me:</v-col></v-row
-            >
+            <v-row v-if="profile.bio"><v-col class="text-h6">About Me:</v-col></v-row>
             <v-row v-if="profile.bio">
-              <v-col class="bio-paragraph">{{ profile?.bio }}</v-col></v-row
-            >
+              <v-col class="bio-paragraph">{{ profile?.bio }}</v-col></v-row>
           </v-card-text>
-          <v-card-actions
-            style="
+          <v-card-actions style="
               position: relative;
               bottom: 0;
               width: 100%;
               background-color: rgba(0, 0, 0, 0.1);
-            "
-          >
-            <v-btn
-              v-if="profileSiteUrl"
-              :href="profileSiteUrl"
-              color="medium-emphasis"
-              icon="mdi-link-variant"
-              size="small"
-              target="_blank"
-              rel="noopener noreferrer"
-              :aria-label="`Visit ${profile.displayname}'s website`"
-            ></v-btn>
-            <v-btn
-              v-else
-              color="medium-emphasis"
-              icon="mdi-link-variant-off"
-              size="small"
-              disabled
-            ></v-btn>
+            ">
+            <v-btn v-if="profileSiteUrl" :href="profileSiteUrl" color="medium-emphasis" icon="mdi-link-variant"
+              size="small" target="_blank" rel="noopener noreferrer"
+              :aria-label="`Visit ${profile.displayname}'s website`"></v-btn>
+            <v-btn v-else color="medium-emphasis" icon="mdi-link-variant-off" size="small" disabled></v-btn>
             <v-spacer></v-spacer>
 
             <ButtonFavorite :profile="profile" />
 
-            <v-btn
-              color="blue medium-emphasis"
-              icon="mdi-cancel"
-              size="small"
-            ></v-btn>
+            <v-btn color="blue medium-emphasis" icon="mdi-cancel" size="small"></v-btn>
 
-            <v-btn
-              color="black medium-emphasis"
-              icon="mdi-share-variant"
-              size="small"
-            ></v-btn>
+            <v-btn color="black medium-emphasis" icon="mdi-share-variant" size="small"></v-btn>
           </v-card-actions>
         </v-card>
 
-        <v-row class="mt-2" justify="center" v-if="isAuthenticated"
-          ><v-col cols="auto"
-            ><NuxtLink to="/settings">Back to Profile</NuxtLink></v-col
-          ><v-col cols="auto"
-            ><NuxtLink to="/chat">Back to Chat</NuxtLink></v-col
-          ></v-row
-        >
+        <v-row class="mt-2" justify="center" v-if="isAuthenticated"><v-col cols="auto">
+            <NuxtLink to="/settings">Back to Profile</NuxtLink>
+          </v-col><v-col cols="auto">
+            <NuxtLink to="/chat">Back to Chat</NuxtLink>
+          </v-col></v-row>
         <v-row class="mt-2" justify="center" v-else>
           <v-col cols="auto">
             <NuxtLink to="/">Back Home</NuxtLink>
@@ -132,6 +101,9 @@ const aiDialog = ref(false);
 
 const { profile, fetchUserProfile } = useUserProfile();
 await fetchUserProfile(userId);
+
+const { getAvatarDecorationFromId } = useDb();
+const avatarDecoration = ref("");
 
 // Computed property for the formatted href
 const profileSiteUrl = computed(() => {
@@ -220,10 +192,32 @@ onMounted(async () => {
   await authStore.checkAuth();
   isAuthenticated.value = authStore.user !== null;
   isLoading.value = false;
+
+  avatarDecoration.value = await getAvatarDecorationFromId(profile.value.user_id);
+
 });
 </script>
 
 <style scoped>
+.cover-image {
+  object-fit: cover;
+}
+
+.avatar-wrapper {
+  position: relative;
+}
+
+.avatar-decoration {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 245px;
+  pointer-events: none;
+  z-index: 1;
+  object-fit: contain;
+}
+
 .subtitle-1 {
   font-size: 1.2rem;
   color: #757575;
