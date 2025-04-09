@@ -4,10 +4,15 @@
       <v-btn v-if="editable" variant="text" color="blue" @click="openDialog">Add Photo</v-btn>
       <div class="photo-container">
         <NuxtImg v-if="photopath" :src="photopath" class="cover-image" />
+        <NuxtImg v-if="avatarDecorationURL" :src="avatarDecorationURL" class="avatar-decoration" />
         <v-btn v-if="photopath && editable" icon class="delete-btn" @click="handleDeletePhoto">
           <v-icon size="small">mdi-delete</v-icon>
         </v-btn>
       </div>
+      <v-btn v-if="editable && isRegistered" variant="text" color="blue" @click="toggleAvatarDecDialog"
+        class="text-caption text-sm-body-2 text-md-body-1 mx-auto" block>
+        Add Avatar Decoration
+      </v-btn>
     </v-col>
   </v-row>
 
@@ -23,14 +28,19 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog v-model="avatarDecDialog" max-width="700">
+    <SelectAvatarDecorationDialog :photopath="photopath" :userId="userId" @closeDialog="toggleAvatarDecDialog"/>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useProfilePhoto } from "@/composables/useProfilePhoto";
 
-const { hasEmail } = useDb();
+const { hasEmail, getAvatarDecorationFromId } = useDb();
 const isRegistered = ref(false);
+const avatarDecorationURL = ref(null);
 
 const props = defineProps({
   userId: {
@@ -45,11 +55,17 @@ const props = defineProps({
 
 const emit = defineEmits(["updateAvatarUrl"]);
 const dialog = ref(false);
+const avatarDecDialog = ref(false);
 const { photopath, file, getProfilePhoto, uploadImage, deletePhoto } =
   useProfilePhoto();
 
 const openDialog = () => {
   dialog.value = true;
+};
+
+const toggleAvatarDecDialog = () => {
+  avatarDecDialog.value = !avatarDecDialog.value;
+  loadProfilePhoto(); // Load the profile photo when the dialog is opened
 };
 
 const handleDeletePhoto = async () => {
@@ -59,6 +75,10 @@ const handleDeletePhoto = async () => {
 
 const loadProfilePhoto = async () => {
   photopath.value = await getProfilePhoto(props.userId);
+  console.log("photopath.value", photopath.value);
+  avatarDecorationURL.value = await getAvatarDecorationFromId(
+    props.userId
+  );
 };
 
 const onFileChange = (e: Event) => {
@@ -73,20 +93,17 @@ const uploadPhoto = async () => {
   dialog.value = false; // Close the dialog after the image is uploaded
 };
 
-
 onMounted(async () => {
   await loadProfilePhoto();
-
   isRegistered.value = await hasEmail(props.userId);
  } );
 </script>
 
 <style scoped>
 .cover-image {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
   object-fit: cover;
 }
 
@@ -103,5 +120,15 @@ onMounted(async () => {
 
 .photo-container:hover .delete-btn {
   display: block;
+}
+
+.avatar-decoration {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  pointer-events: none;
+  object-fit: contain;
 }
 </style>

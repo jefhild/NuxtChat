@@ -534,9 +534,11 @@ const checkIfFinished = async () => {
   isFinished.value = userProfile.value.tagline && userHasInterests && userHasEmail;
   infoLeft.value = []; // Clear the array
 
+  const skipSiteURL = localStorage.getItem("skipSiteURLPrompt") === "true";
+
   const fields = {
     tagline: userProfile.value.tagline,
-    site_url: userProfile.value.site_url,
+    site_url: skipSiteURL ? true : userProfile.value.site_url,
     interests: userHasInterests,
     email: userHasEmail,
   };

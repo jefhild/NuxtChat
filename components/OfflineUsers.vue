@@ -10,9 +10,13 @@
 
               <div class="avatar-wrapper">
                 <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
+
+                <NuxtImg :src="user.avatar_decoration_url" v-if="user.avatar_decoration_url"
+                  class="avatar-decoration" />
+
                 <v-icon size="small" color="grey" icon="mdi-circle" class="status-badge" />
               </div>
-              
+
             </template>
             <v-list-item-title :class="getGenderColorClass(user.gender_id)">
               {{ user.displayname }}
@@ -38,7 +42,6 @@
 
 import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
 
-
 const props = defineProps({
   users: Array,
   filters: Object,
@@ -57,8 +60,24 @@ const selectUser = (user) => {
 </script>
 
 <style scoped>
+
+.v-list-item {
+  margin-top: 10px;
+}
+
 .avatar-wrapper {
   position: relative;
+}
+
+.avatar-decoration {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  pointer-events: none;
+  z-index: 2;
+  object-fit: contain;
 }
 
 .status-badge {
@@ -68,6 +87,7 @@ const selectUser = (user) => {
   width: 10px;
   height: 10px;
   border-radius: 50%;
+  z-index: 3;
 }
 </style>
 
