@@ -542,11 +542,23 @@ export const useDb = () => {
     });
 
     if (error) {
-      console.error("Error fetching upvoted profiles:", error);
+      console.error("Error fetching upvoted me profiles:", error);
     }
 
     return data;
   };
+
+  const getUserFavoritedMeProfiles = async(userId) => {
+    const { data, error } = await supabase.rpc("get_users_who_favorited_me", {
+      input_user_id: userId,
+    })
+
+    if (error) {
+      console.error("Error fetching favorited me profiles: ", error);
+    }
+
+    return data;
+  }
 
   /*------------------*/
   /* Update functions */
@@ -1242,6 +1254,7 @@ export const useDb = () => {
     getUserUpvotedProfiles,
     getAllAvatarDecorations,
     getUserUpvotedMeProfiles,
+    getUserFavoritedMeProfiles,
 
     updateUsername,
     updateProvider,

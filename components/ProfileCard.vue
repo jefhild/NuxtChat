@@ -1,7 +1,8 @@
 <template>
   <v-card class="pa-2 mb-2 d-flex align-center" flat hover @click="goToProfile(profile.user_id)"
     style="cursor: pointer">
-    <!-- Avatar with overlaid icon -->
+
+    <!-- Avatar with overlaid icon and decoration-->
     <div class="avatar-wrapper mr-3">
       <NuxtImg :src="getProfileImage(profile.avatar_url, profile.gender_id)" width="50" height="50"
         class="rounded-circle cover-image" />
@@ -23,15 +24,16 @@
       </div>
     </div>
 
-    <!-- Unupvote Icon -->
-    <v-btn v-if="hideUnupvote" icon="mdi-block-helper" variant="plain" color="red" size="small"
-      @click="$emit('unupvote', profile.profile_id)" class="ml-2">
+    <!-- Un... Icon -->
+    <v-btn v-if="hideUn" :icon="props.icon" variant="plain" color="red" size="small"
+      @click.stop="handeClick(profile.user_id)" class="ml-2">
     </v-btn>
   </v-card>
 </template>
 
 <script setup lang="ts">
 const router = useRouter();
+const authStore = useAuthStore();
 const { getAvatarDecorationFromId } = useDb();
 const avatarDecoration = ref("");
 import {
@@ -42,8 +44,12 @@ import {
 
 const props = defineProps<{
   profile: any;
-  hideUnupvote?: boolean;
+  hideUn?: boolean;
+  icon?: string;
+  type?: string;
 }>();
+
+const emit = defineEmits(["unfavorite", "unupvote"]);
 
 const getProfileImage = (avatar_url: string | null, gender_id: number) => {
   return getAvatar(avatar_url, gender_id);
@@ -56,6 +62,16 @@ const goToProfile = (userId: string) => {
 onMounted(async() => {
   avatarDecoration.value = await getAvatarDecorationFromId(props.profile.user_id);
 });
+
+const handeClick = (userId: string) => {
+  if (props.type === "favorite") {
+    // Handle favorite click
+    emit('unfavorite', userId);
+  } else if (props.type === "upvote") {
+    // Handle upvote click
+    emit('unupvote', userId)
+  }
+};
 </script>
 
 <style scoped>

@@ -86,7 +86,7 @@ const handleUnblock = (userId: string) => {
 
 watch(blockedProfiles, async (newProfiles) =>
 {
-  console.log("New profiles:", newProfiles);
+  console.log("New blocked profiles:", newProfiles);
   for (const profile of newProfiles)
   {
     if (!avatarDecorations.value[profile.user_id])
