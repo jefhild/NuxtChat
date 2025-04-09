@@ -74,7 +74,7 @@ onMounted(async() => {
   top: -6px;
   left: 50%;
   transform: translateX(-50%);
-  width: 63px;
+  width: 62px;
   pointer-events: none;
   z-index: 1;
   object-fit: contain;
