@@ -287,7 +287,7 @@ onMounted(async () => {
     userProfile.value.user_id
   );
   fetchAiUsers(filters.value);
-  fetchActiveChats();
+  fetchActiveChats(filters.value);
 
   // await loadBlockedUsers();
   loadBlockedUsers(); // Load blocked users for the current user
@@ -562,7 +562,7 @@ const updateFilters = async (newFilters) => {
   // console.log("Filters updated:", newFilters); // Debug log
   filters.value = newFilters;
   fetchAiUsers(filters.value);
-  fetchActiveChats();
+  fetchActiveChats(filters.value);
   await fetchOnlineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
   await fetchOfflineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
 };
@@ -580,7 +580,7 @@ watch(activeChatsData, (newData) => {
 const refreshData = async () => {
   // console.log("refreshData"); // Debug log
   fetchAiUsers(filters.value);
-  fetchActiveChats();
+  fetchActiveChats(filters.value);
 };
 </script>
 
