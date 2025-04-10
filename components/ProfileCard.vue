@@ -26,14 +26,13 @@
 
     <!-- Un... Icon -->
     <v-btn v-if="hideUn" :icon="props.icon" variant="plain" color="red" size="small"
-      @click.stop="handleClick(profile.profile_id)" class="ml-2">
+      @click.stop="handleClick()" class="ml-2">
     </v-btn>
   </v-card>
 </template>
 
 <script setup lang="ts">
 const router = useRouter();
-const authStore = useAuthStore();
 const { getAvatarDecorationFromId } = useDb();
 const avatarDecoration = ref("");
 import {
@@ -63,11 +62,11 @@ onMounted(async() => {
   avatarDecoration.value = await getAvatarDecorationFromId(props.profile.user_id);
 });
 
-const handleClick = (profileId: string) => {
+const handleClick = () => {
   if (props.type === "favorite") {
-    emit('unfavorite', profileId);
+    emit('unfavorite', props.profile.user_id);
   } else if (props.type === "upvote") {
-    emit('unupvote', profileId); 
+    emit('unupvote', props.profile.profile_id); 
   }
 };
 </script>

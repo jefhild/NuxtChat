@@ -61,6 +61,7 @@ watch(favoriteProfiles, async (newProfiles) =>
 
 const handleUnfavorite = async (userId: string) =>
 {
+  console.log("Unfavoriting user:", userId);
   await unfavoriteUser(userId);
 };
 

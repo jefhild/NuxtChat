@@ -275,13 +275,20 @@ export const useDb = () => {
   };
 
   const getUserProfileFromId = async (userId) => {
+
+    if (!userId)
+    {
+      console.error("No userId provided to getUserProfileFromId. This is normal if there is no user autheniticated");
+      return { data: null, error: new Error("Missing userId") };
+    }
+    
     const { data, error } = await supabase
       .from("profiles")
       .select(
         "*, genders(id, name), regions(id,name), subregions(id,name), countries(id,name), states(id,name), cities(id,name)"
       )
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
     return { data, error };
   };
@@ -565,6 +572,7 @@ export const useDb = () => {
   /*------------------*/
 
   const updateUsername = async (username, userId) => {
+    console.log("Updating username:", username, userId);
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -578,6 +586,7 @@ export const useDb = () => {
   };
 
   const updateProvider = async (provider, userId) => {
+    console.log("Updating provider:", provider, userId);
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -1193,9 +1202,14 @@ const { data, error } = await supabase
   };
 
   const updateUserEmail = async (mappedEmail) => {
-    const { data, error } = await supabase.auth.updateUser({
-      email: mappedEmail,
-    });
+    const { data, error } = await supabase.auth.updateUser(
+      {
+        email: mappedEmail,
+      },
+      {
+        redirectTo: `${window.location.origin}/loginemail`,
+      }
+    );
 
     if (error) {
       console.error("Error updating email:", error);
