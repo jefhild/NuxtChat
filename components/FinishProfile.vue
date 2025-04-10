@@ -69,7 +69,8 @@
 			</v-row>
 		</v-card-text>
 		<v-card-actions v-if="!isDone" class="pr-4 pb-4">
-			<v-btn color="red" @click="() => nextQuestion()"> SKIP </v-btn>
+			<v-btn color="red" @click="() => nextQuestion()"> {{ skipButtonText }} </v-btn>
+			 <v-btn  v-if="urlQuestion" @click="dismissSitePrompt">Don't Ask Again</v-btn>
 		</v-card-actions>
 	</v-card>
 </template>
@@ -81,6 +82,7 @@ const { updateTagline, updateSiteURL, updateInterests, updateUserEmail } = useDb
 const emit = defineEmits(["closeDialog", "lookingForUpdated"]);
 
 const authStore = useAuthStore();
+
 
 const userProfile = authStore.userProfile;
 const previosUserInput = ref("");
@@ -96,7 +98,9 @@ const mappedURL = ref("");
 const mappedInterests = ref("");
 const mappedEmail = ref("");
 const userResponses = ref({});
-const isDone = ref(false);
+const isDone = ref(false); 
+const urlQuestion = ref(false);
+const skipButtonText = ref("SKIP");
 
 const props = defineProps({
 	infoLeft: {
@@ -111,17 +115,34 @@ const questions = ref([]);
 
 const questionKeyMap = {};
 
-const nextQuestion = async(aiAnswer = "Let's move on") =>
+const dismissSitePrompt = () => {
+  localStorage.setItem("skipSiteURLPrompt", "true");
+  nextQuestion();
+};
+
+const nextQuestion = async(aiAnswer = "Let's move on", sendMessage = false) =>
 {
+	urlQuestion.value = false;
 	currentQuestionIndex.value++;
 	aiResponse.value = aiAnswer; 
+
+	if ( currentQuestionIndex.value === questions.value.length - 1 )
+	{
+		skipButtonText.value = "CLOSE";
+	} 
+
 	if (currentQuestionIndex.value >= questions.value.length )
 	{
 		isDone.value = true;
 		// console.log("All questions answered. Closing dialog.");
-		await new Promise(resolve => setTimeout(resolve, 3000));
+		if(sendMessage){
+			await new Promise(resolve => setTimeout(resolve, 3000));
+		}
 		emit("closeDialog");
 	}
+
+	if(questionKeyMap[currentQuestionIndex.value] === "site_url")
+		urlQuestion.value = true;
 
 	submittingtoDatabase.value = false;
 };
@@ -295,7 +316,7 @@ const sendMessage = async () => {
 		currentQuestionIndex.value--;
 	}
 
-	await nextQuestion(aiAnswer);
+	await nextQuestion(aiAnswer,true);
 };
 
 onMounted(() => {
@@ -326,6 +347,8 @@ onMounted(() => {
 	// console.log(questionKeyMap);
 	// console.log(questionKeyMap[currentQuestionIndex.value]);	
 	// console.log("user responses: ", userResponses.value);
+	if(questionKeyMap[currentQuestionIndex.value] === "site_url")
+		urlQuestion.value = true;
 });
 </script>
 

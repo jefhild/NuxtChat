@@ -10,6 +10,10 @@
 
               <div class="avatar-wrapper">
                 <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
+
+                <NuxtImg :src="user.avatar_decoration_url" v-if="user.avatar_decoration_url"
+                                  class="avatar-decoration" />
+
                 <v-icon color="white" size="x-small" class="status-badge">mdi-circle</v-icon>
                 <v-icon size="small" :color="statusColor(user.user_id)" :icon="statusIcon(user.user_id)"
                   class="status-badge" />
@@ -166,8 +170,23 @@ const { statusColor, statusIcon } = usePresenceStatus();
   color: red;
 }
 
+.v-list-item {
+  margin-top: 10px;
+}
+
 .avatar-wrapper {
   position: relative;
+}
+
+.avatar-decoration {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 49px;
+  pointer-events: none;
+  z-index: 2;
+  object-fit: contain;
 }
 
 .status-badge {
@@ -176,5 +195,6 @@ const { statusColor, statusIcon } = usePresenceStatus();
   right: -2px;
   width: 10px;
   height: 10px;
+  z-index: 3;
 }
 </style>

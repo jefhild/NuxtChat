@@ -31,11 +31,13 @@ export function useBlockedProfiles(userId: string) {
     if (userId) {
       const error  = await unblockUser(userId, blockedUserId);
 
-      if (!error) {
+      console.log("unblock error", error);
+      if (error) {
         // Remove the unblocked profile from the list using user_id
         blockedProfiles.value = blockedProfiles.value.filter(
           (profile) => profile.user_id !== blockedUserId
         );
+        console.log("blockedprofiles", blockedProfiles.value);
       }
     }
   };

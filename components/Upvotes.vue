@@ -12,8 +12,11 @@
                   v-for="profile in upvotedProfiles"
                   :key="profile.profile_id"
                   :profile="profile"
-                  hide-unupvote
+                  hide-un
                   class="mb-2"
+                  type="upvote"
+                  icon="mdi-thumb-down"
+                  @unupvote="handleUnupvote"
                 />
               </div>
               <v-card v-else class="d-flex flex-column align-center">
@@ -30,6 +33,9 @@
                   :key="profile.profile_id"
                   :profile="profile"
                   class="mb-2"
+                  type="upvote"
+                  icon="mdi-thumb-down"
+                  @unupvote="handleUnupvote"
                 />
               </div>
             </v-col>
@@ -48,8 +54,6 @@
 
 <script lang="ts" setup>
 import { useUpvotes } from "@/composables/useUpvotes";
-// import { getAvatar } from "@/utils/userUtils";
-import { getAvatar } from "@/composables/useUserUtils";
 
 const props = defineProps<{ userId: string }>();
 
@@ -57,12 +61,9 @@ const { upvotedProfiles, upvotedMeProfiles, unupvoteUser } = useUpvotes(
   props.userId
 );
 
-const getProfileImage = (avatar_url: string | null, gender_id: number) => {
-  return getAvatar(avatar_url, gender_id);
-};
-
 // Method to handle unfavorite button click
 const handleUnupvote = (profileId: string) => {
+  console.log("handleUnupvote: ", profileId);
   unupvoteUser(profileId);
 };
 </script>
