@@ -961,19 +961,21 @@ export const useDb = () => {
     return error;
   };
 
-  const deleteUpvoteFromUser = async (userId, upvotedProfileId) => {
-    const { error } = await supabase
-      .from("votes")
-      .delete()
-      .eq("user_id", userId)
-      .eq("profile_id", upvotedProfileId);
+const deleteUpvoteFromUser = async (userId, upvotedProfileId) => {
+const { data, error } = await supabase
+  .from("votes")
+  .delete({ returning: "representation" }) // THIS is key!
+  .eq("user_id", userId)
+  .eq("profile_id", upvotedProfileId);
 
-    if (error && error.status !== 204) {
-      console.error("Error unblocking user:", error);
-    }
+  console.log("Deleted rows:", data);
 
-    return error;
-  };
+  if (error && error.status !== 204) {
+    console.error("Error deleting upvote:", error.message);
+  }
+
+  return { data, error };
+};
 
   /*-----------------*/
   /* Other Functions */

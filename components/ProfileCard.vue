@@ -26,7 +26,7 @@
 
     <!-- Un... Icon -->
     <v-btn v-if="hideUn" :icon="props.icon" variant="plain" color="red" size="small"
-      @click.stop="handeClick(profile.user_id)" class="ml-2">
+      @click.stop="handleClick(profile.profile_id)" class="ml-2">
     </v-btn>
   </v-card>
 </template>
@@ -63,13 +63,11 @@ onMounted(async() => {
   avatarDecoration.value = await getAvatarDecorationFromId(props.profile.user_id);
 });
 
-const handeClick = (userId: string) => {
+const handleClick = (profileId: string) => {
   if (props.type === "favorite") {
-    // Handle favorite click
-    emit('unfavorite', userId);
+    emit('unfavorite', profileId);
   } else if (props.type === "upvote") {
-    // Handle upvote click
-    emit('unupvote', userId)
+    emit('unupvote', profileId); 
   }
 };
 </script>
