@@ -5,12 +5,20 @@
         <v-row>
           <!-- Column 1: Favorited Profiles -->
           <v-col cols="12" md="6">
-            <p>I Favorited</p>
+            <p class="text-center font-weight-medium my-2 text-h6">
+              I Favorited
+            </p>
             <div v-if="favoriteProfiles.length > 0">
-              <ProfileCard v-for="profile in favoriteProfiles" :key="profile.profile_id" :profile="profile"
-                icon="mdi-star-outline" type="favorite" hide-un class="mb-2" @unfavorite="handleUnfavorite" />
-
-
+              <ProfileCard
+                v-for="profile in favoriteProfiles"
+                :key="profile.profile_id"
+                :profile="profile"
+                icon="mdi-star-outline"
+                type="favorite"
+                hide-un
+                class="mb-2"
+                @unfavorite="handleUnfavorite"
+              />
             </div>
             <v-card v-else class="d-flex flex-column align-center">
               <v-card-title>No favorited users found</v-card-title>
@@ -19,11 +27,19 @@
 
           <!-- Column 2: Favorited Me -->
           <v-col cols="12" md="6">
-            <p>Favorited Me</p>
+            <p class="text-center font-weight-medium my-2 text-h6">
+              Favorited Me
+            </p>
             <div v-if="favoritedMeProfiles.length > 0">
-              <ProfileCard v-for="profile in favoritedMeProfiles" :key="profile.profile_id" :profile="profile"
-                icon="mdi-star-outline" type="favorite" class="mb-2" @unfavorite="handleUnfavorite" />
-
+              <ProfileCard
+                v-for="profile in favoritedMeProfiles"
+                :key="profile.profile_id"
+                :profile="profile"
+                icon="mdi-star-outline"
+                type="favorite"
+                class="mb-2"
+                @unfavorite="handleUnfavorite"
+              />
             </div>
             <v-card v-else class="d-flex flex-column align-center">
               <v-card-title>No one has favorited you yet</v-card-title>
@@ -43,27 +59,28 @@ const avatarDecorations = ref<Record<string, string>>({});
 
 const props = defineProps<{ userId: string }>();
 
-const { favoriteProfiles, favoritedMeProfiles, unfavoriteUser } = useFavorites(props.userId);
+const { favoriteProfiles, favoritedMeProfiles, unfavoriteUser } = useFavorites(
+  props.userId
+);
 
-watch(favoriteProfiles, async (newProfiles) =>
-{
-  console.log("New favorite profiles:", newProfiles);
-  for (const profile of newProfiles)
-  {
-    if (!avatarDecorations.value[profile.user_id])
-    {
-      const url = await getAvatarDecorationFromId(profile.user_id);
-      avatarDecorations.value[profile.user_id] = url;
+watch(
+  favoriteProfiles,
+  async (newProfiles) => {
+    console.log("New favorite profiles:", newProfiles);
+    for (const profile of newProfiles) {
+      if (!avatarDecorations.value[profile.user_id]) {
+        const url = await getAvatarDecorationFromId(profile.user_id);
+        avatarDecorations.value[profile.user_id] = url;
+      }
     }
-  }
-}, { immediate: true });
+  },
+  { immediate: true }
+);
 
-
-const handleUnfavorite = async (userId: string) =>
-{
+const handleUnfavorite = async (userId: string) => {
+  console.log("Unfavoriting user:", userId);
   await unfavoriteUser(userId);
 };
-
 </script>
 
 <style scoped>

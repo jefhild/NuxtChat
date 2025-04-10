@@ -6,7 +6,7 @@
           <v-row>
             <!-- Column 1: Upvoted Profiles -->
             <v-col cols="12" md="6">
-              <p>I Upvoted</p>
+              <p class="text-center font-weight-medium my-2 text-h6">I Upvoted</p>
               <div v-if="upvotedProfiles.length > 0">
                 <ProfileCard
                   v-for="profile in upvotedProfiles"
@@ -26,7 +26,7 @@
 
             <!-- Column 2: Upvoters -->
             <v-col cols="12" md="6">
-              <p>Upvoted Me</p>
+              <p class="text-center font-weight-medium my-2 text-h6">Upvoted Me</p>
               <div v-if="upvotedMeProfiles.length > 0">
                 <ProfileCard
                   v-for="profile in upvotedMeProfiles"

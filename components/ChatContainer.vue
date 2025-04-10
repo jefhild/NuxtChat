@@ -563,6 +563,8 @@ const updateFilters = async (newFilters) => {
   filters.value = newFilters;
   fetchAiUsers(filters.value);
   fetchActiveChats();
+  await fetchOnlineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
+  await fetchOfflineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
 };
 
 // Watch the data from composable
