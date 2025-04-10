@@ -6,6 +6,7 @@ export function useUpvotes(userId) {
   // Define a reactive reference to store the upvoted profiles
   const upvotedProfiles = ref([]);
   const upvotedMeProfiles = ref([]);
+
   const {
     getUserUpvotedProfiles,
     getUserUpvotedMeProfiles,
@@ -37,16 +38,39 @@ export function useUpvotes(userId) {
   };
 
   // Function to remove a user from the upvoted profiles
-  const unupvoteUser = async (upvotedProfileId) => {
-    if (userId) {
-      const error = await deleteUpvoteFromUser(userId, upvotedProfileId);
+  // const unupvoteUser = async (upvotedProfileId) => {
+  //   if (userId) {
+  //     // console.log("userId: ", userId, "profileId: ", upvotedProfileId)
+  //     const error = await deleteUpvoteFromUser(userId, upvotedProfileId);
+  //     // console.log("deleteUpvoteFromUser result:", error);
 
-      if (!error) {
-        // Filter out the profile from the list using its ID
-        upvotedProfiles.value = upvotedProfiles.value.filter(
-          (profile) => profile.profile_id !== upvotedProfileId
-        );
-      }
+  //     if (!error) {
+  //       upvotedProfiles.value = upvotedProfiles.value.filter(
+  //         (profile) => profile.profile_id !== upvotedProfileId
+  //       );
+  //     }
+  //   }
+  // };
+  const unupvoteUser = async (upvotedProfileId) => {
+    console.log(
+      "Attempting to unupvote, userId:",
+      userId,
+      " profileId: ",
+      upvotedProfileId
+    );
+
+    const { error, data } = await deleteUpvoteFromUser(
+      userId,
+      upvotedProfileId
+    );
+    console.log("Supabase delete result:", { error, data });
+
+    if (error) {
+      console.error("Failed to delete upvote:", error.message);
+    } else {
+      upvotedProfiles.value = upvotedProfiles.value.filter(
+        (profile) => profile.profile_id !== upvotedProfileId
+      );
     }
   };
 

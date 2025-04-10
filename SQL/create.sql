@@ -161,6 +161,7 @@ CREATE TABLE public.profiles (
   status_id INTEGER NULL,
   created TIMESTAMP WITH TIME ZONE NULL DEFAULT now(),
   is_ai BOOLEAN NULL DEFAULT false,
+  avatar_decoration_url TEXT NULL,
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT unique_user_id UNIQUE (user_id),
   CONSTRAINT profiles_displayname_key UNIQUE (displayname),

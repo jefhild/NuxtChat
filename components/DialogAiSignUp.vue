@@ -1,6 +1,6 @@
 <template>
   <v-card width="650" class="mx-auto">
-    <v-card-title class="headline text-center mb-4">Create Your Anonymous Profile</v-card-title>
+    <v-card-title class="headline text-center mb-4"> {{ props.titleText }}</v-card-title>
     <v-card-text>
       <!-- <p class="pb-4">
         Please follow the instructions below to create your anonymous profile.
@@ -132,6 +132,13 @@ const questionKeyMap = {
 
 let messageCounter = 0; // Ensure unique keys for messages
 
+const props = defineProps({
+  titleText: {
+    type: String,
+    default: 'Create Your Anonymous Profile',
+  }
+});
+
 // Load the first question on mount
 onMounted(async () => {
   messages.value = [
@@ -139,6 +146,8 @@ onMounted(async () => {
   ];
   await nextTick(); // Ensure the DOM has fully rendered before focusing
   focusInput(); // Set focus to the input field
+
+  console.log(authStore.user);
 });
 
 // Update messages and handle visibility

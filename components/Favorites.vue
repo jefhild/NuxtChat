@@ -1,86 +1,105 @@
 <template>
   <v-container>
     <v-row>
-      <template v-if="favoriteProfiles.length > 0">
-        <v-col
-          v-for="profile in favoriteProfiles"
-          :key="profile.profile_id"
-          cols="12"
-          sm="6"
-          md="4"
-        >
-          <!-- <v-card hover :to="`/profiles/${profile.user_id}`"> -->
-          <v-card hover>
-            <v-row>
-              <v-col>
-                <NuxtImg
-                  :src="getProfileImage(profile.avatar_url, profile.gender_id)"
-                  aspect-ratio="1"
-                  width="100px"
-                />
-              </v-col>
-              <v-col class="text-right mr-3">
-                {{ profile.country }} {{ profile.country_emoji }}
-              </v-col>
-            </v-row>
-            <v-card-title>
-              <v-row>
-                <v-col>
-                  <v-btn variant="plain" :to="`/profiles/${profile.user_id}`">
-                    {{ profile.displayname }} ({{ profile.age }})
-                  </v-btn>
-                  <v-icon
-                    :color="getGenderColor(profile.gender_id)"
-                    :icon="getAvatarIcon(profile.gender_id)"
-                  ></v-icon>
-                </v-col>
-                <v-spacer />
-                <v-col>
-                  <v-tooltip text="Remove User from Favorites?">
-                    <template v-slot:activator="{ props }">
-                      <v-btn
-                        v-bind="props"
-                        icon="mdi-block-helper"
-                        variant="plain"
-                        color="red"
-                        size="small"
-                        @click="handleUnfavorite(profile.user_id)"
-                      ></v-btn>
-                    </template>
-                  </v-tooltip>
-                </v-col>
-              </v-row>
-            </v-card-title>
-            <!-- <v-card-subtitle>{{ profile.tagline }}</v-card-subtitle> -->
-          </v-card>
-        </v-col>
-      </template>
-      <v-col v-else cols="12">
-        <v-card class="d-flex flex-column align-center">
-          <v-card-title>No favorite users found</v-card-title>
-        </v-card>
-      </v-col>
+      <v-container>
+        <v-row>
+          <!-- Column 1: Favorited Profiles -->
+          <v-col cols="12" md="6">
+            <p class="text-center font-weight-medium my-2 text-h6">
+              I Favorited
+            </p>
+            <div v-if="favoriteProfiles.length > 0">
+              <ProfileCard
+                v-for="profile in favoriteProfiles"
+                :key="profile.profile_id"
+                :profile="profile"
+                icon="mdi-star-outline"
+                type="favorite"
+                hide-un
+                class="mb-2"
+                @unfavorite="handleUnfavorite"
+              />
+            </div>
+            <v-card v-else class="d-flex flex-column align-center">
+              <v-card-title>No favorited users found</v-card-title>
+            </v-card>
+          </v-col>
+
+          <!-- Column 2: Favorited Me -->
+          <v-col cols="12" md="6">
+            <p class="text-center font-weight-medium my-2 text-h6">
+              Favorited Me
+            </p>
+            <div v-if="favoritedMeProfiles.length > 0">
+              <ProfileCard
+                v-for="profile in favoritedMeProfiles"
+                :key="profile.profile_id"
+                :profile="profile"
+                icon="mdi-star-outline"
+                type="favorite"
+                class="mb-2"
+                @unfavorite="handleUnfavorite"
+              />
+            </div>
+            <v-card v-else class="d-flex flex-column align-center">
+              <v-card-title>No one has favorited you yet</v-card-title>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
     </v-row>
   </v-container>
 </template>
 
 <script lang="ts" setup>
 import { useFavorites } from "@/composables/useFavorites";
-// import { getAvatar } from "@/utils/userUtils"; 
-import { getAvatar } from "@/composables/useUserUtils";
+
+const { getAvatarDecorationFromId } = useDb();
+const avatarDecorations = ref<Record<string, string>>({});
 
 const props = defineProps<{ userId: string }>();
 
-const { favoriteProfiles, unfavoriteUser } = useFavorites(props.userId);
+const { favoriteProfiles, favoritedMeProfiles, unfavoriteUser } = useFavorites(
+  props.userId
+);
 
-const getProfileImage = (avatar_url: string | null, gender_id: number) => {
-  return getAvatar(avatar_url, gender_id);
-};
+watch(
+  favoriteProfiles,
+  async (newProfiles) => {
+    console.log("New favorite profiles:", newProfiles);
+    for (const profile of newProfiles) {
+      if (!avatarDecorations.value[profile.user_id]) {
+        const url = await getAvatarDecorationFromId(profile.user_id);
+        avatarDecorations.value[profile.user_id] = url;
+      }
+    }
+  },
+  { immediate: true }
+);
 
-// Method to handle unfavorite button click
-const handleUnfavorite = (userId: string) => {
-  unfavoriteUser(userId);
+const handleUnfavorite = async (userId: string) => {
+  console.log("Unfavoriting user:", userId);
+  await unfavoriteUser(userId);
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.cover-image {
+  object-fit: cover;
+}
+
+.avatar-wrapper {
+  position: relative;
+}
+
+.avatar-decoration {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 241px;
+  pointer-events: none;
+  z-index: 1;
+  object-fit: contain;
+}
+</style>

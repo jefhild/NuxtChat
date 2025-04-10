@@ -130,7 +130,22 @@ export const useDb = () => {
     return data.id;
   };
 
-  const getMessagesBetweenUsers = async (senderUserId, receiverUserId) => {
+  const getAvatarDecorationFromId = async (id) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("avatar_decoration_url")
+      .eq("user_id", id)
+      .maybeSingle();
+
+    if (error)
+    {
+      console.error("Error fetching avatar decoration:", error);
+    }
+
+    return data.avatar_decoration_url;
+  };
+
+  const getMessagesBetweenUsers = async (senderUserId, receiverUserId) =>{
     const { data, error } = await supabase
       .from("messages")
       .select(
@@ -260,13 +275,20 @@ export const useDb = () => {
   };
 
   const getUserProfileFromId = async (userId) => {
+
+    if (!userId)
+    {
+      console.error("No userId provided to getUserProfileFromId. This is normal if there is no user autheniticated");
+      return { data: null, error: new Error("Missing userId") };
+    }
+    
     const { data, error } = await supabase
       .from("profiles")
       .select(
         "*, genders(id, name), regions(id,name), subregions(id,name), countries(id,name), states(id,name), cities(id,name)"
       )
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
     return { data, error };
   };
@@ -352,6 +374,23 @@ export const useDb = () => {
     }
 
     return { data, error };
+  };
+
+  const getActiveChats = async (userId, genderId, minAge, maxAge) =>
+  {
+    const { data, error } = await supabase.rpc("fetch_filtered_active_chats", {
+      logged_in_user_id: userId,
+      gender_filter: genderId,
+      min_age: minAge,
+      max_age: maxAge,
+    });
+
+    if (error)
+    {
+      console.error("Error fetching active chats:", error);
+    }
+
+    return data;
   };
 
   const getOfflineProfiles = async (userId, genderId, minAge, maxAge) => {
@@ -475,17 +514,6 @@ export const useDb = () => {
     return data;
   };
 
-  const getActiveChats = async (userId) => {
-    const { data, error } = await supabase.rpc("fetch_active_chats", {
-      logged_in_user_id: userId,
-    });
-
-    if (error) {
-      console.error("Error fetching active chats:", error);
-    }
-
-    return data;
-  };
 
   const getUserUpvotedProfiles = async (userId) => {
     const { data, error } = await supabase.rpc("get_upvoted_profiles", {
@@ -499,23 +527,58 @@ export const useDb = () => {
     return data;
   };
 
+  const getAllAvatarDecorations = async () => {
+    const config = useRuntimeConfig();
+    const { data, error } = await supabase
+      .storage
+      .from('avatar-decorations')
+      .list('decorations', {
+        limit: 100,
+        sortBy: { column: 'name', order: 'asc' },
+      });
+
+    if (error)
+    {
+      console.error('Error loading decorations:', error.message);
+      return [];
+    }
+
+    return data.map(file => ({
+      name: file.name,
+      url: `${config.public.SUPABASE_URL}/storage/v1/object/public/avatar-decorations/decorations/${file.name}`,
+    }));
+  };
+
   const getUserUpvotedMeProfiles = async (userId) => {
     const { data, error } = await supabase.rpc("get_users_who_upvoted_me", {
       input_user_id: userId,
     });
 
     if (error) {
-      console.error("Error fetching upvoted profiles:", error);
+      console.error("Error fetching upvoted me profiles:", error);
     }
 
     return data;
   };
+
+  const getUserFavoritedMeProfiles = async(userId) => {
+    const { data, error } = await supabase.rpc("get_users_who_favorited_me", {
+      input_user_id: userId,
+    })
+
+    if (error) {
+      console.error("Error fetching favorited me profiles: ", error);
+    }
+
+    return data;
+  }
 
   /*------------------*/
   /* Update functions */
   /*------------------*/
 
   const updateUsername = async (username, userId) => {
+    console.log("Updating username:", username, userId);
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -529,6 +592,7 @@ export const useDb = () => {
   };
 
   const updateProvider = async (provider, userId) => {
+    console.log("Updating provider:", provider, userId);
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -694,6 +758,20 @@ export const useDb = () => {
     }*/
   };
 
+  const updateAvatarDecoration = async (userId, avatarDecUrl) =>{
+    console.log("in db",userId, avatarDecUrl);
+    const { error } = await supabase 
+    .from("profiles")
+    .update({ avatar_decoration_url: avatarDecUrl })
+    .eq("user_id", userId);
+
+
+    if (error && error.status !== 204)
+    {
+      console.error("Error deleting chat:", error);
+    }
+  }
+  
   /*------------------*/
   /* Insert functions */
   /*------------------*/
@@ -889,19 +967,21 @@ export const useDb = () => {
     return error;
   };
 
-  const deleteUpvoteFromUser = async (userId, upvotedProfileId) => {
-    const { error } = await supabase
-      .from("votes")
-      .delete()
-      .eq("user_id", userId)
-      .eq("profile_id", upvotedProfileId);
+const deleteUpvoteFromUser = async (userId, upvotedProfileId) => {
+const { data, error } = await supabase
+  .from("votes")
+  .delete({ returning: "representation" }) // THIS is key!
+  .eq("user_id", userId)
+  .eq("profile_id", upvotedProfileId);
 
-    if (error && error.status !== 204) {
-      console.error("Error unblocking user:", error);
-    }
+  console.log("Deleted rows:", data);
 
-    return error;
-  };
+  if (error && error.status !== 204) {
+    console.error("Error deleting upvote:", error.message);
+  }
+
+  return { data, error };
+};
 
   /*-----------------*/
   /* Other Functions */
@@ -1128,9 +1208,14 @@ export const useDb = () => {
   };
 
   const updateUserEmail = async (mappedEmail) => {
-    const { data, error } = await supabase.auth.updateUser({
-      email: mappedEmail,
-    });
+    const { data, error } = await supabase.auth.updateUser(
+      {
+        email: mappedEmail,
+      },
+      {
+        redirectTo: `${window.location.origin}/loginemail`,
+      }
+    );
 
     if (error) {
       console.error("Error updating email:", error);
@@ -1159,6 +1244,7 @@ export const useDb = () => {
     getStatuses,
     getGenders,
     getLookingForId,
+    getAvatarDecorationFromId,
     getMessagesBetweenUsers,
     getAIInteractionCount,
     getCurrentAIInteractionCount,
@@ -1176,6 +1262,7 @@ export const useDb = () => {
     getRecentFemales,
     getRecentMales,
     getAiProfiles,
+    getActiveChats,
     getOfflineProfiles,
     getOnlineProfiles,
     //getOnlineUserCount,
@@ -1186,9 +1273,10 @@ export const useDb = () => {
     getUserBlockedProfiles,
     getCountUserFavorites,
     getUserFavoriteProfiles,
-    getActiveChats,
     getUserUpvotedProfiles,
+    getAllAvatarDecorations,
     getUserUpvotedMeProfiles,
+    getUserFavoritedMeProfiles,
 
     updateUsername,
     updateProvider,
@@ -1203,6 +1291,7 @@ export const useDb = () => {
     updateMessagesAsRead,
     updateAIInteractionCount,
     updatePresence,
+    updateAvatarDecoration,
 
     insertProfile,
     insertMessage,

@@ -15,14 +15,27 @@ interface Profile {
 export function useFavorites(userId: string) {
   
   const favoriteProfiles = ref<Profile[]>([]);
-  const { getUserFavoriteProfiles, deleteFavorite } = useDb();
+  const favoritedMeProfiles = ref<Profile[]>([]);
+  const { getUserFavoriteProfiles, deleteFavorite, getUserFavoritedMeProfiles } = useDb();
 
   const fetchFavorites = async () => {
     if (userId) {
       const data = await getUserFavoriteProfiles(userId);
 
       if (data) {
+        console.log("favoriteProfiles changed");
         favoriteProfiles.value = data as Profile[];
+      }
+    }
+  };
+
+  const fetchMyFavorites = async () => {
+    if (userId) {
+      const data = await getUserFavoritedMeProfiles(userId);
+
+      
+      if (data) {
+        favoritedMeProfiles.value = data as Profile[];
       }
     }
   };
@@ -43,10 +56,13 @@ export function useFavorites(userId: string) {
 
   // Fetch profiles initially when the composable is used
   fetchFavorites();
+  fetchMyFavorites();
 
   return {
     favoriteProfiles,
+    favoritedMeProfiles,
     fetchFavorites,
+    fetchMyFavorites,
     unfavoriteUser, // Expose the unblock method
   };
 }
