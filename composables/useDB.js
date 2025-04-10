@@ -376,6 +376,23 @@ export const useDb = () => {
     return { data, error };
   };
 
+  const getActiveChats = async (userId, genderId, minAge, maxAge) =>
+  {
+    const { data, error } = await supabase.rpc("fetch_filtered_active_chats", {
+      logged_in_user_id: userId,
+      gender_filter: genderId,
+      min_age: minAge,
+      max_age: maxAge,
+    });
+
+    if (error)
+    {
+      console.error("Error fetching active chats:", error);
+    }
+
+    return data;
+  };
+
   const getOfflineProfiles = async (userId, genderId, minAge, maxAge) => {
     const { data, error } = await supabase.rpc("fetch_offline_profiles", {
       logged_in_user_id: userId,
@@ -497,17 +514,6 @@ export const useDb = () => {
     return data;
   };
 
-  const getActiveChats = async (userId) => {
-    const { data, error } = await supabase.rpc("fetch_active_chats", {
-      logged_in_user_id: userId,
-    });
-
-    if (error) {
-      console.error("Error fetching active chats:", error);
-    }
-
-    return data;
-  };
 
   const getUserUpvotedProfiles = async (userId) => {
     const { data, error } = await supabase.rpc("get_upvoted_profiles", {
@@ -1256,6 +1262,7 @@ const { data, error } = await supabase
     getRecentFemales,
     getRecentMales,
     getAiProfiles,
+    getActiveChats,
     getOfflineProfiles,
     getOnlineProfiles,
     //getOnlineUserCount,
@@ -1266,7 +1273,6 @@ const { data, error } = await supabase
     getUserBlockedProfiles,
     getCountUserFavorites,
     getUserFavoriteProfiles,
-    getActiveChats,
     getUserUpvotedProfiles,
     getAllAvatarDecorations,
     getUserUpvotedMeProfiles,
