@@ -35,10 +35,21 @@ import { useAuthStore } from "@/stores/authStore";
 const authStore = useAuthStore();
 const isAuthenticated = ref(false);
 const isLoading = ref(true);
+const router = useRouter();
+
+const { getUserProfileFromId } = useDb();
 
 onMounted(async () => {
   await authStore.checkAuth();
   isAuthenticated.value = authStore.user !== null;
+  const { data: userProfileData } = await getUserProfileFromId(authStore.user?.id);
+
+  if (!userProfileData)
+  {
+    isAuthenticated.value = false; // User doesn't exist, set to false
+    router.push("/"); // Redirect to home page
+    return;
+  }
   isLoading.value = false;
 });
 </script>
