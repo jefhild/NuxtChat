@@ -26,7 +26,7 @@ export default defineNuxtConfig({
   ],
 
   gtag: {
-    id: process.env.GOOGLE_ANALYTICS_ID || 'G-XXXXXXXXXX',
+    id: process.env.GOOGLE_ANALYTICS_ID,
     config: {
       anonymize_ip: true,
       send_page_view: true,
