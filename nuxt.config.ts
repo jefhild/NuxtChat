@@ -22,7 +22,16 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@nuxtjs/google-fonts",
     "@nuxtjs/seo",
+    'nuxt-gtag',
   ],
+
+  gtag: {
+    id: process.env.GOOGLE_ANALYTICS_ID || 'G-XXXXXXXXXX',
+    config: {
+      anonymize_ip: true,
+      send_page_view: true,
+    },
+  },
 
   googleFonts: {
     families: {
@@ -102,6 +111,7 @@ export default defineNuxtConfig({
       SUPABASE_BUCKET: process.env.SUPABASE_BUCKET,
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_REDIRECT: process.env.SUPABASE_REDIRECT,
+      GOOGLE_ANALYTICS_ID: process.env.GOOGLE_ANALYTICS_ID,
     },
   },
 
