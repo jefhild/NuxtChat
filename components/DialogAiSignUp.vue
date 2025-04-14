@@ -1,6 +1,6 @@
 <template>
   <v-card width="650" class="mx-auto">
-    <v-card-title class="headline text-center mb-4"> {{ props.titleText }}</v-card-title>
+    <v-card-title class="headline text-center mt-4"> {{ props.titleText }}</v-card-title>
     <v-card-text>
       <!-- <p class="pb-4">
         Please follow the instructions below to create your anonymous profile.

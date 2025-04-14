@@ -5,6 +5,6 @@ const supabase = createClient(
   process.env.SUPABASE_KEY!
 );
 
-export async function getRegisteredUsersIds() {
-  return await supabase.from("profiles").select("user_id");
+export async function getRegisteredUsersDisplaynames() {
+  return await supabase.from("profiles").select("displayname");
 }

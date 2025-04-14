@@ -96,11 +96,12 @@ const authStore = useAuthStore();
 const isAuthenticated = ref(false);
 const isLoading = ref(true);
 const route = useRoute();
-const userId = route.params.id;
+const displayName = route.params.displayname;
 const aiDialog = ref(false);
 
-const { profile, fetchUserProfile } = useUserProfile();
-await fetchUserProfile(userId);
+const { profile, fetchUserProfileFromDisplayName } = useUserProfile();
+await fetchUserProfileFromDisplayName(displayName);
+
 
 const { getAvatarDecorationFromId } = useDb();
 const avatarDecoration = ref("");
@@ -150,7 +151,7 @@ useHead(() => ({
   link: [
     {
       rel: "canonical",
-      href: "https://imchatty.com" + "/profiles/" + userId,
+      href: "https://imchatty.com" + "/profiles/" + profile.displayname,
     },
   ],
 }));
@@ -192,8 +193,8 @@ onMounted(async () => {
   await authStore.checkAuth();
   isAuthenticated.value = authStore.user !== null;
   isLoading.value = false;
-
-  avatarDecoration.value = await getAvatarDecorationFromId(profile.value.user_id);
+  
+  avatarDecoration.value = await getAvatarDecorationFromId(profile.value?.user_id);
 
 });
 </script>

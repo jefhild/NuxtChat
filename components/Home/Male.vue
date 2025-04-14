@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.user_id}`"
+                :href="`/profiles/${profile.displayname}`"
                 class="ml-2 mb-2"
               >
                 <v-img

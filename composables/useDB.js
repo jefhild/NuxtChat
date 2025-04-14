@@ -308,6 +308,21 @@ export const useDb = () => {
     return data;
   };
 
+  const getUserProfileFromDisplayName = async (displayName) => {
+    const { data, error } = await supabase.rpc("get_user_profile_by_displayname", {
+      p_displayname: displayName,
+    })
+
+    if (error) {
+      console.error(
+        "Error fetching user profile with RPC:",
+        error
+      )
+    }
+
+    return data;
+  };
+
   const getUserProfilePhoto = async (userId) => {
     const { data, error } = await supabase
       .from("profiles")
@@ -1256,6 +1271,7 @@ const { data, error } = await supabase
     getUserFromName,
     getUserProfileFromId,
     getUserProfileFunctionFromId,
+    getUserProfileFromDisplayName,
     getUserProfilePhoto,
     getRegisteredUsersIds,
     getAllUsersIdsWithoutAvatar,

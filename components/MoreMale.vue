@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.user_id}`"
+                :href="`/profiles/${profile.displayname}`"
                 class="ml-2 mb-2"
               >
                 <v-img
@@ -77,7 +77,7 @@
 import { ref, onMounted } from "vue";
 const activePanels = ref([0]);
 const maleProfiles = ref([]);
-const profileLimit = 10;
+const profileLimit = 20;
 
 const { getRecentMales } = useDb();
 

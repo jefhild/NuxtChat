@@ -14,7 +14,7 @@
             class="mr-3"
             :image="getAvatar(selectedUser.avatar_url, selectedUser.gender_id)"
           ></v-avatar>
-          <NuxtLink :to="`/profiles/${selectedUser.user_id}`">
+          <NuxtLink :to="`/profiles/${selectedUser.displayname}`">
             {{ selectedUser ? selectedUser.displayname : "..." }}
           </NuxtLink>
         </v-col>

@@ -3,7 +3,7 @@
     class="pa-2 mb-2 d-flex align-center"
     flat
     hover
-    @click="goToProfile(profile.user_id)"
+    @click="goToProfile(profile.displayname)"
     style="cursor: pointer"
   >
     <!-- Avatar with overlaid icon and decoration-->
@@ -87,8 +87,8 @@ const getProfileImage = (avatar_url: string | null, gender_id: number) => {
   return getAvatar(avatar_url, gender_id);
 };
 
-const goToProfile = (userId: string) => {
-  router.push(`/profiles/${userId}`);
+const goToProfile = (displayname: string) => {
+  router.push(`/profiles/${displayname}`);
 };
 
 onMounted(async () => {
