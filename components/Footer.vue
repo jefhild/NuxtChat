@@ -9,7 +9,10 @@
             <NuxtLink to="/about">About Us</NuxtLink> |
             <NuxtLink to="/terms">Terms Of Service</NuxtLink> |
             <NuxtLink to="/privacy">Privacy Policy</NuxtLink> |
-            <!-- <NuxtLink to="/cookies">Cookies</NuxtLink> | -->
+            <!-- GitHub Icon -->
+            <a href="https://github.com/jefhild/NuxtChat" target="_blank" rel="noopener">
+              <v-icon>mdi-github</v-icon>
+            </a>
           </v-card-text>
         </v-card>
       </v-col>
