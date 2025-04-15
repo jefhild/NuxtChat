@@ -223,7 +223,7 @@
             flat
             variant="text"
             color="blue"
-            @click="router.push(`/profiles/${userProfile.displayname}`)"
+            @click="router.push(`/profiles/${userProfile.gender}/${userProfile.displayname}`)"
             class="text-link-btn"
             >Public Profile
           </v-btn>

@@ -166,11 +166,11 @@ const updateMessages = (aiResponse, nextQuestion) => {
 
 // Focus on the input field
 const focusInput = async () => {
-  await nextTick(); // Wait for DOM updates
-  if (inputField.value) {
-    inputField.value.focus();
-  }
+  await nextTick(); // Ensure DOM is updated
+  const element = inputField.value?.$el?.querySelector('input');
+  if (element) element.focus();
 };
+
 
 // Validate user response
 const validateResponse = async (index, input) => {

@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.displayname}`"
+                :href="`/profiles/${profile.gender}/${profile.displayname}`"
                 class="ml-2 mb-2"
               >
                 <v-img
@@ -83,11 +83,16 @@ const profileLimit = 5;
 
 const { getRecentMales } = useDb();
 
-const data = getRecentMales(profileLimit);
-if (data) {
-  recentProfiles.value = data;
-}
 
+
+onMounted(async () =>
+{
+  const data = await getRecentMales(profileLimit);
+  if (data)
+  {
+    recentProfiles.value = data;
+  }
+});
 // Fetch data on mount
 // onMounted(async () => {
 //   const { data, error } = await supabase.rpc("get_recent_males");

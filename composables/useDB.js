@@ -115,6 +115,28 @@ export const useDb = () => {
     return data;
   };
 
+  const getGenderFromId = async (id) =>
+  {
+    if (!id)
+    {
+      return null;
+    }
+    const { data, error } = await supabase
+      .from("genders")
+      .select("name")
+      .eq("id", id)
+      .single();
+
+    if (error || !data?.name)
+    {
+      console.error("Failed to get gender name:", error?.message);
+      return null;
+    }
+
+    return data.name;
+  };
+
+
   const getLookingForId = async (name) => {
     const { data, error } = await supabase
       .from("looking_for")
@@ -1258,6 +1280,7 @@ const { data, error } = await supabase
     //getUserStatus,
     getStatuses,
     getGenders,
+    getGenderFromId,
     getLookingForId,
     getAvatarDecorationFromId,
     getMessagesBetweenUsers,

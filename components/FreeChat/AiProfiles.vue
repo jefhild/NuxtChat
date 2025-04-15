@@ -5,7 +5,7 @@
     <v-row dense>
       <v-col v-for="profile in aiProfiles" :key="profile.id" cols="12" sm="6" md="4" lg="3"
         class="d-flex justify-center">
-        <v-card :to="`/profiles/${profile.displayname}`" class="profile-card text-center d-flex flex-column justify-end"
+        <v-card :to="`/profiles/${profile.gender}/${profile.displayname}`" class="profile-card text-center d-flex flex-column justify-end"
           elevation="2" :style="{ backgroundImage: `url(${profile.avatar_url || '/default-avatar.png'})` } ">
           <div class="overlay">
             <div class="font-weight-bold text-white mb-1">{{ profile.displayname }}</div>

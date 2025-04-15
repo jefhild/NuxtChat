@@ -4,7 +4,7 @@
       <template v-if="blockedProfiles.length > 0">
         <v-col v-for="profile in blockedProfiles" :key="profile.profile_id" cols="12" sm="6" md="4">
           <!-- <v-card hover :to="`/profiles/${profile.user_id}`"> -->
-          <v-card hover>
+          <v-card v-if="genderMap[profile.gender_id]" hover :to="`/profiles/${genderMap[profile.gender_id]}/${profile.displayname}`">
             <v-row>
               <v-col cols="12">
                 <div class="avatar-wrapper">
@@ -22,10 +22,13 @@
             <v-card-title>
               <v-row>
                 <v-col cols="8">
-                  <v-btn variant="plain" :to="`/profiles/${profile.user_id}`">
-                    {{ profile.displayname }} ({{ profile.age }})
-                  </v-btn>
-                  <v-icon :color="getGenderColor(profile.gender_id)" :icon="getAvatarIcon(profile.gender_id)"></v-icon>
+                  <v-btn variant="plain"
+                    v-if="genderMap[profile.gender_id]"
+                    :to="`/profiles/${genderMap[profile.gender_id]}/${profile.displayname}`">
+                      {{ profile.displayname }} ({{ profile.age }})
+                    </v-btn>
+                    <v-icon :color="getGenderColor(profile.gender_id)"
+                      :icon="getAvatarIcon(profile.gender_id)"></v-icon>
                 </v-col>
                 <v-spacer />
                 <v-col>
@@ -56,7 +59,7 @@ import { useBlockedProfiles } from "@/composables/useBlockedProfiles";
 // import { getAvatar } from "@/utils/userUtils"; // Import the helper function
 import { getAvatar } from "@/composables/useUserUtils";
 
-const { getAvatarDecorationFromId } = useDb();
+const { getAvatarDecorationFromId, getGenderFromId } = useDb();
 const avatarDecorations = ref<Record<string, string>>({});
 // interface Profile {
 //   profile_id: string;
@@ -71,6 +74,8 @@ const avatarDecorations = ref<Record<string, string>>({});
 // }
 
 const props = defineProps<{ userId: string }>();
+const genderMap = ref<Record<number, string>>({});
+
 
 const { blockedProfiles, unblockAUser } = useBlockedProfiles(props.userId);
 
@@ -93,6 +98,16 @@ watch(blockedProfiles, async (newProfiles) =>
     {
       const url = await getAvatarDecorationFromId(profile.user_id);
       avatarDecorations.value[profile.user_id] = url;
+    }
+
+    // Gender name
+    if (!genderMap.value[profile.gender_id])
+    {
+      const genderName = await getGenderFromId(profile.gender_id);
+      if (genderName)
+      {
+        genderMap.value[profile.gender_id] = genderName;
+      }
     }
   }
 }, { immediate: true });

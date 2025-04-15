@@ -3,33 +3,19 @@
     <v-card-title>
       <v-row no-gutters class="align-center">
         <v-col :class="getGenderColorClass(selectedUser.gender_id)">
-          <v-icon
-            v-if="selectedUser"
-            :color="getGenderColor(selectedUser.gender_id)"
-            :icon="getAvatarIcon(selectedUser.gender_id)"
-            size="small"
-          ></v-icon>
+          <v-icon v-if="selectedUser" :color="getGenderColor(selectedUser.gender_id)"
+            :icon="getAvatarIcon(selectedUser.gender_id)" size="small"></v-icon>
 
-          <v-avatar
-            class="mr-3"
-            :image="getAvatar(selectedUser.avatar_url, selectedUser.gender_id)"
-          ></v-avatar>
-          <NuxtLink :to="`/profiles/${selectedUser.displayname}`">
+          <v-avatar class="mr-3" :image="getAvatar(selectedUser.avatar_url, selectedUser.gender_id)"></v-avatar>
+          <NuxtLink v-if="genderName" :to=" `/profiles/${genderName}/${selectedUser.displayname}`">
             {{ selectedUser ? selectedUser.displayname : "..." }}
           </NuxtLink>
         </v-col>
         <v-col class="text-subtitle-1">{{
           selectedUser ? selectedUser.tagline : "..."
-        }}</v-col>
-        <ChatHeaderActions2
-          v-if="selectedUser"
-          :selectedUser="selectedUser"
-          :currentUser="currentUser"
-          @upvote="upvote"
-          @downvote="downvote"
-          @toggleFavorite="toggleFavorite"
-          @toggleBlockUser="toggleBlockUser"
-        />
+          }}</v-col>
+        <ChatHeaderActions2 v-if="selectedUser" :selectedUser="selectedUser" :currentUser="currentUser" @upvote="upvote"
+          @downvote="downvote" @toggleFavorite="toggleFavorite" @toggleBlockUser="toggleBlockUser" />
       </v-row>
     </v-card-title>
 
@@ -56,7 +42,7 @@
 // } from "@/utils/userUtils";
 import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
 
-const { insertBlockedUser, insertFavorite, unblockUser, deleteFavorite, upvoteUserProfile, downvoteUserProfile} = useDb();
+const { getGenderFromId, insertBlockedUser, insertFavorite, unblockUser, deleteFavorite, upvoteUserProfile, downvoteUserProfile} = useDb();
 
 // const authStore = useAuthStore();
 // const tooltipText = ref("View profile of the user");
@@ -84,9 +70,11 @@ const props = defineProps<{
 
 const hasUpvoted = ref(false);
 const hasDownvoted = ref(false);
+const genderName = ref<String | null>(""); 
+
 watch(
   () => props.selectedUser,
-  (newSelectedUser) => {
+  async (newSelectedUser) => {
     if (newSelectedUser === null) {
       console.log("No user selected");
       hasUpvoted.value = false;
@@ -94,6 +82,7 @@ watch(
     } else {
       hasUpvoted.value = false;
       hasDownvoted.value = false;
+      genderName.value = await getGenderFromId(newSelectedUser.gender_id) || "";
     }
   },
   { immediate: true }
@@ -181,6 +170,13 @@ const downvote = async (targetUserId: string) => {
     }
   }
 };
+
+
+onMounted(async () =>
+{
+  genderName.value = await getGenderFromId(props.selectedUser?.gender_id) || "";
+});
+
 </script>
 
 <style scoped>

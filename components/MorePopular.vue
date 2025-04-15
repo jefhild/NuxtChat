@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.displayname}`"
+                :href="`/profiles/${profile.gender}/${profile.displayname}`"
                 class="ml-2 mb-2"
               >
                 <v-img
@@ -53,7 +53,7 @@
                       ></v-btn>
                     </v-col>
                     <v-col cols="12" class="white--text-subtitle">
-                      {{ profile.tagline }}
+                      {{ profile.displayname }}
                     </v-col>
                   </v-row>
                 </div>
