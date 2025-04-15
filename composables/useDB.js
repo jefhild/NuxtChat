@@ -608,7 +608,123 @@ export const useDb = () => {
     }
 
     return data;
+  };
+
+  const getAllArticlesWithTags = async () =>
+  {
+    const { data, error } = await supabase
+      .from("articles")
+      .select(`
+      id,
+      title,
+      slug,
+      content,
+      is_published,
+      created_at,
+      category:category_id(name),
+      article_tags(tag:tag_id(name))
+    `)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
+
+    if (error)
+    {
+      console.error("Error fetching articles:", error.message);
+      return [];
+    }
+
+    // Flatten tags and category
+    return data.map(article => ({
+      ...article,
+      category_name: article.category?.name ?? "Uncategorized",
+      tags: article.article_tags?.map(t => t.tag.name) ?? []
+    }));
+  };
+
+
+  const getArticleBySlug = async (slug) =>
+  {
+    const { data, error } = await supabase
+      .from("articles")
+      .select(`
+      id,
+      title,
+      slug,
+      content,
+      created_at,
+      is_published,
+      category:category_id ( id, name, slug ),
+      tags:article_tags (
+        tag:tag_id ( id, name, slug )
+      )
+    `)
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .single();
+
+    if (error)
+    {
+      console.error("Error fetching article:", error);
+      return null;
+    }
+
+    // Flatten tag data
+    if (data.tags)
+    {
+      data.tags = data.tags.map((tag) => tag.tag);
+    }
+
+    return data;
+  };
+
+  const getArticlesByTagSlug = async (slug) =>
+  {
+    const { data, error } = await supabase.rpc("get_articles_by_tag_slug", {
+      tag_slug: slug,
+    });
+
+    if (error)
+    {
+      console.error("Error fetching articles by tag slug:", error);
+      return [];
+    }
+
+    return data;
+  };
+
+  const getTagsByArticle = async (articleSlug) =>
+  {
+    const { data, error } = await supabase
+      .from("articles")
+      .select("tags(name, slug)")
+      .eq("slug", articleSlug)
+      .single();
+
+    if (error)
+    {
+      console.error("Error fetching tags for article:", error);
+      return [];
+    }
+
+    return data?.tags || [];
+  };
+
+  const getArticlesbyCategorySlug = async (slug) => {
+    const { data, error } = await supabase.rpc("get_articles_by_category_slug", {
+      cat_slug: slug,
+    });
+
+    if (error)
+    {
+      console.error("Error fetching articles by category slug:", error);
+      return [];
+    }
+
+    return data;
   }
+
+
+
 
   /*------------------*/
   /* Update functions */
@@ -1316,6 +1432,11 @@ const { data, error } = await supabase
     getAllAvatarDecorations,
     getUserUpvotedMeProfiles,
     getUserFavoritedMeProfiles,
+    getAllArticlesWithTags,
+    getArticleBySlug,
+    getArticlesByTagSlug,
+    getTagsByArticle,
+    getArticlesbyCategorySlug,
 
     updateUsername,
     updateProvider,

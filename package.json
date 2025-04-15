@@ -28,6 +28,7 @@
     "@pinia/nuxt": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4",
     "latest": "^0.2.0",
+    "marked": "^15.0.8",
     "openai": "^4.67.3",
     "papaparse": "^5.4.1"
   }
