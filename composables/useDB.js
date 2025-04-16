@@ -327,6 +327,8 @@ export const useDb = () => {
       );
     }
 
+    console.log("Fetched user profile with RPC:", data);
+
     return data;
   };
 
@@ -605,6 +607,38 @@ export const useDb = () => {
 
     if (error) {
       console.error("Error fetching favorited me profiles: ", error);
+    }
+
+    return data;
+  };
+
+  const getAllTags = async () =>
+  {
+    const { data, error } = await supabase
+      .from("tags")
+      .select("id, name, slug")
+      .order("name", { ascending: true });
+
+    if (error)
+    {
+      console.error("Error fetching tags:", error.message);
+      return [];
+    }
+
+    return data;
+  };
+
+  const getAllCategories = async () =>
+  {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("id, name, slug")
+      .order("name", { ascending: true });
+
+    if (error)
+    {
+      console.error("Error fetching categories:", error.message);
+      return [];
     }
 
     return data;
@@ -1432,6 +1466,8 @@ const { data, error } = await supabase
     getAllAvatarDecorations,
     getUserUpvotedMeProfiles,
     getUserFavoritedMeProfiles,
+    getAllTags,
+    getAllCategories,
     getAllArticlesWithTags,
     getArticleBySlug,
     getArticlesByTagSlug,

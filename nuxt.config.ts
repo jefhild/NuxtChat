@@ -69,7 +69,9 @@ export default defineNuxtConfig({
         "/articles/*",
         "/articles",
         "/tags/*",
+        "/tags",
         "/categories/*",
+        "/categories",
         "/sitemap.xml",
       ],
     },
@@ -151,6 +153,7 @@ export default defineNuxtConfig({
 
       // Add the fetched dynamic routes to Nitro's prerender config
       if (nitroConfig?.prerender?.routes) {
+        console.log("Adding dynamic routes to Nitro prerender config:", dynamicRoutes);
         nitroConfig.prerender.routes.push(...dynamicRoutes);
 
         // console.log(
