@@ -2,7 +2,7 @@
 	<v-col>
 		<v-card :to="disableNavigation ? undefined : `/articles/${article.slug}`"
 			class="article-card pa-4 d-flex flex-column justify-between" elevation="3" @click.stop="handleClick"
-			:style="{ minHeight: props.admin ? '325px' : '280px' }">
+			:style="{ minHeight: props.admin ? '360px' : '280px' }">
 			<v-card-title class="font-weight-bold text-wrap">
 				{{ article.title }}
 

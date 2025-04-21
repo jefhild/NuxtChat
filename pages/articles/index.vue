@@ -16,14 +16,26 @@
       <v-row>
         <!-- Article List -->
         <v-col cols="12" md="8" class="articles-column">
-          <v-row dense>
-            <v-col v-for="article in paginatedArticles" :key="article.id" cols="12" sm="6">
-              <ArticleCard :article="article" />
-            </v-col>
-          </v-row>
+          <div class="articles-wrapper">
+            <!-- Search -->
+            <v-text-field v-model="searchQuery" label="Search articles..." prepend-inner-icon="mdi-magnify" clearable
+              class="mb-4" />
 
-          <!-- Pagination -->
-          <v-pagination v-model="currentPage" :length="pageCount" class="mt-6" color="primary"></v-pagination>
+            <!-- Article Cards -->
+            <v-row dense>
+              <v-col v-for="article in paginatedArticles" :key="article.id" cols="12" sm="6">
+                <ArticleCard :article="article" />
+              </v-col>
+            </v-row>
+
+            <v-alert v-if="!paginatedArticles.length" type="info" variant="tonal" border="top" border-color="primary">
+              No articles found for "{{ searchQuery }}".
+            </v-alert>
+
+
+            <!-- Pagination -->
+            <v-pagination v-model="currentPage" :length="pageCount" class="mt-6" color="primary"></v-pagination>
+          </div>
         </v-col>
 
         <!-- Sidebar -->
@@ -63,6 +75,7 @@ const authStore = useAuthStore();
 const userProfile = ref(null);
 const isLoading = ref(true);
 
+const searchQuery = ref('');
 const articles = ref([]);
 const tags = ref([]);
 const categories = ref([]);
@@ -70,14 +83,24 @@ const categories = ref([]);
 const currentPage = ref(1);
 const perPage = 4;
 
-const pageCount = computed(() =>
-  Math.ceil(articles.value.length / perPage)
-);
+const filteredArticles = computed(() =>
+{
+  if (!searchQuery.value) return articles.value;
 
-const paginatedArticles = computed(() => {
-  const start = (currentPage.value - 1) * perPage;
-  return articles.value.slice(start, start + perPage);
+  return articles.value.filter(article =>
+    article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
 });
+
+const paginatedArticles = computed(() =>
+{
+  const start = (currentPage.value - 1) * perPage;
+  return filteredArticles.value.slice(start, start + perPage);
+});
+
+const pageCount = computed(() =>
+  Math.ceil(filteredArticles.value.length / perPage)
+);
 
 onMounted(async () => {
   await authStore.checkAuth();
@@ -111,6 +134,13 @@ onMounted(async () => {
   font-size: 2.8rem;
   text-align: center;
   margin: 2.5rem 0;
+}
+
+.articles-wrapper {
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .article-list-container {

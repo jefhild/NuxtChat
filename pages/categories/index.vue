@@ -29,11 +29,13 @@
 <script setup>
 const { getAllCategories, getCountArticleByCategory } = useDb();
 const isLoading = ref(true);
+const authStore = useAuthStore();
 
 const categories = ref([]);
 
 onMounted(async () =>
 {
+	authStore.checkAuth();
 	const rawCategories = await getAllCategories();
 
 	const categoriesWithCounts = await Promise.all(

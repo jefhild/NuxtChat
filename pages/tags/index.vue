@@ -29,11 +29,13 @@
 <script setup>
 const { getAllTags, getCountArticleByTag } = useDb();
 const isLoading = ref(true);
+const authStore = useAuthStore();
 
 const tags = ref([]);
 
 onMounted(async () =>
 {
+	authStore.checkAuth();
 	const rawTags = await getAllTags();
 
 	const tagsWithCounts = await Promise.all(

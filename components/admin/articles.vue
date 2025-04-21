@@ -6,14 +6,31 @@
 			<v-progress-circular indeterminate color="primary"></v-progress-circular>
 		</v-card-text>
 		<v-card-text v-else>
-			<v-row dense>
-				<v-col v-for="article in paginatedArticles" :key="article.id" cols="12" sm="6" md="6" lg="4">
-					<ArticleCard :article="article" disableNavigation admin @click="toggleEditDialog(article)" />
-				</v-col>
-			</v-row>
+			<v-col>
+				<div class="articles-wrapper">
+					<!-- Search -->
+					<v-text-field v-model="searchQuery" label="Search articles..." prepend-inner-icon="mdi-magnify"
+						clearable class="mb-4" />
 
-			<!-- Pagination -->
-			<v-pagination v-model="currentPage" :length="pageCount" class="mt-6" color="primary"></v-pagination>
+					<!-- Article Cards -->
+					<v-row dense>
+						<v-col v-for="article in paginatedArticles" :key="article.id" cols="12" sm="6" md="6" lg="4">
+							<ArticleCard :article="article" disableNavigation admin
+								@click="toggleEditDialog(article)" />
+						</v-col>
+					</v-row>
+
+					<v-alert v-if="!paginatedArticles.length" type="info" variant="tonal" border="top"
+						border-color="primary">
+						No articles found for "{{ searchQuery }}".
+					</v-alert>
+
+
+					<!-- Pagination -->
+					<v-pagination v-model="currentPage" :length="pageCount" class="mt-6" color="primary"></v-pagination>
+
+				</div>
+			</v-col>
 		</v-card-text>
 	</v-card>
 	<v-card class="pa-6" elevation="3">
@@ -99,11 +116,12 @@ const selectedArticle = ref({})
 const editForm = ref(null)
 const loadingUpdate = ref(false)
 
+const searchQuery = ref('');
+
 const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
 const types = ref(['blog', 'guide']);
-const router = useRouter();
 const loading = ref(false);
 const loadingArticles = ref(true);
 
@@ -144,15 +162,24 @@ onMounted(async () =>
 	tags.value = await getAllTags() || [];
 });
 
+const filteredArticles = computed(() =>
+{
+	if (!searchQuery.value.trim()) return articles.value;
+
+	return articles.value.filter(article =>
+		article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+	);
+});
+
 const paginatedArticles = computed(() =>
 {
 	const start = (currentPage.value - 1) * perPage.value;
-	return articles.value.slice(start, start + perPage.value);
+	return filteredArticles.value.slice(start, start + perPage.value);
 });
 
 const pageCount = computed(() =>
 {
-	return Math.ceil(articles.value.length / perPage.value);
+	return Math.ceil(filteredArticles.value.length / perPage.value);
 });
 
 const formatName = (name) =>
@@ -285,6 +312,13 @@ const handleArticleUpdate = async () =>
 	background-color: #1976d2 !important;
 	color: white !important;
 	border-radius: 8px;
+}
+
+.articles-wrapper {
+	min-height: 100px;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
 }
 
 .html-preview {
