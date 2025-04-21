@@ -5,7 +5,7 @@
         <h1 class="page-title">{{ article.title }}</h1>
       </v-col>
     </v-row>
-
+    
     <v-row>
       <v-col cols="12">
         <div class="text-body-2 text-grey-darken-1 mb-4">

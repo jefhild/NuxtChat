@@ -1,4 +1,5 @@
 import { getRegisteredUsersDisplaynames } from "../lib/supabaseHelpers"; 
+import { useDb } from "../composables/useDB"; // Adjust the import path as necessary
 
 export async function getAllDynamicRoutes() {
   try {

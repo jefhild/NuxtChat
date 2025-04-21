@@ -101,10 +101,12 @@ export default defineNuxtConfig({
       "/privacy",
       "/settings",
       "/chat",
+      "/admin",
       "_nuxt",
       "/cdn-cgi",
     ],
     allow: "/",
+    sitemap: 'https://imchatty.com/sitemap.xml'
   },
 
   runtimeConfig: {
@@ -176,6 +178,7 @@ export default defineNuxtConfig({
       "/privacy",
       "/settings",
       "/chat",
+      "/admin",
     ],
   },
 });

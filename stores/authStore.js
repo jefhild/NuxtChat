@@ -286,7 +286,7 @@ export const useAuthStore = defineStore("authStore", {
       
       // Pass the user id to the composable
       const profile = await fetchUserProfile(this.user.id);
-      console.log("inside fetchUserProfile in auth store. Profile: ", profile);
+      // console.log("inside fetchUserProfile in auth store. Profile: ", profile);
 
       if (profile)
       {

@@ -6,52 +6,62 @@
       </v-col>
     </v-row>
 
+    <v-container v-if="isLoading">
+      <v-row justify="center" class="py-12 text-center">
+        <v-progress-circular indeterminate color="primary"></v-progress-circular>
+      </v-row>
+    </v-container>
 
-    <v-row>
-      <!-- Article List -->
-      <v-col cols="12" md="8" class="articles-column">
-        <v-row dense>
-          <v-col v-for="article in paginatedArticles" :key="article.id" cols="12" sm="6">
-            <ArticleCard :article="article" />
-          </v-col>
-        </v-row>
+    <v-container v-else>
+      <v-row>
+        <!-- Article List -->
+        <v-col cols="12" md="8" class="articles-column">
+          <v-row dense>
+            <v-col v-for="article in paginatedArticles" :key="article.id" cols="12" sm="6">
+              <ArticleCard :article="article" />
+            </v-col>
+          </v-row>
 
-        <!-- Pagination -->
-        <v-pagination v-model="currentPage" :length="pageCount" class="mt-6" color="primary"></v-pagination>
-      </v-col>
+          <!-- Pagination -->
+          <v-pagination v-model="currentPage" :length="pageCount" class="mt-6" color="primary"></v-pagination>
+        </v-col>
 
-      <!-- Sidebar -->
-      <v-col cols="12" md="4">
-        <v-card class="mt-5 mb-10 sidebar-card" elevation="2">
-          <v-card-title class="font-weight-bold">Categories</v-card-title>
-          <v-card-text>
-            <v-chip v-for="cat in categories" :key="cat.slug" class="ma-1" color="primary" variant="outlined"
-              :to="`/categories/${cat.slug}`">
-              {{ cat.name }}
-            </v-chip>
-          </v-card-text>
-        </v-card>
+        <!-- Sidebar -->
+        <v-col cols="12" md="4">
+          <v-card class="mt-5 mb-10 sidebar-card" elevation="2">
+            <v-card-title class="font-weight-bold">Categories</v-card-title>
+            <v-card-text>
+              <v-chip v-for="cat in categories" :key="cat.slug" class="ma-1" color="primary" variant="outlined"
+                :to="`/categories/${cat.slug}`">
+                {{ cat.name }}
+              </v-chip>
+            </v-card-text>
+          </v-card>
 
-        <v-card elevation="2" class="sidebar-card">
-          <v-card-title class="font-weight-bold">Tags</v-card-title>
-          <v-card-text>
-            <v-chip v-for="tag in tags" :key="tag.slug" class="ma-1" size="small" color="deep-purple-lighten-2"
-              variant="outlined" :to="`/tags/${tag.slug}`">
-              {{ tag.name }}
-            </v-chip>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+          <v-card elevation="2" class="sidebar-card">
+            <v-card-title class="font-weight-bold">Tags</v-card-title>
+            <v-card-text>
+              <v-chip v-for="tag in tags" :key="tag.slug" class="ma-1" size="small" color="deep-purple-lighten-2"
+                variant="outlined" :to="`/tags/${tag.slug}`">
+                {{ tag.name }}
+              </v-chip>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+
+
+    <v-btn v-if="userProfile?.is_admin" to="/admin">Admin Panel</v-btn>
   </v-container>
-  <v-btn v-if="userProfile?.is_admin" to="/admin">Admin Panel</v-btn>
 </template>
 
 <script setup>
-const { getAllArticlesWithTags, getAllTags, getAllCategories } = useDb();
+const { getAllPublishedArticlesWithTags, getAllTags, getAllCategories } = useDb();
 
 const authStore = useAuthStore();
-const userProfile = authStore.userProfile;
+const userProfile = ref(null);
+const isLoading = ref(true);
 
 const articles = ref([]);
 const tags = ref([]);
@@ -70,13 +80,16 @@ const paginatedArticles = computed(() => {
 });
 
 onMounted(async () => {
-  const articleData = await getAllArticlesWithTags();
+  await authStore.checkAuth();
+  userProfile.value = authStore.userProfile;
+  const articleData = await getAllPublishedArticlesWithTags();
   const tagData = await getAllTags();
   const categoryData = await getAllCategories();
 
   if (articleData) articles.value = articleData;
   if (tagData) tags.value = tagData;
   if (categoryData) categories.value = categoryData;
+  isLoading.value = false;
 });
 </script>
 

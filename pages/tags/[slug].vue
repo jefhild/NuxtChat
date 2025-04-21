@@ -6,23 +6,32 @@
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col v-for="article in articles" :key="article.id" cols="12" sm="6" md="4" class="d-flex">
-        <ArticleCard :article="article" />
-      </v-col>
-    </v-row>
+    <v-container v-if="isLoading">
+      <v-row justify="center" class="py-12 text-center">
+        <v-progress-circular indeterminate color="primary"></v-progress-circular>
+      </v-row>
+    </v-container>
 
-    <v-row v-if="!articles.length">
-      <v-col class="text-center">
-        <p>No articles found for this tag.</p>
-      </v-col>
-    </v-row>
+    <v-container v-else>
+      <v-row>
+        <v-col v-for="article in articles" :key="article.id" cols="12" sm="6" md="4" class="d-flex">
+          <ArticleCard :article="article" />
+        </v-col>
+      </v-row>
+
+      <v-row v-if="!articles.length">
+        <v-col class="text-center">
+          <p>No articles found for this tag.</p>
+        </v-col>
+      </v-row>
+    </v-container>
   </v-container>
 </template>
 
 <script setup>
 const { getArticlesByTagSlug, getTagsByArticle } = useDb();
 const route = useRoute();
+const isLoading = ref(true);
 
 const articles = ref([]);
 
@@ -38,6 +47,7 @@ onMounted(async () => {
 
     articles.value = articlesWithTags;
   }
+  isLoading.value = false;
 });
 
 </script>

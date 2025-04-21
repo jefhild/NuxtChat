@@ -1,10 +1,13 @@
 <template>
 	<v-col>
-		<v-card :to="`/articles/${article.slug}`" class="article-card pa-4 d-flex flex-column justify-between"
-			elevation="3">
+		<v-card :to="disableNavigation ? undefined : `/articles/${article.slug}`"
+			class="article-card pa-4 d-flex flex-column justify-between" elevation="3" @click.stop="handleClick"
+			:style="{ minHeight: props.admin ? '325px' : '280px' }">
 			<v-card-title class="font-weight-bold text-wrap">
 				{{ article.title }}
+
 			</v-card-title>
+
 
 			<v-card-subtitle class="mb-2 text-medium-emphasis">
 				<div class="d-flex align-center">
@@ -27,6 +30,15 @@
 					{{ tag.name || tag }}
 				</v-chip>
 			</v-card-text>
+
+			<v-card-actions v-if="props.admin">
+				<v-chip v-if="article.is_published" color="success" size="x-small" class="ml-2" label>
+					Published
+				</v-chip>
+				<v-chip v-else color="grey" size="x-small" class="ml-2" label>
+					Draft
+				</v-chip>
+			</v-card-actions>
 		</v-card>
 	</v-col>
 </template>
@@ -37,7 +49,16 @@ const props = defineProps({
 		type: Object,
 		required: true,
 	},
+	disableNavigation: { type: Boolean, default: false },
+	admin: { type: Boolean, default: false },
 });
+
+const emit = defineEmits(["click"]);
+const handleClick = () =>
+{
+	if (props.disableNavigation) emit("click", props.article);
+};
+
 
 const formatDate = (isoDate) =>
 {
@@ -52,7 +73,6 @@ const formatDate = (isoDate) =>
 
 <style scoped>
 .article-card {
-  min-height: 270px;
   border: 1px solid #e0e0e0;
   transition: all 0.3s ease;
   border-radius: 20px;

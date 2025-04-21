@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar scroll-behavior="hide" scroll-threshold="61" image="/images/bkg/tiediebkg.webp" v-if="isAuthenticated">
+  <v-app-bar scroll-behavior="hide" scroll-threshold="61" image="/images/bkg/tiediebkg.webp" alt="navbar background image" v-if="isAuthenticated">
 
     <!--<InactivityChecker /> -->
 
@@ -16,7 +16,7 @@
     </template>
   </v-app-bar>
 
-  <v-app-bar image="/images/bkg/tiediebkg.webp" v-else>
+  <v-app-bar image="/images/bkg/tiediebkg.webp" alt="navbar background image" v-else>
     <v-app-bar-title class="siteTitle">
       <NuxtLink to="/">imchatty</NuxtLink>
     </v-app-bar-title>
