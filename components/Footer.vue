@@ -12,7 +12,13 @@
             <!-- GitHub Icon -->
             <a href="https://github.com/jefhild/NuxtChat" target="_blank" rel="noopener">
               <v-icon>mdi-github</v-icon>
+            </a> |
+            <NuxtLink to="/cookiepolicy">Cookie Policy</NuxtLink> |
+
+            <a href="#" class="termly-display-preferences">
+              Consent Preferences
             </a>
+
           </v-card-text>
         </v-card>
       </v-col>
