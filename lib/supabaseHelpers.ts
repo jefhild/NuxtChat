@@ -8,3 +8,5 @@ const supabase = createClient(
 export async function getRegisteredUsersDisplaynames() {
   return await supabase.from("profiles").select("displayname, gender_id");
 }
+
+
