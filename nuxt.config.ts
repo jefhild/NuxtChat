@@ -31,7 +31,8 @@ export default defineNuxtConfig({
     id: process.env.GOOGLE_ANALYTICS_ID,
     config: {
       anonymize_ip: true,
-      send_page_view: true,
+      send_page_view: false,
+      disableAutoPageTrack: true,
     },
   },
 
@@ -72,6 +73,7 @@ export default defineNuxtConfig({
         "/articles",
         "/tags/*",
         "/tags",
+        "/cookiepolicy",
         "/categories/*",
         "/categories",
         "/sitemap.xml",
