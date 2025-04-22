@@ -819,7 +819,27 @@ export const useDb = () => {
     }
 
     return data;
-  }
+  };
+
+  const getArticlesByType = async (type) => { 
+    if (type != 'guide' && type != 'blog')
+    {
+      console.error("Invalid article type:", type);
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from("articles")
+      .select("id, title, slug, content, created_at, is_published,  category:category_id (name)")
+      .eq("type", type)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching articles by type:", error);
+    }
+
+    return data;
+  };
 
 
 
@@ -1680,6 +1700,7 @@ const { data, error } = await supabase
     getArticlesByTagSlug,
     getTagsByArticle,
     getArticlesbyCategorySlug,
+    getArticlesByType,
 
     updateUsername,
     updateProvider,

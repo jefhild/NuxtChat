@@ -41,7 +41,9 @@
         <!-- Sidebar -->
         <v-col cols="12" md="4">
           <v-card class="mt-5 mb-10 sidebar-card" elevation="2">
-            <v-card-title class="font-weight-bold">Categories</v-card-title>
+            <v-card-title class="font-weight-bold">
+              <NuxtLink class="nostyle" to="/categories">Categories</NuxtLink>
+            </v-card-title>
             <v-card-text>
               <v-chip v-for="cat in categories" :key="cat.slug" class="ma-1" color="primary" variant="outlined"
                 :to="`/categories/${cat.slug}`">
@@ -51,7 +53,9 @@
           </v-card>
 
           <v-card elevation="2" class="sidebar-card">
-            <v-card-title class="font-weight-bold">Tags</v-card-title>
+            <v-card-title class="font-weight-bold">
+              <NuxtLink class="nostyle" to="/tags">Tags</NuxtLink>
+            </v-card-title>
             <v-card-text>
               <v-chip v-for="tag in tags" :key="tag.slug" class="ma-1" size="small" color="deep-purple-lighten-2"
                 variant="outlined" :to="`/tags/${tag.slug}`">
@@ -168,6 +172,11 @@ onMounted(async () => {
 .v-chip:hover {
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.nostyle{
+  text-decoration: none;
+  color: inherit;
 }
 
 </style>

@@ -1,5 +1,6 @@
 <template>
-  <v-app-bar scroll-behavior="hide" scroll-threshold="61" image="/images/bkg/tiediebkg.webp" alt="navbar background image" v-if="isAuthenticated">
+  <v-app-bar scroll-behavior="hide" scroll-threshold="61" image="/images/bkg/tiediebkg.webp"
+    alt="navbar background image" v-if="isAuthenticated">
 
     <!--<InactivityChecker /> -->
 

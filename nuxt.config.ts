@@ -22,14 +22,15 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@nuxtjs/google-fonts",
     "@nuxtjs/seo",
-    'nuxt-gtag',
+    "nuxt-gtag",
   ],
 
   gtag: {
     id: process.env.GOOGLE_ANALYTICS_ID,
     config: {
       anonymize_ip: true,
-      send_page_view: true,
+      send_page_view: false,
+      disableAutoPageTrack: true,
     },
   },
 
@@ -43,9 +44,9 @@ export default defineNuxtConfig({
     },
   },
 
-  alias: {
-    pinia: "/node_modules/@pinia/nuxt/node_modules/pinia/dist/pinia.mjs",
-  },
+  // alias: {
+  //   pinia: "/node_modules/@pinia/nuxt/node_modules/pinia/dist/pinia.mjs",
+  // },
 
   // turnstile: {
   //   siteKey: "0x4AAAAAAAeTlr6xNa6aQYsi",
@@ -70,6 +71,7 @@ export default defineNuxtConfig({
         "/articles",
         "/tags/*",
         "/tags",
+        "/cookiepolicy",
         "/categories/*",
         "/categories",
         "/sitemap.xml",
@@ -106,7 +108,7 @@ export default defineNuxtConfig({
       "/cdn-cgi",
     ],
     allow: "/",
-    sitemap: 'https://imchatty.com/sitemap.xml'
+    sitemap: "https://imchatty.com/sitemap.xml",
   },
 
   runtimeConfig: {
@@ -155,7 +157,10 @@ export default defineNuxtConfig({
 
       // Add the fetched dynamic routes to Nitro's prerender config
       if (nitroConfig?.prerender?.routes) {
-        console.log("Adding dynamic routes to Nitro prerender config:", dynamicRoutes);
+        console.log(
+          "Adding dynamic routes to Nitro prerender config:",
+          dynamicRoutes
+        );
         nitroConfig.prerender.routes.push(...dynamicRoutes);
 
         // console.log(
