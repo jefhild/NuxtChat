@@ -1,5 +1,7 @@
-import { getRegisteredUsersDisplaynames } from "../lib/supabaseHelpers"; 
-import { useDb } from "../composables/useDB"; // Adjust the import path as necessary
+// composables/useDynamicRoutes.ts
+
+import { getRegisteredUsersDisplaynames } from "../lib/supabaseHelpers";
+import { getGenderFromId } from "../lib/dbUtils";
 
 export async function getAllDynamicRoutes() {
   try {
@@ -10,8 +12,14 @@ export async function getAllDynamicRoutes() {
       return [];
     }
 
-    const { getGenderFromId } = useDb();
-    return profiles?.map((profile) => `/profiles/${getGenderFromId(profile.gender_id)}/${profile.displayname}`) ?? [];
+    return (
+      profiles?.map(
+        (profile) =>
+          `/profiles/${getGenderFromId(profile.gender_id)}/${
+            profile.displayname
+          }`
+      ) ?? []
+    );
   } catch (error) {
     console.error("Error fetching profiles for prerendering:", error);
     return [];
