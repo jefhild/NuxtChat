@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar scroll-behavior="hide" scroll-threshold="61" image="/images/bkg/tiediebkg.webp" v-if="isAuthenticated">
+  <v-app-bar scroll-behavior="hide" scroll-threshold="61" image="/images/bkg/tiediebkg.webp" alt="navbar background image" v-if="isAuthenticated">
 
     <!--<InactivityChecker /> -->
 
@@ -8,18 +8,20 @@
     </v-app-bar-title>
 
     <template v-slot:append>
-      <OnlineStatus v-if="navProfileUserId"  />
+      <OnlineStatus v-if="navProfileUserId" />
+      <v-btn prepend-icon="mdi-post-outline" to="/articles">Blog</v-btn>
       <v-btn prepend-icon="mdi-chat" to="/chat">Chat</v-btn>
       <v-btn prepend-icon="mdi-cog" to="/settings">Settings</v-btn>
       <v-btn @click="showLogoutDialog">Logout</v-btn>
     </template>
   </v-app-bar>
 
-  <v-app-bar image="/images/bkg/tiediebkg.webp" v-else>
+  <v-app-bar image="/images/bkg/tiediebkg.webp" alt="navbar background image" v-else>
     <v-app-bar-title class="siteTitle">
       <NuxtLink to="/">imchatty</NuxtLink>
     </v-app-bar-title>
     <v-spacer></v-spacer>
+    <v-btn prepend-icon="mdi-post-outline" to="/articles">Blog</v-btn>
     <v-btn @click="navigate('/signin')">Sign in</v-btn>
     <v-btn @click="navigate('/about')">About Us</v-btn>
     <v-btn @click="navigate('/freechat')">Free Chat</v-btn>

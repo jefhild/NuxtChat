@@ -1,51 +1,46 @@
 <template>
-  <v-container
-    fluid
-    v-if="!isAuthenticated"
-    class="d-flex flex-column align-center justify-center fill-height"
-  >
-    <div class="w-100">
-      <HomeRow1 />
-    </div>
-    <v-row justify="center" align="center">
-      <v-col cols="auto">
-        <LoginAi :titleText="titleText" />
-      </v-col>
-    </v-row>
+  <v-container v-if="isLoading" class="d-flex align-center justify-center fill-height">
+    <v-progress-circular indeterminate color="primary" size="50" />
   </v-container>
-  <v-container fluid v-else>
-    <div class="w-100">
-      <HomeRow1 />
-    </div>
-    <v-fade-transition mode="out-in">
-      <v-container
-        fluid
-        class="d-flex align-center justify-center"
-        style="min-height: 70vh"
-      >
-        <v-row>
-          <v-col class="text-center d-flex flex-column align-center">
-            <h1 class="green--text-h1">
-              You're logged in as {{ loggedInUser }}
-            </h1>
-            <h2 class="text-h6">Where would you like to go?</h2>
-            <v-row>
-              <v-col>
-                <v-btn to="/chat" class="mt-4"
-                  >Chat <v-icon right>mdi-arrow-right</v-icon></v-btn
-                >
-              </v-col>
-              <v-col>
-                <v-btn to="/settings" class="mt-4"
-                  >Settings <v-icon right>mdi-arrow-right</v-icon></v-btn
-                >
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-fade-transition>
-  </v-container>
+
+  <template v-else>
+    <v-container fluid v-if="!isAuthenticated" class="d-flex flex-column align-center justify-center fill-height">
+      <div class="w-100">
+        <HomeRow1 />
+      </div>
+      <v-row justify="center" align="center">
+        <v-col cols="auto">
+          <LoginAi :titleText="titleText" />
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-container fluid v-else>
+      <div class="w-100">
+        <HomeRow1 />
+      </div>
+      <v-fade-transition mode="out-in">
+        <v-container fluid class="d-flex align-center justify-center" style="min-height: 70vh">
+          <v-row>
+            <v-col class="text-center d-flex flex-column align-center">
+              <h1 class="green--text-h1">
+                You're logged in as {{ loggedInUser }}
+              </h1>
+              <h2 class="text-h6">Where would you like to go?</h2>
+              <v-row>
+                <v-col>
+                  <v-btn to="/chat" class="mt-4">Chat <v-icon right>mdi-arrow-right</v-icon></v-btn>
+                </v-col>
+                <v-col>
+                  <v-btn to="/settings" class="mt-4">Settings <v-icon right>mdi-arrow-right</v-icon></v-btn>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-fade-transition>
+    </v-container>
+  </template>
+
 </template>
 
 <script setup>
@@ -55,13 +50,16 @@ import { useAuthStore } from "@/stores/authStore";
 const { getUserProfileFromId, authGetUser ,getInterests, getDescriptions, updateProfilePhoto } = useDb();
 // Track the current step
 const authStore = useAuthStore();
+const router = useRouter();
 const loggedInUser = ref(authStore.userProfile?.displayname || "??");
 const isLoading = ref(false);
 const isAuthenticated = ref(false);
 const titleText = ref("Create Your Anonymous Profile");
 
+
 // Initialize authentication status
 onMounted(async () => {
+  isLoading.value = true; // Set loading to true initially
 
   //If the user just clicked on change the email i redirect 
   //him to /loginemail so his provider can be changed
@@ -76,11 +74,11 @@ onMounted(async () => {
     // If logged in AND there's a code param → assume it's email change verification
     if (user?.user && user.user.email_confirmed_at)
     {
-      window.location.href = "/loginemail";
+      router.push("/loginemail");
     }
   }
 
-  isLoading.value = true; // Set loading to true initially
+ 
   await authStore.checkAuth();
   // console.log("User:", authStore.user); // Debug to see if the user is correctly fetched
   isAuthenticated.value = authStore.user !== null;
@@ -94,8 +92,8 @@ onMounted(async () => {
     titleText.value = "Let's finish up creating your profile"; // Set title for new users
   }
 
-  isLoading.value = false;
   loggedInUser.value = authStore.userProfile?.displayname || "??";
+  isLoading.value = false;
 });
 
 useHead(() => ({

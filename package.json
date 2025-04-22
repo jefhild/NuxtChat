@@ -12,11 +12,11 @@
   },
   "devDependencies": {
     "@nuxt/image": "^1.7.0",
-    "@nuxt/scripts": "^0.5.1",
+    "@nuxt/scripts": "^0.11.6",
     "@nuxtjs/google-fonts": "^3.2.0",
-    "@nuxtjs/seo": "^2.0.0-rc.21",
+    "@nuxtjs/seo": "^3.0.3",
     "@nuxtjs/supabase": "^1.4.0",
-    "nuxt": "^3.13.2",
+    "nuxt": "^3.16.2",
     "nuxt-gtag": "^3.0.2",
     "vite-plugin-vuetify": "^2.0.1",
     "vue": "^3.4.14",
@@ -25,9 +25,16 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
-    "@pinia/nuxt": "^0.5.1",
+    "@pinia/nuxt": "^0.11.0",
     "@supabase/supabase-js": "^2.45.4",
+    "@tiptap/pm": "^2.11.7",
+    "@tiptap/starter-kit": "^2.11.7",
+    "@tiptap/vue-3": "^2.11.7",
     "latest": "^0.2.0",
+    "markdown-it": "^14.1.0",
+    "marked": "^15.0.8",
+    "nuxt-og-image": "^5.1.2",
+    "nuxt-schema-org": "^5.0.5",
     "openai": "^4.67.3",
     "papaparse": "^5.4.1"
   }

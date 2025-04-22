@@ -1,6 +1,6 @@
 <template>
   <v-card width="650" class="mx-auto">
-    <v-card-title class="headline text-center mb-4"> {{ props.titleText }}</v-card-title>
+    <v-card-title class="headline text-center mt-4"> {{ props.titleText }}</v-card-title>
     <v-card-text>
       <!-- <p class="pb-4">
         Please follow the instructions below to create your anonymous profile.
@@ -166,11 +166,11 @@ const updateMessages = (aiResponse, nextQuestion) => {
 
 // Focus on the input field
 const focusInput = async () => {
-  await nextTick(); // Wait for DOM updates
-  if (inputField.value) {
-    inputField.value.focus();
-  }
+  await nextTick(); // Ensure DOM is updated
+  const element = inputField.value?.$el?.querySelector('input');
+  if (element) element.focus();
 };
+
 
 // Validate user response
 const validateResponse = async (index, input) => {

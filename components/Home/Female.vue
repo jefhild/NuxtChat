@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.user_id}`"
+                :href="`/profiles/${profile.gender}/${profile.displayname}`"
                 class="ml-2 mb-2"
               >
                 <v-img
@@ -83,11 +83,15 @@ const profileLimit = 4;
 
 const { getRecentFemales } = useDb();
 
-const data = getRecentFemales(profileLimit);
+onMounted(async () =>
+{
+  const data = await getRecentFemales(profileLimit);
 
-if (data) {
-  recentProfiles.value = data;
-}
+  if (data)
+  {
+    recentProfiles.value = data;
+  }
+});
 
 // Fetch data on mount
 // onMounted(async () => {
