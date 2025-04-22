@@ -20,7 +20,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${popularProfiles[0].user_id}`"
+                :href="`/profiles/${popularProfiles[0].displayname}`"
                 class="mb-2"
               >
                 <v-img
@@ -62,7 +62,7 @@
                   <v-card
                     hover
                     link
-                    :href="`/profiles/${popularProfiles[1].user_id}`"
+                    :href="`/profiles/${popularProfiles[1].displayname}`"
                     class="ml-2"
                   >
                     <v-img
@@ -101,7 +101,7 @@
                   <v-card
                     hover
                     link
-                    :href="`/profiles/${popularProfiles[2].user_id}`"
+                    :href="`/profiles/${popularProfiles[2].displayname}`"
                     class="ml-2 mb-2"
                   >
                     <v-img
@@ -144,7 +144,7 @@
                   <v-card
                     hover
                     link
-                    :href="`/profiles/${popularProfiles[3].user_id}`"
+                    :href="`/profiles/${popularProfiles[3].displayname}`"
                     class="ml-2"
                   >
                     <v-img
@@ -183,7 +183,7 @@
                   <v-card
                     hover
                     link
-                    :href="`/profiles/${popularProfiles[4].user_id}`"
+                    :href="`/profiles/${popularProfiles[4].displayname}`"
                     class="ml-2"
                   >
                     <v-img

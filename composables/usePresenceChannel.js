@@ -33,7 +33,7 @@ export const usePresenceChannel = (userId) =>
 					};
 				});
 
-				console.log("sync");
+				// console.log("sync");
 				presenceStore.setOnlineUsers(usersWithStatus); // full data, not just IDs	
 				Object.entries(state).forEach(([userId, metas]) =>
 				{
@@ -65,7 +65,7 @@ export const usePresenceChannel = (userId) =>
 		{
 			if (status === "SUBSCRIBED")
 			{
-				console.log("Subscribed to presence channel");
+				// console.log("Subscribed to presence channel");
 				await channel.track({ 
 					online_at: new Date().toISOString(),
 					status: 'online'

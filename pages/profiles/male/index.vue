@@ -40,7 +40,19 @@
   </v-container>
 </template>
 
-<script setup></script>
+<script setup>
+const isAuthenticated = ref(false);
+const authStore = useAuthStore();
+const isLoading = ref(false);
+
+onMounted(async () =>
+{
+  isLoading.value = true;
+  await authStore.checkAuth();
+  isAuthenticated.value = authStore.user !== null;
+  isLoading.value = false;
+});
+</script>
 
 <style scoped>
 .green--text-h1 {

@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.user_id}`"
+                :href="`/profiles/${profile.gender}/${profile.displayname}`"
                 class="ml-2 mb-2"
               >
                 <v-img
@@ -53,7 +53,7 @@
                       ></v-btn>
                     </v-col>
                     <v-col cols="12" class="white--text-subtitle">
-                      {{ profile.tagline }}
+                      {{ profile.displayname }}
                     </v-col>
                   </v-row>
                 </div>
@@ -77,16 +77,21 @@
 import { ref, onMounted } from "vue";
 const activePanels = ref([0]);
 const maleProfiles = ref([]);
-const profileLimit = 10;
+const profileLimit = 20;
 
 const { getRecentMales } = useDb();
 
-// Fetch data during SSR
-const data = await getRecentMales(profileLimit);
 
-if (data) {
-  maleProfiles.value = data;
-}
+
+onMounted(async () =>
+{
+  // Fetch data during SSR
+  const data = await getRecentMales(profileLimit);
+
+  if (data) {
+    maleProfiles.value = data;
+  }
+});
 
 useHead(() => ({
   link: [
