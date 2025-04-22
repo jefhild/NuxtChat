@@ -41,6 +41,19 @@
 </template>
 
 <script setup>
+
+const isLoading = ref(false);
+
+const isAuthenticated = ref(false);
+const authStore = useAuthStore();
+onMounted(async () =>
+{
+  isLoading.value = true;
+  await authStore.checkAuth();
+  isAuthenticated.value = authStore.user !== null;
+  isLoading.value = false;
+});
+
 useHead(() => ({
   link: [
     {

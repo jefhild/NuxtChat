@@ -115,6 +115,28 @@ export const useDb = () => {
     return data;
   };
 
+  const getGenderFromId = async (id) =>
+  {
+    if (!id)
+    {
+      return null;
+    }
+    const { data, error } = await supabase
+      .from("genders")
+      .select("name")
+      .eq("id", id)
+      .single();
+
+    if (error || !data?.name)
+    {
+      console.error("Failed to get gender name:", error?.message);
+      return null;
+    }
+
+    return data.name;
+  };
+
+
   const getLookingForId = async (name) => {
     const { data, error } = await supabase
       .from("looking_for")
@@ -303,6 +325,23 @@ export const useDb = () => {
         "Error fetching user profile with RPC:",
         supabaseError.message
       );
+    }
+
+    // console.log("Fetched user profile with RPC:", data);
+
+    return data;
+  };
+
+  const getUserProfileFromDisplayName = async (displayName) => {
+    const { data, error } = await supabase.rpc("get_user_profile_by_displayname", {
+      p_displayname: displayName,
+    })
+
+    if (error) {
+      console.error(
+        "Error fetching user profile with RPC:",
+        error
+      )
     }
 
     return data;
@@ -571,7 +610,219 @@ export const useDb = () => {
     }
 
     return data;
+  };
+
+  const getAllTags = async () =>
+  {
+    const { data, error } = await supabase
+      .from("tags")
+      .select("id, name, slug")
+      .order("name", { ascending: true });
+
+    if (error)
+    {
+      console.error("Error fetching tags:", error.message);
+      return [];
+    }
+
+    return data;
+  };
+
+  const getAllCategories = async () =>
+  {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("id, name, slug")
+      .order("name", { ascending: true });
+
+    if (error)
+    {
+      console.error("Error fetching categories:", error.message);
+      return [];
+    }
+
+    return data;
+  };
+
+  const getAllArticlesWithTags = async () =>
+  {
+    const { data, error } = await supabase
+      .from("articles")
+      .select(`
+      id,
+      title,
+      type,
+      slug,
+      content,
+      is_published,
+      created_at,
+      category:category_id(name),
+      article_tags(tag:tag_id(name))
+    `)
+      .order("created_at", { ascending: false });
+
+    if (error)
+    {
+      console.error("Error fetching articles:", error.message);
+      return [];
+    }
+
+    // Flatten tags and category
+    return data.map(article => ({
+      ...article,
+      category_name: article.category?.name ?? "Uncategorized",
+      tags: article.article_tags?.map(t => t.tag.name) ?? []
+    }));
+  };
+
+  const getAllPublishedArticlesWithTags = async () =>
+  {
+    const { data, error } = await supabase
+      .from("articles")
+      .select(`
+      id,
+      title,
+      type,
+      slug,
+      content,
+      is_published,
+      created_at,
+      category:category_id(name),
+      article_tags(tag:tag_id(name))
+    `)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
+
+    if (error)
+    {
+      console.error("Error fetching articles:", error.message);
+      return [];
+    }
+
+    // Flatten tags and category
+    return data.map(article => ({
+      ...article,
+      category_name: article.category?.name ?? "Uncategorized",
+      tags: article.article_tags?.map(t => t.tag.name) ?? []
+    }));
+  };
+
+
+  const getArticleBySlug = async (slug) =>
+  {
+    const { data, error } = await supabase
+      .from("articles")
+      .select(`
+      id,
+      title,
+      slug,
+      content,
+      created_at,
+      is_published,
+      category:category_id ( id, name, slug ),
+      tags:article_tags (
+        tag:tag_id ( id, name, slug )
+      )
+    `)
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .single();
+
+    if (error)
+    {
+      console.error("Error fetching article:", error);
+      return null;
+    }
+
+    // Flatten tag data
+    if (data.tags)
+    {
+      data.tags = data.tags.map((tag) => tag.tag);
+    }
+
+    return data;
+  };
+
+  const getCountArticleByTag = async (tagId) =>{
+    const { error, count } = await supabase
+      .from('article_tags')
+      .select('*', { count: 'exact', head: true })
+      .eq('tag_id', tagId);
+
+    if (error)
+    {
+      console.error('Error fetching article count for tag:', error.message);
+      return 0;
+    }
+
+    return count || 0;
+  };
+
+  const getCountArticleByCategory = async (categoryId) =>
+  {
+    const { count, error } = await supabase
+      .from("articles")
+      .select("*", { count: "exact", head: true })
+      .eq("category_id", categoryId)
+      .eq("is_published", true); // Optional: only count published articles
+
+    if (error)
+    {
+      console.error("Error fetching article count by category:", error);
+      return 0;
+    }
+
+    return count || 0;
+  };
+
+  const getArticlesByTagSlug = async (slug) =>
+  {
+    const { data, error } = await supabase.rpc("get_articles_by_tag_slug", {
+      tag_slug: slug,
+    });
+
+    if (error)
+    {
+      console.error("Error fetching articles by tag slug:", error);
+      return [];
+    }
+
+    return data;
+  };
+
+  const getTagsByArticle = async (articleSlug) =>
+  {
+    const { data, error } = await supabase
+      .from("articles")
+      .select("tags(name, slug)")
+      .eq("slug", articleSlug)
+      .single();
+
+    if (error)
+    {
+      console.error("Error fetching tags for article:", error);
+      return [];
+    }
+
+    return data?.tags || [];
+  };
+
+  const getArticlesbyCategorySlug = async (slug) => {
+    const { data, error } = await supabase.rpc("get_articles_by_category_slug", {
+      cat_slug: slug,
+    });
+
+    if (error)
+    {
+      console.error("Error fetching articles by category slug:", error);
+      return [];
+    }
+
+    return data;
   }
+
+
+
 
   /*------------------*/
   /* Update functions */
@@ -768,9 +1019,67 @@ export const useDb = () => {
 
     if (error && error.status !== 204)
     {
-      console.error("Error deleting chat:", error);
+      console.error("Error updating decoration:", error);
     }
-  }
+  };
+
+  const updateCategory = async (slug, data) => {
+    const { error } = await supabase
+      .from('categories')
+      .update(data)
+      .eq('slug', slug);
+  
+    if (error && error.status !== 204)
+    {
+      console.error("Error udpating category:", error);
+    }
+  };
+
+  const updateTag = async (slug, data) => {
+    const { error } = await supabase
+      .from('tags')
+      .update(data)
+      .eq('slug', slug);
+
+    if (error && error.status !== 204)
+    {
+      console.error("Error udpating tag:", error);
+    }
+  };
+
+  const updateArticle = async (id, payload) =>
+  {
+    const { error } = await supabase
+      .from("articles")
+      .update(payload)
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error updating article:", error);
+    }
+  };
+
+  const updateArticleTags = async (articleId, tagIds) =>
+  {
+    //Remove the existing tags
+    await supabase
+      .from("article_tags")
+      .delete()
+      .eq("article_id", articleId);
+
+    // Re-insert tag associations
+    const insertData = tagIds.map(tag_id => ({ article_id: articleId, tag_id }));
+    const { error } = await supabase
+      .from("article_tags")
+      .insert(insertData);
+
+    if (error)
+    {
+      console.error("Error updating article tags:", error);
+    }
+  };
+
+
   
   /*------------------*/
   /* Insert functions */
@@ -906,6 +1215,88 @@ export const useDb = () => {
 
     return error;
   };
+
+  const insertArticle = async (article) =>
+  {
+    // Step 1: Insert article and return the id
+    const { data, error } = await supabase
+      .from("articles")
+      .insert({
+        title: article.title,
+        slug: article.slug,
+        content: article.content,
+        category_id: article.category_id,
+        type: article.type,
+        is_published: article.is_published,
+        created_at: new Date(),
+      })
+      .select("id") // important to get the inserted id
+      .single();
+
+    console.log("Inserted article:", data);
+    if (error)
+    {
+      console.error("Error inserting article:", error);
+      return error;
+    }
+
+    const articleId = data.id;
+
+    // Step 2: Insert tag relations
+    const tagInserts = article.tag_ids.map(tagId => ({
+      article_id: articleId,
+      tag_id: tagId,
+    }));
+
+    console.log("isnerting tags:", tagInserts);
+
+    const { error: tagInsertError } = await supabase
+      .from("article_tags")
+      .insert(tagInserts);
+
+    if (tagInsertError)
+    {
+      console.error("Error linking tags to article:", tagInsertError);
+      return tagInsertError;
+    }
+
+    console.log("good");
+
+    return null; // no error
+  };
+
+  const insertCategory = async (category) => {
+    // console.log("Inserting category:", category);
+    const { error } = await supabase
+      .from("categories")
+      .insert({
+        name: category.name,
+        slug: category.slug,
+      });
+
+    
+    if (error)
+    {
+      console.error("Error inserting category:", error);
+    }
+    return error;
+  };
+
+  const insertTag = async (tag) => {
+    const { error } = await supabase
+      .from("tags")
+      .insert({
+        name: tag.name,
+        slug: tag.slug,
+      });
+
+
+    if (error)
+    {
+      console.error("Error inserting tag:", error);
+    }
+    return error;
+  }
 
   /*------------------*/
   /* Delete functions */
@@ -1243,6 +1634,7 @@ const { data, error } = await supabase
     //getUserStatus,
     getStatuses,
     getGenders,
+    getGenderFromId,
     getLookingForId,
     getAvatarDecorationFromId,
     getMessagesBetweenUsers,
@@ -1256,6 +1648,7 @@ const { data, error } = await supabase
     getUserFromName,
     getUserProfileFromId,
     getUserProfileFunctionFromId,
+    getUserProfileFromDisplayName,
     getUserProfilePhoto,
     getRegisteredUsersIds,
     getAllUsersIdsWithoutAvatar,
@@ -1277,6 +1670,16 @@ const { data, error } = await supabase
     getAllAvatarDecorations,
     getUserUpvotedMeProfiles,
     getUserFavoritedMeProfiles,
+    getAllTags,
+    getAllCategories,
+    getAllArticlesWithTags,
+    getAllPublishedArticlesWithTags,
+    getArticleBySlug,
+    getCountArticleByTag,
+    getCountArticleByCategory,
+    getArticlesByTagSlug,
+    getTagsByArticle,
+    getArticlesbyCategorySlug,
 
     updateUsername,
     updateProvider,
@@ -1292,6 +1695,10 @@ const { data, error } = await supabase
     updateAIInteractionCount,
     updatePresence,
     updateAvatarDecoration,
+    updateCategory,
+    updateTag,
+    updateArticle,
+    updateArticleTags,
 
     insertProfile,
     insertMessage,
@@ -1301,6 +1708,9 @@ const { data, error } = await supabase
     insertFavorite,
     insertUserInterest,
     insertUserDescription,
+    insertArticle,
+    insertCategory,
+    insertTag,
 
     deleteChatWithUser,
     deleteFavorite,

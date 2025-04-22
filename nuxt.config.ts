@@ -66,6 +66,12 @@ export default defineNuxtConfig({
         "/privacy",
         "/freechat",
         "/profiles/*",
+        "/articles/*",
+        "/articles",
+        "/tags/*",
+        "/tags",
+        "/categories/*",
+        "/categories",
         "/sitemap.xml",
       ],
     },
@@ -95,10 +101,12 @@ export default defineNuxtConfig({
       "/privacy",
       "/settings",
       "/chat",
+      "/admin",
       "_nuxt",
       "/cdn-cgi",
     ],
     allow: "/",
+    sitemap: 'https://imchatty.com/sitemap.xml'
   },
 
   runtimeConfig: {
@@ -147,6 +155,7 @@ export default defineNuxtConfig({
 
       // Add the fetched dynamic routes to Nitro's prerender config
       if (nitroConfig?.prerender?.routes) {
+        console.log("Adding dynamic routes to Nitro prerender config:", dynamicRoutes);
         nitroConfig.prerender.routes.push(...dynamicRoutes);
 
         // console.log(
@@ -169,6 +178,7 @@ export default defineNuxtConfig({
       "/privacy",
       "/settings",
       "/chat",
+      "/admin",
     ],
   },
 });
