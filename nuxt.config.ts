@@ -29,6 +29,16 @@ export default defineNuxtConfig({
 
   gtag: {
     id: process.env.GOOGLE_ANALYTICS_ID,
+    initCommands: [
+      // Setup up consent mode
+      ['consent', 'default', {
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        ad_storage: 'denied',
+        analytics_storage: 'denied',
+        wait_for_update: 500,
+      }]
+    ],
     config: {
       anonymize_ip: true,
       send_page_view: false,
