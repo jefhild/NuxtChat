@@ -17,7 +17,7 @@ const authStore = useAuthStore();
 useHead({
   script: [
     {
-      src: "https://app.termly.io/resource-blocker/ee8afaf4-646e-47a2-8f9f-8be980f483fe?autoBlock=on",
+      src: "https://app.termly.io/resource-blocker/e30952b7-b801-4ffb-b6b8-733d8d45d0b3?autoBlock=on",
       type: "text/javascript",
       async: true
     }
