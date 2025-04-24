@@ -4,7 +4,7 @@
       <template v-if="blockedProfiles.length > 0">
         <v-col v-for="profile in blockedProfiles" :key="profile.profile_id" cols="12" sm="6" md="4">
           <!-- <v-card hover :to="`/profiles/${profile.user_id}`"> -->
-          <v-card v-if="genderMap[profile.gender_id]" hover :to="`/profiles/${genderMap[profile.gender_id]}/${profile.displayname}`">
+          <v-card v-if="genderMap[profile.gender_id]" hover @click="goToProfile(genderMap[profile.gender_id],profile.displayname)">
             <v-row>
               <v-col cols="12">
                 <div class="avatar-wrapper">
@@ -35,7 +35,7 @@
                   <v-tooltip text="Unblock user?">
                     <template v-slot:activator="{ props }">
                       <v-btn v-bind="props" icon="mdi-block-helper" variant="plain" color="red" size="small"
-                        @click="handleUnblock(profile.user_id)"></v-btn>
+                        @click.stop="handleUnblock(profile.user_id)"></v-btn>
                     </template>
                   </v-tooltip>
                 </v-col>
@@ -75,7 +75,7 @@ const avatarDecorations = ref<Record<string, string>>({});
 
 const props = defineProps<{ userId: string }>();
 const genderMap = ref<Record<number, string>>({});
-
+const router = useRouter();
 
 const { blockedProfiles, unblockAUser } = useBlockedProfiles(props.userId);
 
@@ -87,6 +87,10 @@ const getProfileImage = (avatar_url: string | null, gender_id: number) => {
 const handleUnblock = (userId: string) => {
   unblockAUser(userId);
 };
+
+const goToProfile = (genderName: any, displayName: any) => {
+  router.push(`/profiles/${genderName}/${displayName}`);
+}
 
 
 watch(blockedProfiles, async (newProfiles) =>
