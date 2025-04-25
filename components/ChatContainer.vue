@@ -315,12 +315,17 @@ onMounted(async () => {
   // Set up real-time subscription to messages table
   if (!realtimeMessages) {
     realtimeMessages = supabase
-      .channel("public:messages")
+      .channel(`messages:user:${user.value.id}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "messages" },
-        (payload) => {
-          // console.log("Real-time event received:", payload);
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=eq.${user.value.id}`,
+        },
+        (payload) =>
+        {
           handleRealtimeMessages(payload);
         }
       );
@@ -344,6 +349,14 @@ const sendMessage = async () => {
   if (newMessage.value.trim() && selectedUser.value) {
     const senderUserId = authStore.user?.id;
     const receiverUserId = selectedUser.value.user_id;
+    console.log(
+      "Sender ID:",
+      senderUserId,
+      "Receiver ID:",
+      receiverUserId,
+      "Message:",
+      newMessage.value
+    );
 
     if (!senderUserId || !receiverUserId) {
       console.error("Sender or Receiver ID is missing");

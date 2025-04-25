@@ -1121,10 +1121,9 @@ export const useDb = () => {
     siteUrl,
     bio
   ) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
-      .insert([
-        {
+      .insert({
           gender_id: genderId,
           status_id: statusId,
           age: age,
@@ -1139,14 +1138,31 @@ export const useDb = () => {
           ip: ip,
           site_url: siteUrl,
           bio: bio,
-        },
-      ])
-      .single();
+        })
+      .select("user_id")
+      .maybeSingle();
 
-    if (error) {
-      console.error("Error inserting profile:", error);
+    if (error || !data?.user_id)
+    {
+      console.error("Error inserting profile or no ID returned:", error);
+      return { error };
     }
-    return error;
+
+    const profileId = data.user_id;
+    const defaultFavoriteId = "7d20548d-8a9d-4190-bce5-90c8d74c4a56"; // this is santa clause
+
+    console.log("Inserted profile ID:", profileId);
+
+    try
+    {
+      await insertFavorite(profileId, defaultFavoriteId);
+      await upvoteUserProfile(defaultFavoriteId, profileId);
+    } catch (e)
+    {
+      console.error("Error inserting default favorite/upvote:", e);
+    }
+
+    return { error: null };
   };
 
   const insertMessage = async (receiverId, senderId, message) => {
