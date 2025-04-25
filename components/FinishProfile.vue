@@ -60,9 +60,14 @@
 
 							</v-container>
 							<v-text-field v-if="!submittingtoDatabase" variant="outlined" v-model="userInput"
-								@keyup.enter="sendMessage" placeholder="Type your response..."
-								append-inner-icon="mdi-send" @click:append-inner="sendMessage" />
-
+								@keyup.enter="sendMessage" placeholder="Type your response...">
+								<template #append-inner>
+									<v-icon :color="userInput ? 'primary' : 'grey'" class="cursor-pointer"
+										@click="sendMessage">
+										mdi-send
+									</v-icon>
+								</template>
+							</v-text-field>
 						</v-col>
 					</v-row>
 				</v-col>
@@ -70,7 +75,7 @@
 		</v-card-text>
 		<v-card-actions v-if="!isDone" class="pr-4 pb-4">
 			<v-btn color="red" @click="() => nextQuestion()"> {{ skipButtonText }} </v-btn>
-			 <v-btn  v-if="urlQuestion" @click="dismissSitePrompt">Don't Ask Again</v-btn>
+			<v-btn v-if="urlQuestion" @click="dismissSitePrompt">Don't Ask Again</v-btn>
 		</v-card-actions>
 	</v-card>
 </template>
@@ -122,6 +127,7 @@ const dismissSitePrompt = () => {
 
 const nextQuestion = async(aiAnswer = "Let's move on", sendMessage = false) =>
 {
+	userInput.value = "";
 	urlQuestion.value = false;
 	currentQuestionIndex.value++;
 	aiResponse.value = aiAnswer; 
@@ -328,8 +334,8 @@ onMounted(() => {
 	const questionMap = {
 		tagline: "Your tagline is a short phrase that represents you. It could be a quote, a fun fact, or a quick description of who you are. What would you like yours to be?",
 		interests: "What brings you to this website? Are you here to chat, make new friends?",
-		site_url: "If you have a personal website or social profile you'd like to share, enter the link below.",
-		email: "Enter an email address to register your account and have full access to the site.",
+		site_url: "Have a personal website or social profile you’d like to share? It’s completely optional — you can skip this if you’d prefer not to.",
+		email: "Enter an email address to register your account and have full access to the site. Closing this does not unsave your previous inputs.",
 	};
 
 	// console.log("infoLeft: ", infoLeft);
