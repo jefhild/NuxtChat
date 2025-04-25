@@ -55,7 +55,7 @@ const fetchFavoriteStatus = async () => {
 
     const count = await getCountUserFavorites(authStore.user.id,props.profile.user_id);
     isFavorite.value = count > 0;
-    console.log("Favorite status:", isFavorite.value);
+    // console.log("Favorite status:", isFavorite.value);
 
   } else {
     console.log("User not authenticated or profile missing");

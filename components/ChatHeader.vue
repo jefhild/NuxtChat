@@ -3,12 +3,15 @@
     <v-card-title>
       <v-row no-gutters class="align-center">
         <v-col :class="getGenderColorClass(selectedUser.gender_id)">
-          <v-icon v-if="selectedUser" :color="getGenderColor(selectedUser.gender_id)"
-            :icon="getAvatarIcon(selectedUser.gender_id)" size="small"></v-icon>
+          
 
-          <v-avatar class="mr-3" :image="getAvatar(selectedUser.avatar_url, selectedUser.gender_id)"></v-avatar>
-          <NuxtLink v-if="genderName" :to=" `/profiles/${genderName}/${selectedUser.displayname}`">
+          <NuxtLink v-if="genderName" @click="toggleUserProfileDialog" class="clickable-link d-inline-flex align-center" >
+            <v-icon v-if="selectedUser" :color="getGenderColor(selectedUser.gender_id)"
+              :icon="getAvatarIcon(selectedUser.gender_id)" size="small"></v-icon>
+            <v-avatar class="mr-3" :image="getAvatar(selectedUser.avatar_url, selectedUser.gender_id)"></v-avatar>
+
             {{ selectedUser ? selectedUser.displayname : "..." }}
+            <v-icon size="18" class="ml-1">mdi-account-search</v-icon>
           </NuxtLink>
         </v-col>
         <v-col class="text-subtitle-1">{{
@@ -29,6 +32,12 @@
   <v-card v-else>
     <v-card-title>Select a user to chat with</v-card-title>
   </v-card>
+
+  <v-dialog v-model="userProfileDialog" max-width="600" transition="dialog-transition">
+    <v-card>
+      <PublicUserProfile :selectedUserDisplayName="selectedUser?.displayname" />
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -71,6 +80,12 @@ const props = defineProps<{
 const hasUpvoted = ref(false);
 const hasDownvoted = ref(false);
 const genderName = ref<String | null>(""); 
+const userProfileDialog = ref(false);
+
+const toggleUserProfileDialog = () => {
+  console.log("Toggling user profile dialog");
+  userProfileDialog.value = !userProfileDialog.value;
+};
 
 watch(
   () => props.selectedUser,
@@ -180,6 +195,11 @@ onMounted(async () =>
 </script>
 
 <style scoped>
+.clickable-link {
+  cursor: pointer;
+  text-decoration: none;
+}
+
 .male {
   color: darkblue;
 }

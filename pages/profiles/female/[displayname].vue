@@ -151,7 +151,7 @@ useHead(() => ({
   link: [
     {
       rel: "canonical",
-      href: "https://imchatty.com" + "/profiles/" + profile.gender +  profile.displayname,
+      href: "https://imchatty.com" + "/profiles/" + profile.value.gender + profile.value.displayname,
     },
   ],
 }));
