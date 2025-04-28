@@ -99,10 +99,9 @@
 </template>
 
 <script setup>
-import { useRoute } from "vue-router";
-import { ref, onMounted } from "vue";
 import { marked } from "marked"; // or use @nuxt/content if preferred
 
+const authStore = useAuthStore();
 const route = useRoute();
 const slug = route.params.slug;
 
@@ -112,9 +111,12 @@ const shareUrl = `https://imchatty.com/articles/${slug}`;
 
 const { getArticleBySlug } = useDb(); // You'd need to define this helper
 
-onMounted(async () => {
+onMounted(async () =>
+{
+  authStore.checkAuth();
   const data = await getArticleBySlug(slug);
-  if (data) {
+  if (data)
+  {
     article.value = data;
 
     const markdown = (data.content || "").replace(/\\n/g, "\n");
@@ -130,16 +132,36 @@ const formatDate = (date) =>
     day: "numeric",
   });
 
+watchEffect(() =>
+{
+  if (!article.value) return;
+
+  // To not have the html content when i use article.value.content in the SEO meta
+  const strippedContent = article.value.content?.replace(/<[^>]+>/g, '') || '';
+  const safeDescription = strippedContent.slice(0, 157) + '...';
+
+
 useSeoMeta({
-  title: article.value?.title,
-  description: article.value?.content.slice(0, 160), // or a separate excerpt
-  ogTitle: article.value?.title,
-  ogDescription: article.value?.content.slice(0, 160),
-  ogUrl: `https://imchatty.com/articles/${article.value?.slug}`,
-  twitterCard: "summary_large_image",
-  twitterTitle: article.value?.title,
-  twitterDescription: article.value?.content.slice(0, 160),
+    title: article.value.title,
+    description: safeDescription,
+    ogTitle: article.value.title,
+    ogDescription: safeDescription,
+    ogUrl: shareUrl,
+    ogImage: '/images/article-image.webp',
+    ogType: 'article',
+    ogLocale: 'en_US',
+    ogSiteName: 'ImChatty',
+    twitterCard: "summary_large_image",
+    twitterTitle: article.value.title,
+    twitterDescription: safeDescription,
+    twitterImage: '/images/article-image.webp',
+    canonical: shareUrl,
+    author: 'ImChatty',
+    articleSection: article.value.category?.name,
+    articlePublishedTime: article.value.created_at,
+  });
 });
+
 </script>
 
 <style scoped>
