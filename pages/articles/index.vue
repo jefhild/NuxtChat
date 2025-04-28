@@ -1,10 +1,10 @@
 <template>
   <v-container class="article-list-container">
-    <v-row justify="center" class="title-bar">
+    <!-- <v-row justify="center" class="title-bar"> -->
       <v-col cols="12" md="8">
-        <h1 class="page-title">Explore Our Articles</h1>
+        <h1 >Explore Our Articles</h1>
       </v-col>
-    </v-row>
+    <!-- </v-row> -->
 
     <v-container v-if="isLoading">
       <v-row justify="center" class="py-12 text-center">
@@ -85,7 +85,7 @@ const tags = ref([]);
 const categories = ref([]);
 
 const currentPage = ref(1);
-const perPage = 4;
+const perPage = 10;
 
 const filteredArticles = computed(() =>
 {
