@@ -1,3 +1,5 @@
+import { checkPrintable } from "vuetify/lib/util/helpers.mjs";
+
 export const useDb = () => {
   const supabase = useSupabaseClient();
   const config = useRuntimeConfig();
@@ -373,6 +375,16 @@ export const useDb = () => {
       .neq("avatar_url", "");
 
     return { data, error };
+  };
+
+  const getAllProfiles = async (withAI) => {
+    const { data, error } = await supabase.rpc("get_all_profiles", {p_is_ai: withAI});
+
+    if (error) {
+      console.error("Error fetching all profiles:", error);
+    }
+
+    return data ;
   };
 
   const getRecentFemales = async (profileLimit) => {
@@ -1547,6 +1559,31 @@ const { data, error } = await supabase
     }
   };
 
+  const markUserForDeletion = async (userId) =>
+  {
+    await $fetch('/api/markUser', {
+      method: 'POST',
+      body: {
+        userId,
+        deleteMe: true,
+        deleteRequestedAt: new Date().toISOString()
+      }
+    });
+  };
+
+  const unmarkUserForDeletion = async (userId) =>
+  {
+    await $fetch('/api/markUser', {
+      method: 'POST',
+      body: {
+        userId,
+        deleteMe: false,
+        deleteRequestedAt: null
+      }
+    });
+  };
+
+
   /*----------------*/
   /* Auth functions */
   /*----------------*/
@@ -1688,6 +1725,7 @@ const { data, error } = await supabase
     getUserProfilePhoto,
     getRegisteredUsersIds,
     getAllUsersIdsWithoutAvatar,
+    getAllProfiles,
     getRecentFemales,
     getRecentMales,
     getAiProfiles,
@@ -1764,6 +1802,8 @@ const { data, error } = await supabase
     trackPresence,
     stopTracking,
     checkInactivityForAllUsers,
+    markUserForDeletion,
+    unmarkUserForDeletion,
 
     authGetUser,
     authRefreshSession,
