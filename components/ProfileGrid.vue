@@ -14,8 +14,8 @@
 						</NuxtLink>
 					</v-row>
 					<v-row class="d-flex justify-center align-center">
-						<div v-if="profile.marked_for_deletion_at" class="deletion-info mt-2">
-							<div class="text-white text-caption">
+						<div v-if="profile.marked_for_deletion_at" class="mb-5 text-white">
+							<div>
 								{{ timeLeft(profile.marked_for_deletion_at) }}
 							</div>
 							<v-btn size="x-small" color="green" @click.stop="unmarkDeletion(profile)">
@@ -24,7 +24,7 @@
 
 						</div>
 
-						<v-btn v-if="delete" color="red" class="overlay  mb-5"
+						<v-btn v-if="allowDelete && !profile.marked_for_deletion_at " color="red" class="overlay  mb-5"
 							@click.stop="openDeleteDialog(profile)">Delete</v-btn>
 
 					</v-row>
@@ -75,6 +75,8 @@ const emit = defineEmits(["user-deleted"]);
 
 const { markUserForDeletion, unmarkUserForDeletion } = useDb(); 
 
+const allowDelete = ref(props.delete);
+
 const confirmDeleteDialog = ref(false);
 const userToDelete = ref(null);
 const now = ref(new Date());
@@ -117,8 +119,7 @@ async function confirmDelete()
 
 	await markUserForDeletion(userToDelete.value.user_id);
 
-	// Emit an event so the parent can update the data properly
-	emit('user-deleted');
+	emit('user-deleted', userToDelete.value.user_id); // Emit the event to parent component
 
 	confirmDeleteDialog.value = false;
 };
@@ -128,7 +129,7 @@ async function unmarkDeletion(profile)
 	try
 	{
 		await unmarkUserForDeletion(profile.user_id);
-		profile.marked_for_deletion_at = null; // Update locally to hide the warning
+		profile.marked_for_deletion_at = null; 
 		console.log('User unmarked successfully!');
 	} catch (err)
 	{

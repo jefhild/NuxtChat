@@ -75,11 +75,20 @@ const filteredAI = computed(() =>
 	)
 );
 
-async function handleUserDeleted() {
+async function handleUserDeleted(userId) {
 	try {
-		profiles.value = await getAllProfiles(false);
-		console.log("User deleted successfully", profiles);
-		aiProfiles.value = await getAllProfiles(true);
+		profiles.value = profiles.value.map(profile =>
+		{
+			if (profile.user_id === userId)
+			{
+				// Mark as deleted (example: update local deletion styles)
+				return {
+					...profile,
+					marked_for_deletion_at: new Date().toISOString()
+				};
+			}
+			return profile;
+		});
 	} catch (error) {
 		console.error("Error marking user for deletion:", error);
 	} 

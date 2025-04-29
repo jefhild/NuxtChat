@@ -1561,35 +1561,26 @@ const { data, error } = await supabase
 
   const markUserForDeletion = async (userId) =>
   {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ marked_for_deletion_at: new Date().toISOString() })
-      .eq('user_id', userId);
-
-    if (error)
-    {
-      console.error('Error marking user for deletion:', error.message);
-      throw error;
-    }
-
-    console.log(`User ${userId} marked for deletion.`);
-
-    // const { data } = await supabase.from('profiles').select('user_id, avatar_url, marked_for_deletion_at').not('marked_for_deletion_at', 'is', null);
-    // console.log('Users marked for deletion:', data);
+    await $fetch('/api/markUser', {
+      method: 'POST',
+      body: {
+        userId,
+        deleteMe: true,
+        deleteRequestedAt: new Date().toISOString()
+      }
+    });
   };
 
   const unmarkUserForDeletion = async (userId) =>
   {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ marked_for_deletion_at: null })
-      .eq('user_id', userId);
-
-    if (error)
-    {
-      console.error('Error unmarking user for deletion:', error);
-      throw error;
-    }
+    await $fetch('/api/markUser', {
+      method: 'POST',
+      body: {
+        userId,
+        deleteMe: false,
+        deleteRequestedAt: null
+      }
+    });
   };
 
 
