@@ -5,10 +5,10 @@
         <HomeRow1 />
       </v-col>
     </v-row>
-    
+
     <v-row class="mt-16" justify="center">
       <v-col cols="11" md="8" lg="8">
-      <LogoutAI />
+        <LogoutAI />
       </v-col>
     </v-row>
   </v-container>
@@ -41,7 +41,7 @@ useSeoMeta({
 });
 
 onMounted(async () => {
-  console.log("logout");
+  // console.log("logout");
   await authStore.logout();
 });
 </script>
