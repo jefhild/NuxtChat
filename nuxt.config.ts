@@ -127,6 +127,7 @@ export default defineNuxtConfig({
     // Private keys (accessible only on the server)
     SUPABASE_KEY: process.env.SUPABASE_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
 
     public: {
       // Non-sensitive keys (accessible on both server and client)
