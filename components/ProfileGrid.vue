@@ -16,7 +16,7 @@
 					<v-row class="d-flex justify-center align-center">
 						<div v-if="profile.marked_for_deletion_at" class="mb-5 text-white">
 							<div>
-								{{ timeLeft(profile.marked_for_deletion_at) }}
+								 {{ timeLeft(refreshTime) }}
 							</div>
 							<v-btn size="x-small" color="green" @click.stop="unmarkDeletion(profile)">
 								Undo Deletion
@@ -79,32 +79,20 @@ const allowDelete = ref(props.delete);
 
 const confirmDeleteDialog = ref(false);
 const userToDelete = ref(null);
-const now = ref(new Date());
 
-function timeLeft()
+function timeLeft(refreshTrigger)
 {
-	// Get the current time
-	now.value = new Date();
-	
-	// Create a date object for midnight tonight
-	const midnight = new Date();
-	midnight.setHours(23, 59, 59, 999); // Set to end of day
-	
-	// Calculate time difference in hours
-	const hoursLeft = (midnight.getTime() - now.value.getTime()) / (1000 * 60 * 60);
-	
-	// Format the result
-	if (hoursLeft <= 0) return "Deleting soon...";
-	
-	// Show hours and minutes
-	const hours = Math.floor(hoursLeft);
-	const minutes = Math.floor((hoursLeft - hours) * 60);
-	
-	if (hours > 0) {
-		return `${hours}h ${minutes}m left`;
-	} else {
-		return `${minutes}m left`;
-	}
+	const now = new Date(refreshTrigger); // 👈 use refreshTrigger so Vue tracks it
+	const midnight = new Date(now);
+	midnight.setHours(23, 59, 59, 999);
+
+	const diff = midnight.getTime() - now.getTime();
+	if (diff <= 0) return "Deleting soon...";
+
+	const hours = Math.floor(diff / (1000 * 60 * 60));
+	const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+	return hours > 0 ? `${hours}h ${minutes}m left` : `${minutes}m left`;
 }
 
 function openDeleteDialog(profile)
@@ -142,9 +130,12 @@ onMounted(() =>
 {
 	setInterval(() =>
 	{
-		now.value = new Date();
+		refreshTime.value = Date.now();
 	}, 60000); // 1 minute
 });
+
+const refreshTime = ref(Date.now());
+
 </script>
 
 <style scoped>
