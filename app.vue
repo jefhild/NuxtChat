@@ -1,23 +1,22 @@
-<script setup>
-// useHead({
-//   script: [
-//     {
-//       src: "https://app.termly.io/resource-blocker/ee8afaf4-646e-47a2-8f9f-8be980f483fe?autoBlock=on",
-//       type: "text/javascript",
-//       async: true
-//     }
-//   ]
-// });
-</script>
-
-<template>
+<!-- <template>
   <NuxtLayout>
     <v-app>
       <NuxtPage />
     </v-app>
   </NuxtLayout>
+</template> -->
+
+<template>
+  <v-app>
+    <NuxtLayout />
+  </v-app>
 </template>
 
+<script setup></script>
 
-
-
+<style>
+/* html, body, #__nuxt, #__layout {
+  height: 100%;
+  margin: 0;
+} */
+</style>
