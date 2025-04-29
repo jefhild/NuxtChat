@@ -13,7 +13,7 @@ useHead(() => ({
   link: [
     {
       rel: "canonical",
-      href: "https://imchatty.com" + "/profiles/" + profile.value.gender + "/" + profile.value.displayname,
+      href: "https://imchatty.com" + "/profiles/" + profile.value.gender.toLowerCase() + "/" + profile.value.displayname,
     },
   ],
 }));

@@ -1,3 +1,5 @@
+import { checkPrintable } from "vuetify/lib/util/helpers.mjs";
+
 export const useDb = () => {
   const supabase = useSupabaseClient();
   const config = useRuntimeConfig();
@@ -373,6 +375,16 @@ export const useDb = () => {
       .neq("avatar_url", "");
 
     return { data, error };
+  };
+
+  const getAllProfiles = async (withAI) => {
+    const { data, error } = await supabase.rpc("get_all_profiles", {p_is_ai: withAI});
+
+    if (error) {
+      console.error("Error fetching all profiles:", error);
+    }
+
+    return data ;
   };
 
   const getRecentFemales = async (profileLimit) => {
@@ -1547,6 +1559,40 @@ const { data, error } = await supabase
     }
   };
 
+  const markUserForDeletion = async (userId) =>
+  {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ marked_for_deletion_at: new Date().toISOString() })
+      .eq('user_id', userId);
+
+    if (error)
+    {
+      console.error('Error marking user for deletion:', error.message);
+      throw error;
+    }
+
+    console.log(`User ${userId} marked for deletion.`);
+
+    // const { data } = await supabase.from('profiles').select('user_id, avatar_url, marked_for_deletion_at').not('marked_for_deletion_at', 'is', null);
+    // console.log('Users marked for deletion:', data);
+  };
+
+  const unmarkUserForDeletion = async (userId) =>
+  {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ marked_for_deletion_at: null })
+      .eq('user_id', userId);
+
+    if (error)
+    {
+      console.error('Error unmarking user for deletion:', error);
+      throw error;
+    }
+  };
+
+
   /*----------------*/
   /* Auth functions */
   /*----------------*/
@@ -1688,6 +1734,7 @@ const { data, error } = await supabase
     getUserProfilePhoto,
     getRegisteredUsersIds,
     getAllUsersIdsWithoutAvatar,
+    getAllProfiles,
     getRecentFemales,
     getRecentMales,
     getAiProfiles,
@@ -1764,6 +1811,8 @@ const { data, error } = await supabase
     trackPresence,
     stopTracking,
     checkInactivityForAllUsers,
+    markUserForDeletion,
+    unmarkUserForDeletion,
 
     authGetUser,
     authRefreshSession,

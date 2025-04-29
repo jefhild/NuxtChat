@@ -714,7 +714,7 @@ const cancelEdit = () => {
 
 const confirmDelete = async () => {
   try {
-    await authUpdateProfile(true, null);
+    await authUpdateProfile(true, new Date().toISOString());
     isMarkedForDeletion.value = true;
   } catch (error) {
     console.error("Error deleting account:", error.message);
@@ -723,7 +723,7 @@ const confirmDelete = async () => {
 
 const cancelDelete = async () => {
   try {
-    await authUpdateProfile(false, new Date().toISOString());
+    await authUpdateProfile(false, null);
     isMarkedForDeletion.value = false;
   } catch (error) {
     console.error("Error deleting account:", error.message);
