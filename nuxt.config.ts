@@ -81,7 +81,7 @@ export default defineNuxtConfig({
         "/articles",
         "/tags/*",
         "/tags",
-        "/cookiepolicy",
+        "/cookies",
         "/categories/*",
         "/categories",
         "/sitemap.xml",
