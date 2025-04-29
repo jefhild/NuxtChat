@@ -151,7 +151,7 @@ useHead(() => ({
   link: [
     {
       rel: "canonical",
-      href: "https://imchatty.com" + "/profiles/" + profile.value.gender + profile.value.displayname,
+      href: "https://imchatty.com" + "/profiles/" + profile.value.gender.toLowerCase() + "/" + profile.value.displayname,
     },
   ],
 }));
@@ -195,6 +195,8 @@ onMounted(async () => {
   isLoading.value = false;
   
   avatarDecoration.value = await getAvatarDecorationFromId(profile.value?.user_id);
+  console.log("profile genderrrrrrrrrrrrrrrrrrrrrrrrrrr", profile.value.gender);
+  // console.log("/profiles/" + profile.value.gender.toLowerCase() + profile.value.displayname) ;
 
 });
 </script>

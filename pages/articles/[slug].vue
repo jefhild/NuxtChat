@@ -1,11 +1,11 @@
 <template>
   <v-container class="py-8" v-if="article">
-    <v-row justify="center" class="title-bar">
+    <v-row justify="center">
       <v-col cols="12" md="8">
-        <h1 class="page-title">{{ article.title }}</h1>
+        <h1>{{ article.title }}</h1>
       </v-col>
     </v-row>
-    
+
     <v-row>
       <v-col cols="12">
         <div class="text-body-2 text-grey-darken-1 mb-4">
@@ -13,12 +13,15 @@
           <span class="ml-1">ImChatty</span>
           •
           <v-icon>mdi-folder</v-icon>
-          <NuxtLink :to="`/categories/${article.category.slug}`" class="ml-1 unstyled-link"> {{ article.category.name }}
+          <NuxtLink
+            :to="`/categories/${article.category.slug}`"
+            class="ml-1 unstyled-link"
+          >
+            {{ article.category.name }}
           </NuxtLink>
           •
           <v-icon>mdi-calendar-blank</v-icon>
           <span class="ml-1">{{ formatDate(article.created_at) }}</span>
-
         </div>
 
         <!-- Render Markdown content -->
@@ -39,8 +42,15 @@
       <v-col cols="12" md="8">
         <div class="d-flex align-center flex-wrap">
           <span class="font-weight-medium mr-2">Tags:</span>
-          <v-chip v-for="tag in article.tags" :key="tag.id" class="ma-1" color="deep-purple-lighten-2" size="small"
-            variant="outlined" :to="`/tags/${tag.slug}`">
+          <v-chip
+            v-for="tag in article.tags"
+            :key="tag.id"
+            class="ma-1"
+            color="deep-purple-lighten-2"
+            size="small"
+            variant="outlined"
+            :to="`/tags/${tag.slug}`"
+          >
             #{{ tag.name }}
           </v-chip>
         </div>
@@ -52,16 +62,30 @@
         <h3 class="">Share</h3>
 
         <div class="d-inline-flex align-center justify-center">
-          <v-btn class="ma-2 share-btn" color="primary" :href="`https://twitter.com/intent/tweet?url=${shareUrl}`"
-            target="_blank" icon>
+          <v-btn
+            class="ma-2 share-btn"
+            color="primary"
+            :href="`https://twitter.com/intent/tweet?url=${shareUrl}`"
+            target="_blank"
+            icon
+          >
             <v-icon>mdi-twitter</v-icon>
           </v-btn>
-          <v-btn class="ma-2 share-btn" color="primary"
-            :href="`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`" target="_blank" icon>
+          <v-btn
+            class="ma-2 share-btn"
+            color="primary"
+            :href="`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`"
+            target="_blank"
+            icon
+          >
             <v-icon>mdi-facebook</v-icon>
           </v-btn>
-          <v-btn class="ma-2 share-btn" color="primary" :href="`mailto:?subject=${article.title}&body=${shareUrl}`"
-            icon>
+          <v-btn
+            class="ma-2 share-btn"
+            color="primary"
+            :href="`mailto:?subject=${article.title}&body=${shareUrl}`"
+            icon
+          >
             <v-icon>mdi-email</v-icon>
           </v-btn>
         </div>
@@ -85,7 +109,6 @@ const article = ref(null);
 const renderedMarkdown = ref("");
 const shareUrl = `https://imchatty.com/articles/${slug}`;
 
-
 const { getArticleBySlug } = useDb(); // You'd need to define this helper
 
 onMounted(async () =>
@@ -96,7 +119,7 @@ onMounted(async () =>
   {
     article.value = data;
 
-    const markdown = (data.content || '').replace(/\\n/g, '\n');
+    const markdown = (data.content || "").replace(/\\n/g, "\n");
 
     renderedMarkdown.value = await marked(markdown); // Convert Markdown to HTML
   }
@@ -118,7 +141,7 @@ watchEffect(() =>
   const safeDescription = strippedContent.slice(0, 157) + '...';
 
 
-  useSeoMeta({
+useSeoMeta({
     title: article.value.title,
     description: safeDescription,
     ogTitle: article.value.title,
@@ -128,7 +151,7 @@ watchEffect(() =>
     ogType: 'article',
     ogLocale: 'en_US',
     ogSiteName: 'ImChatty',
-    twitterCard: 'summary_large_image',
+    twitterCard: "summary_large_image",
     twitterTitle: article.value.title,
     twitterDescription: safeDescription,
     twitterImage: '/images/article-image.webp',
@@ -139,7 +162,6 @@ watchEffect(() =>
   });
 });
 
-
 </script>
 
 <style scoped>
@@ -147,7 +169,7 @@ watchEffect(() =>
   border-radius: 20px;
   margin: 10px 0px;
   padding: 20px;
-  background-image: url('/images/bkg/tiediebkg.webp');
+  background-image: url("/images/bkg/tiediebkg.webp");
   background-size: cover;
   background-position: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -190,6 +212,4 @@ watchEffect(() =>
 .share-btn:hover {
   background-color: #333;
 }
-
-
 </style>
