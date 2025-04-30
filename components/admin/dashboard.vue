@@ -9,7 +9,6 @@
 				<v-card>
 					<v-tabs v-model="tab" bg-color="primary">
 						<v-tab value="registered">Registered</v-tab>
-						<v-tab value="unregistered">Unregistered</v-tab>
 						<v-tab value="ai">AI</v-tab>
 					</v-tabs>
 
@@ -20,11 +19,6 @@
 						<v-tabs-window v-model="tab">
 							<v-tabs-window-item value="registered">
 								<ProfileGrid delete :profiles="filteredRegistered" @user-deleted="handleUserDeleted" />
-							</v-tabs-window-item>
-
-							<v-tabs-window-item value="unregistered">
-								<ProfileGrid delete :profiles="filteredUnregistered"
-									@user-deleted="handleUserDeleted" />
 							</v-tabs-window-item>
 
 							<v-tabs-window-item value="ai">
@@ -58,13 +52,6 @@ onMounted(async () =>
 const filteredRegistered = computed(() =>
 	profiles.value.filter(
 		p => p.provider !== "anonymous" &&
-			(!search.value || p.displayname.toLowerCase().includes(search.value.toLowerCase()))
-	)
-);
-
-const filteredUnregistered = computed(() =>
-	profiles.value.filter(
-		p => p.provider === "anonymous" &&
 			(!search.value || p.displayname.toLowerCase().includes(search.value.toLowerCase()))
 	)
 );

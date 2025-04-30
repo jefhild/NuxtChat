@@ -1111,6 +1111,17 @@ export const useDb = () => {
     }
   };
 
+  const updateLastActive = async (userId) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ last_active: new Date() })
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error updating last active:", error);
+    }
+  };
+
 
   
   /*------------------*/
@@ -1774,6 +1785,7 @@ const { data, error } = await supabase
     updateTag,
     updateArticle,
     updateArticleTags,
+    updateLastActive,
 
     insertProfile,
     insertMessage,
