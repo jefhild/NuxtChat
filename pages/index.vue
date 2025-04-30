@@ -166,7 +166,6 @@ useHead(() => ({
       href: "https://imchatty.com",
     },
   ],
-  title: "Free Anonymous Real or AI Chat",
 }));
 
 useSeoMeta({
