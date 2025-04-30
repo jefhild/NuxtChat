@@ -6,6 +6,7 @@ export const usePresenceStore = defineStore('presenceStore', {
     presenceRefs: {}, // { userId: presence_ref }
     channel: null,
     status: 'online', 
+    activityIntervalId: null,
   }),
 
   getters: {
@@ -69,6 +70,29 @@ export const usePresenceStore = defineStore('presenceStore', {
     setChannel(c)
     {
       this.channel = c;
+      if (this.activityIntervalId) clearInterval(this.activityIntervalId);
+
+      this.activityIntervalId = setInterval(async () =>
+      {
+        const updates = this.onlineUsers.map(user => ({
+          user_id: user.userId,
+          last_active: new Date().toISOString()
+        }));
+
+        if (updates.length > 0)
+        {
+          const { error } = await useSupabaseClient()
+            .from('profiles')
+            .upsert(updates, { onConflict: ['user_id'] });
+
+          if (error)
+          {
+            console.error('Error updating last_active in profiles:', error);
+          }
+        }
+
+        console.log("Updated last_active for online users:", updates);
+      }, 60 * 1000); // every 5 minutes
     },
 
     async leavePresenceChannel()
