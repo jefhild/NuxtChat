@@ -1,15 +1,3 @@
-<!-- <template>
-  <v-layout>
-    <ClientOnly>
-      <NavBar />
-    </ClientOnly>
-    <v-main class="d-flex flex-column" style="min-height: 100vh">
-      <slot />
-      <Footer />
-    </v-main>
-  </v-layout>
-</template> -->
-
 <template>
   <v-layout class="d-flex flex-column" style="min-height: 100vh">
     <ClientOnly>
@@ -42,6 +30,8 @@ useHead({
     },
   ],
 });
+
+
 
 watch(
   () => authStore.user?.id,

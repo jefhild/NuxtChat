@@ -1,6 +1,6 @@
 <template>
   <v-card width="650" class="mx-auto">
-    <v-card-title class="headline text-center mt-4"> {{ props.titleText }}</v-card-title>
+    <v-card-title class="text-center mt-4"> <h1>{{ props.titleText }}</h1></v-card-title>
     <v-card-text>
       <!-- <p class="pb-4">
         Please follow the instructions below to create your anonymous profile.
@@ -616,5 +616,10 @@ const submitToDatabase = async () => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+h1 {
+  font-weight: 300;
+  font-size: 1.6em;
 }
 </style>
