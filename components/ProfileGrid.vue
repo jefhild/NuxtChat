@@ -1,6 +1,6 @@
 <template>
-	<v-row dense>
-		<v-col v-for="profile in profiles" :key="profile.user_id" cols="12" sm="6" md="4" lg="3"
+	<v-row dense> 
+		<v-col v-for="profile in profiles" :key="profile.user_id" cols="6" xs="6" sm="6" md="4" lg="3"
 			class="d-flex justify-center pa-4">
 			<v-card :class="[
 				'profile-card text-center d-flex flex-column justify-end',
@@ -9,14 +9,14 @@
 				<div class="overlay">
 					<v-row class="d-flex justify-center align-center">
 						<NuxtLink :to="`/profiles/${profile.gender?.toLowerCase()}/${profile.displayname}`"
-							class="font-weight-bold text-white mb-1 clickable-link">
+							class="font-weight-bold text-white mb-3 clickable-link">
 							{{ profile.displayname }}
 						</NuxtLink>
 					</v-row>
 					<v-row class="d-flex justify-center align-center">
 						<div v-if="profile.marked_for_deletion_at" class="mb-5 text-white">
 							<div>
-								 {{ timeLeft(refreshTime) }}
+								{{ timeLeft(refreshTime) }}
 							</div>
 							<v-btn size="x-small" color="green" @click.stop="unmarkDeletion(profile)">
 								Undo Deletion

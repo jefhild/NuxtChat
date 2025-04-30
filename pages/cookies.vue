@@ -1395,3 +1395,19 @@
   </div>
 </v-container>
 </template>
+<script>
+useSeoMeta({
+  title: "Cookies Policy – ImChatty",
+  description:
+    "Learn how ImChatty uses cookies to improve your experience, analyze site traffic, and provide personalized content. Read our full Cookies Policy.",
+  ogTitle: "Cookies Policy – ImChatty",
+  ogDescription:
+    "Understand how and why we use cookies on ImChatty. Learn what types of cookies are in use and how you can manage your preferences.",
+  ogImage: "https://imchatty.com/images/article-image.webp",
+  twitterCard: "summary_large_image",
+  twitterTitle: "Cookies Policy – How ImChatty Uses Cookies",
+  twitterDescription:
+    "See how ImChatty uses cookies to personalize and improve your experience. Learn about cookie types and privacy controls.",
+  twitterImage: "https://imchatty.com/images/article-image.webp"
+});
+</script>
