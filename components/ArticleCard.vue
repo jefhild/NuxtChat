@@ -43,7 +43,7 @@
           <NuxtLink
             v-for="tag in article.tags"
             :key="tag.slug || tag"
-            :to="`/tags/${tag.slug || tag}`"
+            :to="`/tags/${(tag.slug || tag).toLowerCase()}`"
             class="tag-link"
           >
             #{{ tag.name || tag }}
