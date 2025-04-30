@@ -29,6 +29,7 @@ useHead({
       async: true,
     },
   ],
+     title: "Free Anonymous Chat",
 });
 
 
