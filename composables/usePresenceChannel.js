@@ -42,13 +42,19 @@ export const usePresenceChannel = (userId) =>
 			}
 			
 		})
-		.on("presence", { event: "join" }, ({ key, newPresences }) =>
+		.on("presence", { event: "join" },  async ({ key, newPresences }) =>
 		{
 			const meta = newPresences[0];
 			const status = meta?.status || 'online';
 			const presenceRef = meta?.presence_ref;
 
 			presenceStore.addOnlineUser({ userId: key, status }, presenceRef);
+			console.log("presence join", key, presenceRef, status);
+
+			await supabase
+			.from("profiles")
+			.update({ last_active: new Date() })
+			.eq("user_id", key);
 		})
 		.on("presence", { event: "leave" }, async  ({ key, leftPresences }) =>
 		{

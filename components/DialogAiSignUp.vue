@@ -147,7 +147,7 @@ onMounted(async () => {
   await nextTick(); // Ensure the DOM has fully rendered before focusing
   focusInput(); // Set focus to the input field
 
-  console.log(authStore.user);
+  // console.log(authStore.user);
 });
 
 // Update messages and handle visibility
