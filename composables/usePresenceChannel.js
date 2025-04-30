@@ -49,12 +49,11 @@ export const usePresenceChannel = (userId) =>
 			const presenceRef = meta?.presence_ref;
 
 			presenceStore.addOnlineUser({ userId: key, status }, presenceRef);
-			console.log("presence join", key, presenceRef, status);
+			// console.log("presence join", key, presenceRef, status);
 
-			await supabase
-			.from("profiles")
-			.update({ last_active: new Date() })
-			.eq("user_id", key);
+			const { updateLastActive } = useDb();
+
+			await updateLastActive(key);
 		})
 		.on("presence", { event: "leave" }, async  ({ key, leftPresences }) =>
 		{
