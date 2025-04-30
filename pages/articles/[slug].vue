@@ -137,28 +137,27 @@ watchEffect(() =>
   if (!article.value) return;
 
   // To not have the html content when i use article.value.content in the SEO meta
-  const strippedContent = article.value.content?.replace(/<[^>]+>/g, '') || '';
-  const safeDescription = strippedContent.slice(0, 157) + '...';
+  const plainText = article.value.content?.replace(/<[^>]+>/g, '') || '';
+  const safeDescription = plainText.trim().slice(0, 160) + '…';
 
 
-useSeoMeta({
-    title: article.value.title,
+  useSeoMeta({
+    title: `${article.value.title} – ImChatty`,
     description: safeDescription,
-    ogTitle: article.value.title,
+    ogTitle: `${article.value.title} – ImChatty`,
     ogDescription: safeDescription,
     ogUrl: shareUrl,
-    ogImage: '/images/article-image.webp',
+    ogImage: 'https://imchatty.com/images/article-image.webp',
     ogType: 'article',
     ogLocale: 'en_US',
     ogSiteName: 'ImChatty',
-    twitterCard: "summary_large_image",
-    twitterTitle: article.value.title,
+    twitterCard: 'summary_large_image',
+    twitterTitle: `${article.value.title} – ImChatty`,
     twitterDescription: safeDescription,
-    twitterImage: '/images/article-image.webp',
-    canonical: shareUrl,
-    author: 'ImChatty',
-    articleSection: article.value.category?.name,
+    twitterImage: 'https://imchatty.com/images/article-image.webp',
+    articleSection: article.value.category?.name || 'Article',
     articlePublishedTime: article.value.created_at,
+    canonical: shareUrl
   });
 });
 
