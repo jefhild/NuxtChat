@@ -29,6 +29,7 @@
           :userProfile="userProfile"
           :updateFilters="updateFilters"
           @refresh-data="refreshData"
+          @unread-count="updateTabTitle"
         />
         <UsersAI
           v-if="showAIUsers"
@@ -151,6 +152,9 @@ const dialogVisible = ref(false);
 const userEmail = ref("");
 const showAIUsers = ref(false); // State to toggle between Users and UsersAI
 
+const lastUnreadSenderId = ref(null);
+
+
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
 const { arrayOfflineUsers, fetchOfflineUsers } = useFetchOfflineUsers(user);
@@ -229,30 +233,53 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
 const markMessagesAsRead = async (receiverUserId, senderUserId) => {
   await updateMessagesAsRead(receiverUserId, senderUserId);
 
-  document.title = `Chat | ImChatty `;
-};
-
-const handleRealtimeMessages = (payload) => {
-  const { eventType, new: newRow } = payload;
-
-  if (eventType === "INSERT") {
-    // Check if the message is from/to the selected user
-    if (
-      (newRow.sender_id === selectedUser.value?.user_id ||
-        newRow.receiver_id === selectedUser.value?.user_id) &&
-      !blockedUsers.value.includes(newRow.sender_id) &&
-      !blockedUsers.value.includes(newRow.receiver_id)
-    ) {
-      // Check if message already exists
-      const messageExists = messages.value.some((msg) => msg.id === newRow.id);
-      if (!messageExists) {
-        messages.value.push(newRow); // Add the new message to the array
-        scrollToBottom(); // Ensure the chat scrolls to the bottom when a new message is added
-        markMessagesAsRead(newRow.receiver_id, newRow.sender_id); // Mark the message as read
-      }
-    }
+  if (document.visibilityState === "visible")
+  {
+    updateTabTitle(0); // Only clear if user is really looking
   }
 };
+
+const updateTabTitle = (count) =>
+{
+  document.title = count > 0 ? `(${count}) New Message${count>1 ? 's' : ''}| 'ImChatty`
+  : "Chat | 'ImChatty";
+};
+
+
+
+const handleRealtimeMessages = (payload) =>
+{
+  const { eventType, new: newRow } = payload;
+
+  if (eventType !== "INSERT") return;
+  if (blockedUsers.value.includes(newRow.sender_id)) return;
+
+  fetchActiveChats(filters.value);
+
+  const isMessageToCurrentUser = newRow.receiver_id === user.value.id;
+  const isFromSelectedUser = newRow.sender_id === selectedUser.value?.user_id;
+  const isVisible = document.visibilityState === "visible";
+
+  if (!isMessageToCurrentUser) return;
+
+  const alreadyExists = messages.value.some((msg) => msg.id === newRow.id);
+  if (isFromSelectedUser && !alreadyExists)
+  {
+    messages.value.push(newRow);
+    scrollToBottom();
+    if (isVisible)
+    {
+      markMessagesAsRead(newRow.receiver_id, newRow.sender_id);
+    } else
+    {
+      lastUnreadSenderId.value = newRow.sender_id;
+    }
+  } else if (!isFromSelectedUser && !isVisible)
+  {
+    lastUnreadSenderId.value = newRow.sender_id;
+  }
+};
+
 
 watch(
   () => presenceStore.userIdsOnly,
@@ -286,8 +313,8 @@ onMounted(async () => {
     presenceStore.userIdsOnly,
     userProfile.value.user_id
   );
-  fetchAiUsers(filters.value);
-  fetchActiveChats(filters.value);
+  await fetchAiUsers(filters.value);
+  await fetchActiveChats(filters.value);
 
   // await loadBlockedUsers();
   loadBlockedUsers(); // Load blocked users for the current user
@@ -337,6 +364,20 @@ onMounted(async () => {
       console.log("Subscribed to real-time updates for messages");
     }
   }
+
+  document.addEventListener("visibilitychange", async () =>
+  {
+    if (document.visibilityState === "visible")
+    {
+      if (selectedUser.value.user_id === lastUnreadSenderId.value)
+      {
+        await markMessagesAsRead(user.value.id, selectedUser.value.user_id);
+        lastUnreadSenderId.value = null;
+      }
+
+      await fetchActiveChats(filters.value); // Ensure sync with server
+    }
+  });
 });
 
 // Select user to chat with
