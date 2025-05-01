@@ -43,4 +43,19 @@ onMounted(async () =>
     return;
   }
 });
+
+useSeoMeta({
+  title: "Sign In – Access Your ImChatty Account",
+  description:
+    "Securely sign in to your ImChatty account using Google, Facebook, or email. Join conversations with real people or AI chat partners in seconds.",
+  ogTitle: "Sign In to ImChatty",
+  ogDescription:
+    "Login securely via Google, Facebook, or email and start chatting anonymously with real or AI users. Your chat journey begins here.",
+  ogImage: "https://imchatty.com/images/article-image.webp",
+  twitterCard: "summary_large_image",
+  twitterTitle: "Sign In – Chat Anonymously with ImChatty",
+  twitterDescription:
+    "Easily access your ImChatty account with Google, Facebook, or email login. Start anonymous conversations with real or AI profiles today.",
+  twitterImage: "https://imchatty.com/images/article-image.webp"
+});
 </script>

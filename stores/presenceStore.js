@@ -92,7 +92,7 @@ export const usePresenceStore = defineStore('presenceStore', {
         }
 
         console.log("Updated last_active for online users:", updates);
-      }, 60 * 1000); // every 5 minutes
+      }, 5 * 60 * 1000); // every 5 minutes
     },
 
     async leavePresenceChannel()
