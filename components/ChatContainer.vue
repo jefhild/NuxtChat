@@ -28,6 +28,8 @@
           :activeChats="activeChats"
           :userProfile="userProfile"
           :updateFilters="updateFilters"
+          :selected-user-id="selectedUser?.user_id"
+          :is-tab-visible="isTabVisible"
           @refresh-data="refreshData"
           @unread-count="updateTabTitle"
         />
@@ -114,6 +116,7 @@
 
 <script setup>
 import { ref, watch, onMounted, nextTick } from "vue";
+import { useNotificationStore } from '@/stores/notificationStore';
 const route = useRoute();
 const router = useRouter();
 import { usePresenceStore } from "@/stores/presenceStore";
@@ -125,6 +128,7 @@ import { useFetchActiveChats } from "@/composables/useFetchActiveChats";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
 
 const {
+  getUserProfileFromId,
   getAIInteractionCount,
   getCurrentAIInteractionCount,
   getMessagesBetweenUsers,
@@ -136,6 +140,7 @@ const {
 
 const supabase = useSupabaseClient();
 const authStore = useAuthStore();
+const notificationStore = useNotificationStore();
 const presenceStore = usePresenceStore();
 const user = ref(authStore.user);
 const userProfile = ref(authStore.userProfile);
@@ -153,6 +158,7 @@ const userEmail = ref("");
 const showAIUsers = ref(false); // State to toggle between Users and UsersAI
 
 const lastUnreadSenderId = ref(null);
+const isTabVisible = ref(true);
 
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
@@ -224,6 +230,10 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
 
     // Mark all messages as read
     await markMessagesAsRead(receiverUserId, senderUserId);
+    console.log("Calling markMessageNotificationAsRead with:", senderUserId);
+
+    notificationStore.markMessageNotificationAsRead(senderUserId);
+    
   } catch (error) {
     console.error("Error fetching chat messages:", error);
   }
@@ -247,14 +257,14 @@ const updateTabTitle = (count) =>
 
 
 
-const handleRealtimeMessages = (payload) =>
+const handleRealtimeMessages = async (payload) =>
 {
   const { eventType, new: newRow } = payload;
 
   if (eventType !== "INSERT") return;
   if (blockedUsers.value.includes(newRow.sender_id)) return;
 
-  fetchActiveChats(filters.value);
+  await fetchActiveChats(filters.value);
 
   const isMessageToCurrentUser = newRow.receiver_id === user.value.id;
   const isFromSelectedUser = newRow.sender_id === selectedUser.value?.user_id;
@@ -265,11 +275,25 @@ const handleRealtimeMessages = (payload) =>
   const alreadyExists = messages.value.some((msg) => msg.id === newRow.id);
   if (isFromSelectedUser && !alreadyExists)
   {
+    const senderProfile = await getUserProfileFromId(newRow.sender_id);
+    // console.log("Sender Profile:", senderProfile); 
+    notificationStore.addNotification(
+      'message',
+      `${senderProfile.data.displayname || 'Someone'} sent you a message`,
+      newRow.sender_id
+    );
+
     messages.value.push(newRow);
     scrollToBottom();
     if (isVisible)
     {
       markMessagesAsRead(newRow.receiver_id, newRow.sender_id);
+      notificationStore.markMessageNotificationAsRead(newRow.sender_id);
+      const userInActiveChats = activeChats.value.find(u => u.user_id === newRow.sender_id);
+      if (userInActiveChats)
+      {
+        userInActiveChats.unread_count = 0;
+      }
     } else
     {
       lastUnreadSenderId.value = newRow.sender_id;
@@ -301,6 +325,7 @@ onMounted(async () => {
   user.value = authStore.user;
   userProfile.value = authStore.userProfile;
   showAIUsers.value = route.query.user === "ai";
+  isTabVisible.value = document.visibilityState === "visible";
 
   //Have to do them at least once on mount because if we go to another page and come back, we need to fetch the data again
   await fetchOnlineUsers(
@@ -361,17 +386,20 @@ onMounted(async () => {
     if (error) {
       console.error("Error subscribing to real-time channel:", error);
     } else {
-      console.log("Subscribed to real-time updates for messages");
+      // console.log("Subscribed to real-time updates for messages");
     }
   }
 
   document.addEventListener("visibilitychange", async () =>
   {
+    isTabVisible.value = document.visibilityState === "visible";
     if (document.visibilityState === "visible")
     {
-      if (selectedUser.value.user_id === lastUnreadSenderId.value)
+      if (selectedUser.value?.user_id === lastUnreadSenderId.value)
       {
         await markMessagesAsRead(user.value.id, selectedUser.value.user_id);
+        notificationStore.markMessageNotificationAsRead(selectedUser.value.user_id);
+       
         lastUnreadSenderId.value = null;
       }
 

@@ -80,7 +80,32 @@ const deleteDialog = ref(false);
 const checkboxBlockUser = ref(false);
 const props = defineProps({
   users: Array,
+  selectedUserId: String,
+  isTabVisible: Boolean,
 });
+
+const localUsers = ref([]);
+
+watch(() => props.users, (newVal) =>
+{
+  if (props.selectedUserId && props.isTabVisible)
+  {
+    // Prevent overwrite to avoid flicker
+    localUsers.value = localUsers.value.map(localUser =>
+    {
+      //re render the dom because vue doesnt detect the change if we change localuser directly
+      const updated = newVal.find(u => u.user_id === localUser.user_id) || localUser;
+      if (localUser.user_id === props.selectedUserId)
+      {
+        updated.unread_count = 0;
+      }
+      return { ...updated };
+    });
+  } else
+  {
+    localUsers.value = newVal.map((user) => ({ ...user }));
+  }
+}, { immediate: true });
 
 const supabase = useSupabaseClient();
 const emit = defineEmits(["user-selected", "chat-deleted"]);
@@ -146,21 +171,37 @@ const subscribeToNewMessages = () => {
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "messages" },
       (payload) => {
-        console.log("New message received:", payload);
+        // console.log("New message received:", payload);
 
-        // Find the sender in the users array
-        const sender = props.users.find(
-          (user) => user.user_id === payload.new.sender_id
-        );
+        const senderId = payload.new.sender_id;
+        const receiverId = payload.new.receiver_id;
 
-        // If the message is for the current user, update the unread count
-        if (sender) {
-          sender.unread_count = (sender.unread_count || 0) + 1;
-        }
+        if (receiverId !== myUserId.value.id) return;
+
+        updateUnreadCount(senderId);
       }
     )
     .subscribe();
 };
+
+const updateUnreadCount = (senderId) =>
+{
+  const index = localUsers.value.findIndex(u => u.user_id === senderId);
+  if (index === -1) return;
+
+  const isChattingWithSender = senderId === props.selectedUserId && props.isTabVisible;
+
+  if (!isChattingWithSender)
+  {
+    console.log("Updating unread count for user:", senderId);
+    const updatedUser = {
+      ...localUsers.value[index],
+      unread_count: (localUsers.value[index].unread_count || 0) + 1,
+    };
+    localUsers.value.splice(index, 1, updatedUser);
+  }
+};
+
 
 const { statusColor, statusIcon } = usePresenceStatus();
 </script>
