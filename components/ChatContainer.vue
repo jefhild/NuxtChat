@@ -267,27 +267,31 @@ const handleRealtimeMessages = async (payload) =>
   await fetchActiveChats(filters.value);
 
   const isMessageToCurrentUser = newRow.receiver_id === user.value.id;
-  const isFromSelectedUser = newRow.sender_id === selectedUser.value?.user_id;
-  const isVisible = document.visibilityState === "visible";
-
   if (!isMessageToCurrentUser) return;
 
   const alreadyExists = messages.value.some((msg) => msg.id === newRow.id);
-  if (isFromSelectedUser && !alreadyExists)
+  if (!alreadyExists)
   {
-    const senderProfile = await getUserProfileFromId(newRow.sender_id);
-    // console.log("Sender Profile:", senderProfile); 
-    notificationStore.addNotification(
-      'message',
-      `${senderProfile.data.displayname || 'Someone'} sent you a message`,
-      newRow.sender_id
-    );
 
+    const isFromSelectedUser = newRow.sender_id === selectedUser.value?.user_id;
+    const isVisible = document.visibilityState === "visible";
+
+    if (!isFromSelectedUser || !isVisible)
+    {
+      const senderProfile = await getUserProfileFromId(newRow.sender_id);
+      console.log("Sender Profile:", senderProfile);
+      notificationStore.addNotification(
+        'message',
+        `${senderProfile.data.displayname || 'Someone'} sent you a message`,
+        newRow.sender_id
+      );
+    }
+    
     messages.value.push(newRow);
     scrollToBottom();
-    if (isVisible)
+    if (isVisible && isFromSelectedUser)
     {
-      markMessagesAsRead(newRow.receiver_id, newRow.sender_id);
+      await markMessagesAsRead(newRow.receiver_id, newRow.sender_id);
       notificationStore.markMessageNotificationAsRead(newRow.sender_id);
       const userInActiveChats = activeChats.value.find(u => u.user_id === newRow.sender_id);
       if (userInActiveChats)
@@ -298,7 +302,7 @@ const handleRealtimeMessages = async (payload) =>
     {
       lastUnreadSenderId.value = newRow.sender_id;
     }
-  } else if (!isFromSelectedUser && !isVisible)
+  } else
   {
     lastUnreadSenderId.value = newRow.sender_id;
   }

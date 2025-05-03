@@ -1,9 +1,15 @@
 import { usePresenceStore } from '@/stores/presenceStore';
+import { has } from 'vuetify/lib/util/helpers.mjs';
 
-export const usePresenceChannel = (userId) =>
+export const usePresenceChannel = (userId, favoriteProfiles) =>
 {
 	const supabase = useSupabaseClient();
 	const presenceStore = usePresenceStore();
+	
+	// know when the user has fullysynced to not give
+	// him the notification that one of his favorites is online
+	// when they have been online for a while already
+	const hasFullySynced = ref(false);
 
 	const channel = supabase.channel("presence:global", {
 		config: {
@@ -39,6 +45,7 @@ export const usePresenceChannel = (userId) =>
 				{
 					presenceStore.presenceRefs[userId] = metas[0]?.presence_ref;
 				});
+				hasFullySynced.value = true;
 			}
 			
 		})
@@ -46,14 +53,34 @@ export const usePresenceChannel = (userId) =>
 		{
 			const meta = newPresences[0];
 			const status = meta?.status || 'online';
-			const presenceRef = meta?.presence_ref;
+				const presenceRef = meta?.presence_ref;
 
 			presenceStore.addOnlineUser({ userId: key, status }, presenceRef);
 			// console.log("presence join", key, presenceRef, status);
 
 			const { updateLastActive } = useDb();
-
 			await updateLastActive(key);
+
+			if (!hasFullySynced.value) return;
+
+			console.log("favorites profiles: ", favoriteProfiles.value);
+
+			const isFavoriteOnline = favoriteProfiles.value.some(profile => profile.user_id === key);
+			console.log("isFavoriteOnline: ", isFavoriteOnline);
+
+			if (isFavoriteOnline)
+			{
+				const favoritedProfile = favoriteProfiles.value.find(p => p.user_id === key);
+				if (favoritedProfile)
+				{
+					const notificationStore = useNotificationStore();
+					notificationStore.addNotification(
+						'presence',
+						`${favoritedProfile.displayname} is online!`,
+						favoritedProfile.user_id
+					);
+				}
+			}
 		})
 		.on("presence", { event: "leave" }, async  ({ key, leftPresences }) =>
 		{

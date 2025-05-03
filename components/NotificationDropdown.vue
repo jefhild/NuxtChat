@@ -2,7 +2,7 @@
 	<v-menu v-model="menu" offset-y>
 		<template #activator="{ props }" class="text-center">
 			<v-badge v-if="notificationStore.unreadCount > 0" :content="notificationStore.unreadCount" color="red"
-				overlap v-bind="props" class="mr-4 mt-3">
+				overlap v-bind="props" :class="!mdAndUp ? 'mr-4 mt-3' : ''">
 				<v-icon>
 					mdi-bell
 				</v-icon>
@@ -32,6 +32,9 @@
 
 <script setup>
 import { useNotificationStore } from '@/stores/notificationStore';
+
+import { useDisplay } from 'vuetify';
+const { mdAndUp } = useDisplay();
 
 const notificationStore = useNotificationStore();
 const menu = ref(false);

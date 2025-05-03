@@ -60,7 +60,9 @@ const emit = defineEmits(["user-selected", "chat-deleted", "refresh-data", "unre
 
 const unreadMessageCount = ref(0);
 const activeChats = toRef(props, "activeChats"); // Make the prop reactive
-// Watch for changes in activeChats prop with deep watch
+
+
+// Watch for changes in activeChats for the badge count on the active tab
 watch(
   () => props.activeChats,
   (newChats) => {
