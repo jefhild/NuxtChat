@@ -63,10 +63,10 @@ export const usePresenceChannel = (userId, favoriteProfiles) =>
 
 			if (!hasFullySynced.value) return;
 
-			console.log("favorites profiles: ", favoriteProfiles.value);
+			// console.log("favorites profiles: ", favoriteProfiles.value);
 
 			const isFavoriteOnline = favoriteProfiles.value.some(profile => profile.user_id === key);
-			console.log("isFavoriteOnline: ", isFavoriteOnline);
+			// console.log("isFavoriteOnline: ", isFavoriteOnline);
 
 			if (isFavoriteOnline)
 			{

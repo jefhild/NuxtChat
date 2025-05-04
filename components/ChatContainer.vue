@@ -285,6 +285,7 @@ const handleRealtimeMessages = async (payload) =>
         `${senderProfile.data.displayname || 'Someone'} sent you a message`,
         newRow.sender_id
       );
+      return; //I return so it doesnt add the message to the chat if it is not from the selected user
     }
     
     messages.value.push(newRow);
