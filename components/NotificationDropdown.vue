@@ -2,7 +2,7 @@
 	<v-menu v-model="menu" offset-y>
 		<template #activator="{ props }" class="text-center">
 			<v-badge v-if="notificationStore.unreadCount > 0" :content="notificationStore.unreadCount" color="red"
-				overlap v-bind="props" :class="!mdAndUp ? 'mr-4 mt-3' : ''">
+				overlap v-bind="props" :class="!mdAndUp ? 'mr-4 mt-3' : 'mr-2 ml-2'">
 				<v-icon>
 					mdi-bell
 				</v-icon>
@@ -15,7 +15,7 @@
 		</template>
 
 		<v-list class="notification-list" style="max-height: 400px; overflow-y: auto;">
-			<v-list-item v-for="notification in notificationStore.notifications" :key="notification.id"
+			<v-list-item v-for="notification in notificationStore.notifications.slice(0,4)" :key="notification.id"
 				class="notification-item">
 				<v-list-item-title>{{ notification.message }}</v-list-item-title>
 				<v-list-item-subtitle class="text-caption">
