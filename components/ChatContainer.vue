@@ -230,7 +230,7 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
 
     // Mark all messages as read
     await markMessagesAsRead(receiverUserId, senderUserId);
-    console.log("Calling markMessageNotificationAsRead with:", senderUserId);
+    // console.log("Calling markMessageNotificationAsRead with:", senderUserId);
 
     notificationStore.markMessageNotificationAsRead(senderUserId);
     
@@ -251,8 +251,8 @@ const markMessagesAsRead = async (receiverUserId, senderUserId) => {
 
 const updateTabTitle = (count) =>
 {
-  document.title = count > 0 ? `(${count}) New Message${count>1 ? 's' : ''}| 'ImChatty`
-  : "Chat | 'ImChatty";
+  document.title = count > 0 ? `(${count}) New Message${count>1 ? 's' : ''} | ImChatty`
+    : "ImChatty | Chat";
 };
 
 
