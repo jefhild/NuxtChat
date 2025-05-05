@@ -351,3 +351,20 @@
 
   </v-container>
 </template>
+
+<script setup>
+useSeoMeta({
+  title: "Privacy Policy – ImChatty",
+  description:
+    "Learn how ImChatty works to protect your privacy and improve your experience. Read our full Privacy Policy.",
+  ogTitle: "Privacy Policy – ImChatty",
+  ogDescription:
+    "Take a look at how ImChatty works to protect your privacy and improve your experience. Read our full Privacy Policy.",
+  ogImage: "https://imchatty.com/images/article-image.webp",
+  twitterCard: "summary_large_image",
+  twitterTitle: "Cookies Policy – How ImChatty Uses Cookies",
+  twitterDescription:
+    "Learn how ImChatty works to protect your privacy and improve your experience. Read our full Privacy Policy.",
+  twitterImage: "https://imchatty.com/images/article-image.webp"
+});
+</script>
