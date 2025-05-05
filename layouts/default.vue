@@ -42,7 +42,7 @@ watch(
       const { favoriteProfiles, fetchFavorites } = useFavorites(userId);
       await fetchFavorites(); // wait for favorites to load
 
-      console.log("Joining presence channel for user ID:", userId, favoriteProfiles.value);
+      // console.log("Joining presence channel for user ID:", userId, favoriteProfiles.value);
       usePresenceChannel(userId, favoriteProfiles); // track the presence 
     }
   },
