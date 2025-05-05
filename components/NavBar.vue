@@ -12,16 +12,18 @@
           <v-btn prepend-icon="mdi-post-outline" @click="navigate('/articles')" variant="text">Blog</v-btn>
           <v-btn prepend-icon="mdi-chat" @click="navigate('/chat')" variant="text">Chat</v-btn>
           <v-btn prepend-icon="mdi-cog" @click="navigate('/settings')" variant="text">Settings</v-btn>
+          <NotificationDropdown />
           <v-btn @click="showLogoutDialog" variant="text">Logout</v-btn>
         </v-row>
 
         <!-- Mobile menu -->
         <div class="d-flex d-md-none">
+          <NotificationDropdown />
+
           <v-menu>
             <template #activator="{ props }">
               <v-app-bar-nav-icon v-bind="props" />
             </template>
-
             <v-list>
               <v-list-item to="/articles" prepend-icon="mdi-post-outline">Blog</v-list-item>
               <v-list-item to="/chat" prepend-icon="mdi-chat">Chat</v-list-item>
