@@ -19,8 +19,10 @@
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
 import { usePresenceChannel } from "@/composables/usePresenceChannel";
+import { useFavorites } from "@/composables/useFavorites";
 
 const authStore = useAuthStore();
+
 useHead({
   script: [
     {
@@ -32,13 +34,16 @@ useHead({
      title: "Free Anonymous Chat",
 });
 
-
-
 watch(
   () => authStore.user?.id,
-  (userId) => {
+  async (userId) => {
     if (userId) {
-      usePresenceChannel(userId); // 🔥 track presence!
+      // I do this here because i don't want to fetch the favorites every time someone joins in the presence channel
+      const { favoriteProfiles, fetchFavorites } = useFavorites(userId);
+      await fetchFavorites(); // wait for favorites to load
+
+      console.log("Joining presence channel for user ID:", userId, favoriteProfiles.value);
+      usePresenceChannel(userId, favoriteProfiles); // track the presence 
     }
   },
   { immediate: true }

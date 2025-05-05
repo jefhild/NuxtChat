@@ -40,8 +40,8 @@
   </v-dialog>
 </template>
 
-<script setup lang="ts">
-// import { useAuthStore } from "@/stores/authStore";
+<script setup >
+import { useAuthStore } from "@/stores/authStore";
 
 // import {
 //   getAvatar,
@@ -50,36 +50,41 @@
 //   getGenderColorClass,
 // } from "@/utils/userUtils";
 import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
+import { bookResolver } from "nuxt-schema-org/schema";
 
-const { getGenderFromId, insertBlockedUser, insertFavorite, unblockUser, deleteFavorite, upvoteUserProfile, downvoteUserProfile} = useDb();
+const { getUserProfileFromId, getGenderFromId, insertBlockedUser, insertFavorite, unblockUser, deleteFavorite, upvoteUserProfile, downvoteUserProfile} = useDb();
 
-// const authStore = useAuthStore();
+const authStore = useAuthStore();
+const user = ref(authStore.user);
 // const tooltipText = ref("View profile of the user");
 
-const props = defineProps<{
+const props = defineProps({
   selectedUser: {
-    displayname: string;
-    tagline: string;
-    bio: string;
-    age: number;
-    gender_id: number;
-    country_name: string;
-    user_id: string;
-    profile_id: number;
-    isBlocked: boolean;
-    is_favorite: boolean;
-    upvotes_count: number;
-    downvotes_count: number;
-    avatar_url: string;
-  } | null;
+    displayname: String,
+    tagline: String,
+    bio: String,
+    age: Number,
+    gender_id: Number,
+    country_name: String,
+    user_id: String,
+    profile_id: Number,
+    isBlocked: Boolean,
+    is_favorite: Boolean,
+    upvotes_count: Number,
+    downvotes_count: Number,
+    avatar_url: String,
+  } | null,
   currentUser: {
-    id: string;
-  };
-}>();
+    id: String,
+  },
+});
 
+
+const supabase = useSupabaseClient();
+const notificationStore = useNotificationStore();
 const hasUpvoted = ref(false);
 const hasDownvoted = ref(false);
-const genderName = ref<String | null>(""); 
+const genderName = ref(""); 
 const userProfileDialog = ref(false);
 
 const toggleUserProfileDialog = () => {
@@ -148,7 +153,7 @@ const toggleFavorite = async () => {
   }
 };
 
-const upvote = async (targetUserId: string) => {
+const upvote = async (targetUserId) => {
   if (hasUpvoted.value) {
     console.log("User has already upvoted this profile");
     return;
@@ -167,7 +172,7 @@ const upvote = async (targetUserId: string) => {
   }
 };
 
-const downvote = async (targetUserId: string) => {
+const downvote = async (targetUserId) => {
   if (hasDownvoted.value) {
     console.log("User has already downvoted this profile");
     return;
@@ -190,8 +195,36 @@ const downvote = async (targetUserId: string) => {
 onMounted(async () =>
 {
   genderName.value = await getGenderFromId(props.selectedUser?.gender_id) || "";
-});
+  supabase
+    .channel("favorites")
+    .on(
+      "postgres_changes",
+      { 
+        event: "INSERT", 
+        schema: "public", 
+        table: "favorites",
+        filter: `favorite_user_id=eq.${user.value.id}`,
+      },
+      async (payload) =>
+      {
+        // console.log('New favorite added:', payload);
+        const { user_id: favoritingUserId } = payload.new;
 
+        const { data, error } = await getUserProfileFromId(favoritingUserId);
+        // console.log("User data:", data, "Error:", error);
+        if (!data?.displayname) return;
+
+        // console.log("Favoriting user data:", data);
+
+        notificationStore.addNotification(
+          'favorite',
+          `${data?.displayname} favorited you!`,
+          favoritingUserId
+        );
+      }
+    )
+    .subscribe();
+});
 </script>
 
 <style scoped>
