@@ -1395,7 +1395,7 @@
   </div>
 </v-container>
 </template>
-<script>
+<script setup>
 useSeoMeta({
   title: "Cookies Policy – ImChatty",
   description:

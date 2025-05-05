@@ -143,6 +143,22 @@ onMounted(async () => {
   if (categoryData) categories.value = categoryData;
   isLoading.value = false;
 });
+
+
+useSeoMeta({
+  title: "ImChatty Blog – Tips, Updates & Community Stories",
+  description:
+    "Discover the latest tips, platform updates, and real community stories on the ImChatty Blog. Stay connected and informed.",
+  ogTitle: "ImChatty Blog – Tips, Updates & Community Stories",
+  ogDescription:
+    "Explore helpful articles, platform news, and inspiring stories from the ImChatty community. Updated regularly with new insights.",
+  ogImage: "https://imchatty.com/images/article-image.webp",
+  twitterCard: "summary_large_image",
+  twitterTitle: "ImChatty Blog – Your Source for Tips and Updates",
+  twitterDescription:
+    "Stay informed with the latest blog posts from ImChatty. From platform updates to dating and chat tips, we've got you covered.",
+  twitterImage: "https://imchatty.com/images/article-image.webp"
+});
 </script>
 
 <style scoped>
