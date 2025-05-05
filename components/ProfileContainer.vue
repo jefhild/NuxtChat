@@ -186,7 +186,7 @@
       @lookingForUpdated="refreshLookingForDisplay" />
   </v-dialog>
 
-  <v-snackbar v-model="snackbar" :timeout="1000">
+  <v-snackbar v-model="snackbar" :timeout="3000">
     {{ snackbarText }}
 
     <template v-slot:actions>

@@ -32,6 +32,8 @@
       <v-tabs-window-item :value="3">
         <ActiveChats
           :users="activeChats"
+          :selectedUserId="selectedUserId"
+          :isTabVisible="isTabVisible"
           @user-selected="selectUser"
           @chat-deleted="handleChatDeleted"
         />
@@ -41,7 +43,6 @@
 </template>
 
 <script setup>
-const supabase = useSupabaseClient();
 
 const props = defineProps({
   onlineUsers: Array,
@@ -49,22 +50,29 @@ const props = defineProps({
   activeChats: Array,
   userProfile: Object,
   updateFilters: Function,
+  selectedUserId: String,
+  isTabVisible: Boolean,
 });
 
 
 const tab = ref(1);
-const emit = defineEmits(["user-selected", "chat-deleted", "refresh-data","unread-count"]);
+const emit = defineEmits(["user-selected", "chat-deleted", "refresh-data", "unread-count"]);
 
 const unreadMessageCount = ref(0);
 const activeChats = toRef(props, "activeChats"); // Make the prop reactive
-// Watch for changes in activeChats prop with deep watch
+
+
+// Watch for changes in activeChats for the badge count on the active tab
 watch(
   () => props.activeChats,
   (newChats) => {
-    unreadMessageCount.value = newChats.reduce(
-      (count, chat) => count + (chat.unread_count || 0),
-      0
-    );
+    unreadMessageCount.value = newChats.reduce((count, chat) =>
+    {
+      // Skip counting unread if you're chatting with this user and the tab is visible
+      const isActiveChat = chat.user_id === props.selectedUserId && props.isTabVisible;
+      if (isActiveChat) return count;
+      return count + (chat.unread_count || 0);
+    }, 0);
     emit("unread-count", unreadMessageCount.value);
   },
   { immediate: true, deep: true } // Run immediately on initialization and watch deeply
