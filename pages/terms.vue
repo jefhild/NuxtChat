@@ -772,3 +772,21 @@
     </v-row>
   </v-container>
 </template>
+
+
+<script setup>
+useSeoMeta({
+  title: "Terms & Conditions – ImChatty",
+  description:
+    "Review the Terms and Conditions of using ImChatty. Learn your rights, responsibilities, and how we ensure a safe and respectful platform.",
+  ogTitle: "Terms & Conditions – ImChatty",
+  ogDescription:
+    "Understand the rules and policies for using ImChatty. Read our full Terms and Conditions to know what’s expected from all users.",
+  ogImage: "https://imchatty.com/images/article-image.webp",
+  twitterCard: "summary_large_image",
+  twitterTitle: "Terms & Conditions – ImChatty",
+  twitterDescription:
+    "Explore the Terms and Conditions of ImChatty to learn how we maintain a respectful and safe community experience.",
+  twitterImage: "https://imchatty.com/images/article-image.webp"
+});
+</script>
