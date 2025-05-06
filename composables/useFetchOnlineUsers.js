@@ -8,7 +8,8 @@ export function useFetchOnlineUsers() {
 
   // Method to fetch online users
   const fetchOnlineUsers = async (filters, arrayOfUserIds, userId) => {
-    const { gender_id, age_range, is_anonymous, interests } = filters;
+    const { gender_id, age_range, is_anonymous, interests, country_id, status_id } = filters;
+
     // console.log("Fetching online users with filters:", filters); // Debug log
     loading.value = true; // Set loading state to true
     // console.log("User ID:", user.value?.id); // Debug log
@@ -20,7 +21,7 @@ export function useFetchOnlineUsers() {
     // console.log("Age Range: ", min_age, max_age); // Debug log
 
 
-    const { data, errorDb } = await getUsersFromIds(arrayOfUserIds, gender_id, min_age, max_age, is_anonymous, interests, userId);
+    const { data, errorDb } = await getUsersFromIds(arrayOfUserIds, gender_id, min_age, max_age, is_anonymous, interests, country_id, status_id, userId);
 
     loading.value = false; // Reset loading state after the fetch
 
