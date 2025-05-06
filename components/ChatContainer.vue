@@ -649,7 +649,7 @@ const updateFilters = async (newFilters) => {
   // console.log("Filters updated:", newFilters); // Debug log
   filters.value = newFilters;
   fetchAiUsers(filters.value);
-  fetchActiveChats(filters.value);
+  await fetchActiveChats(filters.value);
   await fetchOnlineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
   await fetchOfflineUsers(filters.value, presenceStore.userIdsOnly, userProfile.value.user_id);
 };

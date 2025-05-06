@@ -1,6 +1,9 @@
 <template>
-  <v-container class="article-list-container py-4">
-
+  <v-container v-if="isLoading" class="text-center">
+			<v-progress-circular indeterminate color="primary"></v-progress-circular>
+		</v-container>
+    
+  <v-container v-else class="article-list-container py-4">
     <!-- Top Row: Title + Search -->
     <v-row align="center" justify="space-between" class="mb-3">
       <v-col cols="12" md="6">

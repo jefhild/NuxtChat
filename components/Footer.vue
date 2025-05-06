@@ -9,16 +9,20 @@
             <NuxtLink to="/about">About Us</NuxtLink> |
             <NuxtLink to="/terms">Terms Of Service</NuxtLink> |
             <NuxtLink to="/privacy">Privacy Policy</NuxtLink> |
-
             <NuxtLink to="/cookies">Cookie Policy</NuxtLink> |
-
+            <NuxtLink to="/freechat">Public Profiles</NuxtLink> |
             <a href="#" class="termly-display-preferences">
               Consent Preferences
-            </a> | 
+            </a>
+            |
             <!-- GitHub Icon -->
-            <a href="https://github.com/jefhild/NuxtChat" target="_blank" rel="noopener">
+            <a
+              href="https://github.com/jefhild/NuxtChat"
+              target="_blank"
+              rel="noopener"
+            >
               <v-icon>mdi-github</v-icon>
-            </a> 
+            </a>
           </v-card-text>
         </v-card>
       </v-col>

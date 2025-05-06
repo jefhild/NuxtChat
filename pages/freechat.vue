@@ -1,6 +1,9 @@
 <template>
   <v-container fluid>
     <HomeRow1 />
+    <div class="d-flex justify-center mt-4">
+      <h1>Popular Public Profiles</h1>
+    </div>
     <FreeChat />
   </v-container>
 </template>
@@ -28,3 +31,10 @@ useSeoMeta({
   twitterImage: "https://imchatty.com/images/article-image.webp",
 });
 </script>
+
+<style scoped>
+h1 {
+  font-weight: 500;
+  font-size: 1.6em;
+}
+</style>

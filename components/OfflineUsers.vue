@@ -69,7 +69,7 @@ const selectUser = (user) => {
   border-left: 10px solid #1976d2;
   border-radius: 10px;
   transition: background-color 0.3s ease;
-  padding-bottom: 10px;
+  padding-bottom: 2px;
 }
 
 .v-list-item {

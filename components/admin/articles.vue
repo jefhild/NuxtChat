@@ -157,9 +157,9 @@ onMounted(async () =>
 {
 	articles.value = await getAllArticlesWithTags(false);
 	console.log("articles", articles.value);
-	loadingArticles.value = false;
 	categories.value = await getAllCategories() || [];
 	tags.value = await getAllTags() || [];
+	loadingArticles.value = false;
 });
 
 const filteredArticles = computed(() =>
