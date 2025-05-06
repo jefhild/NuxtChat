@@ -1,23 +1,19 @@
 <template>
   <v-container>
-    <h2 class="text-h5 font-weight-medium mb-4">Popular Real Profiles</h2>
-
+    <h2 class="text-h5 font-weight-light mb-4">Popular Real Profiles</h2>
     <ProfileGrid :profiles="popularProfiles" />
   </v-container>
 </template>
 
-
 <script setup>
-
 const popularProfiles = ref([]);
 const profileLimit = 30;
-
 const { getMostPopularProfiles } = useDb();
 
 // Fetch data during SSR
 const data = await getMostPopularProfiles(profileLimit);
 
-if (data){
+if (data) {
   popularProfiles.value = data;
   // console.log("popularProfiles", popularProfiles.value);
 }
