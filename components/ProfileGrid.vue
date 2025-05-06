@@ -10,53 +10,59 @@
       lg="3"
       class="d-flex justify-center pa-4"
     >
-      <v-card
-        :class="[
-          'profile-card text-center d-flex flex-column justify-end',
-          profile.marked_for_deletion_at ? 'marked-for-deletion' : '',
-        ]"
-        elevation="2"
-        :style="{
-          backgroundImage: `url(${
-            profile.avatar_url || '/default-avatar.png'
-          })`,
-        }"
+      <NuxtLink
+        :to="`/profiles/${profile.gender?.toLowerCase()}/${
+          profile.displayname
+        }`"
+        class="text-decoration-none"
+        style="width: 100%"
       >
-        <div class="overlay">
-          <v-row class="d-flex justify-center align-center">
-            <NuxtLink
-              :to="`/profiles/${profile.gender?.toLowerCase()}/${
-                profile.displayname
-              }`"
-              class="font-weight-bold text-white mb-3 clickable-link"
-            >
-              {{ profile.displayname }}
-            </NuxtLink>
-          </v-row>
-          <v-row class="d-flex justify-center align-center">
-            <div v-if="profile.marked_for_deletion_at" class="mb-5 text-white">
-              <div>
-                {{ timeLeft(refreshTime) }}
+        <v-card
+          :class="[
+            'profile-card text-center d-flex flex-column justify-end',
+            profile.marked_for_deletion_at ? 'marked-for-deletion' : '',
+          ]"
+          elevation="2"
+          :style="{
+            backgroundImage: `url(${
+              profile.avatar_url || '/default-avatar.png'
+            })`,
+          }"
+        >
+          <div class="overlay">
+            <v-row class="d-flex justify-center align-center">
+              <div class="font-weight-bold text-white mb-3">
+                {{ profile.displayname }}
               </div>
-              <v-btn
-                size="x-small"
-                color="green"
-                @click.stop="unmarkDeletion(profile)"
-              >
-                Undo Deletion
-              </v-btn>
-            </div>
+            </v-row>
 
-            <v-btn
-              v-if="allowDelete && !profile.marked_for_deletion_at"
-              color="red"
-              class="overlay mb-5"
-              @click.stop="openDeleteDialog(profile)"
-              >Delete</v-btn
-            >
-          </v-row>
-        </div>
-      </v-card>
+            <v-row class="d-flex justify-center align-center">
+              <div
+                v-if="profile.marked_for_deletion_at"
+                class="mb-5 text-white"
+              >
+                <div>{{ timeLeft(refreshTime) }}</div>
+                <v-btn
+                  size="x-small"
+                  color="green"
+                  @click.stop.prevent="unmarkDeletion(profile)"
+                >
+                  Undo Deletion
+                </v-btn>
+              </div>
+
+              <v-btn
+                v-if="allowDelete && !profile.marked_for_deletion_at"
+                color="red"
+                class="overlay mb-5"
+                @click.stop.prevent="openDeleteDialog(profile)"
+              >
+                Delete
+              </v-btn>
+            </v-row>
+          </div>
+        </v-card>
+      </NuxtLink>
     </v-col>
   </v-row>
 
