@@ -259,7 +259,9 @@ export const useDb = () => {
     userIds = [],
     genderId,
     minAge,
-    maxAge,
+    maxAge, 
+    is_anonymous,
+    interests,
     userId
   ) => {
     if (!userIds.length) return [];
@@ -272,6 +274,8 @@ export const useDb = () => {
         gender_filter: genderId,
         min_age: minAge,
         max_age: maxAge,
+        is_anonymous: is_anonymous,
+        looking_for_ids: interests,
       }
     );
 
@@ -427,13 +431,15 @@ export const useDb = () => {
     return { data, error };
   };
 
-  const getActiveChats = async (userId, genderId, minAge, maxAge) =>
+  const getActiveChats = async (userId, genderId, minAge, maxAge, is_anonymous, interests) =>
   {
     const { data, error } = await supabase.rpc("fetch_filtered_active_chats", {
       logged_in_user_id: userId,
       gender_filter: genderId,
       min_age: minAge,
       max_age: maxAge,
+      is_anonymous: is_anonymous,
+      looking_for_ids: interests,
     });
 
     if (error)

@@ -95,6 +95,8 @@ const toggleUserProfileDialog = () => {
 watch(
   () => props.selectedUser,
   async (newSelectedUser) => {
+    // console.log("Mounted ChatHeader component, selectedUser:", props.selectedUser);
+
     if (newSelectedUser === null) {
       console.log("No user selected");
       hasUpvoted.value = false;

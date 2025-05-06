@@ -75,7 +75,7 @@ export const usePresenceChannel = (userId, favoriteProfiles) =>
 			const { updateLastActive } = useDb();
 			await updateLastActive(key);
 
-			console.log("favorites profiles: ", favoriteProfiles.value);
+			// console.log("favorites profiles: ", favoriteProfiles.value);
 
 			
 			const isFavoriteOnline = favoriteProfiles.value.some(profile => profile.user_id === key);

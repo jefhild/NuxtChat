@@ -6,29 +6,19 @@
           <v-btn variant="text" color="green" v-bind="props">
             Filter
 
-            <v-badge
-              v-if="
+            <v-badge v-if="
                 selectedGender !== null ||
                 selectedAge[0] !== 18 ||
                 selectedAge[1] !== 100
-              "
-              color="red"
-              dot
-              overlap
-              class="exclamation-badge"
-            >
+              " color="red" dot overlap class="exclamation-badge">
             </v-badge>
           </v-btn>
         </template>
 
         <v-card min-width="350">
           <v-list>
-            <v-list-item
-              v-if="userProfile"
-              :prepend-avatar="userProfile.avatar_url"
-              :subtitle="userProfile.tagline"
-              :title="userProfile.displayname"
-            >
+            <v-list-item v-if="userProfile" :prepend-avatar="userProfile.avatar_url" :subtitle="userProfile.tagline"
+              :title="userProfile.displayname">
             </v-list-item>
           </v-list>
           <v-list>
@@ -41,58 +31,70 @@
 
           <v-list>
             <v-list-item>
-              <v-select
-                v-model="selectedGender"
-                :items="genders"
-                item-title="text"
-                item-value="value"
-                label="Gender"
-                variant="underlined"
-                @change="applyFilters"
-              ></v-select>
+              <v-select v-model="selectedGender" :items="genders" item-title="text" item-value="value" label="Gender"
+                variant="underlined" @change="applyFilters"></v-select>
             </v-list-item>
           </v-list>
 
           <v-list>
             <v-list-item>
               <div class="slider-label mb-2">Age Range</div>
-              <v-range-slider
-                v-model="selectedAge"
-                :min="18"
-                :max="80"
-                :step="1"
-                hide-details
-                color="primary"
-                track-color="grey lighten-2"
-                @change="applyFilters"
-              >
+              <v-range-slider v-model="selectedAge" :min="18" :max="80" :step="1" hide-details color="primary"
+                track-color="grey lighten-2" @change="applyFilters">
                 <!-- Display value on the left (prepend slot) -->
                 <template v-slot:prepend>
-                  <span
-                    style="
+                  <span style="
                       width: 70px;
                       display: inline-block;
                       text-align: center;
-                    "
-                  >
+                    ">
                     {{ selectedAge[0] }}
                   </span>
                 </template>
                 <!-- Display value on the right (append slot) -->
                 <template v-slot:append>
-                  <span
-                    style="
+                  <span style="
                       width: 70px;
                       display: inline-block;
                       text-align: center;
-                    "
-                  >
+                    ">
                     {{ selectedAge[1] }}
                   </span>
                 </template>
               </v-range-slider>
             </v-list-item>
           </v-list>
+
+          <v-list>
+            <v-list-item>
+              <v-select v-model="selectedAnonymous" :items="anonymity" label="Anonymity" item-title="text"
+                item-value="value" variant="underlined" @change="applyFilters"></v-select>
+            </v-list-item>
+          </v-list>
+
+          <!-- interests -->
+          <v-list>
+            <v-list-item>
+              <v-select v-model="selectedInterests" :items="interests" item-title="name" item-value="id"
+                label="Interests" multiple chips closable-chips variant="underlined" @change="applyFilters">
+                <template #selection="{ item, index }">
+                  <v-chip v-if="item" :key="index" :color="item.raw.color" size="small" class="ma-1">
+                    <v-icon left size="small">{{ item.raw.icon }}</v-icon>
+                    {{ item.raw.name }}
+                  </v-chip>
+                </template>
+
+                <template #item="{ item, props }">
+                  <v-list-item v-bind="props">
+                    <template #prepend>
+                      <v-icon size="small" :color="item.raw.color">{{ item.raw.icon }}</v-icon>
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-select>
+            </v-list-item>
+          </v-list>
+
           <v-card-actions>
             <v-spacer></v-spacer>
 
@@ -104,9 +106,7 @@
         </v-card>
       </v-menu>
     </v-col>
-    <v-col class="text-caption text-medium-emphasis mt-2"
-      >{{ rowCount }} users online</v-col
-    >
+    <v-col class="text-caption text-medium-emphasis mt-2">{{ rowCount }} users online</v-col>
   </v-row>
 </template>
 
@@ -114,6 +114,9 @@
 
 
 import { usePresenceStore } from '@/stores/presenceStore';
+
+const { getInterests } = useDb();
+
 const presenceStore = usePresenceStore();
 const rowCount = ref(presenceStore.onlineUsers.length); // Initialize with the current online users count
 watch(() => presenceStore.userIdsOnly, (newVal) =>
@@ -123,6 +126,7 @@ watch(() => presenceStore.userIdsOnly, (newVal) =>
 const menu = ref(false);
 const selectedGender = ref(null);
 const selectedAge = ref([18, 100]); // Default age range
+const selectedAnonymous = ref(null); // Default to null (All)
 
 const props = defineProps({
   userProfile: {
@@ -143,16 +147,31 @@ const genders = [
   { text: "All", value: null },
 ];
 
+const anonymity = [
+  { text: "All", value: null },
+  { text: "Only Registered Users", value: false },
+  { text: "Only Anonymous Users", value: true },
+];
+
+const interests = ref([]);
+const selectedInterests = ref([]);
+
 const applyFilters = () => {
   console.log(
     "Applying filters with gender:",
     selectedGender.value,
     "and age range:",
-    selectedAge.value
+    selectedAge.value,
+    "and anonymity:",
+    selectedAnonymous.value,
+    "and interests:",
+    selectedInterests.value
   );
   emit("filter-changed", {
     gender_id: selectedGender.value,
     age_range: selectedAge.value,
+    is_anonymous: selectedAnonymous.value,
+    interests: selectedInterests.value,
   });
 };
 const handleToggleUsers = () => {
@@ -165,6 +184,12 @@ const saveFilters = () => {
   menu.value = false; // Close the menu
 };
 
+onMounted(async () =>
+{
+  const {data} = await getInterests();
+  interests.value = data;
+  selectedInterests.value = interests.value.map((interest) => interest.id); // Select all interests by default
+});
 </script>
 
 <style scoped>

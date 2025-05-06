@@ -10,7 +10,7 @@ export function useFetchOfflineUsers(user) {
 
   // Method to fetch online users
   const fetchOfflineUsers = async (filters, arrayOfOnlineUsersIds, userId) => {
-    const { gender_id, age_range } = filters;
+    const { gender_id, age_range, is_anonymous, interests } = filters;
     // console.log("Fetching online users with filters:", filters); // Debug log
     loading.value = true; // Set loading state to true
 
@@ -26,7 +26,7 @@ export function useFetchOfflineUsers(user) {
     //Remove online users from the registered users = offline users
     const arrayOfOfflineUserIds = allRegisteredUserIds.filter(userId => !arrayOfOnlineUsersIds.includes(userId));
 
-    const { data, error: errorDb } = await getUsersFromIds(arrayOfOfflineUserIds, gender_id, min_age, max_age, userId);
+    const { data, errorDb } = await getUsersFromIds(arrayOfOfflineUserIds, gender_id, min_age, max_age, is_anonymous, interests, userId);
 
     loading.value = false; // Reset loading state after the fetch
 
