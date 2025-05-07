@@ -33,7 +33,7 @@
 			</v-col>
 		</v-card-text>
 	</v-card>
-	<v-card class="pa-6" elevation="3">
+	<v-card class="pa-6 mt-5" elevation="3">
 		<v-card-title>Create New Article</v-card-title>
 		<v-card-text>
 			<v-form @submit.prevent="handleSubmit" ref="articleForm">

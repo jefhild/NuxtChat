@@ -292,6 +292,22 @@ export const useDb = () => {
     return { data, error };
   };
 
+  const getUserDisplayNameFromId = async (userId) => {
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("displayname")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching display name:", error);
+    }
+
+    return data?.displayname;
+
+  };
+
   const getUserFromName = async (displayName) => {
     const { data, error } = await supabase
       .from("profiles")
@@ -865,7 +881,18 @@ export const useDb = () => {
     return data;
   };
 
+  const getAllReports = async () => {
+    const { data, error } = await supabase
+      .from("reports")
+      .select("*")
+      .order("created_at", { ascending: false });
 
+    if (error) {
+      console.error("Error fetching reports:", error);
+    }
+
+    return data;
+  };
 
 
   /*------------------*/
@@ -1367,7 +1394,26 @@ export const useDb = () => {
       console.error("Error inserting tag:", error);
     }
     return error;
-  }
+  };
+
+  const insertReport = async(currentUserId, reportedUserId, categories, reason) => {
+    const { error } = await supabase
+      .from("reports")
+      .insert({
+        reporter_id: currentUserId,
+        reported_user_id: reportedUserId,
+        categories, 
+        reason,
+      });
+
+    if (error)
+    {
+      console.error("Error submitting report:", error);
+    } else
+    {
+      console.log("Report submitted successfully");
+    }
+  };
 
   /*------------------*/
   /* Delete functions */
@@ -1444,6 +1490,20 @@ const { data, error } = await supabase
 
   return { data, error };
 };
+
+  const deleteReport = async (reportId) => {
+    const { error } = await supabase
+      .from("reports")
+      .delete()
+      .eq("id", reportId);
+
+    if (error) {
+      console.error("Error deleting report:", error);
+    } else {
+      console.log("Report deleted successfully");
+    }
+  };
+
 
   /*-----------------*/
   /* Other Functions */
@@ -1741,6 +1801,7 @@ const { data, error } = await supabase
     getInterestsIcons,
     getDescriptions,
     getUsersFromIds,
+    getUserDisplayNameFromId,
     getUserFromName,
     getUserProfileFromId,
     getUserProfileFunctionFromId,
@@ -1778,6 +1839,7 @@ const { data, error } = await supabase
     getTagsByArticle,
     getArticlesbyCategorySlug,
     getArticlesByType,
+    getAllReports,
 
     updateUsername,
     updateProvider,
@@ -1810,12 +1872,14 @@ const { data, error } = await supabase
     insertArticle,
     insertCategory,
     insertTag,
+    insertReport,
 
     deleteChatWithUser,
     deleteFavorite,
     deleteUserInterest,
     unblockUser,
     deleteUpvoteFromUser,
+    deleteReport,
 
     checkDisplayNameExists,
     hasInterests,
