@@ -166,6 +166,7 @@ useHead(() => ({
       href: "https://imchatty.com",
     },
   ]
+
 }));
 
 useSeoMeta({
