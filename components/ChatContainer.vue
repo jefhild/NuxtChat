@@ -10,38 +10,19 @@
       > -->
 
       <v-col>
-        <FilterMenu2
-          :userProfile="userProfile"
-          :showAIUsers="showAIUsers"
-          @toggle-users="toggleUsers"
-          @filter-changed="updateFilters"
-        /> </v-col
-    ></v-row>
+        <FilterMenu2 :userProfile="userProfile" :showAIUsers="showAIUsers" @toggle-users="toggleUsers"
+          @filter-changed="updateFilters" />
+      </v-col></v-row>
     <v-row>
       <!-- Left Column: Online Users -->
       <v-col cols="12" md="4" class="pa-2">
-        <Users
-          v-if="!showAIUsers"
-          @user-selected="selectUser"
-          :onlineUsers="arrayOnlineUsers"
-          :offlineUsers="arrayOfflineUsers"
-          :activeChats="activeChats"
-          :userProfile="userProfile"
-          :updateFilters="updateFilters"
-          :selected-user-id="selectedUser?.user_id"
-          :is-tab-visible="isTabVisible"
-          @refresh-data="refreshData"
-          @unread-count="updateTabTitle"
-        />
-        <UsersAI
-          v-if="showAIUsers"
-          @user-selected="selectUser"
-          :aiUsers="aiUsers"
-          :activeChats="activeChats"
-          :userProfile="userProfile"
-          :updateFilters="updateFilters"
-          @refresh-data="refreshData"
-        />
+        <Users v-if="!showAIUsers" @user-selected="selectUser" :onlineUsers="arrayOnlineUsers"
+          :offlineUsers="arrayOfflineUsers" :activeChats="activeChats" :userProfile="userProfile"
+          :updateFilters="updateFilters" :selected-user-id="selectedUser?.user_id" :is-tab-visible="isTabVisible"
+          @refresh-data="refreshData" @unread-count="updateTabTitle" />
+        <UsersAI v-if="showAIUsers" @user-selected="selectUser" :aiUsers="aiUsers" :activeChats="activeChats"
+          :userProfile="userProfile" :selected-user-id="selectedUser?.user_id" :is-tab-visible="isTabVisible"
+          :updateFilters="updateFilters" @refresh-data="refreshData" @unread-count="updateTabTitle" />
       </v-col>
 
       <!-- Main Chat Area -->
@@ -50,17 +31,17 @@
 
         <v-card class="flex-grow-1">
           <v-card-text class="chat-messages" ref="chatContainer">
-            <div
-              v-for="(message, index) in messages"
-              :key="message.id"
-              :class="message.sender_id === user.id ? 'sent' : 'received'"
-              :ref="
+            <div v-for="(message, index) in messages" :key="message.id"
+              :class="message.sender_id === user.id ? 'sent' : 'received'" :ref="
                 message.id === messages[messages.length - 1].id
                   ? 'lastMessage'
                   : null
-              "
-            >
+              ">
               <Message :message="message" :user="user" />
+            </div>
+            <!-- Typing Indicator -->
+            <div v-if="isTyping" class="typing-indicator bot-message">
+              <div class="dots"><span></span><span></span><span></span></div>
             </div>
           </v-card-text>
         </v-card>
@@ -80,28 +61,16 @@
                 dense
                 :readonly="!selectedUser"
               ></v-text-field> -->
-              <v-text-field
-                v-model="newMessage"
-                :label="
+              <v-text-field v-model="newMessage" :label="
                   selectedUser
                     ? selectedUser.is_ai
                       ? 'Chat with a ' + selectedUser.displayname + ' AI'
                       : 'Message ' + selectedUser.displayname
                     : 'Select a user to chat with'
-                "
-                variant="underlined"
-                dense
-                :readonly="!selectedUser"
-              ></v-text-field>
+                " variant="underlined" dense :readonly="!selectedUser"></v-text-field>
             </v-col>
             <v-col cols="2">
-              <v-btn
-                type="submit"
-                :disabled="!selectedUser"
-                color="primary"
-                class="mt-3 ml-3"
-                >Send</v-btn
-              >
+              <v-btn type="submit" :disabled="!selectedUser" color="primary" class="mt-3 ml-3">Send</v-btn>
             </v-col>
           </v-row>
         </v-form>
@@ -149,6 +118,7 @@ const selectedUser = ref(null);
 const chatContainer = ref(null);
 const messages = ref([]); // Reactive state
 const aiUsers = ref([]);
+const isTyping = ref(false); 
 const activeChats = ref([]);
 const filters = ref({ gender_id: null });
 let realtimeMessages = null;
@@ -270,9 +240,9 @@ const handleRealtimeMessages = async (payload) =>
   if (!isMessageToCurrentUser) return;
 
   const alreadyExists = messages.value.some((msg) => msg.id === newRow.id);
+  console.log("Already exists:", alreadyExists, "isMessageToCurrentUser:", isMessageToCurrentUser, "Sender ID:", newRow.sender_id, "Receiver ID:", newRow.receiver_id);
   if (!alreadyExists)
   {
-
     const isFromSelectedUser = newRow.sender_id === selectedUser.value?.user_id;
     const isVisible = document.visibilityState === "visible";
 
@@ -307,6 +277,7 @@ const handleRealtimeMessages = async (payload) =>
   {
     lastUnreadSenderId.value = newRow.sender_id;
   }
+  isTyping.value = false;
 };
 
 
@@ -480,6 +451,7 @@ const sendMessage = async () => {
 
         // If the selected user is an AI, generate a response by calling the local API
         if (isAI) {
+          isTyping.value = true;
           const aiResponse = await fetchAiResponse(userMessage, selectedUser);
           // console.log("fetching response from AI:", aiResponse);
           if (aiResponse) {
@@ -490,19 +462,6 @@ const sendMessage = async () => {
               aiResponse
             );
             if (aiData && aiData.length > 0) {
-              console.log("AI response stored successfully:", aiData);
-
-              // Push the AI response to the messages array for immediate UI update
-              messages.value.push({
-                id: aiData[0].id,
-                sender_id: aiData[0].sender_id,
-                receiver_id: aiData[0].receiver_id,
-                content: aiData[0].content,
-                created_at: aiData[0].created_at,
-                read: aiData[0].read,
-                sender: selectedUser.value.displayname, // Assuming AI user's displayname is needed
-              });
-
               scrollToBottom(); // Ensure the chat scrolls to the bottom when a new message is added
             }
           }
@@ -704,5 +663,53 @@ small {
   margin-top: 5px;
   font-size: 0.8em;
   color: gray;
+}
+
+
+/* Typing Indicator */ .typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  width: fit-content;
+  margin-left: auto;
+}
+
+.dots span {
+  width: 8px;
+  height: 8px;
+  margin: 0 2px;
+  background: black;
+  border-radius: 50%;
+  display: inline-block;
+  animation: blink 1.5s infinite ease-in-out both;
+}
+
+.dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.3;
+  }
 }
 </style>
