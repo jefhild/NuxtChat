@@ -17,7 +17,7 @@ export function useFetchAiUsers(user) {
 
     // Set default values for min_age and max_age if they are undefined
     const min_age = age_range && age_range[0] !== undefined ? age_range[0] : 18; // Default min_age to 18
-    const max_age = age_range && age_range[1] !== undefined ? age_range[1] : 80; // Default max_age to 100
+    const max_age = age_range && age_range[1] !== undefined ? age_range[1] : 100; // Default max_age to 100
 
     // console.log("Age Range: ", min_age, max_age); // Debug log
 

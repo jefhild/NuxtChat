@@ -23,7 +23,7 @@
                 {{ user.displayname }}
               </v-list-item-title>
               <v-list-item-subtitle>
-                {{ user.emoji }} ( {{ user.age }} )
+                ({{ user.age }}) {{ user.emoji }}
                 {{ user.state_name ?? "" }}
               </v-list-item-subtitle>
             </v-list-item>

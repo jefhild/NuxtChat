@@ -444,6 +444,8 @@ export const useDb = () => {
       is_ai_filter: true,
     });
 
+    console.log("Fetched AI profiles:", data, userId, genderId, minAge, maxAge); // Debug log
+
     if (error) {
       console.error("Error fetching ai profiles:", error);
     }
@@ -1346,7 +1348,7 @@ export const useDb = () => {
       tag_id: tagId,
     }));
 
-    console.log("isnerting tags:", tagInserts);
+    console.log("inserting tags:", tagInserts);
 
     const { error: tagInsertError } = await supabase
       .from("article_tags")
