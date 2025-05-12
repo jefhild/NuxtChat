@@ -31,7 +31,8 @@ useHead({
       async: true,
     },
   ],
-     title: "Free Anonymous Chat",
+  title: "Free Anonymous Chat",
+  htmlAttrs: { lang: "en" },
 });
 
 watch(
@@ -43,7 +44,7 @@ watch(
       await fetchFavorites(); // wait for favorites to load
 
       // console.log("Joining presence channel for user ID:", userId, favoriteProfiles.value);
-      usePresenceChannel(userId, favoriteProfiles); // track the presence 
+      usePresenceChannel(userId, favoriteProfiles); // track the presence
     }
   },
   { immediate: true }
