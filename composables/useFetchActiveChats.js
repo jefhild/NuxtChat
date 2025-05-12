@@ -8,9 +8,9 @@ export function useFetchActiveChats(user) {
 
   // Method to fetch active chats
   const fetchActiveChats = async (filters) => {
-    // console.log("Fetching online users with filters:", filters); // Debug log
+    // console.log("Fetching active users with filters:", filters); // Debug log
 
-    const { gender_id, age_range } = filters;
+    const { gender_id, age_range, is_anonymous, interests, country_id, status_id } = filters;
     // console.log("User ID:", user.value?.id); // Debug log
 
     // Set default values for min_age and max_age if they are undefined
@@ -18,7 +18,7 @@ export function useFetchActiveChats(user) {
     const max_age = age_range && age_range[1] !== undefined ? age_range[1] : 80; // Default max_age to 100
     // loading.value = true; // Set loading state to true
 
-    const data = await getActiveChats(user.value?.id, gender_id, min_age, max_age);
+    const data = await getActiveChats(user.value?.id, gender_id, min_age, max_age, is_anonymous, interests, country_id, status_id);
 
     if (data) {
       // Sort active chats so that users with unread messages are at the top

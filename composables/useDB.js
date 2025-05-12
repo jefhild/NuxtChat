@@ -259,7 +259,11 @@ export const useDb = () => {
     userIds = [],
     genderId,
     minAge,
-    maxAge,
+    maxAge, 
+    is_anonymous,
+    interests,
+    country_id, 
+    status_id,
     userId
   ) => {
     if (!userIds.length) return [];
@@ -272,6 +276,10 @@ export const useDb = () => {
         gender_filter: genderId,
         min_age: minAge,
         max_age: maxAge,
+        is_anonymous: is_anonymous,
+        looking_for_ids: interests,
+        p_country_id: country_id,
+        p_status_id: status_id,
       }
     );
 
@@ -282,6 +290,22 @@ export const useDb = () => {
 
     // console.log("Fetched users from IDs:", data);
     return { data, error };
+  };
+
+  const getUserDisplayNameFromId = async (userId) => {
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("displayname")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching display name:", error);
+    }
+
+    return data?.displayname;
+
   };
 
   const getUserFromName = async (displayName) => {
@@ -427,13 +451,17 @@ export const useDb = () => {
     return { data, error };
   };
 
-  const getActiveChats = async (userId, genderId, minAge, maxAge) =>
+  const getActiveChats = async (userId, genderId, minAge, maxAge, is_anonymous, interests, country_id, status_id) =>
   {
     const { data, error } = await supabase.rpc("fetch_filtered_active_chats", {
       logged_in_user_id: userId,
       gender_filter: genderId,
       min_age: minAge,
       max_age: maxAge,
+      is_anonymous: is_anonymous,
+      looking_for_ids: interests,
+      p_country_id: country_id,
+      p_status_id: status_id,
     });
 
     if (error)
@@ -853,7 +881,18 @@ export const useDb = () => {
     return data;
   };
 
+  const getAllReports = async () => {
+    const { data, error } = await supabase
+      .from("reports")
+      .select("*")
+      .order("created_at", { ascending: false });
 
+    if (error) {
+      console.error("Error fetching reports:", error);
+    }
+
+    return data;
+  };
 
 
   /*------------------*/
@@ -1355,7 +1394,26 @@ export const useDb = () => {
       console.error("Error inserting tag:", error);
     }
     return error;
-  }
+  };
+
+  const insertReport = async(currentUserId, reportedUserId, categories, reason) => {
+    const { error } = await supabase
+      .from("reports")
+      .insert({
+        reporter_id: currentUserId,
+        reported_user_id: reportedUserId,
+        categories, 
+        reason,
+      });
+
+    if (error)
+    {
+      console.error("Error submitting report:", error);
+    } else
+    {
+      console.log("Report submitted successfully");
+    }
+  };
 
   /*------------------*/
   /* Delete functions */
@@ -1432,6 +1490,20 @@ const { data, error } = await supabase
 
   return { data, error };
 };
+
+  const deleteReport = async (reportId) => {
+    const { error } = await supabase
+      .from("reports")
+      .delete()
+      .eq("id", reportId);
+
+    if (error) {
+      console.error("Error deleting report:", error);
+    } else {
+      console.log("Report deleted successfully");
+    }
+  };
+
 
   /*-----------------*/
   /* Other Functions */
@@ -1729,6 +1801,7 @@ const { data, error } = await supabase
     getInterestsIcons,
     getDescriptions,
     getUsersFromIds,
+    getUserDisplayNameFromId,
     getUserFromName,
     getUserProfileFromId,
     getUserProfileFunctionFromId,
@@ -1766,6 +1839,7 @@ const { data, error } = await supabase
     getTagsByArticle,
     getArticlesbyCategorySlug,
     getArticlesByType,
+    getAllReports,
 
     updateUsername,
     updateProvider,
@@ -1798,12 +1872,14 @@ const { data, error } = await supabase
     insertArticle,
     insertCategory,
     insertTag,
+    insertReport,
 
     deleteChatWithUser,
     deleteFavorite,
     deleteUserInterest,
     unblockUser,
     deleteUpvoteFromUser,
+    deleteReport,
 
     checkDisplayNameExists,
     hasInterests,
