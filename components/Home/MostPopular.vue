@@ -242,12 +242,13 @@ const popularProfiles = ref([]);
 const profileLimit = 5;
 const { getMostPopularProfiles } = useDb();
 
-// Fetch data during SSR
-const data = getMostPopularProfiles(profileLimit);
-
-if (data) {
-  popularProfiles.value = data;
-}
+onMounted(async () => {
+  // Fetch data on component mount
+  const data = await getMostPopularProfiles(profileLimit);
+  if (data) {
+    popularProfiles.value = data;
+  }
+});
 
 // Function to format the 'created' column
 const formatCreated = (created) => {

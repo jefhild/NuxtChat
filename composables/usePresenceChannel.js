@@ -1,15 +1,30 @@
 import { usePresenceStore } from '@/stores/presenceStore';
-import { has } from 'vuetify/lib/util/helpers.mjs';
 
 export const usePresenceChannel = (userId, favoriteProfiles) =>
 {
 	const supabase = useSupabaseClient();
 	const presenceStore = usePresenceStore();
 	
-	// know when the user has fullysynced to not give
-	// him the notification that one of his favorites is online
-	// when they have been online for a while already
-	const hasFullySynced = ref(false);
+	const OFFLINE_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
+	const lastSeenKey = 'presence:lastSeenTimestamps';
+
+	const getLastSeenTimestamps = () =>
+		JSON.parse(localStorage.getItem(lastSeenKey) || '{}');
+
+	const setLastSeenTimestamp = (userId) =>
+	{
+		const seen = getLastSeenTimestamps();
+		seen[userId] = new Date().toISOString();
+		localStorage.setItem(lastSeenKey, JSON.stringify(seen));
+	};
+
+	const getTimeSinceLastSeen = (userId) =>
+	{
+		const seen = getLastSeenTimestamps();
+		const lastSeen = seen[userId] ? new Date(seen[userId]) : null;
+		if (!lastSeen) return Infinity; // Treat as never seen
+		return Date.now() - lastSeen.getTime();
+	};
 
 	const channel = supabase.channel("presence:global", {
 		config: {
@@ -45,7 +60,6 @@ export const usePresenceChannel = (userId, favoriteProfiles) =>
 				{
 					presenceStore.presenceRefs[userId] = metas[0]?.presence_ref;
 				});
-				hasFullySynced.value = true;
 			}
 			
 		})
@@ -53,7 +67,7 @@ export const usePresenceChannel = (userId, favoriteProfiles) =>
 		{
 			const meta = newPresences[0];
 			const status = meta?.status || 'online';
-				const presenceRef = meta?.presence_ref;
+			const presenceRef = meta?.presence_ref;
 
 			presenceStore.addOnlineUser({ userId: key, status }, presenceRef);
 			// console.log("presence join", key, presenceRef, status);
@@ -61,14 +75,14 @@ export const usePresenceChannel = (userId, favoriteProfiles) =>
 			const { updateLastActive } = useDb();
 			await updateLastActive(key);
 
-			if (!hasFullySynced.value) return;
-
 			// console.log("favorites profiles: ", favoriteProfiles.value);
+
 			
 			const isFavoriteOnline = favoriteProfiles.value.some(profile => profile.user_id === key);
-			// console.log("isFavoriteOnline: ", isFavoriteOnline);
+			const wasOfflineLongEnough = getTimeSinceLastSeen(key) > OFFLINE_THRESHOLD_MS;
 
-			if (isFavoriteOnline)
+			// console.log("isFavoriteOnline: ", isFavoriteOnline);
+			if (isFavoriteOnline && wasOfflineLongEnough)
 			{
 				const favoritedProfile = favoriteProfiles.value.find(p => p.user_id === key);
 				if (favoritedProfile)
@@ -81,6 +95,7 @@ export const usePresenceChannel = (userId, favoriteProfiles) =>
 					);
 				}
 			}
+			
 		})
 		.on("presence", { event: "leave" }, async  ({ key, leftPresences }) =>
 		{
@@ -91,6 +106,7 @@ export const usePresenceChannel = (userId, favoriteProfiles) =>
 				return;
 			}
 
+			setLastSeenTimestamp(key); // the user left, so we set the last seen timestamp
 			await presenceStore.removeOnlineUser(key);
 		})
 		.subscribe(async (status) =>

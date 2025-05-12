@@ -3,9 +3,10 @@
     <v-card-title>
       <v-row no-gutters class="align-center">
         <v-col :class="getGenderColorClass(selectedUser.gender_id)">
-          
 
-          <NuxtLink v-if="genderName" @click="toggleUserProfileDialog" class="clickable-link d-inline-flex align-center" >
+
+          <NuxtLink v-if="genderName" @click="toggleUserProfileDialog"
+            class="clickable-link d-inline-flex align-center">
             <v-icon v-if="selectedUser" :color="getGenderColor(selectedUser.gender_id)"
               :icon="getAvatarIcon(selectedUser.gender_id)" size="small"></v-icon>
             <v-avatar class="mr-3" :image="getAvatar(selectedUser.avatar_url, selectedUser.gender_id)"></v-avatar>
@@ -18,7 +19,7 @@
           selectedUser ? selectedUser.tagline : "..."
           }}</v-col>
         <ChatHeaderActions2 v-if="selectedUser" :selectedUser="selectedUser" :currentUser="currentUser" @upvote="upvote"
-          @downvote="downvote" @toggleFavorite="toggleFavorite" @toggleBlockUser="toggleBlockUser" />
+          @downvote="downvote" @toggleFavorite="toggleFavorite" @toggleBlockUser="toggleBlockUser" @toggleReportDialog="toggleReportDialog" />
       </v-row>
     </v-card-title>
 
@@ -38,6 +39,8 @@
       <PublicUserProfile :selectedUserDisplayName="selectedUser?.displayname" />
     </v-card>
   </v-dialog>
+
+  <ReportUserModal v-model="reportDialog" :reportedUserId="selectedUser?.user_id" @submit-report="handleReport" />
 </template>
 
 <script setup >
@@ -50,9 +53,8 @@ import { useAuthStore } from "@/stores/authStore";
 //   getGenderColorClass,
 // } from "@/utils/userUtils";
 import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
-import { bookResolver } from "nuxt-schema-org/schema";
 
-const { getUserProfileFromId, getGenderFromId, insertBlockedUser, insertFavorite, unblockUser, deleteFavorite, upvoteUserProfile, downvoteUserProfile} = useDb();
+const { getUserProfileFromId, getGenderFromId, insertBlockedUser, insertFavorite, unblockUser, deleteFavorite, upvoteUserProfile, downvoteUserProfile, insertReport } = useDb();
 
 const authStore = useAuthStore();
 const user = ref(authStore.user);
@@ -88,13 +90,15 @@ const genderName = ref("");
 const userProfileDialog = ref(false);
 
 const toggleUserProfileDialog = () => {
-  console.log("Toggling user profile dialog");
+  // console.log("Toggling user profile dialog");
   userProfileDialog.value = !userProfileDialog.value;
 };
 
 watch(
   () => props.selectedUser,
   async (newSelectedUser) => {
+    // console.log("Mounted ChatHeader component, selectedUser:", props.selectedUser);
+
     if (newSelectedUser === null) {
       console.log("No user selected");
       hasUpvoted.value = false;
@@ -189,6 +193,25 @@ const downvote = async (targetUserId) => {
       hasDownvoted.value = true; // Mark as downvoted locally
     }
   }
+};
+
+const reportDialog = ref(false);
+
+const toggleReportDialog = () => {
+  // console.log("Toggling report dialog");
+  reportDialog.value = !reportDialog.value;
+};
+
+const handleReport = async ({ reportedUserId, categories, reason }) =>
+{
+  // console.log("Reported User ID:", reportedUserId, "Categories:", categories, "Reason:", reason);
+  await insertReport(
+    props.currentUser.id,
+    reportedUserId,
+    categories,
+    reason
+  );
+  
 };
 
 
