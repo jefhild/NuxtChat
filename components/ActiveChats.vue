@@ -22,13 +22,13 @@
 
               </template>
               <v-list-item-title :class="getGenderColorClass(user.gender_id)">
-                {{ user.displayname }}
+                {{ user.displayname }} 
                 <span v-if="user.unread_count > 0" class="unread-count">
                   ({{ user.unread_count }})
                 </span>
               </v-list-item-title>
               <v-list-item-subtitle>
-                {{ user.emoji }} ( {{ user.age }})
+                 ({{ user.age }}) {{ user.emoji }}
                 {{ user.state_name ?? "" }}
               </v-list-item-subtitle>
 

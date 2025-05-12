@@ -211,7 +211,7 @@ const applyFilters = () => {
     selectedStatus.value
   );
 
-  if (selectedInterests.value.length === 0) {
+  if (selectedInterests.value?.length === 0) {
     selectedInterests.value = null;
     
   }
@@ -231,7 +231,7 @@ const clearFilters = () =>
   selectedStatus.value = null;
   selectedAge.value = [18, 100];
   selectedAnonymous.value = null;
-  selectedInterests.value = interests.value.map(i => i.id); // select all or set to [] if desired
+  selectedInterests.value = null;
   selectedCountry.value = null;
 
   applyFilters(); // emit cleared values
