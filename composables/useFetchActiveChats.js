@@ -8,7 +8,7 @@ export function useFetchActiveChats(user) {
 
   // Method to fetch active chats
   const fetchActiveChats = async (filters) => {
-    // console.log("Fetching active users with filters:", filters); // Debug log
+    console.log("Fetching active users with filters:", filters); // Debug log
 
     const { gender_id, age_range, is_anonymous, interests, country_id, status_id } = filters;
     // console.log("User ID:", user.value?.id); // Debug log
