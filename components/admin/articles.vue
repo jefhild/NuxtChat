@@ -33,7 +33,7 @@
 			</v-col>
 		</v-card-text>
 	</v-card>
-	<v-card class="pa-6" elevation="3">
+	<v-card class="pa-6 mt-5" elevation="3">
 		<v-card-title>Create New Article</v-card-title>
 		<v-card-text>
 			<v-form @submit.prevent="handleSubmit" ref="articleForm">
@@ -157,9 +157,9 @@ onMounted(async () =>
 {
 	articles.value = await getAllArticlesWithTags(false);
 	console.log("articles", articles.value);
-	loadingArticles.value = false;
 	categories.value = await getAllCategories() || [];
 	tags.value = await getAllTags() || [];
+	loadingArticles.value = false;
 });
 
 const filteredArticles = computed(() =>

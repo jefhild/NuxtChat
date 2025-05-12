@@ -39,6 +39,7 @@ import AdminDashboard from '@/components/admin/dashboard.vue';
 import AdminArticles from '@/components/admin/articles.vue';
 import AdminCategories from '@/components/admin/categories.vue';
 import AdminTags from '@/components/admin/tags.vue';
+import AdminReports from '@/components/admin/reports.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -49,7 +50,8 @@ const items = [
   { text: 'Dashboard', icon: 'mdi-view-dashboard', value: 'dashboard' },
   { text: 'Articles', icon: 'mdi-post', value: 'articles' },
   { text: 'Categories', icon: 'mdi-folder', value: 'categories' },
-  { text: 'Tags', icon: 'mdi-tag', value: 'tags' }
+  { text: 'Tags', icon: 'mdi-tag', value: 'tags' },
+  { text: 'Reports', icon: 'mdi-alert-octagon', value: 'reports' },
 ];
 
 onMounted(async () =>
@@ -69,6 +71,7 @@ const getSectionComponent = (section) =>
     case 'articles': return AdminArticles;
     case 'categories': return AdminCategories;
     case 'tags': return AdminTags;
+    case 'reports': return AdminReports;
     default: return AdminDashboard;
   }
 };
