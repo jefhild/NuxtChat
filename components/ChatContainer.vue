@@ -107,6 +107,9 @@ const {
   insertInteractionCount,
 } = useDb();
 
+const notificationSound = new Audio('/sounds/notification.wav');
+notificationSound.volume = 0.5; // Optional: adjust volume
+
 const supabase = useSupabaseClient();
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
@@ -246,15 +249,22 @@ const handleRealtimeMessages = async (payload) =>
     const isFromSelectedUser = newRow.sender_id === selectedUser.value?.user_id;
     const isVisible = document.visibilityState === "visible";
 
+    console.log("isFromSelectedUser:", isFromSelectedUser, "isVisible:", isVisible);
+
     if (!isFromSelectedUser || !isVisible)
     {
       const senderProfile = await getUserProfileFromId(newRow.sender_id);
-      console.log("Sender Profile:", senderProfile);
+      // console.log("Sender Profile:", senderProfile);
+      notificationSound.play().catch((e) =>
+      {
+        console.warn("Autoplay failed:", e);
+      });
       notificationStore.addNotification(
         'message',
         `${senderProfile.data.displayname || 'Someone'} sent you a message`,
         newRow.sender_id
       );
+      lastUnreadSenderId.value = newRow.sender_id;
       return; //I return so it doesnt add the message to the chat if it is not from the selected user
     }
     
@@ -371,8 +381,11 @@ onMounted(async () => {
     isTabVisible.value = document.visibilityState === "visible";
     if (document.visibilityState === "visible")
     {
+
+      console.log("Tab is visible", selectedUser.value.user_id, lastUnreadSenderId.value);
       if (selectedUser.value?.user_id === lastUnreadSenderId.value)
       {
+        loadChatMessages(user.value.id, selectedUser.value.user_id);
         await markMessagesAsRead(user.value.id, selectedUser.value.user_id);
         notificationStore.markMessageNotificationAsRead(selectedUser.value.user_id);
        
