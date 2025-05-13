@@ -444,7 +444,7 @@ export const useDb = () => {
       is_ai_filter: true,
     });
 
-    console.log("Fetched AI profiles:", data, userId, genderId, minAge, maxAge); // Debug log
+    // console.log("Fetched AI profiles:", data, userId, genderId, minAge, maxAge); // Debug log
 
     if (error) {
       console.error("Error fetching ai profiles:", error);

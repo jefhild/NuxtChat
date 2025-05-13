@@ -15,8 +15,8 @@
                   <NuxtImg :src="user.avatar_decoration_url" v-if="user.avatar_decoration_url"
                     class="avatar-decoration" />
 
-                  <v-icon color="white" size="x-small" class="status-badge">mdi-circle</v-icon>
-                  <v-icon size="small" :color="statusColor(user.user_id)" :icon="statusIcon(user.user_id)"
+                  <v-icon v-if="user.provider != 'ChatGPT'" color="white" size="x-small" class="status-badge">mdi-circle</v-icon>
+                  <v-icon v-if="user.provider != 'ChatGPT'" size="small" :color="statusColor(user.user_id)" :icon="statusIcon(user.user_id)"
                     class="status-badge" />
                 </div>
 
@@ -163,6 +163,7 @@ const selectUser = (user) => {
 };
 
 onMounted(() => {
+  console.log("ActiveChats mounted", props.users);
   subscribeToNewMessages();
 });
 
