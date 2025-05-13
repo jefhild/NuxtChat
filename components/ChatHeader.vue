@@ -81,6 +81,8 @@ const props = defineProps({
   },
 });
 
+const notificationSound = new Audio('/sounds/notification.wav');
+notificationSound.volume = 0.5; // Optional: adjust volume
 
 const supabase = useSupabaseClient();
 const notificationStore = useNotificationStore();
@@ -239,6 +241,10 @@ onMounted(async () =>
 
         // console.log("Favoriting user data:", data);
 
+        notificationSound.play().catch((e) =>
+        {
+          console.warn("Autoplay failed:", e);
+        });
         notificationStore.addNotification(
           'favorite',
           `${data?.displayname} favorited you!`,
