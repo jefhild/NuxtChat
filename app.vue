@@ -1,4 +1,3 @@
-
 <template>
   <v-app>
     <NuxtLayout />
@@ -7,7 +6,4 @@
 
 <script setup></script>
 
-<style>
-
-</style>
- 
+<style></style>

@@ -6,13 +6,7 @@
       <v-tab :value="1">AI Users</v-tab>
       <v-tab :value="2">
         <span class="tab-title">Active</span>
-        <v-badge
-          v-if="unreadMessageCount > 0"
-          :content="unreadMessageCount"
-          color="red"
-          overlap
-          class="mb-7"
-        ></v-badge>
+        <v-badge v-if="unreadMessageCount > 0" :content="unreadMessageCount" color="red" overlap class="mb-7"></v-badge>
       </v-tab>
       <v-spacer></v-spacer>
     </v-tabs>
@@ -21,14 +15,11 @@
       <v-tabs-window-item :value="1">
 
         <!-- <OfflineUsers :users="offlineUsers" @user-selected="selectUser" /> -->
-     <AiUsers :users="aiUsers" @user-selected="selectUser" />
+        <AiUsers :users="aiUsers" :selectedUserId="selectedUserId" @user-selected="selectUser" />
       </v-tabs-window-item>
       <v-tabs-window-item :value="2">
-        <ActiveChats
-          :users="activeChats"
-          @user-selected="selectUser"
-          @chat-deleted="handleChatDeleted"
-        />
+        <ActiveChats :users="activeChats" :selectedUserId="selectedUserId" :isTabVisible="isTabVisible"
+          @user-selected="selectUser" @chat-deleted="handleChatDeleted" />
       </v-tabs-window-item>
     </v-tabs-window>
   </v-card>
@@ -42,28 +33,31 @@ const props = defineProps({
   activeChats: Array,
   userProfile: Object,
   updateFilters: Function,
+  selectedUserId: String,
+  isTabVisible: Boolean,
 });
 
 
 const tab = ref(1);
-const emit = defineEmits(["user-selected", "chat-deleted", "refresh-data"]);
+const emit = defineEmits(["user-selected", "chat-deleted", "refresh-data", "unread-count"]);
 
 const unreadMessageCount = ref(0);
 const activeChats = toRef(props, "activeChats"); // Make the prop reactive
 // Watch for changes in activeChats prop with deep watch
 watch(
   () => props.activeChats,
-  (newChats) => {
-    if (Array.isArray(newChats)) {
-      unreadMessageCount.value = newChats.reduce(
-        (count, chat) => count + (chat.unread_count || 0),
-        0
-      );
-    } else {
-      unreadMessageCount.value = 0; // Handle case when activeChats is undefined or not an array
-    }
+  (newChats) =>
+  {
+    unreadMessageCount.value = newChats.reduce((count, chat) =>
+    {
+      // Skip counting unread if you're chatting with this user and the tab is visible
+      const isActiveChat = chat.user_id === props.selectedUserId && props.isTabVisible;
+      if (isActiveChat) return count;
+      return count + (chat.unread_count || 0);
+    }, 0);
+    emit("unread-count", unreadMessageCount.value);
   },
-  { immediate: true, deep: true }
+  { immediate: true, deep: true } // Run immediately on initialization and watch deeply
 );
 
 const selectUser = (user) => {
