@@ -76,6 +76,7 @@ export default defineNuxtConfig({
         "/terms",
         "/privacy",
         "/freechat",
+        "/profiles",
         "/profiles/*",
         "/articles/*",
         "/articles",

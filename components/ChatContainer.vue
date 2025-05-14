@@ -313,6 +313,19 @@ onMounted(async () => {
   showAIUsers.value = route.query.user === "ai";
   isTabVisible.value = document.visibilityState === "visible";
 
+  // Select the user we want to chat with
+  const query = route.query;
+  const userIdFromQuery = query?.userId;
+
+  if (userIdFromQuery)
+  {
+    const { data: userProfileData } = await getUserProfileFromId(userIdFromQuery);
+    if (userProfileData)
+    {
+      selectedUser.value = userProfileData;
+    }
+  }
+
   //Have to do them at least once on mount because if we go to another page and come back, we need to fetch the data again
   await fetchOnlineUsers(
     filters.value,

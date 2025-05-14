@@ -23,7 +23,7 @@
 
 					<v-card-subtitle>
 						<v-row><v-col>{{ profile?.tagline }}</v-col><v-col class="justify-end d-flex align-center">{{
-							profile?.status }}, {{ profile?.country }} {{ profile.country_emoji }}</v-col></v-row>
+								profile?.status }}, {{ profile?.country }} {{ profile.country_emoji }}</v-col></v-row>
 					</v-card-subtitle>
 
 					<v-card-text>
@@ -60,9 +60,13 @@
 
 				<v-row class="mt-2" justify="center" v-if="isAuthenticated"><v-col cols="auto">
 						<NuxtLink to="/settings">Back to Profile</NuxtLink>
-					</v-col><v-col cols="auto">
-						<NuxtLink to="/chat">Back to Chat</NuxtLink>
-					</v-col></v-row>
+					</v-col>
+					<v-col cols="auto">
+						<NuxtLink :to="`/chat?userId=${profile?.user_id}`">
+							Chat with {{ profile?.displayname }}
+						</NuxtLink>
+					</v-col>
+				</v-row>
 				<v-row class="mt-2" justify="center" v-else>
 					<v-col cols="auto">
 						<NuxtLink to="/">Back Home</NuxtLink>
