@@ -1,36 +1,26 @@
 <template>
-  <v-container
-    v-if="isLoading"
-    class="d-flex align-center justify-center fill-height"
-  >
+  <v-container v-if="isLoading" class="d-flex align-center justify-center fill-height">
     <v-progress-circular indeterminate color="primary" size="50" />
   </v-container>
 
   <template v-else>
-    <v-container
-      fluid
-      v-if="!isAuthenticated"
-      class="d-flex flex-column align-center justify-center fill-height"
-    >
-      <div class="w-100">
+    <v-container fluid v-if="!isAuthenticated" class="d-flex flex-column align-center justify-center fill-height">
+      <div class="w-100 ">
         <HomeRow1 />
       </div>
       <v-row justify="center" align="center">
         <v-col cols="auto">
           <LoginAi :titleText="titleText" />
+          <!-- /<Home /> -->
         </v-col>
       </v-row>
     </v-container>
-    <v-container fluid v-else>
-      <div class="w-100">
-        <HomeRow1 />
+    <v-container fluid v-else ">
+      <div class=" w-100">
+      <HomeRow1 />
       </div>
       <v-fade-transition mode="out-in">
-        <v-container
-          fluid
-          class="d-flex align-center justify-center"
-          style="min-height: 70vh"
-        >
+        <v-container fluid class="d-flex align-center justify-center" style="min-height: 70vh">
           <v-row>
             <v-col class="text-center d-flex flex-column align-center">
               <h1 class="green--text-h1">
@@ -39,19 +29,13 @@
               <h2 class="text-h6">Where would you like to go?</h2>
               <v-row>
                 <v-col>
-                  <v-btn to="/chat" class="mt-4"
-                    >Chat <v-icon right>mdi-arrow-right</v-icon></v-btn
-                  >
+                  <v-btn to="/chat" class="mt-4">Chat <v-icon right>mdi-arrow-right</v-icon></v-btn>
                 </v-col>
                 <v-col>
-                  <v-btn to="/settings" class="mt-4"
-                    >Settings <v-icon right>mdi-arrow-right</v-icon></v-btn
-                  >
+                  <v-btn to="/settings" class="mt-4">Settings <v-icon right>mdi-arrow-right</v-icon></v-btn>
                 </v-col>
                 <v-col>
-                  <v-btn @click="showLogoutDialog" class="mt-4"
-                    >Logout<v-icon right>mdi-arrow-right</v-icon></v-btn
-                  >
+                  <v-btn @click="showLogoutDialog" class="mt-4">Logout<v-icon right>mdi-arrow-right</v-icon></v-btn>
                 </v-col>
               </v-row>
             </v-col>
@@ -62,30 +46,17 @@
   </template>
 
   <v-dialog v-model="logoutDialog" width="auto">
-    <v-card
-      max-width="400"
-      prepend-icon="mdi-account-remove"
-      title="Logout Of My Account"
-    >
+    <v-card max-width="400" prepend-icon="mdi-account-remove" title="Logout Of My Account">
       <v-card-text>
         <v-row justify="center">
-          <v-col class="text-center"
-            >Are you sure you want to logout?</v-col
-          ></v-row
-        >
+          <v-col class="text-center">Are you sure you want to logout?</v-col></v-row>
       </v-card-text>
 
       <template v-slot:actions>
-        <v-btn color="primary" text @click="confirmLogout"
-          >Confirm Logout</v-btn
-        >
+        <v-btn color="primary" text @click="confirmLogout">Confirm Logout</v-btn>
 
         <v-spacer></v-spacer>
-        <v-btn
-          class="ms-auto"
-          text="Cancel"
-          @click="logoutDialog = false"
-        ></v-btn>
+        <v-btn class="ms-auto" text="Cancel" @click="logoutDialog = false"></v-btn>
       </template>
     </v-card>
   </v-dialog>
