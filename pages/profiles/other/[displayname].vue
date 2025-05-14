@@ -10,7 +10,7 @@
 
           <div class="avatar-wrapper">
             <NuxtImg :src="profile.avatar_url" height="200" width="200"
-              class="rounded-circle cover-image mx-auto d-block ma-9" />
+              class="rounded-circle cover-image mx-auto d-block ma-9" :alt="`${profile.displayname}'s image`" />
 
             <NuxtImg :src="avatarDecoration" v-if="avatarDecoration" class="avatar-decoration" />
           </div>

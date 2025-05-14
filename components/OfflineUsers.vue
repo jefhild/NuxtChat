@@ -13,7 +13,7 @@
                   <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
 
                   <NuxtImg :src="user.avatar_decoration_url" v-if="user.avatar_decoration_url"
-                    class="avatar-decoration" />
+                    class="avatar-decoration" :alt="`${user.displayname}'s image`"/>
 
                   <v-icon size="small" color="grey" icon="mdi-circle" class="status-badge" />
                 </div>
