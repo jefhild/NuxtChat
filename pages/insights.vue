@@ -46,8 +46,7 @@
       >
         No articles found for "{{ searchQuery }}".
       </v-alert>
-
-      <v-row v-if="!articles.length">
+      <v-row v-if="!articlesData?.length">
         <v-col class="text-center">
           <p>No articles found for this type.</p>
         </v-col>
@@ -58,33 +57,54 @@
 
 <script setup>
 const { getArticlesByType, getTagsByArticle } = useDb();
-const isLoading = ref(true);
-const articles = ref([]);
 
-onMounted(async () => {
-  const data = await getArticlesByType("blog");
-  if (data) {
-    const articlesWithTags = await Promise.all(
-      data.map(async (article) => ({
+const { data: articlesData, pending: isLoading } = await useAsyncData(
+  "articles",
+  async () => {
+    const articles = await getArticlesByType("blog");
+
+    return await Promise.all(
+      articles.map(async (article) => ({
         ...article,
         tags: await getTagsByArticle(article.slug),
         category_name: article.category?.name,
       }))
     );
-
-    articles.value = articlesWithTags;
   }
-  isLoading.value = false;
-  console.log(articles.value);
-});
+);
 
 const searchQuery = ref("");
-const filteredArticles = computed(() => {
-  if (!searchQuery.value) return articles.value;
 
-  return articles.value.filter((article) =>
+const filteredArticles = computed(() => {
+  if (!searchQuery.value) return articlesData.value || [];
+
+  return (articlesData.value || []).filter((article) =>
     article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
+});
+
+useHead(() => ({
+  link: [
+    {
+      rel: "canonical",
+      href: "https://imchatty.com/insights",
+    },
+  ],
+}));
+
+useSeoMeta({
+  title: "Popular Article Insights",
+  description:
+    "Check out our most recent insights! Browse articles of genuine interest.",
+  ogTitle: "Popular Article Insights",
+  ogDescription:
+    "Check out our most recent article insights! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+  // ogImage: popularProfiles[0].value.avatar_url,
+  twitterCard: "summary_large_image",
+  twitterTitle: "Popular Article Insights",
+  twitterDescription:
+    "Check out our most popular article insights! Browse articles of genuine interest, built by a human, and possibly life changing!",
+  // twitterImage: popularProfiles[0].value.avatar_url,
 });
 </script>
 

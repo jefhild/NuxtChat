@@ -79,6 +79,8 @@ export default defineNuxtConfig({
         "/cookies",
         "/categories/*",
         "/categories",
+        "/insights",
+        "/guides",
         "/sitemap.xml",
       ],
     },

@@ -38,7 +38,7 @@
       </v-row>
 
       <v-alert
-        v-if="!filteredArticles.length"
+        v-if="!filteredArticles.length && articlesData?.length"
         type="info"
         variant="tonal"
         border="top"
@@ -47,7 +47,7 @@
         No articles found for "{{ searchQuery }}".
       </v-alert>
 
-      <v-row v-if="!articles.length">
+      <v-row v-if="!articlesData?.length">
         <v-col class="text-center">
           <p>No articles found for this type.</p>
         </v-col>
@@ -58,33 +58,55 @@
 
 <script setup>
 const { getArticlesByType, getTagsByArticle } = useDb();
-const isLoading = ref(true);
-const articles = ref([]);
 
-onMounted(async () => {
-  const data = await getArticlesByType("guide");
-  if (data) {
-    const articlesWithTags = await Promise.all(
-      data.map(async (article) => ({
+const { data: articlesData, pending: isLoading } = await useAsyncData(
+  "guide-articles",
+  async () => {
+    const articles = await getArticlesByType("guide");
+
+    return await Promise.all(
+      articles.map(async (article) => ({
         ...article,
         tags: await getTagsByArticle(article.slug),
         category_name: article.category?.name,
       }))
     );
-
-    articles.value = articlesWithTags;
   }
-  isLoading.value = false;
-  console.log(articles.value);
-});
+);
 
 const searchQuery = ref("");
-const filteredArticles = computed(() => {
-  if (!searchQuery.value) return articles.value;
 
-  return articles.value.filter((article) =>
+const filteredArticles = computed(() => {
+  const articles = articlesData.value || [];
+  if (!searchQuery.value) return articles;
+
+  return articles.filter((article) =>
     article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
+});
+
+useHead(() => ({
+  link: [
+    {
+      rel: "canonical",
+      href: "https://imchatty.com/guides",
+    },
+  ],
+}));
+
+useSeoMeta({
+  title: "Popular Guides",
+  description:
+    "Check out our most recent guides! Browse guides of genuine interest.",
+  ogTitle: "Popular Guides - Help",
+  ogDescription:
+    "Check out our most recent guides! Help getting started, tips, and how to protect yourself.",
+  // ogImage: popularProfiles[0].value.avatar_url,
+  twitterCard: "summary_large_image",
+  twitterTitle: "Popular Guide Insights",
+  twitterDescription:
+    "Check out our most popular guides and insights! Browse guides of genuine interest, built by a human, and possibly life changing!",
+  // twitterImage: popularProfiles[0].value.avatar_url,
 });
 </script>
 
