@@ -11,7 +11,7 @@
 
                 <div class="avatar-wrapper">
                   <v-avatar size="44" :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
-                  <NuxtImg :src="user.avatar_decoration_url" v-if="user.avatar_decoration_url"
+                  <NuxtImg :src="user.avatar_decoration_url" :alt="`${user.displayname}'s image`" v-if="user.avatar_decoration_url"
                     class="avatar-decoration" />
 
                   <v-icon color="white" size="x-small" class="status-badge">mdi-circle</v-icon>

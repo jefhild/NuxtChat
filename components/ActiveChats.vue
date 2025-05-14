@@ -13,7 +13,7 @@
                   <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
 
                   <NuxtImg :src="user.avatar_decoration_url" v-if="user.avatar_decoration_url"
-                    class="avatar-decoration" />
+                    class="avatar-decoration" :alt="`${user.displayname}'s image`"/>
 
                   <v-icon v-if="user.provider != 'ChatGPT'" color="white" size="x-small" class="status-badge">mdi-circle</v-icon>
                   <v-icon v-if="user.provider != 'ChatGPT'" size="small" :color="statusColor(user.user_id)" :icon="statusIcon(user.user_id)"
