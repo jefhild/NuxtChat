@@ -3,7 +3,7 @@ import { ref } from "vue";
 export function useUserProfile() {
   const profile = ref(null);
   const error = ref(null); // Also track errors
-  const { getUserProfileFunctionFromId, getUserProfileFromDisplayName } = useDb();
+  const { getUserProfileFunctionFromId, getUserProfileFromSlug } = useDb();
 
   const fetchUserProfile = async (userId) => {
     if (!userId) {
@@ -25,15 +25,15 @@ export function useUserProfile() {
     return null; // In case data is undefined or empty
   };
 
-  const fetchUserProfileFromDisplayName = async (displayName) => {
-    if(!displayName) {
-      error.value = "Display name is required";
-      console.error("fetchUserProfileFromDisplayName error: Display name is required.");
+  const fetchUserProfileFromSlug = async (slug) => {
+    if (!slug) {
+      error.value = "slug is required";
+      console.error("fetchUserProfileFromSlug error:slug is required.");
       return null; // Return null if no displayName is provided
     }
 
-    const data = await getUserProfileFromDisplayName(displayName);
-    // console.log("Fetched data from display name:", data); // Debugging log
+    const data = await getUserProfileFromSlug(slug);
+    // console.log("Fetched data from slug:", slug, data); // Debugging log
 
     if (data)
     {
@@ -48,5 +48,5 @@ export function useUserProfile() {
     return null;
   };
 
-  return { profile, fetchUserProfile, fetchUserProfileFromDisplayName, error };
+  return { profile, fetchUserProfile, fetchUserProfileFromSlug, error };
 }

@@ -3,7 +3,7 @@
     class="pa-2 mb-2 d-flex align-center"
     flat
     hover
-    @click="goToProfile(profile.gender_id ,profile.displayname)"
+    @click="goToProfile(profile.gender_id ,profile.user_id)"
     style="cursor: pointer"
   >
     <!-- Avatar with overlaid icon and decoration-->
@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 const router = useRouter();
-const { getGenderFromId, getAvatarDecorationFromId } = useDb();
+const { getGenderFromId, getAvatarDecorationFromId, getUserSlugFromId } = useDb();
 const avatarDecoration = ref("");
 
 const tooltipText = computed(() => {
@@ -87,9 +87,10 @@ const getProfileImage = (avatar_url: string | null, gender_id: number) => {
   return getAvatar(avatar_url, gender_id);
 };
 
-const goToProfile = async(genderid: string, displayname: string) => {
+const goToProfile = async(genderid: string, user_id: string) => {
   const gender = await getGenderFromId(genderid);
-  router.push(`/profiles/${gender}/${displayname}`);
+  const slug = await getUserSlugFromId(user_id);
+  router.push(`/profiles/${gender}/${slug}`);
 };
 
 onMounted(async () => {

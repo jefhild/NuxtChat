@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.gender}/${profile.displayname}`"
+                :href="`/profiles/${profile.gender}/${profile.slug}`"
                 class="ml-2 mb-2"
               >
                 <v-img
@@ -79,13 +79,11 @@ const activePanels = ref([0]);
 const maleProfiles = ref([]);
 const profileLimit = 20;
 
-const { getRecentMales } = useDb();
+const { getRecentMales, getUserSlugFromId } = useDb();
 
 
 
-onMounted(async () =>
-{
-  // Fetch data during SSR
+onMounted(async () => {
   const data = await getRecentMales(profileLimit);
 
   if (data) {

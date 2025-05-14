@@ -15,7 +15,7 @@
         </v-col>
       </v-row>
     </v-container>
-    <v-container fluid v-else ">
+    <v-container fluid v-else>
       <div class=" w-100">
       <HomeRow1 />
       </div>

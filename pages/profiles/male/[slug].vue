@@ -1,19 +1,20 @@
 <template>
-  <PublicUserProfile :selectedUserDisplayName="displayName" />
+  <PublicUserProfile :selectedUserSlug="slug" />
 </template>
 
 <script setup>
 const route = useRoute();
-const displayName = route.params.displayname;
+const slug = route.params.slug;
 
-const { profile, fetchUserProfileFromDisplayName } = useUserProfile();
-await fetchUserProfileFromDisplayName(displayName);
+const { profile, fetchUserProfileFromSlug } = useUserProfile();
+await fetchUserProfileFromSlug(slug);
+
 
 useHead(() => ({
   link: [
     {
       rel: "canonical",
-      href: "https://imchatty.com" + "/profiles/" + profile.value.gender.toLowerCase() + "/" + profile.value.displayname,
+      href: "https://imchatty.com" + "/profiles/" + profile.value.gender.toLowerCase() + "/" + profile.value.slug,
     },
   ],
 }));

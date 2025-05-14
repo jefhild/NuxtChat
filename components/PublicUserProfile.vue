@@ -92,7 +92,7 @@ import { useUserProfile } from "@/composables/useUserProfile";
 
 
 const props = defineProps({
-	selectedUserDisplayName: String,
+	selectedUserSlug: String,
 });
 
 const authStore = useAuthStore();
@@ -102,8 +102,8 @@ const isAuthenticated = ref(false);
 const isLoading = ref(true);
 const aiDialog = ref(false);
 
-const { profile, fetchUserProfileFromDisplayName } = useUserProfile();
-await fetchUserProfileFromDisplayName(props.selectedUserDisplayName);
+const { profile, fetchUserProfileFromSlug } = useUserProfile();
+await fetchUserProfileFromSlug(props.selectedUserSlug);
 
 
 const { getAvatarDecorationFromId } = useDb();
@@ -151,7 +151,7 @@ onMounted(async () =>
 	isLoading.value = false;
 
 	avatarDecoration.value = await getAvatarDecorationFromId(profile.value?.user_id);
-	console.log("profile", profile.value);
+	// console.log("profile", profile.value);
 
 });
 </script>

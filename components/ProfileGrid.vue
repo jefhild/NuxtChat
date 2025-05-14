@@ -4,7 +4,7 @@
       <v-col v-for="profile in displayedProfiles" :key="profile.user_id" cols="6" xs="6" sm="6" md="4" lg="3"
         class="d-flex justify-center pa-4">
         <NuxtLink :to="`/profiles/${profile.gender?.toLowerCase()}/${
-          profile.displayname
+          profile.slug
         }`" class="text-decoration-none d-flex justify-center">
           <v-card :class="[
             'profile-card text-center d-flex flex-column justify-end',
@@ -146,7 +146,7 @@ async function unmarkDeletion(profile) {
 
 //So that it can be updated every minute
 onMounted(() => {
-  console.log("Mounted", props.profiles);
+  // console.log("Mounted", props.profiles);
   setInterval(() => {
     refreshTime.value = Date.now();
   }, 60000); // 1 minute

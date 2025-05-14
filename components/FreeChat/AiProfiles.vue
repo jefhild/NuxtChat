@@ -14,6 +14,5 @@ const { getMostPopularAiProfiles } = useDb();
 const data = await getMostPopularAiProfiles(profileLimit);
 if (data) {
   aiProfiles.value = data;
-  // console.log("aiProfiles", aiProfiles.value);
 }
 </script>

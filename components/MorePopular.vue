@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.gender}/${profile.displayname}`"
+                :href="`/profiles/${profile.gender}/${profile.slug}`"
                 class="ml-2 mb-2"
               >
                 <v-img
@@ -76,7 +76,7 @@ import { ref, onMounted } from "vue";
 const activePanels = ref([0]);
 const popularProfiles = ref([]);
 const profileLimit = 10;
-const { getMostPopularProfiles } = useDb();
+const { getMostPopularProfiles, getUserSlugFromId } = useDb();
 
 // Fetch data during SSR
 const data = await getMostPopularProfiles(profileLimit); 
