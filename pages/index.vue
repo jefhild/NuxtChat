@@ -7,17 +7,14 @@
   </v-container>
 
   <template v-else>
-    <v-container
-      v-if="!isAuthenticated"
-      class="fill-height d-flex flex-column justify-center align-center"
-    >
+    <v-container fluid v-if="!isAuthenticated">
       <HomeRow1 />
       <v-row justify="center" class="mt-4">
         <v-col cols="auto"><LoginAi :titleText="titleText" /></v-col>
       </v-row>
     </v-container>
 
-    <v-container v-else>
+    <v-container fluid v-else>
       <HomeRow1 />
       <v-container class="text-center mt-6">
         <h1 class="green--text-h1">You're logged in as {{ loggedInUser }}</h1>
