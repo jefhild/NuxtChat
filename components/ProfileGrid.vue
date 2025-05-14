@@ -1,76 +1,64 @@
 <template>
   <v-row dense>
-    <v-col
-      v-for="profile in profiles"
-      :key="profile.user_id"
-      cols="6"
-      xs="6"
-      sm="6"
-      md="4"
-      lg="3"
-      class="d-flex justify-center pa-4"
-    >
-      <NuxtLink
-        :to="`/profiles/${profile.gender?.toLowerCase()}/${
+    <transition-group name="fade">
+      <v-col v-for="profile in displayedProfiles" :key="profile.user_id" cols="6" xs="6" sm="6" md="4" lg="3"
+        class="d-flex justify-center pa-4">
+        <NuxtLink :to="`/profiles/${profile.gender?.toLowerCase()}/${
           profile.displayname
-        }`"
-        class="text-decoration-none"
-        style="width: 100%"
-      >
-        <v-card
-          :class="[
+        }`" class="text-decoration-none d-flex justify-center">
+          <v-card :class="[
             'profile-card text-center d-flex flex-column justify-end',
             profile.marked_for_deletion_at ? 'marked-for-deletion' : '',
-          ]"
-          elevation="2"
-          :style="{
+          ]" elevation="2" :style="{
             backgroundImage: `url(${
               profile.avatar_url || '/default-avatar.png'
             })`,
-          }"
-        >
-          <div class="overlay">
-            <v-row class="d-flex justify-center align-center">
-              <div class="font-weight-bold text-white mb-3">
-                {{ profile.displayname }}
-              </div>
-            </v-row>
+          }">
+            <div class="overlay mb-2">
+              <v-row class="d-flex justify-center align-center text-center flex-column px-2 mb-2">
+                <div class="font-weight-bold text-white text-truncate">
+                  {{ profile.displayname }}
+                </div>
+                <div v-if="profile.tagline" class="tagline text-white text-caption mt-1 text-truncate">
+                  {{ profile.tagline }}
+                </div>
+                <div v-if="profile.upvote_count" class="text-white d-flex align-center justify-center mt-1">
+                  <v-icon size="16" class="mr-1" color="yellow">mdi-thumb-up</v-icon>
+                  <span class="text-caption">{{ profile.upvote_count }}</span>
+                </div>
+              </v-row>
 
-            <v-row class="d-flex justify-center align-center">
-              <div
-                v-if="profile.marked_for_deletion_at"
-                class="mb-5 text-white"
-              >
-                <div>{{ timeLeft(refreshTime) }}</div>
-                <v-btn
-                  size="x-small"
-                  color="green"
-                  @click.stop.prevent="unmarkDeletion(profile)"
-                >
-                  Undo Deletion
+              <v-row class="d-flex justify-center align-center">
+                <div v-if="profile.marked_for_deletion_at" class="mb-5 text-white">
+                  <div>{{ timeLeft(refreshTime) }}</div>
+                  <v-btn size="x-small" color="green" @click.stop.prevent="unmarkDeletion(profile)">
+                    Undo Deletion
+                  </v-btn>
+                </div>
+
+                <v-btn v-if="allowDelete && !profile.marked_for_deletion_at" color="red" class="overlay mb-5"
+                  @click.stop.prevent="openDeleteDialog(profile)">
+                  Delete
                 </v-btn>
-              </div>
+              </v-row>
+            </div>
 
-              <v-btn
-                v-if="allowDelete && !profile.marked_for_deletion_at"
-                color="red"
-                class="overlay mb-5"
-                @click.stop.prevent="openDeleteDialog(profile)"
-              >
-                Delete
-              </v-btn>
-            </v-row>
-          </div>
-        </v-card>
-      </NuxtLink>
-    </v-col>
+          </v-card>
+        </NuxtLink>
+      </v-col>
+    </transition-group>
   </v-row>
 
-  <v-dialog
-    v-model="confirmDeleteDialog"
-    max-width="400px"
-    transition="dialog-transition"
-  >
+  <v-row justify="center" v-if="props.limit && props.profiles.length > props.limit && !showAll">
+    <v-btn @click="showAll = true" color="primary" variant="tonal">
+      Show All
+    </v-btn>
+  </v-row>
+  <v-row justify="center" v-if="showAll && props.limit && props.profiles.length > props.limit">
+    <v-btn @click="showAll = false" variant="text" color="grey">Show Less</v-btn>
+  </v-row>
+
+  <v-dialog v-model="confirmDeleteDialog" max-width="400px" transition="dialog-transition">
     <v-card>
       <v-card-title class="headline">Confirm Deletion</v-card-title>
 
@@ -78,9 +66,7 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn color="grey" text @click="confirmDeleteDialog = false"
-          >Cancel</v-btn
-        >
+        <v-btn color="grey" text @click="confirmDeleteDialog = false">Cancel</v-btn>
         <v-btn color="red" text @click="confirmDelete">Delete</v-btn>
       </v-card-actions>
     </v-card>
@@ -97,11 +83,22 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  limit: {
+    type: Number,
+    default: null, // No limit unless specified
+  },
 });
 
 const emit = defineEmits(["user-deleted"]);
 
 const { markUserForDeletion, unmarkUserForDeletion } = useDb();
+
+const showAll = ref(false);
+const displayedProfiles = computed(() =>
+  props.limit && !showAll.value
+    ? props.profiles.slice(0, props.limit)
+    : props.profiles
+);
 
 const allowDelete = ref(props.delete);
 
@@ -109,7 +106,7 @@ const confirmDeleteDialog = ref(false);
 const userToDelete = ref(null);
 
 function timeLeft(refreshTrigger) {
-  const now = new Date(refreshTrigger); // 👈 use refreshTrigger so Vue tracks it
+  const now = new Date(refreshTrigger); // Use the refresh trigger to get the current time and so vue tracks it
   const midnight = new Date(now);
   midnight.setHours(23, 59, 59, 999);
 
@@ -149,6 +146,7 @@ async function unmarkDeletion(profile) {
 
 //So that it can be updated every minute
 onMounted(() => {
+  console.log("Mounted", props.profiles);
   setInterval(() => {
     refreshTime.value = Date.now();
   }, 60000); // 1 minute
@@ -182,6 +180,13 @@ const refreshTime = ref(Date.now());
   border-radius: 8px;
 }
 
+.tagline {
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .overlay {
   z-index: 2;
   position: relative;
@@ -194,5 +199,18 @@ const refreshTime = ref(Date.now());
 .marked-for-deletion {
   border: 2px solid red;
   box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+}
+
+
+/*Transition group*/
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.4s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>

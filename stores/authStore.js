@@ -15,36 +15,37 @@ export const useAuthStore = defineStore("authStore", {
     isAnonymous: (state) => state.user?.user_metadata?.isAnonymous ?? false,
   },
   actions: {
-    async checkAuth()
-    {
-      const {authGetUser} = useDb();
-      const { data, error } = await authGetUser();
-      // console.log("inside checkAuth - user: ", data);
+    async checkAuth() {
+      if (!import.meta.client) {
+        console.warn("checkAuth() skipped on server");
+        return;
+      }
 
-      if (data.user)
-      {
+      const { authGetUser } = useDb();
+      const { data, error } = await authGetUser();
+
+      console.log("inside checkAuth - user: ", data);
+
+      if (data.user) {
         this.setUser(data.user);
         await this.fetchUserProfile();
-      } else
-      {
-        this.clearUser();
+      } else {
+        // ❌ don't clear state — allow other logic to determine fallback
+        console.warn("User not found, not clearing state immediately.");
         if (error) console.error("Check auth error:", error.message);
       }
     },
 
-    async checkAuthEmail()
-    {
+    async checkAuthEmail() {
       const { authGetUser } = useDb();
       const { data, error } = await authGetUser();
       // console.log("inside checkAuth - user: ", data);
 
-      if (data.user)
-      {
+      if (data.user) {
         this.setUser(data.user);
         await this.fetchUserProfileEmail(data.user.id);
         // console.log("data.user: ", data.user);
-      } else
-      {
+      } else {
         this.clearUser();
         if (error) console.error("Check auth error email:", error.message);
       }
@@ -58,39 +59,33 @@ export const useAuthStore = defineStore("authStore", {
       avatarUrl,
       userLookingForIds = [],
       userDescriptionIds = [],
-      bio
-    })
-    {
-      const { authGetUser} = useDb();
+      bio,
+    }) {
+      const { authGetUser } = useDb();
 
-      try
-      {
+      try {
         // Step 1: Try to get the current user
         const { data: currentUser, error: currentError } = await authGetUser();
 
-        if (currentError && currentError.message !== "Auth session missing!")
-        {
+        if (currentError && currentError.message !== "Auth session missing!") {
           console.error("Error checking current user:", currentError);
           throw currentError;
         }
 
-        if (currentUser && currentUser.user)
-        {
+        if (currentUser && currentUser.user) {
           this.setUser(currentUser.user);
-        } else
-        {
+        } else {
           const { signInAnonymously } = useDb();
           // Step 2: If no authenticated user, create an anonymous user
-          const { data: userData, error: userError } = await signInAnonymously();
+          const { data: userData, error: userError } =
+            await signInAnonymously();
 
-          if (userError)
-          {
+          if (userError) {
             console.error("Error signing in anonymously:", userError);
             throw userError;
           }
 
-          if (userData.user)
-          {
+          if (userData.user) {
             this.setUser(userData.user);
             const { authMarkUserAsAnonymous } = useDb();
             authMarkUserAsAnonymous();
@@ -110,13 +105,12 @@ export const useAuthStore = defineStore("authStore", {
           avatarUrl,
           userLookingForIds,
           userDescriptionIds,
-          bio
+          bio,
         });
 
         // Fetch the newly created or updated user profile
         await this.fetchUserProfile();
-      } catch (error)
-      {
+      } catch (error) {
         console.error("Error in checkAuthAnony:", error.message);
         throw error;
       }
@@ -130,11 +124,9 @@ export const useAuthStore = defineStore("authStore", {
       avatarUrl,
       userLookingForIds = [],
       userDescriptionIds = [],
-      bio
-    })
-    {
-      try
-      {
+      bio,
+    }) {
+      try {
         // Try creating the user profile
         await this.createUserProfile({
           displayName,
@@ -144,27 +136,23 @@ export const useAuthStore = defineStore("authStore", {
           avatarUrl,
           userLookingForIds,
           userDescriptionIds,
-          bio
+          bio,
         });
-      } catch (error)
-      {
-        if (error.code === "23505")
-        {
+      } catch (error) {
+        if (error.code === "23505") {
           console.error("Display Name already exists:", displayName);
 
           const { getUserFromName } = useDb();
           // Step 5: Fetch the existing profile with the display name
-          const { data: existingProfile } = await getUserFromName(displayName); 
-          
+          const { data: existingProfile } = await getUserFromName(displayName);
+
           // Step 6: Check if the existing profile belongs to the current user
-          if (existingProfile.user_id === this.user.id)
-          {
+          if (existingProfile.user_id === this.user.id) {
             console.log(
               "Duplicate display name, but it's owned by the current user. Proceeding."
             );
             this.userProfile = existingProfile; // Use the existing profile
-          } else
-          {
+          } else {
             console.error(
               "Display name is taken by a different user. Cannot proceed."
             );
@@ -172,21 +160,17 @@ export const useAuthStore = defineStore("authStore", {
               "This Display Name is already taken by another user. Please choose a different name."
             );
           }
-        } else
-        {
+        } else {
           throw error; // Re-throw any other errors
         }
       }
     },
 
-
-    async checkAuthGoogle()
-    {
+    async checkAuthGoogle() {
       const { authGetUser } = useDb();
       const { data: userData1, error: userError1 } = await authGetUser();
 
-      if (userError1 || !userData1?.user)
-      {
+      if (userError1 || !userData1?.user) {
         console.log("No active session. Initiating Google OAuth...");
 
         const { signInWithOAuth } = useDb();
@@ -199,17 +183,15 @@ export const useAuthStore = defineStore("authStore", {
       console.log("Session detected. Linking Google identity...");
 
       const { linkIdentity } = useDb();
-      const { data, error } = await linkIdentity("google",`/login`);
+      const { data, error } = await linkIdentity("google", `/login`);
 
-      if (error)
-      {
+      if (error) {
         console.error("Error linking identity:", error.message);
         return;
       }
 
       // Add a return here to handle the redirect after linking
-      if (data)
-      {
+      if (data) {
         console.log("Identity linked successfully. Redirecting...");
         return;
       }
@@ -217,8 +199,7 @@ export const useAuthStore = defineStore("authStore", {
       // If no redirect occurs (unlikely but possible), continue here
       const { data: userData, error: userError } = await authGetUser();
 
-      if (userError || !userData?.user)
-      {
+      if (userError || !userData?.user) {
         console.error(
           "Error fetching current user after linking:",
           userError?.message
@@ -242,31 +223,26 @@ export const useAuthStore = defineStore("authStore", {
       await this.fetchUserProfile();
     },
 
-    async updateUserProfileAfterLinking({ email, provider })
-    {
-      if (!this.user?.id || !this.userProfile)
-      {
+    async updateUserProfileAfterLinking({ email, provider }) {
+      if (!this.user?.id || !this.userProfile) {
         console.error("No user or userProfile found for updating profile.");
         return;
       }
 
-      try
-      {
+      try {
         const { updateUsername, updateProvider } = useDb();
         // Perform a partial update to avoid overwriting existing profile data
-        await updateUsername(email, this.user.id,);
-        await updateProvider(provider, this.user.id,);
+        await updateUsername(email, this.user.id);
+        await updateProvider(provider, this.user.id);
 
         console.log("User profile updated successfully with Google data.");
-      } catch (error)
-      {
+      } catch (error) {
         console.error("Exception while updating user profile:", error.message);
         throw error;
       }
     },
 
-    async checkAuthFacebook()
-    {
+    async checkAuthFacebook() {
       const { signInWithOAuth } = useDb();
       // console.log("inside checkAuthGoogle - displayName: ");
       await signInWithOAuth("facebook", `/loginfacebook`);
@@ -274,48 +250,41 @@ export const useAuthStore = defineStore("authStore", {
       // console.log("checkAuthFacebook - error: ", error);
     },
 
-    async fetchUserProfile()
-    {
-      if (!this.user || !this.user.id)
-      {
+    async fetchUserProfile() {
+      if (!this.user || !this.user.id) {
         console.log("No user or user.id found.");
         return;
       }
 
       const { fetchUserProfile } = useUserProfile();
-      
+
       // Pass the user id to the composable
       const profile = await fetchUserProfile(this.user.id);
       // console.log("inside fetchUserProfile in auth store. Profile: ", profile);
 
-      if (profile)
-      {
+      if (profile) {
         // Set the userProfile in the store
         this.userProfile = profile;
         // console.log(
         //   "User profile successfully set in the store: ",
         //   this.userProfile
         // );
-      } else
-      {
+      } else {
         console.log("Failed to fetch or set user profile.");
       }
     },
 
-    async fetchUserProfileGoogle()
-    {
+    async fetchUserProfileGoogle() {
       const { authGetUser } = useDb();
       // Fetch the authenticated user
       const { data: userData, error: userError } = await authGetUser();
 
-      if (userError)
-      {
+      if (userError) {
         console.error("Error fetching user:", userError.message);
         return;
       }
 
-      if (!userData.user)
-      {
+      if (!userData.user) {
         this.clearUser();
         return;
       }
@@ -326,55 +295,45 @@ export const useAuthStore = defineStore("authStore", {
       const { getUserProfileFromId } = useDb();
       const { data, error } = await getUserProfileFromId(this.user.id);
 
-      if (error)
-      {
-        if (error.code === "PGRST116")
-        {
-          try
-          {
+      if (error) {
+        if (error.code === "PGRST116") {
+          try {
             await this.createUserProfile();
 
             // Fetch the profile again after creation
-            const { data: newProfile, error: newProfileError } = await getUserProfileFromId(this.user.id);
+            const { data: newProfile, error: newProfileError } =
+              await getUserProfileFromId(this.user.id);
 
-            if (newProfileError)
-            {
+            if (newProfileError) {
               console.error(
                 "Error fetching new user profile:",
                 newProfileError
               );
-            } else
-            {
+            } else {
               this.userProfile = newProfile;
             }
-          } catch (error)
-          {
+          } catch (error) {
             console.error("Error creating user profile:", error.message);
           }
-        } else
-        {
+        } else {
           console.error("Error fetching user profile:", error.message);
         }
-      } else
-      {
+      } else {
         this.userProfile = data;
       }
     },
 
-    async fetchUserProfileFacebook()
-    {
+    async fetchUserProfileFacebook() {
       const { authGetUser } = useDb();
       // Fetch the authenticated user
       const { data: userData, error: userError } = await authGetUser();
 
-      if (userError)
-      {
+      if (userError) {
         console.error("Error fetching user:", userError.message);
         return;
       }
 
-      if (!userData.user)
-      {
+      if (!userData.user) {
         this.clearUser();
         return;
       }
@@ -385,45 +344,36 @@ export const useAuthStore = defineStore("authStore", {
       const { getUserProfileFromId } = useDb();
       const { data, error } = await getUserProfileFromId(this.user.id);
 
-      if (error)
-      {
-        if (error.code === "PGRST116")
-        {
-          try
-          {
+      if (error) {
+        if (error.code === "PGRST116") {
+          try {
             await this.createUserProfile();
 
             // Fetch the profile again after creation
-            const { data: newProfile, error: newProfileError } = await getUserProfileFromId(this.user.id);
+            const { data: newProfile, error: newProfileError } =
+              await getUserProfileFromId(this.user.id);
 
-            if (newProfileError)
-            {
+            if (newProfileError) {
               console.error(
                 "Error fetching new user profile:",
                 newProfileError
               );
-            } else
-            {
+            } else {
               this.userProfile = newProfile;
             }
-          } catch (error)
-          {
+          } catch (error) {
             console.error("Error creating user profile:", error.message);
           }
-        } else
-        {
+        } else {
           console.error("Error fetching user profile:", error.message);
         }
-      } else
-      {
+      } else {
         this.userProfile = data;
       }
     },
 
-    async fetchUserProfileEmail(userId)
-    {
-      if (!userId)
-      {
+    async fetchUserProfileEmail(userId) {
+      if (!userId) {
         this.clearUser();
         return;
       }
@@ -438,37 +388,30 @@ export const useAuthStore = defineStore("authStore", {
 
       // console.log("profile data: ", data);
 
-      if (error)
-      {
-        if (error.code === "PGRST116")
-        {
-          try
-          {
+      if (error) {
+        if (error.code === "PGRST116") {
+          try {
             await this.createUserProfile();
 
             // Fetch the profile again after creation
-            const { data: newProfile, error: newProfileError } = await getUserProfileFromId(userId);
+            const { data: newProfile, error: newProfileError } =
+              await getUserProfileFromId(userId);
 
-            if (newProfileError)
-            {
+            if (newProfileError) {
               console.error(
                 "Error fetching new user profile:",
                 newProfileError
               );
-            } else
-            {
+            } else {
               this.userProfile = newProfile;
             }
-          } catch (error)
-          {
+          } catch (error) {
             console.error("Error creating user profile:", error.message);
           }
-        } else
-        {
+        } else {
           console.error("Error fetching user profile:", error.message);
         }
-      } else
-      {
+      } else {
         this.userProfile = data;
       }
     },
@@ -481,44 +424,47 @@ export const useAuthStore = defineStore("authStore", {
       avatarUrl,
       userLookingForIds = [],
       userDescriptionIds = [],
-      bio
-    })
-    {
+      bio,
+    }) {
       await this.getRawLocationData();
       const locationData = this.userLocation;
       console.log("locationData: ", locationData);
       console.log("userLocation: ", this.userLocation);
 
-      try
-      {
+      try {
         const { getCountryByIsoCode } = useDb();
         // Fetch country data
-        const { data: countryData, error: countryError } = await getCountryByIsoCode(locationData.country_code);
+        const { data: countryData, error: countryError } =
+          await getCountryByIsoCode(locationData.country_code);
 
-        console.log("locdata: ",locationData.country_code );
+        console.log("locdata: ", locationData.country_code);
         console.log("countryData: ", countryData);
-        if (countryError || !countryData)
-        {
+        if (countryError || !countryData) {
           console.error("Error fetching country data:", countryError);
           this.setDefaultProfileData();
         }
 
         // Fetch state data
         const { getStateByCodeAndCountry } = useDb();
-        let { data: stateData, error: stateError } = await getStateByCodeAndCountry(locationData.region_code, countryData.id);
+        let { data: stateData, error: stateError } =
+          await getStateByCodeAndCountry(
+            locationData.region_code,
+            countryData.id
+          );
 
-        if (stateError || !stateData)
-        {
+        if (stateError || !stateData) {
           console.error("Error fetching state data:", stateError);
           stateData = await this.setDefaultStateData(countryData.id);
         }
 
         // Fetch city data
         const { getCityByNameAndState } = useDb();
-        let { data: cityData, error: cityError } = await getCityByNameAndState(locationData.city, stateData ? stateData.id : null);
+        let { data: cityData, error: cityError } = await getCityByNameAndState(
+          locationData.city,
+          stateData ? stateData.id : null
+        );
 
-        if (cityError || !cityData)
-        {
+        if (cityError || !cityData) {
           console.error("Error fetching city data:", cityError);
           cityData = await this.setDefaultCityData(countryData.id);
         }
@@ -526,12 +472,23 @@ export const useAuthStore = defineStore("authStore", {
         // Insert user profile data
         const { insertProfile } = useDb();
         const { error: profileError } = await insertProfile(
-          selectedGender, selectedStatus, age, countryData.id, stateData ? stateData.id : null, cityData ? cityData.id : null,
-          this.user ? this.user.email : null, avatarUrl, this.user.id, "anonymous", displayName, locationData.ip, null, bio
-        ); 
+          selectedGender,
+          selectedStatus,
+          age,
+          countryData.id,
+          stateData ? stateData.id : null,
+          cityData ? cityData.id : null,
+          this.user ? this.user.email : null,
+          avatarUrl,
+          this.user.id,
+          "anonymous",
+          displayName,
+          locationData.ip,
+          null,
+          bio
+        );
 
-        if (profileError)
-        {
+        if (profileError) {
           console.error("Error inserting user profile:", profileError);
           throw profileError;
         }
@@ -550,16 +507,14 @@ export const useAuthStore = defineStore("authStore", {
         });
 
         console.log("User profile and preferences created successfully");
-      } catch (err)
-      {
+      } catch (err) {
         console.error("Exception occurred while creating user profile:", err);
         throw err;
       }
     },
 
     // Helper methods for setting default data if country is not found
-    setDefaultProfileData()
-    {
+    setDefaultProfileData() {
       this.userProfile = {
         gender_id: 1,
         age: 18,
@@ -579,13 +534,13 @@ export const useAuthStore = defineStore("authStore", {
       console.log("Default profile data set due to missing country data.");
     },
 
-    async setDefaultStateData(countryId)
-    {
+    async setDefaultStateData(countryId) {
       const { getStatesFromCountryId } = useDb();
-      const { data: randomStateData, error } = await getStatesFromCountryId(countryId);
+      const { data: randomStateData, error } = await getStatesFromCountryId(
+        countryId
+      );
 
-      if (error || !randomStateData)
-      {
+      if (error || !randomStateData) {
         console.error("Error fetching random state data:", error);
         return null;
       }
@@ -597,13 +552,13 @@ export const useAuthStore = defineStore("authStore", {
       return randomStateData;
     },
 
-    async setDefaultCityData(countryId)
-    {
+    async setDefaultCityData(countryId) {
       const { getCitiesFromCountryId } = useDb();
-      const { data: randomCityData, error } = await getCitiesFromCountryId(countryId);
+      const { data: randomCityData, error } = await getCitiesFromCountryId(
+        countryId
+      );
 
-      if (error || !randomCityData || randomCityData.length === 0)
-      {
+      if (error || !randomCityData || randomCityData.length === 0) {
         console.error(
           "Error fetching random city data or no cities found:",
           error
@@ -618,56 +573,46 @@ export const useAuthStore = defineStore("authStore", {
       return randomCityData[0];
     },
 
-    async getRawLocationData()
-    {
-      try
-      {
+    async getRawLocationData() {
+      try {
         const response = await $fetch("https://ipapi.co/json/");
         this.userLocation = response;
-      } catch (error)
-      {
+      } catch (error) {
         console.error("Error fetching IP location data:", error);
         this.userLocation = null;
       }
     },
 
-    async logout()
-    {
+    async logout() {
       console.log("logout");
       // const { updatePresence } = useDb();
       // await updatePresence(this.user.id, "offline");
       const { authSignOut } = useDb();
       const { error } = authSignOut;
-      if (error)
-      {
+      if (error) {
         console.error("Error during logout:", error.message);
         return;
-      } else
-      {
+      } else {
         const presenceStore = usePresenceStore();
         await presenceStore.leavePresenceChannel();
         this.clearUser();
         this.clearCookies();
       }
     },
-    setUser(user)
-    {
+    setUser(user) {
       this.user = user;
       // console.log("inside authStore.setUser ", user);
       this.userProfile = this.fetchUserProfile();
     },
 
-    clearUser()
-    {
+    clearUser() {
       this.user = null;
       this.userProfile = null;
       this.userLocation = null;
     },
-    clearCookies()
-    {
+    clearCookies() {
       // Clear all cookies
-      document.cookie.split(";").forEach((c) =>
-      {
+      document.cookie.split(";").forEach((c) => {
         document.cookie = c
           .replace(/^ +/, "")
           .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");

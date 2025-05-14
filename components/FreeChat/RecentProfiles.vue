@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <h2 class="text-h5 font-weight-light mb-4">Recent Profiles</h2>
-    <ProfileGrid :profiles="recentProfiles" />
+    <ProfileGrid :profiles="recentProfiles" :limit="8"/>
   </v-container>
 </template>
 
