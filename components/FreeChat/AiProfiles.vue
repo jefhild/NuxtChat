@@ -1,13 +1,13 @@
 <template>
   <v-container>
     <h2 class="text-h5 font-weight-light mb-2">Popular AI Profiles</h2>
-    <ProfileGrid :profiles="aiProfiles" />
+    <ProfileGrid :profiles="aiProfiles" :limit="4" />
   </v-container>
 </template>
 
 <script setup>
 const aiProfiles = ref([]);
-const profileLimit = 5;
+const profileLimit = 8;
 const { getMostPopularAiProfiles } = useDb();
 
 // Fetch data during SSR
