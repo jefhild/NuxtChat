@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <h2 class="text-h5 font-weight-light mb-4">Popular Real Profiles</h2>
-    <ProfileGrid :profiles="popularProfiles" />
+    <ProfileGrid :profiles="popularProfiles" :limit="4"/>
   </v-container>
 </template>
 
