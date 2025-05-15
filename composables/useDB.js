@@ -1218,13 +1218,13 @@ export const useDb = () => {
     bio
   ) => {
 
-      const slug = displayname
+      const slugUser = displayname
         .toLowerCase()
         .trim()
         .replace(/\s+/g, '-')
         .replace(/[^\w-]+/g, '')
         .replace('_', '-');
-
+        
     const { data, error } = await supabase
       .from("profiles")
       .insert({
@@ -1239,7 +1239,7 @@ export const useDb = () => {
           user_id: userId,
           provider: provider,
           displayname: displayname,
-          slug: slug,
+          slug: slugUser,
           ip: ip,
           site_url: siteUrl,
           bio: bio,
@@ -1255,8 +1255,6 @@ export const useDb = () => {
 
     const profileId = data.user_id;
     const defaultFavoriteId = "7d20548d-8a9d-4190-bce5-90c8d74c4a56"; // this is santa clause
-
-    console.log("Inserted profile ID:", profileId);
 
     try
     {
