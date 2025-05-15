@@ -1,0 +1,241 @@
+<template>
+  <v-container fluid>
+    <v-row><v-col>
+        <HomeRow1 />
+      </v-col></v-row>
+    <!-- {{ profile }} -->
+    <v-row justify="center">
+      <v-col cols="12" md="8">
+        <v-card class="mx-auto" max-width="400" v-if="profile">
+
+          <div class="avatar-wrapper">
+            <NuxtImg :src="profile.avatar_url" height="200" width="200"
+              class="rounded-circle cover-image mx-auto d-block ma-9" :alt="`${profile.displayname}'s image`" />
+
+            <NuxtImg :src="avatarDecoration" v-if="avatarDecoration" class="avatar-decoration" />
+          </div>
+
+
+          <v-card-title>
+            <v-row><v-col>
+                <h1 class="text-h5">
+                  {{ profile?.displayname }}, {{ profile?.age }}
+                </h1>
+              </v-col></v-row>
+          </v-card-title>
+
+          <v-card-subtitle>
+            <v-row><v-col>{{ profile?.tagline }}</v-col><v-col class="justify-end d-flex align-center">{{
+                profile?.status }}, {{ profile?.country }}
+                {{ profile?.country_emoji }}</v-col></v-row>
+          </v-card-subtitle>
+
+          <v-card-text>
+            <!-- {{ profile }} -->
+            <v-row v-if="profile?.looking_for?.length">
+              <v-col class="text-h6">Looking For:</v-col>
+            </v-row>
+            <v-row v-if="profile?.looking_for?.length" no-gutters>
+              <v-col class="ml-2">{{ profile?.looking_for.join(", ") }}</v-col>
+            </v-row>
+            <v-row v-if="profile.bio"><v-col class="text-h6">About Me:</v-col></v-row>
+            <v-row v-if="profile.bio">
+              <v-col class="bio-paragraph">{{ profile?.bio }}</v-col></v-row>
+          </v-card-text>
+          <v-card-actions style="
+              position: relative;
+              bottom: 0;
+              width: 100%;
+              background-color: rgba(0, 0, 0, 0.1);
+            ">
+            <v-btn v-if="profileSiteUrl" :href="profileSiteUrl" color="medium-emphasis" icon="mdi-link-variant"
+              size="small" target="_blank" rel="noopener noreferrer"
+              :aria-label="`Visit ${profile.displayname}'s website`"></v-btn>
+            <v-btn v-else color="medium-emphasis" icon="mdi-link-variant-off" size="small" disabled></v-btn>
+            <v-spacer></v-spacer>
+
+            <ButtonFavorite :profile="profile" />
+
+            <v-btn color="blue medium-emphasis" icon="mdi-cancel" size="small"></v-btn>
+
+            <v-btn color="black medium-emphasis" icon="mdi-share-variant" size="small"></v-btn>
+          </v-card-actions>
+        </v-card>
+
+        <v-row class="mt-2" justify="center" v-if="isAuthenticated"><v-col cols="auto">
+            <NuxtLink to="/settings">Back to Profile</NuxtLink>
+          </v-col><v-col cols="auto">
+            <NuxtLink to="/chat">Back to Chat</NuxtLink>
+          </v-col></v-row>
+        <v-row class="mt-2" justify="center" v-else>
+          <v-col cols="auto">
+            <NuxtLink to="/">Back Home</NuxtLink>
+          </v-col>
+          <v-col cols="auto">
+            <NuxtLink to="#" @click.prevent="handleAILogin">
+              Chat with {{ profile?.displayname }}
+            </NuxtLink>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
+  </v-container>
+
+  <v-dialog v-model="aiDialog" width="auto">
+    <DialogAiSignUp @closeDialog="handleDialogClose" />
+  </v-dialog>
+</template>
+
+<script setup>
+import { useAuthStore } from "@/stores/authStore";
+import { useUserProfile } from "@/composables/useUserProfile";
+
+const authStore = useAuthStore();
+
+// Computed property to check if user is authenticated
+const isAuthenticated = ref(false);
+const isLoading = ref(true);
+const route = useRoute();
+const displayName = route.params.displayname;
+const aiDialog = ref(false);
+
+const { profile, fetchUserProfileFromDisplayName } = useUserProfile();
+await fetchUserProfileFromDisplayName(displayName);
+
+
+const { getAvatarDecorationFromId } = useDb();
+const avatarDecoration = ref("");
+
+// Computed property for the formatted href
+const profileSiteUrl = computed(() => {
+  const siteUrl = profile.value?.site_url;
+
+  // Ensure siteUrl is defined and is a string
+  if (!siteUrl || typeof siteUrl !== "string") return null;
+
+  // Ensure it's a valid URL starting with http or https
+  return siteUrl.trim().startsWith("http")
+    ? siteUrl
+    : `https://${siteUrl.trim()}`;
+});
+
+function handleDialogClose() {
+  // console.log('Dialog closed!');
+  aiDialog.value = false;
+}
+
+const handleAILogin = async () => {
+  // errorMessages.value = []; // Clear previous error messages
+
+  try {
+    // await authStore.checkAuthGoogle();
+    aiDialog.value = true;
+    // console.log("AI login clicked");
+  } catch (error) {
+    console.error("Error submitting form:", error);
+  }
+};
+
+const getPlaceholderImage = (gender) => {
+  switch (gender) {
+    case "Male":
+      return "/images/avatars/anonymous-blue.png";
+    case "Female":
+      return "/images/avatars/anonymous-pink.png";
+    default:
+      return "/images/avatars/anonymous.png";
+  }
+};
+
+useHead(() => ({
+  link: [
+    {
+      rel: "canonical",
+      href: "https://imchatty.com" + "/profiles/" + profile.value.gender.toLowerCase() + "/" + profile.value.displayname,
+    },
+  ],
+}));
+
+const getLimitedDescription = (text) =>
+  text && text.length > 160 ? text.slice(0, 157) + "..." : text;
+
+useSeoMeta({
+  title: profile.value?.displayname || "Default Title",
+  description: getLimitedDescription(
+    profile.value?.bio || "Default Description"
+  ),
+  ogTitle: profile.value?.displayname,
+  ogDescription: getLimitedDescription(
+    profile.value?.bio || "Default Description"
+  ),
+  ogImage: profile.value?.avatar_url,
+  twitterCard: "summary_large_image",
+  twitterTitle: profile.value?.displayname,
+  twitterDescription: getLimitedDescription(
+    profile.value?.bio || "Default Description"
+  ),
+  twitterImage: profile.value?.avatar_url,
+});
+
+// useSeoMeta({
+//   title: profile.value?.displayname || "Default Title",
+//   description: profile.value?.bio || "Default Description",
+//   ogTitle: profile.value?.displayname,
+//   ogDescription: profile.value?.bio,
+//   ogImage: profile.value?.avatar_url,
+//   twitterCard: "summary_large_image",
+//   twitterTitle: profile.value?.displayname,
+//   twitterDescription: profile.value?.bio,
+//   twitterImage: profile.value?.avatar_url,
+// });
+
+onMounted(async () => {
+  await authStore.checkAuth();
+  isAuthenticated.value = authStore.user !== null;
+  isLoading.value = false;
+  
+  avatarDecoration.value = await getAvatarDecorationFromId(profile.value?.user_id);
+
+});
+</script>
+
+<style scoped>
+.cover-image {
+  object-fit: cover;
+}
+
+.avatar-wrapper {
+  position: relative;
+}
+
+.avatar-decoration {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 245px;
+  pointer-events: none;
+  z-index: 1;
+  object-fit: contain;
+}
+
+.subtitle-1 {
+  font-size: 1.2rem;
+  color: #757575;
+}
+
+.subtitle-2 {
+  font-size: 1rem;
+  color: #9e9e9e;
+}
+
+.bio-paragraph {
+  font-size: 1rem;
+  line-height: 1.25;
+  color: #374151; /* Tailwind's gray-700 */
+  font-style: italic;
+  border-left: 4px solid #d1d5db; /* Tailwind's gray-300 */
+  padding-left: 1rem;
+  text-align: justify;
+}
+</style>
