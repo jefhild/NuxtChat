@@ -131,7 +131,7 @@
 
         <v-col class="d-flex justify-center">
           <v-btn flat variant="text" color="blue"
-            @click="router.push(`/profiles/${userProfile.gender}/${userProfile.displayname}`)"
+            @click="router.push(`/profiles/${userProfile.gender}/${userProfile.slug}`)"
             class="text-link-btn">Public Profile
           </v-btn>
 
@@ -346,6 +346,7 @@ const loadData = async () => {
 
     // Now update userProfile from the store
     userProfile.value = authStore.userProfile;
+    
 
     if (userProfile.value) {
       const { country_id, state_id, city_id, gender_id } = userProfile.value;
@@ -619,7 +620,7 @@ const copyPublicProfileLink = async () =>
 {
   try
   {
-    const publicUrl = `${window.location.origin}/profiles/${userProfile.value.gender}/${userProfile.value.displayname}`;
+    const publicUrl = `${window.location.origin}/profiles/${userProfile.value.gender}/${userProfile.value.slug}`;
     await navigator.clipboard.writeText(publicUrl);
     snackbarText.value = "Profile link copied to clipboard!";
 

@@ -373,6 +373,22 @@ export const useDb = () => {
     return data;
   };
 
+  const getUserProfileFromSlug = async (slug) => {
+    const { data, error } = await supabase.rpc("get_user_profile_by_slug", {
+      p_slug: slug,
+    })
+
+    if (error)
+    {
+      console.error(
+        "Error fetching user profile with RPC slug:",
+        error
+      )
+    }
+
+    return data;
+  }
+
   const getUserProfilePhoto = async (userId) => {
     const { data, error } = await supabase
       .from("profiles")
@@ -406,6 +422,7 @@ export const useDb = () => {
 
     if (error) {
       console.error("Error fetching all profiles:", error);
+      return [];
     }
 
     return data ;
@@ -896,6 +913,21 @@ export const useDb = () => {
     return data;
   };
 
+  const getUserSlugFromId = async (userId) => {
+    const {data, error} = await supabase
+      .from("profiles")
+      .select("slug")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error)
+    {
+      console.error("Error fetching user slug:", error);
+    }
+
+    return data?.slug;
+  };
+
 
   /*------------------*/
   /* Update functions */
@@ -1185,6 +1217,14 @@ export const useDb = () => {
     siteUrl,
     bio
   ) => {
+
+      const slugUser = displayname
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')
+        .replace('_', '-');
+        
     const { data, error } = await supabase
       .from("profiles")
       .insert({
@@ -1199,6 +1239,7 @@ export const useDb = () => {
           user_id: userId,
           provider: provider,
           displayname: displayname,
+          slug: slugUser,
           ip: ip,
           site_url: siteUrl,
           bio: bio,
@@ -1214,8 +1255,6 @@ export const useDb = () => {
 
     const profileId = data.user_id;
     const defaultFavoriteId = "7d20548d-8a9d-4190-bce5-90c8d74c4a56"; // this is santa clause
-
-    console.log("Inserted profile ID:", profileId);
 
     try
     {
@@ -1808,6 +1847,7 @@ const { data, error } = await supabase
     getUserProfileFromId,
     getUserProfileFunctionFromId,
     getUserProfileFromDisplayName,
+    getUserProfileFromSlug,
     getUserProfilePhoto,
     getRegisteredUsersIds,
     getAllUsersIdsWithoutAvatar,
@@ -1842,6 +1882,7 @@ const { data, error } = await supabase
     getArticlesbyCategorySlug,
     getArticlesByType,
     getAllReports,
+    getUserSlugFromId,
 
     updateUsername,
     updateProvider,

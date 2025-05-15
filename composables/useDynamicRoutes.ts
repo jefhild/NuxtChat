@@ -5,7 +5,8 @@ import
     getRegisteredUsersDisplaynames,
     getAllPublishedArticlesWithTags,
     getAllCategories,
-    getAllTags
+    getAllTags,
+    getUserSlugFromDisplayName
   } from "../lib/supabaseHelpers";
 import { getGenderFromId } from "../lib/dbUtils";
 
@@ -22,13 +23,14 @@ export async function getAllDynamicRoutes() {
       return [];
     }
 
-    const profileRoutes = 
-      profiles?.map(
-        (profile) =>
-          `/profiles/${getGenderFromId(profile.gender_id)}/${
-            profile.displayname
-          }`
-      ) ?? [];
+    const profileRoutes = await Promise.all(
+      profiles.map(async (profile) =>
+      {
+        const slug = await getUserSlugFromDisplayName(profile.displayname);
+        const gender = getGenderFromId(profile.gender_id);
+        return `/profiles/${gender}/${slug}`;
+      })
+    ) ?? [];
 
     const articleRoutes =
       articleData?.map((article) => `/articles/${article.slug}`) ?? [];

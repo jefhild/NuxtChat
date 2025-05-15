@@ -1,8 +1,25 @@
 <template>
-  <div class="d-flex justify-center mt-4">
-    <h1>Popular Recent Profiles</h1>
-  </div>
-  <HomeRecent :limit="100" />
+  <v-container fluid>
+
+    <!-- Back Button -->
+    <v-row>
+      <v-col cols="12">
+          <!-- Page Title -->
+        <div class="d-flex justify-center mt-4">
+          <v-btn icon @click="$router.back()" color="primary" class="mr-4">
+            <v-icon>mdi-arrow-left</v-icon>
+          </v-btn>
+          <h1>Popular Recent Profiles</h1>
+        </div>
+      </v-col>
+    </v-row>
+
+
+
+    <!-- Content -->
+    <HomeRecent :limit="100" />
+
+  </v-container>
 </template>
 
 <script setup>
