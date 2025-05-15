@@ -61,5 +61,19 @@ export async function getAllTags()
   return data;
 }
 
+export async function getUserSlugFromDisplayName(displayName: string){
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("slug")
+    .eq("displayname", displayName)
+    .maybeSingle();
+
+  if (error)
+  {
+    console.error("Error fetching user slug:", error);
+  }
+  
+  return data?.slug;
+}
 
 

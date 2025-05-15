@@ -4,7 +4,7 @@
       <v-col v-for="profile in displayedProfiles" :key="profile.user_id" cols="6" xs="6" sm="6" md="4" lg="3"
         class="d-flex justify-center pa-4">
         <NuxtLink :to="`/profiles/${profile.gender?.toLowerCase()}/${
-          profile.displayname
+          profile.slug
         }`" class="text-decoration-none d-flex justify-center">
           <v-card :class="[
             'profile-card text-center d-flex flex-column justify-end',
@@ -49,14 +49,7 @@
     </transition-group>
   </v-row>
 
-  <v-row justify="center" v-if="props.limit && props.profiles.length > props.limit && !showAll">
-    <v-btn @click="showAll = true" color="primary" variant="tonal">
-      Show All
-    </v-btn>
-  </v-row>
-  <v-row justify="center" v-if="showAll && props.limit && props.profiles.length > props.limit">
-    <v-btn @click="showAll = false" variant="text" color="grey">Show Less</v-btn>
-  </v-row>
+  <v-row ref="infiniteScrollTrigger" v-if="props.limit && loadedCount < props.profiles.length"/>
 
   <v-dialog v-model="confirmDeleteDialog" max-width="400px" transition="dialog-transition">
     <v-card>
@@ -93,12 +86,20 @@ const emit = defineEmits(["user-deleted"]);
 
 const { markUserForDeletion, unmarkUserForDeletion } = useDb();
 
-const showAll = ref(false);
+const loadedCount = ref(props.limit || 12); // Start with 8
+const batchSize = 12; // How many to load each time
+
 const displayedProfiles = computed(() =>
-  props.limit && !showAll.value
-    ? props.profiles.slice(0, props.limit)
-    : props.profiles
+props.limit ? props.profiles.slice(0, loadedCount.value) : props.profiles
 );
+
+const infiniteScrollTrigger = ref(null);
+
+function loadMoreProfiles() {
+  if (loadedCount.value < props.profiles.length) {
+    loadedCount.value = Math.min(loadedCount.value + batchSize, props.profiles.length);
+  }
+}
 
 const allowDelete = ref(props.delete);
 
@@ -146,10 +147,31 @@ async function unmarkDeletion(profile) {
 
 //So that it can be updated every minute
 onMounted(() => {
-  console.log("Mounted", props.profiles);
+  // console.log("Mounted", props.profiles);
   setInterval(() => {
     refreshTime.value = Date.now();
   }, 60000); // 1 minute
+
+  if(!props.limit) {
+    return;   //so that there isnt infinite for the adlin profilegrid
+  } 
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) {
+        loadMoreProfiles();
+      }
+    },
+    { rootMargin: "100px" } // Trigger a bit before it's in view
+  );
+
+  if (infiniteScrollTrigger.value) {
+    observer.observe(infiniteScrollTrigger.value.$el || infiniteScrollTrigger.value);
+  }
+
+  onUnmounted(() => {
+    observer.disconnect();
+  });
 });
 
 const refreshTime = ref(Date.now());

@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.gender}/${profile.displayname}`"
+                :href="`/profiles/${profile.gender}/${profile.slug}`"
                 class="ml-2 mb-2"
               >
                 <v-img
@@ -79,19 +79,16 @@ const activePanels = ref([0]);
 const femaleProfiles = ref([]);
 const profileLimit = 10;
 
-const { getRecentFemales} = useDb();
+const { getRecentFemales } = useDb();
 
 
-onMounted(async () =>
-{
-  // Fetch data during SSR
+onMounted(async () => {
   const data = await getRecentFemales(profileLimit);
 
   if (data)
   {
     femaleProfiles.value = data;
   }
-
 });
 
 // Function to format the 'created' column
