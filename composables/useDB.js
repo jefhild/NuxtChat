@@ -1718,7 +1718,6 @@ const authGetUser = async () => {
   }
 
   const { data, error } = await supabase.auth.getUser();
-  console.log("data: ", data)
   return { data, error };
 };
 

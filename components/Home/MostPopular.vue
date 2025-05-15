@@ -34,7 +34,7 @@ onMounted(async () => {
   if (data) {
     popularProfiles.value = data.slice(0, props.limit); // Limit to 4 profiles for display
   }
-  console.log("Most Popular Profiles: ", popularProfiles.value);
+  // console.log("Most Popular Profiles: ", popularProfiles.value);
   isLoading.value = false;
 });
 </script>

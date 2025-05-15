@@ -24,7 +24,7 @@ export const useAuthStore = defineStore("authStore", {
       const { authGetUser } = useDb();
       const { data, error } = await authGetUser();
 
-      console.log("inside checkAuth - user: ", data);
+      // console.log("inside checkAuth - user: ", data);
 
       if (data.user) {
         this.setUser(data.user);

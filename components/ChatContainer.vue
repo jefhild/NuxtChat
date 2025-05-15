@@ -133,6 +133,8 @@ const showAIUsers = ref(false); // State to toggle between Users and UsersAI
 const lastUnreadSenderId = ref(null);
 const isTabVisible = ref(true);
 
+const typingAiUserId = ref(null);
+
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
@@ -243,13 +245,13 @@ const handleRealtimeMessages = async (payload) =>
   if (!isMessageToCurrentUser) return;
 
   const alreadyExists = messages.value.some((msg) => msg.id === newRow.id);
-  console.log("Already exists:", alreadyExists, "isMessageToCurrentUser:", isMessageToCurrentUser, "Sender ID:", newRow.sender_id, "Receiver ID:", newRow.receiver_id);
+  // console.log("Already exists:", alreadyExists, "isMessageToCurrentUser:", isMessageToCurrentUser, "Sender ID:", newRow.sender_id, "Receiver ID:", newRow.receiver_id);
   if (!alreadyExists)
   {
     const isFromSelectedUser = newRow.sender_id === selectedUser.value?.user_id;
     const isVisible = document.visibilityState === "visible";
 
-    console.log("isFromSelectedUser:", isFromSelectedUser, "isVisible:", isVisible);
+    // console.log("isFromSelectedUser:", isFromSelectedUser, "isVisible:", isVisible);
 
     if (!isFromSelectedUser || !isVisible)
     {
@@ -265,6 +267,7 @@ const handleRealtimeMessages = async (payload) =>
         newRow.sender_id
       );
       lastUnreadSenderId.value = newRow.sender_id;
+      isTyping.value = false;
       return; //I return so it doesnt add the message to the chat if it is not from the selected user
     }
     
@@ -323,6 +326,7 @@ onMounted(async () => {
     if (userProfileData)
     {
       selectedUser.value = userProfileData;
+      // console.log("Selected user from query:", selectedUser.value);
     }
   }
 
@@ -348,6 +352,15 @@ onMounted(async () => {
     selectedUser,
     (newUser, oldUser) => {
       if (newUser && newUser !== oldUser) {
+        isTyping.value = false;
+        if (
+          newUser.provider === "ChatGPT" &&
+          newUser.user_id === typingAiUserId.value
+        )
+        {
+          isTyping.value = true;
+        }
+
         loadChatMessages(authStore.user?.id, newUser.user_id);
       }
     },
@@ -395,7 +408,7 @@ onMounted(async () => {
     if (document.visibilityState === "visible")
     {
 
-      console.log("Tab is visible", selectedUser.value.user_id, lastUnreadSenderId.value);
+      // console.log("Tab is visible", selectedUser.value.user_id, lastUnreadSenderId.value);
       if (selectedUser.value?.user_id === lastUnreadSenderId.value)
       {
         loadChatMessages(user.value.id, selectedUser.value.user_id);
@@ -412,22 +425,22 @@ onMounted(async () => {
 
 // Select user to chat with
 const selectUser = (user) => {
-  // console.log("Selected user (ChatContainer):", user);
   selectedUser.value = user;
+
 };
 
 const sendMessage = async () => {
   if (newMessage.value.trim() && selectedUser.value) {
     const senderUserId = authStore.user?.id;
     const receiverUserId = selectedUser.value.user_id;
-    console.log(
-      "Sender ID:",
-      senderUserId,
-      "Receiver ID:",
-      receiverUserId,
-      "Message:",
-      newMessage.value
-    );
+    // console.log(
+    //   "Sender ID:",
+    //   senderUserId,
+    //   "Receiver ID:",
+    //   receiverUserId,
+    //   "Message:",
+    //   newMessage.value
+    // );
 
     if (!senderUserId || !receiverUserId) {
       console.error("Sender or Receiver ID is missing");
@@ -478,6 +491,7 @@ const sendMessage = async () => {
         // If the selected user is an AI, generate a response by calling the local API
         if (isAI) {
           isTyping.value = true;
+          typingAiUserId.value = receiverUserId; // Track which AI is typing
           const aiResponse = await fetchAiResponse(userMessage, selectedUser);
           // console.log("fetching response from AI:", aiResponse);
           if (aiResponse) {
@@ -488,6 +502,8 @@ const sendMessage = async () => {
               aiResponse
             );
             if (aiData && aiData.length > 0) {
+              isTyping.value = false;
+              typingAiUserId.value = null;
               scrollToBottom(); // Ensure the chat scrolls to the bottom when a new message is added
             }
           }
@@ -523,7 +539,7 @@ const fetchAiResponse = async (message, aiuser) => {
     messages: messages.value.slice(-10),
   };
 
-  console.log("Sending payload:", userPayload); // Debug log to verify payload
+  // console.log("Sending payload:", userPayload); // Debug log to verify payload
 
   if (!userPayload.userMessage) {
     console.error("User message is missing");
@@ -540,7 +556,7 @@ const fetchAiResponse = async (message, aiuser) => {
     });
 
     const responseData = await response.json();
-    console.log("API response:", responseData);
+    // console.log("API response:", responseData);
 
     return responseData.success ? responseData.aiResponse : null;
   } catch (error) {
@@ -552,7 +568,7 @@ const fetchAiResponse = async (message, aiuser) => {
 const checkAiInteractionLimit = async () => {
   try {
     // Determine the interaction limit based on user authentication type
-    const interactionLimit = authStore.user.is_anonymous ? 10 : 100;
+    const interactionLimit = authStore.user.is_anonymous ? 10 : null;
 
     // console.log("interactionLimit:", interactionLimit);
     // console.log("authStore.user.is_anonymous:", authStore.user.is_anonymous);
@@ -586,7 +602,7 @@ const checkAiInteractionLimit = async () => {
     }
 
     // Check if the interaction count exceeds the allowed limit
-    if (data.interaction_count >= interactionLimit) {
+    if (data.interaction_count >= interactionLimit && interactionLimit != null) {
       // Prompt the user to register
       showRegistrationPrompt();
       return false; // Prevent further interactions
