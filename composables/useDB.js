@@ -1712,12 +1712,15 @@ const { data, error } = await supabase
   /* Auth functions */
   /*----------------*/
   /*Get*/
-  const authGetUser = async () => {
-    //console.log("Getting user");
-    const { data, error } = await supabase.auth.getUser();
-    // console.log("User data:", data);
-    return { data, error };
-  };
+const authGetUser = async () => {
+  if (!import.meta.client) {
+    return { data: { user: null }, error: null };
+  }
+
+  const { data, error } = await supabase.auth.getUser();
+  console.log("data: ", data)
+  return { data, error };
+};
 
   const authRefreshSession = async () => {
     const { data, error } = await supabase.auth.refreshSession();

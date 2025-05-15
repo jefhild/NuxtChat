@@ -31,7 +31,6 @@ useHead({
       async: true,
     },
   ],
-  title: "Free Anonymous Chat",
   htmlAttrs: { lang: "en" },
 });
 

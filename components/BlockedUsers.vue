@@ -9,7 +9,7 @@
               <v-col cols="12">
                 <div class="avatar-wrapper">
                   <NuxtImg :src="getProfileImage(profile.avatar_url, profile.gender_id)" height="200" width="200"
-                    class="rounded-circle cover-image mx-auto d-block ma-4" />
+                    class="rounded-circle cover-image mx-auto d-block ma-4" :alt="`${profile.displayname}'s image`"/>
 
                   <NuxtImg v-if="avatarDecorations[profile.user_id]" :src="avatarDecorations[profile.user_id]"
                     class="avatar-decoration" />
