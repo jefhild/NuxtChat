@@ -32,11 +32,12 @@ const { getRecentProfiles } = useDb();
 
 onMounted(async () =>
 {
-  const data = await getRecentProfiles(profileLimit);
+  const data = await getRecentProfiles(props.limit);
   if (data)
   {
     recentProfiles.value = data.slice(0, props.limit); // Limit to 4 profiles for display
   }
+  console.log("Recent Profiles:", recentProfiles.value);
   isLoading.value = false;
 });
 </script>

@@ -1,8 +1,25 @@
-<template v-if="!isLoading">
-  <div class="d-flex justify-center mt-4">
-    <h1>Most Popular Profiles</h1>
-  </div>
-  <HomeMostPopular :limit="100" />
+<template>
+  <v-container fluid>
+
+    <!-- Back Button -->
+    <v-row>
+      <v-col cols="12">
+          <!-- Page Title -->
+        <div class="d-flex justify-center mt-4">
+          <v-btn icon @click="$router.back()" color="primary" class="mr-4">
+            <v-icon>mdi-arrow-left</v-icon>
+          </v-btn>
+          <h1>Most Popular Profiles</h1>
+        </div>
+      </v-col>
+    </v-row>
+
+
+
+    <!-- Content -->
+    <HomeMostPopular :limit="100" />
+
+  </v-container>
 </template>
 
 <script setup>

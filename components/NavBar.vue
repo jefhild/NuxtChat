@@ -46,7 +46,7 @@
           <v-btn prepend-icon="mdi-post-outline" to="/articles">Blog</v-btn>
           <v-btn @click="navigate('/signin')" prepend-icon="mdi-login">Sign in</v-btn>
           <v-btn @click="navigate('/about')" prepend-icon="mdi-account-group">About Us</v-btn>
-          <v-btn @click="navigate('/freechat')" prepend-icon="mdi-monitor-account">Free Chat</v-btn>
+          <v-btn @click="navigate('/profiles')" prepend-icon="mdi-monitor-account">Free Chat</v-btn>
         </v-row>
 
         <!-- Mobile menu -->
@@ -60,7 +60,7 @@
               <v-list-item to="/articles" prepend-icon="mdi-post-outline">Blog</v-list-item>
               <v-list-item to="/signin" prepend-icon="mdi-login">Sign in</v-list-item>
               <v-list-item to="/about" prepend-icon="mdi-account-group">About Us</v-list-item>
-              <v-list-item to="/freechat" prepend-icon="mdi-monitor-account">Free Chat</v-list-item>
+              <v-list-item to="/profiles" prepend-icon="mdi-monitor-account">Free Chat</v-list-item>
             </v-list>
           </v-menu>
         </div>
