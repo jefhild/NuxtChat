@@ -18,11 +18,11 @@
 
 						<v-tabs-window v-model="tab">
 							<v-tabs-window-item value="registered">
-								<ProfileGrid delete :profiles="filteredRegistered" @user-deleted="handleUserDeleted" />
+								<ProfileGrid delete :profiles="filteredRegistered" @user-deleted="handleUserDeleted" :limit="null"/>
 							</v-tabs-window-item>
 
 							<v-tabs-window-item value="ai">
-								<ProfileGrid delete :profiles="filteredAI" @user-deleted="handleUserDeleted" />
+								<ProfileGrid delete :profiles="filteredAI" @user-deleted="handleUserDeleted" :limit="null"/>
 							</v-tabs-window-item>
 						</v-tabs-window>
 					</v-card-text>

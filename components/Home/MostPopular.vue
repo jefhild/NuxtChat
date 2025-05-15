@@ -21,7 +21,6 @@
 
 <script setup>
 const popularProfiles = ref([]);
-const profileLimit = 100;
 const { getMostPopularProfiles } = useDb();
 
 const isLoading = ref(true);
@@ -31,10 +30,11 @@ const props = defineProps({
 
 onMounted(async () => {
   // Fetch data on component mount
-  const data = await getMostPopularProfiles(profileLimit);
+  const data = await getMostPopularProfiles(props.limit);
   if (data) {
     popularProfiles.value = data.slice(0, props.limit); // Limit to 4 profiles for display
   }
+  console.log("Most Popular Profiles: ", popularProfiles.value);
   isLoading.value = false;
 });
 </script>
