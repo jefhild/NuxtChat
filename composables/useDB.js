@@ -1195,6 +1195,14 @@ export const useDb = () => {
     }
   };
 
+  const updateSoundSetting = async (userId, enabled) =>
+  {
+    return await supabase
+      .from("profiles")
+      .update({ sound_notifications_enabled: enabled })
+      .eq("user_id", userId);
+  };
+
 
   
   /*------------------*/
@@ -1707,6 +1715,21 @@ const { data, error } = await supabase
     });
   };
 
+  const isNotificationsEnabled = async (userId) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("sound_notifications_enabled")
+      .eq("user_id", userId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching notification settings:", error);
+      return false;
+    }
+
+    return data?.sound_notifications_enabled ?? false;
+  };
+
 
   /*----------------*/
   /* Auth functions */
@@ -1718,7 +1741,6 @@ const authGetUser = async () => {
   }
 
   const { data, error } = await supabase.auth.getUser();
-  console.log("data: ", data)
   return { data, error };
 };
 
@@ -1906,6 +1928,7 @@ const authGetUser = async () => {
     updateArticle,
     updateArticleTags,
     updateLastActive,
+    updateSoundSetting,
 
     insertProfile,
     insertMessage,
@@ -1938,6 +1961,7 @@ const authGetUser = async () => {
     checkInactivityForAllUsers,
     markUserForDeletion,
     unmarkUserForDeletion,
+    isNotificationsEnabled,
 
     authGetUser,
     authRefreshSession,

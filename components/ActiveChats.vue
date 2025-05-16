@@ -115,7 +115,7 @@ const selectedUser = ref(null);
 const selectedUserForDelete = ref(null);
 
 const deleteChat = (user) => {
-  console.log("Selected user", user);
+  // console.log("Selected user", user);
   selectedUserForDelete.value = user;
   deleteDialog.value = true;
 };
@@ -163,7 +163,7 @@ const selectUser = (user) => {
 };
 
 onMounted(() => {
-  console.log("ActiveChats mounted", props.users);
+  // console.log("ActiveChats mounted", props.users);
   subscribeToNewMessages();
 });
 

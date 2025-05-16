@@ -19,7 +19,8 @@
           selectedUser ? selectedUser.tagline : "..."
           }}</v-col>
         <ChatHeaderActions2 v-if="selectedUser" :selectedUser="selectedUser" :currentUser="currentUser" @upvote="upvote"
-          @downvote="downvote" @toggleFavorite="toggleFavorite" @toggleBlockUser="toggleBlockUser" @toggleReportDialog="toggleReportDialog" />
+          @downvote="downvote" @toggleFavorite="toggleFavorite" @toggleBlockUser="toggleBlockUser"
+          @toggleReportDialog="toggleReportDialog" />
       </v-row>
     </v-card-title>
 
@@ -36,7 +37,7 @@
 
   <v-dialog v-model="userProfileDialog" max-width="600" transition="dialog-transition">
     <v-card>
-      <PublicUserProfile :selectedUserDisplayName="selectedUser?.displayname" />
+      <PublicUserProfile :selectedUserSlug="selectedUser?.slug" :isPublic="false"/>
     </v-card>
   </v-dialog>
 
@@ -66,6 +67,7 @@ const props = defineProps({
     tagline: String,
     bio: String,
     age: Number,
+    slug: String,
     gender_id: Number,
     country_name: String,
     user_id: String,
