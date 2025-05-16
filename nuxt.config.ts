@@ -135,7 +135,7 @@ export default defineNuxtConfig({
       SUPABASE_REDIRECT: process.env.SUPABASE_REDIRECT,
       GOOGLE_ANALYTICS_ID: process.env.GOOGLE_ANALYTICS_ID,
       TERMLY_ID: process.env.TERMLY_ID,
-      ADSENSE_CLIENT: process.env.ADSENSE_CLIENT,
+      ADSENSE_CLIENT: process.env.ADSENSE_CLIENT || '',
     },
   },
 

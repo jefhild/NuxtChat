@@ -37,7 +37,7 @@ onMounted(async () =>
   {
     recentProfiles.value = data.slice(0, props.limit); // Limit to 4 profiles for display
   }
-  console.log("Recent Profiles:", recentProfiles.value);
+  // console.log("Recent Profiles:", recentProfiles.value);
   isLoading.value = false;
 });
 </script>

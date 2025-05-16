@@ -71,6 +71,7 @@
             </v-col></v-row>
         </v-col>
       </v-row>
+
       <v-row>
         <v-col cols="12">
           <LocationSelection :selectedCountry="userProfile.country" :selectedState="userProfile.state"
@@ -87,6 +88,14 @@
         <v-col>
           <ProfileBio :bio="userProfile.bio ?? ''" :isEditable="isEditable" @updateBio="updateBio" />
           <!-- <v-btn v-if="isEditable" flat variant="text" class="text-link-btn" @click="openGenerateBioDialog">Generate a bio</v-btn> -->
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12" md="12">
+          <v-switch v-model="soundNotificationsEnabled"
+            :label="`Sound Notifications: ${soundNotificationsEnabled ? 'On' : 'Off'}`" color="primary" hide-details
+            inset @change="updateSoundNotifications" />
         </v-col>
       </v-row>
 
@@ -131,8 +140,8 @@
 
         <v-col class="d-flex justify-center">
           <v-btn flat variant="text" color="blue"
-            @click="router.push(`/profiles/${userProfile.gender}/${userProfile.slug}`)"
-            class="text-link-btn">Public Profile
+            @click="router.push(`/profiles/${userProfile.gender}/${userProfile.slug}`)" class="text-link-btn">Public
+            Profile
           </v-btn>
 
           <v-btn icon color="primary" size="small" class="ml-5" @click="copyPublicProfileLink">
@@ -206,6 +215,7 @@ const {
   getStatuses,
   getGenders,
   updateGender,
+  updateSoundSetting,
   hasInterests,
   hasEmail,
   updateProfile,
@@ -268,6 +278,9 @@ const finishProfileDialog = ref(false);
 const isMarkedForDeletion = ref(false);
 const snackbar = ref(false);
 const snackbarText = ref("");
+const soundNotificationsEnabled = ref(userProfile.value?.sound_notifications_enabled ?? true);
+
+
 
 const updateFormValidity = (isValid) => {
   // console.log("Form validity updated:", isValid);
@@ -492,6 +505,16 @@ const updateTheGender = async (newGenderId) => {
 watch(selectedGender, (newGenderId) => {
   updateTheGender(newGenderId);
 });
+
+const updateSoundNotifications = async () =>
+{
+    const { error } = await updateSoundSetting(
+      userProfile.value.user_id,
+      soundNotificationsEnabled.value
+    );
+    
+    // console.log("Sound setting updated successfully", soundNotificationsEnabled.value);
+};
 
 const updateStatus = (newStatusId) => {
   userProfile.value.status_id = newStatusId;

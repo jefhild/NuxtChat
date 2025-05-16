@@ -5,38 +5,24 @@
       <v-col cols="12" md="8">
         <v-card class="mx-auto" max-width="400" v-if="profile">
           <div class="avatar-wrapper">
-            <NuxtImg
-              :src="profile.avatar_url"
-              height="200"
-              width="200"
-              class="rounded-circle cover-image mx-auto d-block ma-9"
-            />
+            <NuxtImg :src="profile.avatar_url" height="200" width="200"
+              class="rounded-circle cover-image mx-auto d-block ma-9" :alt="`${profile.displayname} image`" />
 
-            <NuxtImg
-              :src="avatarDecoration"
-              v-if="avatarDecoration"
-              class="avatar-decoration"
-            />
+            <NuxtImg :src="avatarDecoration" v-if="avatarDecoration" class="avatar-decoration" :alt="`${profile.displayname} image decoration`"/>
           </div>
 
           <v-card-title>
-            <v-row
-              ><v-col>
+            <v-row><v-col>
                 <h1 class="text-h5">
                   {{ profile?.displayname }}, {{ profile?.age }}
                 </h1>
-              </v-col></v-row
-            >
+              </v-col></v-row>
           </v-card-title>
 
           <v-card-subtitle>
-            <v-row
-              ><v-col>{{ profile?.tagline }}</v-col
-              ><v-col class="justify-end d-flex align-center"
-                >{{ profile?.status }}, {{ profile?.country }}
-                {{ profile.country_emoji }}</v-col
-              ></v-row
-            >
+            <v-row><v-col>{{ profile?.tagline }}</v-col><v-col class="justify-end d-flex align-center">{{
+                profile?.status }}, {{ profile?.country }}
+                {{ profile.country_emoji }}</v-col></v-row>
           </v-card-subtitle>
 
           <v-card-text>
@@ -47,76 +33,52 @@
             <v-row v-if="profile?.looking_for?.length" no-gutters>
               <v-col class="ml-2">{{ profile?.looking_for.join(", ") }}</v-col>
             </v-row>
-            <v-row v-if="profile?.bio"
-              ><v-col class="text-h6">About Me:</v-col></v-row
-            >
+            <v-row v-if="profile?.bio"><v-col class="text-h6">About Me:</v-col></v-row>
             <v-row v-if="profile?.bio">
-              <v-col class="bio-paragraph">{{ profile?.bio }}</v-col></v-row
-            >
+              <v-col class="bio-paragraph">{{ profile?.bio }}</v-col></v-row>
           </v-card-text>
-          <v-card-actions
-            style="
+          <v-card-actions style="
               position: relative;
               bottom: 0;
               width: 100%;
               background-color: rgba(0, 0, 0, 0.1);
-            "
-          >
-            <v-btn
-              v-if="profileSiteUrl"
-              :href="profileSiteUrl"
-              color="medium-emphasis"
-              icon="mdi-link-variant"
-              size="small"
-              target="_blank"
-              rel="noopener noreferrer"
-              :aria-label="`Visit ${profile?.displayname}'s website`"
-            ></v-btn>
-            <v-btn
-              v-else
-              color="medium-emphasis"
-              icon="mdi-link-variant-off"
-              size="small"
-              disabled
-            ></v-btn>
+            ">
+            <v-btn v-if="profileSiteUrl" :href="profileSiteUrl" color="medium-emphasis" icon="mdi-link-variant"
+              size="small" target="_blank" rel="noopener noreferrer"
+              :aria-label="`Visit ${profile?.displayname}'s website`"></v-btn>
+            <v-btn v-else color="medium-emphasis" icon="mdi-link-variant-off" size="small" disabled></v-btn>
             <v-spacer></v-spacer>
 
             <ButtonFavorite :profile="profile" />
 
-            <v-btn
-              color="blue medium-emphasis"
-              icon="mdi-cancel"
-              size="small"
-            ></v-btn>
+            <v-btn color="blue medium-emphasis" icon="mdi-cancel" size="small"></v-btn>
 
-            <v-btn
-              color="black medium-emphasis"
-              icon="mdi-share-variant"
-              size="small"
-            ></v-btn>
+            <v-btn color="black medium-emphasis" icon="mdi-share-variant" size="small"></v-btn>
           </v-card-actions>
         </v-card>
 
-        <v-row class="mt-2" justify="center" v-if="isAuthenticated"
-          ><v-col cols="auto">
-            <NuxtLink to="/settings">Back to Profile</NuxtLink>
-          </v-col>
-          <v-col cols="auto">
-            <NuxtLink :to="`/chat?userId=${profile?.user_id}`">
-              Chat with {{ profile?.displayname }}
-            </NuxtLink>
-          </v-col>
-        </v-row>
-        <v-row class="mt-2" justify="center" v-else>
-          <v-col cols="auto">
-            <NuxtLink to="/">Back Home</NuxtLink>
-          </v-col>
-          <v-col cols="auto">
-            <NuxtLink to="#" @click.prevent="handleAILogin">
-              Chat with {{ profile?.displayname }}
-            </NuxtLink>
-          </v-col>
-        </v-row>
+        <v-container v-if="isPublic">
+          <v-row class="mt-2" justify="center" v-if="isAuthenticated"><v-col cols="auto">
+              <NuxtLink to="/settings">Back to Profile</NuxtLink>
+            </v-col>
+            <v-col cols="auto">
+              <NuxtLink :to="`/chat?userId=${profile?.user_id}`">
+                Chat with {{ profile?.displayname }}
+              </NuxtLink>
+            </v-col>
+          </v-row>
+          <v-row class="mt-2" justify="center" v-else>
+            <v-col cols="auto">
+              <NuxtLink to="/">Back Home</NuxtLink>
+            </v-col>
+            <v-col cols="auto">
+              <NuxtLink to="#" @click.prevent="handleAILogin">
+                Chat with {{ profile?.displayname }}
+              </NuxtLink>
+            </v-col>
+          </v-row>
+        </v-container>
+
       </v-col>
     </v-row>
   </v-container>
@@ -132,6 +94,10 @@ import { useUserProfile } from "@/composables/useUserProfile";
 
 const props = defineProps({
   selectedUserSlug: String,
+  isPublic: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const authStore = useAuthStore();
