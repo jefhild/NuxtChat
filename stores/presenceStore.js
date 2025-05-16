@@ -84,8 +84,6 @@ export const usePresenceStore = defineStore('presenceStore', {
           console.error('Error updating last_active in profiles:', error);
         }
         
-
-        console.log("Updated last_active for online users:", updates);
       }, 5 * 60 * 1000); // every 5 minutes
     },
 

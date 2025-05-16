@@ -163,7 +163,7 @@ const selectUser = (user) => {
 };
 
 onMounted(() => {
-  console.log("ActiveChats mounted", props.users);
+  // console.log("ActiveChats mounted", props.users);
   subscribeToNewMessages();
 });
 

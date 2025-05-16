@@ -521,6 +521,7 @@ export const useAuthStore = defineStore("authStore", {
         country_id: 233,
         state_id: 1416,
         city_id: 111058,
+        sound_notifications_enabled: true,
         username: this.user ? this.user.email : null,
         avatar_url: this.user.user_metadata
           ? this.user.user_metadata.avatar_url

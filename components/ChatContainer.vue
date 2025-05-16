@@ -84,7 +84,6 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, nextTick } from "vue";
 import { useNotificationStore } from '@/stores/notificationStore';
 const route = useRoute();
 const router = useRouter();
@@ -101,6 +100,7 @@ const {
   getAIInteractionCount,
   getCurrentAIInteractionCount,
   getMessagesBetweenUsers,
+  isNotificationsEnabled,
   updateMessagesAsRead,
   updateAIInteractionCount,
   insertMessage,
@@ -257,10 +257,15 @@ const handleRealtimeMessages = async (payload) =>
     {
       const senderProfile = await getUserProfileFromId(newRow.sender_id);
       // console.log("Sender Profile:", senderProfile);
-      notificationSound.play().catch((e) =>
-      {
-        console.warn("Autoplay failed:", e);
-      });
+      const enabled = await isNotificationsEnabled(userProfile.value.user_id);
+      // console.log("Notification enabled:", enabled);
+      if (enabled) {
+        notificationSound.play().catch((e) =>
+        {
+          console.warn("Autoplay failed:", e);
+        });
+      }
+      
       notificationStore.addNotification(
         'message',
         `${senderProfile.data.displayname || 'Someone'} sent you a message`,
