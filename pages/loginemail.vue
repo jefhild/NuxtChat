@@ -7,7 +7,7 @@
 
   <v-row justify="center" align="center" v-else>
     <v-col cols="12" class="text-center">
-      <h1>Welcome, Thanks for verifying your email</h1>
+      <h1>Welcome, you are now signed in</h1>
       <h2>You can go to your profile or chat now.</h2>
 
       <v-row justify="center" align="center" class="mt-4">
@@ -18,7 +18,7 @@
           <v-btn color="primary" @click="goToSettings">Go to my profile!</v-btn>
         </v-col>
       </v-row>
-    </v-col> 
+    </v-col>
   </v-row>
 
 </template>

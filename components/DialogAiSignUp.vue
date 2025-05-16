@@ -453,7 +453,7 @@ const submitToDatabase = async () => {
     console.error("Error during profile creation:", error);
   } finally {
     isLoading.value = false;
-    router.push("/settings");
+    router.push("/chat");
   }
 };
 </script>
