@@ -8,15 +8,21 @@ const slug = route.params.slug;
 
 const { profile, fetchUserProfileFromSlug } = useUserProfile();
 await fetchUserProfileFromSlug(slug);
+useHead(() => {
+  const gender = profile.value?.gender;
+  const slug = profile.value?.slug;
 
-useHead(() => ({
-  link: [
-    {
-      rel: "canonical",
-      href: "https://imchatty.com" + "/profiles/" + profile.value.gender.toLowerCase() + "/" + profile.value.slug,
-    },
-  ],
-}));
+  return {
+    link: [
+      {
+        rel: "canonical",
+        href: `https://imchatty.com/profiles/${
+          typeof gender === "string" ? gender.toLowerCase() : "unknown"
+        }/${slug || "unknown"}`,
+      },
+    ],
+  };
+});
 
 const getLimitedDescription = (text) =>
   text && text.length > 160 ? text.slice(0, 157) + "..." : text;
