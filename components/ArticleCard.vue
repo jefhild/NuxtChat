@@ -42,11 +42,11 @@
         <div class="tags-links">
           <NuxtLink
             v-for="tag in article.tags"
-            :key="tag.slug || tag"
-            :to="`/tags/${(tag.slug || tag).toLowerCase()}`"
+            :key="tag?.slug || tag"
+            :to="`/tags/${formatTagSlug(tag)}`"
             class="tag-link"
           >
-            #{{ tag.name || tag }}
+            #{{ tag?.name || tag }}
           </NuxtLink>
         </div>
       </v-card-text>
@@ -92,6 +92,10 @@ const formatDate = (isoDate) => {
     day: "numeric",
   });
 };
+const formatTagSlug = (tag) => {
+  const value = tag?.slug || tag;
+  return typeof value === "string" ? value.toLowerCase() : "";
+};
 </script>
 
 <style scoped>
@@ -118,7 +122,7 @@ const formatDate = (isoDate) => {
 }
 
 .tag-link {
-  font-size: 0.800rem;
+  font-size: 0.8rem;
   color: #5e35b1; /* deep purple-ish */
   text-decoration: none;
   background-color: #f3e5f5;
@@ -131,5 +135,4 @@ const formatDate = (isoDate) => {
   background-color: #d1c4e9;
   color: #311b92;
 }
-
 </style>
