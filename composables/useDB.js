@@ -734,7 +734,7 @@ export const useDb = () => {
     }));
   };
 
-  const getAllPublishedArticlesWithTags = async () =>
+  const getAllPublishedArticlesWithTags = async (limit) =>
   {
     const { data, error } = await supabase
       .from("articles")
@@ -750,6 +750,7 @@ export const useDb = () => {
       article_tags(tag:tag_id(name))
     `)
       .eq("is_published", true)
+      .limit(limit)
       .order("created_at", { ascending: false });
 
     if (error)
