@@ -74,6 +74,7 @@
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
+import { useNotificationStore } from '@/stores/notificationStore';
 import useAgeMapper from "@/composables/useAgeMapper";
 import useGenderMapper from "@/composables/useGenderMapper";
 import useStatusMapper from "@/composables/useStatusMapper";
@@ -81,7 +82,7 @@ import useAvatarMapper from "@/composables/useAvatarMapper";
 
 const { checkDisplayNameExists } = useDb();
 
-
+const notificationStore = useNotificationStore();
 const authStore = useAuthStore();
 const router = useRouter();
 const isLoading = ref(false);
@@ -454,6 +455,11 @@ const submitToDatabase = async () => {
   } finally {
     isLoading.value = false;
     router.push("/chat");
+    notificationStore.addNotification(
+      'reminder',
+      `Make sure to enter your email and complete your profile to unlock all features!`,
+      null
+    );
   }
 };
 </script>
