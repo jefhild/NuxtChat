@@ -13,6 +13,7 @@
         width="50"
         height="50"
         class="rounded-circle cover-image"
+        :alt="`${profile.displayname} image`"
       />
       <v-icon
         :color="getGenderColor(profile.gender_id)"
@@ -23,6 +24,7 @@
 
       <NuxtImg
         :src="avatarDecoration"
+        :alt="`${profile.displayname} image decoration`"
         v-if="avatarDecoration"
         class="avatar-decoration"
       />
