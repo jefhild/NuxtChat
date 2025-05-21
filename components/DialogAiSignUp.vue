@@ -1,6 +1,8 @@
 <template>
-  <v-card width="650" class="mx-auto">
-    <v-card-title class="text-center mt-4"> <h1>{{ props.titleText }}</h1></v-card-title>
+  <v-card class="mx-auto pa-4" :class="$vuetify.display.xs ? 'w-100' : 'w-75'" max-width="650">
+    <v-card-title class="text-center mt-4">
+      <h1 class="text-wrap text-h5 text-h4-md text-h3-lg">{{ props.titleText }}</h1>
+    </v-card-title>
     <v-card-text>
       <!-- <p class="pb-4">
         Please follow the instructions below to create your anonymous profile.
@@ -627,5 +629,20 @@ const submitToDatabase = async () => {
 h1 {
   font-weight: 300;
   font-size: 1.6em;
+}
+
+@media (max-width: 600px) {
+  .chat-container {
+    padding: 12px;
+  }
+
+  .chat-bubble {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 1.2em;
+  }
 }
 </style>

@@ -96,7 +96,7 @@
 		</v-container>
 	</v-container>
 
-	<v-dialog v-model="aiDialog" width="auto">
+	<v-dialog v-model="aiDialog" :max-width="750">
 		<DialogAiSignUp @closeDialog="handleDialogClose" />
 	</v-dialog>
 </template>

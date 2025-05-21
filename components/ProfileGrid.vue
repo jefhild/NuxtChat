@@ -190,7 +190,7 @@ const refreshTime = ref(Date.now());
   border-radius: 15px;
 }
 
-/* On small screens (mobile), reduce the width */
+/* reduce the width and height of the profile card for mobiles*/
 @media (max-width: 600px) {
   .profile-card {
     width: 150px;
