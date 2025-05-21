@@ -1,14 +1,14 @@
 <template>
+  <div v-if="message.reply_to" class="reply-preview-box">
+    <div class="text-caption font-italic text-grey">
+      Replied to: "{{ message.reply_to.content }}"
+    </div>
+  </div>
   <div :class="['message', messageClass]">
     <div>{{ message.content }}</div>
     <div class="small">
-      <v-icon
-        icon="mdi-check"
-        v-if="message.read"
-        class="read-icon mr-3"
-      ></v-icon>
-      <v-icon icon="mdi-check" v-else class="unread-icon mr-3"></v-icon
-      >{{ formattedLocalDate }}
+      <v-icon icon="mdi-check" v-if="message.read" class="read-icon mr-3"></v-icon>
+      <v-icon icon="mdi-check" v-else class="unread-icon mr-3"></v-icon>{{ formattedLocalDate }}
     </div>
   </div>
 </template>

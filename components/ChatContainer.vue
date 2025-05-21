@@ -32,6 +32,7 @@
         <v-card class="flex-grow-1">
           <v-card-text class="chat-messages" ref="chatContainer">
             <div v-for="(message, index) in messages" :key="message.id"
+              @click="replyingToMessage = message"
               :class="message.sender_id === user.id ? 'sent' : 'received'" :ref="
                 message.id === messages[messages.length - 1].id
                   ? 'lastMessage'
@@ -46,6 +47,10 @@
           </v-card-text>
         </v-card>
 
+        <div v-if="replyingToMessage" class="d-flex align-center">
+          <div class="text-caption mr-5">Replying to: {{ replyingToMessage.content }}</div>
+          <v-btn icon @click="replyingToMessage = null" size="small" class="mt-2"><v-icon>mdi-close</v-icon></v-btn>
+        </div>
         <!-- Message Input Row -->
         <v-form @submit.prevent="sendMessage">
           <v-row no-gutters class="pa-2">
@@ -135,6 +140,8 @@ const isTabVisible = ref(true);
 
 const typingAiUserId = ref(null);
 
+const replyingToMessage = ref(null);
+
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
@@ -197,6 +204,7 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
       content: msg.content,
       created_at: msg.created_at,
       read: msg.read,
+      reply_to: msg.reply_to,
     }));
 
     //console.log("Fetched and mapped messages:", messages.value);
@@ -474,8 +482,11 @@ const sendMessage = async () => {
       const data = await insertMessage(
         receiverUserId,
         senderUserId,
-        userMessage
+        userMessage,
+        replyingToMessage.value?.id ?? null
       );
+
+      replyingToMessage.value = null;
 
       if (data && data.length > 0) {
         // console.log("Message sent successfully:", data);
@@ -542,6 +553,7 @@ const fetchAiResponse = async (message, aiuser) => {
     userGender: userProfile.value?.gender,
     userAge: userProfile.value?.age,
     messages: messages.value.slice(-10),
+    replyTo: replyingToMessage.value?.content || null,
   };
 
   // console.log("Sending payload:", userPayload); // Debug log to verify payload
@@ -682,6 +694,18 @@ const refreshData = async () => {
   max-height: 300px; /* Adjust as needed */
   overflow-y: auto;
   padding: 5px;
+}
+
+.chat-messages>div {
+  transition: background-color 0.2s ease;
+  border-radius: 6px;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.chat-messages>div:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+  /* light blue background on hover */
 }
 
 .sent {

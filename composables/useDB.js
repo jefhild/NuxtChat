@@ -169,12 +169,21 @@ export const useDb = () => {
     return data.avatar_decoration_url;
   };
 
-  const getMessagesBetweenUsers = async (senderUserId, receiverUserId) =>{
+  const getMessagesBetweenUsers = async (senderUserId, receiverUserId) =>
+  {
     const { data, error } = await supabase
       .from("messages")
-      .select(
-        "id, sender_id, receiver_id, content, created_at, read, profiles!messages_sender_id_fkey(displayname)"
-      )
+      .select(`
+        id,
+        sender_id,
+        receiver_id,
+        content,
+        created_at,
+        read,
+        reply_to_message_id,
+        reply_to:reply_to_message_id ( id, content, sender_id ),
+        profiles!messages_sender_id_fkey(displayname)
+      `)
       .or(
         `and(sender_id.eq.${senderUserId},receiver_id.eq.${receiverUserId}),and(sender_id.eq.${receiverUserId},receiver_id.eq.${senderUserId})`
       );
@@ -182,6 +191,7 @@ export const useDb = () => {
     if (error) throw error;
     return data;
   };
+  
 
   const getAIInteractionCount = async (senderUserId) => {
     const { data: interactionData, error: updateError } = await supabase
@@ -1277,19 +1287,23 @@ export const useDb = () => {
     return { error: null };
   };
 
-  const insertMessage = async (receiverId, senderId, message) => {
+  const insertMessage = async (receiverId, senderId, message, replyToMessageId = null) =>
+  {
     const { data, error } = await supabase
       .from("messages")
       .insert({
         sender_id: senderId,
         receiver_id: receiverId,
         content: message,
+        reply_to_message_id: replyToMessageId,
       })
       .select("*");
 
-    if (error) {
+    if (error)
+    {
       console.error("Error sending message:", error);
     }
+
     return data;
   };
 
