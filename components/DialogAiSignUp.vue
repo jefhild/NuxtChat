@@ -37,7 +37,7 @@
                 {{ message.text }}
 
                 <v-avatar size="32" class="bot-avatar">
-                  <v-img src="/robot.png" />
+                  <v-img src="/images/robot.png" />
                 </v-avatar>
               </p>
             </transition-group>
@@ -53,7 +53,7 @@
             <div v-if="isTyping" class="typing-indicator bot-message">
               <div class="dots"><span></span><span></span><span></span></div>
               <v-avatar size="32" class="bot-avatar">
-                <v-img src="/robot.png" />
+                <v-img src="/images/robot.png" />
               </v-avatar>
             </div>
           </v-container>
