@@ -559,7 +559,7 @@ const sendMessage = async () => {
         replyingToMessage.value?.id ?? null,
         uploadedFileUrl.value,
         uploadedFileType.value,
-        attachedFile.value.name
+        attachedFile.value?.name ? attachedFile.value.name : null
       );
 
       
