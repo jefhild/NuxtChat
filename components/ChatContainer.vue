@@ -70,14 +70,18 @@
                       ? 'Chat with a ' + selectedUser.displayname + ' AI'
                       : 'Message ' + selectedUser.displayname
                     : 'Select a user to chat with'
-                " variant="underlined" dense :readonly="!selectedUser"></v-text-field>
+                " variant="underlined" dense :readonly="!selectedUser || sendingMessage "></v-text-field>
 
               <v-file-input v-if="selectedUser" label="Attach a file or image" v-model="attachedFile"
-                prepend-icon="mdi-paperclip" show-size @change="handleFileUpload" />
+                prepend-icon="mdi-paperclip" show-size @change="handleFileUpload" :disabled="sendingMessage"/>
 
             </v-col>
             <v-col cols="2">
-              <v-btn type="submit" :disabled="!selectedUser" color="primary" class="mt-3 ml-3">Send</v-btn>
+              <v-btn type="submit" :disabled="!selectedUser || sendingMessage" color="primary"
+                class="mt-3 ml-3">
+                <v-progress-circular v-if="sendingMessage" indeterminate color="white" size="18" />
+                <span v-if="!sendingMessage">Send</span>
+              </v-btn>
             </v-col>
           </v-row>
         </v-form>
@@ -130,19 +134,18 @@ const selectedUser = ref(null);
 const chatContainer = ref(null);
 const messages = ref([]); // Reactive state
 const aiUsers = ref([]);
-const isTyping = ref(false); 
 const activeChats = ref([]);
 const filters = ref({ gender_id: null });
 let realtimeMessages = null;
 // const registrationDialog = ref(false);
 const dialogVisible = ref(false);
-const userEmail = ref("");
 const showAIUsers = ref(false); // State to toggle between Users and UsersAI
 const isLoading = ref(true);
 
 const lastUnreadSenderId = ref(null);
 const isTabVisible = ref(true);
 
+const isTyping = ref(false);
 const typingAiUserId = ref(null);
 
 const replyingToMessage = ref(null);
@@ -152,6 +155,7 @@ const uploadedFileUrl = ref(null);
 const uploadedFileType = ref(null);
 
 const loadingMore = ref(false);
+const sendingMessage = ref(false);
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
@@ -486,6 +490,7 @@ const selectUser = (user) => {
 
 const sendMessage = async () => {
   if (newMessage.value.trim() && selectedUser.value) {
+    sendingMessage.value = true;
     const senderUserId = authStore.user?.id;
     const receiverUserId = selectedUser.value.user_id;
 
@@ -499,6 +504,7 @@ const sendMessage = async () => {
       if (error)
       {
         console.error("Error uploading file:", error);
+        sendingMessage.value = false;
         return;
       }
 
@@ -521,6 +527,7 @@ const sendMessage = async () => {
 
     if (!senderUserId || !receiverUserId) {
       console.error("Sender or Receiver ID is missing");
+      sendingMessage.value = false;
       return;
     }
 
@@ -535,6 +542,7 @@ const sendMessage = async () => {
       const canContinue = await checkAiInteractionLimit();
       if (!canContinue) {
         showRegistrationPrompt();
+        sendingMessage.value = false;
         return; // Stop further processing if limit is reached
       }
     }
@@ -618,6 +626,7 @@ const sendMessage = async () => {
     } catch (error) {
       console.error("Error sending message:", error);
     }
+    sendingMessage.value = false;
   } else {
     console.error("Message content or selected user is missing");
   }
