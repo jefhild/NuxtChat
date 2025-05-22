@@ -30,13 +30,12 @@
         <ChatHeader :currentUser="user" :selectedUser="selectedUser" />
 
         <v-card class="flex-grow-1">
-          <v-card-text class="chat-messages" ref="chatContainer">
+          <v-card-text class="chat-messages" ref="chatContainer" @scroll.passive="handleScroll">
+            <div v-if="loadingMore" class="text-center py-2">
+              <v-progress-circular indeterminate color="primary" size="24" />.
+            </div>
             <div v-for="(message, index) in messages" :key="message.id" @click="replyingToMessage = message"
-              :class="message.sender_id === user.id ? 'sent' : 'received'" :ref="
-                message.id === messages[messages.length - 1].id
-                  ? 'lastMessage'
-                  : null
-              ">
+              :class="message.sender_id === user.id ? 'sent' : 'received'" :ref="index === 0 ? 'firstMessage' : null">
               <Message :message="message" :user="user" />
             </div>
             <!-- Typing Indicator -->
@@ -152,6 +151,8 @@ const attachedFile = ref(null);
 const uploadedFileUrl = ref(null);
 const uploadedFileType = ref(null);
 
+const loadingMore = ref(false);
+
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
 const { arrayOfflineUsers, fetchOfflineUsers } = useFetchOfflineUsers(user);
@@ -190,19 +191,17 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
   }
 
   try {
+    
     const data = await getMessagesBetweenUsers(senderUserId, receiverUserId);
+    const reversedData = data.reverse();
 
     // Filter out messages from/to blocked users
-    const filteredMessages = data.filter(
+    const filteredMessages = reversedData.filter(
       (msg) =>
         !blockedUsers.value.includes(msg.sender_id) &&
         !blockedUsers.value.includes(msg.receiver_id)
     );
 
-    // Sort messages by created_at date
-    filteredMessages.sort(
-      (a, b) => new Date(a.created_at) - new Date(b.created_at)
-    );
 
     // Map messages to include the sender's displayname
     messages.value = filteredMessages.map((msg) => ({
@@ -247,6 +246,37 @@ const updateTabTitle = (count) =>
 {
   document.title = count > 0 ? `(${count}) New Message${count>1 ? 's' : ''} | ImChatty`
     : "ImChatty | Chat";
+};
+
+const oldestMessageTimestamp = computed(() =>
+  messages.value.length ? messages.value[0].created_at : null
+);
+
+const handleScroll = async () =>
+{
+  const container = chatContainer.value?.$el || chatContainer.value;
+  if (container && container.scrollTop < 50 && !loadingMore.value)
+  { 
+    loadingMore.value = true;
+    const prevScrollHeight = container.scrollHeight;
+    const moreMessages = await getMessagesBetweenUsers(
+      user.value.id,
+      selectedUser.value.user_id,
+      oldestMessageTimestamp.value
+    );
+
+    messages.value = [...moreMessages.reverse(), ...messages.value];
+
+    await nextTick(); // Wait for DOM to update
+
+    const newScrollHeight = container.scrollHeight;
+    const scrollDelta = newScrollHeight - prevScrollHeight;
+
+    // Maintain scroll position after prepending
+    container.scrollTop += scrollDelta;
+
+    loadingMore.value = false;
+  }
 };
 
 

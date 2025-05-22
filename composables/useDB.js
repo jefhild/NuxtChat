@@ -169,9 +169,9 @@ export const useDb = () => {
     return data.avatar_decoration_url;
   };
 
-  const getMessagesBetweenUsers = async (senderUserId, receiverUserId) =>
+  const getMessagesBetweenUsers = async (senderUserId, receiverUserId, before = null, limit = 20) =>
   {
-    const { data, error } = await supabase
+    let query = supabase
       .from("messages")
       .select(`
         id,
@@ -188,7 +188,16 @@ export const useDb = () => {
       `)
       .or(
         `and(sender_id.eq.${senderUserId},receiver_id.eq.${receiverUserId}),and(sender_id.eq.${receiverUserId},receiver_id.eq.${senderUserId})`
-      );
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (before)
+    {
+      query = query.lt("created_at", before);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return data;
