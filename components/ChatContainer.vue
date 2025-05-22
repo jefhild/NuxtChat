@@ -219,6 +219,7 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
       reply_to: msg.reply_to,
       file_url: msg.file_url,
       file_type: msg.file_type,
+      file_name: msg.file_name,
     }));
 
     //console.log("Fetched and mapped messages:", messages.value);
@@ -557,7 +558,8 @@ const sendMessage = async () => {
         userMessage,
         replyingToMessage.value?.id ?? null,
         uploadedFileUrl.value,
-        uploadedFileType.value
+        uploadedFileType.value,
+        attachedFile.value.name
       );
 
       
@@ -579,7 +581,8 @@ const sendMessage = async () => {
           read: data[0].read,
           sender: userProfile.value.displayname, // Assuming current user's displayname is needed
           file_url: data[0].file_url,       
-          file_type: data[0].file_type,     
+          file_type: data[0].file_type,    
+          file_name: data[0].file_name, 
           reply_to: replyingToMessage.value
             ? {
               id: replyingToMessage.value.id,

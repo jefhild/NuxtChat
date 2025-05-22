@@ -182,6 +182,7 @@ export const useDb = () => {
         read,
         file_url,
         file_type,
+        file_name,
         reply_to_message_id,
         reply_to:reply_to_message_id ( id, content, sender_id ),
         profiles!messages_sender_id_fkey(displayname)
@@ -1306,7 +1307,7 @@ export const useDb = () => {
     return { error: null };
   };
 
-  const insertMessage = async (receiverId, senderId, message, replyToMessageId = null, fileUrl = null, fileType = null) =>
+  const insertMessage = async (receiverId, senderId, message, replyToMessageId = null, fileUrl = null, fileType = null, fileName = null) =>
   {
     const { data, error } = await supabase
       .from("messages")
@@ -1316,7 +1317,8 @@ export const useDb = () => {
         content: message,
         reply_to_message_id: replyToMessageId,
         file_url: fileUrl,
-        file_type: fileType
+        file_type: fileType,
+        file_name: fileName,
       })
       .select("*");
 

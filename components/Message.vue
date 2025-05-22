@@ -3,7 +3,7 @@
     <a :href="message.file_url" target="_blank">
       <img v-if="message.file_type.startsWith('image/')" :src="message.file_url"
         style="max-width: 200px; max-height: 200px; border: 1px solid #ccc" />
-      <v-icon v-else>mdi-file</v-icon>Download File 
+      <v-icon v-else>mdi-file</v-icon>Download File ({{ message.file_name }})
     </a>
   </div>
   <div v-if="message.reply_to" class="reply-preview-box">
