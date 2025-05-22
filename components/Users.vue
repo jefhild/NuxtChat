@@ -17,10 +17,10 @@
       </v-tabs-window-item>
       <v-tabs-window-item :value="2">
         <v-row><v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">No anonymous users here...</v-col></v-row>
-        <OfflineUsers :users="offlineUsers" :selectedUserId="selectedUserId" @user-selected="selectUser" />
+        <OfflineUsers :users="offlineUsers" :selectedUserId="selectedUserId" @user-selected="selectUser" :isLoading="isLoading"/>
       </v-tabs-window-item>
       <v-tabs-window-item :value="3">
-        <ActiveChats :users="activeChats" :selectedUserId="selectedUserId" :isTabVisible="isTabVisible"
+        <ActiveChats :users="activeChats" :selectedUserId="selectedUserId" :isTabVisible="isTabVisible" :isLoading="isLoading"
           @user-selected="selectUser" @chat-deleted="handleChatDeleted" />
       </v-tabs-window-item>
     </v-tabs-window>
@@ -37,6 +37,7 @@ const props = defineProps({
   updateFilters: Function,
   selectedUserId: String,
   isTabVisible: Boolean,
+  isLoading: Boolean,
 });
 
 

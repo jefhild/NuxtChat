@@ -19,7 +19,7 @@
         <Users v-if="!showAIUsers" @user-selected="selectUser" :onlineUsers="arrayOnlineUsers"
           :offlineUsers="arrayOfflineUsers" :activeChats="activeChats" :userProfile="userProfile"
           :updateFilters="updateFilters" :selected-user-id="selectedUser?.user_id" :is-tab-visible="isTabVisible"
-          @refresh-data="refreshData" @unread-count="updateTabTitle" />
+          :isLoading="isLoading" @refresh-data="refreshData" @unread-count="updateTabTitle" />
         <UsersAI v-if="showAIUsers" @user-selected="selectUser" :aiUsers="aiUsers" :activeChats="activeChats"
           :userProfile="userProfile" :selected-user-id="selectedUser?.user_id" :is-tab-visible="isTabVisible"
           :updateFilters="updateFilters" @refresh-data="refreshData" @unread-count="updateTabTitle" />
@@ -31,8 +31,7 @@
 
         <v-card class="flex-grow-1">
           <v-card-text class="chat-messages" ref="chatContainer">
-            <div v-for="(message, index) in messages" :key="message.id"
-              @click="replyingToMessage = message"
+            <div v-for="(message, index) in messages" :key="message.id" @click="replyingToMessage = message"
               :class="message.sender_id === user.id ? 'sent' : 'received'" :ref="
                 message.id === messages[messages.length - 1].id
                   ? 'lastMessage'
@@ -73,6 +72,10 @@
                       : 'Message ' + selectedUser.displayname
                     : 'Select a user to chat with'
                 " variant="underlined" dense :readonly="!selectedUser"></v-text-field>
+
+              <v-file-input v-if="selectedUser" label="Attach a file or image" v-model="attachedFile"
+                prepend-icon="mdi-paperclip" show-size @change="handleFileUpload" />
+
             </v-col>
             <v-col cols="2">
               <v-btn type="submit" :disabled="!selectedUser" color="primary" class="mt-3 ml-3">Send</v-btn>
@@ -110,6 +113,8 @@ const {
   updateAIInteractionCount,
   insertMessage,
   insertInteractionCount,
+  getChatFilePublicUrl, 
+  uploadChatFile
 } = useDb();
 
 const notificationSound = new Audio('/sounds/notification.wav');
@@ -134,6 +139,7 @@ let realtimeMessages = null;
 const dialogVisible = ref(false);
 const userEmail = ref("");
 const showAIUsers = ref(false); // State to toggle between Users and UsersAI
+const isLoading = ref(true);
 
 const lastUnreadSenderId = ref(null);
 const isTabVisible = ref(true);
@@ -142,6 +148,9 @@ const typingAiUserId = ref(null);
 
 const replyingToMessage = ref(null);
 
+const attachedFile = ref(null);
+const uploadedFileUrl = ref(null);
+const uploadedFileType = ref(null);
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
@@ -205,6 +214,8 @@ const loadChatMessages = async (receiverUserId, senderUserId) => {
       created_at: msg.created_at,
       read: msg.read,
       reply_to: msg.reply_to,
+      file_url: msg.file_url,
+      file_type: msg.file_type,
     }));
 
     //console.log("Fetched and mapped messages:", messages.value);
@@ -434,6 +445,7 @@ onMounted(async () => {
       await fetchActiveChats(filters.value); // Ensure sync with server
     }
   });
+  isLoading.value = false; 
 });
 
 // Select user to chat with
@@ -446,6 +458,28 @@ const sendMessage = async () => {
   if (newMessage.value.trim() && selectedUser.value) {
     const senderUserId = authStore.user?.id;
     const receiverUserId = selectedUser.value.user_id;
+
+    //see if ithere is an attached file
+    if (attachedFile.value){
+      const file = attachedFile.value;
+      const fileName = `${Date.now()}_${file.name}`;
+
+      const error = await uploadChatFile(fileName, file);
+
+      if (error)
+      {
+        console.error("Error uploading file:", error);
+        return;
+      }
+
+      const publicUrl = await getChatFilePublicUrl(fileName);
+      console.log("File URL:", publicUrl, fileName);
+
+      uploadedFileUrl.value = publicUrl;
+      uploadedFileType.value = file.type;
+    }
+
+    
     // console.log(
     //   "Sender ID:",
     //   senderUserId,
@@ -483,13 +517,18 @@ const sendMessage = async () => {
         receiverUserId,
         senderUserId,
         userMessage,
-        replyingToMessage.value?.id ?? null
+        replyingToMessage.value?.id ?? null,
+        uploadedFileUrl.value,
+        uploadedFileType.value
       );
 
-      replyingToMessage.value = null;
+      
+      attachedFile.value = null;
+      uploadedFileUrl.value = null;
+      uploadedFileType.value = null;
 
       if (data && data.length > 0) {
-        // console.log("Message sent successfully:", data);
+        console.log("Message sent successfully:", data);
         newMessage.value = ""; // Reset the message input field
 
         // Push the new message to the messages array for immediate UI update
@@ -501,7 +540,17 @@ const sendMessage = async () => {
           created_at: data[0].created_at,
           read: data[0].read,
           sender: userProfile.value.displayname, // Assuming current user's displayname is needed
+          file_url: data[0].file_url,       
+          file_type: data[0].file_type,     
+          reply_to: replyingToMessage.value
+            ? {
+              id: replyingToMessage.value.id,
+              content: replyingToMessage.value.content,
+              sender_id: replyingToMessage.value.sender_id
+            }
+            : null
         });
+        replyingToMessage.value = null;
         scrollToBottom(); // Ensure the chat scrolls to the bottom when a new message is added
 
         // If the selected user is an AI, generate a response by calling the local API
@@ -631,6 +680,11 @@ const checkAiInteractionLimit = async () => {
     return false;
   }
 };
+
+const handleFileUpload = async () =>
+{
+  console.log("File uploaded:", attachedFile.value);
+}
 
 const showRegistrationPrompt = () => {
   // Implement your custom logic to prompt the user to register

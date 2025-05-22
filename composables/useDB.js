@@ -180,6 +180,8 @@ export const useDb = () => {
         content,
         created_at,
         read,
+        file_url,
+        file_type,
         reply_to_message_id,
         reply_to:reply_to_message_id ( id, content, sender_id ),
         profiles!messages_sender_id_fkey(displayname)
@@ -939,6 +941,14 @@ export const useDb = () => {
     return data?.slug;
   };
 
+  const getChatFilePublicUrl = async (fileName) => {
+    const { data } = supabase.storage
+      .from("chat-files")
+      .getPublicUrl(`messages/${fileName}`);
+  
+    return data.publicUrl;
+  };
+
 
   /*------------------*/
   /* Update functions */
@@ -1287,7 +1297,7 @@ export const useDb = () => {
     return { error: null };
   };
 
-  const insertMessage = async (receiverId, senderId, message, replyToMessageId = null) =>
+  const insertMessage = async (receiverId, senderId, message, replyToMessageId = null, fileUrl = null, fileType = null) =>
   {
     const { data, error } = await supabase
       .from("messages")
@@ -1296,6 +1306,8 @@ export const useDb = () => {
         receiver_id: receiverId,
         content: message,
         reply_to_message_id: replyToMessageId,
+        file_url: fileUrl,
+        file_type: fileType
       })
       .select("*");
 
@@ -1655,6 +1667,19 @@ const { data, error } = await supabase
     return error;
   };
 
+  const uploadChatFile = async (fileName, file) => {
+    const { data, error } = await supabase.storage
+      .from("chat-files")
+      .upload(`messages/${fileName}`, file);
+
+    if (error)
+    {
+      console.error("Upload error:", error);
+    }
+
+    return error;
+  };
+
   const checkInactivityForAllUsers = async () => {
     console.log("checking inactivity for ALL users");
 
@@ -1923,6 +1948,7 @@ const authGetUser = async () => {
     getArticlesByType,
     getAllReports,
     getUserSlugFromId,
+    getChatFilePublicUrl,
 
     updateUsername,
     updateProvider,
@@ -1971,6 +1997,7 @@ const authGetUser = async () => {
     upvoteUserProfile,
     downvoteUserProfile,
     uploadProfilePhoto,
+    uploadChatFile,
     trackPresence,
     stopTracking,
     checkInactivityForAllUsers,

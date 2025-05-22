@@ -1,5 +1,10 @@
 <template>
-  <v-container fluid>
+  <v-row v-if="isLoading" justify="center" no-gutters class="mt-15">
+    <v-col class="text-center">
+      <v-progress-circular indeterminate color="primary" size="64" />
+    </v-col>
+  </v-row>
+  <v-container v-else fluid>
     <v-card-text>
       <v-virtual-scroll :items="users" height="300" item-height="10">
         <template v-slot:default="{ item: user }">
@@ -12,23 +17,24 @@
                 <div class="avatar-wrapper">
                   <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
 
-                  <NuxtImg :src="user.avatar_decoration_url" v-if="user.avatar_decoration_url"
-                    class="avatar-decoration" :alt="`${user.displayname}'s image`"/>
+                  <NuxtImg :src="user.avatar_decoration_url" v-if="user.avatar_decoration_url" class="avatar-decoration"
+                    :alt="`${user.displayname}'s image`" />
 
-                  <v-icon v-if="user.provider != 'ChatGPT'" color="white" size="x-small" class="status-badge">mdi-circle</v-icon>
-                  <v-icon v-if="user.provider != 'ChatGPT'" size="small" :color="statusColor(user.user_id)" :icon="statusIcon(user.user_id)"
-                    class="status-badge" />
+                  <v-icon v-if="user.provider != 'ChatGPT'" color="white" size="x-small"
+                    class="status-badge">mdi-circle</v-icon>
+                  <v-icon v-if="user.provider != 'ChatGPT'" size="small" :color="statusColor(user.user_id)"
+                    :icon="statusIcon(user.user_id)" class="status-badge" />
                 </div>
 
               </template>
               <v-list-item-title :class="getGenderColorClass(user.gender_id)">
-                {{ user.displayname }} 
+                {{ user.displayname }}
                 <span v-if="user.unread_count > 0" class="unread-count">
                   ({{ user.unread_count }})
                 </span>
               </v-list-item-title>
               <v-list-item-subtitle>
-                 ({{ user.age }}) {{ user.emoji }}
+                ({{ user.age }}) {{ user.emoji }}
                 {{ user.state_name ?? "" }}
               </v-list-item-subtitle>
 
@@ -84,6 +90,7 @@ const props = defineProps({
   users: Array,
   selectedUserId: String,
   isTabVisible: Boolean,
+  isLoading: Boolean,
 });
 
 const localUsers = ref([]);
