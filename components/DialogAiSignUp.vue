@@ -1,6 +1,8 @@
 <template>
-  <v-card width="650" class="mx-auto">
-    <v-card-title class="text-center mt-4"> <h1>{{ props.titleText }}</h1></v-card-title>
+  <v-card class="mx-auto pa-4" :class="$vuetify.display.xs ? 'w-100' : 'w-75'" max-width="650">
+    <v-card-title class="text-center mt-4">
+      <h1 class="text-wrap text-h5 text-h4-md text-h3-lg">{{ props.titleText }}</h1>
+    </v-card-title>
     <v-card-text>
       <!-- <p class="pb-4">
         Please follow the instructions below to create your anonymous profile.
@@ -37,7 +39,7 @@
                 {{ message.text }}
 
                 <v-avatar size="32" class="bot-avatar">
-                  <v-img src="/robot.png" />
+                  <v-img src="/images/robot.png" />
                 </v-avatar>
               </p>
             </transition-group>
@@ -53,7 +55,7 @@
             <div v-if="isTyping" class="typing-indicator bot-message">
               <div class="dots"><span></span><span></span><span></span></div>
               <v-avatar size="32" class="bot-avatar">
-                <v-img src="/robot.png" />
+                <v-img src="/images/robot.png" />
               </v-avatar>
             </div>
           </v-container>
@@ -74,6 +76,7 @@
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
+import { useNotificationStore } from '@/stores/notificationStore';
 import useAgeMapper from "@/composables/useAgeMapper";
 import useGenderMapper from "@/composables/useGenderMapper";
 import useStatusMapper from "@/composables/useStatusMapper";
@@ -81,7 +84,7 @@ import useAvatarMapper from "@/composables/useAvatarMapper";
 
 const { checkDisplayNameExists } = useDb();
 
-
+const notificationStore = useNotificationStore();
 const authStore = useAuthStore();
 const router = useRouter();
 const isLoading = ref(false);
@@ -453,7 +456,12 @@ const submitToDatabase = async () => {
     console.error("Error during profile creation:", error);
   } finally {
     isLoading.value = false;
-    router.push("/settings");
+    router.push("/chat");
+    notificationStore.addNotification(
+      'reminder',
+      `Make sure to enter your email and complete your profile to unlock all features!`,
+      null
+    );
   }
 };
 </script>
@@ -621,5 +629,20 @@ const submitToDatabase = async () => {
 h1 {
   font-weight: 300;
   font-size: 1.6em;
+}
+
+@media (max-width: 600px) {
+  .chat-container {
+    padding: 12px;
+  }
+
+  .chat-bubble {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 1.2em;
+  }
 }
 </style>

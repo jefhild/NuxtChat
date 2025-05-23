@@ -6,9 +6,10 @@
         <v-card class="mx-auto" max-width="400" v-if="profile">
           <div class="avatar-wrapper">
             <NuxtImg :src="profile.avatar_url" height="200" width="200"
-              class="rounded-circle cover-image mx-auto d-block ma-9" />
+              class="rounded-circle cover-image mx-auto d-block ma-9" :alt="`${profile.displayname} image`" />
 
-            <NuxtImg :src="avatarDecoration" v-if="avatarDecoration" class="avatar-decoration" />
+            <NuxtImg :src="avatarDecoration" v-if="avatarDecoration" class="avatar-decoration"
+              :alt="`${profile.displayname} image decoration`" />
           </div>
 
           <v-card-title>
@@ -83,7 +84,7 @@
     </v-row>
   </v-container>
 
-  <v-dialog v-model="aiDialog" width="auto">
+  <v-dialog v-model="aiDialog" :max-width="750">
     <DialogAiSignUp @closeDialog="handleDialogClose" />
   </v-dialog>
 </template>

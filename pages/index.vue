@@ -6,9 +6,12 @@
   <template v-else>
     <v-container fluid v-if="!isAuthenticated">
       <HomeRow1 />
-      <v-row justify="center" class="mt-4">
-        <v-col cols="auto"><LoginAi :titleText="titleText" /></v-col>
-      </v-row>
+      <!-- <v-row justify="center" class="mt-4">
+        <v-col cols="auto">
+          <LoginAi :titleText="titleText" />
+        </v-col>
+      </v-row> -->
+      <LandingPage />
     </v-container>
 
     <v-container fluid v-else>
@@ -16,31 +19,19 @@
       <v-container class="text-center mt-6">
         <h1 class="green--text-h1">You're logged in as {{ loggedInUser }}</h1>
         <v-row class="mt-4" justify="center">
-          <v-btn to="/chat" class="mx-2"
-            >Chat <v-icon right>mdi-arrow-right</v-icon></v-btn
-          >
-          <v-btn to="/settings" class="mx-2"
-            >Settings <v-icon right>mdi-arrow-right</v-icon></v-btn
-          >
-          <v-btn @click="showLogoutDialog" class="mx-2"
-            >Logout <v-icon right>mdi-arrow-right</v-icon></v-btn
-          >
+          <v-btn to="/chat" class="mx-2">Chat <v-icon right>mdi-arrow-right</v-icon></v-btn>
+          <v-btn to="/settings" class="mx-2">Settings <v-icon right>mdi-arrow-right</v-icon></v-btn>
+          <v-btn @click="showLogoutDialog" class="mx-2">Logout <v-icon right>mdi-arrow-right</v-icon></v-btn>
         </v-row>
       </v-container>
     </v-container>
   </template>
 
   <v-dialog v-model="logoutDialog" width="auto">
-    <v-card
-      max-width="400"
-      prepend-icon="mdi-account-remove"
-      title="Logout Of My Account"
-    >
+    <v-card max-width="400" prepend-icon="mdi-account-remove" title="Logout Of My Account">
       <v-card-text>Are you sure you want to logout?</v-card-text>
       <template v-slot:actions>
-        <v-btn color="primary" text @click="confirmLogout"
-          >Confirm Logout</v-btn
-        >
+        <v-btn color="primary" text @click="confirmLogout">Confirm Logout</v-btn>
         <v-spacer />
         <v-btn text @click="logoutDialog = false">Cancel</v-btn>
       </template>
@@ -53,6 +44,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useDb } from "@/composables/useDB";
+import LandingPage from "~/components/LandingPage.vue";
 
 // SSR-safe head meta
 useSeoMeta({
