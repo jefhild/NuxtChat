@@ -1,12 +1,8 @@
 <template>
   <v-col>
-    <v-card
-      :to="disableNavigation ? undefined : `/articles/${article.slug}`"
-      class="article-card pa-4 d-flex flex-column justify-between"
-      elevation="3"
-      @click.stop="handleClick"
-      :style="{ minHeight: props.admin ? '360px' : '280px' }"
-    >
+    <v-card :to="disableNavigation ? undefined : `/articles/${article.slug}`"
+      class="article-card pa-4 d-flex flex-column justify-between" elevation="3" @click.stop="handleClick"
+      :style="{ minHeight: props.admin ? '360px' : '280px' }">
       <v-card-title class="font-weight-bold text-wrap">
         {{ article.title }}
       </v-card-title>
@@ -26,18 +22,7 @@
         </div>
       </v-card-subtitle>
 
-      <!-- <v-card-text>
-        <v-chip
-          v-for="tag in article.tags"
-          :key="tag.slug || tag"
-          class="ma-1"
-          size="small"
-          color="primary"
-          variant="outlined"
-        >
-          {{ tag.name || tag }}
-        </v-chip>
-      </v-card-text> -->
+      <v-card-text v-html="truncatedSummary"></v-card-text>
       <v-card-text>
         <div class="tags-links">
           <NuxtLink
@@ -52,13 +37,7 @@
       </v-card-text>
 
       <v-card-actions v-if="props.admin">
-        <v-chip
-          v-if="article.is_published"
-          color="success"
-          size="x-small"
-          class="ml-2"
-          label
-        >
+        <v-chip v-if="article.is_published" color="success" size="x-small" class="ml-2" label>
           Published
         </v-chip>
         <v-chip v-else color="grey" size="x-small" class="ml-2" label>
@@ -83,6 +62,14 @@ const emit = defineEmits(["click"]);
 const handleClick = () => {
   if (props.disableNavigation) emit("click", props.article);
 };
+
+const truncatedSummary = computed(() => {
+  const maxLength = 300;
+  if (props.article.content.length > maxLength) {
+    return props.article.content.slice(0, maxLength) + "...";
+  }
+  return props.article.content;
+});
 
 const formatDate = (isoDate) => {
   const date = new Date(isoDate);

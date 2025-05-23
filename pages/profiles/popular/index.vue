@@ -31,7 +31,7 @@ useHead(() => ({
   link: [
     {
       rel: "canonical",
-      href: "https://imchatty.com/popular",
+      href: "https://imchatty.com/profiles/popular",
     },
   ],
 }));
