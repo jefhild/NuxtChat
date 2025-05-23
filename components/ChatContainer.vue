@@ -118,6 +118,7 @@ const {
   getUserProfileFromId,
   getAIInteractionCount,
   getCurrentAIInteractionCount,
+  getMessageById,
   getMessagesBetweenUsers,
   isNotificationsEnabled,
   updateMessagesAsRead,
@@ -337,6 +338,20 @@ const handleRealtimeMessages = async (payload) =>
       lastUnreadSenderId.value = newRow.sender_id;
       isTyping.value = false;
       return; //I return so it doesnt add the message to the chat if it is not from the selected user
+    }
+
+    if (newRow.reply_to_message_id)
+    {
+      const { data: replyMsg } = await getMessageById(newRow.reply_to_message_id);
+
+      if (replyMsg)
+      {
+        newRow.reply_to = {
+          id: replyMsg.id,
+          content: replyMsg.content,
+          sender_id: replyMsg.sender_id
+        };
+      }
     }
     
     messages.value.push(newRow);
