@@ -23,6 +23,8 @@
         <UsersAI v-if="showAIUsers" @user-selected="selectUser" :aiUsers="aiUsers" :activeChats="activeChats"
           :userProfile="userProfile" :selected-user-id="selectedUser?.user_id" :is-tab-visible="isTabVisible"
           :updateFilters="updateFilters" @refresh-data="refreshData" @unread-count="updateTabTitle" />
+        <!-- add profile here -->
+        <ProfileCard :profile="userProfile" class="mt-2"/>
       </v-col>
 
       <!-- Main Chat Area -->
