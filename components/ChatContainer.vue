@@ -10,9 +10,17 @@
       > -->
 
       <v-col>
-        <FilterMenu2 :userProfile="userProfile" :showAIUsers="showAIUsers" @toggle-users="toggleUsers"
-          @filter-changed="updateFilters" />
-      </v-col></v-row>
+        <FilterMenu2 :userProfile="userProfile" :showAIUsers="showAIUsers" @filter-changed="updateFilters" />
+
+        <v-row>
+          <v-col cols="12" class="d-flex align-center">
+            <v-switch :model-value="showAIUsers" @update:model-value="toggleUsers" color="primary" hide-details
+              inset class="mr-3" style="margin-top: -4px" /> 
+            <v-icon size="18" class="mr-1">mdi-robot</v-icon> Show AI Users
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
     <v-row>
       <!-- Left Column: Online Users -->
       <v-col cols="12" md="4" class="pa-2">
@@ -24,7 +32,7 @@
           :userProfile="userProfile" :selected-user-id="selectedUser?.user_id" :is-tab-visible="isTabVisible"
           :updateFilters="updateFilters" @refresh-data="refreshData" @unread-count="updateTabTitle" />
         <!-- add profile here -->
-        <ProfileCard :profile="userProfile" class="mt-2"/>
+        <ProfileCard :profile="userProfile" class="mt-2" />
       </v-col>
 
       <!-- Main Chat Area -->
