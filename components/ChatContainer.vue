@@ -10,9 +10,17 @@
       > -->
 
       <v-col>
-        <FilterMenu2 :userProfile="userProfile" :showAIUsers="showAIUsers" @toggle-users="toggleUsers"
-          @filter-changed="updateFilters" />
-      </v-col></v-row>
+        <FilterMenu2 :userProfile="userProfile" :showAIUsers="showAIUsers" @filter-changed="updateFilters" />
+
+        <v-row>
+          <v-col cols="12" class="d-flex align-center">
+            <v-switch :model-value="showAIUsers" @update:model-value="toggleUsers" color="primary" hide-details
+              inset class="mr-3" style="margin-top: -4px" /> 
+            <v-icon size="18" class="mr-1">mdi-robot</v-icon> Show AI Users
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
     <v-row>
       <!-- Left Column: Online Users -->
       <v-col cols="12" md="4" class="pa-2">
@@ -23,6 +31,8 @@
         <UsersAI v-if="showAIUsers" @user-selected="selectUser" :aiUsers="aiUsers" :activeChats="activeChats"
           :userProfile="userProfile" :selected-user-id="selectedUser?.user_id" :is-tab-visible="isTabVisible"
           :updateFilters="updateFilters" @refresh-data="refreshData" @unread-count="updateTabTitle" />
+        <!-- add profile here -->
+        <ProfileCard :profile="userProfile" class="mt-2" />
       </v-col>
 
       <!-- Main Chat Area -->
@@ -51,34 +61,42 @@
         </div>
         <!-- Message Input Row -->
         <v-form @submit.prevent="sendMessage">
+
+          <v-row v-if="attachedFile">
+            <v-col cols="auto" class="position-relative d-inline-block mt-4 ml-4">
+              <NuxtImg :src="previewUrl" :alt="attachedFile.name" width="100" height="100" class="rounded elevation-2"
+                cover />
+              <!-- Remove button -->
+              <v-btn icon size="x-small" class="remove-image-btn" @click="clearAttachment" color="red" variant="flat">
+                <v-icon size="16">mdi-close</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+
           <v-row no-gutters class="pa-2">
             <v-col cols="10">
-              <!-- <v-text-field
-                v-model="newMessage"
-                :label="
-                  selectedUser
-                    ? 'Message ' + selectedUser.displayname
-                    : 'Select a user to chat with'
-                "
-                variant="underlined"
-                dense
-                :readonly="!selectedUser"
-              ></v-text-field> -->
-              <v-text-field v-model="newMessage" :label="
-                  selectedUser
+              <!-- Message input and upload button -->
+              <v-row>
+                <v-col cols="10" class="d-flex align-center">
+                  <label class="upload-bubble mr-3"
+                    :class="{ 'upload-bubble--disabled': !selectedUser || sendingMessage }">
+                    <v-icon>mdi-plus</v-icon>
+                    <input type="file" accept="image/*" @change="handleFileUpload"
+                      :disabled="!selectedUser || sendingMessage" style="display: none" />
+                  </label>
+
+                  <v-text-field v-model="newMessage" :label="selectedUser
                     ? selectedUser.is_ai
                       ? 'Chat with a ' + selectedUser.displayname + ' AI'
                       : 'Message ' + selectedUser.displayname
-                    : 'Select a user to chat with'
-                " variant="underlined" dense :readonly="!selectedUser || sendingMessage "></v-text-field>
-
-              <v-file-input v-if="selectedUser" label="Attach a file or image" v-model="attachedFile"
-                prepend-icon="mdi-paperclip" show-size @change="handleFileUpload" :disabled="sendingMessage"/>
-
+                    : 'Select a user to chat with'" variant="underlined" dense
+                    :readonly="!selectedUser || sendingMessage" />
+                </v-col>
+              </v-row>
             </v-col>
+
             <v-col cols="2">
-              <v-btn type="submit" :disabled="!selectedUser || sendingMessage" color="primary"
-                class="mt-3 ml-3">
+              <v-btn type="submit" :disabled="!selectedUser || sendingMessage" color="primary" class="mt-4 ml-3">
                 <v-progress-circular v-if="sendingMessage" indeterminate color="white" size="18" />
                 <span v-if="!sendingMessage">Send</span>
               </v-btn>
@@ -110,6 +128,7 @@ const {
   getUserProfileFromId,
   getAIInteractionCount,
   getCurrentAIInteractionCount,
+  getMessageById,
   getMessagesBetweenUsers,
   isNotificationsEnabled,
   updateMessagesAsRead,
@@ -153,8 +172,10 @@ const replyingToMessage = ref(null);
 const attachedFile = ref(null);
 const uploadedFileUrl = ref(null);
 const uploadedFileType = ref(null);
+const previewUrl = ref(null);
 
 const loadingMore = ref(false);
+const hasMoreMessages = ref(true);
 const sendingMessage = ref(false);
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
@@ -270,6 +291,13 @@ const handleScroll = async () =>
       oldestMessageTimestamp.value
     );
 
+    if (!moreMessages || moreMessages.length === 0)
+    {
+      hasMoreMessages.value = false;
+      loadingMore.value = false;
+      return;
+    }
+
     messages.value = [...moreMessages.reverse(), ...messages.value];
 
     await nextTick(); // Wait for DOM to update
@@ -328,6 +356,20 @@ const handleRealtimeMessages = async (payload) =>
       lastUnreadSenderId.value = newRow.sender_id;
       isTyping.value = false;
       return; //I return so it doesnt add the message to the chat if it is not from the selected user
+    }
+
+    if (newRow.reply_to_message_id)
+    {
+      const { data: replyMsg } = await getMessageById(newRow.reply_to_message_id);
+
+      if (replyMsg)
+      {
+        newRow.reply_to = {
+          id: replyMsg.id,
+          content: replyMsg.content,
+          sender_id: replyMsg.sender_id
+        };
+      }
     }
     
     messages.value.push(newRow);
@@ -421,6 +463,7 @@ onMounted(async () => {
         }
 
         loadChatMessages(authStore.user?.id, newUser.user_id);
+        hasMoreMessages.value = true;
       }
     },
     { immediate: true }
@@ -470,7 +513,8 @@ onMounted(async () => {
       // console.log("Tab is visible", selectedUser.value.user_id, lastUnreadSenderId.value);
       if (selectedUser.value?.user_id === lastUnreadSenderId.value)
       {
-        loadChatMessages(user.value.id, selectedUser.value.user_id);
+        await loadChatMessages(user.value.id, selectedUser.value.user_id);
+        hasMoreMessages.value = true;
         await markMessagesAsRead(user.value.id, selectedUser.value.user_id);
         notificationStore.markMessageNotificationAsRead(selectedUser.value.user_id);
        
@@ -723,10 +767,28 @@ const checkAiInteractionLimit = async () => {
   }
 };
 
-const handleFileUpload = async () =>
+const handleFileUpload = (event) =>
 {
-  console.log("File uploaded:", attachedFile.value);
-}
+  const file = event.target.files[0];
+  if (file)
+  {
+    attachedFile.value = file;
+    previewUrl.value = URL.createObjectURL(file);
+    console.log("Selected file:", attachedFile.value, previewUrl.value);
+  }
+
+  event.target.value = null;
+};
+
+const clearAttachment = () =>
+{
+  if (previewUrl.value)
+  {
+    URL.revokeObjectURL(previewUrl.value);
+  }
+  attachedFile.value = null;
+  previewUrl.value = null;
+};
 
 const showRegistrationPrompt = () => {
   // Implement your custom logic to prompt the user to register
@@ -802,6 +864,36 @@ const refreshData = async () => {
 .chat-messages>div:hover {
   background-color: rgba(0, 123, 255, 0.1);
   /* light blue background on hover */
+}
+
+.upload-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1976d2;
+  color: white;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+}
+
+.upload-bubble:hover {
+  background-color: #1565c0;
+}
+
+.upload-bubble--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.remove-image-btn {
+  position: absolute;
+  right: 8px;
+  z-index: 10;
+  background-color: white;
+  border-radius: 50%;
 }
 
 .sent {

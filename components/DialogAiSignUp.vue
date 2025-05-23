@@ -65,7 +65,7 @@
         </v-col>
       </v-row>
       <v-row><v-col>
-          <v-btn color="primary" v-if="showCreateProfileButton" @click="submitToDatabase">
+          <v-btn color="primary" v-if="showCreateProfileButton" @click="submitToDatabase" :disabled="submittingtoDatabase">
             Create Profile
           </v-btn>
         </v-col>
