@@ -175,6 +175,7 @@ const uploadedFileType = ref(null);
 const previewUrl = ref(null);
 
 const loadingMore = ref(false);
+const hasMoreMessages = ref(true);
 const sendingMessage = ref(false);
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
@@ -289,6 +290,13 @@ const handleScroll = async () =>
       selectedUser.value.user_id,
       oldestMessageTimestamp.value
     );
+
+    if (!moreMessages || moreMessages.length === 0)
+    {
+      hasMoreMessages.value = false;
+      loadingMore.value = false;
+      return;
+    }
 
     messages.value = [...moreMessages.reverse(), ...messages.value];
 
@@ -455,6 +463,7 @@ onMounted(async () => {
         }
 
         loadChatMessages(authStore.user?.id, newUser.user_id);
+        hasMoreMessages.value = true;
       }
     },
     { immediate: true }
@@ -504,7 +513,8 @@ onMounted(async () => {
       // console.log("Tab is visible", selectedUser.value.user_id, lastUnreadSenderId.value);
       if (selectedUser.value?.user_id === lastUnreadSenderId.value)
       {
-        loadChatMessages(user.value.id, selectedUser.value.user_id);
+        await loadChatMessages(user.value.id, selectedUser.value.user_id);
+        hasMoreMessages.value = true;
         await markMessagesAsRead(user.value.id, selectedUser.value.user_id);
         notificationStore.markMessageNotificationAsRead(selectedUser.value.user_id);
        
