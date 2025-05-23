@@ -169,19 +169,41 @@ export const useDb = () => {
     return data.avatar_decoration_url;
   };
 
-  const getMessagesBetweenUsers = async (senderUserId, receiverUserId) =>{
-    const { data, error } = await supabase
+  const getMessagesBetweenUsers = async (senderUserId, receiverUserId, before = null, limit = 20) =>
+  {
+    let query = supabase
       .from("messages")
-      .select(
-        "id, sender_id, receiver_id, content, created_at, read, profiles!messages_sender_id_fkey(displayname)"
-      )
+      .select(`
+        id,
+        sender_id,
+        receiver_id,
+        content,
+        created_at,
+        read,
+        file_url,
+        file_type,
+        file_name,
+        reply_to_message_id,
+        reply_to:reply_to_message_id ( id, content, sender_id ),
+        profiles!messages_sender_id_fkey(displayname)
+      `)
       .or(
         `and(sender_id.eq.${senderUserId},receiver_id.eq.${receiverUserId}),and(sender_id.eq.${receiverUserId},receiver_id.eq.${senderUserId})`
-      );
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (before)
+    {
+      query = query.lt("created_at", before);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return data;
   };
+  
 
   const getAIInteractionCount = async (senderUserId) => {
     const { data: interactionData, error: updateError } = await supabase
@@ -734,7 +756,7 @@ export const useDb = () => {
     }));
   };
 
-  const getAllPublishedArticlesWithTags = async () =>
+  const getAllPublishedArticlesWithTags = async (limit) =>
   {
     const { data, error } = await supabase
       .from("articles")
@@ -750,6 +772,7 @@ export const useDb = () => {
       article_tags(tag:tag_id(name))
     `)
       .eq("is_published", true)
+      .limit(limit)
       .order("created_at", { ascending: false });
 
     if (error)
@@ -926,6 +949,14 @@ export const useDb = () => {
     }
 
     return data?.slug;
+  };
+
+  const getChatFilePublicUrl = async (fileName) => {
+    const { data } = supabase.storage
+      .from("chat-files")
+      .getPublicUrl(`messages/${fileName}`);
+  
+    return data.publicUrl;
   };
 
 
@@ -1276,19 +1307,26 @@ export const useDb = () => {
     return { error: null };
   };
 
-  const insertMessage = async (receiverId, senderId, message) => {
+  const insertMessage = async (receiverId, senderId, message, replyToMessageId = null, fileUrl = null, fileType = null, fileName = null) =>
+  {
     const { data, error } = await supabase
       .from("messages")
       .insert({
         sender_id: senderId,
         receiver_id: receiverId,
         content: message,
+        reply_to_message_id: replyToMessageId,
+        file_url: fileUrl,
+        file_type: fileType,
+        file_name: fileName,
       })
       .select("*");
 
-    if (error) {
+    if (error)
+    {
       console.error("Error sending message:", error);
     }
+
     return data;
   };
 
@@ -1640,6 +1678,19 @@ const { data, error } = await supabase
     return error;
   };
 
+  const uploadChatFile = async (fileName, file) => {
+    const { data, error } = await supabase.storage
+      .from("chat-files")
+      .upload(`messages/${fileName}`, file);
+
+    if (error)
+    {
+      console.error("Upload error:", error);
+    }
+
+    return error;
+  };
+
   const checkInactivityForAllUsers = async () => {
     console.log("checking inactivity for ALL users");
 
@@ -1908,6 +1959,7 @@ const authGetUser = async () => {
     getArticlesByType,
     getAllReports,
     getUserSlugFromId,
+    getChatFilePublicUrl,
 
     updateUsername,
     updateProvider,
@@ -1956,6 +2008,7 @@ const authGetUser = async () => {
     upvoteUserProfile,
     downvoteUserProfile,
     uploadProfilePhoto,
+    uploadChatFile,
     trackPresence,
     stopTracking,
     checkInactivityForAllUsers,

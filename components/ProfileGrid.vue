@@ -180,6 +180,7 @@ const refreshTime = ref(Date.now());
 <style scoped>
 .profile-card {
   width: 180px;
+  max-width: 100%;
   height: 220px;
   background-size: cover;
   background-position: center;
@@ -187,6 +188,14 @@ const refreshTime = ref(Date.now());
   cursor: pointer;
   transition: transform 0.2s ease;
   border-radius: 15px;
+}
+
+/* reduce the width and height of the profile card for mobiles*/
+@media (max-width: 600px) {
+  .profile-card {
+    width: 150px;
+    height: 200px;
+  }
 }
 
 .profile-card:hover {

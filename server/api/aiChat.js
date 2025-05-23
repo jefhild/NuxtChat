@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) =>
   });
 
   const body = await readBody(event);
-  const { userMessage, userGender, userName, aiUser, userAge, messages } = body;
+  const { userMessage, userGender, userName, aiUser, userAge, messages, replyTo } = body;
 
   const persona = personas[aiUser];
 
@@ -27,6 +27,11 @@ export default defineEventHandler(async (event) =>
   {
     fullPrompt += `${msg.sender}: ${msg.content}\n`;
   });
+
+  if (replyTo)
+  {
+    fullPrompt += `\nNote: The user is replying to this message: "${replyTo}"\n`;
+  }
 
   // console.log("Full prompt:", fullPrompt);
 
