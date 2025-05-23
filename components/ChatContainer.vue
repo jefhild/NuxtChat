@@ -51,34 +51,42 @@
         </div>
         <!-- Message Input Row -->
         <v-form @submit.prevent="sendMessage">
+
+          <v-row v-if="attachedFile">
+            <v-col cols="auto" class="position-relative d-inline-block mt-4 ml-4">
+              <NuxtImg :src="previewUrl" :alt="attachedFile.name" width="100" height="100" class="rounded elevation-2"
+                cover />
+              <!-- Remove button -->
+              <v-btn icon size="x-small" class="remove-image-btn" @click="clearAttachment" color="red" variant="flat">
+                <v-icon size="16">mdi-close</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+
           <v-row no-gutters class="pa-2">
             <v-col cols="10">
-              <!-- <v-text-field
-                v-model="newMessage"
-                :label="
-                  selectedUser
-                    ? 'Message ' + selectedUser.displayname
-                    : 'Select a user to chat with'
-                "
-                variant="underlined"
-                dense
-                :readonly="!selectedUser"
-              ></v-text-field> -->
-              <v-text-field v-model="newMessage" :label="
-                  selectedUser
+              <!-- Message input and upload button -->
+              <v-row>
+                <v-col cols="10" class="d-flex align-center">
+                  <label class="upload-bubble mr-3"
+                    :class="{ 'upload-bubble--disabled': !selectedUser || sendingMessage }">
+                    <v-icon>mdi-plus</v-icon>
+                    <input type="file" accept="image/*" @change="handleFileUpload"
+                      :disabled="!selectedUser || sendingMessage" style="display: none" />
+                  </label>
+
+                  <v-text-field v-model="newMessage" :label="selectedUser
                     ? selectedUser.is_ai
                       ? 'Chat with a ' + selectedUser.displayname + ' AI'
                       : 'Message ' + selectedUser.displayname
-                    : 'Select a user to chat with'
-                " variant="underlined" dense :readonly="!selectedUser || sendingMessage "></v-text-field>
-
-              <v-file-input v-if="selectedUser" label="Attach a file or image" v-model="attachedFile"
-                prepend-icon="mdi-paperclip" show-size @change="handleFileUpload" :disabled="sendingMessage"/>
-
+                    : 'Select a user to chat with'" variant="underlined" dense
+                    :readonly="!selectedUser || sendingMessage" />
+                </v-col>
+              </v-row>
             </v-col>
+
             <v-col cols="2">
-              <v-btn type="submit" :disabled="!selectedUser || sendingMessage" color="primary"
-                class="mt-3 ml-3">
+              <v-btn type="submit" :disabled="!selectedUser || sendingMessage" color="primary" class="mt-4 ml-3">
                 <v-progress-circular v-if="sendingMessage" indeterminate color="white" size="18" />
                 <span v-if="!sendingMessage">Send</span>
               </v-btn>
@@ -153,6 +161,7 @@ const replyingToMessage = ref(null);
 const attachedFile = ref(null);
 const uploadedFileUrl = ref(null);
 const uploadedFileType = ref(null);
+const previewUrl = ref(null);
 
 const loadingMore = ref(false);
 const sendingMessage = ref(false);
@@ -723,10 +732,28 @@ const checkAiInteractionLimit = async () => {
   }
 };
 
-const handleFileUpload = async () =>
+const handleFileUpload = (event) =>
 {
-  console.log("File uploaded:", attachedFile.value);
-}
+  const file = event.target.files[0];
+  if (file)
+  {
+    attachedFile.value = file;
+    previewUrl.value = URL.createObjectURL(file);
+    console.log("Selected file:", attachedFile.value, previewUrl.value);
+  }
+
+  event.target.value = null;
+};
+
+const clearAttachment = () =>
+{
+  if (previewUrl.value)
+  {
+    URL.revokeObjectURL(previewUrl.value);
+  }
+  attachedFile.value = null;
+  previewUrl.value = null;
+};
 
 const showRegistrationPrompt = () => {
   // Implement your custom logic to prompt the user to register
@@ -802,6 +829,36 @@ const refreshData = async () => {
 .chat-messages>div:hover {
   background-color: rgba(0, 123, 255, 0.1);
   /* light blue background on hover */
+}
+
+.upload-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1976d2;
+  color: white;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+}
+
+.upload-bubble:hover {
+  background-color: #1565c0;
+}
+
+.upload-bubble--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.remove-image-btn {
+  position: absolute;
+  right: 8px;
+  z-index: 10;
+  background-color: white;
+  border-radius: 50%;
 }
 
 .sent {
