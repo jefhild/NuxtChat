@@ -169,6 +169,23 @@ export const useDb = () => {
     return data.avatar_decoration_url;
   };
 
+  const getMessageById = async (id) =>
+  {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("id, content, sender_id")
+      .eq("id", id)
+      .single();
+
+    if (error)
+    {
+      console.error("Error fetching message by ID:", error);
+    }
+
+    return { data, error };
+  };
+  
+
   const getMessagesBetweenUsers = async (senderUserId, receiverUserId, before = null, limit = 20) =>
   {
     let query = supabase
@@ -1910,6 +1927,7 @@ const authGetUser = async () => {
     getGenderFromId,
     getLookingForId,
     getAvatarDecorationFromId,
+    getMessageById,
     getMessagesBetweenUsers,
     getAIInteractionCount,
     getCurrentAIInteractionCount,
