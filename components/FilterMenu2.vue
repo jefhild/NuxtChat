@@ -24,13 +24,6 @@
 
             <v-divider class="my-2" />
 
-            <!-- AI Toggle  -->
-            <v-list-subheader>
-              <v-icon size="18" class="mr-1">mdi-robot</v-icon> Show AI Users
-            </v-list-subheader>
-            <v-switch :model-value="showAIUsers" @update:model-value="handleToggleUsers" color="primary" hide-details
-              inset class="mr-10" style="margin-top: -4px" />
-
             <!-- Gender -->
             <v-list-subheader>
               <v-icon size="18" class="mr-1">mdi-gender-male-female</v-icon> Gender
@@ -169,10 +162,9 @@ const props = defineProps({
       return value && value.user_id !== undefined && value.user_id !== null;
     },
   },
-  showAIUsers: Boolean, // Accept the current state as a prop
 });
 
-const emit = defineEmits(["filter-changed","toggle-users"]);
+const emit = defineEmits(["filter-changed"]);
 const genders = [
   { text: "Male", value: 1, icon: "mdi-gender-male"},
   { text: "Female", value: 2, icon: "mdi-gender-female" },
@@ -235,11 +227,6 @@ const clearFilters = () =>
   selectedCountry.value = null;
 
   applyFilters(); // emit cleared values
-};
-
-const handleToggleUsers = () => {
-  // Toggle the state and emit an event to the parent
-  emit("toggle-users", !props.showAIUsers);
 };
 
 const saveFilters = () => {
