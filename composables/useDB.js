@@ -220,6 +220,39 @@ export const useDb = () => {
     if (error) throw error;
     return data;
   };
+
+  const getMessagesOfAUserWithUser =  async (senderUserId, receiverUserId, before = null,  limit = 20) => {
+    let query = supabase
+      .from("messages")
+      .select(`
+        id,
+        sender_id,
+        receiver_id,
+        content,
+        created_at,
+        read,
+        file_url,
+        file_type,
+        file_name,
+        reply_to_message_id,
+        reply_to:reply_to_message_id ( id, content, sender_id ),
+        profiles!messages_sender_id_fkey(displayname)
+      `)
+      .eq('sender_id',senderUserId)
+      .eq('receiver_id', receiverUserId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+      if (before) {
+        query = query.lt("created_at", before);
+      }
+
+    const { data, error } = await query;
+      
+    console.log("getMessagesOfAUserWithUser", data, error);
+    if (error) throw error;
+    return data;
+  }
   
 
   const getAIInteractionCount = async (senderUserId) => {
@@ -943,7 +976,12 @@ export const useDb = () => {
   const getAllReports = async () => {
     const { data, error } = await supabase
       .from("reports")
-      .select("*")
+      .select(`
+        *, 
+        report_messages:report_messages (
+          message:messages (*)
+        )
+      `)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -1500,23 +1538,46 @@ export const useDb = () => {
     return error;
   };
 
-  const insertReport = async(currentUserId, reportedUserId, categories, reason) => {
-    const { error } = await supabase
+  const insertReport = async(currentUserId, reportedUserId, categories, reason, messages) => {
+    const { data,  error } = await supabase
       .from("reports")
       .insert({
         reporter_id: currentUserId,
         reported_user_id: reportedUserId,
         categories, 
         reason,
-      });
+      })
+      .select("id") // important to get the inserted id
+      .single();
 
     if (error)
     {
       console.error("Error submitting report:", error);
-    } else
+      return error;
+    } 
+
+    const reportId = data.id;
+
+    // Insert messages related to the report
+    for (const message of messages) {
+      await insertReportMessages(reportId, message.id);
+    };
+  }
+
+  const insertReportMessages = async (reportId, messageId) => {
+    const { error } = await supabase
+    .from("report_messages")
+    .insert({
+      report_id: reportId,
+      message_id: messageId,
+    });
+
+    if (error)
     {
-      console.log("Report submitted successfully");
+      console.error("Error inserting report message:", error);
+      return error;
     }
+    
   };
 
   /*------------------*/
@@ -1929,6 +1990,7 @@ const authGetUser = async () => {
     getAvatarDecorationFromId,
     getMessageById,
     getMessagesBetweenUsers,
+    getMessagesOfAUserWithUser,
     getAIInteractionCount,
     getCurrentAIInteractionCount,
     getInterests,

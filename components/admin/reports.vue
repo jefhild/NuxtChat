@@ -27,6 +27,7 @@
 					<th>Reported</th>
 					<th>Categories</th>
 					<th>Reason</th>
+					<th> Messages </th>
 					<th>Date</th>
 					<th>Actions</th>
 				</tr>
@@ -42,9 +43,15 @@
 						</v-chip>
 					</td>
 					<td>{{ report.reason }}</td>
+					<td>
+						<v-btn v-if="report.report_messages.length" color="primary"
+							@click="openMessageDialog(report.report_messages)">
+							View Messages ({{ report.report_messages?.length || 0 }})
+						</v-btn>
+					</td>
 					<td>{{ formatDate(report.created_at) }}</td>
 					<td>
-						<v-btn @click="handleDeleteReport(report.id)" color="red"  small>
+						<v-btn @click="handleDeleteReport(report.id)" color="red" small>
 							Delete
 						</v-btn>
 					</td>
@@ -52,15 +59,52 @@
 			</tbody>
 		</v-table>
 	</v-card>
+
+	<v-dialog v-model="messageDialog" max-width="600">
+		<v-card>
+			<v-card-title>
+				<div class="d-flex align-center justify-space-between w-100">
+					<span>Reported Messages</span>
+					<v-btn @click="messageDialog = false" variant="text" icon="mdi-close" />
+				</div>
+			</v-card-title>
+			<v-divider />
+			<v-card-text>
+				<v-list v-if=" selectedReportMessages?.length" density="compact">
+					<v-list-item v-for="m in selectedReportMessages" :key="m.message.id">
+						<v-list-item-title>{{ m.message.content }}</v-list-item-title>
+						<v-list-item-subtitle class="text-caption">
+							{{ formatDate(m.message.created_at) }}
+						</v-list-item-subtitle>
+						<NuxtImg v-if="m.message.file_url" :src="m.message.file_url" class="preview-image my-2" cover />
+					</v-list-item>
+				</v-list>
+				<v-alert v-else type="info">No messages found for this report.</v-alert>
+			</v-card-text>
+		</v-card>
+	</v-dialog>
+
 </template>
 
 
 <script setup>
+import { NuxtImg } from '#components';
+
 const { getAllReports, getUserDisplayNameFromId, deleteReport } = useDb();
 
 const isLoading = ref(true);
 const reports = ref([]);
 const selectedCategory = ref(null);
+
+const messageDialog = ref(false);
+const selectedReportMessages = ref([]);
+
+const openMessageDialog = (messages) =>
+{
+	selectedReportMessages.value = messages;
+	messageDialog.value = true;
+};
+
 
 onMounted(async () =>
 {
@@ -81,6 +125,7 @@ onMounted(async () =>
 	);
 
 	reports.value = resolved
+	console.log("Resolved reports:", reports.value);
 	isLoading.value = false;
 });
 
@@ -122,5 +167,12 @@ const handleDeleteReport = async (reportId) =>
 
 th {
 	font-weight: bold;
+}
+
+.preview-image {
+	width: 40%;
+	height: auto;
+	display: block;
+	border-radius: 20px;
 }
 </style>
