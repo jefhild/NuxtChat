@@ -129,9 +129,9 @@
         </v-menu>
       </v-col>
 
-      <v-col class="text-caption text-medium-emphasis mt-2">
-        {{ rowCount }} users online
-      </v-col>
+      <!-- <v-col class="text-caption text-medium-emphasis mt-2">
+        <OnlineUsersCount />
+      </v-col> -->
     </v-row>
   <!-- </v-container> -->
 </template>
@@ -144,11 +144,11 @@ import { usePresenceStore } from '@/stores/presenceStore';
 const { getInterests, getCountries, getStatuses } = useDb();
 
 const presenceStore = usePresenceStore();
-const rowCount = ref(presenceStore.onlineUsers.length); // Initialize with the current online users count
-watch(() => presenceStore.userIdsOnly, (newVal) =>
-{
-  rowCount.value = newVal.length;
-});
+// const rowCount = ref(presenceStore.onlineUsers.length); // Initialize with the current online users count
+// watch(() => presenceStore.userIdsOnly, (newVal) =>
+// {
+//   rowCount.value = newVal.length;
+// });
 const menu = ref(false);
 const selectedGender = ref(null);
 const selectedAge = ref([18, 100]); // Default age range
