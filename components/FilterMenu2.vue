@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-0">
+  <!-- <v-container fluid class="pa-0"> -->
     <v-row>
       <v-col cols="12" sm="auto">
         <v-menu v-model="menu" :close-on-content-click="false" location="end">
@@ -23,13 +23,6 @@
             </v-row>
 
             <v-divider class="my-2" />
-
-            <!-- AI Toggle  -->
-            <v-list-subheader>
-              <v-icon size="18" class="mr-1">mdi-robot</v-icon> Show AI Users
-            </v-list-subheader>
-            <v-switch :model-value="showAIUsers" @update:model-value="handleToggleUsers" color="primary" hide-details
-              inset class="mr-10" style="margin-top: -4px" />
 
             <!-- Gender -->
             <v-list-subheader>
@@ -140,7 +133,7 @@
         {{ rowCount }} users online
       </v-col>
     </v-row>
-  </v-container>
+  <!-- </v-container> -->
 </template>
 
 
@@ -169,10 +162,9 @@ const props = defineProps({
       return value && value.user_id !== undefined && value.user_id !== null;
     },
   },
-  showAIUsers: Boolean, // Accept the current state as a prop
 });
 
-const emit = defineEmits(["filter-changed","toggle-users"]);
+const emit = defineEmits(["filter-changed"]);
 const genders = [
   { text: "Male", value: 1, icon: "mdi-gender-male"},
   { text: "Female", value: 2, icon: "mdi-gender-female" },
@@ -236,12 +228,7 @@ const clearFilters = () =>
 
   applyFilters(); // emit cleared values
 };
-
-const handleToggleUsers = () => {
-  // Toggle the state and emit an event to the parent
-  emit("toggle-users", !props.showAIUsers);
-};
-
+ 
 const saveFilters = () => {
   applyFilters();
   menu.value = false; // Close the menu
