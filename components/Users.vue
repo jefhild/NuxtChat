@@ -7,46 +7,23 @@
       <v-tab :value="2">Offline</v-tab>
       <v-tab :value="3">
         <span class="tab-title">Active</span>
-        <v-badge
-          v-if="unreadMessageCount > 0"
-          :content="unreadMessageCount"
-          color="red"
-          overlap
-          class="mb-7"
-        ></v-badge>
+        <v-badge v-if="unreadMessageCount > 0" :content="unreadMessageCount" color="red" overlap class="mb-7"></v-badge>
       </v-tab>
       <v-spacer></v-spacer>
     </v-tabs>
     <v-tabs-window v-model="tab">
       <v-tabs-window-item :value="1">
-        <OnlineUsers
-          :users="onlineUsers"
-          :selectedUserId="selectedUserId"
-          @user-selected="selectUser"
-        />
+        <OnlineUsers :users="onlineUsers" :selectedUserId="selectedUserId" :isTabVisible="isTabVisible"
+          @user-selected="selectUser" />
       </v-tabs-window-item>
       <v-tabs-window-item :value="2">
-        <v-row
-          ><v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis"
-            >No anonymous users here...</v-col
-          ></v-row
-        >
-        <OfflineUsers
-          :users="offlineUsers"
-          :selectedUserId="selectedUserId"
-          @user-selected="selectUser"
-          :isLoading="isLoading"
-        />
+        <v-row><v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">No anonymous users here...</v-col></v-row>
+        <OfflineUsers :users="offlineUsers" :selectedUserId="selectedUserId" @user-selected="selectUser"
+          :isLoading="isLoading" />
       </v-tabs-window-item>
       <v-tabs-window-item :value="3">
-        <ActiveChats
-          :users="activeChats"
-          :selectedUserId="selectedUserId"
-          :isTabVisible="isTabVisible"
-          :isLoading="isLoading"
-          @user-selected="selectUser"
-          @chat-deleted="handleChatDeleted"
-        />
+        <ActiveChats :users="activeChats" :selectedUserId="selectedUserId" :isTabVisible="isTabVisible"
+          :isLoading="isLoading" @user-selected="selectUser" @chat-deleted="handleChatDeleted" />
       </v-tabs-window-item>
     </v-tabs-window>
   </v-card>

@@ -2,9 +2,9 @@
   <div v-if="message.file_url">
     <div class="image-wrapper" v-if="message.file_type.startsWith('image/')">
       <NuxtImg :src="message.file_url" :alt="message.file_name" class="preview-image" :class="{ blurred: !accepted }"
-        @click="openFullscreen" />
+        @click.stop="openFullscreen" />
 
-      <v-btn v-if="!accepted" class="accept-button" small color="primary" @click="accepted = true">
+      <v-btn v-if="!accepted" class="accept-button" small color="primary" @click.stop="accepted = true">
         Accept Image
       </v-btn>
     </div>
@@ -24,7 +24,7 @@
     </div>
   </div>
 
-  <v-dialog v-model="fullscreen" max-width="600" persistent>
+  <v-dialog v-model="fullscreen" max-width="600">
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
         <span class="text-h6">{{ message.file_name }}</span>

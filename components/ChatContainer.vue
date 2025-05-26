@@ -517,6 +517,7 @@ onMounted(async () => {
 
         loadChatMessages(authStore.user?.id, newUser.user_id);
         hasMoreMessages.value = true;
+        replyingToMessage.value = null;
       }
     },
     { immediate: true }
