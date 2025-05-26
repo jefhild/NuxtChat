@@ -1,17 +1,22 @@
 <template>
-  <v-row no-gutters>
-    <v-col cols="12" class="d-flex justify-center">
-      <v-form>
-        <v-btn
-          :disabled="!isFormValid"
-          @click="handleGoogleLogin"
-          color="primary"
-        >
-          Sign in With Google
-        </v-btn>
-      </v-form>
-    </v-col>
-  </v-row>
+<v-row no-gutters>
+  <v-col cols="12" class="d-flex justify-center">
+    <!-- Heading -->
+    <h2 class="text-h5 mb-4">Sign in With Google</h2>
+  </v-col>
+
+  <v-col cols="12" class="d-flex justify-center">
+    <v-form>
+      <v-btn
+        :disabled="!isFormValid"
+        @click="handleGoogleLogin"
+        color="primary"
+      >
+        Continue with Google
+      </v-btn>
+    </v-form>
+  </v-col>
+</v-row>
   <v-row no-gutters>
     <v-col class="mt-4">
       <v-checkbox
