@@ -89,7 +89,7 @@ const categories = [
 const selectMessage = (message) =>
 {
 	const index = selectedMessages.value.findIndex((m) => m.id === message.id);
-	console.log("selectMessages", selectedMessages.value, message, index);
+	// console.log("selectMessages", selectedMessages.value, message, index);
 	if (index === -1)
 	{
 		if (selectedMessages.value.length >= 10){
@@ -102,7 +102,7 @@ const selectMessage = (message) =>
 		selectedMessages.value.splice(index, 1);
 	}
 
-	console.log("selectedMessages", selectedMessages.value);
+	// console.log("selectedMessages", selectedMessages.value);
 };
 
 const formatDate = (ts) =>

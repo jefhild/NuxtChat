@@ -249,7 +249,7 @@ export const useDb = () => {
 
     const { data, error } = await query;
       
-    console.log("getMessagesOfAUserWithUser", data, error);
+    // console.log("getMessagesOfAUserWithUser", data, error);
     if (error) throw error;
     return data;
   }

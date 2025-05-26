@@ -125,7 +125,7 @@ onMounted(async () =>
 	);
 
 	reports.value = resolved
-	console.log("Resolved reports:", reports.value);
+	// console.log("Resolved reports:", reports.value);
 	isLoading.value = false;
 });
 
