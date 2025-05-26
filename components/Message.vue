@@ -1,36 +1,13 @@
 <template>
   <div v-if="message.file_url">
     <div class="image-wrapper" v-if="message.file_type.startsWith('image/')">
-      <NuxtImg 
-        :src="message.file_url" 
-        :alt="message.file_name" 
-        class="preview-image" 
-        :class="{ blurred: !accepted }" 
-        @click="openFullscreen"
-      />
+      <NuxtImg :src="message.file_url" :alt="message.file_name" class="preview-image" :class="{ blurred: !accepted }"
+        @click="openFullscreen" />
 
-      <v-btn 
-        v-if="!accepted" 
-        class="accept-button" 
-        small 
-        color="primary" 
-        @click="accepted = true"
-      >
+      <v-btn v-if="!accepted" class="accept-button" small color="primary" @click="accepted = true">
         Accept Image
       </v-btn>
     </div>
-
-    <v-dialog v-model="fullscreen" fullscreen persistent>
-      <v-card>
-        <v-toolbar dark color="primary">
-          <v-btn icon @click="fullscreen = false"><v-icon>mdi-close</v-icon></v-btn>
-          <v-toolbar-title>{{ message.file_name }}</v-toolbar-title>
-        </v-toolbar>
-        <v-card-text class="d-flex justify-center align-center fill-height">
-          <NuxtImg :src="message.file_url" :alt="message.file_name" class="fullscreen-image" />
-        </v-card-text>
-      </v-card>
-    </v-dialog>
   </div>
 
   <div v-if="message.reply_to" class="reply-preview-box">
@@ -46,6 +23,20 @@
       <v-icon icon="mdi-check" v-else class="unread-icon mr-3"></v-icon>{{ formattedLocalDate }}
     </div>
   </div>
+
+  <v-dialog v-model="fullscreen" max-width="600" persistent>
+    <v-card>
+      <v-card-title class="d-flex justify-space-between align-center">
+        <span class="text-h6">{{ message.file_name }}</span>
+        <v-btn icon @click="fullscreen = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-card-title>
+      <v-card-text class="d-flex justify-center">
+        <NuxtImg :src="message.file_url" :alt="message.file_name" class="popup-image" />
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -117,6 +108,13 @@ const formattedLocalDate = computed(() =>
   transform: translate(-50%, -50%);
   z-index: 10;
   backdrop-filter: blur(4px);
+}
+
+.popup-image {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .blurred {
