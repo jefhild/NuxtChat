@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-0">
+  <!-- <v-container fluid class="pa-0"> -->
     <v-row>
       <v-col cols="12" sm="auto">
         <v-menu v-model="menu" :close-on-content-click="false" location="end">
@@ -133,7 +133,7 @@
         {{ rowCount }} users online
       </v-col>
     </v-row>
-  </v-container>
+  <!-- </v-container> -->
 </template>
 
 
@@ -228,7 +228,7 @@ const clearFilters = () =>
 
   applyFilters(); // emit cleared values
 };
-
+ 
 const saveFilters = () => {
   applyFilters();
   menu.value = false; // Close the menu
