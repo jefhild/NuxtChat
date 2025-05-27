@@ -157,7 +157,7 @@
             <v-col cols="2">
               <v-btn
                 type="submit"
-                :disabled="!selectedUser || sendingMessage"
+                :disabled="!selectedUser || sendingMessage || (!newMessage.trim() && !attachedFile)"
                 color="primary"
                 class="mt-4 ml-3"
               >
@@ -517,6 +517,7 @@ onMounted(async () => {
 
         loadChatMessages(authStore.user?.id, newUser.user_id);
         hasMoreMessages.value = true;
+        replyingToMessage.value = null;
       }
     },
     { immediate: true }
@@ -581,7 +582,7 @@ const selectUser = (user) => {
 };
 
 const sendMessage = async () => {
-  if (newMessage.value.trim() && selectedUser.value) {
+  if ((newMessage.value.trim() || attachedFile.value) && selectedUser.value) {
     sendingMessage.value = true;
     const senderUserId = authStore.user?.id;
     const receiverUserId = selectedUser.value.user_id;
@@ -600,7 +601,7 @@ const sendMessage = async () => {
       }
 
       const publicUrl = await getChatFilePublicUrl(fileName);
-      console.log("File URL:", publicUrl, fileName);
+      // console.log("File URL:", publicUrl, fileName);
 
       uploadedFileUrl.value = publicUrl;
       uploadedFileType.value = file.type;
@@ -656,7 +657,7 @@ const sendMessage = async () => {
       uploadedFileType.value = null;
 
       if (data && data.length > 0) {
-        console.log("Message sent successfully:", data);
+        // console.log("Message sent successfully:", data);
         newMessage.value = ""; // Reset the message input field
 
         // Push the new message to the messages array for immediate UI update
@@ -819,7 +820,7 @@ const handleFileUpload = (event) => {
   if (file) {
     attachedFile.value = file;
     previewUrl.value = URL.createObjectURL(file);
-    console.log("Selected file:", attachedFile.value, previewUrl.value);
+    // console.log("Selected file:", attachedFile.value, previewUrl.value);
   }
 
   event.target.value = null;

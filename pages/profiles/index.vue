@@ -13,7 +13,6 @@
 <script setup>
 const isAuthenticated = ref(false);
 const authStore = useAuthStore();
-const isLoading = ref(true);
 
 useHead(() => ({
   link: [
@@ -42,8 +41,6 @@ useSeoMeta({
 onMounted(async () => {
   await authStore.checkAuth();
   isAuthenticated.value = authStore.user !== null;
-  console.log("User authenticated:", isAuthenticated.value);
-  isLoading.value = false;
 });
 </script>
   

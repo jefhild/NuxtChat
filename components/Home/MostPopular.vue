@@ -1,10 +1,5 @@
 <template>
-  <v-row v-if="isLoading" justify="center" no-gutters>
-    <v-col class="text-center">
-      <v-progress-circular indeterminate color="primary" size="64" />
-    </v-col>
-  </v-row>
-  <v-container v-else>
+  <v-container v-if="!isLoading">
     <h2 v-if="popularProfiles.length <= 8" class="text-h5 font-weight-light mb-4">Most Popular Profiles</h2>
     <ProfileGrid :profiles="popularProfiles" :limit="8"/>
     <v-row v-if="popularProfiles.length <= 8">
@@ -23,6 +18,8 @@
 const popularProfiles = ref([]);
 const { getMostPopularProfiles } = useDb();
 
+const emit = defineEmits(['loaded']);
+
 const isLoading = ref(true);
 const props = defineProps({
   limit: Number,
@@ -36,5 +33,6 @@ onMounted(async () => {
   }
   // console.log("Most Popular Profiles: ", popularProfiles.value);
   isLoading.value = false;
+  emit('loaded');
 });
 </script>
