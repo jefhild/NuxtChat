@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="selectedUser" class="mb-2">
+  <v-card flat variant="tonal" color="blue" v-if="selectedUser" class="mb-2">
     <v-card-title>
       <v-row no-gutters class="align-center">
         <v-col :class="getGenderColorClass(selectedUser.gender_id)">
@@ -31,7 +31,7 @@
       </div>
     </v-card-text>
   </v-card>
-  <v-card v-else>
+  <v-card flat v-else>
     <v-card-title>Select a user to chat with</v-card-title>
   </v-card>
 
