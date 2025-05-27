@@ -4,12 +4,11 @@
       <v-col cols="12" md="4" class="pa-2">
         <v-row class="align-center">
           <v-col>
-            <FilterMenu2
-              :userProfile="userProfile"
-              :showAIUsers="showAIUsers"
-              @filter-changed="updateFilters"
-          /></v-col>
-          <v-col> <ToggleAi v-model="showAIUsers" /></v-col>
+            <FilterMenu2 :userProfile="userProfile" :showAIUsers="showAIUsers" @filter-changed="updateFilters" />
+          </v-col>
+          <v-col>
+            <ToggleAi v-model="showAIUsers" />
+          </v-col>
         </v-row>
       </v-col>
       <v-col cols="12" md="8" class="pa-2 d-flex flex-column">
@@ -41,7 +40,7 @@
             </div>
             <div v-for="(message, index) in messages" :key="message.id" @click="replyingToMessage = message"
               :class="message.sender_id === user.id ? 'sent' : 'received'" :ref="index === 0 ? 'firstMessage' : null">
-              <Message :message="message" :user="user" />
+              <Message :message="message" :user="user" @edit-message="editMessage" />
             </div>
             <!-- Typing Indicator -->
             <div v-if="isTyping" class="typing-indicator bot-message">
@@ -51,10 +50,13 @@
         </v-card>
 
         <div v-if="replyingToMessage" class="d-flex align-center">
-          <div class="text-caption mr-5">
-            Replying to: {{ replyingToMessage.content }}
+          <div class="text-caption mr-2 flex-grow-1">
+            Replying to: {{ replyingToMessage.content.length > 50 ? replyingToMessage.content.substring(0, 50) + '...' :
+              replyingToMessage.content }}
           </div>
-          <v-btn icon @click="replyingToMessage = null" size="small" class="mt-2"><v-icon>mdi-close</v-icon></v-btn>
+          <v-btn icon @click="replyingToMessage = null" size="small" class="flex-shrink-0 mt-2">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
         </div>
         <!-- Message Input Row -->
         <v-form @submit.prevent="sendMessage">
@@ -106,18 +108,9 @@
             </v-col>
 
             <v-col cols="2">
-              <v-btn
-                type="submit"
-                :disabled="!selectedUser || sendingMessage || (!newMessage.trim() && !attachedFile)"
-                color="primary"
-                class="mt-4 ml-3"
-              >
-                <v-progress-circular
-                  v-if="sendingMessage"
-                  indeterminate
-                  color="white"
-                  size="18"
-                />
+              <v-btn type="submit" :disabled="!selectedUser || sendingMessage || (!newMessage.trim() && !attachedFile)"
+                color="primary" class="mt-4 ml-3">
+                <v-progress-circular v-if="sendingMessage" indeterminate color="white" size="18" />
                 <span v-if="!sendingMessage">Send</span>
               </v-btn>
             </v-col>
@@ -159,6 +152,7 @@ const {
   insertInteractionCount,
   getChatFilePublicUrl,
   uploadChatFile,
+  updateMessage
 } = useDb();
 
 const notificationSound = new Audio("/sounds/notification.wav");
@@ -178,6 +172,7 @@ const aiUsers = ref([]);
 const activeChats = ref([]);
 const filters = ref({ gender_id: null });
 let realtimeMessages = null;
+let realtimeUpdateMessages = null;
 // const registrationDialog = ref(false);
 const dialogVisible = ref(false);
 const showAIUsers = ref(false); // State to toggle between Users and UsersAI
@@ -350,7 +345,6 @@ const handleScroll = async () => {
 
 const handleRealtimeMessages = async (payload) => {
   const { eventType, new: newRow } = payload;
-
   if (eventType !== "INSERT") return;
   if (blockedUsers.value.includes(newRow.sender_id)) return;
 
@@ -526,6 +520,41 @@ onMounted(async () => {
     } else {
       // console.log("Subscribed to real-time updates for messages");
     }
+  }
+
+  if (!realtimeUpdateMessages) {
+    realtimeUpdateMessages = supabase
+      .channel(`messages:update:${user.value.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=eq.${user.value.id}`,
+        },
+        (payload) => {
+          // console.log("Realtime update payload:", payload);
+
+          //find the message in the local messages array
+          const messageIndex = messages.value.findIndex(msg => msg.id === payload.old.id);
+          if (messageIndex !== -1)
+          {
+            messages.value[messageIndex] = {
+              ...messages.value[messageIndex],
+              content: payload.new.content
+            };
+          }
+        }
+      );
+
+    const { error } = realtimeUpdateMessages.subscribe();
+    if (error) {
+      console.error("Error subscribing to real-time updates:", error);
+    } else {
+      // console.log("Subscribed to real-time updates for message updates");
+    }
+    
   }
 
   document.addEventListener("visibilitychange", async () => {
@@ -788,6 +817,34 @@ const checkAiInteractionLimit = async () => {
   }
 };
 
+const editMessage = async (editData) =>
+{
+  try
+  {
+    const { messageId, newContent } = editData;
+
+    // Update in database
+    const updatedMessage = await updateMessage(messageId, newContent);
+
+    // Update local messages array
+    const messageIndex = messages.value.findIndex(msg => msg.id === messageId);
+    if (messageIndex !== -1)
+    {
+      messages.value[messageIndex] = {
+        ...messages.value[messageIndex],
+        content: newContent,
+        edited_at: updatedMessage.edited_at
+      };
+    }
+
+    // console.log('Message updated successfully');
+  } catch (error)
+  {
+    console.error('Error editing message:', error);
+    // You could show a toast notification here
+  }
+};
+
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
@@ -874,7 +931,7 @@ const refreshData = async () => {
 
 <style scoped>
 .chat-messages {
-  max-height: 400px; /* Adjust as needed */
+  max-height: 413px; /* Adjust as needed */
   overflow-y: auto;
   padding: 5px;
 }
