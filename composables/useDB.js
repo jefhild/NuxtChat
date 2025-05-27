@@ -151,7 +151,7 @@ export const useDb = () => {
       return null;
     }
 
-    return data.id;
+    return data?.id;
   };
 
   const getAvatarDecorationFromId = async (id) => {

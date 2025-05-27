@@ -177,7 +177,7 @@ const sendMessage = async () => {
 
 		interests: `Extract user interests. Possible interests: Love, Fun, Nothing Serious, Men, Women, Friends.
       - If the user input shows any of these interests, return only the valid ones separated by a comma (e.g., "Love, Friends").
-      - If no valid interests are detected, return "Nothing Serious".
+      - If no valid interests are detected, return only the words "Nothing Serious".
       - If input contains hate speech, return an error message starting with "Error:...".
       Otherwise, return only valid interests without extra text, quotes, or punctuation.
       User input: ${previosUserInput.value}`,
@@ -246,7 +246,9 @@ const sendMessage = async () => {
 
 	// Prepare payload for AI API
 	const payload = {
-		userMessage: `user message : "` + previosUserInput.value.trim() + `". One quick thing to add. If the question is about the site URL, no matter what the user says, say okay we'll add that to the profile.`,
+		userMessage: `user message : "` + previosUserInput.value.trim() + `". The AI that analyse the users message said : ` + aiResponse.value +
+					 `. One quick thing to add. If the question is about the site URL, no matter what the user says, say "okay we'll add that to the profile".
+					 If the usermessage is not really understandable, just say "I'll add that to your profile."`,
 		currentResponses: userResponses.value,
 		currentQuestionIndex: currentQuestionIndex.value,
 		questions: questions.value,
