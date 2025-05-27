@@ -10,7 +10,7 @@
       > -->
 
   <v-row class="rowbg rowheight" justify="center" align="center">
-    <v-col class="text-center">Free anonymous chat.</v-col>
+    <v-col class="text-center"><OnlineUsersCount /></v-col>
     <v-col class="fill-height">
       <div class="fill-height d-flex align-center justify-center">
         <AdSenseAdBanner ad-slot="2131952668" />

@@ -37,11 +37,15 @@
 
   <v-dialog v-model="userProfileDialog" max-width="600" transition="dialog-transition">
     <v-card>
-      <PublicUserProfile :selectedUserSlug="selectedUser?.slug" :isPublic="false"/>
+      <PublicUserProfile :selectedUserSlug="selectedUser?.slug" :isPublic="false" />
     </v-card>
   </v-dialog>
 
   <ReportUserModal v-model="reportDialog" :reportedUserId="selectedUser?.user_id" @submit-report="handleReport" />
+
+  <v-snackbar v-model="showAlert" :timeout="3000" color="primary" location="top">
+    {{ snackbarMessage }}
+  </v-snackbar>
 </template>
 
 <script setup >
@@ -91,6 +95,10 @@ const notificationStore = useNotificationStore();
 const hasUpvoted = ref(false);
 const hasDownvoted = ref(false);
 const genderName = ref(""); 
+
+const showAlert = ref(false);
+const snackbarMessage = ref("");
+
 const userProfileDialog = ref(false);
 
 const toggleUserProfileDialog = () => {
@@ -206,16 +214,22 @@ const toggleReportDialog = () => {
   reportDialog.value = !reportDialog.value;
 };
 
-const handleReport = async ({ reportedUserId, categories, reason }) =>
+const handleReport = async ({ reportedUserId, categories, reason, messages }) =>
 {
-  // console.log("Reported User ID:", reportedUserId, "Categories:", categories, "Reason:", reason);
-  await insertReport(
+  console.log("Reported User ID:", reportedUserId, "Categories:", categories, "Reason:", reason, "Messages:", messages);
+  
+  const error = await insertReport(
     props.currentUser.id,
     reportedUserId,
     categories,
-    reason
+    reason,
+    messages
   );
-  
+
+  error ? snackbarMessage.value = "Failed to submit report. Please try again later."
+        : snackbarMessage.value = "Report submitted successfully.";
+
+  showAlert.value = true;
 };
 
 

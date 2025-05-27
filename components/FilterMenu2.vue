@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-0">
+  <!-- <v-container fluid class="pa-0"> -->
     <v-row>
       <v-col cols="12" sm="auto">
         <v-menu v-model="menu" :close-on-content-click="false" location="end">
@@ -129,11 +129,11 @@
         </v-menu>
       </v-col>
 
-      <v-col class="text-caption text-medium-emphasis mt-2">
-        {{ rowCount }} users online
-      </v-col>
+      <!-- <v-col class="text-caption text-medium-emphasis mt-2">
+        <OnlineUsersCount />
+      </v-col> -->
     </v-row>
-  </v-container>
+  <!-- </v-container> -->
 </template>
 
 
@@ -144,11 +144,11 @@ import { usePresenceStore } from '@/stores/presenceStore';
 const { getInterests, getCountries, getStatuses } = useDb();
 
 const presenceStore = usePresenceStore();
-const rowCount = ref(presenceStore.onlineUsers.length); // Initialize with the current online users count
-watch(() => presenceStore.userIdsOnly, (newVal) =>
-{
-  rowCount.value = newVal.length;
-});
+// const rowCount = ref(presenceStore.onlineUsers.length); // Initialize with the current online users count
+// watch(() => presenceStore.userIdsOnly, (newVal) =>
+// {
+//   rowCount.value = newVal.length;
+// });
 const menu = ref(false);
 const selectedGender = ref(null);
 const selectedAge = ref([18, 100]); // Default age range
@@ -228,7 +228,7 @@ const clearFilters = () =>
 
   applyFilters(); // emit cleared values
 };
-
+ 
 const saveFilters = () => {
   applyFilters();
   menu.value = false; // Close the menu

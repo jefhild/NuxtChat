@@ -11,8 +11,8 @@
 
                 <div class="avatar-wrapper">
                   <v-avatar size="44" :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
-                  <NuxtImg :src="user.avatar_decoration_url" :alt="`${user.displayname}'s image`" v-if="user.avatar_decoration_url"
-                    class="avatar-decoration" />
+                  <NuxtImg :src="user.avatar_decoration_url" :alt="`${user.displayname}'s image`"
+                    v-if="user.avatar_decoration_url" class="avatar-decoration" />
 
                   <v-icon color="white" size="x-small" class="status-badge">mdi-circle</v-icon>
                   <v-icon size="small" :color="statusColor(user.user_id)" :icon="statusIcon(user.user_id)"
@@ -21,6 +21,9 @@
               </template>
               <v-list-item-title :class="getGenderColorClass(user.gender_id)">
                 {{ user.displayname }}
+                <span v-if="user.unread_count > 0" class="unread-count">
+                  ({{ user.unread_count }})
+                </span>
               </v-list-item-title>
               <v-list-item-subtitle>
                 ({{ user.age }}) {{ user.emoji }}
@@ -48,6 +51,7 @@ import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@
 const props = defineProps({
   users: Array,
   filters: Object,
+  isTabVisible: Boolean,
   selectedUserId: String
 });
 
@@ -58,6 +62,7 @@ const selectedUser = ref(null);
 
 const selectUser = (user) => {
   selectedUser.value = user;
+  user.unread_count = 0;
   emit("user-selected", user);
 };
 </script>
@@ -96,6 +101,10 @@ const selectUser = (user) => {
   width: 10px;
   height: 10px;
   z-index: 3;
+}
+
+.unread-count {
+  color: red;
 }
 
 </style>

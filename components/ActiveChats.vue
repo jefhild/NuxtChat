@@ -179,14 +179,11 @@ const subscribeToNewMessages = () => {
     .channel("messages")
     .on(
       "postgres_changes",
-      { event: "INSERT", schema: "public", table: "messages" },
+      { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${myUserId.value.id}` },
       (payload) => {
         // console.log("New message received:", payload);
 
         const senderId = payload.new.sender_id;
-        const receiverId = payload.new.receiver_id;
-
-        if (receiverId !== myUserId.value.id) return;
 
         updateUnreadCount(senderId);
       }
@@ -203,7 +200,7 @@ const updateUnreadCount = (senderId) =>
 
   if (!isChattingWithSender)
   {
-    console.log("Updating unread count for user:", senderId);
+    console.log("Updating unread count for user in activechats:", senderId);
     const updatedUser = {
       ...localUsers.value[index],
       unread_count: (localUsers.value[index].unread_count || 0) + 1,

@@ -1,10 +1,5 @@
 <template>
-  <v-row v-if="isLoading" justify="center" no-gutters>
-    <v-col class="text-center">
-      <v-progress-circular indeterminate color="primary" size="64" />
-    </v-col>
-  </v-row>
-  <v-container v-else>
+  <v-container v-if="!isLoading">
     <h2 v-if="recentProfiles.length <= 4" class="text-h5 font-weight-light mb-4">Recent Profiles</h2>
     <ProfileGrid :profiles="recentProfiles" :limit="8" />
     <v-row v-if="recentProfiles.length <= 4">
@@ -25,6 +20,8 @@ const props = defineProps({
   limit: Number,
 });
 
+const emit = defineEmits(['loaded']);
+
 const isLoading = ref(true);
 const recentProfiles = ref([]);
 const profileLimit = 100;
@@ -39,5 +36,6 @@ onMounted(async () =>
   }
   // console.log("Recent Profiles:", recentProfiles.value);
   isLoading.value = false;
+  emit('loaded');
 });
 </script>
