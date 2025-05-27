@@ -35,7 +35,6 @@ const props = defineProps({
   offlineUsers: Array,
   activeChats: Array,
   userProfile: Object,
-  updateFilters: Function,
   selectedUserId: String,
   isTabVisible: Boolean,
   isLoading: Boolean,
@@ -49,8 +48,10 @@ const emit = defineEmits([
   "unread-count",
 ]);
 
+const supabase = useSupabaseClient();
+const authStore = useAuthStore();
+const myUserId = ref(authStore.user);
 const unreadMessageCount = ref(0);
-const activeChats = toRef(props, "activeChats"); // Make the prop reactive
 
 // Watch for changes in activeChats for the badge count on the active tab
 watch(
@@ -68,6 +69,46 @@ watch(
   { immediate: true, deep: true } // Run immediately on initialization and watch deeply
 );
 
+onMounted(() =>
+{
+  // console.log("ActiveChats mounted", props.users);
+  subscribeToNewMessages();
+});
+
+
+
+const subscribeToNewMessages = () =>
+{
+  supabase
+    .channel("messages")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${myUserId.value.id}` },
+      (payload) =>
+      {
+        // console.log("New message received:", payload);
+
+        const senderId = payload.new.sender_id;
+        updateUnreadCount(senderId);
+      }
+    )
+    .subscribe();
+};
+
+const updateUnreadCount = (senderId) =>
+{
+  const index = props.activeChats.findIndex(u => u.user_id === senderId);
+  if (index === -1) return;
+  const user = props.activeChats[index];
+
+  const isChattingWithSender = senderId === props.selectedUserId && props.isTabVisible;
+  if (!isChattingWithSender)
+  {
+    user.unread_count = (user.unread_count || 0) + 1;
+    unreadCountUpdated(user);
+  }
+};
+
 const selectUser = (user) => {
   emit("user-selected", user); // Ensure this line exists
 };
@@ -78,10 +119,17 @@ const handleChatDeleted = (user) => {
   emit("refresh-data");
 };
 
-// const refreshData = (user) => {
-//   console.log("Refreshing data...");
-//   emit("refresh-data", user); // Ensure this line exists
-// };
+const unreadCountUpdated = (user) => {
+  // console.log("Inside unreadCountUpdated: User - ", user);
+  
+  // find user in onlineUsers and update unread_count
+  const onlineUser = props.onlineUsers.find(u => u.user_id === user.user_id);
+  if (onlineUser) {
+    // console.log("Updating unread count for user:", onlineUser.user_id);
+    onlineUser.unread_count = user.unread_count;
+  }
+};
+
 </script>
 <style scoped>
 .refresh-icon {

@@ -22,7 +22,6 @@
           :offlineUsers="arrayOfflineUsers"
           :activeChats="activeChats"
           :userProfile="userProfile"
-          :updateFilters="updateFilters"
           :selected-user-id="selectedUser?.user_id"
           :is-tab-visible="isTabVisible"
           :isLoading="isLoading"
