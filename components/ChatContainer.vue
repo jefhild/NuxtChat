@@ -1,15 +1,19 @@
 <template>
   <v-container fluid>
     <v-row class="align-center">
-      <v-col cols="auto">
-        <FilterMenu2
-          :userProfile="userProfile"
-          :showAIUsers="showAIUsers"
-          @filter-changed="updateFilters"
-        />
+      <v-col cols="12" md="4" class="pa-2">
+        <v-row class="align-center">
+          <v-col>
+            <FilterMenu2
+              :userProfile="userProfile"
+              :showAIUsers="showAIUsers"
+              @filter-changed="updateFilters"
+          /></v-col>
+          <v-col> <ToggleAi v-model="showAIUsers" /></v-col>
+        </v-row>
       </v-col>
-      <v-col cols="auto">
-        <ToggleAi v-model="showAIUsers" />
+      <v-col cols="12" md="8" class="pa-2 d-flex flex-column">
+        <ChatHeader :currentUser="user" :selectedUser="selectedUser" />
       </v-col>
     </v-row>
     <v-row>
@@ -47,7 +51,7 @@
 
       <!-- Main Chat Area -->
       <v-col cols="12" md="8" class="pa-2 d-flex flex-column">
-        <ChatHeader :currentUser="user" :selectedUser="selectedUser" />
+        <!-- <ChatHeader :currentUser="user" :selectedUser="selectedUser" /> -->
 
         <v-card class="flex-grow-1">
           <v-card-text
@@ -157,7 +161,11 @@
             <v-col cols="2">
               <v-btn
                 type="submit"
-                :disabled="!selectedUser || sendingMessage || (!newMessage.trim() && !attachedFile)"
+                :disabled="
+                  !selectedUser ||
+                  sendingMessage ||
+                  (!newMessage.trim() && !attachedFile)
+                "
                 color="primary"
                 class="mt-4 ml-3"
               >
