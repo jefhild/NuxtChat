@@ -1,14 +1,9 @@
 <template>
-    <v-container fluid>
-      <HomeRow1 />
-      <!-- <v-row justify="center" class="mt-4">
-        <v-col cols="auto">
-          <LoginAi :titleText="titleText" />
-        </v-col>
-      </v-row> -->
-      <LandingPage />
-    </v-container>
- 
+  <!-- Remove margin by forcing pa-0 on the wrapper -->
+  <v-container fluid class="pa-0">
+    <HomeRow1 />
+    <LandingPage />
+  </v-container>
 </template>
 
 <script setup>
