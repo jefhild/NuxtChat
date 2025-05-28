@@ -280,6 +280,7 @@ onMounted(async () =>
 
 .male {
   color: darkblue;
+  background-color: #e3f2fd;
 }
 
 .female {

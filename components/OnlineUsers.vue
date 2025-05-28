@@ -1,14 +1,14 @@
 <template>
   <v-container fluid>
-    <v-card-text>
-      <v-virtual-scroll :items="users" height="300" item-height="10">
-        <template v-slot:default="{ item: user }">
+    <v-card-text no-gutters class="pa-0">
+      <v-virtual-scroll :items="users" height="300" item-height="20">
+        <template v-slot:default="{ item: user }" >
           <div :class="[
             { 'selected-user': user.user_id === selectedUserId },
             user.user_id === selectedUserId ? `selected-gender-${user.gender_id}` : ''
           ]">
             <v-list-item @click="selectUser(user)">
-              <template v-slot:prepend>
+              <template v-slot:prepend >
                 <v-icon :color="getGenderColor(user.gender_id)" :icon="getAvatarIcon(user.gender_id)" size="small"
                   class="mr-1"></v-icon>
 
@@ -96,6 +96,8 @@ const selectUser = (user) => {
 
 .v-list-item {
   margin-top: 10px;
+  padding-bottom: 10px;
+  padding-top: 10px;
 }
 
 .avatar-wrapper {

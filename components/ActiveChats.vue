@@ -5,7 +5,7 @@
     </v-col>
   </v-row>
   <v-container v-else fluid>
-    <v-card-text>
+    <v-card-text no-gutters class="pa-0">
       <v-virtual-scroll :items="users" height="300" item-height="10">
         <template v-slot:default="{ item: user }">
           <div :class="[
@@ -177,6 +177,8 @@ const { statusColor, statusIcon } = usePresenceStatus();
 
 .v-list-item {
   margin-top: 10px;
+  padding-bottom: 10px;
+  padding-top: 10px;
 }
 
 .avatar-wrapper {
