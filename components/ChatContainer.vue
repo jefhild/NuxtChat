@@ -542,7 +542,8 @@ onMounted(async () => {
           {
             messages.value[messageIndex] = {
               ...messages.value[messageIndex],
-              content: payload.new.content
+              content: payload.new.content,
+              edited_at: payload.new.edited_at,
             };
           }
         }

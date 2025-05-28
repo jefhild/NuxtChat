@@ -5,11 +5,12 @@
 		</v-col>
 	</v-row>
 
-	<v-container v-else fluid>
+	<v-container v-else fluid >
 		<!-- Hero Section -->
-		<v-container class="pa-0">
+		<v-container fluid class="pa-0">
 			<v-sheet height="100vh" class="d-flex align-center justify-center position-relative">
-				<v-img src="/public/images/background.png" cover height="100%" width="100%" class="position-absolute"
+				<v-img src="/public/images/background.png" cover height="100%" width="100%"
+					class="position-absolute"
 					style="filter: brightness(0.4); z-index: 1; "></v-img>
 
 				<v-container class="text-center" style="z-index: 2;" v-if="!isAuthenticated">
