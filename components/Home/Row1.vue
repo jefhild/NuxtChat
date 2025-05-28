@@ -1,16 +1,10 @@
 <template>
-  <!-- <v-card> -->
-  <!-- <v-card-text> -->
-  <!-- <v-row class="rowbg colstyle" justify="center" align="center"
-        ><v-col class="text-center">Free anonymous chat.</v-col>
-        <v-col class="text-center">AI or human chats.</v-col
-        ><v-col class="text-center d-none d-md-flex">
-          Sign in to get all the free features.</v-col
-        ></v-row
-      > -->
-
   <v-row class="rowbg rowheight" justify="center" align="center">
-    <v-col class="text-center"><OnlineUsersCount /></v-col>
+    <v-col class="text-center" v-if="isAuthenticated">
+      <OnlineUsersCount />
+    </v-col>
+    <v-col class="text-center" v-else> Lots of users online now! </v-col>
+
     <v-col class="fill-height">
       <div class="fill-height d-flex align-center justify-center">
         <AdSenseAdBanner ad-slot="2131952668" />
@@ -22,7 +16,13 @@
   <!-- </v-card> -->
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import { useAuthStore } from "@/stores/authStore";
+
+const authStore = useAuthStore();
+const logoutDialog = ref(false);
+const isAuthenticated = computed(() => !!authStore.user);
+</script>
 
 <style>
 .rowbg {

@@ -82,8 +82,6 @@ import { usePresenceStatus } from "@/composables/usePresenceStatus";
 import { useAuthStore } from "@/stores/authStore";
 const { insertBlockedUser, deleteChatWithUser } = useDb();
 
-const authStore = useAuthStore();
-const myUserId = ref(authStore.user);
 const deleteDialog = ref(false);
 const checkboxBlockUser = ref(false);
 const props = defineProps({
@@ -93,30 +91,6 @@ const props = defineProps({
   isLoading: Boolean,
 });
 
-const localUsers = ref([]);
-
-watch(() => props.users, (newVal) =>
-{
-  if (props.selectedUserId && props.isTabVisible)
-  {
-    // Prevent overwrite to avoid flicker
-    localUsers.value = localUsers.value.map(localUser =>
-    {
-      //re render the dom because vue doesnt detect the change if we change localuser directly
-      const updated = newVal.find(u => u.user_id === localUser.user_id) || localUser;
-      if (localUser.user_id === props.selectedUserId)
-      {
-        updated.unread_count = 0;
-      }
-      return { ...updated };
-    });
-  } else
-  {
-    localUsers.value = newVal.map((user) => ({ ...user }));
-  }
-}, { immediate: true });
-
-const supabase = useSupabaseClient();
 const emit = defineEmits(["user-selected", "chat-deleted"]);
 const selectedUser = ref(null);
 const selectedUserForDelete = ref(null);
@@ -128,10 +102,8 @@ const deleteChat = (user) => {
 };
 
 const confirmDelete = async () => {
-  console.log("selectedUserForDelete: ", selectedUserForDelete.value.user_id);
-  console.log("myUserId: ", myUserId.value.id);
   if (checkboxBlockUser.value) {
-    console.log("Block user");
+    // console.log("Block user");
 
     await insertBlockedUser(
       myUserId.value.user_id,
@@ -150,7 +122,7 @@ const confirmDelete = async () => {
       return;
     }
 
-    console.log("Messages deleted:");
+    // console.log("Messages deleted:");
 
     emit("chat-deleted");
   } catch (error) {
@@ -168,47 +140,6 @@ const selectUser = (user) => {
     emit("user-selected", user);
   }
 };
-
-onMounted(() => {
-  // console.log("ActiveChats mounted", props.users);
-  subscribeToNewMessages();
-});
-
-const subscribeToNewMessages = () => {
-  supabase
-    .channel("messages")
-    .on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${myUserId.value.id}` },
-      (payload) => {
-        // console.log("New message received:", payload);
-
-        const senderId = payload.new.sender_id;
-
-        updateUnreadCount(senderId);
-      }
-    )
-    .subscribe();
-};
-
-const updateUnreadCount = (senderId) =>
-{
-  const index = localUsers.value.findIndex(u => u.user_id === senderId);
-  if (index === -1) return;
-
-  const isChattingWithSender = senderId === props.selectedUserId && props.isTabVisible;
-
-  if (!isChattingWithSender)
-  {
-    console.log("Updating unread count for user in activechats:", senderId);
-    const updatedUser = {
-      ...localUsers.value[index],
-      unread_count: (localUsers.value[index].unread_count || 0) + 1,
-    };
-    localUsers.value.splice(index, 1, updatedUser);
-  }
-};
-
 
 const { statusColor, statusIcon } = usePresenceStatus();
 </script>
