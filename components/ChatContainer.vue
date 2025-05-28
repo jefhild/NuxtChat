@@ -40,7 +40,7 @@
             </div>
             <div v-for="(message, index) in messages" :key="message.id" @click="replyingToMessage = message"
               :class="message.sender_id === user.id ? 'sent' : 'received'" :ref="index === 0 ? 'firstMessage' : null">
-              <Message :message="message" :user="user" @edit-message="editMessage" />
+              <Message :message="message" :user="user" @edit-message="editMessage" @removeReplying="removeReplyingToMessage" />
             </div>
             <!-- Typing Indicator -->
             <div v-if="isTyping" class="typing-indicator bot-message">
@@ -818,6 +818,13 @@ const checkAiInteractionLimit = async () => {
   }
 };
 
+const removeReplyingToMessage = () => {
+  console.log("Replying to message removed", replyingToMessage.value);
+  replyingToMessage.value = null;
+  console.log("Replying to message removed", replyingToMessage.value);
+
+};
+
 const editMessage = async (editData) =>
 {
   try
@@ -844,6 +851,7 @@ const editMessage = async (editData) =>
     console.error('Error editing message:', error);
     // You could show a toast notification here
   }
+  removeReplyingToMessage();
 };
 
 const handleFileUpload = (event) => {

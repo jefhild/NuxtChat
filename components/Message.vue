@@ -74,7 +74,7 @@ const props = defineProps({
   user: Object,
 });
 
-const emit = defineEmits(['edit-message']);
+const emit = defineEmits(['edit-message','removeReplying']);
 
 const accepted = ref(false);
 const fullscreen = ref(false);
@@ -94,6 +94,7 @@ function openFullscreen()
 
 function startEdit()
 {
+  emit('removeReplying');
   // Only allow editing own messages without files
   if (props.message.sender_id === props.user.id && !props.message.file_url)
   {
@@ -104,6 +105,7 @@ function startEdit()
 
 async function saveEdit()
 {
+  emit('removeReplying');
   if (!editedContent.value.trim() || editedContent.value.trim() === props.message.content)
   {
     return;
@@ -114,7 +116,7 @@ async function saveEdit()
   try
   {
     // Emit the edit event to parent component
-    await emit('edit-message', {
+    emit('edit-message', {
       messageId: props.message.id,
       newContent: editedContent.value.trim()
     });
@@ -131,6 +133,7 @@ async function saveEdit()
 
 function cancelEdit()
 {
+  emit('removeReplying');
   isEditing.value = false;
   editedContent.value = '';
 }

@@ -1,5 +1,5 @@
 <template>
-  <v-card flat variant="tonal" color="blue" v-if="selectedUser" class="mb-2">
+  <v-card flat variant="tonal" :class="getGenderColorClass(selectedUser.gender_id)"  v-if="selectedUser" class="mb-2">
     <v-card-title>
       <v-row no-gutters class="align-center">
         <v-col :class="getGenderColorClass(selectedUser.gender_id)">
