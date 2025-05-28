@@ -8,7 +8,6 @@
       <v-container fluid class="d-flex flex-column flex-grow-1 pa-0">
         <div class="d-flex flex-column flex-grow-1">
           <NuxtPage />
-          <!-- This is where the page is rendered -->
         </div>
         <Footer />
       </v-container>
