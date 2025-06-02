@@ -1,0 +1,65 @@
+{
+	"pages": {
+		"home": {
+			"homeRow1": {
+				"offlineUsersOnline": "Lots of users online now",
+				"onlineUsersOnline": "users online",
+				"freeAnonymousChat": "Free Anonymous Chat"
+			},
+			"landing_page": {
+				"title-text": "Chat Anonymously. Connect Instantly.",
+				"title-text2": "AI friends, real people, log in anonymously.",
+				"cta_button": "Start Chatting",
+				"learn_more": "Learn More",
+				"welcome_back": "Welcome back,",
+				"chat": "Chat",
+				"settings": "Settings",
+				"logout": "Logout",
+				"meet_people": "Meet People Like You",
+				"discover_connections": "Discover real connections through anonymous chat.",
+				"realtime_conversations": "Real-time conversations with people from around the world. A smarter, friendlier alternative.",
+				"get_chatting": "Get Chatting",
+				"popular_ai_profiles": "Our Most Popular AI Profiles",
+				"see_more_profiles": "See More Popular Profiles",
+				"check_articles": "Check out some of our Articles",
+				"see_more_articles": "See More Articles",
+				"final_cta_title": "Ready to Start Chatting?",
+				"final_cta_description": "Whether you're here to meet new people or explore fun AI personalities, it's all just one click away.",
+				"get_chatting_now": "Get Chatting Now",
+				"logout_title": "Logout Of My Account",
+				"logout_confirm": "Are you sure you want to logout?",
+				"logout_confirm_button": "Confirm Logout",
+				"cancel": "Cancel"
+			},
+			"meta": {
+				"title": "Free Anonymous Chat (Real or AI)",
+				"description": "Explore real & AI chat profiles on imchatty.com",
+				"ogTitle": "Real & AI Chat Profiles",
+				"twitterTitle": "Popular Free Chat",
+				"twitterCard": "summary_large_image"
+			}
+		},
+		"about": {
+			"meta": {},
+			"page": {
+				"title-text": "About Us",
+				"welcome-title": "Hi! Welcome to Imchatty.com",
+				"welcome-text": "Welcome to Imchatty, a free chat site where you can connect with others anonymously. Our mission is to provide a safe and free platform for people to chat and share their thoughts without the need for extensive personal information. At Imchatty, we believe in the power of conversation and the importance of privacy.",
+				"who_we_are-title": "Who We Are",
+				"who_we_are-text1": "Imchatty is a project by",
+				"who_we_are-text2": "a seasoned player in the IT consulting industry. We created this site to delve deeper into real-time database and presence technology, AI chatbots and LLM's. We're using Imchatty as a dynamic sandbox for testing and development. We'd love to see how far we can push this technology and if we can build something useful. You'll find the Open Source code for this site ",
+				"who_we_are-text3": "here",
+				"our_mission-title": "Our Mission and Vision",
+				"our_mission-text": "Our mission is simple: to offer a free and secure chat platform supported by advertising, which will cover the infrastructure costs. Our vision is to continually add services and features, evolving Imchatty into a robust and valuable tool for our users. We aspire to create a space where users can enjoy seamless communication while feeling safe and respected.",
+				"unique_approach-title": "Our Unique Approach",
+				"unique_approach-text": "What sets Imchatty apart is our commitment to providing a truly free service without compromising on user safety. We understand the importance of privacy, and our anonymous registration ensures that your personal information remains confidential. Additionally, Imchatty serves as a testing ground for innovative technologies, helping us stay at the forefront of IT advancements.",
+				"building_community-title": "Building a Community",
+				"building_community-text": " Our goal is not just to offer a chat service but to build a community. We encourage our users to provide feedback and share their experiences to help us improve and expand the platform. By working together, we hope to create a service that meets the needs of our users and adapts to their evolving preferences.",
+				"looking_ahead-title": "Looking Ahead",
+				"looking_ahead-text": "As we continue to grow, our focus remains on maintaining a free and secure platform while exploring new features and improvements. We are excited about the future of Imchatty and are committed to making it a valuable resource for our users.",
+				"join_us-title": "Join Us",
+				"join_us-text": "We invite you to join Imchatty and be a part of our journey. Whether you’re looking for a place to chat, share ideas, or simply meet new people, Imchatty is here for you. Together, we can create a dynamic and fun community."
+			}
+		}
+	}
+}

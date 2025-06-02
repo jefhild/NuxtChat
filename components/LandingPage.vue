@@ -42,10 +42,11 @@
           <v-row justify="center">
             <v-col cols="12" md="8">
               <h1 class="text-h4 text-md-h2 font-weight-bold mb-4 text-white">
-                Chat Anonymously. Connect Instantly.
+                {{ $t("pages.home.landing_page.title-text") }}
+                
               </h1>
               <p class="text-body-1 text-md-subtitle-1 mb-6 text-white">
-                AI friends, real people, log in anonymously.
+                {{ $t("pages.home.landing_page.title-text2") }}
               </p>
 
               <v-row justify="center" align="center" class="mx-0" dense>
@@ -56,7 +57,7 @@
                       @click.prevent="handleAILogin"
                       class="text-dec-none text-white"
                     >
-                      Start Chatting
+                    {{ $t("pages.home.landing_page.cta_button") }}
                     </NuxtLink>
                   </v-btn>
                 </v-col>
@@ -67,7 +68,7 @@
                     block
                     @click="$router.push('/about')"
                   >
-                    Learn More
+                  {{ $t("pages.home.landing_page.learn_more") }}
                   </v-btn>
                 </v-col>
               </v-row>
@@ -102,7 +103,7 @@
               />
             </div>
 
-            <h2 class="mb-2 font-weight-bold">Welcome back,</h2>
+            <h2 class="mb-2 font-weight-bold">{{ $t("pages.home.landing_page.welcome_back") }}</h2>
             <h3 class="text-h5 mb-4 primary--text">{{ loggedInUser }}</h3>
 
             <v-divider class="mb-4" />
@@ -110,7 +111,7 @@
             <v-row justify="center" align="center" dense>
               <v-col cols="12" sm="4">
                 <v-btn to="/chat" block color="primary" variant="flat" rounded>
-                  <v-icon left>mdi-chat</v-icon> Chat
+                  <v-icon left>mdi-chat</v-icon> {{ $t("pages.home.landing_page.chat") }}
                 </v-btn>
               </v-col>
               <v-col cols="12" sm="4">
@@ -121,7 +122,7 @@
                   variant="flat"
                   rounded
                 >
-                  <v-icon left>mdi-cog</v-icon> Settings
+                  <v-icon left>mdi-cog</v-icon> {{ $t("pages.home.landing_page.settings") }}
                 </v-btn>
               </v-col>
               <v-col cols="12" sm="4">
@@ -132,7 +133,7 @@
                   variant="flat"
                   rounded
                 >
-                  <v-icon left>mdi-logout</v-icon> Logout
+                  <v-icon left>mdi-logout</v-icon> {{ $t("pages.home.landing_page.logout") }}
                 </v-btn>
               </v-col>
             </v-row>
@@ -150,14 +151,13 @@
       "
     >
       <v-chip color="primary" variant="tonal" class="mb-4"
-        >Meet People Like You</v-chip
+        >{{ $t("pages.home.landing_page.meet_people") }}</v-chip
       >
       <div class="text-h5 font-weight-medium mb-2">
-        Discover real connections through anonymous chat.
+        {{ $t("pages.home.landing_page.discover_connections") }}
       </div>
       <div class="text-body-1 mt-6">
-        Real-time conversations with people from around the world. A smarter,
-        friendlier alternative.
+        {{ $t("pages.home.landing_page.realtime_conversations") }}
       </div>
       <v-btn color="primary" class="mr-4 mt-5" size="large">
         <NuxtLink
@@ -165,7 +165,7 @@
           @click.prevent="handleClick"
           class="text-dec-none text-white"
         >
-          Get Chatting
+        {{ $t("pages.home.landing_page.get_chatting") }}
         </NuxtLink>
       </v-btn>
     </v-container>
@@ -173,14 +173,14 @@
     <!-- AI Profiles Section -->
     <v-container class="py-12 mt-8">
       <h2 class="text-h4 text-center font-weight-bold mb-8">
-        Our Most Popular AI Profiles
+        {{ $t("pages.home.landing_page.popular_ai_profiles") }}
       </h2>
       <ProfileGrid :profiles="mostPopularAiProfiles" :limit="8" />
 
       <div class="text-center mt-6" v-if="mostPopularAiProfiles.length >= 4">
         <NuxtLink to="/profiles/popular">
           <v-btn variant="outlined" color="primary"
-            >See More Popular Profiles</v-btn
+            >{{ $t("pages.home.landing_page.see_more_profiles") }}</v-btn
           >
         </NuxtLink>
       </div>
@@ -189,7 +189,7 @@
     <!-- Articles Section -->
     <v-container class="mt-10">
       <h2 class="text-h4 text-center font-weight-bold mb-8">
-        Check out some of our Articles
+        {{ $t("pages.home.landing_page.check_articles") }}
       </h2>
       <v-row dense>
         <v-col
@@ -204,7 +204,9 @@
       </v-row>
       <div class="text-center mt-6">
         <NuxtLink to="/articles">
-          <v-btn variant="outlined" color="primary">See More Articles</v-btn>
+          <v-btn variant="outlined" color="primary">
+            {{ $t("pages.home.landing_page.see_more_articles") }}
+          </v-btn>
         </NuxtLink>
       </div>
     </v-container>
@@ -217,10 +219,9 @@
         border-radius: 100px;
       "
     >
-      <h2 class="text-h4 font-weight-bold mb-2">Ready to Start Chatting?</h2>
+      <h2 class="text-h4 font-weight-bold mb-2">{{ $t("pages.home.landing_page.final_cta_title") }}</h2>
       <p class="text-body-1 mb-5">
-        Whether you're here to meet new people or explore fun AI personalities,
-        it's all just one click away.
+        {{ $t("pages.home.landing_page.final_cta_description") }}
       </p>
       <v-btn color="primary" class="mr-4" size="large">
         <NuxtLink
@@ -228,7 +229,7 @@
           @click.prevent="handleClick"
           class="text-dec-none text-white"
         >
-          Get Chatting Now
+        {{ $t("pages.home.landing_page.get_chatting_now") }}
         </NuxtLink>
       </v-btn>
     </v-container>
@@ -242,15 +243,17 @@
     <v-card
       max-width="400"
       prepend-icon="mdi-account-remove"
-      title="Logout Of My Account"
     >
-      <v-card-text>Are you sure you want to logout?</v-card-text>
+      <v-card-title>
+        {{ $t("pages.home.landing_page.logout_title") }}
+      </v-card-title>
+      <v-card-text>{{ $t("pages.home.landing_page.logout_confirm") }}</v-card-text>
       <template v-slot:actions>
         <v-btn color="primary" text @click="confirmLogout"
-          >Confirm Logout</v-btn
+          >{{ $t("pages.home.landing_page.logout_confirm_button") }}</v-btn
         >
         <v-spacer />
-        <v-btn text @click="logoutDialog = false">Cancel</v-btn>
+        <v-btn text @click="logoutDialog = false">{{ $t("pages.home.landing_page.cancel") }}</v-btn>
       </template>
     </v-card>
   </v-dialog>
