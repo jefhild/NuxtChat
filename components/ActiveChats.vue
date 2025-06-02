@@ -5,10 +5,13 @@
     </v-col>
   </v-row>
   <v-container v-else fluid>
-    <v-card-text>
+    <v-card-text no-gutters class="pa-0">
       <v-virtual-scroll :items="users" height="300" item-height="10">
         <template v-slot:default="{ item: user }">
-          <div :class="{ 'selected-user': user.user_id === selectedUserId}">
+          <div :class="[
+            { 'selected-user': user.user_id === selectedUserId },
+            user.user_id === selectedUserId ? `selected-gender-${user.gender_id}` : ''
+          ]">
             <v-list-item @click="selectUser(user)">
               <template v-slot:prepend>
                 <v-icon :color="getGenderColor(user.gender_id)" :icon="getAvatarIcon(user.gender_id)"
@@ -82,8 +85,6 @@ import { usePresenceStatus } from "@/composables/usePresenceStatus";
 import { useAuthStore } from "@/stores/authStore";
 const { insertBlockedUser, deleteChatWithUser } = useDb();
 
-const authStore = useAuthStore();
-const myUserId = ref(authStore.user);
 const deleteDialog = ref(false);
 const checkboxBlockUser = ref(false);
 const props = defineProps({
@@ -93,30 +94,6 @@ const props = defineProps({
   isLoading: Boolean,
 });
 
-const localUsers = ref([]);
-
-watch(() => props.users, (newVal) =>
-{
-  if (props.selectedUserId && props.isTabVisible)
-  {
-    // Prevent overwrite to avoid flicker
-    localUsers.value = localUsers.value.map(localUser =>
-    {
-      //re render the dom because vue doesnt detect the change if we change localuser directly
-      const updated = newVal.find(u => u.user_id === localUser.user_id) || localUser;
-      if (localUser.user_id === props.selectedUserId)
-      {
-        updated.unread_count = 0;
-      }
-      return { ...updated };
-    });
-  } else
-  {
-    localUsers.value = newVal.map((user) => ({ ...user }));
-  }
-}, { immediate: true });
-
-const supabase = useSupabaseClient();
 const emit = defineEmits(["user-selected", "chat-deleted"]);
 const selectedUser = ref(null);
 const selectedUserForDelete = ref(null);
@@ -128,10 +105,8 @@ const deleteChat = (user) => {
 };
 
 const confirmDelete = async () => {
-  console.log("selectedUserForDelete: ", selectedUserForDelete.value.user_id);
-  console.log("myUserId: ", myUserId.value.id);
   if (checkboxBlockUser.value) {
-    console.log("Block user");
+    // console.log("Block user");
 
     await insertBlockedUser(
       myUserId.value.user_id,
@@ -150,7 +125,7 @@ const confirmDelete = async () => {
       return;
     }
 
-    console.log("Messages deleted:");
+    // console.log("Messages deleted:");
 
     emit("chat-deleted");
   } catch (error) {
@@ -169,50 +144,6 @@ const selectUser = (user) => {
   }
 };
 
-onMounted(() => {
-  // console.log("ActiveChats mounted", props.users);
-  subscribeToNewMessages();
-});
-
-const subscribeToNewMessages = () => {
-  supabase
-    .channel("messages")
-    .on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "messages" },
-      (payload) => {
-        // console.log("New message received:", payload);
-
-        const senderId = payload.new.sender_id;
-        const receiverId = payload.new.receiver_id;
-
-        if (receiverId !== myUserId.value.id) return;
-
-        updateUnreadCount(senderId);
-      }
-    )
-    .subscribe();
-};
-
-const updateUnreadCount = (senderId) =>
-{
-  const index = localUsers.value.findIndex(u => u.user_id === senderId);
-  if (index === -1) return;
-
-  const isChattingWithSender = senderId === props.selectedUserId && props.isTabVisible;
-
-  if (!isChattingWithSender)
-  {
-    console.log("Updating unread count for user:", senderId);
-    const updatedUser = {
-      ...localUsers.value[index],
-      unread_count: (localUsers.value[index].unread_count || 0) + 1,
-    };
-    localUsers.value.splice(index, 1, updatedUser);
-  }
-};
-
-
 const { statusColor, statusIcon } = usePresenceStatus();
 </script>
 
@@ -222,14 +153,32 @@ const { statusColor, statusIcon } = usePresenceStatus();
 }
 
 .selected-user {
-  background-color: #e3f2fd;
-  border-left: 10px solid #1976d2;
+  border-left: 10px solid;
   border-radius: 10px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Gender-specific selected styles */
+.selected-gender-1 {
+  background-color: #e3f2fd;
+  border-left-color: #1976d2;
+}
+
+.selected-gender-2 {
+  background-color: #fce4ec;
+  border-left-color: #c2185b;
+}
+
+.selected-gender-3,
+.selected-user:not(.selected-gender-1):not(.selected-gender-2) {
+  background-color: #f3e5f5;
+  border-left-color: #7b1fa2;
 }
 
 .v-list-item {
   margin-top: 10px;
+  padding-bottom: 10px;
+  padding-top: 10px;
 }
 
 .avatar-wrapper {

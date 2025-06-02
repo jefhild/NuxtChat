@@ -8,13 +8,13 @@
           <v-btn icon @click="$router.back()" color="primary" class="mr-4">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
-          <h1>Popular Recent Profiles</h1>
+          <h1>Popular AI Profiles</h1>
         </div>
       </v-col>
     </v-row>
 
     <!-- Content -->
-    <HomeRecent :limit="100" />
+    <HomeAi :limit="100" />
   </v-container>
 </template>
 
@@ -27,23 +27,25 @@ useHead(() => ({
   link: [
     {
       rel: "canonical",
-      href: "https://imchatty.com/profiles/recent",
+      href: "https://imchatty.com/profiles/ai",
     },
   ],
 }));
 
 useSeoMeta({
-  title: "More Popular Recent Profiles",
+  title: "More Popular AI Profiles",
   description:
-    "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  ogTitle: "Popular Profiles",
+    "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
+  ogTitle: "Popular AI Profiles",
+  ogType: "Website",
+  ogUrl: "https://imchatty.com/profiles/ai/",
   ogDescription:
-    "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  // ogImage: popularProfiles[0].value.avatar_url,
+    "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
+  ogImage: "https://imchatty.com/images/robot.png",
   twitterCard: "summary_large_image",
   twitterTitle: "Popular Recent Profiles",
   twitterDescription:
-    "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+    "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
   // twitterImage: popularProfiles[0].value.avatar_url,
 });
 

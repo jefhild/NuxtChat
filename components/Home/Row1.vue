@@ -3,14 +3,14 @@
     <v-col class="text-center" v-if="isAuthenticated">
       <OnlineUsersCount />
     </v-col>
-    <v-col class="text-center" v-else> Lots of users online now! </v-col>
+    <v-col class="text-center" v-else> {{ $t("pages.home.homeRow1.offlineUsersOnline") }} </v-col>
 
     <v-col class="fill-height">
       <div class="fill-height d-flex align-center justify-center">
         <AdSenseAdBanner ad-slot="2131952668" />
       </div>
     </v-col>
-    <v-col class="text-center">Free anonymous chat.</v-col>
+    <v-col class="text-center">{{ $t("pages.home.homeRow1.freeAnonymousChat") }}</v-col>
   </v-row>
   <!-- </v-card-text> -->
   <!-- </v-card> -->

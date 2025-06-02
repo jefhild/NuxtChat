@@ -7,46 +7,23 @@
       <v-tab :value="2">Offline</v-tab>
       <v-tab :value="3">
         <span class="tab-title">Active</span>
-        <v-badge
-          v-if="unreadMessageCount > 0"
-          :content="unreadMessageCount"
-          color="red"
-          overlap
-          class="mb-7"
-        ></v-badge>
+        <v-badge v-if="unreadMessageCount > 0" :content="unreadMessageCount" color="red" overlap class="mb-7"></v-badge>
       </v-tab>
       <v-spacer></v-spacer>
     </v-tabs>
     <v-tabs-window v-model="tab">
       <v-tabs-window-item :value="1">
-        <OnlineUsers
-          :users="onlineUsers"
-          :selectedUserId="selectedUserId"
-          @user-selected="selectUser"
-        />
+        <OnlineUsers :users="onlineUsers" :selectedUserId="selectedUserId" :isTabVisible="isTabVisible"
+          @user-selected="selectUser" />
       </v-tabs-window-item>
       <v-tabs-window-item :value="2">
-        <v-row
-          ><v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis"
-            >No anonymous users here...</v-col
-          ></v-row
-        >
-        <OfflineUsers
-          :users="offlineUsers"
-          :selectedUserId="selectedUserId"
-          @user-selected="selectUser"
-          :isLoading="isLoading"
-        />
+        <v-row><v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">No anonymous users here...</v-col></v-row>
+        <OfflineUsers :users="offlineUsers" :selectedUserId="selectedUserId" @user-selected="selectUser"
+          :isLoading="isLoading" />
       </v-tabs-window-item>
       <v-tabs-window-item :value="3">
-        <ActiveChats
-          :users="activeChats"
-          :selectedUserId="selectedUserId"
-          :isTabVisible="isTabVisible"
-          :isLoading="isLoading"
-          @user-selected="selectUser"
-          @chat-deleted="handleChatDeleted"
-        />
+        <ActiveChats :users="activeChats" :selectedUserId="selectedUserId" :isTabVisible="isTabVisible"
+          :isLoading="isLoading" @user-selected="selectUser" @chat-deleted="handleChatDeleted" />
       </v-tabs-window-item>
     </v-tabs-window>
   </v-card>
@@ -58,7 +35,6 @@ const props = defineProps({
   offlineUsers: Array,
   activeChats: Array,
   userProfile: Object,
-  updateFilters: Function,
   selectedUserId: String,
   isTabVisible: Boolean,
   isLoading: Boolean,
@@ -72,8 +48,10 @@ const emit = defineEmits([
   "unread-count",
 ]);
 
+const supabase = useSupabaseClient();
+const authStore = useAuthStore();
+const myUserId = ref(authStore.user);
 const unreadMessageCount = ref(0);
-const activeChats = toRef(props, "activeChats"); // Make the prop reactive
 
 // Watch for changes in activeChats for the badge count on the active tab
 watch(
@@ -91,6 +69,46 @@ watch(
   { immediate: true, deep: true } // Run immediately on initialization and watch deeply
 );
 
+onMounted(() =>
+{
+  // console.log("ActiveChats mounted", props.users);
+  subscribeToNewMessages();
+});
+
+
+
+const subscribeToNewMessages = () =>
+{
+  supabase
+    .channel("messages")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${myUserId.value.id}` },
+      (payload) =>
+      {
+        // console.log("New message received:", payload);
+
+        const senderId = payload.new.sender_id;
+        updateUnreadCount(senderId);
+      }
+    )
+    .subscribe();
+};
+
+const updateUnreadCount = (senderId) =>
+{
+  const index = props.activeChats.findIndex(u => u.user_id === senderId);
+  if (index === -1) return;
+  const user = props.activeChats[index];
+
+  const isChattingWithSender = senderId === props.selectedUserId && props.isTabVisible;
+  if (!isChattingWithSender)
+  {
+    user.unread_count = (user.unread_count || 0) + 1;
+    unreadCountUpdated(user);
+  }
+};
+
 const selectUser = (user) => {
   emit("user-selected", user); // Ensure this line exists
 };
@@ -101,10 +119,17 @@ const handleChatDeleted = (user) => {
   emit("refresh-data");
 };
 
-// const refreshData = (user) => {
-//   console.log("Refreshing data...");
-//   emit("refresh-data", user); // Ensure this line exists
-// };
+const unreadCountUpdated = (user) => {
+  // console.log("Inside unreadCountUpdated: User - ", user);
+  
+  // find user in onlineUsers and update unread_count
+  const onlineUser = props.onlineUsers.find(u => u.user_id === user.user_id);
+  if (onlineUser) {
+    // console.log("Updating unread count for user:", onlineUser.user_id);
+    onlineUser.unread_count = user.unread_count;
+  }
+};
+
 </script>
 <style scoped>
 .refresh-icon {

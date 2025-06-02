@@ -151,7 +151,7 @@ export const useDb = () => {
       return null;
     }
 
-    return data.id;
+    return data?.id;
   };
 
   const getAvatarDecorationFromId = async (id) => {
@@ -220,6 +220,39 @@ export const useDb = () => {
     if (error) throw error;
     return data;
   };
+
+  const getMessagesOfAUserWithUser =  async (senderUserId, receiverUserId, before = null,  limit = 20) => {
+    let query = supabase
+      .from("messages")
+      .select(`
+        id,
+        sender_id,
+        receiver_id,
+        content,
+        created_at,
+        read,
+        file_url,
+        file_type,
+        file_name,
+        reply_to_message_id,
+        reply_to:reply_to_message_id ( id, content, sender_id ),
+        profiles!messages_sender_id_fkey(displayname)
+      `)
+      .eq('sender_id',senderUserId)
+      .eq('receiver_id', receiverUserId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+      if (before) {
+        query = query.lt("created_at", before);
+      }
+
+    const { data, error } = await query;
+      
+    // console.log("getMessagesOfAUserWithUser", data, error);
+    if (error) throw error;
+    return data;
+  }
   
 
   const getAIInteractionCount = async (senderUserId) => {
@@ -943,7 +976,12 @@ export const useDb = () => {
   const getAllReports = async () => {
     const { data, error } = await supabase
       .from("reports")
-      .select("*")
+      .select(`
+        *, 
+        report_messages:report_messages (
+          message:messages (*)
+        )
+      `)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -1091,6 +1129,27 @@ export const useDb = () => {
         console.error("Error inserting user looking for:", error);
       }
     }
+  };
+
+  const updateMessage = async (messageId, newContent) =>
+  {
+    const { data, error } = await supabase
+      .from('messages')
+      .update({
+        content: newContent,
+        edited_at: new Date().toISOString()
+      })
+      .eq('id', messageId)
+      .select()
+      .single();
+
+    if (error)
+    {
+      console.error('Error updating message:', error);
+      throw error;
+    }
+
+    return data;
   };
 
   const updateProfile = async (
@@ -1500,23 +1559,46 @@ export const useDb = () => {
     return error;
   };
 
-  const insertReport = async(currentUserId, reportedUserId, categories, reason) => {
-    const { error } = await supabase
+  const insertReport = async(currentUserId, reportedUserId, categories, reason, messages) => {
+    const { data,  error } = await supabase
       .from("reports")
       .insert({
         reporter_id: currentUserId,
         reported_user_id: reportedUserId,
         categories, 
         reason,
-      });
+      })
+      .select("id") // important to get the inserted id
+      .single();
 
     if (error)
     {
       console.error("Error submitting report:", error);
-    } else
+      return error;
+    } 
+
+    const reportId = data.id;
+
+    // Insert messages related to the report
+    for (const message of messages) {
+      await insertReportMessages(reportId, message.id);
+    };
+  }
+
+  const insertReportMessages = async (reportId, messageId) => {
+    const { error } = await supabase
+    .from("report_messages")
+    .insert({
+      report_id: reportId,
+      message_id: messageId,
+    });
+
+    if (error)
     {
-      console.log("Report submitted successfully");
+      console.error("Error inserting report message:", error);
+      return error;
     }
+    
   };
 
   /*------------------*/
@@ -1798,6 +1880,21 @@ const { data, error } = await supabase
     return data?.sound_notifications_enabled ?? false;
   };
 
+  const isAI = async (userId) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("is_ai")
+      .eq("user_id", userId)
+      .single();
+
+    if (error) {
+      console.error("Error checking if user is AI:", error);
+      return false;
+    }
+
+    return data?.is_ai ?? false;
+  }
+
 
   /*----------------*/
   /* Auth functions */
@@ -1929,6 +2026,7 @@ const authGetUser = async () => {
     getAvatarDecorationFromId,
     getMessageById,
     getMessagesBetweenUsers,
+    getMessagesOfAUserWithUser,
     getAIInteractionCount,
     getCurrentAIInteractionCount,
     getInterests,
@@ -1989,6 +2087,7 @@ const authGetUser = async () => {
     updateSiteURL,
     updateInterests,
     updateProfile,
+    updateMessage,
     updateMessagesAsRead,
     updateAIInteractionCount,
     updatePresence,
@@ -2033,6 +2132,7 @@ const authGetUser = async () => {
     markUserForDeletion,
     unmarkUserForDeletion,
     isNotificationsEnabled,
+    isAI,
 
     authGetUser,
     authRefreshSession,

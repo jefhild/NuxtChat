@@ -14,6 +14,7 @@
     "@nuxt/image": "^1.10.0",
     "@nuxt/scripts": "^0.11.6",
     "@nuxtjs/google-fonts": "^3.2.0",
+    "@nuxtjs/i18n": "^10.0.0-beta.8",
     "@nuxtjs/seo": "^3.0.3",
     "@nuxtjs/supabase": "^1.5.1",
     "nuxt": "^3.16.2",
@@ -27,12 +28,14 @@
     "@mdi/font": "^7.4.47",
     "@pinia/nuxt": "^0.11.0",
     "@supabase/supabase-js": "^2.45.4",
+    "@vueuse/core": "^13.3.0",
     "latest": "^0.2.0",
     "markdown-it": "^14.1.0",
     "marked": "^15.0.8",
     "nuxt-og-image": "^5.1.2",
     "nuxt-schema-org": "^5.0.5",
     "openai": "^4.67.3",
-    "papaparse": "^5.4.1"
+    "papaparse": "^5.4.1",
+    "vue3-emoji-picker": "^1.1.8"
   }
 }

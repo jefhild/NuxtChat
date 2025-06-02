@@ -1,11 +1,11 @@
 <template>
-  <v-row v-if="isLoading" justify="center" no-gutters>
-    <v-col class="text-center">
-      <v-progress-circular indeterminate color="primary" size="64" />
-    </v-col>
-  </v-row>
-  <v-container v-else>
-    <h2 v-if="femaleProfiles.length <= 4" class="text-h5 font-weight-light mb-4">Female Profiles</h2>
+  <v-container v-if="!isLoading">
+    <h2
+      v-if="femaleProfiles.length <= 4"
+      class="text-h5 font-weight-light mb-4"
+    >
+      Recent Female Profiles
+    </h2>
     <ProfileGrid :profiles="femaleProfiles" :limit="8" />
     <v-row v-if="femaleProfiles.length <= 4">
       <v-col class="text-right mr-12">
@@ -24,19 +24,20 @@ const femaleProfiles = ref([]);
 const profileLimit = 100;
 const isLoading = ref(true);
 
+const emit = defineEmits(["loaded"]);
+
 const { getRecentFemales } = useDb();
 
 const props = defineProps({
   limit: Number,
 });
 
-onMounted(async () =>
-{
+onMounted(async () => {
   const data = await getRecentFemales(profileLimit);
-  if (data)
-  {
+  if (data) {
     femaleProfiles.value = data.slice(0, props.limit); // Limit to 4 profiles for display
   }
   isLoading.value = false;
+  emit("loaded");
 });
 </script>

@@ -33,6 +33,35 @@ const authStore = useAuthStore();
 
 const categories = ref([]);
 
+
+
+useHead(() => ({
+  link: [
+    {
+      rel: "canonical",
+      href: "https://imchatty.com/categories",
+    },
+  ],
+}));
+
+useSeoMeta({
+  title: "Popular Article Categories",
+  description:
+    "Check out our most popular categories! Browse top-rated articles with real information, personalized details, and genuine interests.",
+	ogTitle: "Article Categories",
+    ogType: "Website",
+  ogUrl: "https://imchatty.com/categories",
+  ogDescription:
+    "Check out our most popular categories! Browse top-rated categories with real information, personalized details, and genuine interests.",
+  // ogImage: popularProfiles[0].value.avatar_url,
+  twitterCard: "summary_large_image",
+  twitterTitle: "Popular Recent Categories",
+  twitterDescription:
+    "Check out our most popular categories! Browse top-rated members with real information, personalized details, and genuine interests.",
+  // twitterImage: popularProfiles[0].value.avatar_url,
+});
+
+
 onMounted(async () =>
 {
 	authStore.checkAuth();

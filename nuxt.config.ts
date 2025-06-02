@@ -25,7 +25,19 @@ export default defineNuxtConfig({
     "@nuxtjs/google-fonts",
     "@nuxtjs/seo",
     "nuxt-gtag",
+    "@nuxtjs/i18n",
   ],
+  
+  i18n: {
+    // Define available locales
+    defaultLocale: 'en-US',
+    langDir: './locales/',
+    strategy: 'prefix_except_default',
+    locales: [
+      { code: 'en-US', iso: 'en-US', file: 'en-US.json' },
+      { code: 'fr-FR', iso: 'fr-FR', file: 'fr-FR.json' },
+    ],
+  },
 
   gtag: {
     id: process.env.GOOGLE_ANALYTICS_ID,

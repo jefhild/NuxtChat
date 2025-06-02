@@ -33,6 +33,8 @@ useSeoMeta({
     profile.value?.bio || "Default Description"
   ),
   ogTitle: profile.value?.displayname,
+  ogType: "Website",
+  ogUrl: "https://imchatty.com/profiles/",
   ogDescription: getLimitedDescription(
     profile.value?.bio || "Default Description"
   ),
@@ -45,15 +47,4 @@ useSeoMeta({
   twitterImage: profile.value?.avatar_url,
 });
 
-// useSeoMeta({
-//   title: profile.value?.displayname || "Default Title",
-//   description: profile.value?.bio || "Default Description",
-//   ogTitle: profile.value?.displayname,
-//   ogDescription: profile.value?.bio,
-//   ogImage: profile.value?.avatar_url,
-//   twitterCard: "summary_large_image",
-//   twitterTitle: profile.value?.displayname,
-//   twitterDescription: profile.value?.bio,
-//   twitterImage: profile.value?.avatar_url,
-// });
 </script>
