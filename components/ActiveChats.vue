@@ -5,10 +5,13 @@
     </v-col>
   </v-row>
   <v-container v-else fluid>
-    <v-card-text>
+    <v-card-text no-gutters class="pa-0">
       <v-virtual-scroll :items="users" height="300" item-height="10">
         <template v-slot:default="{ item: user }">
-          <div :class="{ 'selected-user': user.user_id === selectedUserId}">
+          <div :class="[
+            { 'selected-user': user.user_id === selectedUserId },
+            user.user_id === selectedUserId ? `selected-gender-${user.gender_id}` : ''
+          ]">
             <v-list-item @click="selectUser(user)">
               <template v-slot:prepend>
                 <v-icon :color="getGenderColor(user.gender_id)" :icon="getAvatarIcon(user.gender_id)"
@@ -150,14 +153,32 @@ const { statusColor, statusIcon } = usePresenceStatus();
 }
 
 .selected-user {
-  background-color: #e3f2fd;
-  border-left: 10px solid #1976d2;
+  border-left: 10px solid;
   border-radius: 10px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Gender-specific selected styles */
+.selected-gender-1 {
+  background-color: #e3f2fd;
+  border-left-color: #1976d2;
+}
+
+.selected-gender-2 {
+  background-color: #fce4ec;
+  border-left-color: #c2185b;
+}
+
+.selected-gender-3,
+.selected-user:not(.selected-gender-1):not(.selected-gender-2) {
+  background-color: #f3e5f5;
+  border-left-color: #7b1fa2;
 }
 
 .v-list-item {
   margin-top: 10px;
+  padding-bottom: 10px;
+  padding-top: 10px;
 }
 
 .avatar-wrapper {

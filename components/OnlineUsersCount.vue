@@ -1,5 +1,5 @@
 <template>
-    <span>{{ presenceStore.onlineUserCount }} users online</span>
+    <span>{{ presenceStore.onlineUserCount }} {{ $t("pages.home.homeRow1.onlineUsersOnline") }}</span>
   </template>
   
   <script setup>
