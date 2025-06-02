@@ -1,8 +1,8 @@
 <template>
   <v-container v-if="isLoading" class="text-center">
-			<v-progress-circular indeterminate color="primary"></v-progress-circular>
-		</v-container>
-    
+    <v-progress-circular indeterminate color="primary"></v-progress-circular>
+  </v-container>
+
   <v-container v-else class="article-list-container py-4">
     <!-- Top Row: Title + Search -->
     <v-row align="center" justify="space-between" class="mb-3">
@@ -79,7 +79,12 @@
     <!-- No Articles Found -->
     <v-row v-if="!paginatedArticles.length" justify="center">
       <v-col cols="12" class="text-center">
-        <v-alert type="info" variant="tonal" border="top" border-color="primary">
+        <v-alert
+          type="info"
+          variant="tonal"
+          border="top"
+          border-color="primary"
+        >
           No articles found for "{{ searchQuery }}".
         </v-alert>
       </v-col>
@@ -92,22 +97,27 @@
 
     <!-- Admin Button -->
     <v-row justify="center" class="mt-6">
-      <v-btn v-if="userProfile?.is_admin" to="/admin" color="primary" variant="tonal">
+      <v-btn
+        v-if="userProfile?.is_admin"
+        to="/admin"
+        color="primary"
+        variant="tonal"
+      >
         Admin Panel
       </v-btn>
     </v-row>
-
   </v-container>
 </template>
 
 <script setup>
-const { getAllPublishedArticlesWithTags, getAllTags, getAllCategories } = useDb();
+const { getAllPublishedArticlesWithTags, getAllTags, getAllCategories } =
+  useDb();
 
 const authStore = useAuthStore();
 const userProfile = ref(null);
 const isLoading = ref(true);
 
-const searchQuery = ref('');
+const searchQuery = ref("");
 const articles = ref([]);
 const tags = ref([]);
 const categories = ref([]);
@@ -115,17 +125,15 @@ const categories = ref([]);
 const currentPage = ref(1);
 const perPage = 10;
 
-const filteredArticles = computed(() =>
-{
+const filteredArticles = computed(() => {
   if (!searchQuery.value) return articles.value;
 
-  return articles.value.filter(article =>
+  return articles.value.filter((article) =>
     article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
 
-const paginatedArticles = computed(() =>
-{
+const paginatedArticles = computed(() => {
   const start = (currentPage.value - 1) * perPage;
   return filteredArticles.value.slice(start, start + perPage);
 });
@@ -147,20 +155,30 @@ onMounted(async () => {
   isLoading.value = false;
 });
 
+useHead(() => ({
+  link: [
+    {
+      rel: "canonical",
+      href: "https://imchatty.com/articles",
+    },
+  ],
+}));
 
 useSeoMeta({
   title: "ImChatty Blog – Tips, Updates & Community Stories",
   description:
     "Discover the latest tips, platform updates, and real community stories on the ImChatty Blog. Stay connected and informed.",
   ogTitle: "ImChatty Blog – Tips, Updates & Community Stories",
+  ogType: "Website",
+  ogUrl: "https://imchatty.com/articles",
   ogDescription:
     "Explore helpful articles, platform news, and inspiring stories from the ImChatty community. Updated regularly with new insights.",
-  ogImage: "https://imchatty.com/images/article-image.webp",
+  ogImage: "https://imchatty.com/images/robot.png",
   twitterCard: "summary_large_image",
   twitterTitle: "ImChatty Blog – Your Source for Tips and Updates",
   twitterDescription:
     "Stay informed with the latest blog posts from ImChatty. From platform updates to dating and chat tips, we've got you covered.",
-  twitterImage: "https://imchatty.com/images/article-image.webp"
+  twitterImage: "https://imchatty.com/images/robot.png",
 });
 </script>
 
