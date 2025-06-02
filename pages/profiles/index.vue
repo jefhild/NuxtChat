@@ -1,13 +1,12 @@
 <template>
-	<v-container fluid>
-		<HomeRow1 />
-		<v-row>
-			<v-col cols="12">
-				<NewsContainer />
-			</v-col>
-		</v-row>
-
-	</v-container>
+  <v-container fluid>
+    <HomeRow1 />
+    <v-row>
+      <v-col cols="12">
+        <NewsContainer />
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script setup>
@@ -28,9 +27,11 @@ useSeoMeta({
   description:
     "Check out our most popular  profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
   ogTitle: "Popular Profiles",
+  ogType: "Website",
+  ogUrl: "https://imchatty.com/profiles/",
   ogDescription:
     "Check out our most popular  profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  // ogImage: popularProfiles[0].value.avatar_url,
+  ogImage: "https://imchatty.com/images/robot.png",
   twitterCard: "summary_large_image",
   twitterTitle: "Popular  Profiles",
   twitterDescription:
@@ -43,4 +44,3 @@ onMounted(async () => {
   isAuthenticated.value = authStore.user !== null;
 });
 </script>
-  

@@ -19,9 +19,11 @@ useSeoMeta({
   description:
     "Learn more about ImChatty — a unique platform where you can chat anonymously with real people or AI companions. Discover our mission, our team, and how we’re creating a safer, more engaging online space for chatting.",
   ogTitle: "About ImChatty – Real & AI Chat Platform",
+  ogType: "Website",
+  ogUrl: "https://imchatty.com/about",
   ogDescription:
     "Learn more about ImChatty — a unique platform for anonymous chatting with real users or AI. Explore our mission, vision, and values.",
-  ogImage: "https://imchatty.com/images/article-image.webp",
+  ogImage: "https://imchatty.com/images/robot.png",
   twitterCard: "summary_large_image",
   twitterTitle: "About ImChatty – Chat With Real People or AI",
   twitterDescription:

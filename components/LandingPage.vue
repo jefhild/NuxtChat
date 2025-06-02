@@ -172,18 +172,7 @@
 
     <!-- AI Profiles Section -->
     <v-container class="py-12 mt-8">
-      <h2 class="text-h4 text-center font-weight-bold mb-8">
-        {{ $t("pages.home.landing_page.popular_ai_profiles") }}
-      </h2>
-      <ProfileGrid :profiles="mostPopularAiProfiles" :limit="8" />
-
-      <div class="text-center mt-6" v-if="mostPopularAiProfiles.length >= 4">
-        <NuxtLink to="/profiles/popular">
-          <v-btn variant="outlined" color="primary"
-            >{{ $t("pages.home.landing_page.see_more_profiles") }}</v-btn
-          >
-        </NuxtLink>
-      </div>
+      <HomeRecent :limit="4" @loaded="handleLoaded" />
     </v-container>
 
     <!-- Articles Section -->
@@ -209,6 +198,19 @@
           </v-btn>
         </NuxtLink>
       </div>
+    </v-container>
+
+    <!-- AI Profiles Section -->
+    <v-container class="py-12 mt-8">
+      <!-- <HomeRecent :limit="4" @loaded="handleLoaded" /> -->
+      <HomeAi :limit="4" @loaded="handleLoaded" />
+      <HomeMale :limit="4" @loaded="handleLoaded" />
+      <HomeFemale :limit="4" @loaded="handleLoaded" />
+
+      <!-- <HomeRecent :limit="4" @loaded="handleLoaded" />
+  <HomeMale :limit="4" @loaded="handleLoaded" />
+  <HomeFemale :limit="4" @loaded="handleLoaded" />
+  <HomeMostPopular :limit="8" @loaded="handleLoaded" /> -->
     </v-container>
 
     <!-- Final CTA Banner -->

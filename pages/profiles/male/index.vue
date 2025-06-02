@@ -1,10 +1,9 @@
 <template>
   <v-container fluid>
-
     <!-- Back Button -->
     <v-row>
       <v-col cols="12">
-          <!-- Page Title -->
+        <!-- Page Title -->
         <div class="d-flex justify-center mt-4">
           <v-btn icon @click="$router.back()" color="primary" class="mr-4">
             <v-icon>mdi-arrow-left</v-icon>
@@ -14,21 +13,15 @@
       </v-col>
     </v-row>
 
-
-
     <!-- Content -->
     <HomeMale :limit="100" />
-
   </v-container>
 </template>
-
-
 
 <script setup>
 const isAuthenticated = ref(false);
 const authStore = useAuthStore();
 const isLoading = ref(false);
-
 
 useHead(() => ({
   link: [
@@ -44,9 +37,11 @@ useSeoMeta({
   description:
     "Check out our most popular male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
   ogTitle: "Popular Male Profiles",
+  ogType: "Website",
+  ogUrl: "https://imchatty.com/profiles/male/",
   ogDescription:
     "Check out our most popular male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  // ogImage: popularProfiles[0].value.avatar_url,
+  ogImage: "https://imchatty.com/images/robot.png",
   twitterCard: "summary_large_image",
   twitterTitle: "Popular male Profiles",
   twitterDescription:
@@ -54,8 +49,7 @@ useSeoMeta({
   // twitterImage: popularProfiles[0].value.avatar_url,
 });
 
-onMounted(async () =>
-{
+onMounted(async () => {
   isLoading.value = true;
   await authStore.checkAuth();
   isAuthenticated.value = authStore.user !== null;
