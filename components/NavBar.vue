@@ -1,11 +1,7 @@
 <template>
   <nav aria-label="Main Navigation" v-if="isAuthenticated">
-    <v-app-bar
-      scroll-behavior="hide"
-      scroll-threshold="61"
-      image="/images/bkg/tiediebkg.webp"
-      alt="navbar background image"
-    >
+    <v-app-bar scroll-behavior="hide" scroll-threshold="61" image="/images/bkg/tiediebkg.webp"
+      alt="navbar background image">
       <v-app-bar-title class="siteTitle">
         <NuxtLink to="/">{{ $t("components.navbar.imchatty") }}</NuxtLink>
       </v-app-bar-title>
@@ -23,35 +19,35 @@
             <v-icon start>mdi-cog</v-icon>{{ $t("components.navbar.settings") }}
           </NuxtLink>
           <NotificationDropdown />
+          <v-select :items="availableLocales" v-model="currentLocale" class="ml-3" hide-details
+            prepend-inner-icon="mdi-earth" density="compact" variant="outlined"
+            @update:modelValue="switchLanguage"></v-select>
           <v-btn @click="showLogoutDialog" variant="text">{{ $t("components.navbar.logout") }}</v-btn>
         </v-row>
 
         <!-- Mobile menu -->
         <div class="d-flex d-md-none">
           <NotificationDropdown />
-
+          <v-select :items="availableLocales" v-model="currentLocale" class="ml-3" hide-details
+            prepend-inner-icon="mdi-earth" density="compact" variant="outlined" style="max-width: 100px"
+            @update:modelValue="switchLanguage"></v-select>
           <v-menu>
             <template #activator="{ props }">
               <v-app-bar-nav-icon v-bind="props" />
             </template>
             <v-list>
-              <v-list-item
-                :to="{ path: '/articles' }"
-                prepend-icon="mdi-post-outline"
-                link
-              >
+              <v-list-item :to="{ path: '/articles' }" prepend-icon="mdi-post-outline" link>
                 <v-list-item-title>{{ $t("components.navbar.blog") }}</v-list-item-title>
               </v-list-item>
               <v-list-item :to="{ path: '/chat' }" prepend-icon="mdi-chat" link>
                 <v-list-item-title>{{ $t("components.navbar.chat") }}</v-list-item-title>
               </v-list-item>
               <!-- <v-list-item to="/chat" prepend-icon="mdi-chat">Chat</v-list-item> -->
-              <v-list-item :to="{ path: '/settings' }" prepend-icon="mdi-cog"
-                >{{ $t("components.navbar.settings") }}</v-list-item
-              >
-              <v-list-item @click="showLogoutDialog" prepend-icon="mdi-logout"
-                >{{ $t("components.navbar.logout") }}</v-list-item
-              >
+              <v-list-item :to="{ path: '/settings' }" prepend-icon="mdi-cog">{{ $t("components.navbar.settings")
+                }}</v-list-item>
+              <v-list-item @click="showLogoutDialog" prepend-icon="mdi-logout">{{ $t("components.navbar.logout")
+                }}</v-list-item>
+
             </v-list>
           </v-menu>
         </div>
@@ -84,6 +80,10 @@
           </NuxtLink>
         </v-row>
 
+        <v-select :items="availableLocales" v-model="currentLocale" class="ml-3" hide-details
+          prepend-inner-icon="mdi-earth" density="compact" variant="outlined"
+          @update:modelValue="switchLanguage"></v-select>
+
         <!-- Mobile menu -->
         <div class="d-flex d-md-none">
           <v-menu>
@@ -92,18 +92,13 @@
             </template>
 
             <v-list>
-              <v-list-item to="/articles" prepend-icon="mdi-post-outline"
-                >{{ $t("components.navbar.blog") }}</v-list-item
-              >
-              <v-list-item to="/signin" prepend-icon="mdi-login"
-                >{{ $t("components.navbar.signin") }}</v-list-item
-              >
-              <v-list-item to="/about" prepend-icon="mdi-account-group"
-                >{{ $t("components.navbar.aboutus") }}</v-list-item
-              >
-              <v-list-item to="/profiles" prepend-icon="mdi-monitor-account"
-                >{{ $t("components.navbar.free-chat") }}</v-list-item
-              >
+              <v-list-item to="/articles" prepend-icon="mdi-post-outline">{{ $t("components.navbar.blog")
+                }}</v-list-item>
+              <v-list-item to="/signin" prepend-icon="mdi-login">{{ $t("components.navbar.signin") }}</v-list-item>
+              <v-list-item to="/about" prepend-icon="mdi-account-group">{{ $t("components.navbar.aboutus")
+                }}</v-list-item>
+              <v-list-item to="/profiles" prepend-icon="mdi-monitor-account">{{ $t("components.navbar.free-chat")
+                }}</v-list-item>
             </v-list>
           </v-menu>
         </div>
@@ -112,30 +107,19 @@
   </nav>
 
   <v-dialog v-model="logoutDialog" width="auto">
-    <v-card
-      max-width="400"
-      prepend-icon="mdi-account-remove"
-      title="Logout Of My Account"
-    >
+    <v-card max-width="400" prepend-icon="mdi-account-remove" title="Logout Of My Account">
       <v-card-text>
         <v-row justify="center">
-          <v-col class="text-center"
-            >{{ $t("pages.home.landing_page.logout_confirm") }}</v-col
-          ></v-row
-        >
+          <v-col class="text-center">{{ $t("pages.home.landing_page.logout_confirm") }}</v-col></v-row>
       </v-card-text>
 
       <template v-slot:actions>
-        <v-btn color="primary" text @click="confirmLogout"
-          >{{ $t("pages.home.landing_page.logout_confirm_button") }}</v-btn
-        >
+        <v-btn color="primary" text @click="confirmLogout">{{ $t("pages.home.landing_page.logout_confirm_button")
+          }}</v-btn>
 
         <v-spacer></v-spacer>
-        <v-btn
-          class="ms-auto"
-          @click="logoutDialog = false"
-        >
-        {{ $t("pages.home.landing_page.cancel") }}</v-btn>
+        <v-btn class="ms-auto" @click="logoutDialog = false">
+          {{ $t("pages.home.landing_page.cancel") }}</v-btn>
       </template>
     </v-card>
   </v-dialog>
@@ -143,6 +127,16 @@
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
+
+import { useI18n } from "vue-i18n";
+
+const { locale, availableLocales } = useI18n();
+const currentLocale = ref(locale.value);
+
+const switchLanguage = (lang) =>
+{
+  locale.value = lang;
+};
 
 const router = useRouter();
 const authStore = useAuthStore();

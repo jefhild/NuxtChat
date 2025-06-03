@@ -73,7 +73,7 @@ const ogDescription = computed(() =>
   t("pages.categories.slug.meta.ogDescription1") + "\"" + formattedSlug.value.toLowerCase() + "\"" + t("pages.categories.slug.meta.ogDescription2")
 );
 const twitterDescription = computed(() =>
-  t("pages.categories.slug.meta.twitterDescription") + "\"" + formattedSlug.value.toLowerCase() + "\"" + t("pages.categories.slug.meta.twitterDescription2")
+  t("pages.categories.slug.meta.twitterDescription1") + "\"" + formattedSlug.value.toLowerCase() + "\"" + t("pages.categories.slug.meta.twitterDescription2")
 );
 
 useSeoMeta({
