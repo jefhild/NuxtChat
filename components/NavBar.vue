@@ -7,23 +7,23 @@
       alt="navbar background image"
     >
       <v-app-bar-title class="siteTitle">
-        <NuxtLink to="/">imchatty</NuxtLink>
+        <NuxtLink to="/">{{ $t("components.navbar.imchatty") }}</NuxtLink>
       </v-app-bar-title>
 
       <template v-slot:append>
         <v-row class="d-none d-md-flex" align="center">
           <OnlineStatus v-if="navProfileUserId" />
           <NuxtLink to="/articles" class="v-btn text-button navItem mr-3" exact>
-            <v-icon start>mdi-post-outline</v-icon>Blog
+            <v-icon start>mdi-post-outline</v-icon>{{ $t("components.navbar.blog") }}
           </NuxtLink>
           <NuxtLink to="/chat" class="v-btn text-button navItem mr-3" exact>
-            <v-icon start>mdi-chat</v-icon>Chat
+            <v-icon start>mdi-chat</v-icon>{{ $t("components.navbar.chat") }}
           </NuxtLink>
           <NuxtLink to="/settings" class="v-btn text-button navItem mr-3" exact>
-            <v-icon start>mdi-cog</v-icon>Settings
+            <v-icon start>mdi-cog</v-icon>{{ $t("components.navbar.settings") }}
           </NuxtLink>
           <NotificationDropdown />
-          <v-btn @click="showLogoutDialog" variant="text">Logout</v-btn>
+          <v-btn @click="showLogoutDialog" variant="text">{{ $t("components.navbar.logout") }}</v-btn>
         </v-row>
 
         <!-- Mobile menu -->
@@ -40,17 +40,17 @@
                 prepend-icon="mdi-post-outline"
                 link
               >
-                <v-list-item-title>Blog</v-list-item-title>
+                <v-list-item-title>{{ $t("components.navbar.blog") }}</v-list-item-title>
               </v-list-item>
               <v-list-item :to="{ path: '/chat' }" prepend-icon="mdi-chat" link>
-                <v-list-item-title>Chat</v-list-item-title>
+                <v-list-item-title>{{ $t("components.navbar.chat") }}</v-list-item-title>
               </v-list-item>
               <!-- <v-list-item to="/chat" prepend-icon="mdi-chat">Chat</v-list-item> -->
               <v-list-item :to="{ path: '/settings' }" prepend-icon="mdi-cog"
-                >Settings</v-list-item
+                >{{ $t("components.navbar.settings") }}</v-list-item
               >
               <v-list-item @click="showLogoutDialog" prepend-icon="mdi-logout"
-                >Logout</v-list-item
+                >{{ $t("components.navbar.logout") }}</v-list-item
               >
             </v-list>
           </v-menu>
@@ -61,26 +61,26 @@
   <nav v-else>
     <v-app-bar image="/images/bkg/tiediebkg.webp" alt="navbar background image">
       <v-app-bar-title class="siteTitle">
-        <NuxtLink to="/">imchatty</NuxtLink>
+        <NuxtLink to="/">{{ $t("components.navbar.imchatty") }}</NuxtLink>
       </v-app-bar-title>
       <v-spacer></v-spacer>
 
       <template v-slot:append>
         <v-row class="d-none d-md-flex" align="center">
           <NuxtLink to="/articles" class="v-btn text-button navItem mr-3" exact>
-            <v-icon start>mdi-post-outline</v-icon> Blog
+            <v-icon start>mdi-post-outline</v-icon> {{ $t("components.navbar.blog") }}
           </NuxtLink>
 
           <NuxtLink to="/signin" class="v-btn text-button navItem mr-3" exact>
-            <v-icon start>mdi-login</v-icon> Sign in
+            <v-icon start>mdi-login</v-icon> {{ $t("components.navbar.signin") }}
           </NuxtLink>
 
           <NuxtLink to="/about" class="v-btn text-button navItem mr-3" exact>
-            <v-icon start>mdi-account-group</v-icon> About Us
+            <v-icon start>mdi-account-group</v-icon> {{ $t("components.navbar.aboutus") }}
           </NuxtLink>
 
           <NuxtLink to="/profiles" class="v-btn text-button navItem mr-3" exact>
-            <v-icon start>mdi-monitor-account</v-icon> Free Chat
+            <v-icon start>mdi-monitor-account</v-icon> {{ $t("components.navbar.free-chat") }}
           </NuxtLink>
         </v-row>
 
@@ -93,16 +93,16 @@
 
             <v-list>
               <v-list-item to="/articles" prepend-icon="mdi-post-outline"
-                >Blog</v-list-item
+                >{{ $t("components.navbar.blog") }}</v-list-item
               >
               <v-list-item to="/signin" prepend-icon="mdi-login"
-                >Sign in</v-list-item
+                >{{ $t("components.navbar.signin") }}</v-list-item
               >
               <v-list-item to="/about" prepend-icon="mdi-account-group"
-                >About Us</v-list-item
+                >{{ $t("components.navbar.aboutus") }}</v-list-item
               >
               <v-list-item to="/profiles" prepend-icon="mdi-monitor-account"
-                >Free Chat</v-list-item
+                >{{ $t("components.navbar.free-chat") }}</v-list-item
               >
             </v-list>
           </v-menu>
@@ -120,22 +120,22 @@
       <v-card-text>
         <v-row justify="center">
           <v-col class="text-center"
-            >Are you sure you want to logout?</v-col
+            >{{ $t("pages.home.landing_page.logout_confirm") }}</v-col
           ></v-row
         >
       </v-card-text>
 
       <template v-slot:actions>
         <v-btn color="primary" text @click="confirmLogout"
-          >Confirm Logout</v-btn
+          >{{ $t("pages.home.landing_page.logout_confirm_button") }}</v-btn
         >
 
         <v-spacer></v-spacer>
         <v-btn
           class="ms-auto"
-          text="Cancel"
           @click="logoutDialog = false"
-        ></v-btn>
+        >
+        {{ $t("pages.home.landing_page.cancel") }}</v-btn>
       </template>
     </v-card>
   </v-dialog>

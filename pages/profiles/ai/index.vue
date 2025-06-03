@@ -8,13 +8,13 @@
           <v-btn icon @click="$router.back()" color="primary" class="mr-4">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
-          <h1>{{ $t("pages.profiles.male.title") }}</h1>
+          <h1>{{ $t("pages.profiles.ai.title") }}</h1>
         </div>
       </v-col>
     </v-row>
 
     <!-- Content -->
-    <HomeMale :limit="100" />
+    <HomeAi :limit="100" />
   </v-container>
 </template>
 
@@ -25,29 +25,31 @@ const isAuthenticated = ref(false);
 const authStore = useAuthStore();
 const isLoading = ref(false);
 
+
 useHead(() => ({
   link: [
     {
       rel: "canonical",
-      href: "https://imchatty.com/profiles/male",
+      href: "https://imchatty.com/profiles/ai",
     },
   ],
 }));
 
-const seoTitle = computed(() => t("pages.profiles.male.meta.title"));
-const seoDescription = computed(() => t("pages.profiles.male.meta.description"));
-const ogTitle = computed(() => t("pages.profiles.male.meta.ogTitle"));
-const ogType = computed(() => t("pages.profiles.male.meta.ogType"));
-const ogUrl = computed(() => t("pages.profiles.male.meta.ogUrl"));
+const seoTitle = computed(() => t("pages.profiles.ai.meta.title"));
+const seoDescription = computed(() => t("pages.profiles.ai.meta.description"));
+const ogTitle = computed(() => t("pages.profiles.ai.meta.ogTitle"));
+const ogType = computed(() => t("pages.profiles.ai.meta.ogType"));
+const ogUrl = computed(() => t("pages.profiles.ai.meta.ogUrl"));
 const ogDescription = computed(() =>
-  t("pages.profiles.male.meta.ogDescription")
+  t("pages.profiles.ai.meta.ogDescription")
 );
-const ogImage = computed(() => t("pages.profiles.male.meta.ogImage"));
-const twitterTitle = computed(() => t("pages.profiles.male.meta.twitterTitle"));
-const twitterCard = computed(() => t("pages.profiles.male.meta.twitterCard"));
+const ogImage = computed(() => t("pages.profiles.ai.meta.ogImage"));
+const twitterTitle = computed(() => t("pages.profiles.ai.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.profiles.ai.meta.twitterCard"));
 const twitterDescription = computed(() =>
-  t("pages.profiles.male.meta.twitterDescription")
+  t("pages.profiles.ai.meta.twitterDescription")
 );
+
 
 useSeoMeta({
   title: seoTitle.value,

@@ -1,0 +1,297 @@
+{
+	"pages": {
+		"home": {
+			"homeRow1": {
+				"offlineUsersOnline": "Lots of users online now",
+				"onlineUsersOnline": "users online",
+				"freeAnonymousChat": "Free Anonymous Chat"
+			},
+			"landing_page": {
+				"title-text": "Chat Anonymously. Connect Instantly.",
+				"title-text2": "AI friends, real people, log in anonymously.",
+				"cta_button": "Start Chatting",
+				"learn_more": "Learn More",
+				"welcome_back": "Welcome back,",
+				"chat": "Chat",
+				"settings": "Settings",
+				"logout": "Logout",
+				"meet_people": "Meet People Like You",
+				"discover_connections": "Discover real connections through anonymous chat.",
+				"realtime_conversations": "Real-time conversations with people from around the world. A smarter, friendlier alternative.",
+				"get_chatting": "Get Chatting",
+				"popular_ai_profiles": "Our Most Popular AI Profiles",
+				"see_more_profiles": "See More Popular Profiles",
+				"check_articles": "Check out some of our Articles",
+				"see_more_articles": "See More Articles",
+				"final_cta_title": "Ready to Start Chatting?",
+				"final_cta_description": "Whether you're here to meet new people or explore fun AI personalities, it's all just one click away.",
+				"get_chatting_now": "Get Chatting Now",
+				"logout_title": "Logout Of My Account",
+				"logout_confirm": "Are you sure you want to logout?",
+				"logout_confirm_button": "Confirm Logout",
+				"cancel": "Cancel"
+			},
+			"meta": {
+				"title": "Free Anonymous Chat (Real or AI)",
+				"description": "Explore real & AI chat profiles on imchatty.com",
+				"ogTitle": "Real & AI Chat Profiles",
+				"twitterTitle": "Popular Free Chat",
+				"twitterCard": "summary_large_image"
+			}
+		},
+		"about": {
+			"meta": {
+				"title": "About ImChatty – Real & AI Chat Platform",
+				"description": "Learn more about ImChatty — a unique platform where you can chat anonymously with real people or AI companions. Discover our mission, our team, and how we’re creating a safer, more engaging online space for chatting.",
+				"ogTitle": "About ImChatty – Real & AI Chat Platform",
+				"ogType": "Website",
+				"ogUrl": "https://imchatty.com/about",
+				"ogDescription": "Learn more about ImChatty — a unique platform for anonymous chatting with real users or AI. Explore our mission, vision, and values.",
+				"ogImage": "https://imchatty.com/images/robot.png",
+				"twitterCard": "summary_large_image",
+				"twitterTitle": "About ImChatty – Chat With Real People or AI",
+				"twitterDescription": "Get to know ImChatty — the platform for anonymous, meaningful conversations with real people or AI profiles. Meet the team behind the experience.",
+				"twitterImage": "https://imchatty.com/images/article-image.webp"
+			},
+			"page": {
+				"title-text": "About Us",
+				"welcome-title": "Hi! Welcome to Imchatty.com",
+				"welcome-text": "Welcome to Imchatty, a free chat site where you can connect with others anonymously. Our mission is to provide a safe and free platform for people to chat and share their thoughts without the need for extensive personal information. At Imchatty, we believe in the power of conversation and the importance of privacy.",
+				"who_we_are-title": "Who We Are",
+				"who_we_are-text1": "Imchatty is a project by",
+				"who_we_are-text2": "a seasoned player in the IT consulting industry. We created this site to delve deeper into real-time database and presence technology, AI chatbots and LLM's. We're using Imchatty as a dynamic sandbox for testing and development. We'd love to see how far we can push this technology and if we can build something useful. You'll find the Open Source code for this site ",
+				"who_we_are-text3": "here",
+				"our_mission-title": "Our Mission and Vision",
+				"our_mission-text": "Our mission is simple: to offer a free and secure chat platform supported by advertising, which will cover the infrastructure costs. Our vision is to continually add services and features, evolving Imchatty into a robust and valuable tool for our users. We aspire to create a space where users can enjoy seamless communication while feeling safe and respected.",
+				"unique_approach-title": "Our Unique Approach",
+				"unique_approach-text": "What sets Imchatty apart is our commitment to providing a truly free service without compromising on user safety. We understand the importance of privacy, and our anonymous registration ensures that your personal information remains confidential. Additionally, Imchatty serves as a testing ground for innovative technologies, helping us stay at the forefront of IT advancements.",
+				"building_community-title": "Building a Community",
+				"building_community-text": " Our goal is not just to offer a chat service but to build a community. We encourage our users to provide feedback and share their experiences to help us improve and expand the platform. By working together, we hope to create a service that meets the needs of our users and adapts to their evolving preferences.",
+				"looking_ahead-title": "Looking Ahead",
+				"looking_ahead-text": "As we continue to grow, our focus remains on maintaining a free and secure platform while exploring new features and improvements. We are excited about the future of Imchatty and are committed to making it a valuable resource for our users.",
+				"join_us-title": "Join Us",
+				"join_us-text": "We invite you to join Imchatty and be a part of our journey. Whether you’re looking for a place to chat, share ideas, or simply meet new people, Imchatty is here for you. Together, we can create a dynamic and fun community."
+			}
+		},
+		"terms": {
+			"meta": {
+				"title": "Terms & Conditions – ImChatty",
+				"description": "Review the Terms and Conditions of using ImChatty. Learn your rights, responsibilities, and how we ensure a safe and respectful platform.",
+				"ogTitle": "Terms & Conditions – ImChatty",
+				"ogDescription": "Understand the rules and policies for using ImChatty. Read our full Terms and Conditions to know what’s expected from all users.",
+				"ogImage": "https://imchatty.com/images/article-image.webp",
+				"twitterCard": "summary_large_image",
+				"twitterTitle": "Terms & Conditions – ImChatty",
+				"twitterDescription": "Explore the Terms and Conditions of ImChatty to learn how we maintain a respectful and safe community experience.",
+				"twitterImage": "https://imchatty.com/images/article-image.webp"
+			},
+			"page": {
+				"title": "Terms and Conditions",
+				"intro": "Welcome to the Imchatty website. Please review these Terms of Service (“Terms”), which govern your use of the website and services provided by it.",
+				"intro-2": "The website imchatty.com (the “Site”) facilitates real-time interactions in a secure environment that protects user privacy, (the “Service”). The Terms describe the conditions under which this Service is being made available to you, and your access to and use of the Site and the Service. Read the Terms carefully. By using the Service, you will be deemed to have accepted it. If you do not accept the Terms, you may not use this Service. By accessing the Site, you agree to abide by these Terms of Service (\"Terms\"), which govern your use of the Website, which is further subject to our Privacy Policy and safety guidelines.",
+				"intro-3": "In this document, “we” or “us” means imchatty.com and its owners, managers, officers, employees, partners, agents, representatives, affiliates, contractors, service providers, and/or designees; “both of us” means both you and us; “Terms of Service” or “Terms” means these Terms of Service and documents incorporated by reference; “Our Materials” means information, data, text, software, music, sound, photographs, graphics, video, messages or other materials that we may make available through the Service; “Service” means the service we provide you at the Site; “Site” means www.imchatty.com and any other website designated by us as being subject to the Terms; “you” means the person or company using the Services; and “Content” means information, data, text, software, music, sound, photographs, graphics, video, messages, images or other materials made available or accessible through the Service by you or other users of the Service.",
+				"service-title": "THE SERVICE",
+				"service-text": "We currently are in beta and offer a simple chat feature for engaging conversations. We hope to be offering other services soon, and will be updating our policy and terms document as these services become available.",
+				"acquisition-title": "ACQUISITION OF SERVICE",
+				"acquisition-text": " You acquire rights to use the Service subject to these Terms by enrolling in the Service at imchatty.com.",
+				"use-of-service-title": "USE OF SERVICE",
+				"use-of-service-text": "Except as set forth in “Other agreements”, below, we authorize you to use the Service only for your own personal, non-commercial purposes. Use of the Service for any public or commercial purpose (including, without limitation, use of the Service for the benefit of third parties) is strictly prohibited. If you make copies of any of Our Materials, you must retain on any such copies all copyright and other proprietary notices contained in Our Materials as provided by us. You may not modify, publicly display, publicly perform, or distribute Our Materials. As between you and us, we own the Service, Site and Our Materials. The Service, Site and Our Materials are protected under United States and international copyright laws. Any unauthorized use of the Service, Site or Our Materials may violate copyright, trademark, and other laws.",
+				"eligibility-title": "ELIGIBILITY",
+				"eligibility-text": "Conduct and Prohibited Uses. You must be of at least eighteen (18) years of age to use the services on this Website. You agree and warrant that none of Your Content shall be of a pornographic (including but not limited to child pornography), violent, discriminatory, unlawful, hateful, obscene, lewd, nude, partially nude or sexually suggestive nature, drug or terrorism-related, harmful, deceptive, extremely profane, racist, defamatory, abusive, threatening or otherwise objectionable in any manner (together “Objectionable Content”).",
+				"eligibility-text-2": "You represent and warrant that you shall not solicit personal information from or exploit in a sexual or violent manner anyone under the age of eighteen (18). You also represent and warrant that none of Your Content infringes the rights of any other third party. Imchatty disclaims any duty to monitor the nature of Your Content, and disclaims any liability or responsibility for any of Your Content.",
+				"eligibility-text-3": "You also represent and warrant that you will not “stalk” or otherwise harass any other user of this Website, impersonate other people or organizations, provide false, misleading or inaccurate information to Imchatty, interfere with our servers or software, attempt to access any restricted area on the Website, post harmful or disruptive html/javascript, upload or transmit files containing viruses or other objects which may damage other devices, access the Website through bots, agents, scraping, automated devices or intelligent search, or use the Website for spam purposes, unauthorised advertising or promotional purposes or to conduct surveys of any nature (together, “Prohibited Uses”).",
+				"eligibility-text-4": "Modifications. We reserve the right to modify or replace these Terms at any time. Any updated Terms will be available at this link. These Terms may be updated, reviewed, or amended from time to time, at our sole discretion. Material changes in these terms might or might not be communicated on our home page. You should periodically refer to any changes made to these Terms. Continued use of the Website, or use of any of the services or purchase of any product, will thereafter constitute your deemed acceptance of the revised Terms., Conduct and Prohibited Uses. You must be of at least eighteen (18) years of age to use the services on this Website. You agree and warrant that none of Your Content shall be of a pornographic (including but not limited to child pornography), violent, discriminatory, unlawful, hateful, obscene, lewd, nude, partially nude or sexually suggestive nature, drug or terrorism-related, harmful, deceptive, extremely profane, racist, defamatory, abusive, threatening or otherwise objectionable in any manner (together “Objectionable Content”).",
+				"registration-title": "YOUR REGISTRATION OBLIGATIONS",
+				"registration-text":"Certain portions of the Service may require registration and provision by you of certain information regarding yourself to us. If you register, you represent that you are at least 18 years old and are not a person barred from receiving services under the laws of the United States, European Union or other applicable jurisdiction. You must: (a) provide true, accurate, current and complete information about yourself as prompted by the Service's registration form (such information being the “Registration Data”) and (b) maintain and promptly update the Registration Data to keep it true, accurate, current and complete. If you provide any information that is untrue, inaccurate, not current or incomplete, or we have reasonable grounds to suspect that such information is untrue, inaccurate, not current or incomplete, we have the right to suspend or terminate your account and refuse any and all current or future use of the Service (or any portion thereof).",
+				"member-title": "MEMBER ACCOUNT, PASSWORD AND SECURITY",
+				"memeber-text": "You may receive or create a password and account designation upon completing the Service’s registration process. You are responsible for maintaining the confidentiality of the password and account designation, and are fully responsible for all activities that occur under your password or account. You must (a) immediately notify us of any unauthorized use of your password or account or any other breach of security, and (b) ensure that you exit from your account at the end of each session. We cannot and will not be liable for any loss or damage arising from your failure to comply with this Section.",
+				"privacy-policy-title": "PRIVACY POLICY; USE OF PERSONALLY IDENTIFIABLE DATA",
+				"privacy-policy-text": "Registration Data and certain other information about you is subject to our Privacy Policy. For more information, see our full privacy policy. By using the Service you consent to the collection and use (as set forth in the Privacy Policy) of this information, including the transfer of this information to the United States and/or other countries for storage, processing, and use by us and our affiliates.",
+				"gpdr-title": "General Data Protection Regulation (GDPR) Compliance",
+				"gpdr-text1": "If you are a resident of or are located in the European Union or European Economic Area (“EEA”), you may also have certain rights under the General Data Protection Regulation (“GDPR”). Personal information (“Personal Data”) you provide on imchatty.com websites or through its products is only collected with your consent, and is subject to the terms of the Company’s Privacy Policy, which may be found here. Contact ",
+				"gpdr-text2": "if you have concerns regarding your Personal Data, or wish to exercise any of your rights under the GDPR.",
+				"billing-title": "BILLING; TAXES",
+				"billing-text": "Currently imchatty.com is a service without consumer tax implications.",
+				"member-conduct-title": "MEMBER CONDUCT",
+				"member-conduct-text": "You understand that all Content, whether publicly posted or privately transmitted, are the sole responsibility of the person from whom such Content originated. This means that you, and not us, are entirely responsible for all Content that you upload, post, email, transmit or otherwise make available or access via the Service. We do not control the Content posted or accessed via the Service and, as such, do not guarantee the accuracy, integrity or quality of such Content. You understand that by using the Service, you may be exposed to Content that is offensive, indecent or objectionable. Under no circumstances will we be liable in any way for any Content, including, but not limited to, for any errors or omissions in any Content, or for any loss or damage of any kind incurred as a result of the use of any Content posted, emailed, transmitted or otherwise made available or accessed via the Service.",
+				"member-conduct-text-2": "Any use of the Service is subject to our code of conduct.",
+				"member-conduct-text-3": "We may or may not pre-screen Content; however, we and our designees shall have the right (but not the obligation) in our sole discretion to pre-screen, refuse, or move any Content or block any sites that are available or accessible via the Service. Without limiting the foregoing, we and our designees shall have the right to remove or block access to any Content that violates the Terms or is otherwise objectionable. You must evaluate, and bear all risks associated with, the use of any Content, including any reliance on the accuracy, completeness, or usefulness of such Content.",
+				"member-conduct-text-4": "We may access, preserve, and disclose your account information and Content if required to do so by law or in a good faith belief that such access preservation or disclosure is reasonably necessary to: (a) comply with legal process; (b) enforce the Terms; (c) respond to claims that any Content violates the rights of third-parties; (d) respond to your requests for customer service; or (e) protect our (or our users or the public's) rights, property, or personal safety.",
+				"member-conduct-text-5": "The technical processing and transmission of the Service, including your Content, may involve (a) transmissions over various networks; and (b) changes to conform and adapt to technical requirements of connecting networks or devices.",
+				"member-conduct-text-6": "The Service and software embodied within the Service may include security components that permit digital materials to be protected, and use of these materials is subject to usage rules set by us and/or content providers who provide content to the Service. You may not attempt to override or circumvent any of the usage rules embedded into the Service. Any unauthorized reproduction, publication, further distribution or public exhibition of the materials provided on the Service, in whole or in part, is strictly prohibited.",
+				"ownership-title": "OWNERSHIP AND USE OF CONTENT SUBMITTED OR MADE AVAILABLE FOR INCLUSION ON THE SERVICE",
+				"ownership-text": "We do not claim ownership of Content you submit or make available for inclusion on the Service. However, with respect to Content you submit or make available for inclusion on areas of the Service accessible to other members, the license to use, distribute, reproduce, modify, adapt, publicly perform and publicly display such Content on the Service solely for the purposes of providing and promoting the members to which such Content was submitted or made available. This license exists only for as long as you elect to continue to include such Content on the Service and will terminate at the time you remove or we remove such Content from the Service.",
+				"ownership-text-2": "You may voluntarily provide (in connection with use of the Service, use of our products or otherwise) suggestions, comments or other feedback to us with respect to items or information provided by us on the Service or otherwise. We are not required to hold such feedback in confidence, and such feedback may be used by us for any purpose without obligation of any kind; provided, that we will not disclose the source of specific feedback without your consent; and nothing in the Terms restricts the use by you of such feedback or ideas that you provide to us.",
+				"ownership-text-3": "Any content, including but not limited to photographs, pictures, images, and video clips which you upload onto the Website, or share with other users of this Website (“Your Content”) is owned by you. imchatty does not claim any ownership of Your Content. You grant imchatty a non-exclusive, royalty-free, perpetual, sub-licensable, worldwide license to use Your Content, in accordance with our Website’s Privacy Policy. You can choose to share Your Content with other users of our Website while chatting. You represent and warrant that you are the owner of Your Content, and are not violating any third-party rights by posting or sharing Your Content on our Website. We do not necessarily endorse Your Content, and have no obligation to monitor, edit, remove or prescreen Your Content. You are solely liable for any of Your Content posted or shared on this Website. You are also solely responsible for your interaction with other users on this Website, both online and offline, and imchatty is not liable for the conduct of any of its users. In case you think that some user of imchatty itself is infringing your intellectual property rights through our Website, you can promptly contact us, and we will reserve the right to delete content alleged to be infringing, and even terminate the accounts of repeat offenders.",
+				"indemnity-title": "INDEMNITY",
+				"indemnity-text": "You hereby indemnify and hold us and our subsidiaries, affiliates, officers, agents, co-branders or other partners, and employees, consultant and agents harmless from any claim or demand (including reimbursing us any reasonable attorneys' fees incurred by us in the defense of any such claim or demand), made by any third party due to or arising out of Content you submit, post, transmit or make available through the Service, your use of the Service, your connection to the Service, your violation of the Terms, or your violation of any rights of another. We retain the right to retain counsel of our choosing in our sole discretion. Furthermore, you must cooperate in good faith to assist us in our defense and any settlement negotiations related thereto, and to reimburse us for reasonable settlement amounts, if any.",
+				"general-practices-title": "GENERAL PRACTICES REGARDING USE AND STORAGE",
+				"general-practices-text": "You acknowledge that we may establish general practices and limits concerning use of the Service, including without limitation the maximum number of days that uploaded Content will be retained by the Service, the maximum number and size of postings that may be made through an account on the Service, and the maximum number of times (and the maximum duration for which) you may access the Service in a given period of time. We have no responsibility or liability for the deletion or failure to store any posting and other communications or other Content maintained or transmitted by the Service. We may modify these general practices and limits from time to time.",
+				"modifications-title": "MODIFICATIONS TO SERVICE",
+				"modifications-text": "We may at any time and from time to time to modify or discontinue, temporarily or permanently, the Service (or any part thereof) with or without notice. We shall not be liable to you or to any third party for any modification, suspension or discontinuance of the Service.",
+				"termination-title": "TERMINATION",
+				"termination-text": "We may, under certain circumstances and without prior notice, immediately terminate your account and access to the Service. Cause for such termination shall include, but not be limited to, (a) breaches or violations of the Terms or other incorporated agreements or guidelines, (b) requests by law enforcement or other government agencies, (c) a request by you (self-initiated account deletions), (d) discontinuance or material modification to the Service (or any part thereof), (e) unexpected technical or security issues or problems, (f) extended periods of inactivity, (g) you have engaged in fraudulent or illegal activities, and/or (h) nonpayment of any fees owed by you in connection with the Services. Termination of your account includes (a) removal of access to all offerings within the Service, (b) deletion of your password and all related information, files and content associated with or inside your account (or any part thereof), and (c) barring further use of the Service. Further, all terminations for cause shall be made in our sole discretion and we shall not be liable to you or any third-party for any termination of your account, any associated email address, or access to the Service.",
+				"dealings-title": "DEALINGS WITH THIRD PARTIES",
+				"dealings-text": "The Service might enable you to access other web sites or resources. Because we have no control over such sites and resources, we are not responsible for the availability of such external sites or resources, and we do not endorse and are not responsible or liable for any Content, products, or other materials on or available from such sites or resources. We are not responsible or liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in connection with use of or reliance on any such Content or services available on or through any such site or resource. We may or may not pre-screen other websites or resources; however, we and our designees shall have the right (but not the obligation) in our sole discretion to pre-screen, refuse or block access to any web sites or other resources that violate the Terms or are otherwise objectionable.",
+				"property-title": "OUR PROPRIETARY RIGHTS",
+				"property-text": "The Service and any necessary software used in connection with the Service (“Software”) contain proprietary and confidential information that is protected by applicable intellectual property and other laws. You may not access the Service by any means other than through the interface that is provided by us for use in accessing the Service.",
+				"property-text-2": "In general, the Service is provided in a manner which does not result in your downloading or using any of our Software. In the event that we do, however, provide you with Software (such as a plug-in or similar item), we grant you a personal, non-transferable and non-exclusive right and license to use the object code of the Software on a single computer in connection with your access to the Service; provided that you do not (and do not allow any third party to) copy, modify, create a derivative work of, reverse engineer, reverse assemble or otherwise attempt to discover any source code, sell, assign, sublicense, grant a security interest in or otherwise transfer any right in the Software. You may not modify the Software in any manner or form, or to use modified versions of the Software, including (without limitation) for the purpose of obtaining unauthorized access to the Service. You may not rent, lease, loan, sell, distribute or create derivative works based on the Software, in whole or in part.",
+				"property-text-3": "You may not reproduce, duplicate, copy, sell, trade, resell or exploit for any commercial purposes, any portion of the Service (including your account name), use of the Service, or access to the Service.",
+				"disclaimer-title": "DISCLAIMER OF WARRANTIES",
+				"disclaimer-text": "YOUR USE OF THE SERVICE IS AT YOUR SOLE RISK. THE SERVICE IS PROVIDED ON AN “AS IS” AND “AS AVAILABLE” BASIS. WE EXPRESSLY DISCLAIM ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.",
+				"disclaimer-text-2": "WE MAKE NO WARRANTY THAT (i) THE SERVICE WILL MEET YOUR REQUIREMENTS, (ii) THE SERVICE WILL BE UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE, (iii) THE RESULTS THAT MAY BE OBTAINED FROM THE USE OF THE SERVICE WILL BE ACCURATE OR RELIABLE, (iv) THE QUALITY OF ANY PRODUCTS, SERVICES, INFORMATION, OR OTHER MATERIAL PURCHASED OR OBTAINED BY YOU THROUGH THE SERVICE WILL MEET YOUR EXPECTATIONS, AND (v) ANY ERRORS IN THE SOFTWARE WILL BE CORRECTED.",
+				"disclaimer-text-3": "ANY MATERIAL DOWNLOADED OR OTHERWISE OBTAINED THROUGH THE USE OF THE SERVICE IS DONE AT YOUR OWN DISCRETION AND RISK AND THAT YOU WILL BE SOLELY RESPONSIBLE FOR ANY DAMAGE TO YOUR COMPUTER SYSTEM OR LOSS OF DATA THAT RESULTS FROM THE DOWNLOAD OF ANY SUCH MATERIAL.",
+				"disclaimer-text-4": "NO ADVICE OR INFORMATION, WHETHER ORAL OR WRITTEN, OBTAINED BY YOU FROM US OR THROUGH OR FROM THE SERVICE SHALL CREATE ANY WARRANTY NOT EXPRESSLY STATED IN THE TERMS.",
+				"limitation-title": "LIMITATION OF LIABILITY",
+				"limitation-text": "WE SHALL NOT BE LIABLE TO YOU FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR EXEMPLARY DAMAGES, INCLUDING BUT NOT LIMITED TO, DAMAGES FOR LOSS OF PROFITS, GOODWILL, USE, DATA OR OTHER INTANGIBLE LOSSES (EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES), RESULTING FROM: (i) THE USE OR THE INABILITY TO USE THE SERVICE; (ii) THE COST OF PROCUREMENT OF SUBSTITUTE GOODS AND SERVICES RESULTING FROM ANY GOODS, DATA, INFORMATION OR SERVICES PURCHASED OR OBTAINED OR MESSAGES RECEIVED OR TRANSACTIONS ENTERED INTO THROUGH OR FROM THE SERVICE; (iii) UNAUTHORIZED ACCESS TO OR ALTERATION OF YOUR TRANSMISSIONS OR DATA; (iv) STATEMENTS OR CONDUCT OF ANY THIRD PARTY ON THE SERVICE; OR (v) ANY OTHER MATTER RELATING TO THE SERVICE.",
+				"exclusions-title": "EXCLUSIONS AND LIMITATIONS",
+				"exclusions-text": "SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF CERTAIN WARRANTIES OR THE LIMITATION OR EXCLUSION OF LIABILITY FOR INCIDENTAL OR CONSEQUENTIAL DAMAGES. ACCORDINGLY, SOME OF THE ABOVE LIMITATIONS OF MAY NOT APPLY TO YOU.",
+				"general-info-title": "GENERAL INFORMATION",
+				"general-info-text": "Entire Agreement. The Terms constitute the entire agreement between both of us and governs your use of the Service, superseding any prior agreements between both of us with respect to the Service. You also may be subject to additional terms and conditions that may apply when you use or purchase certain other services, affiliate services, third-party content, or third-party software.",
+				"general-info-text-2": "Choice of Law and Forum. The Terms and the relationship between both of us shall be exclusively governed by the laws of the European Union without regard to its conflict of law provisions. Your exclusive forum for bringing any claim or cause of action against us is the courts located in the City of Paris, France. You hereby accept and submit to the personal and exclusive jurisdiction of such courts in any proceeding or action. With respect to any such proceeding or action brought in such courts, you hereby irrevocably waive, to the fullest extent permitted by law: (a) any objection you may have now or in the future to such jurisdiction or venue, and (b) any claim that such action or proceeding has been brought in an inconvenient form. Nothing limits our right to commence and prosecute any legal or equitable action or proceeding before any court of competent jurisdiction to obtain injunctive or any other form of relief. Regardless of any statute or law to the contrary, any claim or cause of action arising out of or related to use of the Service or the Terms must be filed within ninety (90) days (or, if different, the minimum amount of time permitted by law) after such claim or cause of action arose or be forever barred.",
+				"general-info-text-3": "Arbitration. Notwithstanding anything herein, if we elect in our sole discretion to resolve any claim through arbitration, you must cooperate fully with and be bound by such arbitration, without further recourse of any kind. The European Court of Arbitration (ECA) shall preside over such arbitration. Such arbitration shall be exclusively governed by the laws of the European Union without regard to its conflict of law provisions. All proceedings shall take place in the City of Paris. If there is a conflict between the rules of the ECA and any provision of the Terms, the Terms shall govern. You are responsible for all costs that you incur in the arbitration, including without limitation, expert witnesses or attorneys. The reasonable filing fees and arbitrator’s costs and expenses shall be advanced by us. However, if the arbitration is decided in our favor, you must reimburse us for all of our fees, costs, and expenses related to the arbitration, including without limitation, all fees, costs, and expenses related to filing, arbitrators, expert witnesses, attorneys, and other third parties.",
+				"general-info-text-4": "Waiver and Severability of Terms. Our failure to exercise or enforce any right or provision of the Terms shall not constitute a waiver of such right or provision. If any provision of the Terms is found by a court of competent jurisdiction to be invalid, the parties nevertheless agree that the court should endeavor to give effect to the parties' intentions as reflected in the provision, and the other provisions of the Terms remain in full force and effect.",
+				"general-info-text-5": "No Third Party Beneficiaries. Except as otherwise expressly provided in the Terms, there shall be no third party beneficiaries to the Terms.",
+				"general-info-text-6": "Restrictions on Assignment. These Terms and all of the rights, interest or obligations hereunder may be not assigned, directly or indirectly, including, without limitation, by operation of law, by either of us, without the prior written consent of the non-assigning party, not to be unreasonably withheld, delayed or conditioned; provided, however, either party may assign the Terms without any such requirement of consent, in whole or in part to any affiliate, subsidiary or successor in interest in the event of a merger, consolidation, acquisition, reorganization, change in control or otherwise, provided that: (i) the assigning and acquiring entity notify the non-assigning party at the time of such assignment and the acquiring entity agrees in writing to be bound by the Terms, and (ii) the acquiring entity is no a competitor of the non-acquiring entity.",
+				"general-info-text-7": "Statute of Limitations. Regardless of any statute or law to the contrary, any claim or cause of action arising out of or related to use of the Service or the Terms must be filed within one (1) year after such claim or cause of action arose or be forever barred.",
+				"general-info-text-8": "The section titles in the Terms are for convenience only and have no legal or contractual effect.",
+				"accepting-title": "ACCEPTING THE TERMS",
+				"accepting-text": "Agreement to Terms. In order to use the Service, you must first agree to the Terms. You may not use the Service if you do not accept the Terms. You can accept the Terms by executing by clicking to accept or agree to the Terms, where this option is made available to you by us in the user interface for the Service, or by actually using the Service. You agree that we will treat your use of the Service as acceptance of the Terms from that point onwards.",
+				"accepting-text-2": "Eligibility to Use the Service. You may not use the Service and may not accept the Terms if (a) you are not of legal age (the laws of the jurisdiction of which you are a resident or from which you use the Service) to form a binding contract with us, or (b) you are a person barred from using the Service under the laws of the EU, United States or other countries including the country in which you are resident or from which you use the Service.",
+				"accepting-text-3": "Representation of Eligibility. In any of the above cases, you represent that you satisfy all of the above eligibility conditions. If you do not satisfy the above conditions, or if you do not agree with the Terms, you may not use the Service or any portion thereof; in that case we may also terminate the Terms and your use of the Service immediately without liability to you.",
+				"accepting-text-4": "Acceptance by Electronic Submissions. You acknowledge that your electronic submissions constitute your agreement and intent to be bound by the Terms. Pursuant to any applicable statutes, regulations, rules, ordinances or other laws, you hereby agree to the use of electronic signatures, contracts, orders and other records and to electronic delivery of notices, policies and records of transactions initiated or completed through the Service. Further, you hereby waive any rights or requirements under any statutes, regulations, rules, ordinances or other laws in any jurisdiction which require an original signature or delivery or retention of non-electronic records.",
+				"amendments-title": "AMENDMENT AND UPDATING OF THE TERMS",
+				"amendments-text": "We may desire to make changes to these Terms from time to time to update it, for example to add references to different products or services. We may specify amended or updated terms that apply to the use of Service after the effective date of such amendment or update, and we will make a new copy of these Terms available to you and may require you to accept it as a condition to the continued provision of the Service to you. In addition, the continued use of the Service after receipt of such amended Terms shall constitute your agreement to such Terms."
+			}	
+		},
+		"admin": {
+			"title": "Admin Dashboard",
+			"sections-title" : "Sections",
+			"sections" : {
+				"dashboard" : "Dashboard",
+				"articles" : "Articles",
+				"categories" : "Categories",
+				"tags" : "Tags",
+				"reports" : "Reports"
+			}
+		},
+		"articles":{
+			"index":{
+				"explore" : "Explore Our Articles",
+				"categories": "Categories",
+				"tags": "Tags",
+				"search": "Search Articles...",
+				"no-articles": "No articles found for",
+				"meta": {
+					"title": "ImChatty Blog – Tips, Updates & Community Stories",
+					"description": "Discover the latest tips, platform updates, and real community stories on the ImChatty Blog. Stay connected and informed.",
+					"ogTitle": "ImChatty Blog – Tips, Updates & Community Stories",
+					"ogType": "Website",
+					"ogUrl": "https://imchatty.com/articles",
+					"ogDescription" : "Explore helpful articles, platform news, and inspiring stories from the ImChatty community. Updated regularly with new insights.",
+					"ogImage": "https://imchatty.com/images/robot.png",
+					"twitterDescription": "Stay informed with the latest blog posts from ImChatty. From platform updates to dating and chat tips, we've got you covered.",
+					"twitterTitle": "ImChatty Blog – Your Source for Tips and Updates",
+					"twitterCard": "summary_large_image",
+					"twitterImage" : "https://imchatty.com/images/robot.png"
+					
+				}
+			}
+		},
+		"categories": {
+			"index": {
+				"title": "All the different Categories",
+				"meta": {
+					"title": "Popular Article Categories",
+					"description": "Check out our most popular categories! Browse top-rated articles with real information, personalized details, and genuine interests.",
+					"ogTitle": "Article Categories",
+					"ogType": "Website",
+					"ogUrl": "https://imchatty.com/categories",
+					"ogDescription": "Check out our most popular categories! Browse top-rated categories with real information, personalized details, and genuine interests.",
+					"twitterTitle": "Popular Recent Categories",
+					"twitterCard": "summary_large_image",
+					"twitterDescription": "Check out our most popular categories! Browse top-rated members with real information, personalized details, and genuine interests."
+				}
+			},
+			"slug": {
+				"no-articles": "No articles found for this category",
+				"meta": {
+					"articles": "Articles",
+					"description1":"Browse articles tagged with ",
+					"description2": " on ImChatty. Explore insights, stories, and resources related to ",
+					"ogDescription1": "Find the latest articles and content on ",
+					"ogDescription2": " at ImChatty. See how real users and AI explore this topic.",
+					"twitterDescription1": "Learn about ",
+					"twitterDescription2": " in our latest chat-related content. Updated articles from real and AI perspectives."
+				}
+			}
+		},
+		"profiles": {
+			"ai" : {
+				"title": "Popular AI Profiles",
+				"meta": {
+					"title": "More Popular AI Profiles",
+					"description": "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
+					"ogTitle": "Popular AI Profiless",
+					"ogType": "Website",
+					"ogUrl": "https://imchatty.com/profiles/ai",
+					"ogDescription": "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
+					"ogImage": "https://imchatty.com/images/robot.png",
+					"twitterTitle": "Popular Recent Profiles",
+					"twitterCard": "summary_large_image",
+					"twitterDescription": "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests."
+				}
+			},
+			"female": {
+				"title": "Popular Female Profiles",
+				"meta": {
+					"title": "More Popular Female Profiles",
+					"description": "Check out our most popular recent female profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogTitle": "Popular Female Profiless",
+					"ogType": "Website",
+					"ogUrl": "https://imchatty.com/profiles/female",
+					"ogDescription": "Check out our most popular recent female profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogImage": "https://imchatty.com/images/robot.png",
+					"twitterTitle": "Popular Female Profiles",
+					"twitterCard": "summary_large_image",
+					"twitterDescription": "Check out our most popular recent female profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
+				}
+			},
+			"male":{
+				"title": "Popular Male Profiles",
+				"meta": {
+					"title": "More Popular Male Profiles",
+					"description": "Check out our most popular recent male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogTitle": "Popular Male Profiless",
+					"ogType": "Website",
+					"ogUrl": "https://imchatty.com/profiles/male",
+					"ogDescription": "Check out our most popular recent male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogImage": "https://imchatty.com/images/robot.png",
+					"twitterTitle": "Popular Male Profiles",
+					"twitterCard": "summary_large_image",
+					"twitterDescription": "Check out our most popular recent male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
+				}
+			}
+		}
+	},
+	"components": {
+		"navbar": {
+			"imchatty": "ImChatty",
+			"blog": "Blog",
+			"chat": "Chat",
+			"settings": "Settings",
+			"logout": "Logout",
+			"signin": "Sign in",
+			"aboutus": "About Us",
+			"free-chat": "Free Chat"
+		},
+		"footer": {
+			"about": "About Us",
+			"terms": "Terms Of Service",
+			"privacy": "Privacy Policy",
+			"cookies": "Cookie Policy",
+			"public-profiles": "Public Profiles",
+			"consent-preferences": "Consent Preferences"
+		}
+	}
+}

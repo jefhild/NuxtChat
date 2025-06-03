@@ -40,7 +40,7 @@
             </div>
             <div v-for="(message, index) in messages" :key="message.id" @click="replyingToMessage = message"
               :class="message.sender_id === user.id ? 'sent' : 'received'" :ref="index === 0 ? 'firstMessage' : null">
-              <Message :message="message" :user="user" @edit-message="editMessage" />
+              <Message :message="message" :user="user" @edit-message="editMessage" @removeReplying="removeReplyingToMessage" />
             </div>
             <!-- Typing Indicator -->
             <div v-if="isTyping" class="typing-indicator bot-message">
@@ -141,6 +141,7 @@ import { onClickOutside } from '@vueuse/core';
 
 const {
   getUserProfileFromId,
+  getUserProfileFromSlug,
   getAIInteractionCount,
   getCurrentAIInteractionCount,
   getMessageById,
@@ -440,15 +441,15 @@ onMounted(async () => {
 
   // Select the user we want to chat with
   const query = route.query;
-  const userIdFromQuery = query?.userId;
-
-  if (userIdFromQuery) {
-    const { data: userProfileData } = await getUserProfileFromId(
-      userIdFromQuery
+  const userSlug = query?.userSlug;
+  
+  if (userSlug) {
+    const userProfileData  = await getUserProfileFromSlug(
+      userSlug
     );
+
     if (userProfileData) {
-      selectedUser.value = userProfileData;
-      // console.log("Selected user from query:", selectedUser.value);
+      selectedUser.value = userProfileData[0];
     }
   }
 
@@ -818,6 +819,13 @@ const checkAiInteractionLimit = async () => {
   }
 };
 
+const removeReplyingToMessage = () => {
+  console.log("Replying to message removed", replyingToMessage.value);
+  replyingToMessage.value = null;
+  console.log("Replying to message removed", replyingToMessage.value);
+
+};
+
 const editMessage = async (editData) =>
 {
   try
@@ -844,6 +852,7 @@ const editMessage = async (editData) =>
     console.error('Error editing message:', error);
     // You could show a toast notification here
   }
+  removeReplyingToMessage();
 };
 
 const handleFileUpload = (event) => {

@@ -31,7 +31,7 @@
 
       <v-row v-if="!articles.length">
         <v-col class="text-center">
-          <p>No articles found for this tag.</p>
+          <p>{{ $t("pages.categories.slug.no-articles") }}</p>
         </v-col>
       </v-row>
     </v-container>
@@ -39,7 +39,9 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
 const { getArticlesbyCategorySlug, getTagsByArticle } = useDb();
+const { t } = useI18n();
 const route = useRoute();
 const formattedSlug = computed(() => {
   const raw = route.params.slug;
@@ -65,22 +67,22 @@ onMounted(async () => {
   isLoading.value = false;
 });
 
+const articlesSeo = computed(() => t("pages.categories.slug.meta.articles"));
+const seoDescription = computed(() => t("pages.categories.slug.meta.description1") + "\"" + formattedSlug.value.toLowerCase() + "\"" + t("pages.categories.slug.meta.description2"));
+const ogDescription = computed(() =>
+  t("pages.categories.slug.meta.ogDescription1") + "\"" + formattedSlug.value.toLowerCase() + "\"" + t("pages.categories.slug.meta.ogDescription2")
+);
+const twitterDescription = computed(() =>
+  t("pages.categories.slug.meta.twitterDescription") + "\"" + formattedSlug.value.toLowerCase() + "\"" + t("pages.categories.slug.meta.twitterDescription2")
+);
+
 useSeoMeta({
-  title: computed(() => `${formattedSlug.value} Articles – ImChatty`),
-  description: computed(
-    () =>
-      `Browse articles tagged with ${formattedSlug.value.toLowerCase()} on ImChatty. Explore insights, stories, and resources related to ${formattedSlug.value.toLowerCase()}.`
-  ),
-  ogTitle: computed(() => `${formattedSlug.value} Articles – ImChatty`),
-  ogDescription: computed(
-    () =>
-      `Find the latest articles and content on ${formattedSlug.value.toLowerCase()} at ImChatty. See how real users and AI explore this topic.`
-  ),
+  title: computed(() => `${formattedSlug.value} ${articlesSeo.value} – ImChatty`),
+  description: seoDescription,
+  ogTitle: computed(() => `${formattedSlug.value} ${articlesSeo.value} – ImChatty`),
+  ogDescription: ogDescription,
   twitterTitle: computed(() => `${formattedSlug.value} Articles`),
-  twitterDescription: computed(
-    () =>
-      `Learn about ${formattedSlug.value.toLowerCase()} in our latest chat-related content. Updated articles from real and AI perspectives.`
-  ),
+  twitterDescription: twitterDescription,
 });
 </script>
 

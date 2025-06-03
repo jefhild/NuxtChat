@@ -63,7 +63,7 @@
               <NuxtLink to="/settings">Back to Profile</NuxtLink>
             </v-col>
             <v-col cols="auto">
-              <NuxtLink :to="`/chat?userId=${profile?.user_id}`">
+              <NuxtLink :to="`/chat?userSlug=${profile?.slug}`">
                 Chat with {{ profile?.displayname }}
               </NuxtLink>
             </v-col>

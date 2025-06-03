@@ -97,9 +97,10 @@ useSeoMeta({
   description:
     "Check out our most recent insights! Browse articles of genuine interest.",
   ogTitle: "Popular Article Insights",
+  ogType: "Website",
   ogDescription:
     "Check out our most recent article insights! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  // ogImage: popularProfiles[0].value.avatar_url,
+  ogImage: "https://imchatty.com/images/robot.png",
   twitterCard: "summary_large_image",
   twitterTitle: "Popular Article Insights",
   twitterDescription:
