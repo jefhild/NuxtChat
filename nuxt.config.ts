@@ -30,7 +30,7 @@ export default defineNuxtConfig({
     // Define available locales
     defaultLocale: 'en-US',
     langDir: './locales/',
-    strategy: 'prefix_except_default',
+    strategy: 'prefix_and_default',
     locales: [
       { code: 'en-US', iso: 'en-US', file: 'en-US.json' },
       { code: 'fr-FR', iso: 'fr-FR', file: 'fr-FR.json' },
