@@ -130,12 +130,12 @@ import { useAuthStore } from "@/stores/authStore";
 
 import { useI18n } from "vue-i18n";
 
-const { locale, availableLocales } = useI18n();
+const { locale, availableLocales, setLocale } = useI18n();
 const currentLocale = ref(locale.value);
 
 const switchLanguage = (lang) =>
 {
-  locale.value = lang;
+  setLocale(lang);
 };
 
 const router = useRouter();
