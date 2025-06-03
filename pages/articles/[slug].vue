@@ -10,7 +10,7 @@
       <v-col cols="12">
         <div class="text-body-2 text-grey-darken-1 mb-4">
           <v-icon>mdi-account</v-icon>
-          <span class="ml-1">ImChatty</span>
+          <span class="ml-1">{{ $t("components.navbar.imchatty") }}</span>
           •
           <v-icon>mdi-folder</v-icon>
           <NuxtLink
@@ -32,7 +32,7 @@
     <v-row class="ml-2 mt-10">
       <v-col cols="12" md="4">
         <v-btn color="primary" to="/chat">
-          Start Chatting!
+          {{ $t("pages.home.landing_page.cta_button") }}!
           <v-icon end>mdi-chat</v-icon>
         </v-btn>
       </v-col>
@@ -41,7 +41,7 @@
     <v-row>
       <v-col cols="12" md="8">
         <div class="d-flex align-center flex-wrap">
-          <span class="font-weight-medium mr-2">Tags:</span>
+          <span class="font-weight-medium mr-2">{{ $t("pages.admin.sections.tags") }}:</span>
           <v-chip
             v-for="tag in article.tags"
             :key="tag.id"

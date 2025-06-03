@@ -7,12 +7,12 @@
     <!-- Top Row: Title + Search -->
     <v-row align="center" justify="space-between" class="mb-3">
       <v-col cols="12" md="6">
-        <h1>Explore Our Articles</h1>
+        <h1>{{ $t("pages.articles.index.explore") }}</h1>
       </v-col>
       <v-col cols="12" md="6" class="d-flex justify-end">
         <v-text-field
           v-model="searchQuery"
-          label="Search articles..."
+          :label="searchArticlesLabel"
           prepend-inner-icon="mdi-magnify"
           clearable
           dense
@@ -26,7 +26,7 @@
     <!-- Categories Row -->
     <v-row class="mb-2">
       <v-col cols="12">
-        <h2 class="section-title">Categories</h2>
+        <h2 class="section-title">{{ $t("pages.articles.index.categories") }}</h2>
         <div class="chip-group">
           <v-chip
             v-for="cat in categories"
@@ -46,7 +46,7 @@
     <!-- Tags Row -->
     <v-row class="mb-8">
       <v-col cols="12">
-        <h2 class="section-title">Tags</h2>
+        <h2 class="section-title">{{ $t("pages.articles.index.tags") }}</h2>
         <div class="chip-group">
           <v-chip
             v-for="tag in tags"
@@ -85,7 +85,7 @@
           border="top"
           border-color="primary"
         >
-          No articles found for "{{ searchQuery }}".
+        {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
         </v-alert>
       </v-col>
     </v-row>
@@ -110,12 +110,18 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 const { getAllPublishedArticlesWithTags, getAllTags, getAllCategories } =
   useDb();
 
 const authStore = useAuthStore();
 const userProfile = ref(null);
 const isLoading = ref(true);
+
+const { t } = useI18n();
+const searchArticlesLabel = computed(() =>
+  t("pages.articles.index.search")
+);
 
 const searchQuery = ref("");
 const articles = ref([]);
@@ -155,6 +161,22 @@ onMounted(async () => {
   isLoading.value = false;
 });
 
+const seoTitle = computed(() => t("pages.articles.index.meta.title"));
+const seoDescription = computed(() => t("pages.articles.index.meta.description"));
+const ogTitle = computed(() => t("pages.articles.index.meta.ogTitle"));
+const ogType = computed(() => t("pages.articles.index.meta.ogType"));
+const ogUrl = computed(() => t("pages.articles.index.meta.ogUrl"));
+const ogDescription = computed(() =>
+  t("pages.articles.index.meta.ogDescription")
+);
+const ogImage = computed(() => t("pages.articles.index.meta.ogImage"));
+const twitterTitle = computed(() => t("pages.articles.index.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.articles.index.meta.twitterCard"));
+const twitterDescription = computed(() =>
+  t("pages.articles.index.meta.twitterDescription")
+);
+const twitterImage = computed(() => t("pages.articles.index.meta.twitterImage"));
+
 useHead(() => ({
   link: [
     {
@@ -165,20 +187,17 @@ useHead(() => ({
 }));
 
 useSeoMeta({
-  title: "ImChatty Blog – Tips, Updates & Community Stories",
-  description:
-    "Discover the latest tips, platform updates, and real community stories on the ImChatty Blog. Stay connected and informed.",
-  ogTitle: "ImChatty Blog – Tips, Updates & Community Stories",
-  ogType: "Website",
-  ogUrl: "https://imchatty.com/articles",
-  ogDescription:
-    "Explore helpful articles, platform news, and inspiring stories from the ImChatty community. Updated regularly with new insights.",
-  ogImage: "https://imchatty.com/images/robot.png",
-  twitterCard: "summary_large_image",
-  twitterTitle: "ImChatty Blog – Your Source for Tips and Updates",
-  twitterDescription:
-    "Stay informed with the latest blog posts from ImChatty. From platform updates to dating and chat tips, we've got you covered.",
-  twitterImage: "https://imchatty.com/images/robot.png",
+  title: seoTitle.value,
+  description: seoDescription.value,
+  ogTitle: ogTitle.value,
+  ogType: ogType.value,
+  ogUrl: ogUrl.value,
+  ogDescription: ogDescription.value,
+  ogImage: ogImage.value,
+  twitterCard: twitterCard.value,
+  twitterTitle: twitterTitle.value,
+  twitterDescription: twitterDescription.value,
+  twitterImage: twitterImage.value,
 });
 </script>
 

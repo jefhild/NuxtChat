@@ -8,7 +8,7 @@
           <v-btn icon @click="$router.back()" color="primary" class="mr-4">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
-          <h1>Popular Male Profiles</h1>
+          <h1>{{ $t("pages.profiles.male.title") }}</h1>
         </div>
       </v-col>
     </v-row>
@@ -19,6 +19,8 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const isAuthenticated = ref(false);
 const authStore = useAuthStore();
 const isLoading = ref(false);
@@ -32,21 +34,32 @@ useHead(() => ({
   ],
 }));
 
+const seoTitle = computed(() => t("pages.profiles.male.meta.title"));
+const seoDescription = computed(() => t("pages.profiles.male.meta.description"));
+const ogTitle = computed(() => t("pages.profiles.male.meta.ogTitle"));
+const ogType = computed(() => t("pages.profiles.male.meta.ogType"));
+const ogUrl = computed(() => t("pages.profiles.male.meta.ogUrl"));
+const ogDescription = computed(() =>
+  t("pages.profiles.male.meta.ogDescription")
+);
+const ogImage = computed(() => t("pages.profiles.male.meta.ogImage"));
+const twitterTitle = computed(() => t("pages.profiles.male.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.profiles.male.meta.twitterCard"));
+const twitterDescription = computed(() =>
+  t("pages.profiles.male.meta.twitterDescription")
+);
+
 useSeoMeta({
-  title: "More Popular Male Profiles",
-  description:
-    "Check out our most popular male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  ogTitle: "Popular Male Profiles",
-  ogType: "Website",
-  ogUrl: "https://imchatty.com/profiles/male/",
-  ogDescription:
-    "Check out our most popular male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  ogImage: "https://imchatty.com/images/robot.png",
-  twitterCard: "summary_large_image",
-  twitterTitle: "Popular male Profiles",
-  twitterDescription:
-    "Check out our most popular male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  // twitterImage: popularProfiles[0].value.avatar_url,
+  title: seoTitle.value,
+  description: seoDescription.value,
+  ogTitle: ogTitle.value,
+  ogType: ogType.value,
+  ogUrl: ogUrl.value,
+  ogDescription: ogDescription.value,
+  ogImage: ogImage.value,
+  twitterCard: twitterCard.value,
+  twitterTitle: twitterTitle.value,
+  twitterDescription: twitterDescription.value,
 });
 
 onMounted(async () => {

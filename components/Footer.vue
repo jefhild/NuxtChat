@@ -6,13 +6,13 @@
           <v-card-text>
             <!-- Footer Content -->
             <!-- <v-row>&copy; 2024 Oliver W. Jones</v-row> -->
-            <NuxtLink to="/about">About Us</NuxtLink> |
-            <NuxtLink to="/terms">Terms Of Service</NuxtLink> |
-            <NuxtLink to="/privacy">Privacy Policy</NuxtLink> |
-            <NuxtLink to="/cookies">Cookie Policy</NuxtLink> |
-            <NuxtLink to="/profiles">Public Profiles</NuxtLink> |
+            <NuxtLink to="/about">{{ $t("components.footer.about") }}</NuxtLink> |
+            <NuxtLink to="/terms">{{ $t("components.footer.terms") }}</NuxtLink> |
+            <NuxtLink to="/privacy">{{ $t("components.footer.privacy") }}</NuxtLink> |
+            <NuxtLink to="/cookies">{{ $t("components.footer.cookies") }}</NuxtLink> |
+            <NuxtLink to="/profiles">{{ $t("components.footer.public-profiles") }}</NuxtLink> |
             <a href="#" class="termly-display-preferences">
-              Consent Preferences
+              {{ $t("components.footer.consent-preferences") }}
             </a>
             |
             <!-- GitHub Icon -->

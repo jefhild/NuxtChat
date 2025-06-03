@@ -8,7 +8,7 @@
           <v-btn icon @click="$router.back()" color="primary" class="mr-4">
             <v-icon>mdi-arrow-left</v-icon>
           </v-btn>
-          <h1>Popular AI Profiles</h1>
+          <h1>{{ $t("pages.profiles.ai.title") }}</h1>
         </div>
       </v-col>
     </v-row>
@@ -19,9 +19,12 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const isAuthenticated = ref(false);
 const authStore = useAuthStore();
 const isLoading = ref(false);
+
 
 useHead(() => ({
   link: [
@@ -32,21 +35,33 @@ useHead(() => ({
   ],
 }));
 
+const seoTitle = computed(() => t("pages.profiles.ai.meta.title"));
+const seoDescription = computed(() => t("pages.profiles.ai.meta.description"));
+const ogTitle = computed(() => t("pages.profiles.ai.meta.ogTitle"));
+const ogType = computed(() => t("pages.profiles.ai.meta.ogType"));
+const ogUrl = computed(() => t("pages.profiles.ai.meta.ogUrl"));
+const ogDescription = computed(() =>
+  t("pages.profiles.ai.meta.ogDescription")
+);
+const ogImage = computed(() => t("pages.profiles.ai.meta.ogImage"));
+const twitterTitle = computed(() => t("pages.profiles.ai.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.profiles.ai.meta.twitterCard"));
+const twitterDescription = computed(() =>
+  t("pages.profiles.ai.meta.twitterDescription")
+);
+
+
 useSeoMeta({
-  title: "More Popular AI Profiles",
-  description:
-    "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
-  ogTitle: "Popular AI Profiles",
-  ogType: "Website",
-  ogUrl: "https://imchatty.com/profiles/ai/",
-  ogDescription:
-    "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
-  ogImage: "https://imchatty.com/images/robot.png",
-  twitterCard: "summary_large_image",
-  twitterTitle: "Popular Recent Profiles",
-  twitterDescription:
-    "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
-  // twitterImage: popularProfiles[0].value.avatar_url,
+  title: seoTitle.value,
+  description: seoDescription.value,
+  ogTitle: ogTitle.value,
+  ogType: ogType.value,
+  ogUrl: ogUrl.value,
+  ogDescription: ogDescription.value,
+  ogImage: ogImage.value,
+  twitterCard: twitterCard.value,
+  twitterTitle: twitterTitle.value,
+  twitterDescription: twitterDescription.value,
 });
 
 onMounted(async () => {
