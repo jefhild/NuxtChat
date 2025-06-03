@@ -2,7 +2,7 @@
 	<v-container>
 		<v-row justify="center">
 			<v-col cols="12" md="8">
-				<h1>All the different Categories</h1>
+				<h1>{{ $t("pages.categories.index.title") }}</h1>
 			</v-col>
 		</v-row>
 
@@ -27,12 +27,27 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
 const { getAllCategories, getCountArticleByCategory } = useDb();
 const isLoading = ref(true);
 const authStore = useAuthStore();
 
+const { t } = useI18n();
 const categories = ref([]);
 
+const seoTitle = computed(() => t("pages.categories.index.meta.title"));
+const seoDescription = computed(() => t("pages.categories.index.meta.description"));
+const ogTitle = computed(() => t("pages.categories.index.meta.ogTitle"));
+const ogType = computed(() => t("pages.categories.index.meta.ogType"));
+const ogUrl = computed(() => t("pages.categories.index.meta.ogUrl"));
+const ogDescription = computed(() =>
+	t("pages.categories.index.meta.ogDescription")
+);
+const twitterTitle = computed(() => t("pages.categories.index.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.categories.index.meta.twitterCard"));
+const twitterDescription = computed(() =>
+	t("pages.categories.index.meta.twitterDescription")
+);
 
 
 useHead(() => ({
@@ -45,20 +60,15 @@ useHead(() => ({
 }));
 
 useSeoMeta({
-  title: "Popular Article Categories",
-  description:
-    "Check out our most popular categories! Browse top-rated articles with real information, personalized details, and genuine interests.",
-	ogTitle: "Article Categories",
-    ogType: "Website",
-  ogUrl: "https://imchatty.com/categories",
-  ogDescription:
-    "Check out our most popular categories! Browse top-rated categories with real information, personalized details, and genuine interests.",
-  // ogImage: popularProfiles[0].value.avatar_url,
-  twitterCard: "summary_large_image",
-  twitterTitle: "Popular Recent Categories",
-  twitterDescription:
-    "Check out our most popular categories! Browse top-rated members with real information, personalized details, and genuine interests.",
-  // twitterImage: popularProfiles[0].value.avatar_url,
+	title: seoTitle.value,
+	description: seoDescription.value,
+	ogTitle: ogTitle.value,
+	ogType: ogType.value,
+	ogUrl: ogUrl.value,
+	ogDescription: ogDescription.value,
+	twitterCard: twitterCard.value,
+	twitterTitle: twitterTitle.value,
+	twitterDescription: twitterDescription.value,
 });
 
 

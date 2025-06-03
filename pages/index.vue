@@ -8,18 +8,23 @@
 
 <script setup>
 import LandingPage from "~/components/LandingPage.vue";
+import { useI18n } from "vue-i18n";
+import { computed } from "vue";
 
-// SSR-safe head meta
+const { t } = useI18n();
+
+const seoTitle = computed(() => t("pages.home.meta.title"));
+const seoDescription = computed(() => t("pages.home.meta.description"));
+const ogTitle = computed(() => t("pages.home.meta.ogTitle"));
+const twitterTitle = computed(() => t("pages.home.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.home.meta.twitterCard"));
+
+// SSR-safe SEO meta
 useSeoMeta({
-  title: "Free Anonymous Chat (Real or AI)",
-  description: "Explore real & AI chat profiles on imchatty.com",
-  ogTitle: "Real & AI Chat Profiles",
-  ogType: "Website",
-  ogUrl: "https://imchatty.com/",
-  ogDescription:
-    "ImChatty is a unique platform for anonymous chatting with real users or AI. Explore our mission, vision, and values.",
-  ogImage: "https://imchatty.com/images/robot.png",
-  twitterTitle: "Popular Free Chat",
-  twitterCard: "summary_large_image",
+  title: () => seoTitle.value,
+  description: () => seoDescription.value,
+  ogTitle: () => ogTitle.value,
+  twitterTitle: () => twitterTitle.value,
+  twitterCard: () => twitterCard.value,
 });
 </script>

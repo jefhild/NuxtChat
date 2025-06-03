@@ -5,6 +5,24 @@
   </v-container>
 </template>
 <script setup>
+import { useI18n } from "vue-i18n";
+import { computed } from "vue";
+
+const { t } = useI18n();
+
+const seoTitle = computed(() => t("pages.about.meta.title"));
+const seoDescription = computed(() => t("pages.about.meta.description"));
+const ogTitle = computed(() => t("pages.about.meta.ogTitle"));
+const ogType = computed(() => t("pages.about.meta.ogType"));
+const ogUrl = computed(() => t("pages.about.meta.ogUrl"));
+const ogDescription = computed(() => t("pages.about.meta.ogDescription"));
+const ogImage = computed(() => t("pages.about.meta.ogImage"));
+const twitterTitle = computed(() => t("pages.about.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.about.meta.twitterCard"));
+const twitterDescription = computed(() => t("pages.about.meta.twitterDescription"));
+const twitterImage = computed(() => t("pages.about.meta.twitterImage"));
+
+// Canonical link
 useHead(() => ({
   link: [
     {
@@ -14,20 +32,18 @@ useHead(() => ({
   ],
 }));
 
+// SSR-safe dynamic meta
 useSeoMeta({
-  title: "About ImChatty – Real & AI Chat Platform",
-  description:
-    "Learn more about ImChatty — a unique platform where you can chat anonymously with real people or AI companions. Discover our mission, our team, and how we’re creating a safer, more engaging online space for chatting.",
-  ogTitle: "About ImChatty – Real & AI Chat Platform",
-  ogType: "Website",
-  ogUrl: "https://imchatty.com/about",
-  ogDescription:
-    "Learn more about ImChatty — a unique platform for anonymous chatting with real users or AI. Explore our mission, vision, and values.",
-  ogImage: "https://imchatty.com/images/robot.png",
-  twitterCard: "summary_large_image",
-  twitterTitle: "About ImChatty – Chat With Real People or AI",
-  twitterDescription:
-    "Get to know ImChatty — the platform for anonymous, meaningful conversations with real people or AI profiles. Meet the team behind the experience.",
-  twitterImage: "https://imchatty.com/images/article-image.webp",
+  title: seoTitle,
+  description: seoDescription,
+  ogTitle: ogTitle,
+  ogType: ogType,
+  ogUrl: ogUrl,
+  ogDescription: ogDescription,
+  ogImage: ogImage,
+  twitterCard: twitterCard,
+  twitterTitle: twitterTitle,
+  twitterDescription: twitterDescription,
+  twitterImage: twitterImage,
 });
 </script>
