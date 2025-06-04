@@ -340,6 +340,15 @@ const handleClick = () => {
   }
 };
 
+//useless
+const loadedCount = ref(0);
+const handleLoaded = () =>
+{
+  loadedCount.value++;
+};
+
+
+
 // Logout
 function showLogoutDialog() {
   logoutDialog.value = true;
