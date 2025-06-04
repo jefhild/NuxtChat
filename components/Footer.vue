@@ -6,11 +6,11 @@
           <v-card-text>
             <!-- Footer Content -->
             <!-- <v-row>&copy; 2024 Oliver W. Jones</v-row> -->
-            <NuxtLink to="/about">{{ $t("components.footer.about") }}</NuxtLink> |
-            <NuxtLink to="/terms">{{ $t("components.footer.terms") }}</NuxtLink> |
-            <NuxtLink to="/privacy">{{ $t("components.footer.privacy") }}</NuxtLink> |
-            <NuxtLink to="/cookies">{{ $t("components.footer.cookies") }}</NuxtLink> |
-            <NuxtLink to="/profiles">{{ $t("components.footer.public-profiles") }}</NuxtLink> |
+            <NuxtLink :to="localPath('/about')">{{ $t("components.footer.about") }}</NuxtLink> |
+            <NuxtLink :to="localPath('/terms')">{{ $t("components.footer.terms") }}</NuxtLink> |
+            <NuxtLink :to="localPath('/privacy')">{{ $t("components.footer.privacy") }}</NuxtLink> |
+            <NuxtLink :to="localPath('/cookies')">{{ $t("components.footer.cookies") }}</NuxtLink> |
+            <NuxtLink :to="localPath('/profiles')">{{ $t("components.footer.public-profiles") }}</NuxtLink> |
             <a href="#" class="termly-display-preferences">
               {{ $t("components.footer.consent-preferences") }}
             </a>
@@ -29,3 +29,7 @@
     </v-row>
   </v-footer>
 </template>
+
+<script setup>
+const localPath = useLocalePath();
+</script>
