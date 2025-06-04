@@ -83,7 +83,7 @@ import useStatusMapper from "@/composables/useStatusMapper";
 import useAvatarMapper from "@/composables/useAvatarMapper";
 
 const { checkDisplayNameExists } = useDb();
-
+const localPath = useLocalePath();
 const notificationStore = useNotificationStore();
 const authStore = useAuthStore();
 const router = useRouter();
@@ -456,7 +456,7 @@ const submitToDatabase = async () => {
     console.error("Error during profile creation:", error);
   } finally {
     isLoading.value = false;
-    router.push("/chat");
+    router.push(localPath("/chat"));
     notificationStore.addNotification(
       'reminder',
       `Make sure to enter your email and complete your profile to unlock all features!`,

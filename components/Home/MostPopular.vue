@@ -4,7 +4,7 @@
     <ProfileGrid :profiles="popularProfiles" :limit="8"/>
     <v-row v-if="popularProfiles.length <= 8">
       <v-col class="text-right mr-12">
-        <NuxtLink to="/profiles/popular">
+        <NuxtLink :to="localPath('/profiles/popular')">
           <v-btn variant="outlined" color="primary" class="font-style-poppins">
             See More Popular Profiles
           </v-btn>
@@ -15,6 +15,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 const popularProfiles = ref([]);
 const { getMostPopularProfiles } = useDb();
 

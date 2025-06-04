@@ -60,17 +60,17 @@
 
         <v-container v-if="isPublic">
           <v-row class="mt-2" justify="center" v-if="isAuthenticated"><v-col cols="auto">
-              <NuxtLink to="/settings">Back to Profile</NuxtLink>
+              <NuxtLink :to="localPath('/settings')">Back to Profile</NuxtLink>
             </v-col>
             <v-col cols="auto">
-              <NuxtLink :to="`/chat?userSlug=${profile?.slug}`">
+              <NuxtLink :to="localPath(`/chat?userSlug=${profile?.slug}`)">
                 Chat with {{ profile?.displayname }}
               </NuxtLink>
             </v-col>
           </v-row>
           <v-row class="mt-2" justify="center" v-else>
             <v-col cols="auto">
-              <NuxtLink to="/">Back Home</NuxtLink>
+              <NuxtLink :to="localPath('/')">Back Home</NuxtLink>
             </v-col>
             <v-col cols="auto">
               <NuxtLink to="#" @click.prevent="handleAILogin">
@@ -90,6 +90,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 import { useAuthStore } from "@/stores/authStore";
 import { useUserProfile } from "@/composables/useUserProfile";
 

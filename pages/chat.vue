@@ -36,6 +36,7 @@ const authStore = useAuthStore();
 const isAuthenticated = ref(false);
 const isLoading = ref(true);
 const router = useRouter();
+const localPath = useLocalePath();
 
 const { getUserProfileFromId } = useDb();
 
@@ -47,7 +48,7 @@ onMounted(async () => {
   if (!userProfileData)
   {
     isAuthenticated.value = false; // User doesn't exist, set to false
-    router.push("/"); // Redirect to home page
+    router.push(localPath("/")); // Redirect to home page
     return;
   }
   isLoading.value = false;

@@ -15,7 +15,7 @@
 		<v-container v-else>
 			<v-row justify="center" class="category-container">
 				<v-col v-for="category in categories" :key="category.slug" cols="auto" class="my-2">
-					<NuxtLink :to="`/categories/${category.slug}`" class="category-link" v-if="category.articleCount > 0">
+					<NuxtLink :to="localPath(`/categories/${category.slug}`)" class="category-link" v-if="category.articleCount > 0">
 						{{ category.name }}
 						<v-chip class="ma-1" size="small" color="black"> {{ category.articleCount }}
 						</v-chip>
@@ -27,6 +27,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 import { useI18n } from "vue-i18n";
 const { getAllCategories, getCountArticleByCategory } = useDb();
 const isLoading = ref(true);

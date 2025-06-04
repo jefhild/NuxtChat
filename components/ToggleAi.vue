@@ -16,15 +16,20 @@
 const props = defineProps({
   modelValue: Boolean,
 });
-
+const localPath = useLocalePath();
 const emit = defineEmits(["update:modelValue"]);
 
 const route = useRoute();
 const router = useRouter();
 
-const onToggle = (val) => {
+const onToggle = (val) =>
+{
   emit("update:modelValue", val);
   const query = { ...route.query, user: val ? "ai" : "human" };
-  router.push({ query });
+
+  const localizedPath = localPath(route.fullPath.split("?")[0]); 
+
+  router.push({ path: localizedPath, query });
 };
+
 </script>
