@@ -45,6 +45,7 @@ import AdminReports from '@/components/admin/reports.vue';
 const { t } = useI18n();
 const authStore = useAuthStore();
 const router = useRouter();
+const localPath = useLocalePath();
 
 const selectedSection = ref("dashboard");
 
@@ -62,7 +63,7 @@ onMounted(async () =>
   if (!authStore.userProfile?.is_admin)
   {
     console.log("Unauthorized access to admin panel");
-    router.push("/"); // or show unauthorized page
+    router.push(localPath("/")); // or show unauthorized page
   }
 });
 

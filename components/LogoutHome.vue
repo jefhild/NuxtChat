@@ -43,7 +43,7 @@
                 <v-row justify="center" align="center" class="mx-0" dense>
                   <v-col cols="12" sm="auto" class="mb-2 mb-sm-0">
                     <v-btn color="primary" block>
-                      <NuxtLink to="/" class="text-dec-none text-white">
+                      <NuxtLink :to="localPath('/')" class="text-dec-none text-white">
                         {{ $t("pages.home.landing_page.cta_button") }}
                       </NuxtLink>
                     </v-btn>
@@ -53,7 +53,7 @@
                       color="white"
                       variant="outlined"
                       block
-                      @click="$router.push('/about')"
+                      @click="$router.push(localPath('/about'))"
                     >
                       {{ $t("pages.home.landing_page.learn_more") }}
                     </v-btn>
@@ -79,6 +79,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 import { useAuthStore } from "@/stores/authStore";
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -118,7 +119,7 @@ const questions = [
 
 const redirectToLogin = async () => {
   try {
-    const navigationResult = await router.push("/");
+    const navigationResult = await router.push(localPath("/"));
     //window.location.reload();
   } catch (error) {
     console.error("Failed to redirect to login page:", error);

@@ -35,7 +35,7 @@
             color="primary"
             variant="outlined"
             size="small"
-            :to="`/categories/${cat.slug}`"
+            :to="localPath(`/categories/${cat.slug}`)"
           >
             {{ cat.name }}
           </v-chip>
@@ -55,7 +55,7 @@
             size="small"
             color="deep-purple-lighten-2"
             variant="outlined"
-            :to="`/tags/${tag.slug}`"
+            :to="localPath(`/tags/${tag.slug}`)"
           >
             {{ tag.name }}
           </v-chip>
@@ -99,7 +99,7 @@
     <v-row justify="center" class="mt-6">
       <v-btn
         v-if="userProfile?.is_admin"
-        to="/admin"
+        :to="localPath('/admin')"
         color="primary"
         variant="tonal"
       >
@@ -110,6 +110,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 import { useI18n } from 'vue-i18n';
 const { getAllPublishedArticlesWithTags, getAllTags, getAllCategories } =
   useDb();

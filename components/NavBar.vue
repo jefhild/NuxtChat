@@ -158,7 +158,7 @@ const showLogoutDialog = () => {
 // Function to handle logout confirmation
 const confirmLogout = async () => {
   logoutDialog.value = false;
-  router.push("/logout"); // Redirect to the logout page
+  router.push(localPath("/logout")); // Redirect to the logout page
 };
 </script>
 

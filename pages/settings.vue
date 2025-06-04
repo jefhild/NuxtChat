@@ -15,6 +15,7 @@ import { useAuthStore } from "@/stores/authStore";
 const authStore = useAuthStore();
 const router = useRouter();
 const isLoading = ref(true);
+const localPath = useLocalePath();
 
 const { getUserProfileFromId } = useDb();
 
@@ -24,7 +25,7 @@ onMounted(async () =>
 
   if (!userProfileData)
   {
-    router.push("/"); // Redirect to home page
+    router.push(localPath("/")); // Redirect to home page
     return;
   }
 

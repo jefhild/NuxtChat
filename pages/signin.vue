@@ -29,6 +29,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 const isAuthenticated = ref(false);
 const isLoading = ref(false);
+const localPath = useLocalePath();
 isLoading.value = true; // Set loading to true initially
 
 onMounted(async () =>
@@ -39,7 +40,7 @@ onMounted(async () =>
 
   if (isAuthenticated.value)
   {
-    router.push("/");
+    router.push(localPath("/"));
     return;
   }
 });

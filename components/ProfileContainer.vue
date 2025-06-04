@@ -140,7 +140,7 @@
 
         <v-col class="d-flex justify-center">
           <v-btn flat variant="text" color="blue"
-            @click="router.push(`/profiles/${userProfile.gender}/${userProfile.slug}`)" class="text-link-btn">Public
+            @click="router.push(localPath(`/profiles/${userProfile.gender}/${userProfile.slug}`))" class="text-link-btn">Public
             Profile
           </v-btn>
 
@@ -222,6 +222,7 @@ const {
   authUpdateProfile,
 } = useDb();
 
+const localPath = useLocalePath();
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
@@ -312,7 +313,7 @@ const gotoChat = async () => {
     isEditable.value = true;
   } else {
     toggleEditMode();
-    router.push("/chat");
+    router.push(localPath("/chat"));
   }
 };
 
