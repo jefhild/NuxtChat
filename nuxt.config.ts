@@ -25,15 +25,15 @@ export default defineNuxtConfig({
     "nuxt-gtag",
     "@nuxtjs/i18n",
   ],
-  
+
   i18n: {
     // Define available locales
-    defaultLocale: 'en',
-    langDir: './locales/',
-    strategy: 'prefix_and_default',
+    defaultLocale: "en",
+    langDir: "./locales/",
+    strategy: "prefix_and_default",
     locales: [
-      { code: 'en', iso: 'en-US', file: 'en-US.json' },
-      { code: 'fr', iso: 'fr-FR', file: 'fr-FR.json' },
+      { code: "en", iso: "en-US", file: "en-US.json" },
+      { code: "fr", iso: "fr-FR", file: "fr-FR.json" },
     ],
   },
 
@@ -74,6 +74,7 @@ export default defineNuxtConfig({
       login: "/",
       callback: "/callback",
       exclude: [
+        "/[a-z]",
         "/about",
         "/login",
         "/logout",
@@ -145,7 +146,7 @@ export default defineNuxtConfig({
       SUPABASE_REDIRECT: process.env.SUPABASE_REDIRECT,
       GOOGLE_ANALYTICS_ID: process.env.GOOGLE_ANALYTICS_ID,
       TERMLY_ID: process.env.TERMLY_ID,
-      ADSENSE_CLIENT: process.env.ADSENSE_CLIENT || '',
+      ADSENSE_CLIENT: process.env.ADSENSE_CLIENT || "",
     },
   },
 

@@ -3,9 +3,9 @@
     <v-progress-circular indeterminate color="primary"></v-progress-circular>
   </v-container>
 
-  <v-container v-else class="article-list-container py-4">
-    <!-- Top Row: Title + Search -->
-    <v-row align="center" justify="space-between" class="mb-3">
+  <v-container fluid v-else>
+    <HomeRow1 />
+    <v-row align="center" justify="space-between" class="m-3">
       <v-col cols="12" md="6">
         <h1>{{ $t("pages.articles.index.explore") }}</h1>
       </v-col>
@@ -227,10 +227,10 @@ useSeoMeta({
   gap: 4px;
 }
 
-.article-list-container {
+/* .article-list-container {
   max-width: 1400px;
   margin: 0 auto;
-}
+} */
 
 .v-chip {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
