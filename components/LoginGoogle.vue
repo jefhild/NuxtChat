@@ -42,7 +42,7 @@
         photos, use advanced filters and have a more complete AI experience. Google will share your name, email
         address, and profile picture with imchatty. By creating an account, you
         agree to our
-        <NuxtLink to="/terms">Terms of Service.</NuxtLink>
+        <NuxtLink :to="localPath('/terms')">Terms of Service.</NuxtLink>
       </p></v-col
     ></v-row
   >
@@ -50,6 +50,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 // import { ref } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 

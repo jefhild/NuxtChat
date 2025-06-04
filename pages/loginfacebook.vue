@@ -12,6 +12,7 @@ import { useAuthStore } from "@/stores/authStore";
 const authStore = useAuthStore();
 const router = useRouter();
 const isLoading = ref(true);
+const localPath = useLocalePath();
 
 onMounted(async () => {
   try {
@@ -35,13 +36,13 @@ onMounted(async () => {
     // Redirect based on profile completeness
     // if (!authStore.userProfile?.displayname) {
     if (authStore.userProfile) {
-      router.push("/settings"); // Go to onboarding if profile is incomplete
+      router.push(localPath("/settings")); // Go to onboarding if profile is incomplete
     } else {
-      router.push("/"); // Go to home if profile is complete
+      router.push(localPath("/")); // Go to home if profile is complete
     }
   } catch (error) {
     console.error("Error during login process:", error);
-    router.push("/"); // Fallback in case of an error
+    router.push(localPath("/")); // Fallback in case of an error
   } finally {
     isLoading.value = false; // Stop the loading spinner
   }

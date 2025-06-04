@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.gender}/${profile.slug}`"
+                :href="localPath(`/profiles/${profile.gender}/${profile.slug}`)"
                 class="ml-2 mb-2"
               >
                 <v-img
@@ -65,7 +65,7 @@
     </v-expansion-panels>
     <v-row>
       <v-col class="text-right">
-        <NuxtLink href="/" class="text-body-2 font-style-poppins mr-5">Go back</NuxtLink>
+        <NuxtLink :href="localPath('/')" class="text-body-2 font-style-poppins mr-5">Go back</NuxtLink>
       </v-col>
     </v-row>
   </v-container>
@@ -77,6 +77,7 @@ const activePanels = ref([0]);
 const popularProfiles = ref([]);
 const profileLimit = 10;
 const { getMostPopularProfiles, getUserSlugFromId } = useDb();
+const localPath = useLocalePath();
 
 // Fetch data during SSR
 const data = await getMostPopularProfiles(profileLimit); 

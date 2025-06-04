@@ -9,7 +9,7 @@
     <ProfileGrid :profiles="femaleProfiles" :limit="8" />
     <v-row v-if="limit < 4">
       <v-col class="text-right mr-12">
-        <NuxtLink to="/profiles/female">
+        <NuxtLink :to="localPath('/profiles/female')">
           <v-btn variant="outlined" color="primary" class="font-style-poppins">
             See More Female Profiles
           </v-btn>
@@ -20,6 +20,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 const femaleProfiles = ref([]);
 const profileLimit = 100;
 const isLoading = ref(true);

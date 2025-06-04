@@ -58,7 +58,7 @@
       <p class="text-justify text-caption font-italic font-weight-light">
         Registered users can contact offline users, save favorites, share photos
         and a bunch of other stuff. By creating an account, you agree to our
-        <NuxtLink to="/terms">Terms of Service.</NuxtLink>
+        <NuxtLink :to="localPath('/terms')">Terms of Service.</NuxtLink>
       </p></v-col
     ></v-row
   >
@@ -72,6 +72,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 const { signInWithOtp } = useDb();
 const config = useRuntimeConfig();
 

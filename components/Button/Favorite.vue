@@ -32,7 +32,7 @@ const { getCountUserFavorites, deleteFavorite, insertFavorite } = useDb();
 // Initialize stores and utilities
 const authStore = useAuthStore();
 const router = useRouter();
-
+const localPath = useLocalePath();
 // Props
 const props = defineProps({
   profile: Object,
@@ -81,7 +81,7 @@ const handleFavoriteToggle = async () => {
 
 // Redirect to login
 const redirectToLogin = () => {
-  router.push("/signin");
+  router.push(localPath("/signin"));
 };
 
 // Run on component mount

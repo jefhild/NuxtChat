@@ -66,7 +66,7 @@
                     color="white"
                     variant="outlined"
                     block
-                    @click="$router.push('/about')"
+                    @click="$router.push(localPath('/about'))"
                   >
                   {{ $t("pages.home.landing_page.learn_more") }}
                   </v-btn>
@@ -172,7 +172,7 @@
 
     <!-- AI Profiles Section -->
     <v-container class="py-12 mt-8">
-      <HomeRecent :limit="4" @loaded="handleLoaded" />
+      <HomeRecent :limit="4" />
     </v-container>
 
     <!-- Articles Section -->
@@ -203,9 +203,9 @@
     <!-- AI Profiles Section -->
     <v-container class="py-12 mt-8">
       <!-- <HomeRecent :limit="4" @loaded="handleLoaded" /> -->
-      <HomeAi :limit="4" @loaded="handleLoaded" />
-      <HomeMale :limit="4" @loaded="handleLoaded" />
-      <HomeFemale :limit="4" @loaded="handleLoaded" />
+      <HomeAi :limit="4"  />
+      <HomeMale :limit="4"  />
+      <HomeFemale :limit="4" />
 
       <!-- <HomeRecent :limit="4" @loaded="handleLoaded" />
   <HomeMale :limit="4" @loaded="handleLoaded" />
@@ -334,7 +334,7 @@ onMounted(async () => {
 
 const handleClick = () => {
   if (isAuthenticated.value) {
-    router.push("/chat");
+    router.push(localPath("/chat"));
   } else {
     handleAILogin();
   }
@@ -346,7 +346,7 @@ function showLogoutDialog() {
 }
 async function confirmLogout() {
   logoutDialog.value = false;
-  router.push("/logout");
+  router.push(localPath("/logout"));
 }
 </script>
 

@@ -24,7 +24,7 @@
           ><strong
             ><span style="font-size: 15px"
               ><span data-custom-class="subtitle"
-                >Last updated <bdt class="question">April 23, 2025</bdt></span
+                >Last updated <span class="question">April 23, 2025</span></span
               ></span
             ></strong
           ></span
@@ -38,7 +38,7 @@
           ><span style="color: rgb(89, 89, 89); font-size: 15px"
             ><span data-custom-class="body_text"
               >This Cookie Policy explains how
-              <bdt class="question">Oliver W. Jones SAS</bdt>
+              <span class="question">Oliver W. Jones SAS</span>
               ("<strong>Company</strong>," "<strong>we</strong>,"
               "<strong>us</strong>," and "<strong>our</strong>") uses cookies
               and similar technologies to recognize you when you visit our
@@ -46,10 +46,10 @@
             ></span
           ><span style="color: rgb(0, 58, 250); font-size: 15px"
             ><span data-custom-class="body_text"
-              ><bdt class="question"
-                ><NuxtLink to="/" rel="noopener" class="link">
+              ><span class="question"
+                ><NuxtLink :to="localPath('/')" rel="noopener" class="link">
                   https://imchatty.com
-                </NuxtLink></bdt
+                </NuxtLink></span
               ></span
             ></span
           ><span style="color: rgb(89, 89, 89); font-size: 15px"
@@ -104,7 +104,7 @@
           ><span style="color: rgb(89, 89, 89); font-size: 15px"
             ><span data-custom-class="body_text"
               >Cookies set by the website owner (in this case,
-              <bdt class="question">Oliver W. Jones SAS</bdt>) are called
+              <span class="question">Oliver W. Jones SAS</span>) are called
               "first-party cookies." Cookies set by parties other than the
               website owner are called "third-party cookies." Third-party
               cookies enable third-party features or functionality to be
@@ -133,17 +133,17 @@
         <span style="color: rgb(127, 127, 127)"
           ><span style="color: rgb(89, 89, 89); font-size: 15px"
             ><span data-custom-class="body_text"
-              >We use first-<bdt class="block-component"></bdt> and third-<bdt
+              >We use first-<span class="block-component"></span> and third-<span
                 class="statement-end-if-in-editor"
-              ></bdt
+              ></span
               >party cookies for several reasons. Some cookies are required for
               technical reasons in order for our Website to operate, and we
               refer to these as "essential" or "strictly necessary" cookies.
               Other cookies also enable us to track and target the interests of
               our users to enhance the experience on our Online Properties.
-              <bdt class="block-component"></bdt>Third parties serve cookies
+              <span class="block-component"></span>Third parties serve cookies
               through our Website for advertising, analytics, and other
-              purposes. <bdt class="statement-end-if-in-editor"></bdt>This is
+              purposes. <span class="statement-end-if-in-editor"></span>This is
               described in more detail below.</span
             ></span
           ></span
@@ -1130,10 +1130,10 @@
                 time, like web beacons (sometimes called "tracking pixels" or
                 "clear gifs"). These are tiny graphics files that contain a
                 unique identifier that enables us to recognize when someone has
-                visited our Website<bdt class="block-component"></bdt> or opened
-                an email including them<bdt
+                visited our Website<span class="block-component"></span> or opened
+                an email including them<span
                   class="statement-end-if-in-editor"
-                ></bdt
+                ></span
                 >. This allows us, for example, to monitor </span
               ><span style="font-size: 15px; color: rgb(89, 89, 89)"
                 ><span style="color: rgb(89, 89, 89)"
@@ -1147,9 +1147,9 @@
                     technologies are reliant on cookies to function properly,
                     and so declining cookies will impair their
                     functioning.</span
-                  ><bdt
+                  ><span
                     class="block-component"
-                  ></bdt></span></span></span></span
+                  ></span></span></span></span></span
         ></span>
       </div>
       <div style="line-height: 1.5"><br /></div>
@@ -1234,10 +1234,10 @@
             ><span style="font-size: 15px; color: rgb(89, 89, 89)"
               ><span style="font-size: 15px; color: rgb(89, 89, 89)"
                 ><span style="color: rgb(89, 89, 89)"
-                  ><bdt class="statement-end-if-in-editor"></bdt
-                  ><bdt
+                  ><span class="statement-end-if-in-editor"></span
+                  ><span
                     class="block-component"
-                  ></bdt></span></span></span></span
+                  ></span></span></span></span></span
         ></span>
       </div>
       <div style="line-height: 1.5"><br /></div>
@@ -1269,9 +1269,9 @@
             ><span style="font-size: 15px; color: rgb(89, 89, 89)"
               ><span style="font-size: 15px; color: rgb(89, 89, 89)"
                 ><span style="color: rgb(89, 89, 89)"
-                  ><bdt
+                  ><span
                     class="statement-end-if-in-editor"
-                  ></bdt></span></span></span></span
+                  ></span></span></span></span></span
         ></span>
       </div>
       <div style="line-height: 1.5"><br /></div>
@@ -1325,9 +1325,9 @@
             ><span style="font-size: 15px; color: rgb(89, 89, 89)"
               ><span data-custom-class="body_text"
                 >If you have any questions about our use of cookies or other
-                technologies, please<bdt class="block-component"></bdt> email us
-                at <bdt class="question">jefhild@oliverwjones.fr</bdt> or by
-                post to<bdt class="else-block"></bdt>:</span
+                technologies, please<span class="block-component"></span> email us
+                at <span class="question">jefhild@oliverwjones.fr</span> or by
+                post to<span class="else-block"></span>:</span
               ></span
             ></span
           ></span
@@ -1338,71 +1338,72 @@
         <span style="font-size: 15px; color: rgb(89, 89, 89)"
           ><span style="font-size: 15px; color: rgb(89, 89, 89)"
             ><span data-custom-class="body_text"
-              ><bdt class="question">Oliver W. Jones SAS</bdt></span
+              ><span class="question">Oliver W. Jones SAS</span></span
             ></span
           ></span
         >
       </div>
       <div style="line-height: 1.5">
-        <bdt class="block-component"><span style="font-size: 15px"></span></bdt
+        <span class="block-component"><span style="font-size: 15px"></span></span
         ><span style="font-size: 15px"
-          ><bdt class="question"
-            ><span data-custom-class="body_text">Bourlioux</span></bdt
+          ><span class="question"
+            ><span data-custom-class="body_text">Bourlioux</span></span
           ></span
-        ><bdt class="statement-end-if-in-editor"
+        ><span class="statement-end-if-in-editor"
           ><span style="font-size: 15px"></span
-        ></bdt>
+        ></span>
       </div>
       <div style="line-height: 1.5">
         <span style="font-size: 15px; color: rgb(89, 89, 89)"
           ><span data-custom-class="body_text"
-            ><bdt class="block-component"></bdt></span
+            ><span class="block-component"></span></span
         ></span>
       </div>
       <div style="line-height: 1.5">
-        <bdt class="block-component"></bdt
-        ><bdt class="question"
-          ><span data-custom-class="body_text">Saint Bonnet Elvert,</span></bdt
-        ><bdt class="statement-end-if-in-editor"></bdt
+        <span class="block-component"></span
+        ><span class="question"
+          ><span data-custom-class="body_text">Saint Bonnet Elvert,</span></span
+        ><span class="statement-end-if-in-editor"></span
         ><span data-custom-class="body_text"
           ><span style="font-size: 15px; color: rgb(89, 89, 89)"
-            ><bdt class="block-component"></bdt>
-            <bdt class="question">Correze</bdt
-            ><bdt class="statement-end-if-in-editor"></bdt
-            ><bdt class="block-component"></bdt>
-            <bdt class="question">19380</bdt
-            ><bdt class="statement-end-if-in-editor"></bdt
-            ><bdt class="block-component"></bdt
-            ><bdt class="block-component"></bdt></span
+            ><span class="block-component"></span>
+            <span class="question">Correze</span
+            ><span class="statement-end-if-in-editor"></span
+            ><span class="block-component"></span>
+            <span class="question">19380</span
+            ><span class="statement-end-if-in-editor"></span
+            ><span class="block-component"></span
+            ><span class="block-component"></span></span
         ></span>
       </div>
       <div style="line-height: 1.5">
         <span data-custom-class="body_text"
           ><span style="font-size: 15px; color: rgb(89, 89, 89)"
-            ><bdt class="question">France</bdt
-            ><bdt class="statement-end-if-in-editor"></bdt></span></span
+            ><span class="question">France</span
+            ><span class="statement-end-if-in-editor"></span></span></span
         ><span data-custom-class="body_text"
           ><span style="font-size: 15px; color: rgb(89, 89, 89)"
-            ><bdt class="statement-end-if-in-editor"
-              ><bdt class="block-component"></bdt></bdt></span
+            ><span class="statement-end-if-in-editor"
+              ><span class="block-component"></span></span></span
         ></span>
       </div>
       <div style="line-height: 1.5">
         <span data-custom-class="body_text"
           ><span style="font-size: 15px; color: rgb(89, 89, 89)"
-            ><bdt class="statement-end-if-in-editor"
-              >Phone: <bdt class="question">(+33)0749592148</bdt></bdt
+            ><span class="statement-end-if-in-editor"
+              >Phone: <span class="question">(+33)0749592148</span></span
             ></span
           ></span
         ><span data-custom-class="body_text"
           ><span style="font-size: 15px; color: rgb(89, 89, 89)"
-            ><bdt class="block-component"></bdt></span
+            ><span class="block-component"></span></span
         ></span>
       </div>
     </div>
   </v-container>
 </template>
 <script setup>
+const localPath = useLocalePath();
 useSeoMeta({
   title: "Cookies Policy – ImChatty",
   description:

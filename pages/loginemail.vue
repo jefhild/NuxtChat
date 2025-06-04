@@ -29,6 +29,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const isLoading = ref(true);
 const { getUserProfileFromId,  authGetUser, authRefreshSession } = useDb();
+const localPath = useLocalePath();
 
 onMounted(async () => {
 
@@ -44,7 +45,7 @@ onMounted(async () => {
 
   if (!userProfileData) {
     console.log("user doesnt exist", sessionData?.user?.id);
-    router.push("/");
+    router.push(localPath("/"));
     return;
   }
 
@@ -70,11 +71,11 @@ onMounted(async () => {
 });
 
 const goToSettings = () => {
-  router.push("/settings");
+  router.push(localPath("/settings"));
 };
 
 const getChatting = () =>
 {
-  router.push("/chat");
+  router.push(localPath("/chat"));
 };
 </script>
