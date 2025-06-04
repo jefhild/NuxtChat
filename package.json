@@ -14,7 +14,7 @@
     "@nuxt/image": "^1.10.0",
     "@nuxt/scripts": "^0.11.6",
     "@nuxtjs/google-fonts": "^3.2.0",
-    "@nuxtjs/i18n": "^10.0.0-beta.8",
+    "@nuxtjs/i18n": "^9.5.5",
     "@nuxtjs/seo": "^3.0.3",
     "@nuxtjs/supabase": "^1.5.1",
     "nuxt": "^3.16.2",

@@ -110,13 +110,13 @@
 
             <v-row justify="center" align="center" dense>
               <v-col cols="12" sm="4">
-                <v-btn to="/chat" block color="primary" variant="flat" rounded>
+                <v-btn :to="localPath('/chat')" block color="primary" variant="flat" rounded>
                   <v-icon left>mdi-chat</v-icon> {{ $t("pages.home.landing_page.chat") }}
                 </v-btn>
               </v-col>
               <v-col cols="12" sm="4">
                 <v-btn
-                  to="/settings"
+                  :to="localPath('/settings')"
                   block
                   color="secondary"
                   variant="flat"
@@ -192,7 +192,7 @@
         </v-col>
       </v-row>
       <div class="text-center mt-6">
-        <NuxtLink to="/articles">
+        <NuxtLink :to="localPath('/articles')">
           <v-btn variant="outlined" color="primary">
             {{ $t("pages.home.landing_page.see_more_articles") }}
           </v-btn>
@@ -264,6 +264,7 @@
 <script setup>
 // App logic
 const router = useRouter();
+const localPath = useLocalePath();
 const authStore = useAuthStore();
 
 const mostPopularAiProfiles = ref([]);
