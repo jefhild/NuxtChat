@@ -15,7 +15,7 @@
 		<v-container v-else>
 			<v-row justify="center" class="tag-container">
 				<v-col v-for="tag in tags" :key="tag.slug" cols="auto" class="my-2">
-					<NuxtLink :to="`/tags/${tag.slug}`" class="tag-link" v-if="tag.articleCount > 0">
+					<NuxtLink :to="localPath(`/tags/${tag.slug}`)" class="tag-link" v-if="tag.articleCount > 0">
 						{{ tag.name }}
 						<v-chip class="ma-1" size="small" color="white"> {{ tag.articleCount }}
 						</v-chip>
@@ -27,6 +27,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 const { getAllTags, getCountArticleByTag } = useDb();
 const isLoading = ref(true);
 const authStore = useAuthStore();

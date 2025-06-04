@@ -56,12 +56,12 @@
         <template v-slot:label>
           <span id="checkboxLabel">
             I am 18 years of age or older and agree to the
-            <NuxtLink to="/terms">Terms of Service</NuxtLink>.
+            <NuxtLink :to="localPath('/terms')">Terms of Service</NuxtLink>.
           </span>
         </template>
       </v-checkbox>
       <p>
-        <NuxtLink to="/signin" class="text-decoration-none text-subtitle-2"
+        <NuxtLink :to="localPath('/signin')" class="text-decoration-none text-subtitle-2"
           >Already Registered? Sign in Here...</NuxtLink
         >
       </p>
@@ -70,6 +70,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 // Define props
 const props = defineProps({
   modelValue: {

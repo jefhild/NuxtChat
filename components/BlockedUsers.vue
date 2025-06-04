@@ -72,7 +72,7 @@ const avatarDecorations = ref<Record<string, string>>({});
 //   country: string;
 //   country_emoji: string;
 // }
-
+const localPath = useLocalePath();
 const props = defineProps<{ userId: string }>();
 const genderMap = ref<Record<number, string>>({});
 const router = useRouter();
@@ -89,7 +89,7 @@ const handleUnblock = (userId: string) => {
 };
 
 const goToProfile = (genderName: any, displayName: any) => {
-  router.push(`/profiles/${genderName}/${displayName}`);
+  router.push(localPath(`/profiles/${genderName}/${displayName}`));
 }
 
 

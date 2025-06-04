@@ -13,6 +13,7 @@ import { useDb } from "@/composables/useDB";
 const router = useRouter();
 const authStore = useAuthStore();
 const { authGetUser } = useDb();
+const localPath = useLocalePath();
 
 onMounted(async () => {
   try {
@@ -21,14 +22,14 @@ onMounted(async () => {
 
     if (user?.user) {
       await authStore.checkAuth(); // updates state
-      router.replace("/"); // clean redirect
+      router.replace(localPath("/")); // clean redirect
     } else {
       console.warn("No session found — redirecting to login");
-      router.replace("/login");
+      router.replace(localPath("/login"));
     }
   } catch (err) {
     console.error("Auth callback error:", err);
-    router.replace("/login");
+    router.replace(localPath("/login"));
   }
 });
 </script>

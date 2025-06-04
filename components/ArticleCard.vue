@@ -1,6 +1,6 @@
 <template>
   <v-col>
-    <v-card :to="disableNavigation ? undefined : `/articles/${article.slug}`"
+    <v-card :to="disableNavigation ? undefined : localPath(`/articles/${article.slug}`)"
       class="article-card pa-4 d-flex flex-column justify-between" elevation="3" @click.stop="handleClick"
       :style="{ minHeight: props.admin ? '360px' : '280px' }">
       <v-card-title class="font-weight-bold text-wrap">
@@ -28,7 +28,7 @@
           <NuxtLink
             v-for="tag in article.tags"
             :key="tag?.slug || tag"
-            :to="`/tags/${formatTagSlug(tag)}`"
+            :to="localPath(`/tags/${formatTagSlug(tag)}`)"
             class="tag-link"
           >
             #{{ tag?.name || tag }}
@@ -49,6 +49,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 const props = defineProps({
   article: {
     type: Object,

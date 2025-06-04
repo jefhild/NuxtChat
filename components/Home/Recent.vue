@@ -9,7 +9,7 @@
     <ProfileGrid :profiles="recentProfiles" :limit="8" />
     <v-row v-if="recentProfiles.length <= 4">
       <v-col class="text-right mr-12">
-        <NuxtLink to="/profiles/recent">
+        <NuxtLink :to="localPath('/profiles/recent')">
           <v-btn variant="outlined" color="primary" class="font-style-poppins">
             See More Recent Profiles
           </v-btn>
@@ -20,6 +20,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 const props = defineProps({
   limit: Number,
 });

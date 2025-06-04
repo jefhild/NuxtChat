@@ -8,7 +8,7 @@
 
     <v-row v-if="limit <= 4">
       <v-col class="text-right mr-12">
-        <NuxtLink to="/profiles/ai">
+        <NuxtLink :to="localPath('/profiles/ai')">
           <v-btn variant="outlined" color="primary" class="font-style-poppins">
             See More AI Profiles
           </v-btn>
@@ -19,6 +19,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 const props = defineProps({
   limit: {
     type: Number,
