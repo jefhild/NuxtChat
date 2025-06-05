@@ -226,13 +226,50 @@
 				}
 			}
 		},
+		"tags": {
+			"index": {
+				"title": "All the different Tags"
+			},
+			"slug": {
+				"no-articles": "No articles found for this tag"
+			}
+		},
+		"guides": {
+			"title": "All of our Guides",
+			"no-articles": "No articles found for this type",
+			"meta": {
+				"title": "Popular Guides",
+				"description": "Check out our most recent guides! Browse guides of genuine interest.",
+				"ogTitle": "Popular Guides - Help",
+				"ogUrl": "https://imchatty.com/guides",
+				"ogDescription": "Check out our most recent guides! Help getting started, tips, and how to protect yourself.",
+				"twitterTitle": "Popular Guide Insights",
+				"twitterCard": "summary_large_image",
+				"twitterDescription": "Check out our most popular guides and insights! Browse guides of genuine interest, built by a human, and possibly life changing!"
+			}
+		},
+		"insights": {
+			"title": "All of our non guide articles",
+			"meta": {
+				"title": "Popular Article Insights",
+				"description": "Check out our most recent insights! Browse articles of genuine interest.",
+				"ogTitle": "Popular Article Insights",
+				"ogUrl": "https://imchatty.com/insights",
+				"ogType": "Website",
+				"ogDescription": "Check out our most recent insights! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+				"ogImage": "https://imchatty.com/images/robot.png",
+				"twitterTitle": "Popular Article Insights",
+				"twitterCard": "summary_large_image",
+				"twitterDescription": "Check out our most popular article insights! Browse articles of genuine interest, built by a human, and possibly life changing!"
+			}
+		},
 		"profiles": {
 			"ai" : {
 				"title": "Popular AI Profiles",
 				"meta": {
 					"title": "More Popular AI Profiles",
 					"description": "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
-					"ogTitle": "Popular AI Profiless",
+					"ogTitle": "Popular AI Profiles",
 					"ogType": "Website",
 					"ogUrl": "https://imchatty.com/profiles/ai",
 					"ogDescription": "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
@@ -247,7 +284,7 @@
 				"meta": {
 					"title": "More Popular Female Profiles",
 					"description": "Check out our most popular recent female profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-					"ogTitle": "Popular Female Profiless",
+					"ogTitle": "Popular Female Profiles",
 					"ogType": "Website",
 					"ogUrl": "https://imchatty.com/profiles/female",
 					"ogDescription": "Check out our most popular recent female profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
@@ -262,7 +299,7 @@
 				"meta": {
 					"title": "More Popular Male Profiles",
 					"description": "Check out our most popular recent male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-					"ogTitle": "Popular Male Profiless",
+					"ogTitle": "Popular Male Profiles",
 					"ogType": "Website",
 					"ogUrl": "https://imchatty.com/profiles/male",
 					"ogDescription": "Check out our most popular recent male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
@@ -292,7 +329,7 @@
 				"meta": {
 					"title": "More Popular Recent Profiles",
 					"description": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-					"ogTitle": "Popular Recent Profiless",
+					"ogTitle": "Popular Recent Profiles",
 					"ogType": "Website",
 					"ogUrl": "https://imchatty.com/profiles/recent",
 					"ogDescription": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
@@ -301,6 +338,55 @@
 					"twitterCard": "summary_large_image",
 					"twitterDescription": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
 				}
+			},
+			"index": {
+				"title": "Public Profiles",
+				"meta": {
+					"title": "More Profiles",
+					"description": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogTitle": "Public Profiles",
+					"ogType": "Website",
+					"ogUrl": "https://imchatty.com/profiles/",
+					"ogDescription": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogImage": "https://imchatty.com/images/robot.png",
+					"twitterTitle": "Public Profiles",
+					"twitterCard": "summary_large_image",
+					"twitterDescription": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
+				}
+			}
+		},
+		"loginemail": {
+			"welcome": "Welcome, you are now signed in",
+			"choices": "You can go to your profile or chat now.",
+			"get-chatting": "Get chatting!",
+			"profile": "Go to my profile"
+		},
+		"logout": {
+			"meta": {
+				"title": "Logout",
+				"description": "Free anonymous chat app (Real or AI) for everyone.",
+				"ogTitle": "Imchatty - Logout",
+				"ogType": "Website",
+				"ogUrl": "https://imchatty.com/logout",
+				"ogImage": "https://imchatty.com/images/robot.png",
+				"ogDescription": "Free anonymous chat app (Real or AI) for everyone.",
+				"twitterTitle": "Imchatty - Logout",
+				"twitterCard": "summary_large_image",
+				"twitterDescription": "Free anonymous chat app (Real or AI) for everyone."
+			}
+		},
+		"signin": {
+			"note": "You should never be here...",
+			"meta": {
+				"title": "Sign In – Access Your ImChatty Account",
+				"description": "Securely sign in to your ImChatty account using Google, Facebook, or email. Join conversations with real people or AI chat partners in seconds.",
+				"ogTitle": "Sign In to ImChatty",
+				"ogImage": "https://imchatty.com/images/article-image.webp",
+				"ogDescription": "Login securely via Google, Facebook, or email and start chatting anonymously with real or AI users. Your chat journey begins here.",
+				"twitterTitle": "Sign In – Chat Anonymously with ImChatty",
+				"twitterCard": "summary_large_image",
+				"twitterDescription": "Easily access your ImChatty account with Google, Facebook, or email login. Start anonymous conversations with real or AI profiles today.",
+				"twitterImage": "https://imchatty.com/images/article-image.webp"
 			}
 		}
 	},

@@ -18,12 +18,14 @@
 
   <!-- Redirect fallback (shouldn't be seen, but just in case) -->
   <v-container v-else>
-    <div>hi, you should never be here...</div>
+    <div>h{{ $t("pages.signin.note") }}</div>
   </v-container>
 </template>
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const router = useRouter();
 // Track the current step
 const authStore = useAuthStore();
@@ -45,18 +47,29 @@ onMounted(async () =>
   }
 });
 
+const seoTitle = computed(() => t("pages.signin.meta.title"));
+const seoDescription = computed(() => t("pages.signin.meta.description"));
+const ogTitle = computed(() => t("pages.signin.meta.ogTitle"));
+const ogImage = computed(() => t("pages.signin.meta.ogImage"));
+const ogDescription = computed(() =>
+  t("pages.signin.meta.ogDescription")
+);
+const twitterTitle = computed(() => t("pages.signin.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.signin.meta.twitterCard"));
+const twitterDescription = computed(() =>
+  t("pages.signin.meta.twitterDescription")
+);
+const twitterImage = computed(() => t("pages.signin.meta.twitterImage"));
+
 useSeoMeta({
-  title: "Sign In – Access Your ImChatty Account",
-  description:
-    "Securely sign in to your ImChatty account using Google, Facebook, or email. Join conversations with real people or AI chat partners in seconds.",
-  ogTitle: "Sign In to ImChatty",
-  ogDescription:
-    "Login securely via Google, Facebook, or email and start chatting anonymously with real or AI users. Your chat journey begins here.",
-  ogImage: "https://imchatty.com/images/article-image.webp",
-  twitterCard: "summary_large_image",
-  twitterTitle: "Sign In – Chat Anonymously with ImChatty",
-  twitterDescription:
-    "Easily access your ImChatty account with Google, Facebook, or email login. Start anonymous conversations with real or AI profiles today.",
-  twitterImage: "https://imchatty.com/images/article-image.webp"
+  title: seoTitle.value,
+  description: seoDescription.value,
+  ogTitle: ogTitle.value,
+  ogImage: ogImage.value,
+  ogDescription: ogDescription.value,
+  twitterCard: twitterCard.value,
+  twitterTitle: twitterTitle.value,
+  twitterDescription: twitterDescription.value,
+  twitterImage: twitterImage.value,
 });
 </script>

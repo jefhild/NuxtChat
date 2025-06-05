@@ -3,6 +3,14 @@
     <HomeRow1 />
     <v-row>
       <v-col cols="12">
+        <!-- Page Title -->
+        <div class="d-flex justify-center mt-4">
+          <h1>{{ $t("pages.profiles.index.title") }}</h1>
+        </div>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
         <NewsContainer />
       </v-col>
     </v-row>
@@ -10,6 +18,8 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const isAuthenticated = ref(false);
 const authStore = useAuthStore();
 
@@ -22,21 +32,32 @@ useHead(() => ({
   ],
 }));
 
+const seoTitle = computed(() => t("pages.profiles.index.meta.title"));
+const seoDescription = computed(() => t("pages.profiles.index.meta.description"));
+const ogTitle = computed(() => t("pages.profiles.index.meta.ogTitle"));
+const ogType = computed(() => t("pages.profiles.index.meta.ogType"));
+const ogUrl = computed(() => t("pages.profiles.index.meta.ogUrl"));
+const ogDescription = computed(() =>
+  t("pages.profiles.index.meta.ogDescription")
+);
+const ogImage = computed(() => t("pages.profiles.index.meta.ogImage"));
+const twitterTitle = computed(() => t("pages.profiles.index.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.profiles.index.meta.twitterCard"));
+const twitterDescription = computed(() =>
+  t("pages.profiles.index.meta.twitterDescription")
+);
+
 useSeoMeta({
-  title: "More Popular Profiles",
-  description:
-    "Check out our most popular  profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  ogTitle: "Popular Profiles",
-  ogType: "Website",
-  ogUrl: "https://imchatty.com/profiles/",
-  ogDescription:
-    "Check out our most popular  profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  ogImage: "https://imchatty.com/images/robot.png",
-  twitterCard: "summary_large_image",
-  twitterTitle: "Popular  Profiles",
-  twitterDescription:
-    "Check out our most popular profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  // twitterImage: popularProfiles[0].value.avatar_url,
+  title: seoTitle.value,
+  description: seoDescription.value,
+  ogTitle: ogTitle.value,
+  ogType: ogType.value,
+  ogUrl: ogUrl.value,
+  ogDescription: ogDescription.value,
+  ogImage: ogImage.value,
+  twitterCard: twitterCard.value,
+  twitterTitle: twitterTitle.value,
+  twitterDescription: twitterDescription.value,
 });
 
 onMounted(async () => {
