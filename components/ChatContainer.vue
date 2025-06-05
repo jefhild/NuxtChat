@@ -83,7 +83,9 @@
 
                   <!-- Emoji Picker Panel -->
                   <div class="emoji-picker-container" v-if="showEmojiPicker" ref="emojiPickerRef">
-                    <EmojiPicker @select="onSelectEmoji" />
+                    <client-only>
+                      <EmojiPicker @select="onSelectEmoji" />
+                    </client-only>
                   </div>
 
 
@@ -136,7 +138,7 @@ import { useFetchOfflineUsers } from "@/composables/useFetchOfflineUsers";
 import { useFetchOnlineUsers } from "@/composables/useFetchOnlineUsers";
 import { useFetchActiveChats } from "@/composables/useFetchActiveChats";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
-import EmojiPicker from 'vue3-emoji-picker';
+import { defineAsyncComponent } from 'vue';
 import { onClickOutside } from '@vueuse/core';
 
 const {
@@ -198,6 +200,7 @@ const sendingMessage = ref(false);
 
 const showEmojiPicker = ref(false);
 const emojiPickerRef = ref(null);
+const EmojiPicker = defineAsyncComponent(() => import('vue3-emoji-picker'));
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);

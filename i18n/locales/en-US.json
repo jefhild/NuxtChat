@@ -271,6 +271,36 @@
 					"twitterCard": "summary_large_image",
 					"twitterDescription": "Check out our most popular recent male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
 				}
+			},
+			"popular": {
+				"title": "Most Popular Profiles",
+				"meta": {
+					"title": "More Popular Profiles",
+					"description": "Check out our most popular profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogTitle": "Popular Profiles",
+					"ogType": "Website",
+					"ogUrl": "https://imchatty.com/profiles/popular",
+					"ogDescription": "Check out our most popular profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogImage": "https://imchatty.com/images/robot.png",
+					"twitterTitle": "Popular Profiles",
+					"twitterCard": "summary_large_image",
+					"twitterDescription": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
+				}
+			},
+			"recent": {
+				"title": "Popular Recent Profiles",
+				"meta": {
+					"title": "More Popular Recent Profiles",
+					"description": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogTitle": "Popular Recent Profiless",
+					"ogType": "Website",
+					"ogUrl": "https://imchatty.com/profiles/recent",
+					"ogDescription": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogImage": "https://imchatty.com/images/robot.png",
+					"twitterTitle": "Popular Recent Profiles",
+					"twitterCard": "summary_large_image",
+					"twitterDescription": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
+				}
 			}
 		}
 	},
