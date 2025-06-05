@@ -175,7 +175,7 @@ export const useAuthStore = defineStore("authStore", {
 
         const { signInWithOAuth } = useDb();
         // Redirect to Google's OAuth
-        await signInWithOAuth("google", `/login`);
+        await signInWithOAuth("google", `/chat`);
         // Execution stops here due to redirection
         return;
       }

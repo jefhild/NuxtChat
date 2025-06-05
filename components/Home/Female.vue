@@ -34,9 +34,9 @@ const props = defineProps({
 });
 
 onMounted(async () => {
-  console.log("Fetching", props.limit);
+  // console.log("Fetching", props.limit);
   const data = await getRecentFemales(props.limit);
-  console.log("Fetched", data);
+  // console.log("Fetched", data);
   if (data) {
     femaleProfiles.value = data;
   }

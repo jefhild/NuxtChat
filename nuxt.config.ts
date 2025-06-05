@@ -72,10 +72,12 @@ export default defineNuxtConfig({
   supabase: {
     redirectOptions: {
       login: "/",
-      callback: "/*/callback",
+      callback: "/callback",
       exclude: [
         "/en",
         "/fr",
+        "/callback",
+        "/*/callback",
         "/*/about",
         "/*/login",
         "/*/logout",

@@ -1963,11 +1963,35 @@ const authGetUser = async () => {
     return { data, error };
   };
 
-  const signInWithOAuth = async (provider, redirectTo) => {
+  // const signInWithOAuth = async (provider, redirectTo) => {
+  //   await supabase.auth.signInWithOAuth({
+  //     provider: provider,
+  //     options: {
+  //       redirectTo: redirectTo, // Redirect after OAuth
+  //     },
+  //   });
+  // };
+
+
+  // const signInWithOAuth = async (provider, path = "/callback") => {
+  //   const origin = window.location.origin;
+  //   const redirectUrl = `${origin}${path}`;
+  //   await supabase.auth.signInWithOAuth({
+  //     provider,
+  //     options: {
+  //       redirectTo: redirectUrl,
+  //     },
+  //   });
+  // };
+
+
+  const signInWithOAuth = async (provider, next = "/chat") => {
+    const origin = window.location.origin;
+    const redirectTo = `${origin}/callback?next=${encodeURIComponent(next)}`;
     await supabase.auth.signInWithOAuth({
-      provider: provider,
+      provider,
       options: {
-        redirectTo: redirectTo, // Redirect after OAuth
+        redirectTo,
       },
     });
   };
