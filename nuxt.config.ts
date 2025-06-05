@@ -32,7 +32,7 @@ export default defineNuxtConfig({
     langDir: "./locales/",
     strategy: "prefix",
     locales: [
-      { code: "en", iso: "en-US", file: "en-US.json" },
+      { code: "en", iso: "en-US", file: "en-US.json"},
       { code: "fr", iso: "fr-FR", file: "fr-FR.json" },
     ],
     bundle: {
