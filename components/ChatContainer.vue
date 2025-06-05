@@ -101,9 +101,9 @@
                   <v-text-field v-model="newMessage" :label="
                       selectedUser
                         ? selectedUser.is_ai
-                          ? 'Chat with a ' + selectedUser.displayname + ' AI'
-                          : 'Message ' + selectedUser.displayname
-                        : 'Select a user to chat with'
+                          ? $t('components.chatcontainer.chat') + selectedUser.displayname + $t('components.chatcontainer.ai')
+                          : $t('components.chatcontainer.message') + selectedUser.displayname
+                        : $t('components.chatcontainer.select-user')
                     " variant="underlined" dense :readonly="!selectedUser || sendingMessage" />
                 </v-col>
               </v-row>
@@ -113,7 +113,7 @@
               <v-btn type="submit" :disabled="!selectedUser || sendingMessage || (!newMessage.trim() && !attachedFile)"
                 color="primary" class="mt-4 ml-3">
                 <v-progress-circular v-if="sendingMessage" indeterminate color="white" size="18" />
-                <span v-if="!sendingMessage">Send</span>
+                <span v-if="!sendingMessage">{{ $t("components.chatcontainer.send") }}</span>
               </v-btn>
             </v-col>
           </v-row>
@@ -140,6 +140,8 @@ import { useFetchActiveChats } from "@/composables/useFetchActiveChats";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
 import { defineAsyncComponent } from 'vue';
 import { onClickOutside } from '@vueuse/core';
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const {
   getUserProfileFromId,

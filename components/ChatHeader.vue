@@ -26,13 +26,13 @@
 
     <v-card-text>
       <div>
-        {{ selectedUser ? selectedUser.age : "..." }} years old,
+        {{ selectedUser ? selectedUser.age : "..." }} {{ $t("components.chatheader.years-old") }}
         {{ selectedUser?.country_name ?? "" }}
       </div>
     </v-card-text>
   </v-card>
   <v-card flat v-else>
-    <v-card-title>Select a user to chat with</v-card-title>
+    <v-card-title>{{ $t("components.chatcontainer.select-user") }}</v-card-title>
   </v-card>
 
   <v-dialog v-model="userProfileDialog" max-width="600" transition="dialog-transition">

@@ -85,7 +85,7 @@
   </v-container>
 
   <v-dialog v-model="aiDialog" :max-width="750">
-    <DialogAiSignUp @closeDialog="handleDialogClose" />
+    <DialogAiSignUp :titleText="titleText" @closeDialog="handleDialogClose" />
   </v-dialog>
 </template>
 
@@ -93,6 +93,8 @@
 const localPath = useLocalePath();
 import { useAuthStore } from "@/stores/authStore";
 import { useUserProfile } from "@/composables/useUserProfile";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const props = defineProps({
   selectedUserSlug: String,
@@ -108,6 +110,7 @@ const authStore = useAuthStore();
 const isAuthenticated = ref(false);
 const isLoading = ref(true);
 const aiDialog = ref(false);
+const titleText = computed(() => t("components.dialogAiSignUp.titleText"));
 
 const { profile, fetchUserProfileFromSlug } = useUserProfile();
 await fetchUserProfileFromSlug(props.selectedUserSlug);

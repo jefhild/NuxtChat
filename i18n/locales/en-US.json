@@ -471,6 +471,105 @@
 			"cookies": "Cookie Policy",
 			"public-profiles": "Public Profiles",
 			"consent-preferences": "Consent Preferences"
+		},
+		"button-favorite": {
+			"log-in": "Log In",
+			"cancel": "Cancel",
+			"please-log-in": "Please Log in",
+			"need-log-in": "You need to log in to save profiles as favorites."
+		},
+		"home": {
+			"ai":{
+				"title": "Recent AI Profiles",
+				"see-more": "See More AI Profiles"
+			},
+			"female":{
+				"title": "Recent Female Profiles",
+				"see-more": "See More Female Profiles"
+			},
+			"main": {
+				"sign-in": "Sign In",
+				"google": "With Google",
+				"facebook": "With Facebook",
+				"email": "With Email"
+			},
+			"male": {
+				"title": "Recent Male Profiles",
+				"see-more": "See More Male Profiles"
+			},
+			"most-popular": {
+				"title": "Most Popular Profiles",
+				"see-more": "See More Popular Profiles"
+			},
+			"recent": {
+				"title": "Recent Real Profiles",
+				"see-more": "See More Recent Profiles"
+			}
+		},
+		"activeChats":{
+			"confirm": "Confirm",
+			"cancel": "Cancel",
+			"delete-title": "Delete This Chat",
+			"delete-confirm": "Are you sure you want to delete this chat? This action cannot be undone.",
+			"block": "Block this user?"
+		},
+		"blockedUsers":{
+			"no-blocked-users": "You have no blocked users"
+		},
+		"chatcontainer": {
+			"replying-to": "Replying to: ",
+			"chat": "Chat with a ",
+			"ai": " AI",
+			"message": "Message ",
+			"select-user": "Select a user to chat with",
+			"send": "Send"
+		},
+		"chatheader": {
+			"years-old": " years old, ",
+			"remove-favorites": "Remove from Favorites",
+			"add-favorites": "Add to Favorites",
+			"block-user": "Block User",
+			"unblock-user": "Unblock User",
+			"report-user": "Report User"
+		},
+		"loginAi":{
+			"titleText": "Create Your Anonymous Profile"
+		},
+		"dialogAiSignUp":{
+			"create-profile": "Create Profile",
+			"type-response": "Type your response here...",
+			"titleText": "Create Your Anonymous Profile",
+			"titleText2": "Let's finish creating your profile"
+		},
+		"favorites":{
+			"i-favorited": "I Favorited",
+			"no-favorites": "No favorited users found",
+			"favorited-me": "Favorited me",
+			"no-favorited-me": "No one has favorited you yet"
+		},
+		"filter-menu":{
+			"logged-in": "Logged In as ",
+			"filters": "Filters",
+			"gender": "Gender",
+			"status": "Status",
+			"age-range": "Age Range",
+			"anonymity": "Anonymity",
+			"interests": "Interests",
+			"country": "Country",
+			"clear": "Clear",
+			"apply": "Apply",
+			"cancel": "Cancel"
+		},
+		"finish-profile":{
+			"finish-up" : "Let's finish setting up your profile - you have",
+			"type-response": "Type your response here...",
+			"skip": "Skip",
+			"close": "Close",
+			"no-ask" : "Don't ask again"
+		},
+		"gender-selection": {
+			"gender": "Gender",
+			"select-gender": "You must select a gender."
 		}
 	}
 }

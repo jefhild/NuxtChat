@@ -60,13 +60,13 @@
             </div>
           </v-container>
           <v-text-field v-if="showInputField" ref="inputField" variant="outlined" v-model="userInput"
-            @keyup.enter="sendMessage" placeholder="Type your response..." :disabled="isLoading"
+            @keyup.enter="sendMessage" :placeholder="$t('components.dialogAiSignUp.type-response')" :disabled="isLoading"
             append-inner-icon="mdi-send" @click:append-inner="sendMessage" />
         </v-col>
       </v-row>
       <v-row><v-col>
           <v-btn color="primary" v-if="showCreateProfileButton" @click="submitToDatabase" :disabled="submittingtoDatabase">
-            Create Profile
+            {{ $t("components.dialogAiSignUp.create-profile") }}
           </v-btn>
         </v-col>
       </v-row>

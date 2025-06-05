@@ -47,7 +47,7 @@
       </template>
       <v-col v-else cols="12">
         <v-card class="d-flex flex-column align-center">
-          <v-card-title>No blocked users found</v-card-title>
+          <v-card-title>{{ $t("components.blockedUsers.no-blocked-users") }}</v-card-title>
         </v-card>
       </v-col>
     </v-row>
@@ -58,6 +58,9 @@
 import { useBlockedProfiles } from "@/composables/useBlockedProfiles";
 // import { getAvatar } from "@/utils/userUtils"; // Import the helper function
 import { getAvatar } from "@/composables/useUserUtils";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 
 const { getAvatarDecorationFromId, getGenderFromId } = useDb();
 const avatarDecorations = ref<Record<string, string>>({});

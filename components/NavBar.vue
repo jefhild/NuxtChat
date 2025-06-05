@@ -139,7 +139,6 @@ const switchLanguage = (lang) =>
 {
   currentLocale.value = lang;
   setLocale(lang);
-  console.log(`Language switched to: ${lang} and locapath is: ${localPath}`);
 };
 
 const router = useRouter();

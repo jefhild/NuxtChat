@@ -3,7 +3,7 @@
 		<v-progress-linear :model-value="(currentQuestionIndex / questions.length) * 100" color="light-blue" height="10"
 			rounded style="width: 100%" />
 		<v-card-title class="text-center text-subtitle-1">
-			Let's finish setting up your profile - you have {{ questions.length - currentQuestionIndex }} left
+			{{ $t("components.finish-profile.finish-up") }} {{ questions.length - currentQuestionIndex }} left
 		</v-card-title>
 		<v-card-text>
 			<v-row align="center" justify="center">
@@ -60,7 +60,7 @@
 
 							</v-container>
 							<v-text-field v-if="!submittingtoDatabase" variant="outlined" v-model="userInput"
-								@keyup.enter="sendMessage" placeholder="Type your response...">
+								@keyup.enter="sendMessage" :placeholder="$t('components.finish-profile.type-response')">
 								<template #append-inner>
 									<v-icon :color="userInput ? 'primary' : 'grey'" class="cursor-pointer"
 										@click="sendMessage">
@@ -75,13 +75,15 @@
 		</v-card-text>
 		<v-card-actions v-if="!isDone" class="pr-4 pb-4">
 			<v-btn color="red" @click="() => nextQuestion()"> {{ skipButtonText }} </v-btn>
-			<v-btn v-if="urlQuestion" @click="dismissSitePrompt">Don't Ask Again</v-btn>
+			<v-btn v-if="urlQuestion" @click="dismissSitePrompt">{{ $t("components.finish-profile.no-ask") }}</v-btn>
 		</v-card-actions>
 	</v-card>
 </template>
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const { updateTagline, updateSiteURL, updateInterests, updateUserEmail } = useDb();
 
 const emit = defineEmits(["closeDialog", "lookingForUpdated"]);
@@ -105,7 +107,7 @@ const mappedEmail = ref("");
 const userResponses = ref({});
 const isDone = ref(false); 
 const urlQuestion = ref(false);
-const skipButtonText = ref("SKIP");
+const skipButtonText = ref(t("components.finish-profile.skip"));
 
 const props = defineProps({
 	infoLeft: {
@@ -134,7 +136,7 @@ const nextQuestion = async(aiAnswer = "Let's move on", sendMessage = false) =>
 
 	if ( currentQuestionIndex.value === questions.value.length - 1 )
 	{
-		skipButtonText.value = "CLOSE";
+		skipButtonText.value = t("components.finish-profile.close");
 	} 
 
 	if (currentQuestionIndex.value >= questions.value.length )

@@ -18,7 +18,7 @@
 
   <!-- Redirect fallback (shouldn't be seen, but just in case) -->
   <v-container v-else>
-    <div>h{{ $t("pages.signin.note") }}</div>
+    <div>{{ $t("pages.signin.note") }}</div>
   </v-container>
 </template>
 

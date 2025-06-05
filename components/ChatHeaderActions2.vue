@@ -28,7 +28,7 @@
       </template>
     </v-tooltip>
 
-    <v-tooltip text="Report User" location="bottom">
+    <v-tooltip :text="$t('components.chatheader.report-user')" location="bottom">
       <template #activator="{ props }">
         <v-btn color="red" variant="text" v-bind="props" class="mt-4" @click="$emit('toggleReportDialog')">
           <v-icon>mdi-alert-circle-outline</v-icon>
@@ -44,6 +44,8 @@
 import { computed } from "vue";
 
 const emit = defineEmits(["upvote", "downvote", "toggleFavorite", "toggleBlockUser", "toggleReportDialog"]);
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const props = defineProps({
   selectedUser: {
@@ -66,13 +68,13 @@ const props = defineProps({
 });
 
 const blockTooltipText = computed(() => {
-  return props.selectedUser?.isBlocked ? "Unblock User" : "Block User";
+  return props.selectedUser?.isBlocked ? t("components.chatheader.unblock-user") : t("components.chatheader.block-user");
 });
 
 const addFavoriteText = computed(() => {
   return props.selectedUser?.is_favorite 
-    ? "Remove From Favorites"
-    : "Add to Favorites";
+    ? t("components.chatheader.remove-favorites")
+    : t("components.chatheader.add-favorites");
 });
 </script>
 
