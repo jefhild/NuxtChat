@@ -52,6 +52,7 @@ const supabase = useSupabaseClient();
 const authStore = useAuthStore();
 const myUserId = ref(authStore.user);
 const unreadMessageCount = ref(0);
+let messageChannel = null;
 
 // Watch for changes in activeChats for the badge count on the active tab
 watch(
@@ -79,9 +80,13 @@ onMounted(() =>
 
 const subscribeToNewMessages = () =>
 {
-  supabase
-    .channel("messages")
-    .on(
+  if (!messageChannel)
+  {
+    messageChannel = supabase.channel(`messages:notify:${myUserId.value.id}`);
+  }
+
+  if (!messageChannel._subscribed){
+    messageChannel.on(
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${myUserId.value.id}` },
       (payload) =>
@@ -91,8 +96,18 @@ const subscribeToNewMessages = () =>
         const senderId = payload.new.sender_id;
         updateUnreadCount(senderId);
       }
-    )
-    .subscribe();
+    );
+
+    const { error } = messageChannel.subscribe();
+    if (!error)
+    {
+      messageChannel._subscribed = true;
+    }
+    else
+    {
+      console.error("Failed to subscribe to new messages:", error);
+    }
+  }
 };
 
 const updateUnreadCount = (senderId) =>
@@ -129,6 +144,17 @@ const unreadCountUpdated = (user) => {
     onlineUser.unread_count = user.unread_count;
   }
 };
+
+onBeforeUnmount(() =>
+{
+  if (messageChannel?._subscribed)
+  {
+    messageChannel.unsubscribe();
+    messageChannel._subscribed = false;
+    messageChannel = null;
+  }
+});
+
 
 </script>
 <style scoped>

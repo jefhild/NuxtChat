@@ -505,62 +505,68 @@ onMounted(async () => {
 
   // Set up real-time subscription to messages table
   if (!realtimeMessages) {
-    realtimeMessages = supabase.channel(`messages:user:${user.value.id}`).on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-        filter: `receiver_id=eq.${user.value.id}`,
-      },
-      (payload) => {
-        handleRealtimeMessages(payload);
-      }
-    );
-
-    const { error } = realtimeMessages.subscribe();
-    if (error) {
-      console.error("Error subscribing to real-time channel:", error);
-    } else {
-      // console.log("Subscribed to real-time updates for messages");
-    }
-  }
-
-  if (!realtimeUpdateMessages) {
-    realtimeUpdateMessages = supabase
-      .channel(`messages:update:${user.value.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
+    realtimeMessages = supabase.channel(`messages:user:${user.value.id}`);
+    if (!realtimeMessages._subscribed)
+    {
+      realtimeMessages
+        .on("postgres_changes", {
+          event: "INSERT",
           schema: "public",
           table: "messages",
           filter: `receiver_id=eq.${user.value.id}`,
-        },
-        (payload) => {
-          // console.log("Realtime update payload:", payload);
+        }, handleRealtimeMessages);
 
-          //find the message in the local messages array
-          const messageIndex = messages.value.findIndex(msg => msg.id === payload.old.id);
-          if (messageIndex !== -1)
-          {
-            messages.value[messageIndex] = {
-              ...messages.value[messageIndex],
-              content: payload.new.content,
-              edited_at: payload.new.edited_at,
-            };
-          }
-        }
-      );
-
-    const { error } = realtimeUpdateMessages.subscribe();
-    if (error) {
-      console.error("Error subscribing to real-time updates:", error);
-    } else {
-      // console.log("Subscribed to real-time updates for message updates");
+      const { error } = realtimeMessages.subscribe();
+      if (!error)
+      {
+        realtimeMessages._subscribed = true;
+      } else
+      {
+        console.error("Realtime message subscription failed:", error);
+      }
     }
-    
   }
+
+  if (!realtimeUpdateMessages)
+  {
+    realtimeUpdateMessages = supabase.channel(`messages:update:${user.value.id}`);
+    if (!realtimeUpdateMessages._subscribed)
+    {
+      realtimeUpdateMessages
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "messages",
+            filter: `receiver_id=eq.${user.value.id}`,
+          },
+          (payload) =>
+          {
+            // console.log("Realtime update payload:", payload);
+
+            const messageIndex = messages.value.findIndex(msg => msg.id === payload.old.id);
+            if (messageIndex !== -1)
+            {
+              messages.value[messageIndex] = {
+                ...messages.value[messageIndex],
+                content: payload.new.content,
+                edited_at: payload.new.edited_at,
+              };
+            }
+          }
+        )
+
+      const { error } = realtimeUpdateMessages.subscribe();
+      if (!error)
+      {
+        realtimeUpdateMessages._subscribed = true;
+      } else
+      {
+        console.error("Realtime message subscription failed:", error);
+      }
+  }
+}
 
   document.addEventListener("visibilitychange", async () => {
     isTabVisible.value = document.visibilityState === "visible";
@@ -582,6 +588,21 @@ onMounted(async () => {
   });
   isLoading.value = false;
 });
+
+onBeforeUnmount(() =>
+{
+  if (realtimeMessages?._subscribed)
+  {
+    realtimeMessages.unsubscribe();
+    realtimeMessages._subscribed = false;
+  }
+  if (realtimeUpdateMessages?._subscribed)
+  {
+    realtimeUpdateMessages.unsubscribe();
+    realtimeUpdateMessages._subscribed = false;
+  }
+});
+
 
 // Select user to chat with
 const selectUser = (user) => {
