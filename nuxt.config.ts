@@ -35,6 +35,9 @@ export default defineNuxtConfig({
       { code: "en", iso: "en-US", file: "en-US.json" },
       { code: "fr", iso: "fr-FR", file: "fr-FR.json" },
     ],
+    bundle: {
+      optimizeTranslationDirective: false,
+    }
   },
 
   gtag: {
