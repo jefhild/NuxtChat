@@ -14,17 +14,9 @@
 
     <!-- Conditional rendering based on authentication status -->
     <v-row v-else>
-      <!-- If the user is authenticated, show ChatContainer5 -->
-      <template v-if="isAuthenticated">
-        <v-col cols="12">
-          <ChatContainer />
-        </v-col>
-      </template>
-
-      <!-- <template v-else>
-        <HomeMain />
-        <NewsContainer />
-      </template> -->
+      <v-col v-if="isAuthenticated" cols="12">
+        <ChatContainer />
+      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -43,10 +35,11 @@ const { getUserProfileFromId } = useDb();
 onMounted(async () => {
   await authStore.checkAuth();
   isAuthenticated.value = authStore.user !== null;
-  const { data: userProfileData } = await getUserProfileFromId(authStore.user?.id);
+  const { data: userProfileData } = await getUserProfileFromId(
+    authStore.user?.id
+  );
 
-  if (!userProfileData)
-  {
+  if (!userProfileData) {
     isAuthenticated.value = false; // User doesn't exist, set to false
     router.push(localPath("/")); // Redirect to home page
     return;

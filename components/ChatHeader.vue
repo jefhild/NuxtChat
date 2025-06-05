@@ -87,6 +87,8 @@ const props = defineProps({
   },
 });
 
+let favoriteChannel = null;
+
 const notificationSound = new Audio('/sounds/notification.wav');
 notificationSound.volume = 0.5; // Optional: adjust volume
 
@@ -236,40 +238,63 @@ const handleReport = async ({ reportedUserId, categories, reason, messages }) =>
 onMounted(async () =>
 {
   genderName.value = await getGenderFromId(props.selectedUser?.gender_id) || "";
-  supabase
-    .channel("favorites")
-    .on(
+
+  if (!favoriteChannel)
+  {
+    favoriteChannel = supabase.channel(`favorites`);
+  }
+
+  if (!favoriteChannel._subscribed)
+  {
+    favoriteChannel.on(
       "postgres_changes",
-      { 
-        event: "INSERT", 
-        schema: "public", 
+      {
+        event: "INSERT",
+        schema: "public",
         table: "favorites",
         filter: `favorite_user_id=eq.${user.value.id}`,
       },
       async (payload) =>
       {
-        // console.log('New favorite added:', payload);
         const { user_id: favoritingUserId } = payload.new;
 
         const { data, error } = await getUserProfileFromId(favoritingUserId);
-        // console.log("User data:", data, "Error:", error);
         if (!data?.displayname) return;
-
-        // console.log("Favoriting user data:", data);
 
         notificationSound.play().catch((e) =>
         {
           console.warn("Autoplay failed:", e);
         });
+
         notificationStore.addNotification(
-          'favorite',
-          `${data?.displayname} favorited you!`,
+          "favorite",
+          `${data.displayname} favorited you!`,
           favoritingUserId
         );
       }
-    )
-    .subscribe();
+    );
+
+    const { error } = favoriteChannel.subscribe();
+    if (!error)
+    {
+      favoriteChannel._subscribed = true;
+    } else
+    {
+      console.error("Error subscribing to favorites channel:", error);
+    }
+  }
 });
+
+onBeforeUnmount(() =>
+{
+  if (favoriteChannel?._subscribed)
+  {
+    favoriteChannel.unsubscribe();
+    favoriteChannel._subscribed = false;
+    favoriteChannel = null;
+  }
+});
+
 </script>
 
 <style scoped>

@@ -33,7 +33,8 @@ onMounted(async () => {
     // Redirect based on profile completeness
     // if (!authStore.userProfile?.displayname) {
     if (authStore.userProfile) {
-      router.push(localPath("/settings")); // Go to onboarding if profile is incomplete
+      // router.push(localPath("/settings")); // Go to onboarding if profile is incomplete
+      router.push(localPath("/chat"));
     } else {
       router.push(localPath("/")); // Go to home if profile is complete
     }
