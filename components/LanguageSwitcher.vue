@@ -27,6 +27,8 @@ const currentLocale = ref(locale.value);
 const flagPaths = {
   en: "/images/flags/icon_us.png",
   fr: "/images/flags/icon_fr.png",
+  // cn: "/images/flags/icon_cn.png",
+  // zh: "/images/flags/icon_ru.png",
 };
 
 const localesWithFlags = rawLocales.map((code) => ({
