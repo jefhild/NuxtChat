@@ -2,7 +2,7 @@
   <v-container>
     <v-row justify="center" class="title-bar">
       <v-col cols="12" md="8">
-        <h1 class="page-title">All of our non guide articles</h1>
+        <h1 class="page-title">{{ $t("pages.insights.title") }}</h1>
       </v-col>
     </v-row>
 
@@ -18,7 +18,7 @@
     <v-container v-else>
       <v-text-field
         v-model="searchQuery"
-        label="Search articles..."
+        :label="searchArticlesLabel"
         prepend-inner-icon="mdi-magnify"
         clearable
         class="mb-4"
@@ -44,11 +44,11 @@
         border="top"
         border-color="primary"
       >
-        No articles found for "{{ searchQuery }}".
+      {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
       </v-alert>
       <v-row v-if="!articlesData?.length">
         <v-col class="text-center">
-          <p>No articles found for this type.</p>
+          <p>{{ $t("pages.guides.no-articles") }}</p>
         </v-col>
       </v-row>
     </v-container>
@@ -57,6 +57,14 @@
 
 <script setup>
 const { getArticlesByType, getTagsByArticle } = useDb();
+
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
+const searchArticlesLabel = computed(() =>
+  t("pages.articles.index.search")
+);
+
 
 const { data: articlesData, pending: isLoading } = await useAsyncData(
   "articles",
@@ -92,20 +100,32 @@ useHead(() => ({
   ],
 }));
 
+const seoTitle = computed(() => t("pages.insights.meta.title"));
+const seoDescription = computed(() => t("pages.insights.meta.description"));
+const ogTitle = computed(() => t("pages.insights.meta.ogTitle"));
+const ogUrl = computed(() => t("pages.insights.meta.ogUrl"));
+const ogType = computed(() => t("pages.insights.meta.ogType"));
+const ogImage = computed(() => t("pages.insights.meta.ogImage"));
+const ogDescription = computed(() =>
+  t("pages.insights.meta.ogDescription")
+);
+const twitterTitle = computed(() => t("pages.insights.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.insights.meta.twitterCard"));
+const twitterDescription = computed(() =>
+  t("pages.insights.meta.twitterDescription")
+);
+
 useSeoMeta({
-  title: "Popular Article Insights",
-  description:
-    "Check out our most recent insights! Browse articles of genuine interest.",
-  ogTitle: "Popular Article Insights",
-  ogType: "Website",
-  ogDescription:
-    "Check out our most recent article insights! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-  ogImage: "https://imchatty.com/images/robot.png",
-  twitterCard: "summary_large_image",
-  twitterTitle: "Popular Article Insights",
-  twitterDescription:
-    "Check out our most popular article insights! Browse articles of genuine interest, built by a human, and possibly life changing!",
-  // twitterImage: popularProfiles[0].value.avatar_url,
+  title: seoTitle.value,
+  description: seoDescription.value,
+  ogTitle: ogTitle.value,
+  ogType: ogType.value,
+  ogUrl: ogUrl.value,
+  ogImage: ogImage.value,
+  ogDescription: ogDescription.value,
+  twitterCard: twitterCard.value,
+  twitterTitle: twitterTitle.value,
+  twitterDescription: twitterDescription.value,
 });
 </script>
 

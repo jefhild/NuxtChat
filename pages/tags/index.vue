@@ -2,7 +2,7 @@
 	<v-container>
 		<v-row justify="center">
 			<v-col cols="12" md="8">
-				<h1>All the different Tags</h1>
+				<h1>{{ $t("pages.tags.index.title") }}</h1>
 			</v-col>
 		</v-row>
 
@@ -27,6 +27,8 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const localPath = useLocalePath();
 const { getAllTags, getCountArticleByTag } = useDb();
 const isLoading = ref(true);

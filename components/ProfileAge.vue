@@ -5,7 +5,7 @@
     :items="getAgeList()"
     item-title="age"
     item-value="age"
-    label="Age"
+    :label="$t('components.profile-age.age')"
     :rules="[requiredAgeRule]"
     variant="underlined"
   />
@@ -15,6 +15,8 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const items = ref([]);
 
 const props = defineProps({
@@ -43,7 +45,7 @@ const getAgeList = () => {
 // Rule to check if age is provided
 const requiredAgeRule = (value) => {
   return (
-    (value !== null && value !== undefined && value !== "") || "Age is required"
+    (value !== null && value !== undefined && value !== "") || t("components.profile-age.required") 
   );
 };
 

@@ -54,7 +54,7 @@
                   <v-btn color="primary" block>
                     <NuxtLink
                       to="#"
-                      @click.prevent="handleAILogin"
+                      @click.prevent="handleClick"
                       class="text-dec-none text-white"
                     >
                     {{ $t("pages.home.landing_page.cta_button") }}
@@ -238,7 +238,7 @@
   </v-container>
 
   <v-dialog v-model="aiDialog" :max-width="750">
-    <DialogAiSignUp @closeDialog="handleDialogClose" />
+    <DialogAiSignUp @closeDialog="handleDialogClose" :titleText="titleText" />
   </v-dialog>
 
   <v-dialog v-model="logoutDialog" width="auto">
@@ -262,6 +262,8 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 // App logic
 const router = useRouter();
 const localPath = useLocalePath();
@@ -276,7 +278,7 @@ const aiDialog = ref(false);
 const isAuthenticated = ref(false);
 const userProfile = ref(null);
 const loggedInUser = ref("??");
-const titleText = ref("Create Your Anonymous Profile");
+const titleText = computed(() => t("components.dialogAiSignUp.titleText"));
 const logoutDialog = ref(false);
 
 const {
@@ -316,10 +318,10 @@ onMounted(async () => {
       isAuthenticated.value = !!userProfileData;
       loggedInUser.value = profile?.displayname || "??";
       userProfile.value = userProfileData;
-      console.log("User profile data:", userProfileData);
+      // console.log("User profile data:", userProfileData);
 
       if (!userProfileData) {
-        titleText.value = "Let's finish creating your profile";
+        titleText.value = computed(() => t("components.dialogAiSignUp.titleText2"));
       }
     } else {
       isAuthenticated.value = false;

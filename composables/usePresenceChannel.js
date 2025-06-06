@@ -1,6 +1,6 @@
 import { usePresenceStore } from '@/stores/presenceStore';
 
-export const usePresenceChannel = (userId, favoriteProfiles) =>
+export const usePresenceChannel = (userId, favoriteProfiles, t) =>
 {
 	const supabase = useSupabaseClient();
 	const presenceStore = usePresenceStore();
@@ -90,7 +90,7 @@ export const usePresenceChannel = (userId, favoriteProfiles) =>
 					const notificationStore = useNotificationStore();
 					notificationStore.addNotification(
 						'presence',
-						`${favoritedProfile.displayname} is online!`,
+						`${favoritedProfile.displayname} ` + t("composables.presenceChannel.online"),
 						favoritedProfile.user_id
 					);
 				}

@@ -21,7 +21,7 @@
 
       <v-row v-if="!articles.length">
         <v-col class="text-center">
-          <p>No articles found for this tag.</p>
+          <p>{{ $t("pages.tags.slug.no-articles") }}</p>
         </v-col>
       </v-row>
     </v-container>
@@ -30,6 +30,8 @@
 
 <script setup>
 const { getArticlesByTagSlug, getTagsByArticle } = useDb();
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const route = useRoute();
 const isLoading = ref(true);
 

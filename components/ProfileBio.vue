@@ -2,7 +2,7 @@
   <v-textarea
     v-if="isEditable"
     v-model="bio"
-    label="Bio"
+    :label="$t('components.profile-bio.bio')"
     rows="5"
     outlined
   ></v-textarea>
@@ -12,6 +12,8 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const props = defineProps({
   bio: {
     type: String,

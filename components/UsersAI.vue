@@ -3,9 +3,9 @@
     <v-tabs v-model="tab" align-tabs="center" color="deep-purple-accent-4">
       <v-btn icon="mdi-refresh" variant="text" @click="refreshData"></v-btn>
       <v-spacer></v-spacer>
-      <v-tab :value="1">AI Users</v-tab>
+      <v-tab :value="1">{{ $t('components.users-ai.ai-users') }}</v-tab>
       <v-tab :value="2">
-        <span class="tab-title">Active</span>
+        <span class="tab-title">{{ $t('components.users-ai.active') }}</span>
         <v-badge v-if="unreadMessageCount > 0" :content="unreadMessageCount" color="red" overlap class="mb-7"></v-badge>
       </v-tab>
       <v-spacer></v-spacer>
@@ -26,6 +26,9 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 const props = defineProps({
   onlineUsers: Array,
   aiUsers: Array,

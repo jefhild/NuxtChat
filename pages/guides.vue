@@ -2,7 +2,7 @@
   <v-container>
     <v-row justify="center" class="title-bar">
       <v-col cols="12" md="8">
-        <h1 class="page-title">All of our guides</h1>
+        <h1 class="page-title">{{ $t("pages.guides.title") }}</h1>
       </v-col>
     </v-row>
 
@@ -18,7 +18,7 @@
     <v-container v-else>
       <v-text-field
         v-model="searchQuery"
-        label="Search articles..."
+        :label="searchArticlesLabel"
         prepend-inner-icon="mdi-magnify"
         clearable
         class="mb-4"
@@ -44,12 +44,12 @@
         border="top"
         border-color="primary"
       >
-        No articles found for "{{ searchQuery }}".
+      {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
       </v-alert>
 
       <v-row v-if="!articlesData?.length">
         <v-col class="text-center">
-          <p>No articles found for this type.</p>
+          <p>{{ $t("pages.guides.no-articles") }}</p>
         </v-col>
       </v-row>
     </v-container>
@@ -58,6 +58,12 @@
 
 <script setup>
 const { getArticlesByType, getTagsByArticle } = useDb();
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
+const searchArticlesLabel = computed(() =>
+  t("pages.articles.index.search")
+);
 
 const { data: articlesData, pending: isLoading } = await useAsyncData(
   "guide-articles",
@@ -94,19 +100,28 @@ useHead(() => ({
   ],
 }));
 
+const seoTitle = computed(() => t("pages.guides.meta.title"));
+const seoDescription = computed(() => t("pages.guides.meta.description"));
+const ogTitle = computed(() => t("pages.guides.meta.ogTitle"));
+const ogUrl = computed(() => t("pages.guides.meta.ogUrl"));
+const ogDescription = computed(() =>
+  t("pages.guides.meta.ogDescription")
+);
+const twitterTitle = computed(() => t("pages.guides.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.guides.meta.twitterCard"));
+const twitterDescription = computed(() =>
+  t("pages.guides.meta.twitterDescription")
+);
+
 useSeoMeta({
-  title: "Popular Guides",
-  description:
-    "Check out our most recent guides! Browse guides of genuine interest.",
-  ogTitle: "Popular Guides - Help",
-  ogDescription:
-    "Check out our most recent guides! Help getting started, tips, and how to protect yourself.",
-  // ogImage: popularProfiles[0].value.avatar_url,
-  twitterCard: "summary_large_image",
-  twitterTitle: "Popular Guide Insights",
-  twitterDescription:
-    "Check out our most popular guides and insights! Browse guides of genuine interest, built by a human, and possibly life changing!",
-  // twitterImage: popularProfiles[0].value.avatar_url,
+  title: seoTitle.value,
+  description: seoDescription.value,
+  ogTitle: ogTitle.value,
+  ogUrl: ogUrl.value,
+  ogDescription: ogDescription.value,
+  twitterCard: twitterCard.value,
+  twitterTitle: twitterTitle.value,
+  twitterDescription: twitterDescription.value,
 });
 </script>
 

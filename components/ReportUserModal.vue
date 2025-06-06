@@ -1,18 +1,18 @@
 <template>
 	<v-dialog v-model="dialog" max-width="500">
 		<v-card>
-			<v-card-title class="headline">Report User</v-card-title>
+			<v-card-title class="headline">{{ $t('components.report-user-modal.title') }}</v-card-title>
 			<v-card-text>
 				<v-select v-model="selectedCategories" :items="categories" item-title="label" item-value="value"
-					label="Select all relevant issues" multiple chips closable-chips variant="outlined"
+					:label="$t('components.report-user-modal.select-issues')" multiple chips closable-chips variant="outlined"
 					density="comfortable" required />
-				<v-textarea v-model="reportReason" label="Describe the problem" auto-grow rows="3" variant="outlined"
+				<v-textarea v-model="reportReason" :label="$t('components.report-user-modal.describe-problem')" auto-grow rows="3" variant="outlined"
 					density="comfortable" required />
 
 				<div class="mt-4">
-					<label class="text-subtitle-2 mb-2 d-block">Select specific message (optional)</label>
+					<label class="text-subtitle-2 mb-2 d-block">{{ $t('components.report-user-modal.select-message') }}</label>
 					<div class="text-caption text-right mb-1 text-grey-darken-1">
-						Selected messages: {{ selectedMessages.length }} / 10
+						{{ $t('components.report-user-modal.selected-messages') }} {{ selectedMessages.length }} / {{ $t('components.report-user-modal.10') }}
 					</div>
 					<v-sheet class="message-scroll-list" elevation="1" max-height="200" rounded style="overflow-y: auto"
 						@scroll.passive="handleScroll">
@@ -40,9 +40,9 @@
 			</v-card-text>
 			<v-card-actions>
 				<v-spacer />
-				<v-btn text @click="dialog = false">Cancel</v-btn>
+				<v-btn text @click="dialog = false">{{ $t('components.report-user-modal.cancel') }}</v-btn>
 				<v-btn color="red" variant="flat" :disabled="!canSubmit" @click="submitReport">
-					Submit
+					{{ $t('components.report-user-modal.submit') }}
 				</v-btn>
 			</v-card-actions>
 		</v-card>
@@ -54,6 +54,9 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 const props = defineProps({
 	modelValue: Boolean,
 	reportedUserId: String
@@ -76,14 +79,14 @@ const isLoadingMore = ref(false);
 let lastMessageTime = ref(null);
 
 const showAlert = ref(false);
-const snackbarMessage = ref("You can select up to 10 messages.");
+const snackbarMessage = ref(t('components.report-user-modal.10-max'));
 
 
 const categories = [
-	{ label: "Their photo", value: "photo" },
-	{ label: "Their name", value: "name" },
-	{ label: "Their text descriptors", value: "descriptors" },
-	{ label: "Their actions", value: "actions" },
+	{ label: t('components.report-user-modal.photo'), value: "photo" },
+	{ label: t('components.report-user-modal.username'), value: "name" },
+	{ label: t('components.report-user-modal.descriptors'), value: "descriptors" },
+	{ label: t('components.report-user-modal.actions'), value: "actions" },
 ];
 
 const selectMessage = (message) =>

@@ -11,13 +11,13 @@
   <v-dialog v-model="loginDialog" max-width="400">
     <template #default>
       <v-card>
-        <v-card-title>Please Log In</v-card-title>
+        <v-card-title>{{ $t("components.button-favorite.please-log-in") }}</v-card-title>
         <v-card-text
-          >You need to log in to save profiles as favorites.</v-card-text
+          >{{ $t("components.button-favorite.need-log-in") }}</v-card-text
         >
         <v-card-actions>
-          <v-btn color="primary" @click="redirectToLogin">Log In</v-btn>
-          <v-btn text @click="loginDialog = false">Cancel</v-btn>
+          <v-btn color="primary" @click="redirectToLogin">{{ $t("components.button-favorite.log-in") }}</v-btn>
+          <v-btn text @click="loginDialog = false">{{ $t("components.button-favorite.cancel") }}</v-btn>
         </v-card-actions>
       </v-card>
     </template>
@@ -26,6 +26,8 @@
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore"; // Replace with your actual store path
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const { getCountUserFavorites, deleteFavorite, insertFavorite } = useDb();
 

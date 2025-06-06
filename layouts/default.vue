@@ -19,6 +19,9 @@
 import { useAuthStore } from "@/stores/authStore";
 import { usePresenceChannel } from "@/composables/usePresenceChannel";
 import { useFavorites } from "@/composables/useFavorites";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 const config = useRuntimeConfig();
 const authStore = useAuthStore();
 
@@ -65,9 +68,8 @@ watch(
       // I do this here because i don't want to fetch the favorites every time someone joins in the presence channel
       const { favoriteProfiles, fetchFavorites } = useFavorites(userId);
       await fetchFavorites(); // wait for favorites to load
-
       // console.log("Joining presence channel for user ID:", userId, favoriteProfiles.value);
-      usePresenceChannel(userId, favoriteProfiles); // track the presence
+      usePresenceChannel(userId, favoriteProfiles, t); // track the presence
     }
   },
   { immediate: true }

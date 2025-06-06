@@ -1,8 +1,8 @@
 <template>
   <v-card>
-    <v-card-title>Avatar Decoration</v-card-title>
+    <v-card-title>{{ $t('components.select-avatar-decoration.title') }}</v-card-title>
     <v-card-text>
-      <p>Choose an avatar decoration for your profile.</p>
+      <p>{{ $t('components.select-avatar-decoration.choose') }}</p>
       <v-row>
         <v-col
           v-for="decoration in allAvatarDecorations"
@@ -33,13 +33,15 @@
       </v-row>
     </v-card-text>
     <v-card-actions>
-      <v-btn color="primary" @click="selectDecoration">Done</v-btn>
-      <v-btn @click="closeDialog">Cancel</v-btn>
+      <v-btn color="primary" @click="selectDecoration">{{ $t('components.select-avatar-decoration.done') }}</v-btn>
+      <v-btn @click="closeDialog">{{ $t('components.select-avatar-decoration.cancel') }}</v-btn>
     </v-card-actions>
   </v-card>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const allAvatarDecorations = ref<{ name: string; url: string }[]>([]);
 const selectedDecoration = ref<string | null>(null);
 
