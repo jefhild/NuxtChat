@@ -522,7 +522,8 @@
 			"ai": " AI",
 			"message": "Message ",
 			"select-user": "Select a user to chat with",
-			"send": "Send"
+			"send": "Send",
+			"message-sent" : "sent you a message"
 		},
 		"chatheader": {
 			"years-old": " years old, ",
@@ -530,7 +531,10 @@
 			"add-favorites": "Add to Favorites",
 			"block-user": "Block User",
 			"unblock-user": "Unblock User",
-			"report-user": "Report User"
+			"report-user": "Report User",
+			"favorited": "favorited you!",
+			"report-success": "Thank you for reporting this user. We will review the report and take appropriate action if necessary.",
+			"report-failure": "There was an error reporting this user. Please try again later."
 		},
 		"loginAi":{
 			"titleText": "Create Your Anonymous Profile"
@@ -539,7 +543,8 @@
 			"create-profile": "Create Profile",
 			"type-response": "Type your response here...",
 			"titleText": "Create Your Anonymous Profile",
-			"titleText2": "Let's finish creating your profile"
+			"titleText2": "Let's finish creating your profile",
+			"reminder" : "Make sure to enter your email and complete your profile to unlock all features!"
 		},
 		"favorites":{
 			"i-favorited": "I Favorited",
@@ -605,7 +610,162 @@
 			"looking-for": "Looking for",
 			"cancel": "Cancel",
 			"save": "Save"
-
+		},
+		"message": {
+			"accept-image": "Accept Image",
+			"replied-to": "Replied to: ",
+			"save": "Save",
+			"cancel": "Cancel",
+			"edit-hint": "Ctrl+Enter to save • Esc to cancel",
+			"edited": "(edited)"
+		},
+		"morefemale":{
+			"title": "More Female Profiles",
+			"back" : "Go back"
+		},
+		"notification-dropdown":{
+			"none" : "No notifications"
+		},
+		"profile-age":{
+			"age": "Agee",
+			"required": "Age is required"
+		},
+		"profile-bio": {
+			"bio": "Bio"	
+		},
+		"profile-card":{
+			"remove-favorite": "Remove Favorite",
+			"remove-upvote": "Remove Upvote",
+			"remove": "Remove"
+		},
+		"profile-container":{
+			"status": "Status:",
+			"gender": "Gender:",
+			"age": "Age:",
+			"about-me": "About Me:",
+			"generate-bio": "Generate a Bio",
+			"sound-notifs": "Sound Notifications",
+			"on": "On",
+			"off": "Off",
+			"save": "Save",
+			"edit": "Edit",
+			"cancel": "Cancel",
+			"go-to-chat": "Go to Chat",
+			"delete": "Delete My Account",
+			"delete-confirm": "Are you sure you want to delete your account? This action cannot be undone.",
+			"restore": "Restore Account",
+			"finish" : "Finish Profile",
+			"public": "Public Profile",
+			"copy": "Copy Profile Link",
+			"snackbar-copy-text": "Profile link copied to clipboard!",
+			"loading": "Loading...",
+			"confirm": "Confirm",
+			"close": "Close",
+			"gender-male": "Male",
+			"gender-female": "Female",
+			"gender-other": "Other"
+		},
+		"profile-displayname": {
+			"display-name": "Display Name",
+			"no-spaces": "No spaces allowed",
+			"min-4": "Minimum 4 characters required",
+			"max-15": "Maximum 15 characters allowed",
+			"less-3-special": "Less than 3 special characters required",
+			"required": "Display Name is required"
+		},
+		"profile-photo": {
+			"add-photo": "Add Photo",
+			"add-avatar-deco": "Add Avatar Decoration",
+			"upload-photo": "Upload Profile Photo",
+			"upload": "Upload",
+			"cancel": "Cancel"
+		},
+		"profile-site":{
+			"label": "Public Site URL",
+			"valid": "Valid URL is required"
+		},
+		"profile-tagline":{
+			"label": "Tagline",
+			"min-4":"Minimum 4 characters required",
+			"max-30": "Maximum 30 characters allowed",
+			"less-3-special": "Less than 3 special characters required",
+			"no-domain": "Domain names or links are not allowed"
+		},
+		"public-user-profile":{
+			"looking-for": "Looking for: ",
+			"about-me": "About Me: ",
+			"visit1" : "Visit ",
+			"visit2" : "'s website",
+			"back": "Back to Profile",
+			"chat": "Chat with ",
+			"back-home": "Back Home"
+		},
+		"registration-dialog": {
+			"register": "Register to Continue",
+			"close": "Close"
+		},
+		"report-user-modal": {
+			"title": "Report User",
+			"select-issues": "Select all relevant issues",
+			"describe-problem": "Describe the problem",
+			"select-message": "Select specific messages (optional)",
+			"selected-messages": "Selected messages: ",
+			"10": "10",
+			"cancel": "Cancel",
+			"submit": "Submit Report",
+			"photo": "Their photo",
+			"username": "Their username",
+			"descriptors": "Their text descriptors",
+			"actions": "Their actions",
+			"10-max": "You can select up to 10 messages"
+		},
+		"select-avatar-decoration":{
+			"title": "Avatar Decoration",
+			"choose": "Choose an Avatar Decoration for your profile",
+			"done": "Done",
+			"cancel": "Cancel"
+		},
+		"settings-container": {
+			"profile": "My Profile",
+			"favorites": "My Favorites",
+			"blocked": "Blocked Users",
+			"upvotes": "Upvotes",
+			"loading": "Loading...",
+			"registered-only": "Registered users only"
+		},
+		"status-selection":{
+			"status": "Status"
+		},
+		"toggle-ai": {
+			"ai": "AI Users",
+			"real": "Real Users"
+		},
+		"upvotes":{
+			"no-upvotes": "You have no upvotes",
+			"upvoted-me": "Upvoted me",
+			"i-upvoted": "I Upvoted",
+			"no-upvoted-me": "No one has upvoted you yet"
+		},
+		"users":{
+			"online": "online",
+			"offline": "offline",
+			"active": "active",
+			"no-anonymous": "No anonymous users found"
+		},
+		"users-ai":{
+			"ai-users": "AI Users",
+			"active": "active"
+		}
+	},
+	"composables": {
+		"presenceChannel": {
+			"online": "is online!"
+		},
+		"presenceStatus":{
+			"online": "Online",
+			"away": "Away",
+			"dnd": "Do Not Disturb"
 		}
 	}
+	
 }

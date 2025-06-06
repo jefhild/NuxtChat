@@ -81,6 +81,9 @@ import useAgeMapper from "@/composables/useAgeMapper";
 import useGenderMapper from "@/composables/useGenderMapper";
 import useStatusMapper from "@/composables/useStatusMapper";
 import useAvatarMapper from "@/composables/useAvatarMapper";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 
 const { checkDisplayNameExists } = useDb();
 const localPath = useLocalePath();
@@ -459,7 +462,7 @@ const submitToDatabase = async () => {
     router.push(localPath("/chat"));
     notificationStore.addNotification(
       'reminder',
-      `Make sure to enter your email and complete your profile to unlock all features!`,
+      t("components.dialogAiSignUp.reminder"),
       null
     );
   }

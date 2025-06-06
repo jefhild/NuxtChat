@@ -60,15 +60,17 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const router = useRouter();
 const { getGenderFromId, getAvatarDecorationFromId, getUserSlugFromId } = useDb();
 const avatarDecoration = ref("");
 const localPath = useLocalePath();
 
 const tooltipText = computed(() => {
-  if (props.type === "favorite") return "Remove Favorite";
-  if (props.type === "upvote") return "Remove Upvote";
-  return "Remove"; // default fallback
+  if (props.type === "favorite") return t('components.profile-card.remove-favorite');
+  if (props.type === "upvote") return t('components.profile-card.remove-upvote');
+  return t('components.profile-card.remove'); // default fallback
 });
 
 import {

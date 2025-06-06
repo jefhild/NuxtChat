@@ -52,21 +52,21 @@
       <v-row>
         <v-col cols="12" md="4">
           <v-row><v-col v-if="!isEditable" cols="auto" class="mt-1">
-              <label class="font-weight-bold">Status:</label></v-col><v-col>
+              <label class="font-weight-bold">{{ $t("components.profile-container.status") }}</label></v-col><v-col>
               <StatusSelection :selectedStatus="userProfile?.status_id ?? 1" :status="status" :isEditable="isEditable"
                 @updateStatus="updateStatus" />
             </v-col></v-row>
         </v-col>
         <v-col cols="12" md="4">
           <v-row><v-col v-if="!isEditable" cols="auto" class="mt-1"><label
-                class="font-weight-bold">Gender:</label></v-col><v-col>
+                class="font-weight-bold">{{ $t("components.profile-container.gender") }}</label></v-col><v-col>
               <GenderSelection v-model="selectedGender" :genders="genders" :isEditable="isEditable"
                 @validation="handleGenderValidation" />
             </v-col></v-row>
         </v-col>
         <v-col cols="12" md="4">
           <v-row><v-col v-if="!isEditable" cols="auto" class="mt-1"><label
-                class="font-weight-bold">Age:</label></v-col><v-col>
+                class="font-weight-bold">{{ $t("components.profile-container.age") }}</label></v-col><v-col>
               <ProfileAge :age="userProfile.age ?? 18" :isEditable="isEditable" @updateAge="updateAge" />
             </v-col></v-row>
         </v-col>
@@ -81,7 +81,7 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col><label class="font-weight-bold">About Me:</label> </v-col>
+        <v-col><label class="font-weight-bold">{{ $t("components.profile-container.about-me") }}</label> </v-col>
         <v-col align="right">
           <v-btn v-if="isEditable" flat variant="text" class="text-link-btn" @click="openGenerateBioDialog">Generate a
             bio</v-btn></v-col> </v-row><v-row no-gutters>
@@ -94,7 +94,7 @@
       <v-row>
         <v-col cols="12" md="12">
           <v-switch v-model="soundNotificationsEnabled"
-            :label="`Sound Notifications: ${soundNotificationsEnabled ? 'On' : 'Off'}`" color="primary" hide-details
+            :label="t('components.profile-container.sound-notifs') + `: ${soundNotificationsEnabled ? t('components.profile-container.on') : t('components.profile-container.off')}`" color="primary" hide-details
             inset @change="updateSoundNotifications" />
         </v-col>
       </v-row>
@@ -113,40 +113,44 @@
       <v-row>
         <v-col cols="8">
           <v-btn color="primary" :disabled="!isFormValid" @click="toggleEditMode">
-            {{ isEditable ? "Save" : "Edit" }}
+            {{ isEditable ? t('components.profile-container.save') : t('components.profile-container.edit') }}
           </v-btn>
           <v-btn class="ml-4" color="secondary" v-if="isEditable" @click="cancelEdit">
-            Cancel
+            {{ $t("components.profile-container.cancel") }}
           </v-btn>
         </v-col>
         <v-col cols="4" class="d-flex justify-end">
-          <v-btn color="primary" :disabled="!isFormValid" @click="gotoChat()">Go to Chat</v-btn>
+          <v-btn color="primary" :disabled="!isFormValid" @click="gotoChat()">{{ $t("components.profile-container.go-to-chat") }}</v-btn>
         </v-col>
       </v-row>
       <v-row>
-        <v-col class="d-flex justify-center">
+        <v-col>
           <v-btn v-if="!isMarkedForDeletion" flat variant="text" @click="deleteDialog = true" class="text-link-btn">
-            Delete My Account
+            {{ $t("components.profile-container.delete") }}
           </v-btn>
           <v-btn v-else flat variant="text" @click="deleteDialog = true" class="text-link-btn">
-            Restore Account
+            {{ $t("components.profile-container.restore") }}
           </v-btn>
         </v-col>
 
         <v-col class="d-flex justify-center">
           <v-btn v-if="!isFinished && isEditable" flat variant="text" class="text-link-btn"
-            @click="openFinishProfileDialog">Finish Profile</v-btn>
+            @click="openFinishProfileDialog">{{ $t("components.profile-container.finish") }}</v-btn>
         </v-col>
 
         <v-col class="d-flex justify-center">
           <v-btn flat variant="text" color="blue"
-            @click="router.push(localPath(`/profiles/${userProfile.gender}/${userProfile.slug}`))" class="text-link-btn">Public
-            Profile
+            @click="router.push(localPath(`/profiles/${userProfile.gender}/${userProfile.slug}`))" class="text-link-btn">
+            {{ $t("components.profile-container.public") }}
           </v-btn>
 
-          <v-btn icon color="primary" size="small" class="ml-5" @click="copyPublicProfileLink">
-            <v-icon>mdi-content-copy</v-icon>
-          </v-btn>
+          <v-tooltip :text="t('components.profile-container.copy')" location="top">
+            <template #activator="{ props: tooltipProps }">
+              <v-btn icon color="primary" size="small" class="ml-5" v-bind="tooltipProps" @click="copyPublicProfileLink">
+                <v-icon>mdi-content-copy</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
         </v-col>
 
         <!-- lets make this a claim account button to link an email -->
@@ -159,7 +163,7 @@
       <v-row>
         <v-col cols="12">
           <v-progress-circular indeterminate color="primary"></v-progress-circular>
-          <span>Loading...</span>
+          <span>{{ $t("components.profile-container.loading") }}</span>
         </v-col>
       </v-row>
     </v-card-text>
@@ -169,15 +173,14 @@
     <v-card max-width="400" prepend-icon="mdi-account-remove" title="Delete My Account">
       <v-card-text>
         <v-row justify="center">
-          <v-col class="text-center">Are you sure you want to delete your account? This action cannot be
-            undone.</v-col></v-row>
+          <v-col class="text-center">{{ $t("components.profile-container.delete-confirm") }}</v-col></v-row>
       </v-card-text>
 
       <template v-slot:actions>
-        <v-btn v-if="!isMarkedForDeletion" color="primary" text @click="confirmDelete">Confirm</v-btn>
-        <v-btn v-else color="primary" text @click="cancelDelete">Restore Account</v-btn>
+        <v-btn v-if="!isMarkedForDeletion" color="primary" text @click="confirmDelete">{{ $t("components.profile-container.confirm") }}</v-btn>
+        <v-btn v-else color="primary" text @click="cancelDelete">{{ $t("components.profile-container.restore") }}</v-btn>
         <v-spacer></v-spacer>
-        <v-btn class="ms-auto" text="Cancel" @click="deleteDialog = false"></v-btn>
+        <v-btn class="ms-auto" :text="t('components.profile-container.cancel')" @click="deleteDialog = false"></v-btn>
       </template>
     </v-card>
   </v-dialog>
@@ -200,7 +203,7 @@
 
     <template v-slot:actions>
       <v-btn color="blue" variant="text" @click="snackbar = false">
-        Close
+        {{ $t("components.profile-container.close") }}
       </v-btn>
     </template>
   </v-snackbar>
@@ -210,6 +213,8 @@
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useLocationManager } from "@/composables/useLocationManager";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const {
   getStatuses,
@@ -232,10 +237,10 @@ const userProfile = ref(authStore.userProfile);
 // const genders = ref([]);
 
 const genders = ref([
-  { id: null, name: "Please select a gender" },
-  { id: 1, name: "Male" },
-  { id: 2, name: "Female" },
-  { id: 3, name: "Other" },
+  { id: null, name:  t("components.gender-selection.select-gender") },
+  { id: 1, name: t("components.profile-container.gender-male") },
+  { id: 2, name: t("components.profile-container.gender-female") },
+  { id: 3, name: t("components.profile-container.gender-other") },
 ]);
 
 const status = ref([]);
@@ -646,7 +651,7 @@ const copyPublicProfileLink = async () =>
   {
     const publicUrl = `${window.location.origin}/profiles/${userProfile.value.gender}/${userProfile.value.slug}`;
     await navigator.clipboard.writeText(publicUrl);
-    snackbarText.value = "Profile link copied to clipboard!";
+    snackbarText.value = t("components.profile-container.snackbar-copy-text");
 
   } catch (err)
   {

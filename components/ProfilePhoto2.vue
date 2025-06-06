@@ -1,7 +1,7 @@
 <template>
   <v-row no-gutters>
     <v-col class="d-flex flex-column align-center">
-      <v-btn v-if="editable" variant="text" color="blue" @click="openDialog">Add Photo</v-btn>
+      <v-btn v-if="editable" variant="text" color="blue" @click="openDialog">{{ $t('components.profile-photo.add-photo') }}</v-btn>
       <div class="photo-container">
         <NuxtImg v-if="photopath" :src="photopath" class="cover-image" alt="Profile Image"/>
         <NuxtImg v-if="avatarDecorationURL" :src="avatarDecorationURL" class="avatar-decoration" />
@@ -11,20 +11,20 @@
       </div>
       <v-btn v-if="editable && isRegistered" variant="text" color="blue" @click="toggleAvatarDecDialog"
         class="text-caption text-sm-body-2 text-md-body-1 mx-auto" block>
-        Add Avatar Decoration
+        {{ $t('components.profile-photo.add-avatar-deco') }}
       </v-btn>
     </v-col>
   </v-row>
 
   <v-dialog v-model="dialog" max-width="500">
     <v-card>
-      <v-card-title>Upload Profile Photo</v-card-title>
+      <v-card-title>{{ $t('components.profile-photo.upload-photo') }}</v-card-title>
       <v-card-text>
         <input type="file" @change="onFileChange" />
       </v-card-text>
       <v-card-actions>
-        <v-btn color="primary" @click="uploadPhoto">Upload</v-btn>
-        <v-btn @click="dialog = false">Cancel</v-btn>
+        <v-btn color="primary" @click="uploadPhoto">{{ $t('components.profile-photo.upload') }}</v-btn>
+        <v-btn @click="dialog = false">{{ $t('components.profile-photo.cancel') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -37,6 +37,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useProfilePhoto } from "@/composables/useProfilePhoto";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const { hasEmail, getAvatarDecorationFromId } = useDb();
 const isRegistered = ref(false);

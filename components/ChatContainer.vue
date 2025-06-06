@@ -380,7 +380,7 @@ const handleRealtimeMessages = async (payload) => {
 
       notificationStore.addNotification(
         "message",
-        `${senderProfile.data.displayname || "Someone"} sent you a message`,
+        `${senderProfile.data.displayname || "Someone"} ` + t("components.chatcontainer.message-sent"),
         newRow.sender_id
       );
       lastUnreadSenderId.value = newRow.sender_id;

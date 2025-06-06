@@ -2,7 +2,7 @@
   <v-text-field
     v-if="isEditable"
     v-model="siteUrl"
-    label="Public site URL"
+    :label="$t('components.profile-site.label')"
     variant="underlined"
     :rules="[urlValidationRule]"
   ></v-text-field>
@@ -13,6 +13,8 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const props = defineProps({
   siteUrl: {
     type: String,
@@ -33,7 +35,7 @@ const urlValidationRule = (value) => {
   const isValidUrl = urlRegex.test(value);
 
   // Return the validation result
-  return isValidUrl || "This field must be a valid URL";
+  return isValidUrl || t('components.profile-site.valid');
 };
 
 const emits = defineEmits(["updateSite"]);

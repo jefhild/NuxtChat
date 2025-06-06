@@ -58,6 +58,9 @@ import { useAuthStore } from "@/stores/authStore";
 //   getGenderColorClass,
 // } from "@/utils/userUtils";
 import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 
 const { getUserProfileFromId, getGenderFromId, insertBlockedUser, insertFavorite, unblockUser, deleteFavorite, upvoteUserProfile, downvoteUserProfile, insertReport } = useDb();
 
@@ -228,8 +231,8 @@ const handleReport = async ({ reportedUserId, categories, reason, messages }) =>
     messages
   );
 
-  error ? snackbarMessage.value = "Failed to submit report. Please try again later."
-        : snackbarMessage.value = "Report submitted successfully.";
+  error ? snackbarMessage.value = t('components.chatheader.report-failure')
+    : snackbarMessage.value = t('components.chatheader.report-success');
 
   showAlert.value = true;
 };
@@ -268,7 +271,7 @@ onMounted(async () =>
 
         notificationStore.addNotification(
           "favorite",
-          `${data.displayname} favorited you!`,
+          `${data.displayname} ` + t("components.chatheader.favorited"),
           favoritingUserId
         );
       }

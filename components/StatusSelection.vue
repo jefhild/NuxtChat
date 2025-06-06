@@ -7,7 +7,7 @@
       item-title="name"
       item-value="id"
       variant="underlined"
-      label="Status"
+      :label="$t('components.status-selection.status')"
     />
     <div v-else>
       <v-row>
@@ -18,6 +18,8 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const props = defineProps({
   selectedStatus: {
     type: Number,

@@ -24,7 +24,7 @@
 			</v-list-item>
 
 			<v-list-item v-if="notificationStore.notifications.length === 0">
-				<v-list-item-title>No notifications</v-list-item-title>
+				<v-list-item-title>{{ $t("components.notification-dropdown.none") }}</v-list-item-title>
 			</v-list-item>
 		</v-list>
 	</v-menu>
@@ -32,6 +32,8 @@
 
 <script setup>
 import { useNotificationStore } from '@/stores/notificationStore';
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay();
