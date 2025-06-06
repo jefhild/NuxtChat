@@ -54,19 +54,18 @@
   </v-container>
 
   <v-dialog v-model="deleteDialog" width="auto">
-    <v-card max-width="400" prepend-icon="mdi-message" title="Delete This Chat">
+    <v-card max-width="400" prepend-icon="mdi-message" :title="$t('components.activeChats.delete-title')">
       <v-card-text>
         <v-row justify="center">
-          <v-col class="text-center">Are you sure you want to delete this chat? This action cannot be
-            undone.</v-col></v-row>
+          <v-col class="text-center">{{ $t("components.activeChats.delete-confirm") }}</v-col></v-row>
       </v-card-text>
       <v-card-text><v-row><v-col><v-checkbox v-model="checkboxBlockUser"
-              label="Block this user?"></v-checkbox></v-col></v-row></v-card-text>
+              :label="$t('components.activeChats.block')"></v-checkbox></v-col></v-row></v-card-text>
 
       <template v-slot:actions>
-        <v-btn color="primary" text @click="confirmDelete()">Confirm</v-btn>
+        <v-btn color="primary" text @click="confirmDelete()">{{ $t("components.activeChats.confirm") }}</v-btn>
         <v-spacer></v-spacer>
-        <v-btn class="ms-auto" text="Cancel" @click="deleteDialog = false"></v-btn>
+        <v-btn class="ms-auto" @click="deleteDialog = false">{{ $t("components.activeChats.cancel") }}</v-btn>
       </template>
     </v-card>
   </v-dialog>
@@ -83,6 +82,8 @@
 import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
 import { usePresenceStatus } from "@/composables/usePresenceStatus";
 import { useAuthStore } from "@/stores/authStore";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const { insertBlockedUser, deleteChatWithUser } = useDb();
 
 const deleteDialog = ref(false);

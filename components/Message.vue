@@ -5,14 +5,14 @@
         @click.stop="openFullscreen" />
 
       <v-btn v-if="!accepted" class="accept-button" small color="primary" @click.stop="accepted = true">
-        Accept Image
+        {{ $t("components.message.accept-image") }}
       </v-btn>
     </div>
   </div>
 
   <div v-if="message.reply_to" class="reply-preview-box">
     <div class="text-caption font-italic text-grey">
-      Replied to: "{{ message.reply_to.content }}"
+      {{ $t("components.message.replied-to") }} "{{ message.reply_to.content }}"
     </div>
   </div>
 
@@ -23,14 +23,14 @@
     <div class="edit-actions">
       <v-btn size="small" color="primary" variant="flat" @click="saveEdit" :loading="saving"
         :disabled="!editedContent.trim() || editedContent.trim() === message.content">
-        Save
+        {{ $t("components.message.save") }}
       </v-btn>
       <v-btn size="small" variant="text" @click="cancelEdit" :disabled="saving">
-        Cancel
+        {{ $t("components.message.cancel") }}
       </v-btn>
     </div>
     <div class="edit-hint text-caption text-grey">
-      Ctrl+Enter to save • Esc to cancel
+      {{ $t("components.message.edit-hint") }}
     </div>
   </div>
 
@@ -47,7 +47,7 @@
       <v-icon icon="mdi-check" v-if="message.read" class="read-icon mr-3"></v-icon>
       <v-icon icon="mdi-check" v-else class="unread-icon mr-3"></v-icon>
       {{ formattedLocalDate }}
-      <span v-if="message.edited_at" class="edited-indicator ml-2">(edited)</span>
+      <span v-if="message.edited_at" class="edited-indicator ml-2">{{ $t("components.message.edited") }}</span>
     </div>
   </div>
 
@@ -68,6 +68,8 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const props = defineProps({
   message: Object,
@@ -152,7 +154,7 @@ const messageClass = computed(() =>
 const formattedLocalDate = computed(() =>
 {
   const date = new Date(props.message.created_at);
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("fr-FR", {
     dateStyle: "short",
     timeStyle: "short",
     hour12: true,

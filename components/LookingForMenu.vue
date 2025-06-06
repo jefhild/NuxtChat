@@ -6,7 +6,7 @@
           append-icon="mdi-arrow-expand-right"
           v-bind="props"
           color="blue"
-          >Looking For
+          >{{ $t("components.lookingFor.looking-for") }}
         </v-btn>
       </template>
 
@@ -62,9 +62,9 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn variant="text" @click="menu = false"> Cancel </v-btn>
+          <v-btn variant="text" @click="menu = false"> {{ $t("components.lookingFor.cancel") }} </v-btn>
           <v-btn color="primary" variant="text" @click="saveChanges">
-            Save
+            {{ $t("components.lookingFor.save") }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -72,6 +72,8 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const menu = ref(false);
 const lookingForOptions = ref([]);
 const userLookingForIds = ref([]);

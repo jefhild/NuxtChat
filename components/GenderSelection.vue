@@ -7,7 +7,7 @@
     item-value="id"
     variant="underlined"
     :rules="genderRules"
-    label="Gender"
+    :label=" $t('components.gender-selection.gender')"
     @blur="validateGender"
     :error="genderError"
     :error-messages="genderErrorMessage"
@@ -33,6 +33,8 @@ const props = defineProps({
   },
 });
 
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const emits = defineEmits(["update:modelValue", "validation"]);
 
 const internalSelectedGender = ref(props.modelValue);
@@ -64,7 +66,7 @@ const selectedGenderLabel = computed(() => {
 const validateGender = () => {
   if (!internalSelectedGender.value) {
     genderError.value = true;
-    genderErrorMessage.value = "You must select a gender.";
+    genderErrorMessage.value = t("components.gender-selection.select-gender");
     emits("validation", false); // Emit false if invalid
   } else {
     genderError.value = false;

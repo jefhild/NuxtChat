@@ -2,7 +2,7 @@
   <v-row>
     <v-row no-gutters class="ma-0 pa-0">
       <v-col class="text-caption text-grey-darken-1 ma-0 pa-0">
-        Logged in as {{ userProfile.displayname }}
+        {{ $t("components.filter-menu.logged-in") }} {{ userProfile.displayname }}
       </v-col>
     </v-row>
 
@@ -16,7 +16,7 @@
             class="rounded-lg"
           >
             <v-icon start>mdi-filter-variant</v-icon>
-            Filters
+            {{ $t("components.filter-menu.filters") }}
             <v-badge
               v-if="
                 selectedGender !== null ||
@@ -56,7 +56,7 @@
           <!-- Gender -->
           <v-list-subheader>
             <v-icon size="18" class="mr-1">mdi-gender-male-female</v-icon>
-            Gender
+            {{ $t("components.filter-menu.gender") }}
           </v-list-subheader>
           <v-select
             v-model="selectedGender"
@@ -85,7 +85,7 @@
 
           <!-- Statuses -->
           <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-ring</v-icon> Status
+            <v-icon size="18" class="mr-1">mdi-ring</v-icon> {{ $t("components.filter-menu.status") }}
           </v-list-subheader>
           <v-select
             v-model="selectedStatus"
@@ -116,7 +116,7 @@
 
           <!-- Age Range -->
           <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-calendar-range</v-icon> Age Range
+            <v-icon size="18" class="mr-1">mdi-calendar-range</v-icon> {{ $t("components.filter-menu.age-range") }}
           </v-list-subheader>
           <v-range-slider
             v-model="selectedAge"
@@ -141,7 +141,7 @@
 
           <!-- Anonymity -->
           <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-incognito</v-icon> Anonymity
+            <v-icon size="18" class="mr-1">mdi-incognito</v-icon> {{ $t("components.filter-menu.anonymity") }}
           </v-list-subheader>
           <v-select
             v-model="selectedAnonymous"
@@ -156,7 +156,7 @@
 
           <!-- Interests -->
           <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-heart-multiple</v-icon> Interests
+            <v-icon size="18" class="mr-1">mdi-heart-multiple</v-icon> {{ $t("components.filter-menu.interests") }}
           </v-list-subheader>
           <v-select
             v-model="selectedInterests"
@@ -187,7 +187,7 @@
 
           <!-- Country -->
           <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-flag</v-icon> Country
+            <v-icon size="18" class="mr-1">mdi-flag</v-icon> {{ $t("components.filter-menu.country") }}
           </v-list-subheader>
           <v-select
             v-model="selectedCountry"
@@ -206,12 +206,12 @@
           <v-card-actions>
             <v-btn variant="text" color="error" @click="clearFilters">
               <v-icon start size="small">mdi-close-circle</v-icon>
-              Clear
+              {{ $t("components.filter-menu.clear") }}
             </v-btn>
             <v-spacer />
-            <v-btn variant="text" @click="menu = false">Cancel</v-btn>
+            <v-btn variant="text" @click="menu = false">{{ $t("components.filter-menu.cancel") }}</v-btn>
             <v-btn color="primary" variant="flat" @click="saveFilters"
-              >Apply</v-btn
+              >{{ $t("components.filter-menu.apply") }}</v-btn
             >
           </v-card-actions>
         </v-card>
@@ -222,6 +222,8 @@
 
 <script setup>
 import { usePresenceStore } from "@/stores/presenceStore";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const { getInterests, getCountries, getStatuses } = useDb();
 

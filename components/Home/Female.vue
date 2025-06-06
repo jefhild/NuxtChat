@@ -4,14 +4,14 @@
       v-if="femaleProfiles.length <= 4"
       class="text-h5 font-weight-light mb-4"
     >
-      Recent Female Profiles
+    {{ $t("components.home.female.title") }}
     </h2>
     <ProfileGrid :profiles="femaleProfiles" :limit="8" />
     <v-row v-if="limit < 4">
       <v-col class="text-right mr-12">
         <NuxtLink :to="localPath('/profiles/female')">
           <v-btn variant="outlined" color="primary" class="font-style-poppins">
-            See More Female Profiles
+            {{ $t("components.home.female.see-more") }}
           </v-btn>
         </NuxtLink>
       </v-col>
@@ -32,6 +32,9 @@ const { getRecentFemales } = useDb();
 const props = defineProps({
   limit: Number,
 });
+
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 onMounted(async () => {
   // console.log("Fetching", props.limit);

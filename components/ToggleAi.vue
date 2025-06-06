@@ -6,13 +6,15 @@
       color="primary"
       hide-details
       class="text-medium-emphasis"
-      :label="modelValue ? 'AI Users' : 'Real Users'"
+      :label="modelValue ? $t('components.toggle-ai.ai') : $t('components.toggle-ai.real')"
     />
     <!-- <v-icon size="18" class="mr-1">mdi-robot</v-icon> AI -->
   </div>
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const props = defineProps({
   modelValue: Boolean,
 });

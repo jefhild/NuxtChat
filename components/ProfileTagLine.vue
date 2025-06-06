@@ -2,7 +2,7 @@
   <v-text-field
     v-if="isEditable"
     v-model="tagLine"
-    label="Tag Line"
+    :label="$t('components.profile-tagline.label')"
     variant="underlined"
     :rules="[blockedDomainRule, specialCharsRule, minLengthRule, maxLengthRule]"
   ></v-text-field>
@@ -13,6 +13,8 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const props = defineProps({
   tagLine: {
     type: String,
@@ -32,18 +34,18 @@ const props = defineProps({
 
 // Rule to check for minimum length of 4 characters
 const minLengthRule = (value) => {
-  return value.length >= 4 || "Minimum 4 characters required";
+  return value.length >= 4 || t('components.profile-tagline.min-4');
 };
 
 const maxLengthRule = (value) => {
-  return value.length <= 30 || "Maximum 30 characters allowed"; 
+  return value.length <= 30 || t('components.profile-tagline.max-30'); 
 };
 
 // Rule to check for special characters
 const specialCharsRule = (value) => {
   const specialChars = /[!@#$%^&*(),.?":{}|<>]/g;
   const specialCharCount = (value.match(specialChars) || []).length;
-  return specialCharCount < 3 || "Less than 3 special characters required";
+  return specialCharCount < 3 || t('components.profile-tagline.less-3-special');
 };
 const blockedDomainRule = (value) => {
   // Regular expression to match domain names and URLs
@@ -53,7 +55,7 @@ const blockedDomainRule = (value) => {
   const isBlocked = domainRegex.test(value);
 
   // Return the validation result
-  return !isBlocked || "Domain names or links are not allowed";
+  return !isBlocked || t('components.profile-tagline.no-domain');
 };
 
 const emits = defineEmits(["updateTagLine"]);

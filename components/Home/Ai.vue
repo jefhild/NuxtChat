@@ -1,7 +1,7 @@
 <template>
   <v-container v-if="!isLoading">
     <h2 v-if="limit <= 4" class="text-h5 font-weight-light mb-4">
-      Recent AI Profiles
+      {{ $t("components.home.ai.title") }}
     </h2>
 
     <ProfileGrid :profiles="mostPopularAiProfiles" :limit="limit" />
@@ -10,7 +10,7 @@
       <v-col class="text-right mr-12">
         <NuxtLink :to="localPath('/profiles/ai')">
           <v-btn variant="outlined" color="primary" class="font-style-poppins">
-            See More AI Profiles
+            {{ $t("components.home.ai.see-more") }}
           </v-btn>
         </NuxtLink>
       </v-col>
@@ -26,6 +26,9 @@ const props = defineProps({
     default: 4,
   },
 });
+
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const emit = defineEmits(["loaded"]);
 

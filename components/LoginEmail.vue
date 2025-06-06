@@ -9,7 +9,7 @@
               :disabled="loading || !isFormValid"
               color="primary"
             >
-              Sign in with Email
+            {{ $t("components.loginEmail.sign-in") }}
             </v-btn>
           </v-col>
         </v-row>
@@ -30,13 +30,12 @@
           <v-col>
             <v-checkbox
               v-model="isAgeConfirmed"
-              :rules="[(v) => !!v || 'You must confirm your age']"
+              :rules="[(v) => !!v || $t('components.loginEmail.confirmAge') ]"
               @change="updateFormValidity"
             >
               <template v-slot:label>
                 <span id="checkboxLabel">
-                  I am 18 years of age or older and agree to the Terms of
-                  Service.
+                  {{ $t("components.loginEmail.18years") }}
                 </span>
               </template>
             </v-checkbox>
@@ -48,17 +47,15 @@
 
   <v-row v-else
     ><v-col>
-      <b>Check your email for the login link!</b> (It may be in your spam
-      folder.)
+      <b>{{ $t("components.loginEmail.checkmail1") }}</b> {{ $t("components.loginEmail.checkmail2") }}
     </v-col></v-row
   >
 
   <v-row
     ><v-col>
       <p class="text-justify text-caption font-italic font-weight-light">
-        Registered users can contact offline users, save favorites, share photos
-        and a bunch of other stuff. By creating an account, you agree to our
-        <NuxtLink :to="localPath('/terms')">Terms of Service.</NuxtLink>
+        {{ $t("components.loginEmail.registeredInfo") }}
+        <NuxtLink :to="localPath('/terms')">{{ $t("components.loginEmail.terms") }}</NuxtLink>
       </p></v-col
     ></v-row
   >
@@ -72,6 +69,9 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 const localPath = useLocalePath();
 const { signInWithOtp } = useDb();
 const config = useRuntimeConfig();
@@ -82,7 +82,7 @@ const successMessage = ref(false);
 const isAgeConfirmed = ref(false);
 
 const emailRule = (value) =>
-  (!!value && /.+@.+\..+/.test(value)) || "Invalid email address";
+  (!!value && /.+@.+\..+/.test(value)) || t("components.loginEmail.invalid-email");
 
 const isFormValid = computed(() => {
   return emailRule(email.value) === true && isAgeConfirmed.value;

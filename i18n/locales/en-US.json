@@ -164,6 +164,69 @@
 				"amendments-text": "We may desire to make changes to these Terms from time to time to update it, for example to add references to different products or services. We may specify amended or updated terms that apply to the use of Service after the effective date of such amendment or update, and we will make a new copy of these Terms available to you and may require you to accept it as a condition to the continued provision of the Service to you. In addition, the continued use of the Service after receipt of such amended Terms shall constitute your agreement to such Terms."
 			}	
 		},
+		"privacy": {
+			"title": "Privacy Policy",
+			"intro": "Your privacy is important to us. Therefore, we are committed to respecting your privacy and the confidentiality of your personal data and content. This Privacy Policy is designed to assist you in understanding how we use and safeguards the information you provide in using imchatty. In this Privacy Policy, “Terms of Service” means our Terms of Service applicable from time to time and currently found at imchatty.com/terms “Personal Data” means any information that we possesses relating to an identified or identifiable user of imchatty; other capitalized terms have the meanings given them in the Terms of Service.",
+			"information-title": "WHAT INFORMATION DO WE COLLECT?",
+			"information-text1": "In order to provide you with access to imchatty, we may gather and process some or all of the following information:",
+			"information-text2": "Content: any information that is collected or stored by or from users of imchatty, other than Registration Information, Customer Service Communications or Log Information.",
+			"information-text3": "Registration Information: any information provided when voluntarily registering for use of imchatty, including, but not limited to, username and password and email address.",
+			"information-text4": "Customer Service Communications: any information that is reported to us about the operation of imchatty, including bug reports or requests for enhancements.",
+			"information-text5": "Log Information: When you use some services, our servers automatically record basic information that your application sends. These server logs may include information such as your message, Internet Protocol address, other addressing information, the date and time of your request and an authentication token used to validate the identity of you and your computer.",
+			"how-we-use-title": "HOW DO WE USE YOUR INFORMATION AND FOR WHAT PURPOSE?",
+			"how-we-use-intro": "Our primary purpose in collecting information is to provide you with an efficient user experience. We may use the information defined in this Privacy Policy to: provide the services and any customer support you request; resolve disputes, collect fees, and troubleshoot problems; enforce our Terms of Service; customize, measure, and improve imchatty, content and layout; inform you about service updates; compare information for accuracy, and verify your identity; provide other services for you as described when we collect the information. Additionally we may use your information as described below.",
+			"registration-title": "REGISTRATION INFORMATION",
+			"registration-intro": "We ask for Registration Information in order to verify your identity and to enable your use of imchatty.",
+			"registration-text": "We respect the privacy of personal e-mail accounts and we will store your e-mail addresses just as securely as other Personal Data. We will not sell or distribute your e-mail messages, and your details will not be sold to third parties for their marketing purposes without your explicit permission. However, we will use e-mail to send you messages about faults and service issues. We may also use e-mail to keep you up to date with news about imchatty.",
+			"content-title": "CONTENT",
+			"content-text": "In general, we will not review or provide third parties access to your Content. However, if required by law, we reserve the right to pre-screen, review, flag, filter, modify, refuse or remove any or all Content from imchatty.",
+			"customer-service-title": "CUSTOMER SERVICE COMMUNICATIONS",
+			"customer-service-text": "Information which is voluntarily submitted in feedback is used for the purposes of reviewing this feedback and improving imchatty. We reserve the right to utilize anonymous information for marketing purposes, for instance by displaying selected comments on imchatty or in other communications. Further, we may from time to time ask you to provide information on your experiences which will be used to measure and improve quality. You are at no time in any obligation to provide any of such data. We will never use any personally identifiable (feedback) information without your explicit permission thereto.",
+			"log-information-title": "LOG INFORMATION",
+			"log-information-text": "We will use this information to control and audit access to imchatty and for statistical information.",
+			"to-whom-title": "TO WHOM DO WE TRANSFER YOUR PERSONAL INFORMATION",
+			"to-whom-text1": "Except as provided below, we shall not sell, rent, trade or otherwise transfer any Registration Information or Content to any third party without your explicit permission, unless we are obliged to do so under applicable laws or by order of the competent authorities.",
+			"to-whom-text2": "We may share your information with our affiliates and other service providers. We may offer some of our services in connection with other service providers. Registration Information that you provide to us may be sent to those providers in order to deliver the service provided by them; similarly, personal information that you provide to those sites may be sent to us in order to operate imchatty.",
+			"to-whom-text3": "Information collected by us may be stored and processed in any country in which we and our affiliates maintain facilities. We reserve the right to transfer information outside of the country where you reside and/or from which you use imchatty, including countries that your own country's privacy laws and regulations may deem deficient in ensuring an adequate level of protection for such information. If you are unsure whether this privacy statement is in conflict with applicable local rules, you should not submit your information. Nevertheless, by using imchatty you consent to any such transfer and/or strorage of information in the United States of America.",
+			"to-whom-text4": "As we continue to develop our business, we might sell or buy subsidiaries or business units. In such transactions as well as in the event all or substantially all of our assets are acquired by a third party, personal information of our users will generally be one of the transferred business assets. We reserve the right to include your personal information, collected as an asset, in any such transfer to a third party. Notwithstanding anything to the contrary in this Privacy Policy or the Terms of Service, we may access, use, preserve or disclose any information we have access to if we have a good faith belief that such access, use, preservation or disclosure of any information is reasonably necessary to (a) satisfy any applicable law, regulation, legal process or enforceable governmental request, (b) enforce the Terms of Service, including investigation of potential violations thereof, (c) detect, prevent, or otherwise address fraud, security or technical issues, or (d) protect against imminent harm to the rights, property or safety of us, our users or the public as required or permitted by law.",
+			"how-we-protect-title": "HOW DO WE PROTECT YOUR PERSONAL INFORMATION?",
+			"how-we-protect-text": "We take appropriate organizational and technical measures to protect the data provided to us or collected by us. You should be aware that internet communications are not always secure. Although we do take what we consider appropriate steps to protect your data, protection of information available over the internet is subject to attack from third parties, and accordingly we cannot promise you that third parties cannot access your Content.",
+			"how-long-title": "HOW LONG IS YOUR PERSONAL DATA KEPT BY US?",
+			"how-long-text": "We do not retain your information any longer than permitted in order to perform our services or as required under relevant legislation, with due observance of the applicable obligations and exceptions under the relevant legislation. Specifically, your information is retained only for as long as is necessary to: (1) provide the use of imchatty; (2) invoice to you your use of imchatty and to maintain records until invoicing for imchatty cannot be lawfully challenged and legal proceedings may no longer be pursued; (3) communicate with you regarding other services that we offer; (4) comply with applicable legislation, regulatory requests and relevant orders from competent courts; (5) enforce our Terms of Service; or (6) fulfill any of the other purposes detailed in this Privacy Policy.",
+			"what-are-cookies-title": "WHAT ARE COOKIES AND HOW DO WE USE THEM?",
+			"what-are-cookies-text": "A cookie is a piece of data stored on the user’s hard drive containing information about the user. Usage of a cookie will in no way linked to any personally identifiable information while on imchatty. Once the user closes their browser, the cookie simply terminates. For instance, by setting a cookie on imchatty, the user would not have to log in a password more than once, thereby saving time while on imchatty. If a user rejects the cookie, they may still use imchatty. The only drawback to this is that the user will be limited in some areas of imchatty. We do not use cookies to track or enhance your experience on imchatty but might for analytics. Some of our business partners may use cookies on imchatty. However, we have no access to or control over these cookies. In addition, if we choose to provide you with promotional offers or advertising, the third party business party may use cookies for that purpose.",
+			"gdpr-compliance-title": "General Data Protection Regulation (GDPR) Compliance",
+			"gdpr-compliance-intro": "If you are a resident of or are located in the European Economic Area (“EEA”), you may also have certain rights under the General Data Protection Regulation (“GDPR”). Personal data you provide on our website or through our products is only collected with your consent, and may be transmitted outside of the EEA to the imchatty (or computer servers maintained for the benefit of imchatty) pursuant to that consent.",
+			"gdpr-compliance-text1": "In general, under the GDPR you may:",
+			"gdpr-compliance-text2": "request access to your personal data",
+			"gdpr-compliance-text3": "have incomplete or incorrect data corrected",
+			"gdpr-compliance-text4": "have your personal data deleted",
+			"gdpr-compliance-text5": "suspend or restrict our use of your personal data, or withdraw your consent",
+			"gdpr-compliance-text6": "complain to a supervisory authority if you believe your rights under the GDPR are not being respected",
+			"gdpr-compliance-text7": "Should you request a copy of your personal data, we will supply to you a copy of your personal data. The first copy will be provided free of charge, but additional copies may be subject to a reasonable fee. Should you request the deletion of your personal data, imchatty will generally do so as soon as practicable, although your right to have your personal data deleted is subject to exceptions, such as, for example, compliance with a legal obligation or for the establishment, exercise or defense of legal claims.",
+			"gdpr-compliance-text8": "If you consider that our processing of your personal information infringes data protection laws, you have a legal right to lodge a complaint with a supervisory authority responsible for data protection. You may do so in the EU member state of your habitual residence, your place of work or the place of the alleged infringement.",
+			"gdpr-compliance-text9": "Contact ",
+			"gdpr-compliance-text10":" if you have concerns regarding your personal data, or wish to exercise any of these listed rights.",
+			"gdpr-compliance-text11": "Note that, if you are in the EEA, we may transfer your personal data outside of the EEA, including to the United States. By way of example, this may happen if your personal data is transferred to our servers located in a country outside of the EEA. These countries may not have similar data protection laws to the EEA. By submitting your personal data, you’re agreeing to this transfer, storing or processing. If we transfer your information outside of the EEA in this way, we will take steps to ensure that appropriate security measures are taken with the aim of ensuring that your privacy rights continue to be protected as outlined in this policy.",
+			"how-far-title": "HOW FAR DOES OUR RESPONSIBILITY EXTEND?",
+			"how-far-text": "This Privacy Policy applies to services that are owned and operated by us. We do not exercise control over other users or third party systems that may link to imchatty. They may place their own or other files on their systems, collect data or solicit personal information from you. We accept no responsibility or liability for these other sites or services.",
+			"privacy-modified-title": "CAN THIS PRIVACY POLICY BE MODIFIED?",
+			"privacy-modified-text": "We reserve the right to modify the provisions of this Privacy Policy if deemed necessary. We will inform you of these changes by publishing the revised Privacy Policy at imchatty.com/privacy. The revised Privacy Policy shall become effective within thirty (30) days of such publishing, unless you expressly accept the revised statement earlier by clicking on the accept button. You agree that the express acceptance by you, or your continued use of imchatty, shall constitute your acceptance of the Privacy Policy.",
+			"rights-contact-title": "WHAT RIGHTS DO YOU HAVE AND HOW CAN YOU CONTACT US?",
+			"rights-contact-text1": "If you would like to exercise your right to view, correct, complete or remove your Personal Data, please contact us at ",
+			"rights-contact-text2": "Upon verification of your identity, we will attempt to quickly fulfill your request, provided we will not act contrary to applicable legislation by fulfilling your request.",
+			"meta": {
+				"title": "Privacy Policy – ImChatty",
+				"description": "Learn how ImChatty works to protect your privacy and improve your experience. Read our full Privacy Policy.",
+				"ogTitle": "Privacy Policy – ImChatty",
+				"ogImage": "https://imchatty.com/images/article-image.webp",
+				"ogDescription":"Take a look at how ImChatty works to protect your privacy and improve your experience. Read our full Privacy Policy.",
+				"twitterTitle": "Privacy Policy – ImChatty",
+				"twitterCard": "summary_large_image",
+				"twitterDescription": "Learn how ImChatty works to protect your privacy and improve your experience. Read our full Privacy Policy.",
+				"twitterImage": "https://imchatty.com/images/article-image.webp"
+			}
+		},
 		"admin": {
 			"title": "Admin Dashboard",
 			"sections-title" : "Sections",
@@ -226,13 +289,50 @@
 				}
 			}
 		},
+		"tags": {
+			"index": {
+				"title": "All the different Tags"
+			},
+			"slug": {
+				"no-articles": "No articles found for this tag"
+			}
+		},
+		"guides": {
+			"title": "All of our Guides",
+			"no-articles": "No articles found for this type",
+			"meta": {
+				"title": "Popular Guides",
+				"description": "Check out our most recent guides! Browse guides of genuine interest.",
+				"ogTitle": "Popular Guides - Help",
+				"ogUrl": "https://imchatty.com/guides",
+				"ogDescription": "Check out our most recent guides! Help getting started, tips, and how to protect yourself.",
+				"twitterTitle": "Popular Guide Insights",
+				"twitterCard": "summary_large_image",
+				"twitterDescription": "Check out our most popular guides and insights! Browse guides of genuine interest, built by a human, and possibly life changing!"
+			}
+		},
+		"insights": {
+			"title": "All of our non guide articles",
+			"meta": {
+				"title": "Popular Article Insights",
+				"description": "Check out our most recent insights! Browse articles of genuine interest.",
+				"ogTitle": "Popular Article Insights",
+				"ogUrl": "https://imchatty.com/insights",
+				"ogType": "Website",
+				"ogDescription": "Check out our most recent insights! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+				"ogImage": "https://imchatty.com/images/robot.png",
+				"twitterTitle": "Popular Article Insights",
+				"twitterCard": "summary_large_image",
+				"twitterDescription": "Check out our most popular article insights! Browse articles of genuine interest, built by a human, and possibly life changing!"
+			}
+		},
 		"profiles": {
 			"ai" : {
 				"title": "Popular AI Profiles",
 				"meta": {
 					"title": "More Popular AI Profiles",
 					"description": "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
-					"ogTitle": "Popular AI Profiless",
+					"ogTitle": "Popular AI Profiles",
 					"ogType": "Website",
 					"ogUrl": "https://imchatty.com/profiles/ai",
 					"ogDescription": "Check out our most popular recent AI profiles! Browse top-rated chatbots with personalized details, and genuine interests.",
@@ -247,7 +347,7 @@
 				"meta": {
 					"title": "More Popular Female Profiles",
 					"description": "Check out our most popular recent female profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-					"ogTitle": "Popular Female Profiless",
+					"ogTitle": "Popular Female Profiles",
 					"ogType": "Website",
 					"ogUrl": "https://imchatty.com/profiles/female",
 					"ogDescription": "Check out our most popular recent female profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
@@ -262,7 +362,7 @@
 				"meta": {
 					"title": "More Popular Male Profiles",
 					"description": "Check out our most popular recent male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-					"ogTitle": "Popular Male Profiless",
+					"ogTitle": "Popular Male Profiles",
 					"ogType": "Website",
 					"ogUrl": "https://imchatty.com/profiles/male",
 					"ogDescription": "Check out our most popular recent male profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
@@ -292,7 +392,7 @@
 				"meta": {
 					"title": "More Popular Recent Profiles",
 					"description": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-					"ogTitle": "Popular Recent Profiless",
+					"ogTitle": "Popular Recent Profiles",
 					"ogType": "Website",
 					"ogUrl": "https://imchatty.com/profiles/recent",
 					"ogDescription": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
@@ -301,6 +401,55 @@
 					"twitterCard": "summary_large_image",
 					"twitterDescription": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
 				}
+			},
+			"index": {
+				"title": "Public Profiles",
+				"meta": {
+					"title": "More Profiles",
+					"description": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogTitle": "Public Profiles",
+					"ogType": "Website",
+					"ogUrl": "https://imchatty.com/profiles/",
+					"ogDescription": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+					"ogImage": "https://imchatty.com/images/robot.png",
+					"twitterTitle": "Public Profiles",
+					"twitterCard": "summary_large_image",
+					"twitterDescription": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
+				}
+			}
+		},
+		"loginemail": {
+			"welcome": "Welcome, you are now signed in",
+			"choices": "You can go to your profile or chat now.",
+			"get-chatting": "Get chatting!",
+			"profile": "Go to my profile"
+		},
+		"logout": {
+			"meta": {
+				"title": "Logout",
+				"description": "Free anonymous chat app (Real or AI) for everyone.",
+				"ogTitle": "Imchatty - Logout",
+				"ogType": "Website",
+				"ogUrl": "https://imchatty.com/logout",
+				"ogImage": "https://imchatty.com/images/robot.png",
+				"ogDescription": "Free anonymous chat app (Real or AI) for everyone.",
+				"twitterTitle": "Imchatty - Logout",
+				"twitterCard": "summary_large_image",
+				"twitterDescription": "Free anonymous chat app (Real or AI) for everyone."
+			}
+		},
+		"signin": {
+			"note": "You should never be here...",
+			"meta": {
+				"title": "Sign In – Access Your ImChatty Account",
+				"description": "Securely sign in to your ImChatty account using Google, Facebook, or email. Join conversations with real people or AI chat partners in seconds.",
+				"ogTitle": "Sign In to ImChatty",
+				"ogImage": "https://imchatty.com/images/article-image.webp",
+				"ogDescription": "Login securely via Google, Facebook, or email and start chatting anonymously with real or AI users. Your chat journey begins here.",
+				"twitterTitle": "Sign In – Chat Anonymously with ImChatty",
+				"twitterCard": "summary_large_image",
+				"twitterDescription": "Easily access your ImChatty account with Google, Facebook, or email login. Start anonymous conversations with real or AI profiles today.",
+				"twitterImage": "https://imchatty.com/images/article-image.webp"
 			}
 		}
 	},
@@ -322,6 +471,301 @@
 			"cookies": "Cookie Policy",
 			"public-profiles": "Public Profiles",
 			"consent-preferences": "Consent Preferences"
+		},
+		"button-favorite": {
+			"log-in": "Log In",
+			"cancel": "Cancel",
+			"please-log-in": "Please Log in",
+			"need-log-in": "You need to log in to save profiles as favorites."
+		},
+		"home": {
+			"ai":{
+				"title": "Recent AI Profiles",
+				"see-more": "See More AI Profiles"
+			},
+			"female":{
+				"title": "Recent Female Profiles",
+				"see-more": "See More Female Profiles"
+			},
+			"main": {
+				"sign-in": "Sign In",
+				"google": "With Google",
+				"facebook": "With Facebook",
+				"email": "With Email"
+			},
+			"male": {
+				"title": "Recent Male Profiles",
+				"see-more": "See More Male Profiles"
+			},
+			"most-popular": {
+				"title": "Most Popular Profiles",
+				"see-more": "See More Popular Profiles"
+			},
+			"recent": {
+				"title": "Recent Real Profiles",
+				"see-more": "See More Recent Profiles"
+			}
+		},
+		"activeChats":{
+			"confirm": "Confirm",
+			"cancel": "Cancel",
+			"delete-title": "Delete This Chat",
+			"delete-confirm": "Are you sure you want to delete this chat? This action cannot be undone.",
+			"block": "Block this user?"
+		},
+		"blockedUsers":{
+			"no-blocked-users": "You have no blocked users"
+		},
+		"chatcontainer": {
+			"replying-to": "Replying to: ",
+			"chat": "Chat with a ",
+			"ai": " AI",
+			"message": "Message ",
+			"select-user": "Select a user to chat with",
+			"send": "Send",
+			"message-sent" : "sent you a message"
+		},
+		"chatheader": {
+			"years-old": " years old, ",
+			"remove-favorites": "Remove from Favorites",
+			"add-favorites": "Add to Favorites",
+			"block-user": "Block User",
+			"unblock-user": "Unblock User",
+			"report-user": "Report User",
+			"favorited": "favorited you!",
+			"report-success": "Thank you for reporting this user. We will review the report and take appropriate action if necessary.",
+			"report-failure": "There was an error reporting this user. Please try again later."
+		},
+		"loginAi":{
+			"titleText": "Create Your Anonymous Profile"
+		},
+		"dialogAiSignUp":{
+			"create-profile": "Create Profile",
+			"type-response": "Type your response here...",
+			"titleText": "Create Your Anonymous Profile",
+			"titleText2": "Let's finish creating your profile",
+			"reminder" : "Make sure to enter your email and complete your profile to unlock all features!"
+		},
+		"favorites":{
+			"i-favorited": "I Favorited",
+			"no-favorites": "No favorited users found",
+			"favorited-me": "Favorited me",
+			"no-favorited-me": "No one has favorited you yet"
+		},
+		"filter-menu":{
+			"logged-in": "Logged In as ",
+			"filters": "Filters",
+			"gender": "Gender",
+			"status": "Status",
+			"age-range": "Age Range",
+			"anonymity": "Anonymity",
+			"interests": "Interests",
+			"country": "Country",
+			"clear": "Clear",
+			"apply": "Apply",
+			"cancel": "Cancel"
+		},
+		"finish-profile":{
+			"finish-up" : "Let's finish setting up your profile - you have",
+			"type-response": "Type your response here...",
+			"skip": "Skip",
+			"close": "Close",
+			"no-ask" : "Don't ask again"
+		},
+		"gender-selection": {
+			"gender": "Gender",
+			"select-gender": "You must select a gender."
+		},
+		"location-selection": {
+			"country": "Country",
+			"country2": "Country:",
+			"state": "State",
+			"state2": "State:",
+			"city": "City",
+			"city2": "City:"
+		},
+		"loginEmail":{
+			"sign-in": "Sign In with Email",
+			"18years": "I am 18 years or older and agree to the Terms of Service",
+			"checkmail1" : "Check your email for the login link!", 
+			"checkmail2" : "(It may be in your spam folder.)",
+			"registeredInfo": "Registered users can contact offline users, save favorites, share photos and a bunch of other stuff. By creating an account, you agree to our",
+			"terms": "Terms of Service",
+			"invalid-email": "Invalid email address",
+			"confirmAge": "You must confirm your age"
+		},
+		"loginFacebook": {
+			"sign-in": "Sign In with Facebook",
+			"18years": "I am 18 years or older and agree to the Terms of Service",
+			"registeredInfo": "Registered users can contact offline users, save favorites, share photos, use advanced filters and have a more complete AI experience. Facebook will share your name, email address, and profile picture with imchatty. By creating an account, you agree to our",
+			"confirmAge": "You must confirm your age"
+		},
+		"loginGoogle": {
+			"sign-in": "Sign In With Google",
+			"continue": "Continue with Google",
+			"registeredInfo": "Registered users can contact offline users, save favorites, share photos, use advanced filters and have a more complete AI experience. Facebook will share your name, email address, and profile picture with imchatty. By creating an account, you agree to our",
+			"confirmAge": "You must confirm your age"
+		},
+		"lookingFor": {
+			"looking-for": "Looking for",
+			"cancel": "Cancel",
+			"save": "Save"
+		},
+		"message": {
+			"accept-image": "Accept Image",
+			"replied-to": "Replied to: ",
+			"save": "Save",
+			"cancel": "Cancel",
+			"edit-hint": "Ctrl+Enter to save • Esc to cancel",
+			"edited": "(edited)"
+		},
+		"morefemale":{
+			"title": "More Female Profiles",
+			"back" : "Go back"
+		},
+		"notification-dropdown":{
+			"none" : "No notifications"
+		},
+		"profile-age":{
+			"age": "Agee",
+			"required": "Age is required"
+		},
+		"profile-bio": {
+			"bio": "Bio"	
+		},
+		"profile-card":{
+			"remove-favorite": "Remove Favorite",
+			"remove-upvote": "Remove Upvote",
+			"remove": "Remove"
+		},
+		"profile-container":{
+			"status": "Status:",
+			"gender": "Gender:",
+			"age": "Age:",
+			"about-me": "About Me:",
+			"generate-bio": "Generate a Bio",
+			"sound-notifs": "Sound Notifications",
+			"on": "On",
+			"off": "Off",
+			"save": "Save",
+			"edit": "Edit",
+			"cancel": "Cancel",
+			"go-to-chat": "Go to Chat",
+			"delete": "Delete My Account",
+			"delete-confirm": "Are you sure you want to delete your account? This action cannot be undone.",
+			"restore": "Restore Account",
+			"finish" : "Finish Profile",
+			"public": "Public Profile",
+			"copy": "Copy Profile Link",
+			"snackbar-copy-text": "Profile link copied to clipboard!",
+			"loading": "Loading...",
+			"confirm": "Confirm",
+			"close": "Close",
+			"gender-male": "Male",
+			"gender-female": "Female",
+			"gender-other": "Other"
+		},
+		"profile-displayname": {
+			"display-name": "Display Name",
+			"no-spaces": "No spaces allowed",
+			"min-4": "Minimum 4 characters required",
+			"max-15": "Maximum 15 characters allowed",
+			"less-3-special": "Less than 3 special characters required",
+			"required": "Display Name is required"
+		},
+		"profile-photo": {
+			"add-photo": "Add Photo",
+			"add-avatar-deco": "Add Avatar Decoration",
+			"upload-photo": "Upload Profile Photo",
+			"upload": "Upload",
+			"cancel": "Cancel"
+		},
+		"profile-site":{
+			"label": "Public Site URL",
+			"valid": "Valid URL is required"
+		},
+		"profile-tagline":{
+			"label": "Tagline",
+			"min-4":"Minimum 4 characters required",
+			"max-30": "Maximum 30 characters allowed",
+			"less-3-special": "Less than 3 special characters required",
+			"no-domain": "Domain names or links are not allowed"
+		},
+		"public-user-profile":{
+			"looking-for": "Looking for: ",
+			"about-me": "About Me: ",
+			"visit1" : "Visit ",
+			"visit2" : "'s website",
+			"back": "Back to Profile",
+			"chat": "Chat with ",
+			"back-home": "Back Home"
+		},
+		"registration-dialog": {
+			"register": "Register to Continue",
+			"close": "Close"
+		},
+		"report-user-modal": {
+			"title": "Report User",
+			"select-issues": "Select all relevant issues",
+			"describe-problem": "Describe the problem",
+			"select-message": "Select specific messages (optional)",
+			"selected-messages": "Selected messages: ",
+			"10": "10",
+			"cancel": "Cancel",
+			"submit": "Submit Report",
+			"photo": "Their photo",
+			"username": "Their username",
+			"descriptors": "Their text descriptors",
+			"actions": "Their actions",
+			"10-max": "You can select up to 10 messages"
+		},
+		"select-avatar-decoration":{
+			"title": "Avatar Decoration",
+			"choose": "Choose an Avatar Decoration for your profile",
+			"done": "Done",
+			"cancel": "Cancel"
+		},
+		"settings-container": {
+			"profile": "My Profile",
+			"favorites": "My Favorites",
+			"blocked": "Blocked Users",
+			"upvotes": "Upvotes",
+			"loading": "Loading...",
+			"registered-only": "Registered users only"
+		},
+		"status-selection":{
+			"status": "Status"
+		},
+		"toggle-ai": {
+			"ai": "AI Users",
+			"real": "Real Users"
+		},
+		"upvotes":{
+			"no-upvotes": "You have no upvotes",
+			"upvoted-me": "Upvoted me",
+			"i-upvoted": "I Upvoted",
+			"no-upvoted-me": "No one has upvoted you yet"
+		},
+		"users":{
+			"online": "online",
+			"offline": "offline",
+			"active": "active",
+			"no-anonymous": "No anonymous users found"
+		},
+		"users-ai":{
+			"ai-users": "AI Users",
+			"active": "active"
+		}
+	},
+	"composables": {
+		"presenceChannel": {
+			"online": "is online!"
+		},
+		"presenceStatus":{
+			"online": "Online",
+			"away": "Away",
+			"dnd": "Do Not Disturb"
 		}
 	}
+	
 }

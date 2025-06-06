@@ -8,14 +8,14 @@
           :items="countries"
           item-title="name"
           item-value="name"
-          label="Country"
+          :label="$t('components.location-selection.country')"
           variant="underlined"
           @change="countryChanged"
         ></v-select>
 
         <v-row v-else
           ><v-col cols="auto" class="mt-1"
-            ><label class="font-weight-bold">Country:</label></v-col
+            ><label class="font-weight-bold">{{ $t("components.location-selection.country2") }}</label></v-col
           >
           <v-col class="location-label">{{ selectedCountry }}</v-col>
         </v-row>
@@ -27,14 +27,14 @@
           :items="states"
           item-title="name"
           item-value="name"
-          label="State"
+          :label="$t('components.location-selection.state')"
           variant="underlined"
           @change="stateChanged"
         ></v-select>
 
         <v-row v-else
           ><v-col cols="auto" class="mt-1"
-            ><label class="font-weight-bold">State:</label></v-col
+            ><label class="font-weight-bold">{{ $t("components.location-selection.state2") }}</label></v-col
           >
           <v-col class="location-label">{{ selectedState }}</v-col>
         </v-row>
@@ -46,13 +46,13 @@
           :items="cities"
           item-title="name"
           item-value="name"
-          label="City"
+          :label="$t('components.location-selection.city')"
           variant="underlined"
         ></v-select>
 
         <v-row v-else
           ><v-col cols="auto" class="mt-1"
-            ><label class="font-weight-bold">City:</label></v-col
+            ><label class="font-weight-bold">{{ $t("components.location-selection.city2") }}</label></v-col
           >
 
           <v-col class="location-label">{{ selectedCity }}</v-col>
@@ -93,6 +93,9 @@ const props = defineProps({
     required: true,
   },
 });
+
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const emits = defineEmits(["updateCountry", "updateState", "updateCity"]);
 
