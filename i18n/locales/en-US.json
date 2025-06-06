@@ -570,6 +570,42 @@
 		"gender-selection": {
 			"gender": "Gender",
 			"select-gender": "You must select a gender."
+		},
+		"location-selection": {
+			"country": "Country",
+			"country2": "Country:",
+			"state": "State",
+			"state2": "State:",
+			"city": "City",
+			"city2": "City:"
+		},
+		"loginEmail":{
+			"sign-in": "Sign In with Email",
+			"18years": "I am 18 years or older and agree to the Terms of Service",
+			"checkmail1" : "Check your email for the login link!", 
+			"checkmail2" : "(It may be in your spam folder.)",
+			"registeredInfo": "Registered users can contact offline users, save favorites, share photos and a bunch of other stuff. By creating an account, you agree to our",
+			"terms": "Terms of Service",
+			"invalid-email": "Invalid email address",
+			"confirmAge": "You must confirm your age"
+		},
+		"loginFacebook": {
+			"sign-in": "Sign In with Facebook",
+			"18years": "I am 18 years or older and agree to the Terms of Service",
+			"registeredInfo": "Registered users can contact offline users, save favorites, share photos, use advanced filters and have a more complete AI experience. Facebook will share your name, email address, and profile picture with imchatty. By creating an account, you agree to our",
+			"confirmAge": "You must confirm your age"
+		},
+		"loginGoogle": {
+			"sign-in": "Sign In With Google",
+			"continue": "Continue with Google",
+			"registeredInfo": "Registered users can contact offline users, save favorites, share photos, use advanced filters and have a more complete AI experience. Facebook will share your name, email address, and profile picture with imchatty. By creating an account, you agree to our",
+			"confirmAge": "You must confirm your age"
+		},
+		"lookingFor": {
+			"looking-for": "Looking for",
+			"cancel": "Cancel",
+			"save": "Save"
+
 		}
 	}
 }
