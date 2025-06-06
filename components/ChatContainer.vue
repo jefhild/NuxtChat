@@ -51,7 +51,7 @@
 
         <div v-if="replyingToMessage" class="d-flex align-center">
           <div class="text-caption mr-2 flex-grow-1">
-            Replying to: {{ replyingToMessage.content.length > 50 ? replyingToMessage.content.substring(0, 50) + '...' :
+            {{ $t('components.chatcontainer.replying-to') }} {{ replyingToMessage.content.length > 50 ? replyingToMessage.content.substring(0, 50) + '...' :
               replyingToMessage.content }}
           </div>
           <v-btn icon @click="replyingToMessage = null" size="small" class="flex-shrink-0 mt-2">
