@@ -32,8 +32,10 @@ export default defineNuxtConfig({
     langDir: "./locales/",
     strategy: "prefix",
     locales: [
-      { code: "en", iso: "en-US", file: "en-US.json"},
+      { code: "en", iso: "en-US", file: "en-US.json" },
       { code: "fr", iso: "fr-FR", file: "fr-FR.json" },
+      { code: 'ru', iso: 'ru-RU', file: 'ru-RU.json' },
+      { code: "zh", iso: "zh-CN", file: "zh-CN.json" }
     ],
     bundle: {
       optimizeTranslationDirective: false,
