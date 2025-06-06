@@ -54,7 +54,7 @@
                   <v-btn color="primary" block>
                     <NuxtLink
                       to="#"
-                      @click.prevent="handleAILogin"
+                      @click.prevent="handleClick"
                       class="text-dec-none text-white"
                     >
                     {{ $t("pages.home.landing_page.cta_button") }}
@@ -66,7 +66,7 @@
                     color="white"
                     variant="outlined"
                     block
-                    @click="$router.push('/about')"
+                    @click="$router.push(localPath('/about'))"
                   >
                   {{ $t("pages.home.landing_page.learn_more") }}
                   </v-btn>
@@ -110,13 +110,13 @@
 
             <v-row justify="center" align="center" dense>
               <v-col cols="12" sm="4">
-                <v-btn to="/chat" block color="primary" variant="flat" rounded>
+                <v-btn :to="localPath('/chat')" block color="primary" variant="flat" rounded>
                   <v-icon left>mdi-chat</v-icon> {{ $t("pages.home.landing_page.chat") }}
                 </v-btn>
               </v-col>
               <v-col cols="12" sm="4">
                 <v-btn
-                  to="/settings"
+                  :to="localPath('/settings')"
                   block
                   color="secondary"
                   variant="flat"
@@ -172,7 +172,7 @@
 
     <!-- AI Profiles Section -->
     <v-container class="py-12 mt-8">
-      <HomeRecent :limit="4" @loaded="handleLoaded" />
+      <HomeRecent :limit="4" />
     </v-container>
 
     <!-- Articles Section -->
@@ -192,7 +192,7 @@
         </v-col>
       </v-row>
       <div class="text-center mt-6">
-        <NuxtLink to="/articles">
+        <NuxtLink :to="localPath('/articles')">
           <v-btn variant="outlined" color="primary">
             {{ $t("pages.home.landing_page.see_more_articles") }}
           </v-btn>
@@ -203,9 +203,9 @@
     <!-- AI Profiles Section -->
     <v-container class="py-12 mt-8">
       <!-- <HomeRecent :limit="4" @loaded="handleLoaded" /> -->
-      <HomeAi :limit="4" @loaded="handleLoaded" />
-      <HomeMale :limit="4" @loaded="handleLoaded" />
-      <HomeFemale :limit="4" @loaded="handleLoaded" />
+      <HomeAi :limit="4"  />
+      <HomeMale :limit="4"  />
+      <HomeFemale :limit="4" />
 
       <!-- <HomeRecent :limit="4" @loaded="handleLoaded" />
   <HomeMale :limit="4" @loaded="handleLoaded" />
@@ -238,7 +238,7 @@
   </v-container>
 
   <v-dialog v-model="aiDialog" :max-width="750">
-    <DialogAiSignUp @closeDialog="handleDialogClose" />
+    <DialogAiSignUp @closeDialog="handleDialogClose" :titleText="titleText" />
   </v-dialog>
 
   <v-dialog v-model="logoutDialog" width="auto">
@@ -262,8 +262,11 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 // App logic
 const router = useRouter();
+const localPath = useLocalePath();
 const authStore = useAuthStore();
 
 const mostPopularAiProfiles = ref([]);
@@ -275,7 +278,7 @@ const aiDialog = ref(false);
 const isAuthenticated = ref(false);
 const userProfile = ref(null);
 const loggedInUser = ref("??");
-const titleText = ref("Create Your Anonymous Profile");
+const titleText = computed(() => t("components.dialogAiSignUp.titleText"));
 const logoutDialog = ref(false);
 
 const {
@@ -315,10 +318,10 @@ onMounted(async () => {
       isAuthenticated.value = !!userProfileData;
       loggedInUser.value = profile?.displayname || "??";
       userProfile.value = userProfileData;
-      console.log("User profile data:", userProfileData);
+      // console.log("User profile data:", userProfileData);
 
       if (!userProfileData) {
-        titleText.value = "Let's finish creating your profile";
+        titleText.value = computed(() => t("components.dialogAiSignUp.titleText2"));
       }
     } else {
       isAuthenticated.value = false;
@@ -333,11 +336,20 @@ onMounted(async () => {
 
 const handleClick = () => {
   if (isAuthenticated.value) {
-    router.push("/chat");
+    router.push(localPath("/chat"));
   } else {
     handleAILogin();
   }
 };
+
+//useless
+const loadedCount = ref(0);
+const handleLoaded = () =>
+{
+  loadedCount.value++;
+};
+
+
 
 // Logout
 function showLogoutDialog() {
@@ -345,7 +357,7 @@ function showLogoutDialog() {
 }
 async function confirmLogout() {
   logoutDialog.value = false;
-  router.push("/logout");
+  router.push(localPath("/logout"));
 }
 </script>
 

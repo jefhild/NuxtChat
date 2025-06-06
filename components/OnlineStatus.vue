@@ -3,7 +3,6 @@
     <template v-slot:activator="{ props }">
       <v-btn v-bind="props" size="small" :color="statusColorVal" :icon="statusIconVal"></v-btn>
     </template>
-
     <v-list>
       <v-list-item v-for="option in statusOptions" :key="option.value" @click="() => setStatus(option.value)">
         <v-list-item-title>

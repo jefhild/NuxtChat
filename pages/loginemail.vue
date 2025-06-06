@@ -7,15 +7,15 @@
 
   <v-row justify="center" align="center" v-else>
     <v-col cols="12" class="text-center">
-      <h1>Welcome, you are now signed in</h1>
-      <h2>You can go to your profile or chat now.</h2>
+      <h1>{{ $t("pages.loginemail.welcome") }}</h1>
+      <h2>{{ $t("pages.loginemail.choices") }}</h2>
 
       <v-row justify="center" align="center" class="mt-4">
         <v-col cols="auto">
-          <v-btn color="primary" @click="getChatting">Get Chatting!</v-btn>
+          <v-btn color="primary" @click="getChatting">{{ $t("pages.loginemail.get-chatting") }}</v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn color="primary" @click="goToSettings">Go to my profile!</v-btn>
+          <v-btn color="primary" @click="goToSettings">{{ $t("pages.loginemail.profile") }}</v-btn>
         </v-col>
       </v-row>
     </v-col>
@@ -24,11 +24,14 @@
 </template>
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const authStore = useAuthStore();
 const router = useRouter();
 const isLoading = ref(true);
 const { getUserProfileFromId,  authGetUser, authRefreshSession } = useDb();
+const localPath = useLocalePath();
 
 onMounted(async () => {
 
@@ -44,7 +47,7 @@ onMounted(async () => {
 
   if (!userProfileData) {
     console.log("user doesnt exist", sessionData?.user?.id);
-    router.push("/");
+    router.push(localPath("/"));
     return;
   }
 
@@ -70,11 +73,11 @@ onMounted(async () => {
 });
 
 const goToSettings = () => {
-  router.push("/settings");
+  router.push(localPath("/settings"));
 };
 
 const getChatting = () =>
 {
-  router.push("/chat");
+  router.push(localPath("/chat"));
 };
 </script>

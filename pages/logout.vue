@@ -1,21 +1,14 @@
 <template>
-  <v-container fluid>
-    <v-row>
-      <v-col cols="12">
-        <HomeRow1 />
-      </v-col>
-    </v-row>
-
-    <v-row class="mt-16" justify="center">
-      <v-col cols="11" md="8" lg="8">
-        <LogoutAI />
-      </v-col>
-    </v-row>
+  <v-container fluid class="pa-0">
+    <HomeRow1 />
+    <LogoutHome />
   </v-container>
 </template>
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const authStore = useAuthStore();
 
@@ -28,18 +21,32 @@ useHead(() => ({
   ],
 }));
 
+const seoTitle = computed(() => t("pages.logout.meta.title"));
+const seoDescription = computed(() => t("pages.logout.meta.description"));
+const ogTitle = computed(() => t("pages.logout.meta.ogTitle"));
+const ogUrl = computed(() => t("pages.logout.meta.ogUrl"));
+const ogType = computed(() => t("pages.logout.meta.ogType"));
+const ogImage = computed(() => t("pages.logout.meta.ogImage"));
+const ogDescription = computed(() =>
+  t("pages.logout.meta.ogDescription")
+);
+const twitterTitle = computed(() => t("pages.logout.meta.twitterTitle"));
+const twitterCard = computed(() => t("pages.logout.meta.twitterCard"));
+const twitterDescription = computed(() =>
+  t("pages.logout.meta.twitterDescription")
+);
+
 useSeoMeta({
-  title: "Logout",
-  description: "Free anonymous chat app (Real or AI) for everyone.",
-  ogTitle: "Imchatty - Logout",
-  ogDescription: "Free anonymous chat app (Real or AI) for everyone.",
-  ogType: "Website",
-  ogUrl: "https://imchatty.com/logout",
-  ogImage: "https://imchatty.com/images/robot.png",
-  twitterCard: "summary_large_image",
-  twitterTitle: "Imchatty - Logout",
-  twitterDescription: "Free anonymous chat app (Real or AI) for everyone.",
-  // twitterImage: "",
+  title: seoTitle.value,
+  description: seoDescription.value,
+  ogTitle: ogTitle.value,
+  ogType: ogType.value,
+  ogUrl: ogUrl.value,
+  ogImage: ogImage.value,
+  ogDescription: ogDescription.value,
+  twitterCard: twitterCard.value,
+  twitterTitle: twitterTitle.value,
+  twitterDescription: twitterDescription.value,
 });
 
 onMounted(async () => {

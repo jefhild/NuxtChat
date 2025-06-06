@@ -6,7 +6,7 @@
           <!-- Column 1: Favorited Profiles -->
           <v-col cols="12" md="6">
             <p class="text-center font-weight-medium my-2 text-h6">
-              I Favorited
+              {{ $t("components.favorites.i-favorited") }}
             </p>
             <div v-if="favoriteProfiles.length > 0">
               <ProfileCard
@@ -21,14 +21,14 @@
               />
             </div>
             <v-card v-else class="d-flex flex-column align-center">
-              <v-card-title>No favorited users found</v-card-title>
+              <v-card-title>{{ $t("components.favorites.no-favorites") }}</v-card-title>
             </v-card>
           </v-col>
 
           <!-- Column 2: Favorited Me -->
           <v-col cols="12" md="6">
             <p class="text-center font-weight-medium my-2 text-h6">
-              Favorited Me
+              {{ $t("components.favorites.favorited-me") }}
             </p>
             <div v-if="favoritedMeProfiles.length > 0">
               <ProfileCard
@@ -42,7 +42,7 @@
               />
             </div>
             <v-card v-else class="d-flex flex-column align-center">
-              <v-card-title>No one has favorited you yet</v-card-title>
+              <v-card-title>{{ $t("components.favorites.no-favorited-me") }}</v-card-title>
             </v-card>
           </v-col>
         </v-row>
@@ -53,6 +53,8 @@
 
 <script lang="ts" setup>
 import { useFavorites } from "@/composables/useFavorites";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const { getAvatarDecorationFromId } = useDb();
 const avatarDecorations = ref<Record<string, string>>({});

@@ -26,13 +26,13 @@
 
     <v-card-text>
       <div>
-        {{ selectedUser ? selectedUser.age : "..." }} years old,
+        {{ selectedUser ? selectedUser.age : "..." }} {{ $t("components.chatheader.years-old") }}
         {{ selectedUser?.country_name ?? "" }}
       </div>
     </v-card-text>
   </v-card>
   <v-card flat v-else>
-    <v-card-title>Select a user to chat with</v-card-title>
+    <v-card-title>{{ $t("components.chatcontainer.select-user") }}</v-card-title>
   </v-card>
 
   <v-dialog v-model="userProfileDialog" max-width="600" transition="dialog-transition">
@@ -58,6 +58,9 @@ import { useAuthStore } from "@/stores/authStore";
 //   getGenderColorClass,
 // } from "@/utils/userUtils";
 import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 
 const { getUserProfileFromId, getGenderFromId, insertBlockedUser, insertFavorite, unblockUser, deleteFavorite, upvoteUserProfile, downvoteUserProfile, insertReport } = useDb();
 
@@ -86,6 +89,8 @@ const props = defineProps({
     id: String,
   },
 });
+
+let favoriteChannel = null;
 
 const notificationSound = new Audio('/sounds/notification.wav');
 notificationSound.volume = 0.5; // Optional: adjust volume
@@ -226,8 +231,8 @@ const handleReport = async ({ reportedUserId, categories, reason, messages }) =>
     messages
   );
 
-  error ? snackbarMessage.value = "Failed to submit report. Please try again later."
-        : snackbarMessage.value = "Report submitted successfully.";
+  error ? snackbarMessage.value = t('components.chatheader.report-failure')
+    : snackbarMessage.value = t('components.chatheader.report-success');
 
   showAlert.value = true;
 };
@@ -236,40 +241,63 @@ const handleReport = async ({ reportedUserId, categories, reason, messages }) =>
 onMounted(async () =>
 {
   genderName.value = await getGenderFromId(props.selectedUser?.gender_id) || "";
-  supabase
-    .channel("favorites")
-    .on(
+
+  if (!favoriteChannel)
+  {
+    favoriteChannel = supabase.channel(`favorites`);
+  }
+
+  if (!favoriteChannel._subscribed)
+  {
+    favoriteChannel.on(
       "postgres_changes",
-      { 
-        event: "INSERT", 
-        schema: "public", 
+      {
+        event: "INSERT",
+        schema: "public",
         table: "favorites",
         filter: `favorite_user_id=eq.${user.value.id}`,
       },
       async (payload) =>
       {
-        // console.log('New favorite added:', payload);
         const { user_id: favoritingUserId } = payload.new;
 
         const { data, error } = await getUserProfileFromId(favoritingUserId);
-        // console.log("User data:", data, "Error:", error);
         if (!data?.displayname) return;
-
-        // console.log("Favoriting user data:", data);
 
         notificationSound.play().catch((e) =>
         {
           console.warn("Autoplay failed:", e);
         });
+
         notificationStore.addNotification(
-          'favorite',
-          `${data?.displayname} favorited you!`,
+          "favorite",
+          `${data.displayname} ` + t("components.chatheader.favorited"),
           favoritingUserId
         );
       }
-    )
-    .subscribe();
+    );
+
+    const { error } = favoriteChannel.subscribe();
+    if (!error)
+    {
+      favoriteChannel._subscribed = true;
+    } else
+    {
+      console.error("Error subscribing to favorites channel:", error);
+    }
+  }
 });
+
+onBeforeUnmount(() =>
+{
+  if (favoriteChannel?._subscribed)
+  {
+    favoriteChannel.unsubscribe();
+    favoriteChannel._subscribed = false;
+    favoriteChannel = null;
+  }
+});
+
 </script>
 
 <style scoped>

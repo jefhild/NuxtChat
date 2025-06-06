@@ -25,7 +25,7 @@
               <v-card
                 hover
                 link
-                :href="`/profiles/${profile.gender}/${profile.slug}`"
+                :href="localPath(`/profiles/${profile.gender}/${profile.slug}`)"
                 class="ml-2 mb-2"
               >
                 <v-img
@@ -65,7 +65,7 @@
     </v-expansion-panels>
     <v-row>
       <v-col class="text-right">
-        <NuxtLink href="/" class="text-body-2 font-style-poppins mr-5"
+        <NuxtLink :href="localPath('/')" class="text-body-2 font-style-poppins mr-5"
           >Go back</NuxtLink
         >
       </v-col>
@@ -78,7 +78,7 @@ import { ref, onMounted } from "vue";
 const activePanels = ref([0]);
 const femaleProfiles = ref([]);
 const profileLimit = 10;
-
+const localPath = useLocalePath();
 const { getRecentFemales } = useDb();
 
 

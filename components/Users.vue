@@ -3,10 +3,10 @@
     <v-tabs v-model="tab" align-tabs="center" color="deep-purple-accent-4">
       <!-- <v-btn icon="mdi-refresh" variant="text" @click="refreshData"></v-btn> -->
       <v-spacer></v-spacer>
-      <v-tab :value="1">Online</v-tab>
-      <v-tab :value="2">Offline</v-tab>
+      <v-tab :value="1">{{ $t('components.users.online') }}</v-tab>
+      <v-tab :value="2">{{ $t('components.users.offline') }}</v-tab>
       <v-tab :value="3">
-        <span class="tab-title">Active</span>
+        <span class="tab-title">{{ $t('components.users.active') }}</span>
         <v-badge v-if="unreadMessageCount > 0" :content="unreadMessageCount" color="red" overlap class="mb-7"></v-badge>
       </v-tab>
       <v-spacer></v-spacer>
@@ -17,7 +17,7 @@
           @user-selected="selectUser" />
       </v-tabs-window-item>
       <v-tabs-window-item :value="2">
-        <v-row><v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">No anonymous users here...</v-col></v-row>
+        <v-row><v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">{{ $t('components.users.no-anonymous') }}</v-col></v-row>
         <OfflineUsers :users="offlineUsers" :selectedUserId="selectedUserId" @user-selected="selectUser"
           :isLoading="isLoading" />
       </v-tabs-window-item>
@@ -30,6 +30,9 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 const props = defineProps({
   onlineUsers: Array,
   offlineUsers: Array,
@@ -52,6 +55,7 @@ const supabase = useSupabaseClient();
 const authStore = useAuthStore();
 const myUserId = ref(authStore.user);
 const unreadMessageCount = ref(0);
+let messageChannel = null;
 
 // Watch for changes in activeChats for the badge count on the active tab
 watch(
@@ -79,9 +83,13 @@ onMounted(() =>
 
 const subscribeToNewMessages = () =>
 {
-  supabase
-    .channel("messages")
-    .on(
+  if (!messageChannel)
+  {
+    messageChannel = supabase.channel(`messages:notify:${myUserId.value.id}`);
+  }
+
+  if (!messageChannel._subscribed){
+    messageChannel.on(
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${myUserId.value.id}` },
       (payload) =>
@@ -91,8 +99,18 @@ const subscribeToNewMessages = () =>
         const senderId = payload.new.sender_id;
         updateUnreadCount(senderId);
       }
-    )
-    .subscribe();
+    );
+
+    const { error } = messageChannel.subscribe();
+    if (!error)
+    {
+      messageChannel._subscribed = true;
+    }
+    else
+    {
+      console.error("Failed to subscribe to new messages:", error);
+    }
+  }
 };
 
 const updateUnreadCount = (senderId) =>
@@ -129,6 +147,17 @@ const unreadCountUpdated = (user) => {
     onlineUser.unread_count = user.unread_count;
   }
 };
+
+onBeforeUnmount(() =>
+{
+  if (messageChannel?._subscribed)
+  {
+    messageChannel.unsubscribe();
+    messageChannel._subscribed = false;
+    messageChannel = null;
+  }
+});
+
 
 </script>
 <style scoped>

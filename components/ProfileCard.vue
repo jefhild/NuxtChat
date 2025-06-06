@@ -60,14 +60,17 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const router = useRouter();
 const { getGenderFromId, getAvatarDecorationFromId, getUserSlugFromId } = useDb();
 const avatarDecoration = ref("");
+const localPath = useLocalePath();
 
 const tooltipText = computed(() => {
-  if (props.type === "favorite") return "Remove Favorite";
-  if (props.type === "upvote") return "Remove Upvote";
-  return "Remove"; // default fallback
+  if (props.type === "favorite") return t('components.profile-card.remove-favorite');
+  if (props.type === "upvote") return t('components.profile-card.remove-upvote');
+  return t('components.profile-card.remove'); // default fallback
 });
 
 import {
@@ -92,7 +95,7 @@ const getProfileImage = (avatar_url: string | null, gender_id: number) => {
 const goToProfile = async(genderid: string, user_id: string) => {
   const gender = await getGenderFromId(genderid);
   const slug = await getUserSlugFromId(user_id);
-  router.push(`/profiles/${gender}/${slug}`);
+  router.push(localPath(`/profiles/${gender}/${slug}`));
 };
 
 onMounted(async () => {

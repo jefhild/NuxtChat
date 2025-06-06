@@ -3,7 +3,7 @@
     <!-- Top Bar -->
     <v-row justify="center" class="title-bar">
       <v-col cols="12" md="8">
-        <h1 class="page-title">Admin Container</h1>
+        <h1 class="page-title">{{ $t("pages.admin.title") }}</h1>
       </v-col>
     </v-row>
 
@@ -12,7 +12,7 @@
       <v-col cols="12" md="3" class="sidebar">
         <v-card class="mx-auto pa-2" max-width="300">
           <v-list>
-            <v-list-subheader>Sections</v-list-subheader>
+            <v-list-subheader>{{ $t("pages.admin.sections-title") }}</v-list-subheader>
 
             <v-list-item v-for="(item, i) in items" :key="i" :value="item.value" @click="selectedSection = item.value"
               :active="selectedSection === item.value" color="primary" rounded="shaped">
@@ -35,24 +35,27 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import AdminDashboard from '@/components/admin/dashboard.vue';
 import AdminArticles from '@/components/admin/articles.vue';
 import AdminCategories from '@/components/admin/categories.vue';
 import AdminTags from '@/components/admin/tags.vue';
 import AdminReports from '@/components/admin/reports.vue';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const router = useRouter();
+const localPath = useLocalePath();
 
 const selectedSection = ref("dashboard");
 
-const items = [
-  { text: 'Dashboard', icon: 'mdi-view-dashboard', value: 'dashboard' },
-  { text: 'Articles', icon: 'mdi-post', value: 'articles' },
-  { text: 'Categories', icon: 'mdi-folder', value: 'categories' },
-  { text: 'Tags', icon: 'mdi-tag', value: 'tags' },
-  { text: 'Reports', icon: 'mdi-alert-octagon', value: 'reports' },
-];
+const items = computed(() => [
+  { text: t("pages.admin.sections.dashboard"), icon: 'mdi-view-dashboard', value: 'dashboard' },
+  { text: t("pages.admin.sections.articles"), icon: 'mdi-post', value: 'articles' },
+  { text: t("pages.admin.sections.categories"), icon: 'mdi-folder', value: 'categories' },
+  { text: t("pages.admin.sections.tags"), icon: 'mdi-tag', value: 'tags' },
+  { text: t("pages.admin.sections.reports"), icon: 'mdi-alert-octagon', value: 'reports' },
+]);
 
 onMounted(async () =>
 {
@@ -60,7 +63,7 @@ onMounted(async () =>
   if (!authStore.userProfile?.is_admin)
   {
     console.log("Unauthorized access to admin panel");
-    router.push("/"); // or show unauthorized page
+    router.push(localPath("/")); // or show unauthorized page
   }
 });
 

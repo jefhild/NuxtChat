@@ -7,7 +7,7 @@
           @click="handleFacebookLogin"
           color="primary"
         >
-          Sign in With Facebook
+        {{ $t("components.loginFacebook.sign-in") }}
         </v-btn>
       </v-form>
     </v-col>
@@ -16,12 +16,12 @@
     <v-col class="mt-4">
       <v-checkbox
         v-model="isAgeConfirmed"
-        :rules="[(v) => !!v || 'You must confirm your age']"
+        :rules="[(v) => !!v || $t('components.loginEmail.confirmAge')]"
         @change="updateFormValidity"
       >
         <template v-slot:label>
           <span id="checkboxLabel">
-            I am 18 years of age or older and agree to the Terms of Service.
+            {{ $t("components.loginFacebook.18years") }}
           </span>
         </template>
       </v-checkbox>
@@ -31,11 +31,8 @@
   <v-row
     ><v-col>
       <p class="text-justify text-caption font-italic font-weight-light">
-        Registered users can contact offline users, save favorites, share
-        photos, use advanced filters and have a more complete AI experience.
-        Facebook will share your name, email address, and profile picture with
-        imchatty. By creating an account, you agree to our
-        <NuxtLink to="/terms">Terms of Service.</NuxtLink>
+        {{ $t("components.loginFacebook.registeredInfo") }}
+        <NuxtLink :to="localPath('/terms')">{{ $t("components.loginEmail.terms") }}</NuxtLink>
       </p></v-col
     ></v-row
   >
@@ -49,6 +46,10 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
+const localPath = useLocalePath();
 import { ref } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 

@@ -10,13 +10,10 @@
       <v-col cols="12">
         <div class="text-body-2 text-grey-darken-1 mb-4">
           <v-icon>mdi-account</v-icon>
-          <span class="ml-1">ImChatty</span>
+          <span class="ml-1">{{ $t("components.navbar.imchatty") }}</span>
           •
           <v-icon>mdi-folder</v-icon>
-          <NuxtLink
-            :to="`/categories/${article.category.slug}`"
-            class="ml-1 unstyled-link"
-          >
+          <NuxtLink :to="localPath(`/categories/${article.category.slug}`)" class="ml-1 unstyled-link">
             {{ article.category.name }}
           </NuxtLink>
           •
@@ -31,8 +28,8 @@
 
     <v-row class="ml-2 mt-10">
       <v-col cols="12" md="4">
-        <v-btn color="primary" to="/chat">
-          Start Chatting!
+        <v-btn color="primary" :to="localPath('/chat')">
+          {{ $t("pages.home.landing_page.cta_button") }}!
           <v-icon end>mdi-chat</v-icon>
         </v-btn>
       </v-col>
@@ -41,16 +38,9 @@
     <v-row>
       <v-col cols="12" md="8">
         <div class="d-flex align-center flex-wrap">
-          <span class="font-weight-medium mr-2">Tags:</span>
-          <v-chip
-            v-for="tag in article.tags"
-            :key="tag.id"
-            class="ma-1"
-            color="deep-purple-lighten-2"
-            size="small"
-            variant="outlined"
-            :to="`/tags/${tag.slug}`"
-          >
+          <span class="font-weight-medium mr-2">{{ $t("pages.admin.sections.tags") }}:</span>
+          <v-chip v-for="tag in article.tags" :key="tag.id" class="ma-1" color="deep-purple-lighten-2" size="small"
+            variant="outlined" :to="localPath(`/tags/${tag.slug}`)">
             #{{ tag.name }}
           </v-chip>
         </div>
@@ -62,30 +52,16 @@
         <h3 class="">Share</h3>
 
         <div class="d-inline-flex align-center justify-center">
-          <v-btn
-            class="ma-2 share-btn"
-            color="primary"
-            :href="`https://twitter.com/intent/tweet?url=${shareUrl}`"
-            target="_blank"
-            icon
-          >
+          <v-btn class="ma-2 share-btn" color="primary" :href="`https://twitter.com/intent/tweet?url=${shareUrl}`"
+            target="_blank" icon>
             <v-icon>mdi-twitter</v-icon>
           </v-btn>
-          <v-btn
-            class="ma-2 share-btn"
-            color="primary"
-            :href="`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`"
-            target="_blank"
-            icon
-          >
+          <v-btn class="ma-2 share-btn" color="primary"
+            :href="`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`" target="_blank" icon>
             <v-icon>mdi-facebook</v-icon>
           </v-btn>
-          <v-btn
-            class="ma-2 share-btn"
-            color="primary"
-            :href="`mailto:?subject=${article.title}&body=${shareUrl}`"
-            icon
-          >
+          <v-btn class="ma-2 share-btn" color="primary" :href="`mailto:?subject=${article.title}&body=${shareUrl}`"
+            icon>
             <v-icon>mdi-email</v-icon>
           </v-btn>
         </div>
@@ -100,6 +76,7 @@
 
 <script setup>
 import { marked } from "marked"; // or use @nuxt/content if preferred
+const localPath = useLocalePath();
 
 const authStore = useAuthStore();
 const route = useRoute();

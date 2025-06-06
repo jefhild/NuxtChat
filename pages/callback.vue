@@ -10,9 +10,12 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useDb } from "@/composables/useDB";
 
+const route = useRoute();
+const nextPath = route.query.next || "/";
 const router = useRouter();
 const authStore = useAuthStore();
 const { authGetUser } = useDb();
+const localPath = useLocalePath();
 
 onMounted(async () => {
   try {
@@ -21,14 +24,17 @@ onMounted(async () => {
 
     if (user?.user) {
       await authStore.checkAuth(); // updates state
-      router.replace("/"); // clean redirect
+      // router.replace(localPath("/")); 
+      router.replace(localPath(nextPath as string));
     } else {
       console.warn("No session found — redirecting to login");
-      router.replace("/login");
+      // router.replace(localPath("/login"));
+      router.replace(localPath("/signin"));
     }
   } catch (err) {
     console.error("Auth callback error:", err);
-    router.replace("/login");
+    // router.replace(localPath("/login"));
+    router.replace(localPath("/signin"));
   }
 });
 </script>

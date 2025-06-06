@@ -3,9 +3,9 @@
     <transition-group name="fade">
       <v-col v-for="profile in displayedProfiles" :key="profile.user_id" cols="6" xs="6" sm="6" md="4" lg="3"
         class="d-flex justify-center pa-4">
-        <NuxtLink :to="`/profiles/${profile.gender?.toLowerCase()}/${
+        <NuxtLink :to="localPath(`/profiles/${profile.gender?.toLowerCase()}/${
           profile.slug
-        }`" class="text-decoration-none d-flex justify-center">
+        }`)" class="text-decoration-none d-flex justify-center">
           <v-card :class="[
             'profile-card text-center d-flex flex-column justify-end',
             profile.marked_for_deletion_at ? 'marked-for-deletion' : '',
@@ -67,6 +67,7 @@
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 const props = defineProps({
   profiles: {
     type: Array,

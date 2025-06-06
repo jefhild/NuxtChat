@@ -3,7 +3,7 @@
     <v-text-field
       v-if="isEditable"
       v-model="localDisplayName"
-      label="Display Name"
+      :label="$t('components.profile-displayname.display-name')"
       :rules="displayNameRules"
       variant="underlined"
     ></v-text-field>
@@ -13,7 +13,8 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue';
-
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 // Props
 const props = defineProps({
   displayName: {
@@ -34,25 +35,25 @@ const localDisplayName = ref(props.displayName);
 
 // Validation rules
 const noSpacesRule = (value) => {
-  return !/\s/.test(value) || "No spaces allowed";
+  return !/\s/.test(value) || t('components.profile-displayname.no-spaces');
 };
 
 const minLengthRule = (value) => {
-  return value.length >= 4 || "Minimum 4 characters required";
+  return value.length >= 4 || t('components.profile-displayname.min-4');
 };
 
 const maxLengthRule = (value) => {
-  return value.length <= 15 || "Maximum 15 characters allowed"; 
+  return value.length <= 15 || t('components.profile-displayname.max-15'); 
 };
 
 const specialCharsRule = (value) => {
   const specialChars = /[!@#$%^&*(),.?":{}|<>]/g;
   const specialCharCount = (value.match(specialChars) || []).length;
-  return specialCharCount < 3 || "Less than 3 special characters required";
+  return specialCharCount < 3 || t('components.profile-displayname.less-3-special');
 };
 
 const displayNameRules = [
-  (v) => !!v || "Display Name is required",
+  (v) => !!v || t('components.profile-displayname.required '),
   noSpacesRule,
   minLengthRule,
   maxLengthRule,

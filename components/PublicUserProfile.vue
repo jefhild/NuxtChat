@@ -29,12 +29,12 @@
           <v-card-text>
             <!-- {{ profile }} -->
             <v-row v-if="profile?.looking_for?.length">
-              <v-col class="text-h6">Looking For:</v-col>
+              <v-col class="text-h6">{{ $t('components.public-user-profile.looking-for') }}</v-col>
             </v-row>
             <v-row v-if="profile?.looking_for?.length" no-gutters>
               <v-col class="ml-2">{{ profile?.looking_for.join(", ") }}</v-col>
             </v-row>
-            <v-row v-if="profile?.bio"><v-col class="text-h6">About Me:</v-col></v-row>
+            <v-row v-if="profile?.bio"><v-col class="text-h6">{{ $t('components.public-user-profile.about-me') }}</v-col></v-row>
             <v-row v-if="profile?.bio">
               <v-col class="bio-paragraph">{{ profile?.bio }}</v-col></v-row>
           </v-card-text>
@@ -46,7 +46,7 @@
             ">
             <v-btn v-if="profileSiteUrl" :href="profileSiteUrl" color="medium-emphasis" icon="mdi-link-variant"
               size="small" target="_blank" rel="noopener noreferrer"
-              :aria-label="`Visit ${profile?.displayname}'s website`"></v-btn>
+              :aria-label="t('components.public-user-profile.visit1') + `${profile?.displayname}` + t('components.public-user-profile.visit2')"></v-btn>
             <v-btn v-else color="medium-emphasis" icon="mdi-link-variant-off" size="small" disabled></v-btn>
             <v-spacer></v-spacer>
 
@@ -60,21 +60,21 @@
 
         <v-container v-if="isPublic">
           <v-row class="mt-2" justify="center" v-if="isAuthenticated"><v-col cols="auto">
-              <NuxtLink to="/settings">Back to Profile</NuxtLink>
+              <NuxtLink :to="localPath('/settings')">{{ $t('components.public-user-profile.back') }}</NuxtLink>
             </v-col>
             <v-col cols="auto">
-              <NuxtLink :to="`/chat?userSlug=${profile?.slug}`">
-                Chat with {{ profile?.displayname }}
+              <NuxtLink :to="localPath(`/chat?userSlug=${profile?.slug}`)">
+                {{ $t('components.public-user-profile.chat') }} {{ profile?.displayname }}
               </NuxtLink>
             </v-col>
           </v-row>
           <v-row class="mt-2" justify="center" v-else>
             <v-col cols="auto">
-              <NuxtLink to="/">Back Home</NuxtLink>
+              <NuxtLink :to="localPath('/')">{{ $t('components.public-user-profile.back-home') }}</NuxtLink>
             </v-col>
             <v-col cols="auto">
               <NuxtLink to="#" @click.prevent="handleAILogin">
-                Chat with {{ profile?.displayname }}
+                {{ $t('components.public-user-profile.chat') }} {{ profile?.displayname }}
               </NuxtLink>
             </v-col>
           </v-row>
@@ -85,13 +85,16 @@
   </v-container>
 
   <v-dialog v-model="aiDialog" :max-width="750">
-    <DialogAiSignUp @closeDialog="handleDialogClose" />
+    <DialogAiSignUp :titleText="titleText" @closeDialog="handleDialogClose" />
   </v-dialog>
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 import { useAuthStore } from "@/stores/authStore";
 import { useUserProfile } from "@/composables/useUserProfile";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const props = defineProps({
   selectedUserSlug: String,
@@ -107,6 +110,7 @@ const authStore = useAuthStore();
 const isAuthenticated = ref(false);
 const isLoading = ref(true);
 const aiDialog = ref(false);
+const titleText = computed(() => t("components.dialogAiSignUp.titleText"));
 
 const { profile, fetchUserProfileFromSlug } = useUserProfile();
 await fetchUserProfileFromSlug(props.selectedUserSlug);

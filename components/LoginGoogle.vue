@@ -2,7 +2,7 @@
 <v-row no-gutters>
   <v-col cols="12" class="d-flex justify-center">
     <!-- Heading -->
-    <h2 class="text-h5 mb-4">Sign in With Google</h2>
+    <h2 class="text-h5 mb-4">{{ $t("components.loginGoogle.sign-in") }}</h2>
   </v-col>
 
   <v-col cols="12" class="d-flex justify-center">
@@ -12,7 +12,7 @@
         @click="handleGoogleLogin"
         color="primary"
       >
-        Continue with Google
+      {{ $t("components.loginGoogle.continue") }}
       </v-btn>
     </v-form>
   </v-col>
@@ -21,13 +21,13 @@
     <v-col class="mt-4">
       <v-checkbox
         v-model="isAgeConfirmed"
-        :rules="[(v) => !!v || 'You must confirm your age']"
+        :rules="[(v) => !!v || $t('components.loginGoogle.confirmAge')]"
         @change="updateFormValidity"
       >
         <template v-slot:label>
           <span id="checkboxLabel">
             <p class="text-caption">
-              I am 18 years of age or older and agree to the Terms of Service.
+              {{ $t("components.loginFacebook.18years") }}
             </p>
           </span>
         </template>
@@ -38,11 +38,8 @@
   <v-row
     ><v-col
       ><p class="text-justify text-caption font-italic font-weight-light">
-        Registered users can contact offline users, save favorites, share
-        photos, use advanced filters and have a more complete AI experience. Google will share your name, email
-        address, and profile picture with imchatty. By creating an account, you
-        agree to our
-        <NuxtLink to="/terms">Terms of Service.</NuxtLink>
+        {{ $t("components.loginGoogle.registeredInfo") }}
+        <NuxtLink :to="localPath('/terms')">{{ $t("components.loginEmail.terms") }}</NuxtLink>
       </p></v-col
     ></v-row
   >
@@ -50,6 +47,9 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+const localPath = useLocalePath();
 // import { ref } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 

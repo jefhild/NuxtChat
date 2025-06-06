@@ -51,7 +51,7 @@
 
         <div v-if="replyingToMessage" class="d-flex align-center">
           <div class="text-caption mr-2 flex-grow-1">
-            Replying to: {{ replyingToMessage.content.length > 50 ? replyingToMessage.content.substring(0, 50) + '...' :
+            {{ $t('components.chatcontainer.replying-to') }} {{ replyingToMessage.content.length > 50 ? replyingToMessage.content.substring(0, 50) + '...' :
               replyingToMessage.content }}
           </div>
           <v-btn icon @click="replyingToMessage = null" size="small" class="flex-shrink-0 mt-2">
@@ -83,7 +83,9 @@
 
                   <!-- Emoji Picker Panel -->
                   <div class="emoji-picker-container" v-if="showEmojiPicker" ref="emojiPickerRef">
-                    <EmojiPicker @select="onSelectEmoji" />
+                    <client-only>
+                      <EmojiPicker @select="onSelectEmoji" />
+                    </client-only>
                   </div>
 
 
@@ -99,9 +101,9 @@
                   <v-text-field v-model="newMessage" :label="
                       selectedUser
                         ? selectedUser.is_ai
-                          ? 'Chat with a ' + selectedUser.displayname + ' AI'
-                          : 'Message ' + selectedUser.displayname
-                        : 'Select a user to chat with'
+                          ? $t('components.chatcontainer.chat') + selectedUser.displayname + $t('components.chatcontainer.ai')
+                          : $t('components.chatcontainer.message') + selectedUser.displayname
+                        : $t('components.chatcontainer.select-user')
                     " variant="underlined" dense :readonly="!selectedUser || sendingMessage" />
                 </v-col>
               </v-row>
@@ -111,7 +113,7 @@
               <v-btn type="submit" :disabled="!selectedUser || sendingMessage || (!newMessage.trim() && !attachedFile)"
                 color="primary" class="mt-4 ml-3">
                 <v-progress-circular v-if="sendingMessage" indeterminate color="white" size="18" />
-                <span v-if="!sendingMessage">Send</span>
+                <span v-if="!sendingMessage">{{ $t("components.chatcontainer.send") }}</span>
               </v-btn>
             </v-col>
           </v-row>
@@ -136,8 +138,10 @@ import { useFetchOfflineUsers } from "@/composables/useFetchOfflineUsers";
 import { useFetchOnlineUsers } from "@/composables/useFetchOnlineUsers";
 import { useFetchActiveChats } from "@/composables/useFetchActiveChats";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
-import EmojiPicker from 'vue3-emoji-picker';
+import { defineAsyncComponent } from 'vue';
 import { onClickOutside } from '@vueuse/core';
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const {
   getUserProfileFromId,
@@ -198,6 +202,7 @@ const sendingMessage = ref(false);
 
 const showEmojiPicker = ref(false);
 const emojiPickerRef = ref(null);
+const EmojiPicker = defineAsyncComponent(() => import('vue3-emoji-picker'));
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
@@ -375,7 +380,7 @@ const handleRealtimeMessages = async (payload) => {
 
       notificationStore.addNotification(
         "message",
-        `${senderProfile.data.displayname || "Someone"} sent you a message`,
+        `${senderProfile.data.displayname || "Someone"} ` + t("components.chatcontainer.message-sent"),
         newRow.sender_id
       );
       lastUnreadSenderId.value = newRow.sender_id;
@@ -502,62 +507,68 @@ onMounted(async () => {
 
   // Set up real-time subscription to messages table
   if (!realtimeMessages) {
-    realtimeMessages = supabase.channel(`messages:user:${user.value.id}`).on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-        filter: `receiver_id=eq.${user.value.id}`,
-      },
-      (payload) => {
-        handleRealtimeMessages(payload);
-      }
-    );
-
-    const { error } = realtimeMessages.subscribe();
-    if (error) {
-      console.error("Error subscribing to real-time channel:", error);
-    } else {
-      // console.log("Subscribed to real-time updates for messages");
-    }
-  }
-
-  if (!realtimeUpdateMessages) {
-    realtimeUpdateMessages = supabase
-      .channel(`messages:update:${user.value.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
+    realtimeMessages = supabase.channel(`messages:user:${user.value.id}`);
+    if (!realtimeMessages._subscribed)
+    {
+      realtimeMessages
+        .on("postgres_changes", {
+          event: "INSERT",
           schema: "public",
           table: "messages",
           filter: `receiver_id=eq.${user.value.id}`,
-        },
-        (payload) => {
-          // console.log("Realtime update payload:", payload);
+        }, handleRealtimeMessages);
 
-          //find the message in the local messages array
-          const messageIndex = messages.value.findIndex(msg => msg.id === payload.old.id);
-          if (messageIndex !== -1)
-          {
-            messages.value[messageIndex] = {
-              ...messages.value[messageIndex],
-              content: payload.new.content,
-              edited_at: payload.new.edited_at,
-            };
-          }
-        }
-      );
-
-    const { error } = realtimeUpdateMessages.subscribe();
-    if (error) {
-      console.error("Error subscribing to real-time updates:", error);
-    } else {
-      // console.log("Subscribed to real-time updates for message updates");
+      const { error } = realtimeMessages.subscribe();
+      if (!error)
+      {
+        realtimeMessages._subscribed = true;
+      } else
+      {
+        console.error("Realtime message subscription failed:", error);
+      }
     }
-    
   }
+
+  if (!realtimeUpdateMessages)
+  {
+    realtimeUpdateMessages = supabase.channel(`messages:update:${user.value.id}`);
+    if (!realtimeUpdateMessages._subscribed)
+    {
+      realtimeUpdateMessages
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "messages",
+            filter: `receiver_id=eq.${user.value.id}`,
+          },
+          (payload) =>
+          {
+            // console.log("Realtime update payload:", payload);
+
+            const messageIndex = messages.value.findIndex(msg => msg.id === payload.old.id);
+            if (messageIndex !== -1)
+            {
+              messages.value[messageIndex] = {
+                ...messages.value[messageIndex],
+                content: payload.new.content,
+                edited_at: payload.new.edited_at,
+              };
+            }
+          }
+        )
+
+      const { error } = realtimeUpdateMessages.subscribe();
+      if (!error)
+      {
+        realtimeUpdateMessages._subscribed = true;
+      } else
+      {
+        console.error("Realtime message subscription failed:", error);
+      }
+  }
+}
 
   document.addEventListener("visibilitychange", async () => {
     isTabVisible.value = document.visibilityState === "visible";
@@ -579,6 +590,21 @@ onMounted(async () => {
   });
   isLoading.value = false;
 });
+
+onBeforeUnmount(() =>
+{
+  if (realtimeMessages?._subscribed)
+  {
+    realtimeMessages.unsubscribe();
+    realtimeMessages._subscribed = false;
+  }
+  if (realtimeUpdateMessages?._subscribed)
+  {
+    realtimeUpdateMessages.unsubscribe();
+    realtimeUpdateMessages._subscribed = false;
+  }
+});
+
 
 // Select user to chat with
 const selectUser = (user) => {

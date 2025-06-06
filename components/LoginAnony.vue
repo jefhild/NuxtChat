@@ -47,13 +47,14 @@
   <v-row>
     <v-col cols="10">
       By creating an account, you agree to our
-      <NuxtLink to="/terms">Terms of Service.</NuxtLink>
+      <NuxtLink :to="localPath('/terms')">Terms of Service.</NuxtLink>
     </v-col>
   </v-row>
   <!-- </v-container> -->
 </template>
 
 <script setup>
+const localPath = useLocalePath();
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
@@ -97,7 +98,7 @@ const handleSubmit = async () => {
     console.log("handleSubmit for loginAnony: ", displayName.value);
     await authStore.checkAuthAnony(displayName.value);
     // router.push("/settings");
-    router.push({ path: "/settings", query: { edit: true } });
+    router.push({ path: localPath("/settings"), query: { edit: true } });
   } catch (error) {
     console.error("Error submitting form:", error);
     errorMessages.value = [error.message || "An error occurred"];

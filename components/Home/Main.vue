@@ -9,7 +9,7 @@
             </p>
             <v-card>
               <v-card-title
-                ><h1 class="green--text-h1">Sign In</h1></v-card-title
+                ><h1 class="green--text-h1">{{ $t("components.home.main.sign-in") }}</h1></v-card-title
               >
               <v-card-text>
                 <v-row no-gutters
@@ -19,7 +19,7 @@
                       variant="plain"
                       @click="switchModel('LoginGoogle')"
                     >
-                      <h2 class="green--text-h2">With Google</h2>
+                      <h2 class="green--text-h2">{{ $t("components.home.main.google") }}</h2>
                     </v-btn></v-col
                   ></v-row
                 >
@@ -37,7 +37,7 @@
                       variant="plain"
                       @click="switchModel('LoginFacebook')"
                     >
-                      <h2 class="green--text-h2">With Facebook</h2>
+                      <h2 class="green--text-h2">{{ $t("components.home.main.facebook") }}</h2>
                     </v-btn>
                   </v-col></v-row
                 >
@@ -48,7 +48,7 @@
                       variant="plain"
                       @click="switchModel('LoginEmail')"
                     >
-                      <h2 class="green--text-h2">With Email</h2>
+                      <h2 class="green--text-h2">{{ $t("components.home.main.email") }}</h2>
                     </v-btn></v-col
                   ></v-row
                 >
@@ -76,6 +76,9 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 const highlight = ref(false);
 
 const selectedModel = ref("LoginGoogle");

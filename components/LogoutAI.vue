@@ -78,7 +78,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 const { insertFeedback } = useDb();
-
+const localPath = useLocalePath();
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -114,7 +114,7 @@ const questions = [
 
 const redirectToLogin = async () => {
   try {
-    const navigationResult = await router.push('/');
+    const navigationResult = await router.push(localPath('/'));
     //window.location.reload();
   } catch (error) {
     console.error("Failed to redirect to login page:", error);

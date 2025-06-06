@@ -47,7 +47,7 @@
       </template>
       <v-col v-else cols="12">
         <v-card class="d-flex flex-column align-center">
-          <v-card-title>No blocked users found</v-card-title>
+          <v-card-title>{{ $t("components.blockedUsers.no-blocked-users") }}</v-card-title>
         </v-card>
       </v-col>
     </v-row>
@@ -58,6 +58,9 @@
 import { useBlockedProfiles } from "@/composables/useBlockedProfiles";
 // import { getAvatar } from "@/utils/userUtils"; // Import the helper function
 import { getAvatar } from "@/composables/useUserUtils";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 
 const { getAvatarDecorationFromId, getGenderFromId } = useDb();
 const avatarDecorations = ref<Record<string, string>>({});
@@ -72,7 +75,7 @@ const avatarDecorations = ref<Record<string, string>>({});
 //   country: string;
 //   country_emoji: string;
 // }
-
+const localPath = useLocalePath();
 const props = defineProps<{ userId: string }>();
 const genderMap = ref<Record<number, string>>({});
 const router = useRouter();
@@ -89,7 +92,7 @@ const handleUnblock = (userId: string) => {
 };
 
 const goToProfile = (genderName: any, displayName: any) => {
-  router.push(`/profiles/${genderName}/${displayName}`);
+  router.push(localPath(`/profiles/${genderName}/${displayName}`));
 }
 
 

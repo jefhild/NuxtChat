@@ -60,13 +60,13 @@
             </div>
           </v-container>
           <v-text-field v-if="showInputField" ref="inputField" variant="outlined" v-model="userInput"
-            @keyup.enter="sendMessage" placeholder="Type your response..." :disabled="isLoading"
+            @keyup.enter="sendMessage" :placeholder="$t('components.dialogAiSignUp.type-response')" :disabled="isLoading"
             append-inner-icon="mdi-send" @click:append-inner="sendMessage" />
         </v-col>
       </v-row>
       <v-row><v-col>
           <v-btn color="primary" v-if="showCreateProfileButton" @click="submitToDatabase" :disabled="submittingtoDatabase">
-            Create Profile
+            {{ $t("components.dialogAiSignUp.create-profile") }}
           </v-btn>
         </v-col>
       </v-row>
@@ -81,9 +81,12 @@ import useAgeMapper from "@/composables/useAgeMapper";
 import useGenderMapper from "@/composables/useGenderMapper";
 import useStatusMapper from "@/composables/useStatusMapper";
 import useAvatarMapper from "@/composables/useAvatarMapper";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 
 const { checkDisplayNameExists } = useDb();
-
+const localPath = useLocalePath();
 const notificationStore = useNotificationStore();
 const authStore = useAuthStore();
 const router = useRouter();
@@ -456,10 +459,10 @@ const submitToDatabase = async () => {
     console.error("Error during profile creation:", error);
   } finally {
     isLoading.value = false;
-    router.push("/chat");
+    router.push(localPath("/chat"));
     notificationStore.addNotification(
       'reminder',
-      `Make sure to enter your email and complete your profile to unlock all features!`,
+      t("components.dialogAiSignUp.reminder"),
       null
     );
   }

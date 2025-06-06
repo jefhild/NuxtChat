@@ -2,7 +2,7 @@
 	<v-container>
 		<v-row justify="center">
 			<v-col cols="12" md="8">
-				<h1>All the different Tags</h1>
+				<h1>{{ $t("pages.tags.index.title") }}</h1>
 			</v-col>
 		</v-row>
 
@@ -15,7 +15,7 @@
 		<v-container v-else>
 			<v-row justify="center" class="tag-container">
 				<v-col v-for="tag in tags" :key="tag.slug" cols="auto" class="my-2">
-					<NuxtLink :to="`/tags/${tag.slug}`" class="tag-link" v-if="tag.articleCount > 0">
+					<NuxtLink :to="localPath(`/tags/${tag.slug}`)" class="tag-link" v-if="tag.articleCount > 0">
 						{{ tag.name }}
 						<v-chip class="ma-1" size="small" color="white"> {{ tag.articleCount }}
 						</v-chip>
@@ -27,6 +27,9 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+const localPath = useLocalePath();
 const { getAllTags, getCountArticleByTag } = useDb();
 const isLoading = ref(true);
 const authStore = useAuthStore();

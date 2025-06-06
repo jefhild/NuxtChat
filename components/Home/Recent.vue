@@ -4,14 +4,14 @@
       v-if="recentProfiles.length <= 4"
       class="text-h5 font-weight-light mb-4"
     >
-      Recent Real Profiles
+    {{ $t("components.home.recent.title") }}
     </h2>
     <ProfileGrid :profiles="recentProfiles" :limit="8" />
     <v-row v-if="recentProfiles.length <= 4">
       <v-col class="text-right mr-12">
-        <NuxtLink to="/profiles/recent">
+        <NuxtLink :to="localPath('/profiles/recent')">
           <v-btn variant="outlined" color="primary" class="font-style-poppins">
-            See More Recent Profiles
+            {{ $t("components.home.recent.see-more") }}
           </v-btn>
         </NuxtLink>
       </v-col>
@@ -20,6 +20,11 @@
 </template>
 
 <script setup>
+
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
+const localPath = useLocalePath();
 const props = defineProps({
   limit: Number,
 });
