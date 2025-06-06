@@ -250,16 +250,16 @@ const props = defineProps({
 
 const emit = defineEmits(["filter-changed"]);
 const genders = [
-  { text: "Male", value: 1, icon: "mdi-gender-male" },
-  { text: "Female", value: 2, icon: "mdi-gender-female" },
-  { text: "Other", value: 3, icon: "mdi-gender-male-female" },
-  { text: "All", value: null, icon: "mdi-all-inclusive" },
+  { text: t('components.filter-menu.male'), value: 1, icon: "mdi-gender-male" },
+  { text: t('components.filter-menu.female'), value: 2, icon: "mdi-gender-female" },
+  { text: t('components.filter-menu.other'), value: 3, icon: "mdi-gender-male-female" },
+  { text: t('components.filter-menu.all'), value: null, icon: "mdi-all-inclusive" },
 ];
 
 const anonymity = [
-  { text: "All", value: null },
-  { text: "Only Registered Users", value: false },
-  { text: "Only Anonymous Users", value: true },
+  { text: t('components.filter-menu.all'), value: null },
+  { text: t('components.filter-menu.registered'), value: false },
+  { text: t('components.filter-menu.anony'), value: true },
 ];
 
 const statuses = ref([]);
