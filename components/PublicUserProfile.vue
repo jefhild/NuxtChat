@@ -46,7 +46,7 @@
             ">
             <v-btn v-if="profileSiteUrl" :href="profileSiteUrl" color="medium-emphasis" icon="mdi-link-variant"
               size="small" target="_blank" rel="noopener noreferrer"
-              :aria-label="t('components.public-user-profile.visit1') + ` ${profile?.displayname}` + t('components.public-user-profile.visit2')"></v-btn>
+              :aria-label="t('components.public-user-profile.visit1') + `${profile?.displayname}` + t('components.public-user-profile.visit2')"></v-btn>
             <v-btn v-else color="medium-emphasis" icon="mdi-link-variant-off" size="small" disabled></v-btn>
             <v-spacer></v-spacer>
 
