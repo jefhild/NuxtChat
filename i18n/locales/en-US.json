@@ -563,7 +563,13 @@
 			"country": "Country",
 			"clear": "Clear",
 			"apply": "Apply",
-			"cancel": "Cancel"
+			"cancel": "Cancel",
+			"male": "Male",
+			"female": "Female",
+			"other": "Other",
+			"all": "All",
+			"registered": "Only Registered Users",
+			"anony": "Only Anonymous Users"
 		},
 		"finish-profile":{
 			"finish-up" : "Let's finish setting up your profile - you have",

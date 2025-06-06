@@ -562,7 +562,13 @@
 			"country": "国家",
 			"clear": "清除",
 			"apply": "应用",
-			"cancel": "取消"
+			"cancel": "取消",
+			"male": "男性",
+			"female": "女性",
+			"other": "其他",
+			"all": "全部",
+			"registered": "仅注册用户",
+			"anony": "仅匿名用户"
 		},
 		"finish-profile": {
 			"finish-up": "让我们完成设置您的档案 - 您有",

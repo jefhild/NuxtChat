@@ -562,7 +562,13 @@
 			"country": "Pays",
 			"clear": "Effacer",
 			"apply": "Appliquer",
-			"cancel": "Annuler"
+			"cancel": "Annuler",
+			"male": "Homme",
+			"female": "Femme",
+			"other": "Autre",
+			"all": "Tous",
+			"registered": "Utilisateurs Enregistrés Uniquement",
+			"anony": "Utilisateurs Anonymes Uniquement"
 		},
 		"finish-profile": {
 			"finish-up": "Finissons de configurer votre profil - vous avez",
