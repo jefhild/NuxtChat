@@ -27,8 +27,8 @@ const currentLocale = ref(locale.value);
 const flagPaths = {
   en: "/images/flags/icon_us.png",
   fr: "/images/flags/icon_fr.png",
-  // cn: "/images/flags/icon_cn.png",
-  // zh: "/images/flags/icon_ru.png",
+  zh: "/images/flags/icon_zh.png",
+  ru: "/images/flags/icon_ru.png",
 };
 
 const localesWithFlags = rawLocales.map((code) => ({
@@ -38,6 +38,7 @@ const localesWithFlags = rawLocales.map((code) => ({
 
 const selectedFlag = computed(() => {
   const match = localesWithFlags.find((l) => l.code === currentLocale.value);
+  console.log("Selected flag:", match?.flag);
   return match?.flag || "";
 });
 
