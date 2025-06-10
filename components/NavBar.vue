@@ -225,18 +225,10 @@ const flagPaths = {
   fr: "/images/flags/icon_fr.png",
 };
 
-const availableLocales = rawLocales.map((code) => ({
-  code,
-  flag: flagPaths[code] || "/images/flags/default.png", // fallback
-}));
-console.log("currentLocale:", currentLocale.value);
-console.log("availableLocales:", availableLocales);
-// Language switch handler
-const switchLanguage = (lang) => {
-  currentLocale.value = lang;
-  setLocale(lang);
-  console.log(`Language switched to: ${lang}`);
-};
+// const availableLocales = rawLocales.map((code) => ({
+//   code,
+//   flag: flagPaths[code] || "/images/flags/default.png", // fallback
+// }));
 
 // Logout helpers
 const showLogoutDialog = () => {
