@@ -28,7 +28,7 @@ const flagPaths = {
   en: "/images/flags/icon_us.png",
   fr: "/images/flags/icon_fr.png",
   zh: "/images/flags/icon_zh.png",
-  // ru: "/images/flags/icon_ru.png",
+  ru: "/images/flags/icon_ru.png",
 };
 
 const localesWithFlags = rawLocales.map((code) => ({
