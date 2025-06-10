@@ -34,7 +34,7 @@ export default defineNuxtConfig({
     locales: [
       { code: "en", iso: "en-US", file: "en-US.json" },
       { code: "fr", iso: "fr-FR", file: "fr-FR.json" },
-      // { code: 'ru', iso: 'ru-RU', file: 'ru-RU.json' },
+      { code: 'ru', iso: 'ru-RU', file: 'ru-RU.json' },
       { code: "zh", iso: "zh-CN", file: "zh-CN.json" }
     ],
     bundle: {
@@ -81,7 +81,7 @@ export default defineNuxtConfig({
       exclude: [
         "/en",
         "/fr",
-        // '/ru',
+        '/ru',
         "/zh",
         "/callback",
         "/*/callback",
