@@ -81,6 +81,8 @@ export default defineNuxtConfig({
       exclude: [
         "/en",
         "/fr",
+        '/ru',
+        "/zh",
         "/callback",
         "/*/callback",
         "/*/about",
