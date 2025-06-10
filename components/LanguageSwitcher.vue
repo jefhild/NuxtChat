@@ -38,7 +38,7 @@ const localesWithFlags = rawLocales.map((code) => ({
 
 const selectedFlag = computed(() => {
   const match = localesWithFlags.find((l) => l.code === currentLocale.value);
-  console.log("Selected flag:", match?.flag);
+  // console.log("Selected flag:", match?.flag);
   return match?.flag || "";
 });
 
