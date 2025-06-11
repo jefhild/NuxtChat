@@ -1,775 +1,796 @@
 {
-	"pages": {
-		"home": {
-			"homeRow1": {
-				"offlineUsersOnline": "Beaucoup d'utilisateurs en ligne maintenant",
-				"onlineUsersOnline": "utilisateurs en ligne",
-				"freeAnonymousChat": "Chat Anonyme Gratuit"
-			},
-			"landing_page": {
-				"title-text": "Chattez Anonymement. Connectez-vous Instantanément.",
-				"title-text2": "Amis IA, vraies personnes, connectez-vous anonymement.",
-				"cta_button": "Commencer à Chatter",
-				"learn_more": "En Savoir Plus",
-				"welcome_back": "Bon retour,",
-				"chat": "Chat",
-				"settings": "Paramètres",
-				"logout": "Déconnexion",
-				"meet_people": "Rencontrez des Gens Comme Vous",
-				"discover_connections": "Découvrez de vraies connexions grâce au chat anonyme.",
-				"realtime_conversations": "Conversations en temps réel avec des personnes du monde entier. Une alternative plus intelligente et plus conviviale.",
-				"get_chatting": "Commencer à Chatter",
-				"popular_ai_profiles": "Nos Profils IA les Plus Populaires",
-				"see_more_profiles": "Voir Plus de Profils Populaires",
-				"check_articles": "Découvrez certains de nos Articles",
-				"see_more_articles": "Voir Plus d'Articles",
-				"final_cta_title": "Prêt à Commencer à Chatter ?",
-				"final_cta_description": "Que vous soyez ici pour rencontrer de nouvelles personnes ou explorer des personnalités IA amusantes, tout n'est qu'à un clic.",
-				"get_chatting_now": "Commencer à Chatter Maintenant",
-				"logout_title": "Déconnexion de Mon Compte",
-				"logout_confirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
-				"logout_confirm_button": "Confirmer la Déconnexion",
-				"cancel": "Annuler"
-			},
-			"meta": {
-				"title": "Chat Anonyme Gratuit (Réel ou IA)",
-				"description": "Explorez les profils de chat réels et IA sur imchatty.com",
-				"ogTitle": "Profils de Chat Réels et IA",
-				"twitterTitle": "Chat Gratuit Populaire",
-				"twitterCard": "summary_large_image"
-			}
-		},
-		"about": {
-			"meta": {
-				"title": "À Propos d'ImChatty – Plateforme de Chat Réel et IA",
-				"description": "Apprenez-en plus sur ImChatty — une plateforme unique où vous pouvez chatter anonymement avec de vraies personnes ou des compagnons IA. Découvrez notre mission, notre équipe et comment nous créons un espace en ligne plus sûr et plus engageant pour chatter.",
-				"ogTitle": "À Propos d'ImChatty – Plateforme de Chat Réel et IA",
-				"ogType": "Website",
-				"ogUrl": "https://imchatty.com/about",
-				"ogDescription": "Apprenez-en plus sur ImChatty — une plateforme unique pour chatter anonymement avec de vrais utilisateurs ou de l'IA. Explorez notre mission, vision et valeurs.",
-				"ogImage": "https://imchatty.com/images/robot.png",
-				"twitterCard": "summary_large_image",
-				"twitterTitle": "À Propos d'ImChatty – Chattez avec de Vraies Personnes ou de l'IA",
-				"twitterDescription": "Apprenez à connaître ImChatty — la plateforme pour des conversations anonymes et significatives avec de vraies personnes ou des profils IA. Rencontrez l'équipe derrière l'expérience.",
-				"twitterImage": "https://imchatty.com/images/article-image.webp"
-			},
-			"page": {
-				"title-text": "À Propos de Nous",
-				"welcome-title": "Salut ! Bienvenue sur Imchatty.com",
-				"welcome-text": "Bienvenue sur Imchatty, un site de chat gratuit où vous pouvez vous connecter avec d'autres personnes anonymement. Notre mission est de fournir une plateforme sûre et gratuite pour que les gens puissent chatter et partager leurs pensées sans avoir besoin d'informations personnelles étendues. Chez Imchatty, nous croyons au pouvoir de la conversation et à l'importance de la vie privée.",
-				"who_we_are-title": "Qui Nous Sommes",
-				"who_we_are-text1": "Imchatty est un projet de",
-				"who_we_are-text2": "un acteur expérimenté dans l'industrie du conseil en informatique. Nous avons créé ce site pour approfondir la technologie de base de données en temps réel et de présence, les chatbots IA et les LLM. Nous utilisons Imchatty comme un bac à sable dynamique pour les tests et le développement. Nous aimerions voir jusqu'où nous pouvons pousser cette technologie et si nous pouvons construire quelque chose d'utile. Vous trouverez le code Open Source de ce site ",
-				"who_we_are-text3": "ici",
-				"our_mission-title": "Notre Mission et Vision",
-				"our_mission-text": "Notre mission est simple : offrir une plateforme de chat gratuite et sécurisée soutenue par la publicité, qui couvrira les coûts d'infrastructure. Notre vision est d'ajouter continuellement des services et des fonctionnalités, faisant évoluer Imchatty en un outil robuste et précieux pour nos utilisateurs. Nous aspirons à créer un espace où les utilisateurs peuvent profiter d'une communication transparente tout en se sentant en sécurité et respectés.",
-				"unique_approach-title": "Notre Approche Unique",
-				"unique_approach-text": "Ce qui distingue Imchatty, c'est notre engagement à fournir un service vraiment gratuit sans compromettre la sécurité des utilisateurs. Nous comprenons l'importance de la vie privée, et notre inscription anonyme garantit que vos informations personnelles restent confidentielles. De plus, Imchatty sert de terrain d'essai pour des technologies innovantes, nous aidant à rester à la pointe des avancées informatiques.",
-				"building_community-title": "Construire une Communauté",
-				"building_community-text": " Notre objectif n'est pas seulement d'offrir un service de chat mais de construire une communauté. Nous encourageons nos utilisateurs à fournir des commentaires et à partager leurs expériences pour nous aider à améliorer et étendre la plateforme. En travaillant ensemble, nous espérons créer un service qui répond aux besoins de nos utilisateurs et s'adapte à leurs préférences évolutives.",
-				"looking_ahead-title": "Regarder Vers l'Avenir",
-				"looking_ahead-text": "Alors que nous continuons à grandir, notre focus reste sur le maintien d'une plateforme gratuite et sécurisée tout en explorant de nouvelles fonctionnalités et améliorations. Nous sommes excités par l'avenir d'Imchatty et nous nous engageons à en faire une ressource précieuse pour nos utilisateurs.",
-				"join_us-title": "Rejoignez-nous",
-				"join_us-text": "Nous vous invitons à rejoindre Imchatty et à faire partie de notre voyage. Que vous cherchiez un endroit pour chatter, partager des idées, ou simplement rencontrer de nouvelles personnes, Imchatty est là pour vous. Ensemble, nous pouvons créer une communauté dynamique et amusante."
-			}
-		},
-		"terms": {
-			"meta": {
-				"title": "Conditions Générales – ImChatty",
-				"description": "Consultez les Conditions Générales d'utilisation d'ImChatty. Apprenez vos droits, responsabilités et comment nous assurons une plateforme sûre et respectueuse.",
-				"ogTitle": "Conditions Générales – ImChatty",
-				"ogDescription": "Comprenez les règles et politiques d'utilisation d'ImChatty. Lisez nos Conditions Générales complètes pour savoir ce qui est attendu de tous les utilisateurs.",
-				"ogImage": "https://imchatty.com/images/article-image.webp",
-				"twitterCard": "summary_large_image",
-				"twitterTitle": "Conditions Générales – ImChatty",
-				"twitterDescription": "Explorez les Conditions Générales d'ImChatty pour apprendre comment nous maintenons une expérience communautaire respectueuse et sûre.",
-				"twitterImage": "https://imchatty.com/images/article-image.webp"
-			},
-			"page": {
-				"title": "Conditions Générales",
-				"intro": "Bienvenue sur le site web Imchatty. Veuillez consulter ces Conditions de Service (\"Conditions\"), qui régissent votre utilisation du site web et des services fournis par celui-ci.",
-				"intro-2": "Le site web imchatty.com (le \"Site\") facilite les interactions en temps réel dans un environnement sécurisé qui protège la vie privée des utilisateurs, (le \"Service\"). Les Conditions décrivent les conditions sous lesquelles ce Service vous est mis à disposition, et votre accès et utilisation du Site et du Service. Lisez attentivement les Conditions. En utilisant le Service, vous serez réputé les avoir acceptées. Si vous n'acceptez pas les Conditions, vous ne pouvez pas utiliser ce Service. En accédant au Site, vous acceptez de respecter ces Conditions de Service (\"Conditions\"), qui régissent votre utilisation du Site web, qui est en outre soumise à notre Politique de Confidentialité et aux directives de sécurité.",
-				"intro-3": "Dans ce document, \"nous\" ou \"nos\" signifie imchatty.com et ses propriétaires, gestionnaires, dirigeants, employés, partenaires, agents, représentants, affiliés, contractants, fournisseurs de services, et/ou désignés ; \"nous deux\" signifie vous et nous ; \"Conditions de Service\" ou \"Conditions\" signifie ces Conditions de Service et les documents incorporés par référence ; \"Nos Matériaux\" signifie les informations, données, texte, logiciel, musique, son, photographies, graphiques, vidéo, messages ou autres matériaux que nous pouvons rendre disponibles par le Service ; \"Service\" signifie le service que nous vous fournissons sur le Site ; \"Site\" signifie www.imchatty.com et tout autre site web désigné par nous comme étant soumis aux Conditions ; \"vous\" signifie la personne ou la société utilisant les Services ; et \"Contenu\" signifie les informations, données, texte, logiciel, musique, son, photographies, graphiques, vidéo, messages, images ou autres matériaux rendus disponibles ou accessibles par le Service par vous ou d'autres utilisateurs du Service.",
-				"service-title": "LE SERVICE",
-				"service-text": "Nous sommes actuellement en version bêta et offrons une fonctionnalité de chat simple pour des conversations engageantes. Nous espérons offrir bientôt d'autres services, et mettrons à jour notre politique et notre document de conditions dès que ces services seront disponibles.",
-				"acquisition-title": "ACQUISITION DU SERVICE",
-				"acquisition-text": " Vous acquérez les droits d'utiliser le Service soumis à ces Conditions en vous inscrivant au Service sur imchatty.com.",
-				"use-of-service-title": "UTILISATION DU SERVICE",
-				"use-of-service-text": "Sauf tel qu'énoncé dans \"Autres accords\", ci-dessous, nous vous autorisons à utiliser le Service uniquement pour vos propres fins personnelles et non commerciales. L'utilisation du Service à des fins publiques ou commerciales (y compris, sans limitation, l'utilisation du Service au profit de tiers) est strictement interdite. Si vous faites des copies de nos Matériaux, vous devez conserver sur toutes ces copies tous les avis de droits d'auteur et autres avis de propriété contenus dans nos Matériaux tels que fournis par nous. Vous ne pouvez pas modifier, afficher publiquement, exécuter publiquement, ou distribuer nos Matériaux. Entre vous et nous, nous possédons le Service, le Site et nos Matériaux. Le Service, le Site et nos Matériaux sont protégés par les lois américaines et internationales sur les droits d'auteur. Toute utilisation non autorisée du Service, du Site ou de nos Matériaux peut violer les droits d'auteur, de marque et d'autres lois.",
-				"eligibility-title": "ÉLIGIBILITÉ",
-				"eligibility-text": "Conduite et Utilisations Interdites. Vous devez avoir au moins dix-huit (18) ans pour utiliser les services sur ce Site web. Vous acceptez et garantissez qu'aucun de vos Contenus ne sera de nature pornographique (y compris mais sans s'y limiter la pornographie infantile), violente, discriminatoire, illégale, haineuse, obscène, lubrique, nue, partiellement nue ou sexuellement suggestive, liée à la drogue ou au terrorisme, nuisible, trompeuse, extrêmement profane, raciste, diffamatoire, abusive, menaçante ou autrement répréhensible de quelque manière que ce soit (ensemble \"Contenu Répréhensible\").",
-				"eligibility-text-2": "Vous déclarez et garantissez que vous ne solliciterez pas d'informations personnelles ou n'exploiterez pas de manière sexuelle ou violente quiconque âgé de moins de dix-huit (18) ans. Vous déclarez et garantissez également qu'aucun de vos Contenus n'enfreint les droits d'un tiers. Imchatty décline toute obligation de surveiller la nature de votre Contenu, et décline toute responsabilité pour votre Contenu.",
-				"eligibility-text-3": "Vous déclarez et garantissez également que vous ne \"traquerez\" pas ou ne harcèlerez pas autrement tout autre utilisateur de ce Site web, n'usurperez pas l'identité d'autres personnes ou organisations, ne fournirez pas d'informations fausses, trompeuses ou inexactes à Imchatty, n'interférerez pas avec nos serveurs ou logiciels, ne tenterez pas d'accéder à toute zone restreinte du Site web, ne publierez pas de html/javascript nuisible ou perturbateur, ne téléchargerez ou ne transmettrez pas de fichiers contenant des virus ou d'autres objets pouvant endommager d'autres appareils, n'accéderez pas au Site web par des bots, agents, grattage, appareils automatisés ou recherche intelligente, ou n'utiliserez pas le Site web à des fins de spam, de publicité ou de promotion non autorisées ou pour mener des enquêtes de toute nature (ensemble, \"Utilisations Interdites\").",
-				"eligibility-text-4": "Modifications. Nous nous réservons le droit de modifier ou de remplacer ces Conditions à tout moment. Toutes Conditions mises à jour seront disponibles à ce lien. Ces Conditions peuvent être mises à jour, révisées ou modifiées de temps à autre, à notre seule discrétion. Les changements importants dans ces conditions peuvent ou peuvent ne pas être communiqués sur notre page d'accueil. Vous devriez consulter périodiquement les changements apportés à ces Conditions. L'utilisation continue du Site web, ou l'utilisation de l'un des services ou l'achat de tout produit, constituera par la suite votre acceptation réputée des Conditions révisées., Conduite et Utilisations Interdites. Vous devez avoir au moins dix-huit (18) ans pour utiliser les services sur ce Site web. Vous acceptez et garantissez qu'aucun de vos Contenus ne sera de nature pornographique (y compris mais sans s'y limiter la pornographie infantile), violente, discriminatoire, illégale, haineuse, obscène, lubrique, nue, partiellement nue ou sexuellement suggestive, liée à la drogue ou au terrorisme, nuisible, trompeuse, extrêmement profane, raciste, diffamatoire, abusive, menaçante ou autrement répréhensible de quelque manière que ce soit (ensemble \"Contenu Répréhensible\").",
-				"registration-title": "VOS OBLIGATIONS D'INSCRIPTION",
-				"registration-text": "Certaines parties du Service peuvent nécessiter une inscription et la fourniture par vous de certaines informations vous concernant. Si vous vous inscrivez, vous déclarez que vous avez au moins 18 ans et n'êtes pas une personne interdite de recevoir des services sous les lois des États-Unis, de l'Union européenne ou d'une autre juridiction applicable. Vous devez : (a) fournir des informations vraies, exactes, actuelles et complètes sur vous-même comme demandé par le formulaire d'inscription du Service (ces informations étant les \"Données d'Inscription\") et (b) maintenir et mettre à jour rapidement les Données d'Inscription pour qu'elles restent vraies, exactes, actuelles et complètes. Si vous fournissez des informations qui sont fausses, inexactes, non actuelles ou incomplètes, ou nous avons des motifs raisonnables de soupçonner que ces informations sont fausses, inexactes, non actuelles ou incomplètes, nous avons le droit de suspendre ou de résilier votre compte et de refuser toute utilisation actuelle ou future du Service (ou de toute partie de celui-ci).",
-				"member-title": "COMPTE MEMBRE, MOT DE PASSE ET SÉCURITÉ",
-				"member-text": "Vous pouvez recevoir ou créer un mot de passe et une désignation de compte en complétant le processus d'inscription du Service. Vous êtes responsable de maintenir la confidentialité du mot de passe et de la désignation du compte, et êtes entièrement responsable de toutes les activités qui se produisent sous votre mot de passe ou compte. Vous devez (a) nous notifier immédiatement de toute utilisation non autorisée de votre mot de passe ou compte ou de toute autre violation de sécurité, et (b) vous assurer que vous quittez votre compte à la fin de chaque session. Nous ne pouvons pas et ne serons pas responsables de toute perte ou dommage résultant de votre non-respect de cette Section.",
-				"privacy-policy-title": "POLITIQUE DE CONFIDENTIALITÉ ; UTILISATION DES DONNÉES PERSONNELLEMENT IDENTIFIABLES",
-				"privacy-policy-text": "Les Données d'Inscription et certaines autres informations sur vous sont soumises à notre Politique de Confidentialité. Pour plus d'informations, consultez notre politique de confidentialité complète. En utilisant le Service, vous consentez à la collecte et à l'utilisation (telles qu'énoncées dans la Politique de Confidentialité) de ces informations, y compris le transfert de ces informations vers les États-Unis et/ou d'autres pays pour le stockage, le traitement et l'utilisation par nous et nos affiliés.",
-				"gpdr-title": "Conformité au Règlement Général sur la Protection des Données (RGPD)",
-				"gpdr-text1": "Si vous êtes résident ou situé dans l'Union européenne ou l'Espace économique européen (\"EEE\"), vous pouvez également avoir certains droits sous le Règlement Général sur la Protection des Données (\"RGPD\"). Les informations personnelles (\"Données Personnelles\") que vous fournissez sur les sites web imchatty.com ou via ses produits ne sont collectées qu'avec votre consentement, et sont soumises aux termes de la Politique de Confidentialité de la Société, qui peut être trouvée ici. Contactez ",
-				"gpdr-text2": "si vous avez des préoccupations concernant vos Données Personnelles, ou souhaitez exercer l'un de vos droits sous le RGPD.",
-				"billing-title": "FACTURATION ; TAXES",
-				"billing-text": "Actuellement, imchatty.com est un service sans implications fiscales pour le consommateur.",
-				"member-conduct-title": "CONDUITE DES MEMBRES",
-				"member-conduct-text": "Vous comprenez que tout Contenu, qu'il soit publié publiquement ou transmis privément, est la seule responsabilité de la personne de qui ce Contenu provient. Cela signifie que vous, et non nous, êtes entièrement responsable de tout Contenu que vous téléchargez, publiez, envoyez par e-mail, transmettez ou rendez disponible ou accessible via le Service. Nous ne contrôlons pas le Contenu publié ou accessible via le Service et, en tant que tel, ne garantissons pas l'exactitude, l'intégrité ou la qualité de ce Contenu. Vous comprenez qu'en utilisant le Service, vous pouvez être exposé à du Contenu qui est offensant, indécent ou répréhensible. En aucune circonstance nous ne serons responsables de quelque manière que ce soit pour tout Contenu, y compris, mais sans s'y limiter, pour toute erreur ou omission dans tout Contenu, ou pour toute perte ou dommage de toute nature encourus en raison de l'utilisation de tout Contenu publié, envoyé par e-mail, transmis ou autrement rendu disponible ou accessible via le Service.",
-				"member-conduct-text-2": "Toute utilisation du Service est soumise à notre code de conduite.",
-				"member-conduct-text-3": "Nous pouvons ou non pré-examiner le Contenu ; cependant, nous et nos désignés aurons le droit (mais pas l'obligation) à notre seule discrétion de pré-examiner, refuser, ou déplacer tout Contenu ou bloquer tout site qui est disponible ou accessible via le Service. Sans limiter ce qui précède, nous et nos désignés aurons le droit de supprimer ou de bloquer l'accès à tout Contenu qui viole les Conditions ou est autrement répréhensible. Vous devez évaluer, et supporter tous les risques associés à, l'utilisation de tout Contenu, y compris toute dépendance à l'exactitude, l'exhaustivité, ou l'utilité de ce Contenu.",
-				"member-conduct-text-4": "Nous pouvons accéder, préserver et divulguer les informations de votre compte et le Contenu si requis de le faire par la loi ou dans une croyance de bonne foi que cet accès, préservation ou divulgation est raisonnablement nécessaire pour : (a) se conformer au processus légal ; (b) faire respecter les Conditions ; (c) répondre aux réclamations que tout Contenu viole les droits de tiers ; (d) répondre à vos demandes de service client ; ou (e) protéger nos droits (ou ceux de nos utilisateurs ou du public), propriété, ou sécurité personnelle.",
-				"member-conduct-text-5": "Le traitement technique et la transmission du Service, y compris votre Contenu, peuvent impliquer (a) des transmissions sur divers réseaux ; et (b) des changements pour se conformer et s'adapter aux exigences techniques des réseaux ou appareils de connexion.",
-				"member-conduct-text-6": "Le Service et le logiciel incorporé dans le Service peuvent inclure des composants de sécurité qui permettent aux matériaux numériques d'être protégés, et l'utilisation de ces matériaux est soumise aux règles d'utilisation définies par nous et/ou les fournisseurs de contenu qui fournissent du contenu au Service. Vous ne pouvez pas tenter de contourner ou de contourner les règles d'utilisation intégrées dans le Service. Toute reproduction, publication, distribution ultérieure ou exposition publique non autorisée des matériaux fournis sur le Service, en tout ou en partie, est strictement interdite.",
-				"ownership-title": "PROPRIÉTÉ ET UTILISATION DU CONTENU SOUMIS OU RENDU DISPONIBLE POUR INCLUSION SUR LE SERVICE",
-				"ownership-text": "Nous ne revendiquons pas la propriété du Contenu que vous soumettez ou rendez disponible pour inclusion sur le Service. Cependant, en ce qui concerne le Contenu que vous soumettez ou rendez disponible pour inclusion sur les zones du Service accessibles à d'autres membres, la licence d'utiliser, distribuer, reproduire, modifier, adapter, exécuter publiquement et afficher publiquement ce Contenu sur le Service uniquement aux fins de fournir et promouvoir les membres auxquels ce Contenu a été soumis ou rendu disponible. Cette licence n'existe que tant que vous choisissez de continuer à inclure ce Contenu sur le Service et se terminera au moment où vous supprimez ou nous supprimons ce Contenu du Service.",
-				"ownership-text-2": "Vous pouvez volontairement fournir (en relation avec l'utilisation du Service, l'utilisation de nos produits ou autrement) des suggestions, commentaires ou autres retours à nous concernant les éléments ou informations fournis par nous sur le Service ou autrement. Nous ne sommes pas tenus de tenir ces retours confidentiels, et ces retours peuvent être utilisés par nous à toute fin sans obligation d'aucune sorte ; à condition que nous ne divulguerons pas la source de retours spécifiques sans votre consentement ; et rien dans les Conditions ne restreint l'utilisation par vous de ces retours ou idées que vous nous fournissez.",
-				"ownership-text-3": "Tout contenu, y compris mais sans s'y limiter les photographies, images, images et clips vidéo que vous téléchargez sur le Site web, ou partagez avec d'autres utilisateurs de ce Site web (\"Votre Contenu\") vous appartient. imchatty ne revendique aucune propriété de Votre Contenu. Vous accordez à imchatty une licence non exclusive, libre de redevances, perpétuelle, sous-licenciable, mondiale pour utiliser Votre Contenu, conformément à la Politique de Confidentialité de notre Site web. Vous pouvez choisir de partager Votre Contenu avec d'autres utilisateurs de notre Site web en chattant. Vous déclarez et garantissez que vous êtes le propriétaire de Votre Contenu, et ne violez aucun droit de tiers en publiant ou partageant Votre Contenu sur notre Site web. Nous n'approuvons pas nécessairement Votre Contenu, et n'avons aucune obligation de surveiller, éditer, supprimer ou pré-examiner Votre Contenu. Vous êtes seul responsable de tout Votre Contenu publié ou partagé sur ce Site web. Vous êtes également seul responsable de votre interaction avec d'autres utilisateurs sur ce Site web, en ligne et hors ligne, et imchatty n'est pas responsable de la conduite de ses utilisateurs. Au cas où vous pensez qu'un utilisateur d'imchatty lui-même enfreint vos droits de propriété intellectuelle via notre Site web, vous pouvez nous contacter rapidement, et nous nous réservons le droit de supprimer le contenu allégué être en infraction, et même de résilier les comptes des contrevenants répétés.",
-				"indemnity-title": "INDEMNISATION",
-				"indemnity-text": "Vous indemnisez par les présentes et tenez indemnes nous et nos filiales, affiliés, dirigeants, agents, co-marqueurs ou autres partenaires, et employés, consultants et agents de toute réclamation ou demande (y compris nous rembourser tous les honoraires d'avocat raisonnables encourus par nous dans la défense de toute réclamation ou demande), faite par un tiers en raison ou découlant du Contenu que vous soumettez, publiez, transmettez ou rendez disponible par le Service, votre utilisation du Service, votre connexion au Service, votre violation des Conditions, ou votre violation de tout droit d'autrui. Nous nous réservons le droit de retenir un conseil de notre choix à notre seule discrétion. De plus, vous devez coopérer de bonne foi pour nous aider dans notre défense et toute négociation de règlement s'y rapportant, et nous rembourser pour les montants de règlement raisonnables, le cas échéant.",
-				"general-practices-title": "PRATIQUES GÉNÉRALES CONCERNANT L'UTILISATION ET LE STOCKAGE",
-				"general-practices-text": "Vous reconnaissez que nous pouvons établir des pratiques générales et des limites concernant l'utilisation du Service, y compris sans limitation le nombre maximum de jours que le Contenu téléchargé sera conservé par le Service, le nombre maximum et la taille des publications qui peuvent être faites via un compte sur le Service, et le nombre maximum de fois (et la durée maximale pour laquelle) vous pouvez accéder au Service dans une période de temps donnée. Nous n'avons aucune responsabilité pour la suppression ou l'échec à stocker toute publication et autres communications ou autre Contenu maintenu ou transmis par le Service. Nous pouvons modifier ces pratiques générales et limites de temps à autre.",
-				"modifications-title": "MODIFICATIONS AU SERVICE",
-				"modifications-text": "Nous pouvons à tout moment et de temps à autre modifier ou discontinuer, temporairement ou définitivement, le Service (ou toute partie de celui-ci) avec ou sans préavis. Nous ne serons pas responsables envers vous ou envers tout tiers pour toute modification, suspension ou discontinuation du Service.",
-				"termination-title": "RÉSILIATION",
-				"termination-text": "Nous pouvons, dans certaines circonstances et sans préavis, résilier immédiatement votre compte et l'accès au Service. Les motifs de cette résiliation incluront, mais ne se limiteront pas à, (a) les violations des Conditions ou autres accords ou directives incorporés, (b) les demandes des forces de l'ordre ou autres agences gouvernementales, (c) une demande de votre part (suppressions de compte auto-initiées), (d) discontinuation ou modification matérielle du Service (ou toute partie de celui-ci), (e) problèmes techniques ou de sécurité inattendus, (f) périodes prolongées d'inactivité, (g) vous vous êtes engagé dans des activités frauduleuses ou illégales, et/ou (h) non-paiement de tous frais dus par vous en relation avec les Services. La résiliation de votre compte inclut (a) la suppression de l'accès à toutes les offres dans le Service, (b) la suppression de votre mot de passe et de toutes les informations, fichiers et contenu associés ou à l'intérieur de votre compte (ou toute partie de celui-ci), et (c) l'interdiction de toute utilisation future du Service. De plus, toutes les résiliations pour cause seront faites à notre seule discrétion et nous ne serons pas responsables envers vous ou tout tiers pour toute résiliation de votre compte, toute adresse e-mail associée, ou l'accès au Service.",
-				"dealings-title": "RELATIONS AVEC LES TIERS",
-				"dealings-text": "Le Service pourrait vous permettre d'accéder à d'autres sites web ou ressources. Parce que nous n'avons aucun contrôle sur ces sites et ressources, nous ne sommes pas responsables de la disponibilité de ces sites ou ressources externes, et nous n'approuvons pas et ne sommes pas responsables de tout Contenu, produits, ou autres matériaux sur ou disponibles à partir de ces sites ou ressources. Nous ne sommes pas responsables, directement ou indirectement, de tout dommage ou perte causé ou allégué être causé par ou en relation avec l'utilisation ou la dépendance à tout Contenu ou services disponibles sur ou via tout site ou ressource. Nous pouvons ou non pré-examiner d'autres sites web ou ressources ; cependant, nous et nos désignés aurons le droit (mais pas l'obligation) à notre seule discrétion de pré-examiner, refuser ou bloquer l'accès à tout site web ou autres ressources qui violent les Conditions ou sont autrement répréhensibles.",
-				"property-title": "NOS DROITS DE PROPRIÉTÉ",
-				"property-text": "Le Service et tout logiciel nécessaire utilisé en relation avec le Service (\"Logiciel\") contiennent des informations propriétaires et confidentielles qui sont protégées par les lois applicables de propriété intellectuelle et autres. Vous ne pouvez pas accéder au Service par d'autres moyens que par l'interface qui est fournie par nous pour une utilisation dans l'accès au Service.",
-				"property-text-2": "En général, le Service est fourni d'une manière qui ne résulte pas en votre téléchargement ou utilisation de notre Logiciel. Dans le cas où nous vous fournissons cependant du Logiciel (tel qu'un plug-in ou élément similaire), nous vous accordons un droit et une licence personnels, non transférables et non exclusifs d'utiliser le code objet du Logiciel sur un seul ordinateur en relation avec votre accès au Service ; à condition que vous ne (et ne permettez pas à un tiers de) copier, modifier, créer une œuvre dérivée de, faire de l'ingénierie inverse, démontage inverse ou autrement tenter de découvrir tout code source, vendre, assigner, sous-licencier, accorder un intérêt de sécurité dans ou autrement transférer tout droit dans le Logiciel. Vous ne pouvez pas modifier le Logiciel de quelque manière ou forme, ou utiliser des versions modifiées du Logiciel, y compris (sans limitation) dans le but d'obtenir un accès non autorisé au Service. Vous ne pouvez pas louer, prêter, vendre, distribuer ou créer des œuvres dérivées basées sur le Logiciel, en tout ou en partie.",
-				"property-text-3": "Vous ne pouvez pas reproduire, dupliquer, copier, vendre, échanger, revendre ou exploiter à des fins commerciales, toute partie du Service (y compris le nom de votre compte), l'utilisation du Service, ou l'accès au Service.",
-				"disclaimer-title": "AVERTISSEMENT DE GARANTIES",
-				"disclaimer-text": "VOTRE UTILISATION DU SERVICE EST À VOS SEULS RISQUES. LE SERVICE EST FOURNI SUR UNE BASE \"TEL QUEL\" ET \"TEL QUE DISPONIBLE\". NOUS DÉCLINONS EXPRESSÉMENT TOUTES GARANTIES DE TOUT TYPE, QU'ELLES SOIENT EXPRESSES OU IMPLICITES, Y COMPRIS, MAIS SANS S'Y LIMITER, LES GARANTIES IMPLICITES DE QUALITÉ MARCHANDE, D'ADÉQUATION À UN USAGE PARTICULIER ET DE NON-CONTREFAÇON.",
-				"disclaimer-text-2": "NOUS NE GARANTISSONS PAS QUE (i) LE SERVICE RÉPONDRA À VOS EXIGENCES, (ii) LE SERVICE SERA ININTERROMPU, PONCTUEL, SÉCURISÉ, OU SANS ERREUR, (iii) LES RÉSULTATS QUI PEUVENT ÊTRE OBTENUS DE L'UTILISATION DU SERVICE SERONT EXACTS OU FIABLES, (iv) LA QUALITÉ DE TOUS PRODUITS, SERVICES, INFORMATIONS, OU AUTRES MATÉRIAUX ACHETÉS OU OBTENUS PAR VOUS VIA LE SERVICE RÉPONDRA À VOS ATTENTES, ET (v) TOUTE ERREUR DANS LE LOGICIEL SERA CORRIGÉE.",
-				"disclaimer-text-3": "TOUT MATÉRIEL TÉLÉCHARGÉ OU AUTREMENT OBTENU PAR L'UTILISATION DU SERVICE EST FAIT À VOTRE PROPRE DISCRÉTION ET RISQUE ET VOUS SEREZ SEUL RESPONSABLE DE TOUT DOMMAGE À VOTRE SYSTÈME INFORMATIQUE OU PERTE DE DONNÉES QUI RÉSULTE DU TÉLÉCHARGEMENT DE TOUT MATÉRIEL.",
-				"disclaimer-text-4": "AUCUN CONSEIL OU INFORMATION, QU'IL SOIT ORAL OU ÉCRIT, OBTENU PAR VOUS DE NOUS OU VIA OU DU SERVICE NE CRÉERA AUCUNE GARANTIE NON EXPRESSÉMENT ÉNONCÉE DANS LES CONDITIONS.",
-				"limitation-title": "LIMITATION DE RESPONSABILITÉ",
-				"limitation-text": "NOUS NE SERONS PAS RESPONSABLES ENVERS VOUS POUR TOUT DOMMAGE DIRECT, INDIRECT, ACCESSOIRE, SPÉCIAL, CONSÉCUTIF OU EXEMPLAIRE, Y COMPRIS MAIS SANS S'Y LIMITER, LES DOMMAGES POUR PERTE DE PROFITS, GOODWILL, UTILISATION, DONNÉES OU AUTRES PERTES INTANGIBLES (MÊME SI NOUS AVONS ÉTÉ AVISÉS DE LA POSSIBILITÉ DE TELS DOMMAGES), RÉSULTANT DE : (i) L'UTILISATION OU L'INCAPACITÉ D'UTILISER LE SERVICE ; (ii) LE COÛT D'ACQUISITION DE BIENS ET SERVICES DE SUBSTITUTION RÉSULTANT DE TOUS BIENS, DONNÉES, INFORMATIONS OU SERVICES ACHETÉS OU OBTENUS OU MESSAGES REÇUS OU TRANSACTIONS CONCLUES VIA OU DU SERVICE ; (iii) L'ACCÈS NON AUTORISÉ À OU L'ALTÉRATION DE VOS TRANSMISSIONS OU DONNÉES ; (iv) LES DÉCLARATIONS OU LA CONDUITE DE TOUT TIERS SUR LE SERVICE ; OU (v) TOUTE AUTRE QUESTION RELATIVE AU SERVICE.",
-				"exclusions-title": "EXCLUSIONS ET LIMITATIONS",
-				"exclusions-text": "CERTAINES JURIDICTIONS NE PERMETTENT PAS L'EXCLUSION DE CERTAINES GARANTIES OU LA LIMITATION OU L'EXCLUSION DE RESPONSABILITÉ POUR LES DOMMAGES ACCESSOIRES OU CONSÉCUTIFS. EN CONSÉQUENCE, CERTAINES DES LIMITATIONS CI-DESSUS PEUVENT NE PAS S'APPLIQUER À VOUS.",
-				"general-info-title": "INFORMATIONS GÉNÉRALES",
-				"general-info-text": "Accord Complet. Les Conditions constituent l'accord complet entre nous deux et régissent votre utilisation du Service, remplaçant tout accord antérieur entre nous deux concernant le Service. Vous pouvez également être soumis à des termes et conditions supplémentaires qui peuvent s'appliquer lorsque vous utilisez ou achetez certains autres services, services d'affiliés, contenu de tiers, ou logiciel de tiers.",
-				"general-info-text-2": "Choix de Loi et Forum. Les Conditions et la relation entre nous deux seront exclusivement régies par les lois de l'Union européenne sans égard à ses dispositions de conflit de lois. Votre forum exclusif pour porter toute réclamation ou cause d'action contre nous sont les tribunaux situés dans la Ville de Paris, France. Vous acceptez et vous soumettez par les présentes à la juridiction personnelle et exclusive de ces tribunaux dans toute procédure ou action. En ce qui concerne toute procédure ou action portée devant ces tribunaux, vous renoncez par les présentes irrévocablement, dans toute la mesure permise par la loi : (a) toute objection que vous pourriez avoir maintenant ou à l'avenir à cette juridiction ou venue, et (b) toute réclamation qu'une telle action ou procédure a été portée dans un forum inconvénient. Rien ne limite notre droit de commencer et poursuivre toute action légale ou équitable devant tout tribunal de juridiction compétente pour obtenir une injonction ou toute autre forme de réparation. Indépendamment de tout statut ou loi contraire, toute réclamation ou cause d'action découlant de ou liée à l'utilisation du Service ou des Conditions doit être déposée dans les quatre-vingt-dix (90) jours (ou, si différent, le temps minimum permis par la loi) après qu'une telle réclamation ou cause d'action soit survenue ou être à jamais interdite.",
-				"general-info-text-3": "Arbitrage. Nonobstant tout ce qui précède, si nous choisissons à notre seule discrétion de résoudre toute réclamation par arbitrage, vous devez coopérer pleinement avec et être lié par un tel arbitrage, sans autre recours d'aucune sorte. La Cour Européenne d'Arbitrage (CEA) présidera un tel arbitrage. Un tel arbitrage sera exclusivement régi par les lois de l'Union européenne sans égard à ses dispositions de conflit de lois. Toutes les procédures auront lieu dans la Ville de Paris. S'il y a un conflit entre les règles de la CEA et toute disposition des Conditions, les Conditions prévaudront. Vous êtes responsable de tous les coûts que vous encourez dans l'arbitrage, y compris sans limitation, les témoins experts ou les avocats. Les frais de dépôt raisonnables et les coûts et dépenses de l'arbitre seront avancés par nous. Cependant, si l'arbitrage est décidé en notre faveur, vous devez nous rembourser tous nos frais, coûts et dépenses liés à l'arbitrage, y compris sans limitation, tous les frais, coûts et dépenses liés au dépôt, aux arbitres, aux témoins experts, aux avocats et à d'autres tiers.",
-				"general-info-text-4": "Renonciation et Divisibilité des Conditions. Notre échec à exercer ou faire respecter tout droit ou disposition des Conditions ne constituera pas une renonciation à ce droit ou provision. Si une disposition des Conditions est jugée invalide par un tribunal de juridiction compétente, les parties conviennent néanmoins que le tribunal devrait s'efforcer de donner effet aux intentions des parties telles que reflétées dans la provision, et les autres provisions des Conditions restent en pleine vigueur et effet.",
-				"general-info-text-5": "Aucun Bénéficiaire Tiers. Sauf indication contraire expresse dans les Conditions, il n'y aura aucun bénéficiaire tiers aux Conditions.",
-				"general-info-text-6": "Restrictions sur l'Attribution. Ces Conditions et tous les droits, intérêts ou obligations en vertu de celles-ci ne peuvent pas être attribués, directement ou indirectement, y compris, sans limitation, par application de la loi, par l'une de nous, sans le consentement écrit préalable de la partie non-attribuante, à ne pas être déraisonnablement retenu, retardé ou conditionné ; à condition, cependant, que l'une ou l'autre partie peut attribuer les Conditions sans une telle exigence de consentement, en tout ou en partie à tout affilié, filiale ou successeur en intérêt dans le cas d'une fusion, consolidation, acquisition, réorganisation, changement de contrôle ou autrement, à condition que : (i) la partie attribuante et l'entité acquéreuse notifient la partie non-attribuante au moment de cette attribution et l'entité acquéreuse accepte par écrit d'être liée par les Conditions, et (ii) l'entité acquéreuse n'est pas un concurrent de l'entité non-acquéreuse.",
-				"general-info-text-7": "Prescription. Indépendamment de tout statut ou loi contraire, toute réclamation ou cause d'action découlant de ou liée à l'utilisation du Service ou des Conditions doit être déposée dans un (1) an après qu'une telle réclamation ou cause d'action soit survenue ou être à jamais interdite.",
-				"general-info-text-8": "Les titres de section dans les Conditions sont pour la commodité seulement et n'ont aucun effet légal ou contractuel.",
-				"accepting-title": "ACCEPTER LES CONDITIONS",
-				"accepting-text": "Accord aux Conditions. Pour utiliser le Service, vous devez d'abord accepter les Conditions. Vous ne pouvez pas utiliser le Service si vous n'acceptez pas les Conditions. Vous pouvez accepter les Conditions en cliquant pour accepter ou accepter les Conditions, où cette option vous est mise à disposition par nous dans l'interface utilisateur pour le Service, ou en utilisant réellement le Service. Vous acceptez que nous traiterons votre utilisation du Service comme une acceptation des Conditions à partir de ce moment.",
-				"accepting-text-2": "Éligibilité à Utiliser le Service. Vous ne pouvez pas utiliser le Service et ne pouvez pas accepter les Conditions si (a) vous n'êtes pas d'âge légal (les lois de la juridiction dont vous êtes résident ou d'où vous utilisez le Service) pour former un contrat contraignant avec nous, ou (b) vous êtes une personne interdite d'utiliser le Service sous les lois de l'UE, des États-Unis ou d'autres pays y compris le pays où vous résidez ou d'où vous utilisez le Service.",
-				"accepting-text-3": "Représentation d'Éligibilité. Dans tous les cas ci-dessus, vous déclarez que vous satisfaites toutes les conditions d'éligibilité ci-dessus. Si vous ne satisfaites pas les conditions ci-dessus, ou si vous n'êtes pas d'accord avec les Conditions, vous ne pouvez pas utiliser le Service ou toute partie de celui-ci ; dans ce cas nous pouvons également résilier les Conditions et votre utilisation du Service immédiatement sans responsabilité envers vous.",
-				"accepting-text-4": "Acceptation par Soumissions Électroniques. Vous reconnaissez que vos soumissions électroniques constituent votre accord et intention d'être lié par les Conditions. Conformément à tous statuts, règlements, règles, ordonnances ou autres lois applicables, vous acceptez par les présentes l'utilisation de signatures électroniques, contrats, commandes et autres enregistrements et à la livraison électronique d'avis, politiques et enregistrements de transactions initiées ou complétées via le Service. De plus, vous renoncez par les présentes à tous droits ou exigences sous tous statuts, règlements, règles, ordonnances ou autres lois dans toute juridiction qui exigent une signature originale ou la livraison ou rétention d'enregistrements non électroniques.",
-				"amendments-title": "AMENDEMENT ET MISE À JOUR DES CONDITIONS",
-				"amendments-text": "Nous pouvons désirer apporter des changements à ces Conditions de temps à autre pour les mettre à jour, par exemple pour ajouter des références à différents produits ou services. Nous pouvons spécifier des termes amendés ou mis à jour qui s'appliquent à l'utilisation du Service après la date effective de cet amendement ou mise à jour, et nous mettrons à disposition une nouvelle copie de ces Conditions et pouvons exiger que vous l'acceptiez comme condition à la fourniture continue du Service. De plus, l'utilisation continue du Service après réception de ces Conditions amendées constituera votre accord à ces Conditions."
-			}
-		},
-		"privacy": {
-			"title": "Politique de Confidentialité",
-			"intro": "Votre vie privée est importante pour nous. Par conséquent, nous nous engageons à respecter votre vie privée et la confidentialité de vos données personnelles et de votre contenu. Cette Politique de Confidentialité est conçue pour vous aider à comprendre comment nous utilisons et protégeons les informations que vous fournissez en utilisant imchatty. Dans cette Politique de Confidentialité, \"Conditions de Service\" signifie nos Conditions de Service applicables de temps à autre et actuellement trouvées à imchatty.com/terms \"Données Personnelles\" signifie toute information que nous possédons relative à un utilisateur identifié ou identifiable d'imchatty ; les autres termes en majuscules ont les significations qui leur sont données dans les Conditions de Service.",
-			"information-title": "QUELLES INFORMATIONS COLLECTONS-NOUS ?",
-			"information-text1": "Afin de vous fournir l'accès à imchatty, nous pouvons rassembler et traiter certaines ou toutes les informations suivantes :",
-			"information-text2": "Contenu : toute information qui est collectée ou stockée par ou des utilisateurs d'imchatty, autre que les Informations d'Inscription, les Communications de Service Client ou les Informations de Journal.",
-			"information-text3": "Informations d'Inscription : toute information fournie lors de l'inscription volontaire pour l'utilisation d'imchatty, y compris, mais sans s'y limiter, le nom d'utilisateur et le mot de passe et l'adresse e-mail.",
-			"information-text4": "Communications de Service Client : toute information qui nous est rapportée sur le fonctionnement d'imchatty, y compris les rapports de bogues ou les demandes d'améliorations.",
-			"information-text5": "Informations de Journal : Lorsque vous utilisez certains services, nos serveurs enregistrent automatiquement les informations de base que votre application envoie. Ces journaux de serveur peuvent inclure des informations telles que votre message, l'adresse de Protocole Internet, d'autres informations d'adressage, la date et l'heure de votre demande et un jeton d'authentification utilisé pour valider l'identité de vous et votre ordinateur.",
-			"how-we-use-title": "COMMENT UTILISONS-NOUS VOS INFORMATIONS ET À QUELLE FIN ?",
-			"how-we-use-intro": "Notre objectif principal en collectant des informations est de vous fournir une expérience utilisateur efficace. Nous pouvons utiliser les informations définies dans cette Politique de Confidentialité pour : fournir les services et tout support client que vous demandez ; résoudre les litiges, collecter les frais et résoudre les problèmes ; faire respecter nos Conditions de Service ; personnaliser, mesurer et améliorer imchatty, le contenu et la mise en page ; vous informer des mises à jour de service ; comparer les informations pour l'exactitude et vérifier votre identité ; fournir d'autres services pour vous comme décrit quand nous collectons les informations. De plus, nous pouvons utiliser vos informations comme décrit ci-dessous.",
-			"registration-title": "INFORMATIONS D'INSCRIPTION",
-			"registration-intro": "Nous demandons des Informations d'Inscription afin de vérifier votre identité et de permettre votre utilisation d'imchatty.",
-			"registration-text": "Nous respectons la vie privée des comptes e-mail personnels et nous stockerons vos adresses e-mail aussi sécurisément que d'autres Données Personnelles. Nous ne vendrons pas ou ne distribuerons pas vos messages e-mail, et vos détails ne seront pas vendus à des tiers pour leurs fins de marketing sans votre permission explicite. Cependant, nous utiliserons l'e-mail pour vous envoyer des messages sur les défauts et les problèmes de service. Nous pouvons également utiliser l'e-mail pour vous tenir au courant des nouvelles concernant imchatty.",
-			"content-title": "CONTENU",
-			"content-text": "En général, nous ne réviserons pas ou ne fournirons pas aux tiers l'accès à votre Contenu. Cependant, si requis par la loi, nous nous réservons le droit de pré-examiner, réviser, signaler, filtrer, modifier, refuser ou supprimer tout ou partie du Contenu d'imchatty.",
-			"customer-service-title": "COMMUNICATIONS DE SERVICE CLIENT",
-			"customer-service-text": "Les informations qui sont volontairement soumises dans les commentaires sont utilisées aux fins de révision de ces commentaires et d'amélioration d'imchatty. Nous nous réservons le droit d'utiliser des informations anonymes à des fins de marketing, par exemple en affichant des commentaires sélectionnés sur imchatty ou dans d'autres communications. De plus, nous pouvons de temps à autre vous demander de fournir des informations sur vos expériences qui seront utilisées pour mesurer et améliorer la qualité. Vous n'êtes à aucun moment dans l'obligation de fournir de telles données. Nous n'utiliserons jamais d'informations personnellement identifiables (commentaires) sans votre permission explicite à cet effet.",
-			"log-information-title": "INFORMATIONS DE JOURNAL",
-			"log-information-text": "Nous utiliserons ces informations pour contrôler et auditer l'accès à imchatty et pour des informations statistiques.",
-			"to-whom-title": "À QUI TRANSFÉRONS-NOUS VOS INFORMATIONS PERSONNELLES",
-			"to-whom-text1": "Sauf comme indiqué ci-dessous, nous ne vendrons, ne louerons, n'échangerons ou ne transférerons pas autrement les Informations d'Inscription ou le Contenu à un tiers sans votre permission explicite, sauf si nous sommes obligés de le faire sous les lois applicables ou par ordre des autorités compétentes.",
-			"to-whom-text2": "Nous pouvons partager vos informations avec nos affiliés et autres fournisseurs de services. Nous pouvons offrir certains de nos services en relation avec d'autres fournisseurs de services. Les Informations d'Inscription que vous nous fournissez peuvent être envoyées à ces fournisseurs afin de livrer le service fourni par eux ; de même, les informations personnelles que vous fournissez à ces sites peuvent nous être envoyées afin d'exploiter imchatty.",
-			"to-whom-text3": "Les informations collectées par nous peuvent être stockées et traitées dans tout pays où nous et nos affiliés maintenons des installations. Nous nous réservons le droit de transférer des informations en dehors du pays où vous résidez et/ou d'où vous utilisez imchatty, y compris les pays que les lois de confidentialité et règlements de votre propre pays peuvent juger déficients pour assurer un niveau adéquat de protection pour ces informations. Si vous n'êtes pas sûr que cette déclaration de confidentialité soit en conflit avec les règles locales applicables, vous ne devriez pas soumettre vos informations. Néanmoins, en utilisant imchatty, vous consentez à tout transfert et/ou stockage d'informations aux États-Unis d'Amérique.",
-			"to-whom-text4": "Alors que nous continuons à développer notre entreprise, nous pourrions vendre ou acheter des filiales ou des unités commerciales. Dans de telles transactions ainsi que dans le cas où tous ou substantiellement tous nos actifs sont acquis par un tiers, les informations personnelles de nos utilisateurs seront généralement l'un des actifs commerciaux transférés. Nous nous réservons le droit d'inclure vos informations personnelles, collectées comme un actif, dans tout transfert à un tiers. Nonobstant tout ce qui est contraire dans cette Politique de Confidentialité ou les Conditions de Service, nous pouvons accéder, utiliser, préserver ou divulguer toute information à laquelle nous avons accès si nous avons une croyance de bonne foi qu'un tel accès, utilisation, préservation ou divulgation de toute information est raisonnablement nécessaire pour (a) satisfaire toute loi applicable, règlement, processus légal ou demande gouvernementale exécutoire, (b) faire respecter les Conditions de Service, y compris l'enquête sur les violations potentielles de celles-ci, (c) détecter, prévenir, ou autrement aborder la fraude, la sécurité ou les problèmes techniques, ou (d) protéger contre un préjudice imminent aux droits, propriété ou sécurité de nous, nos utilisateurs ou le public comme requis ou permis par la loi.",
-			"how-we-protect-title": "COMMENT PROTÉGEONS-NOUS VOS INFORMATIONS PERSONNELLES ?",
-			"how-we-protect-text": "Nous prenons des mesures organisationnelles et techniques appropriées pour protéger les données qui nous sont fournies ou collectées par nous. Vous devriez être conscient que les communications internet ne sont pas toujours sécurisées. Bien que nous prenions ce que nous considérons comme des mesures appropriées pour protéger vos données, la protection des informations disponibles sur internet est sujette à des attaques de tiers, et en conséquence nous ne pouvons pas vous promettre que des tiers ne peuvent pas accéder à votre Contenu.",
-			"how-long-title": "COMBIEN DE TEMPS VOS DONNÉES PERSONNELLES SONT-ELLES CONSERVÉES PAR NOUS ?",
-			"how-long-text": "Nous ne conservons pas vos informations plus longtemps que permis afin d'exécuter nos services ou comme requis sous la législation pertinente, avec due observance des obligations applicables et exceptions sous la législation pertinente. Spécifiquement, vos informations ne sont conservées que aussi longtemps que nécessaire pour : (1) fournir l'utilisation d'imchatty ; (2) vous facturer votre utilisation d'imchatty et maintenir des enregistrements jusqu'à ce que la facturation pour imchatty ne puisse être légalement contestée et que les procédures légales ne puissent plus être poursuivies ; (3) communiquer avec vous concernant d'autres services que nous offrons ; (4) se conformer à la législation applicable, aux demandes réglementaires et aux ordres pertinents des tribunaux compétents ; (5) faire respecter nos Conditions de Service ; ou (6) remplir l'un des autres objectifs détaillés dans cette Politique de Confidentialité.",
-			"what-are-cookies-title": "QUE SONT LES COOKIES ET COMMENT LES UTILISONS-NOUS ?",
-			"what-are-cookies-text": "Un cookie est un morceau de données stocké sur le disque dur de l'utilisateur contenant des informations sur l'utilisateur. L'utilisation d'un cookie ne sera en aucun cas liée à des informations personnellement identifiables sur imchatty. Une fois que l'utilisateur ferme son navigateur, le cookie se termine simplement. Par exemple, en définissant un cookie sur imchatty, l'utilisateur n'aurait pas à se connecter avec un mot de passe plus d'une fois, économisant ainsi du temps sur imchatty. Si un utilisateur rejette le cookie, il peut toujours utiliser imchatty. Le seul inconvénient est que l'utilisateur sera limité dans certaines zones d'imchatty. Nous n'utilisons pas de cookies pour suivre ou améliorer votre expérience sur imchatty mais pourrions pour l'analytique. Certains de nos partenaires commerciaux peuvent utiliser des cookies sur imchatty. Cependant, nous n'avons aucun accès ou contrôle sur ces cookies. De plus, si nous choisissons de vous fournir des offres promotionnelles ou de la publicité, le tiers partenaire commercial peut utiliser des cookies à cette fin.",
-			"gdpr-compliance-title": "Conformité au Règlement Général sur la Protection des Données (RGPD)",
-			"gdpr-compliance-intro": "Si vous êtes résident ou situé dans l'Espace économique européen (\"EEE\"), vous pouvez également avoir certains droits sous le Règlement Général sur la Protection des Données (\"RGPD\"). Les données personnelles que vous fournissez sur notre site web ou via nos produits ne sont collectées qu'avec votre consentement, et peuvent être transmises en dehors de l'EEE vers l'imchatty (ou les serveurs informatiques maintenus au bénéfice d'imchatty) conformément à ce consentement.",
-			"gdpr-compliance-text1": "En général, sous le RGPD vous pouvez :",
-			"gdpr-compliance-text2": "demander l'accès à vos données personnelles",
-			"gdpr-compliance-text3": "faire corriger des données incomplètes ou incorrectes",
-			"gdpr-compliance-text4": "faire supprimer vos données personnelles",
-			"gdpr-compliance-text5": "suspendre ou restreindre notre utilisation de vos données personnelles, ou retirer votre consentement",
-			"gdpr-compliance-text6": "porter plainte auprès d'une autorité de surveillance si vous croyez que vos droits sous le RGPD ne sont pas respectés",
-			"gdpr-compliance-text7": "Si vous demandez une copie de vos données personnelles, nous vous fournirons une copie de vos données personnelles. La première copie sera fournie gratuitement, mais des copies supplémentaires peuvent être soumises à des frais raisonnables. Si vous demandez la suppression de vos données personnelles, imchatty le fera généralement dès que possible, bien que votre droit de faire supprimer vos données personnelles soit soumis à des exceptions, telles que, par exemple, la conformité à une obligation légale ou pour l'établissement, l'exercice ou la défense de réclamations légales.",
-			"gdpr-compliance-text8": "Si vous considérez que notre traitement de vos informations personnelles enfreint les lois de protection des données, vous avez un droit légal de porter plainte auprès d'une autorité de surveillance responsable de la protection des données. Vous pouvez le faire dans l'État membre de l'UE de votre résidence habituelle, votre lieu de travail ou le lieu de l'infraction alléguée.",
-			"gdpr-compliance-text9": "Contactez ",
-			"gdpr-compliance-text10": " si vous avez des préoccupations concernant vos données personnelles, ou souhaitez exercer l'un de ces droits listés.",
-			"gdpr-compliance-text11": "Notez que, si vous êtes dans l'EEE, nous pouvons transférer vos données personnelles en dehors de l'EEE, y compris vers les États-Unis. Par exemple, cela peut arriver si vos données personnelles sont transférées vers nos serveurs situés dans un pays en dehors de l'EEE. Ces pays peuvent ne pas avoir des lois de protection des données similaires à l'EEE. En soumettant vos données personnelles, vous acceptez ce transfert, stockage ou traitement. Si nous transférons vos informations en dehors de l'EEE de cette manière, nous prendrons des mesures pour nous assurer que des mesures de sécurité appropriées sont prises dans le but de s'assurer que vos droits de confidentialité continuent d'être protégés comme décrit dans cette politique.",
-			"how-far-title": "JUSQU'OÙ S'ÉTEND NOTRE RESPONSABILITÉ ?",
-			"how-far-text": "Cette Politique de Confidentialité s'applique aux services qui sont détenus et exploités par nous. Nous n'exerçons pas de contrôle sur d'autres utilisateurs ou systèmes de tiers qui peuvent lier à imchatty. Ils peuvent placer leurs propres fichiers ou d'autres fichiers sur leurs systèmes, collecter des données ou solliciter des informations personnelles de votre part. Nous n'acceptons aucune responsabilité pour ces autres sites ou services.",
-			"privacy-modified-title": "CETTE POLITIQUE DE CONFIDENTIALITÉ PEUT-ELLE ÊTRE MODIFIÉE ?",
-			"privacy-modified-text": "Nous nous réservons le droit de modifier les dispositions de cette Politique de Confidentialité si jugé nécessaire. Nous vous informerons de ces changements en publiant la Politique de Confidentialité révisée à imchatty.com/privacy. La Politique de Confidentialité révisée deviendra effective dans les trente (30) jours de cette publication, sauf si vous acceptez expressément la déclaration révisée plus tôt en cliquant sur le bouton d'acceptation. Vous acceptez que l'acceptation expresse par vous, ou votre utilisation continue d'imchatty, constituera votre acceptation de la Politique de Confidentialité.",
-			"rights-contact-title": "QUELS DROITS AVEZ-VOUS ET COMMENT POUVEZ-VOUS NOUS CONTACTER ?",
-			"rights-contact-text1": "Si vous souhaitez exercer votre droit de voir, corriger, compléter ou supprimer vos Données Personnelles, veuillez nous contacter à ",
-			"rights-contact-text2": "Après vérification de votre identité, nous tenterons de répondre rapidement à votre demande, à condition que nous n'agissions pas contrairement à la législation applicable en répondant à votre demande.",
-			"meta": {
-				"title": "Politique de Confidentialité – ImChatty",
-				"description": "Apprenez comment ImChatty travaille pour protéger votre vie privée et améliorer votre expérience. Lisez notre Politique de Confidentialité complète.",
-				"ogTitle": "Politique de Confidentialité – ImChatty",
-				"ogImage": "https://imchatty.com/images/article-image.webp",
-				"ogDescription": "Jetez un œil à comment ImChatty travaille pour protéger votre vie privée et améliorer votre expérience. Lisez notre Politique de Confidentialité complète.",
-				"twitterTitle": "Politique de Confidentialité – ImChatty",
-				"twitterCard": "summary_large_image",
-				"twitterDescription": "Apprenez comment ImChatty travaille pour protéger votre vie privée et améliorer votre expérience. Lisez notre Politique de Confidentialité complète.",
-				"twitterImage": "https://imchatty.com/images/article-image.webp"
-			}
-		},
-		"admin": {
-			"title": "Tableau de Bord Admin",
-			"sections-title": "Sections",
-			"sections": {
-				"dashboard": "Tableau de Bord",
-				"articles": "Articles",
-				"categories": "Catégories",
-				"tags": "Étiquettes",
-				"reports": "Rapports"
-			}
-		},
-		"articles": {
-			"index": {
-				"explore": "Explorez Nos Articles",
-				"categories": "Catégories",
-				"tags": "Étiquettes",
-				"search": "Rechercher des Articles...",
-				"no-articles": "Aucun article trouvé pour",
-				"meta": {
-					"title": "Blog ImChatty – Conseils, Mises à Jour et Histoires Communautaires",
-					"description": "Découvrez les derniers conseils, mises à jour de plateforme et vraies histoires communautaires sur le Blog ImChatty. Restez connecté et informé.",
-					"ogTitle": "Blog ImChatty – Conseils, Mises à Jour et Histoires Communautaires",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/articles",
-					"ogDescription": "Explorez des articles utiles, des nouvelles de plateforme et des histoires inspirantes de la communauté ImChatty. Mis à jour régulièrement avec de nouveaux aperçus.",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterDescription": "Restez informé avec les derniers articles de blog d'ImChatty. Des mises à jour de plateforme aux conseils de rencontres et de chat, nous avons tout ce qu'il vous faut.",
-					"twitterTitle": "Blog ImChatty – Votre Source de Conseils et Mises à Jour",
-					"twitterCard": "summary_large_image",
-					"twitterImage": "https://imchatty.com/images/robot.png"
-				}
-			}
-		},
-		"categories": {
-			"index": {
-				"title": "Toutes les Différentes Catégories",
-				"meta": {
-					"title": "Catégories d'Articles Populaires",
-					"description": "Découvrez nos catégories les plus populaires ! Parcourez les articles les mieux notés avec de vraies informations, des détails personnalisés et des intérêts authentiques.",
-					"ogTitle": "Catégories d'Articles",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/categories",
-					"ogDescription": "Découvrez nos catégories les plus populaires ! Parcourez les catégories les mieux notées avec de vraies informations, des détails personnalisés et des intérêts authentiques.",
-					"twitterTitle": "Catégories Récentes Populaires",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "Découvrez nos catégories les plus populaires ! Parcourez les membres les mieux notés avec de vraies informations, des détails personnalisés et des intérêts authentiques."
-				}
-			},
-			"slug": {
-				"no-articles": "Aucun article trouvé pour cette catégorie",
-				"meta": {
-					"articles": "Articles",
-					"description1": "Parcourez les articles étiquetés avec ",
-					"description2": " sur ImChatty. Explorez les aperçus, histoires et ressources liés à ",
-					"ogDescription1": "Trouvez les derniers articles et contenus sur ",
-					"ogDescription2": " chez ImChatty. Voyez comment les vrais utilisateurs et l'IA explorent ce sujet.",
-					"twitterDescription1": "Apprenez-en plus sur ",
-					"twitterDescription2": " dans notre dernier contenu lié au chat. Articles mis à jour de perspectives réelles et IA."
-				}
-			}
-		},
-		"tags": {
-			"index": {
-				"title": "Toutes les Différentes Étiquettes"
-			},
-			"slug": {
-				"no-articles": "Aucun article trouvé pour cette étiquette"
-			}
-		},
-		"guides": {
-			"title": "Tous nos Guides",
-			"no-articles": "Aucun article trouvé pour ce type",
-			"meta": {
-				"title": "Guides Populaires",
-				"description": "Découvrez nos guides les plus récents ! Parcourez les guides d'intérêt authentique.",
-				"ogTitle": "Guides Populaires - Aide",
-				"ogUrl": "https://imchatty.com/guides",
-				"ogDescription": "Découvrez nos guides les plus récents ! Aide pour commencer, conseils et comment vous protéger.",
-				"twitterTitle": "Aperçus de Guides Populaires",
-				"twitterCard": "summary_large_image",
-				"twitterDescription": "Découvrez nos guides et aperçus les plus populaires ! Parcourez les guides d'intérêt authentique, créés par un humain, et possiblement révolutionnaires !"
-			}
-		},
-		"insights": {
-			"title": "Tous nos articles non-guides",
-			"meta": {
-				"title": "Aperçus d'Articles Populaires",
-				"description": "Découvrez nos aperçus les plus récents ! Parcourez les articles d'intérêt authentique.",
-				"ogTitle": "Aperçus d'Articles Populaires",
-				"ogUrl": "https://imchatty.com/insights",
-				"ogType": "Website",
-				"ogDescription": "Découvrez nos aperçus les plus récents ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-				"ogImage": "https://imchatty.com/images/robot.png",
-				"twitterTitle": "Aperçus d'Articles Populaires",
-				"twitterCard": "summary_large_image",
-				"twitterDescription": "Découvrez nos aperçus d'articles les plus populaires ! Parcourez les articles d'intérêt authentique, créés par un humain, et possiblement révolutionnaires !"
-			}
-		},
-		"profiles": {
-			"ai": {
-				"title": "Profils IA Populaires",
-				"meta": {
-					"title": "Plus de Profils IA Populaires",
-					"description": "Découvrez nos profils IA récents les plus populaires ! Parcourez les chatbots les mieux notés avec des détails personnalisés et des intérêts authentiques.",
-					"ogTitle": "Profils IA Populaires",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/ai",
-					"ogDescription": "Découvrez nos profils IA récents les plus populaires ! Parcourez les chatbots les mieux notés avec des détails personnalisés et des intérêts authentiques.",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "Profils Récents Populaires",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "Découvrez nos profils IA récents les plus populaires ! Parcourez les chatbots les mieux notés avec des détails personnalisés et des intérêts authentiques."
-				}
-			},
-			"female": {
-				"title": "Profils Féminins Populaires",
-				"meta": {
-					"title": "Plus de Profils Féminins Populaires",
-					"description": "Découvrez nos profils féminins récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-					"ogTitle": "Profils Féminins Populaires",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/female",
-					"ogDescription": "Découvrez nos profils féminins récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "Profils Féminins Populaires",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "Découvrez nos profils féminins récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques."
-				}
-			},
-			"male": {
-				"title": "Profils Masculins Populaires",
-				"meta": {
-					"title": "Plus de Profils Masculins Populaires",
-					"description": "Découvrez nos profils masculins récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-					"ogTitle": "Profils Masculins Populaires",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/male",
-					"ogDescription": "Découvrez nos profils masculins récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "Profils Masculins Populaires",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "Découvrez nos profils masculins récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques."
-				}
-			},
-			"popular": {
-				"title": "Profils les Plus Populaires",
-				"meta": {
-					"title": "Plus de Profils Populaires",
-					"description": "Découvrez nos profils les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-					"ogTitle": "Profils Populaires",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/popular",
-					"ogDescription": "Découvrez nos profils les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "Profils Populaires",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "Découvrez nos profils récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques."
-				}
-			},
-			"recent": {
-				"title": "Profils Récents Populaires",
-				"meta": {
-					"title": "Plus de Profils Récents Populaires",
-					"description": "Découvrez nos profils récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-					"ogTitle": "Profils Récents Populaires",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/recent",
-					"ogDescription": "Découvrez nos profils récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "Profils Récents Populaires",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "Découvrez nos profils récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques."
-				}
-			},
-			"index": {
-				"title": "Profils Publics",
-				"meta": {
-					"title": "Plus de Profils",
-					"description": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-					"ogTitle": "Profils Publics",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/",
-					"ogDescription": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "Profils Publics",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques."
-				}
-			}
-		},
-		"loginemail": {
-			"welcome": "Bienvenue, vous êtes maintenant connecté",
-			"choices": "Vous pouvez aller à votre profil ou chatter maintenant.",
-			"get-chatting": "Commencer à chatter !",
-			"profile": "Aller à mon profil"
-		},
-		"logout": {
-			"meta": {
-				"title": "Déconnexion",
-				"description": "Application de chat anonyme gratuite (Réel ou IA) pour tous.",
-				"ogTitle": "Imchatty - Déconnexion",
-				"ogType": "Website",
-				"ogUrl": "https://imchatty.com/logout",
-				"ogImage": "https://imchatty.com/images/robot.png",
-				"ogDescription": "Application de chat anonyme gratuite (Réel ou IA) pour tous.",
-				"twitterTitle": "Imchatty - Déconnexion",
-				"twitterCard": "summary_large_image",
-				"twitterDescription": "Application de chat anonyme gratuite (Réel ou IA) pour tous."
-			}
-		},
-		"signin": {
-			"note": "Vous ne devriez jamais être ici...",
-			"meta": {
-				"title": "Se Connecter – Accédez à Votre Compte ImChatty",
-				"description": "Connectez-vous en toute sécurité à votre compte ImChatty en utilisant Google, Facebook ou e-mail. Rejoignez les conversations avec de vraies personnes ou des partenaires de chat IA en quelques secondes.",
-				"ogTitle": "Se Connecter à ImChatty",
-				"ogImage": "https://imchatty.com/images/article-image.webp",
-				"ogDescription": "Connectez-vous en toute sécurité via Google, Facebook ou e-mail et commencez à chatter anonymement avec de vrais utilisateurs ou IA. Votre voyage de chat commence ici.",
-				"twitterTitle": "Se Connecter – Chattez Anonymement avec ImChatty",
-				"twitterCard": "summary_large_image",
-				"twitterDescription": "Accédez facilement à votre compte ImChatty avec la connexion Google, Facebook ou e-mail. Commencez des conversations anonymes avec de vrais profils ou IA aujourd'hui.",
-				"twitterImage": "https://imchatty.com/images/article-image.webp"
-			}
-		}
-	},
-	"components": {
-		"navbar": {
-			"imchatty": "ImChatty",
-			"blog": "Blog",
-			"chat": "Chat",
-			"settings": "Paramètres",
-			"logout": "Déconnexion",
-			"signin": "Se connecter",
-			"aboutus": "À Propos de Nous",
-			"free-chat": "Chat Gratuit"
-		},
-		"footer": {
-			"about": "À Propos de Nous",
-			"terms": "Conditions de Service",
-			"privacy": "Politique de Confidentialité",
-			"cookies": "Politique des Cookies",
-			"public-profiles": "Profils Publics",
-			"consent-preferences": "Préférences de Consentement"
-		},
-		"button-favorite": {
-			"log-in": "Se Connecter",
-			"cancel": "Annuler",
-			"please-log-in": "Veuillez Vous Connecter",
-			"need-log-in": "Vous devez vous connecter pour sauvegarder les profils comme favoris."
-		},
-		"home": {
-			"ai": {
-				"title": "Profils IA Récents",
-				"see-more": "Voir Plus de Profils IA"
-			},
-			"female": {
-				"title": "Profils Féminins Récents",
-				"see-more": "Voir Plus de Profils Féminins"
-			},
-			"main": {
-				"sign-in": "Se Connecter",
-				"google": "Avec Google",
-				"facebook": "Avec Facebook",
-				"email": "Avec E-mail"
-			},
-			"male": {
-				"title": "Profils Masculins Récents",
-				"see-more": "Voir Plus de Profils Masculins"
-			},
-			"most-popular": {
-				"title": "Profils les Plus Populaires",
-				"see-more": "Voir Plus de Profils Populaires"
-			},
-			"recent": {
-				"title": "Profils Réels Récents",
-				"see-more": "Voir Plus de Profils Récents"
-			}
-		},
-		"activeChats": {
-			"confirm": "Confirmer",
-			"cancel": "Annuler",
-			"delete-title": "Supprimer Ce Chat",
-			"delete-confirm": "Êtes-vous sûr de vouloir supprimer ce chat ? Cette action ne peut pas être annulée.",
-			"block": "Bloquer cet utilisateur ?"
-		},
-		"blockedUsers": {
-			"no-blocked-users": "Vous n'avez aucun utilisateur bloqué"
-		},
-		"chatcontainer": {
-			"replying-to": "En réponse à : ",
-			"chat": "Chatter avec un ",
-			"ai": " IA",
-			"message": "Message ",
-			"select-user": "Sélectionnez un utilisateur pour chatter",
-			"send": "Envoyer",
-			"message-sent": "vous a envoyé un message"
-		},
-		"chatheader": {
-			"years-old": " ans, ",
-			"remove-favorites": "Retirer des Favoris",
-			"add-favorites": "Ajouter aux Favoris",
-			"block-user": "Bloquer l'Utilisateur",
-			"unblock-user": "Débloquer l'Utilisateur",
-			"report-user": "Signaler l'Utilisateur",
-			"favorited": "vous a ajouté en favori !",
-			"report-success": "Merci d'avoir signalé cet utilisateur. Nous examinerons le rapport et prendrons les mesures appropriées si nécessaire.",
-			"report-failure": "Il y a eu une erreur lors du signalement de cet utilisateur. Veuillez réessayer plus tard."
-		},
-		"loginAi": {
-			"titleText": "Créez Votre Profil Anonyme"
-		},
-		"dialogAiSignUp": {
-			"create-profile": "Créer un Profil",
-			"type-response": "Tapez votre réponse ici...",
-			"titleText": "Créez Votre Profil Anonyme",
-			"titleText2": "Finissons de créer votre profil",
-			"reminder": "Assurez-vous d'entrer votre e-mail et de compléter votre profil pour débloquer toutes les fonctionnalités !"
-		},
-		"favorites": {
-			"i-favorited": "J'ai Favorisé",
-			"no-favorites": "Aucun utilisateur favorisé trouvé",
-			"favorited-me": "M'a favorisé",
-			"no-favorited-me": "Personne ne vous a encore favorisé"
-		},
-		"filter-menu": {
-			"logged-in": "Connecté en tant que ",
-			"filters": "Filtres",
-			"gender": "Genre",
-			"status": "Statut",
-			"age-range": "Tranche d'Âge",
-			"anonymity": "Anonymat",
-			"interests": "Intérêts",
-			"country": "Pays",
-			"clear": "Effacer",
-			"apply": "Appliquer",
-			"cancel": "Annuler",
-			"male": "Homme",
-			"female": "Femme",
-			"other": "Autre",
-			"all": "Tous",
-			"registered": "Utilisateurs Enregistrés Uniquement",
-			"anony": "Utilisateurs Anonymes Uniquement"
-		},
-		"finish-profile": {
-			"finish-up": "Finissons de configurer votre profil - vous avez",
-			"type-response": "Tapez votre réponse ici...",
-			"skip": "Passer",
-			"close": "Fermer",
-			"no-ask": "Ne plus demander"
-		},
-		"gender-selection": {
-			"gender": "Genre",
-			"select-gender": "Vous devez sélectionner un genre."
-		},
-		"location-selection": {
-			"country": "Pays",
-			"country2": "Pays :",
-			"state": "État",
-			"state2": "État :",
-			"city": "Ville",
-			"city2": "Ville :"
-		},
-		"loginEmail": {
-			"sign-in": "Se Connecter avec E-mail",
-			"18years": "J'ai 18 ans ou plus et j'accepte les Conditions de Service",
-			"checkmail1": "Vérifiez votre e-mail pour le lien de connexion !",
-			"checkmail2": "(Il peut être dans votre dossier spam.)",
-			"registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos et plein d'autres choses. En créant un compte, vous acceptez nos",
-			"terms": "Conditions de Service",
-			"invalid-email": "Adresse e-mail invalide",
-			"confirmAge": "Vous devez confirmer votre âge"
-		},
-		"loginFacebook": {
-			"sign-in": "Se Connecter avec Facebook",
-			"18years": "J'ai 18 ans ou plus et j'accepte les Conditions de Service",
-			"registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos, utiliser des filtres avancés et avoir une expérience IA plus complète. Facebook partagera votre nom, adresse e-mail et photo de profil avec imchatty. En créant un compte, vous acceptez nos",
-			"confirmAge": "Vous devez confirmer votre âge"
-		},
-		"loginGoogle": {
-			"sign-in": "Se Connecter Avec Google",
-			"continue": "Continuer avec Google",
-			"registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos, utiliser des filtres avancés et avoir une expérience IA plus complète. Facebook partagera votre nom, adresse e-mail et photo de profil avec imchatty. En créant un compte, vous acceptez nos",
-			"confirmAge": "Vous devez confirmer votre âge"
-		},
-		"lookingFor": {
-			"looking-for": "Recherche",
-			"cancel": "Annuler",
-			"save": "Sauvegarder"
-		},
-		"message": {
-			"accept-image": "Accepter l'Image",
-			"replied-to": "En réponse à : ",
-			"save": "Sauvegarder",
-			"cancel": "Annuler",
-			"edit-hint": "Ctrl+Entrée pour sauvegarder • Échap pour annuler",
-			"edited": "(modifié)"
-		},
-		"morefemale": {
-			"title": "Plus de Profils Féminins",
-			"back": "Retour"
-		},
-		"notification-dropdown": {
-			"none": "Aucune notification"
-		},
-		"profile-age": {
-			"age": "Âge",
-			"required": "L'âge est requis"
-		},
-		"profile-bio": {
-			"bio": "Bio"
-		},
-		"profile-card": {
-			"remove-favorite": "Retirer des Favoris",
-			"remove-upvote": "Retirer le Vote Positif",
-			"remove": "Retirer"
-		},
-		"profile-container": {
-			"status": "Statut :",
-			"gender": "Genre :",
-			"age": "Âge :",
-			"about-me": "À Propos de Moi :",
-			"generate-bio": "Générer une Bio",
-			"sound-notifs": "Notifications Sonores",
-			"on": "Activé",
-			"off": "Désactivé",
-			"save": "Sauvegarder",
-			"edit": "Modifier",
-			"cancel": "Annuler",
-			"go-to-chat": "Aller au Chat",
-			"delete": "Supprimer Mon Compte",
-			"delete-confirm": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action ne peut pas être annulée.",
-			"restore": "Restaurer le Compte",
-			"finish": "Finaliser le Profil",
-			"public": "Profil Public",
-			"copy": "Copier le Lien du Profil",
-			"snackbar-copy-text": "Lien du profil copié dans le presse-papiers !",
-			"loading": "Chargement...",
-			"confirm": "Confirmer",
-			"close": "Fermer",
-			"gender-male": "Homme",
-			"gender-female": "Femme",
-			"gender-other": "Autre"
-		},
-		"profile-displayname": {
-			"display-name": "Nom d'Affichage",
-			"no-spaces": "Aucun espace autorisé",
-			"min-4": "Minimum 4 caractères requis",
-			"max-15": "Maximum 15 caractères autorisés",
-			"less-3-special": "Moins de 3 caractères spéciaux requis",
-			"required": "Le Nom d'Affichage est requis"
-		},
-		"profile-photo": {
-			"add-photo": "Ajouter une Photo",
-			"add-avatar-deco": "Ajouter une Décoration d'Avatar",
-			"upload-photo": "Télécharger une Photo de Profil",
-			"upload": "Télécharger",
-			"cancel": "Annuler"
-		},
-		"profile-site": {
-			"label": "URL du Site Public",
-			"valid": "URL valide requise"
-		},
-		"profile-tagline": {
-			"label": "Slogan",
-			"min-4": "Minimum 4 caractères requis",
-			"max-30": "Maximum 30 caractères autorisés",
-			"less-3-special": "Moins de 3 caractères spéciaux requis",
-			"no-domain": "Les noms de domaine ou liens ne sont pas autorisés"
-		},
-		"public-user-profile": {
-			"looking-for": "Recherche : ",
-			"about-me": "À Propos de Moi : ",
-			"visit1": "Visiter ",
-			"visit2": "'s site web",
-			"back": "Retour au Profil",
-			"chat": "Chatter avec ",
-			"back-home": "Retour à l'Accueil"
-		},
-		"registration-dialog": {
-			"register": "S'inscrire pour Continuer",
-			"close": "Fermer"
-		},
-		"report-user-modal": {
-			"title": "Signaler l'Utilisateur",
-			"select-issues": "Sélectionnez tous les problèmes pertinents",
-			"describe-problem": "Décrivez le problème",
-			"select-message": "Sélectionnez des messages spécifiques (optionnel)",
-			"selected-messages": "Messages sélectionnés : ",
-			"10": "10",
-			"cancel": "Annuler",
-			"submit": "Soumettre le Rapport",
-			"photo": "Leur photo",
-			"username": "Leur nom d'utilisateur",
-			"descriptors": "Leurs descripteurs de texte",
-			"actions": "Leurs actions",
-			"10-max": "Vous pouvez sélectionner jusqu'à 10 messages"
-		},
-		"select-avatar-decoration": {
-			"title": "Décoration d'Avatar",
-			"choose": "Choisissez une Décoration d'Avatar pour votre profil",
-			"done": "Terminé",
-			"cancel": "Annuler"
-		},
-		"settings-container": {
-			"profile": "Mon Profil",
-			"favorites": "Mes Favoris",
-			"blocked": "Utilisateurs Bloqués",
-			"upvotes": "Votes Positifs",
-			"loading": "Chargement...",
-			"registered-only": "Utilisateurs enregistrés seulement"
-		},
-		"status-selection": {
-			"status": "Statut"
-		},
-		"toggle-ai": {
-			"ai": "Utilisateurs IA",
-			"real": "Vrais Utilisateurs"
-		},
-		"upvotes": {
-			"no-upvotes": "Vous n'avez aucun vote positif",
-			"upvoted-me": "M'a voté positivement",
-			"i-upvoted": "J'ai Voté Positivement",
-			"no-upvoted-me": "Personne ne vous a encore voté positivement"
-		},
-		"users": {
-			"online": "en ligne",
-			"offline": "hors ligne",
-			"active": "actif",
-			"no-anonymous": "Aucun utilisateur anonyme trouvé"
-		},
-		"users-ai": {
-			"ai-users": "Utilisateurs IA",
-			"active": "actif"
-		}
-	},
-	"composables": {
-		"presenceChannel": {
-			"online": "est en ligne !"
-		},
-		"presenceStatus": {
-			"online": "En ligne",
-			"away": "Absent",
-			"dnd": "Ne Pas Déranger"
-		}
-	}
+  "pages": {
+    "home": {
+      "homeRow1": {
+        "offlineUsersOnline": "Beaucoup d'utilisateurs en ligne maintenant",
+        "onlineUsersOnline": "utilisateurs en ligne",
+        "freeAnonymousChat": "Chat Anonyme Gratuit"
+      },
+      "landing_page": {
+        "title-text": "Chattez Anonymement. Connectez-vous Instantanément.",
+        "title-text2": "Amis IA, vraies personnes, connectez-vous anonymement.",
+        "cta_button": "Commencer à Chatter",
+        "learn_more": "En Savoir Plus",
+        "welcome_back": "Bon retour,",
+        "chat": "Chat",
+        "settings": "Paramètres",
+        "logout": "Déconnexion",
+        "meet_people": "Rencontrez des Gens Comme Vous",
+        "discover_connections": "Découvrez de vraies connexions grâce au chat anonyme.",
+        "realtime_conversations": "Conversations en temps réel avec des personnes du monde entier. Une alternative plus intelligente et plus conviviale.",
+        "get_chatting": "Commencer à Chatter",
+        "popular_ai_profiles": "Nos Profils IA les Plus Populaires",
+        "see_more_profiles": "Voir Plus de Profils Populaires",
+        "check_articles": "Découvrez certains de nos Articles",
+        "see_more_articles": "Voir Plus d'Articles",
+        "final_cta_title": "Prêt à Commencer à Chatter ?",
+        "final_cta_description": "Que vous soyez ici pour rencontrer de nouvelles personnes ou explorer des personnalités IA amusantes, tout n'est qu'à un clic.",
+        "get_chatting_now": "Commencer à Chatter Maintenant",
+        "logout_title": "Déconnexion de Mon Compte",
+        "logout_confirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
+        "logout_confirm_button": "Confirmer la Déconnexion",
+        "cancel": "Annuler"
+      },
+      "meta": {
+        "title": "Chat Anonyme Gratuit (Réel ou IA)",
+        "description": "Explorez les profils de chat réels et IA sur imchatty.com",
+        "ogTitle": "Profils de Chat Réels et IA",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com",
+        "ogDescription": "ImChatty est une plateforme unique de discussion anonyme. Nous sommes open source et cherchons à créer une alternative aux solutions de chat existantes.",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterTitle": "Chat Gratuit Populaire",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "Découvrez ImChatty — la plateforme pour des conversations anonymes et authentiques avec de vraies personnes ou des profils d'IA. Faites connaissance avec l'équipe derrière cette expérience.",
+        "twitterImage": "https://imchatty.com/images/article-image.webp"
+      }
+    },
+    "about": {
+      "meta": {
+        "title": "À Propos d'ImChatty – Plateforme de Chat Réel et IA",
+        "description": "Apprenez-en plus sur ImChatty — une plateforme unique où vous pouvez chatter anonymement avec de vraies personnes ou des compagnons IA. Découvrez notre mission, notre équipe et comment nous créons un espace en ligne plus sûr et plus engageant pour chatter.",
+        "ogTitle": "À Propos d'ImChatty – Plateforme de Chat Réel et IA",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/about",
+        "ogDescription": "Apprenez-en plus sur ImChatty — une plateforme unique pour chatter anonymement avec de vrais utilisateurs ou de l'IA. Explorez notre mission, vision et valeurs.",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "À Propos d'ImChatty – Chattez avec de Vraies Personnes ou de l'IA",
+        "twitterDescription": "Apprenez à connaître ImChatty — la plateforme pour des conversations anonymes et significatives avec de vraies personnes ou des profils IA. Rencontrez l'équipe derrière l'expérience.",
+        "twitterImage": "https://imchatty.com/images/article-image.webp"
+      },
+      "page": {
+        "title-text": "À Propos de Nous",
+        "welcome-title": "Salut ! Bienvenue sur Imchatty.com",
+        "welcome-text": "Bienvenue sur Imchatty, un site de chat gratuit où vous pouvez vous connecter avec d'autres personnes anonymement. Notre mission est de fournir une plateforme sûre et gratuite pour que les gens puissent chatter et partager leurs pensées sans avoir besoin d'informations personnelles étendues. Chez Imchatty, nous croyons au pouvoir de la conversation et à l'importance de la vie privée.",
+        "who_we_are-title": "Qui Nous Sommes",
+        "who_we_are-text1": "Imchatty est un projet de",
+        "who_we_are-text2": "un acteur expérimenté dans l'industrie du conseil en informatique. Nous avons créé ce site pour approfondir la technologie de base de données en temps réel et de présence, les chatbots IA et les LLM. Nous utilisons Imchatty comme un bac à sable dynamique pour les tests et le développement. Nous aimerions voir jusqu'où nous pouvons pousser cette technologie et si nous pouvons construire quelque chose d'utile. Vous trouverez le code Open Source de ce site ",
+        "who_we_are-text3": "ici",
+        "our_mission-title": "Notre Mission et Vision",
+        "our_mission-text": "Notre mission est simple : offrir une plateforme de chat gratuite et sécurisée soutenue par la publicité, qui couvrira les coûts d'infrastructure. Notre vision est d'ajouter continuellement des services et des fonctionnalités, faisant évoluer Imchatty en un outil robuste et précieux pour nos utilisateurs. Nous aspirons à créer un espace où les utilisateurs peuvent profiter d'une communication transparente tout en se sentant en sécurité et respectés.",
+        "unique_approach-title": "Notre Approche Unique",
+        "unique_approach-text": "Ce qui distingue Imchatty, c'est notre engagement à fournir un service vraiment gratuit sans compromettre la sécurité des utilisateurs. Nous comprenons l'importance de la vie privée, et notre inscription anonyme garantit que vos informations personnelles restent confidentielles. De plus, Imchatty sert de terrain d'essai pour des technologies innovantes, nous aidant à rester à la pointe des avancées informatiques.",
+        "building_community-title": "Construire une Communauté",
+        "building_community-text": " Notre objectif n'est pas seulement d'offrir un service de chat mais de construire une communauté. Nous encourageons nos utilisateurs à fournir des commentaires et à partager leurs expériences pour nous aider à améliorer et étendre la plateforme. En travaillant ensemble, nous espérons créer un service qui répond aux besoins de nos utilisateurs et s'adapte à leurs préférences évolutives.",
+        "looking_ahead-title": "Regarder Vers l'Avenir",
+        "looking_ahead-text": "Alors que nous continuons à grandir, notre focus reste sur le maintien d'une plateforme gratuite et sécurisée tout en explorant de nouvelles fonctionnalités et améliorations. Nous sommes excités par l'avenir d'Imchatty et nous nous engageons à en faire une ressource précieuse pour nos utilisateurs.",
+        "join_us-title": "Rejoignez-nous",
+        "join_us-text": "Nous vous invitons à rejoindre Imchatty et à faire partie de notre voyage. Que vous cherchiez un endroit pour chatter, partager des idées, ou simplement rencontrer de nouvelles personnes, Imchatty est là pour vous. Ensemble, nous pouvons créer une communauté dynamique et amusante."
+      }
+    },
+    "terms": {
+      "meta": {
+        "title": "Conditions Générales – ImChatty",
+        "description": "Consultez les Conditions Générales d'utilisation d'ImChatty. Apprenez vos droits, responsabilités et comment nous assurons une plateforme sûre et respectueuse.",
+        "ogTitle": "Conditions Générales – ImChatty",
+        "ogDescription": "Comprenez les règles et politiques d'utilisation d'ImChatty. Lisez nos Conditions Générales complètes pour savoir ce qui est attendu de tous les utilisateurs.",
+        "ogImage": "https://imchatty.com/images/article-image.webp",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Conditions Générales – ImChatty",
+        "twitterDescription": "Explorez les Conditions Générales d'ImChatty pour apprendre comment nous maintenons une expérience communautaire respectueuse et sûre.",
+        "twitterImage": "https://imchatty.com/images/article-image.webp"
+      },
+      "page": {
+        "title": "Conditions Générales",
+        "intro": "Bienvenue sur le site web Imchatty. Veuillez consulter ces Conditions de Service (\"Conditions\"), qui régissent votre utilisation du site web et des services fournis par celui-ci.",
+        "intro-2": "Le site web imchatty.com (le \"Site\") facilite les interactions en temps réel dans un environnement sécurisé qui protège la vie privée des utilisateurs, (le \"Service\"). Les Conditions décrivent les conditions sous lesquelles ce Service vous est mis à disposition, et votre accès et utilisation du Site et du Service. Lisez attentivement les Conditions. En utilisant le Service, vous serez réputé les avoir acceptées. Si vous n'acceptez pas les Conditions, vous ne pouvez pas utiliser ce Service. En accédant au Site, vous acceptez de respecter ces Conditions de Service (\"Conditions\"), qui régissent votre utilisation du Site web, qui est en outre soumise à notre Politique de Confidentialité et aux directives de sécurité.",
+        "intro-3": "Dans ce document, \"nous\" ou \"nos\" signifie imchatty.com et ses propriétaires, gestionnaires, dirigeants, employés, partenaires, agents, représentants, affiliés, contractants, fournisseurs de services, et/ou désignés ; \"nous deux\" signifie vous et nous ; \"Conditions de Service\" ou \"Conditions\" signifie ces Conditions de Service et les documents incorporés par référence ; \"Nos Matériaux\" signifie les informations, données, texte, logiciel, musique, son, photographies, graphiques, vidéo, messages ou autres matériaux que nous pouvons rendre disponibles par le Service ; \"Service\" signifie le service que nous vous fournissons sur le Site ; \"Site\" signifie www.imchatty.com et tout autre site web désigné par nous comme étant soumis aux Conditions ; \"vous\" signifie la personne ou la société utilisant les Services ; et \"Contenu\" signifie les informations, données, texte, logiciel, musique, son, photographies, graphiques, vidéo, messages, images ou autres matériaux rendus disponibles ou accessibles par le Service par vous ou d'autres utilisateurs du Service.",
+        "service-title": "LE SERVICE",
+        "service-text": "Nous sommes actuellement en version bêta et offrons une fonctionnalité de chat simple pour des conversations engageantes. Nous espérons offrir bientôt d'autres services, et mettrons à jour notre politique et notre document de conditions dès que ces services seront disponibles.",
+        "acquisition-title": "ACQUISITION DU SERVICE",
+        "acquisition-text": " Vous acquérez les droits d'utiliser le Service soumis à ces Conditions en vous inscrivant au Service sur imchatty.com.",
+        "use-of-service-title": "UTILISATION DU SERVICE",
+        "use-of-service-text": "Sauf tel qu'énoncé dans \"Autres accords\", ci-dessous, nous vous autorisons à utiliser le Service uniquement pour vos propres fins personnelles et non commerciales. L'utilisation du Service à des fins publiques ou commerciales (y compris, sans limitation, l'utilisation du Service au profit de tiers) est strictement interdite. Si vous faites des copies de nos Matériaux, vous devez conserver sur toutes ces copies tous les avis de droits d'auteur et autres avis de propriété contenus dans nos Matériaux tels que fournis par nous. Vous ne pouvez pas modifier, afficher publiquement, exécuter publiquement, ou distribuer nos Matériaux. Entre vous et nous, nous possédons le Service, le Site et nos Matériaux. Le Service, le Site et nos Matériaux sont protégés par les lois américaines et internationales sur les droits d'auteur. Toute utilisation non autorisée du Service, du Site ou de nos Matériaux peut violer les droits d'auteur, de marque et d'autres lois.",
+        "eligibility-title": "ÉLIGIBILITÉ",
+        "eligibility-text": "Conduite et Utilisations Interdites. Vous devez avoir au moins dix-huit (18) ans pour utiliser les services sur ce Site web. Vous acceptez et garantissez qu'aucun de vos Contenus ne sera de nature pornographique (y compris mais sans s'y limiter la pornographie infantile), violente, discriminatoire, illégale, haineuse, obscène, lubrique, nue, partiellement nue ou sexuellement suggestive, liée à la drogue ou au terrorisme, nuisible, trompeuse, extrêmement profane, raciste, diffamatoire, abusive, menaçante ou autrement répréhensible de quelque manière que ce soit (ensemble \"Contenu Répréhensible\").",
+        "eligibility-text-2": "Vous déclarez et garantissez que vous ne solliciterez pas d'informations personnelles ou n'exploiterez pas de manière sexuelle ou violente quiconque âgé de moins de dix-huit (18) ans. Vous déclarez et garantissez également qu'aucun de vos Contenus n'enfreint les droits d'un tiers. Imchatty décline toute obligation de surveiller la nature de votre Contenu, et décline toute responsabilité pour votre Contenu.",
+        "eligibility-text-3": "Vous déclarez et garantissez également que vous ne \"traquerez\" pas ou ne harcèlerez pas autrement tout autre utilisateur de ce Site web, n'usurperez pas l'identité d'autres personnes ou organisations, ne fournirez pas d'informations fausses, trompeuses ou inexactes à Imchatty, n'interférerez pas avec nos serveurs ou logiciels, ne tenterez pas d'accéder à toute zone restreinte du Site web, ne publierez pas de html/javascript nuisible ou perturbateur, ne téléchargerez ou ne transmettrez pas de fichiers contenant des virus ou d'autres objets pouvant endommager d'autres appareils, n'accéderez pas au Site web par des bots, agents, grattage, appareils automatisés ou recherche intelligente, ou n'utiliserez pas le Site web à des fins de spam, de publicité ou de promotion non autorisées ou pour mener des enquêtes de toute nature (ensemble, \"Utilisations Interdites\").",
+        "eligibility-text-4": "Modifications. Nous nous réservons le droit de modifier ou de remplacer ces Conditions à tout moment. Toutes Conditions mises à jour seront disponibles à ce lien. Ces Conditions peuvent être mises à jour, révisées ou modifiées de temps à autre, à notre seule discrétion. Les changements importants dans ces conditions peuvent ou peuvent ne pas être communiqués sur notre page d'accueil. Vous devriez consulter périodiquement les changements apportés à ces Conditions. L'utilisation continue du Site web, ou l'utilisation de l'un des services ou l'achat de tout produit, constituera par la suite votre acceptation réputée des Conditions révisées., Conduite et Utilisations Interdites. Vous devez avoir au moins dix-huit (18) ans pour utiliser les services sur ce Site web. Vous acceptez et garantissez qu'aucun de vos Contenus ne sera de nature pornographique (y compris mais sans s'y limiter la pornographie infantile), violente, discriminatoire, illégale, haineuse, obscène, lubrique, nue, partiellement nue ou sexuellement suggestive, liée à la drogue ou au terrorisme, nuisible, trompeuse, extrêmement profane, raciste, diffamatoire, abusive, menaçante ou autrement répréhensible de quelque manière que ce soit (ensemble \"Contenu Répréhensible\").",
+        "registration-title": "VOS OBLIGATIONS D'INSCRIPTION",
+        "registration-text": "Certaines parties du Service peuvent nécessiter une inscription et la fourniture par vous de certaines informations vous concernant. Si vous vous inscrivez, vous déclarez que vous avez au moins 18 ans et n'êtes pas une personne interdite de recevoir des services sous les lois des États-Unis, de l'Union européenne ou d'une autre juridiction applicable. Vous devez : (a) fournir des informations vraies, exactes, actuelles et complètes sur vous-même comme demandé par le formulaire d'inscription du Service (ces informations étant les \"Données d'Inscription\") et (b) maintenir et mettre à jour rapidement les Données d'Inscription pour qu'elles restent vraies, exactes, actuelles et complètes. Si vous fournissez des informations qui sont fausses, inexactes, non actuelles ou incomplètes, ou nous avons des motifs raisonnables de soupçonner que ces informations sont fausses, inexactes, non actuelles ou incomplètes, nous avons le droit de suspendre ou de résilier votre compte et de refuser toute utilisation actuelle ou future du Service (ou de toute partie de celui-ci).",
+        "member-title": "COMPTE MEMBRE, MOT DE PASSE ET SÉCURITÉ",
+        "member-text": "Vous pouvez recevoir ou créer un mot de passe et une désignation de compte en complétant le processus d'inscription du Service. Vous êtes responsable de maintenir la confidentialité du mot de passe et de la désignation du compte, et êtes entièrement responsable de toutes les activités qui se produisent sous votre mot de passe ou compte. Vous devez (a) nous notifier immédiatement de toute utilisation non autorisée de votre mot de passe ou compte ou de toute autre violation de sécurité, et (b) vous assurer que vous quittez votre compte à la fin de chaque session. Nous ne pouvons pas et ne serons pas responsables de toute perte ou dommage résultant de votre non-respect de cette Section.",
+        "privacy-policy-title": "POLITIQUE DE CONFIDENTIALITÉ ; UTILISATION DES DONNÉES PERSONNELLEMENT IDENTIFIABLES",
+        "privacy-policy-text": "Les Données d'Inscription et certaines autres informations sur vous sont soumises à notre Politique de Confidentialité. Pour plus d'informations, consultez notre politique de confidentialité complète. En utilisant le Service, vous consentez à la collecte et à l'utilisation (telles qu'énoncées dans la Politique de Confidentialité) de ces informations, y compris le transfert de ces informations vers les États-Unis et/ou d'autres pays pour le stockage, le traitement et l'utilisation par nous et nos affiliés.",
+        "gpdr-title": "Conformité au Règlement Général sur la Protection des Données (RGPD)",
+        "gpdr-text1": "Si vous êtes résident ou situé dans l'Union européenne ou l'Espace économique européen (\"EEE\"), vous pouvez également avoir certains droits sous le Règlement Général sur la Protection des Données (\"RGPD\"). Les informations personnelles (\"Données Personnelles\") que vous fournissez sur les sites web imchatty.com ou via ses produits ne sont collectées qu'avec votre consentement, et sont soumises aux termes de la Politique de Confidentialité de la Société, qui peut être trouvée ici. Contactez ",
+        "gpdr-text2": "si vous avez des préoccupations concernant vos Données Personnelles, ou souhaitez exercer l'un de vos droits sous le RGPD.",
+        "billing-title": "FACTURATION ; TAXES",
+        "billing-text": "Actuellement, imchatty.com est un service sans implications fiscales pour le consommateur.",
+        "member-conduct-title": "CONDUITE DES MEMBRES",
+        "member-conduct-text": "Vous comprenez que tout Contenu, qu'il soit publié publiquement ou transmis privément, est la seule responsabilité de la personne de qui ce Contenu provient. Cela signifie que vous, et non nous, êtes entièrement responsable de tout Contenu que vous téléchargez, publiez, envoyez par e-mail, transmettez ou rendez disponible ou accessible via le Service. Nous ne contrôlons pas le Contenu publié ou accessible via le Service et, en tant que tel, ne garantissons pas l'exactitude, l'intégrité ou la qualité de ce Contenu. Vous comprenez qu'en utilisant le Service, vous pouvez être exposé à du Contenu qui est offensant, indécent ou répréhensible. En aucune circonstance nous ne serons responsables de quelque manière que ce soit pour tout Contenu, y compris, mais sans s'y limiter, pour toute erreur ou omission dans tout Contenu, ou pour toute perte ou dommage de toute nature encourus en raison de l'utilisation de tout Contenu publié, envoyé par e-mail, transmis ou autrement rendu disponible ou accessible via le Service.",
+        "member-conduct-text-2": "Toute utilisation du Service est soumise à notre code de conduite.",
+        "member-conduct-text-3": "Nous pouvons ou non pré-examiner le Contenu ; cependant, nous et nos désignés aurons le droit (mais pas l'obligation) à notre seule discrétion de pré-examiner, refuser, ou déplacer tout Contenu ou bloquer tout site qui est disponible ou accessible via le Service. Sans limiter ce qui précède, nous et nos désignés aurons le droit de supprimer ou de bloquer l'accès à tout Contenu qui viole les Conditions ou est autrement répréhensible. Vous devez évaluer, et supporter tous les risques associés à, l'utilisation de tout Contenu, y compris toute dépendance à l'exactitude, l'exhaustivité, ou l'utilité de ce Contenu.",
+        "member-conduct-text-4": "Nous pouvons accéder, préserver et divulguer les informations de votre compte et le Contenu si requis de le faire par la loi ou dans une croyance de bonne foi que cet accès, préservation ou divulgation est raisonnablement nécessaire pour : (a) se conformer au processus légal ; (b) faire respecter les Conditions ; (c) répondre aux réclamations que tout Contenu viole les droits de tiers ; (d) répondre à vos demandes de service client ; ou (e) protéger nos droits (ou ceux de nos utilisateurs ou du public), propriété, ou sécurité personnelle.",
+        "member-conduct-text-5": "Le traitement technique et la transmission du Service, y compris votre Contenu, peuvent impliquer (a) des transmissions sur divers réseaux ; et (b) des changements pour se conformer et s'adapter aux exigences techniques des réseaux ou appareils de connexion.",
+        "member-conduct-text-6": "Le Service et le logiciel incorporé dans le Service peuvent inclure des composants de sécurité qui permettent aux matériaux numériques d'être protégés, et l'utilisation de ces matériaux est soumise aux règles d'utilisation définies par nous et/ou les fournisseurs de contenu qui fournissent du contenu au Service. Vous ne pouvez pas tenter de contourner ou de contourner les règles d'utilisation intégrées dans le Service. Toute reproduction, publication, distribution ultérieure ou exposition publique non autorisée des matériaux fournis sur le Service, en tout ou en partie, est strictement interdite.",
+        "ownership-title": "PROPRIÉTÉ ET UTILISATION DU CONTENU SOUMIS OU RENDU DISPONIBLE POUR INCLUSION SUR LE SERVICE",
+        "ownership-text": "Nous ne revendiquons pas la propriété du Contenu que vous soumettez ou rendez disponible pour inclusion sur le Service. Cependant, en ce qui concerne le Contenu que vous soumettez ou rendez disponible pour inclusion sur les zones du Service accessibles à d'autres membres, la licence d'utiliser, distribuer, reproduire, modifier, adapter, exécuter publiquement et afficher publiquement ce Contenu sur le Service uniquement aux fins de fournir et promouvoir les membres auxquels ce Contenu a été soumis ou rendu disponible. Cette licence n'existe que tant que vous choisissez de continuer à inclure ce Contenu sur le Service et se terminera au moment où vous supprimez ou nous supprimons ce Contenu du Service.",
+        "ownership-text-2": "Vous pouvez volontairement fournir (en relation avec l'utilisation du Service, l'utilisation de nos produits ou autrement) des suggestions, commentaires ou autres retours à nous concernant les éléments ou informations fournis par nous sur le Service ou autrement. Nous ne sommes pas tenus de tenir ces retours confidentiels, et ces retours peuvent être utilisés par nous à toute fin sans obligation d'aucune sorte ; à condition que nous ne divulguerons pas la source de retours spécifiques sans votre consentement ; et rien dans les Conditions ne restreint l'utilisation par vous de ces retours ou idées que vous nous fournissez.",
+        "ownership-text-3": "Tout contenu, y compris mais sans s'y limiter les photographies, images, images et clips vidéo que vous téléchargez sur le Site web, ou partagez avec d'autres utilisateurs de ce Site web (\"Votre Contenu\") vous appartient. imchatty ne revendique aucune propriété de Votre Contenu. Vous accordez à imchatty une licence non exclusive, libre de redevances, perpétuelle, sous-licenciable, mondiale pour utiliser Votre Contenu, conformément à la Politique de Confidentialité de notre Site web. Vous pouvez choisir de partager Votre Contenu avec d'autres utilisateurs de notre Site web en chattant. Vous déclarez et garantissez que vous êtes le propriétaire de Votre Contenu, et ne violez aucun droit de tiers en publiant ou partageant Votre Contenu sur notre Site web. Nous n'approuvons pas nécessairement Votre Contenu, et n'avons aucune obligation de surveiller, éditer, supprimer ou pré-examiner Votre Contenu. Vous êtes seul responsable de tout Votre Contenu publié ou partagé sur ce Site web. Vous êtes également seul responsable de votre interaction avec d'autres utilisateurs sur ce Site web, en ligne et hors ligne, et imchatty n'est pas responsable de la conduite de ses utilisateurs. Au cas où vous pensez qu'un utilisateur d'imchatty lui-même enfreint vos droits de propriété intellectuelle via notre Site web, vous pouvez nous contacter rapidement, et nous nous réservons le droit de supprimer le contenu allégué être en infraction, et même de résilier les comptes des contrevenants répétés.",
+        "indemnity-title": "INDEMNISATION",
+        "indemnity-text": "Vous indemnisez par les présentes et tenez indemnes nous et nos filiales, affiliés, dirigeants, agents, co-marqueurs ou autres partenaires, et employés, consultants et agents de toute réclamation ou demande (y compris nous rembourser tous les honoraires d'avocat raisonnables encourus par nous dans la défense de toute réclamation ou demande), faite par un tiers en raison ou découlant du Contenu que vous soumettez, publiez, transmettez ou rendez disponible par le Service, votre utilisation du Service, votre connexion au Service, votre violation des Conditions, ou votre violation de tout droit d'autrui. Nous nous réservons le droit de retenir un conseil de notre choix à notre seule discrétion. De plus, vous devez coopérer de bonne foi pour nous aider dans notre défense et toute négociation de règlement s'y rapportant, et nous rembourser pour les montants de règlement raisonnables, le cas échéant.",
+        "general-practices-title": "PRATIQUES GÉNÉRALES CONCERNANT L'UTILISATION ET LE STOCKAGE",
+        "general-practices-text": "Vous reconnaissez que nous pouvons établir des pratiques générales et des limites concernant l'utilisation du Service, y compris sans limitation le nombre maximum de jours que le Contenu téléchargé sera conservé par le Service, le nombre maximum et la taille des publications qui peuvent être faites via un compte sur le Service, et le nombre maximum de fois (et la durée maximale pour laquelle) vous pouvez accéder au Service dans une période de temps donnée. Nous n'avons aucune responsabilité pour la suppression ou l'échec à stocker toute publication et autres communications ou autre Contenu maintenu ou transmis par le Service. Nous pouvons modifier ces pratiques générales et limites de temps à autre.",
+        "modifications-title": "MODIFICATIONS AU SERVICE",
+        "modifications-text": "Nous pouvons à tout moment et de temps à autre modifier ou discontinuer, temporairement ou définitivement, le Service (ou toute partie de celui-ci) avec ou sans préavis. Nous ne serons pas responsables envers vous ou envers tout tiers pour toute modification, suspension ou discontinuation du Service.",
+        "termination-title": "RÉSILIATION",
+        "termination-text": "Nous pouvons, dans certaines circonstances et sans préavis, résilier immédiatement votre compte et l'accès au Service. Les motifs de cette résiliation incluront, mais ne se limiteront pas à, (a) les violations des Conditions ou autres accords ou directives incorporés, (b) les demandes des forces de l'ordre ou autres agences gouvernementales, (c) une demande de votre part (suppressions de compte auto-initiées), (d) discontinuation ou modification matérielle du Service (ou toute partie de celui-ci), (e) problèmes techniques ou de sécurité inattendus, (f) périodes prolongées d'inactivité, (g) vous vous êtes engagé dans des activités frauduleuses ou illégales, et/ou (h) non-paiement de tous frais dus par vous en relation avec les Services. La résiliation de votre compte inclut (a) la suppression de l'accès à toutes les offres dans le Service, (b) la suppression de votre mot de passe et de toutes les informations, fichiers et contenu associés ou à l'intérieur de votre compte (ou toute partie de celui-ci), et (c) l'interdiction de toute utilisation future du Service. De plus, toutes les résiliations pour cause seront faites à notre seule discrétion et nous ne serons pas responsables envers vous ou tout tiers pour toute résiliation de votre compte, toute adresse e-mail associée, ou l'accès au Service.",
+        "dealings-title": "RELATIONS AVEC LES TIERS",
+        "dealings-text": "Le Service pourrait vous permettre d'accéder à d'autres sites web ou ressources. Parce que nous n'avons aucun contrôle sur ces sites et ressources, nous ne sommes pas responsables de la disponibilité de ces sites ou ressources externes, et nous n'approuvons pas et ne sommes pas responsables de tout Contenu, produits, ou autres matériaux sur ou disponibles à partir de ces sites ou ressources. Nous ne sommes pas responsables, directement ou indirectement, de tout dommage ou perte causé ou allégué être causé par ou en relation avec l'utilisation ou la dépendance à tout Contenu ou services disponibles sur ou via tout site ou ressource. Nous pouvons ou non pré-examiner d'autres sites web ou ressources ; cependant, nous et nos désignés aurons le droit (mais pas l'obligation) à notre seule discrétion de pré-examiner, refuser ou bloquer l'accès à tout site web ou autres ressources qui violent les Conditions ou sont autrement répréhensibles.",
+        "property-title": "NOS DROITS DE PROPRIÉTÉ",
+        "property-text": "Le Service et tout logiciel nécessaire utilisé en relation avec le Service (\"Logiciel\") contiennent des informations propriétaires et confidentielles qui sont protégées par les lois applicables de propriété intellectuelle et autres. Vous ne pouvez pas accéder au Service par d'autres moyens que par l'interface qui est fournie par nous pour une utilisation dans l'accès au Service.",
+        "property-text-2": "En général, le Service est fourni d'une manière qui ne résulte pas en votre téléchargement ou utilisation de notre Logiciel. Dans le cas où nous vous fournissons cependant du Logiciel (tel qu'un plug-in ou élément similaire), nous vous accordons un droit et une licence personnels, non transférables et non exclusifs d'utiliser le code objet du Logiciel sur un seul ordinateur en relation avec votre accès au Service ; à condition que vous ne (et ne permettez pas à un tiers de) copier, modifier, créer une œuvre dérivée de, faire de l'ingénierie inverse, démontage inverse ou autrement tenter de découvrir tout code source, vendre, assigner, sous-licencier, accorder un intérêt de sécurité dans ou autrement transférer tout droit dans le Logiciel. Vous ne pouvez pas modifier le Logiciel de quelque manière ou forme, ou utiliser des versions modifiées du Logiciel, y compris (sans limitation) dans le but d'obtenir un accès non autorisé au Service. Vous ne pouvez pas louer, prêter, vendre, distribuer ou créer des œuvres dérivées basées sur le Logiciel, en tout ou en partie.",
+        "property-text-3": "Vous ne pouvez pas reproduire, dupliquer, copier, vendre, échanger, revendre ou exploiter à des fins commerciales, toute partie du Service (y compris le nom de votre compte), l'utilisation du Service, ou l'accès au Service.",
+        "disclaimer-title": "AVERTISSEMENT DE GARANTIES",
+        "disclaimer-text": "VOTRE UTILISATION DU SERVICE EST À VOS SEULS RISQUES. LE SERVICE EST FOURNI SUR UNE BASE \"TEL QUEL\" ET \"TEL QUE DISPONIBLE\". NOUS DÉCLINONS EXPRESSÉMENT TOUTES GARANTIES DE TOUT TYPE, QU'ELLES SOIENT EXPRESSES OU IMPLICITES, Y COMPRIS, MAIS SANS S'Y LIMITER, LES GARANTIES IMPLICITES DE QUALITÉ MARCHANDE, D'ADÉQUATION À UN USAGE PARTICULIER ET DE NON-CONTREFAÇON.",
+        "disclaimer-text-2": "NOUS NE GARANTISSONS PAS QUE (i) LE SERVICE RÉPONDRA À VOS EXIGENCES, (ii) LE SERVICE SERA ININTERROMPU, PONCTUEL, SÉCURISÉ, OU SANS ERREUR, (iii) LES RÉSULTATS QUI PEUVENT ÊTRE OBTENUS DE L'UTILISATION DU SERVICE SERONT EXACTS OU FIABLES, (iv) LA QUALITÉ DE TOUS PRODUITS, SERVICES, INFORMATIONS, OU AUTRES MATÉRIAUX ACHETÉS OU OBTENUS PAR VOUS VIA LE SERVICE RÉPONDRA À VOS ATTENTES, ET (v) TOUTE ERREUR DANS LE LOGICIEL SERA CORRIGÉE.",
+        "disclaimer-text-3": "TOUT MATÉRIEL TÉLÉCHARGÉ OU AUTREMENT OBTENU PAR L'UTILISATION DU SERVICE EST FAIT À VOTRE PROPRE DISCRÉTION ET RISQUE ET VOUS SEREZ SEUL RESPONSABLE DE TOUT DOMMAGE À VOTRE SYSTÈME INFORMATIQUE OU PERTE DE DONNÉES QUI RÉSULTE DU TÉLÉCHARGEMENT DE TOUT MATÉRIEL.",
+        "disclaimer-text-4": "AUCUN CONSEIL OU INFORMATION, QU'IL SOIT ORAL OU ÉCRIT, OBTENU PAR VOUS DE NOUS OU VIA OU DU SERVICE NE CRÉERA AUCUNE GARANTIE NON EXPRESSÉMENT ÉNONCÉE DANS LES CONDITIONS.",
+        "limitation-title": "LIMITATION DE RESPONSABILITÉ",
+        "limitation-text": "NOUS NE SERONS PAS RESPONSABLES ENVERS VOUS POUR TOUT DOMMAGE DIRECT, INDIRECT, ACCESSOIRE, SPÉCIAL, CONSÉCUTIF OU EXEMPLAIRE, Y COMPRIS MAIS SANS S'Y LIMITER, LES DOMMAGES POUR PERTE DE PROFITS, GOODWILL, UTILISATION, DONNÉES OU AUTRES PERTES INTANGIBLES (MÊME SI NOUS AVONS ÉTÉ AVISÉS DE LA POSSIBILITÉ DE TELS DOMMAGES), RÉSULTANT DE : (i) L'UTILISATION OU L'INCAPACITÉ D'UTILISER LE SERVICE ; (ii) LE COÛT D'ACQUISITION DE BIENS ET SERVICES DE SUBSTITUTION RÉSULTANT DE TOUS BIENS, DONNÉES, INFORMATIONS OU SERVICES ACHETÉS OU OBTENUS OU MESSAGES REÇUS OU TRANSACTIONS CONCLUES VIA OU DU SERVICE ; (iii) L'ACCÈS NON AUTORISÉ À OU L'ALTÉRATION DE VOS TRANSMISSIONS OU DONNÉES ; (iv) LES DÉCLARATIONS OU LA CONDUITE DE TOUT TIERS SUR LE SERVICE ; OU (v) TOUTE AUTRE QUESTION RELATIVE AU SERVICE.",
+        "exclusions-title": "EXCLUSIONS ET LIMITATIONS",
+        "exclusions-text": "CERTAINES JURIDICTIONS NE PERMETTENT PAS L'EXCLUSION DE CERTAINES GARANTIES OU LA LIMITATION OU L'EXCLUSION DE RESPONSABILITÉ POUR LES DOMMAGES ACCESSOIRES OU CONSÉCUTIFS. EN CONSÉQUENCE, CERTAINES DES LIMITATIONS CI-DESSUS PEUVENT NE PAS S'APPLIQUER À VOUS.",
+        "general-info-title": "INFORMATIONS GÉNÉRALES",
+        "general-info-text": "Accord Complet. Les Conditions constituent l'accord complet entre nous deux et régissent votre utilisation du Service, remplaçant tout accord antérieur entre nous deux concernant le Service. Vous pouvez également être soumis à des termes et conditions supplémentaires qui peuvent s'appliquer lorsque vous utilisez ou achetez certains autres services, services d'affiliés, contenu de tiers, ou logiciel de tiers.",
+        "general-info-text-2": "Choix de Loi et Forum. Les Conditions et la relation entre nous deux seront exclusivement régies par les lois de l'Union européenne sans égard à ses dispositions de conflit de lois. Votre forum exclusif pour porter toute réclamation ou cause d'action contre nous sont les tribunaux situés dans la Ville de Paris, France. Vous acceptez et vous soumettez par les présentes à la juridiction personnelle et exclusive de ces tribunaux dans toute procédure ou action. En ce qui concerne toute procédure ou action portée devant ces tribunaux, vous renoncez par les présentes irrévocablement, dans toute la mesure permise par la loi : (a) toute objection que vous pourriez avoir maintenant ou à l'avenir à cette juridiction ou venue, et (b) toute réclamation qu'une telle action ou procédure a été portée dans un forum inconvénient. Rien ne limite notre droit de commencer et poursuivre toute action légale ou équitable devant tout tribunal de juridiction compétente pour obtenir une injonction ou toute autre forme de réparation. Indépendamment de tout statut ou loi contraire, toute réclamation ou cause d'action découlant de ou liée à l'utilisation du Service ou des Conditions doit être déposée dans les quatre-vingt-dix (90) jours (ou, si différent, le temps minimum permis par la loi) après qu'une telle réclamation ou cause d'action soit survenue ou être à jamais interdite.",
+        "general-info-text-3": "Arbitrage. Nonobstant tout ce qui précède, si nous choisissons à notre seule discrétion de résoudre toute réclamation par arbitrage, vous devez coopérer pleinement avec et être lié par un tel arbitrage, sans autre recours d'aucune sorte. La Cour Européenne d'Arbitrage (CEA) présidera un tel arbitrage. Un tel arbitrage sera exclusivement régi par les lois de l'Union européenne sans égard à ses dispositions de conflit de lois. Toutes les procédures auront lieu dans la Ville de Paris. S'il y a un conflit entre les règles de la CEA et toute disposition des Conditions, les Conditions prévaudront. Vous êtes responsable de tous les coûts que vous encourez dans l'arbitrage, y compris sans limitation, les témoins experts ou les avocats. Les frais de dépôt raisonnables et les coûts et dépenses de l'arbitre seront avancés par nous. Cependant, si l'arbitrage est décidé en notre faveur, vous devez nous rembourser tous nos frais, coûts et dépenses liés à l'arbitrage, y compris sans limitation, tous les frais, coûts et dépenses liés au dépôt, aux arbitres, aux témoins experts, aux avocats et à d'autres tiers.",
+        "general-info-text-4": "Renonciation et Divisibilité des Conditions. Notre échec à exercer ou faire respecter tout droit ou disposition des Conditions ne constituera pas une renonciation à ce droit ou provision. Si une disposition des Conditions est jugée invalide par un tribunal de juridiction compétente, les parties conviennent néanmoins que le tribunal devrait s'efforcer de donner effet aux intentions des parties telles que reflétées dans la provision, et les autres provisions des Conditions restent en pleine vigueur et effet.",
+        "general-info-text-5": "Aucun Bénéficiaire Tiers. Sauf indication contraire expresse dans les Conditions, il n'y aura aucun bénéficiaire tiers aux Conditions.",
+        "general-info-text-6": "Restrictions sur l'Attribution. Ces Conditions et tous les droits, intérêts ou obligations en vertu de celles-ci ne peuvent pas être attribués, directement ou indirectement, y compris, sans limitation, par application de la loi, par l'une de nous, sans le consentement écrit préalable de la partie non-attribuante, à ne pas être déraisonnablement retenu, retardé ou conditionné ; à condition, cependant, que l'une ou l'autre partie peut attribuer les Conditions sans une telle exigence de consentement, en tout ou en partie à tout affilié, filiale ou successeur en intérêt dans le cas d'une fusion, consolidation, acquisition, réorganisation, changement de contrôle ou autrement, à condition que : (i) la partie attribuante et l'entité acquéreuse notifient la partie non-attribuante au moment de cette attribution et l'entité acquéreuse accepte par écrit d'être liée par les Conditions, et (ii) l'entité acquéreuse n'est pas un concurrent de l'entité non-acquéreuse.",
+        "general-info-text-7": "Prescription. Indépendamment de tout statut ou loi contraire, toute réclamation ou cause d'action découlant de ou liée à l'utilisation du Service ou des Conditions doit être déposée dans un (1) an après qu'une telle réclamation ou cause d'action soit survenue ou être à jamais interdite.",
+        "general-info-text-8": "Les titres de section dans les Conditions sont pour la commodité seulement et n'ont aucun effet légal ou contractuel.",
+        "accepting-title": "ACCEPTER LES CONDITIONS",
+        "accepting-text": "Accord aux Conditions. Pour utiliser le Service, vous devez d'abord accepter les Conditions. Vous ne pouvez pas utiliser le Service si vous n'acceptez pas les Conditions. Vous pouvez accepter les Conditions en cliquant pour accepter ou accepter les Conditions, où cette option vous est mise à disposition par nous dans l'interface utilisateur pour le Service, ou en utilisant réellement le Service. Vous acceptez que nous traiterons votre utilisation du Service comme une acceptation des Conditions à partir de ce moment.",
+        "accepting-text-2": "Éligibilité à Utiliser le Service. Vous ne pouvez pas utiliser le Service et ne pouvez pas accepter les Conditions si (a) vous n'êtes pas d'âge légal (les lois de la juridiction dont vous êtes résident ou d'où vous utilisez le Service) pour former un contrat contraignant avec nous, ou (b) vous êtes une personne interdite d'utiliser le Service sous les lois de l'UE, des États-Unis ou d'autres pays y compris le pays où vous résidez ou d'où vous utilisez le Service.",
+        "accepting-text-3": "Représentation d'Éligibilité. Dans tous les cas ci-dessus, vous déclarez que vous satisfaites toutes les conditions d'éligibilité ci-dessus. Si vous ne satisfaites pas les conditions ci-dessus, ou si vous n'êtes pas d'accord avec les Conditions, vous ne pouvez pas utiliser le Service ou toute partie de celui-ci ; dans ce cas nous pouvons également résilier les Conditions et votre utilisation du Service immédiatement sans responsabilité envers vous.",
+        "accepting-text-4": "Acceptation par Soumissions Électroniques. Vous reconnaissez que vos soumissions électroniques constituent votre accord et intention d'être lié par les Conditions. Conformément à tous statuts, règlements, règles, ordonnances ou autres lois applicables, vous acceptez par les présentes l'utilisation de signatures électroniques, contrats, commandes et autres enregistrements et à la livraison électronique d'avis, politiques et enregistrements de transactions initiées ou complétées via le Service. De plus, vous renoncez par les présentes à tous droits ou exigences sous tous statuts, règlements, règles, ordonnances ou autres lois dans toute juridiction qui exigent une signature originale ou la livraison ou rétention d'enregistrements non électroniques.",
+        "amendments-title": "AMENDEMENT ET MISE À JOUR DES CONDITIONS",
+        "amendments-text": "Nous pouvons désirer apporter des changements à ces Conditions de temps à autre pour les mettre à jour, par exemple pour ajouter des références à différents produits ou services. Nous pouvons spécifier des termes amendés ou mis à jour qui s'appliquent à l'utilisation du Service après la date effective de cet amendement ou mise à jour, et nous mettrons à disposition une nouvelle copie de ces Conditions et pouvons exiger que vous l'acceptiez comme condition à la fourniture continue du Service. De plus, l'utilisation continue du Service après réception de ces Conditions amendées constituera votre accord à ces Conditions."
+      }
+    },
+    "privacy": {
+      "title": "Politique de Confidentialité",
+      "intro": "Votre vie privée est importante pour nous. Par conséquent, nous nous engageons à respecter votre vie privée et la confidentialité de vos données personnelles et de votre contenu. Cette Politique de Confidentialité est conçue pour vous aider à comprendre comment nous utilisons et protégeons les informations que vous fournissez en utilisant imchatty. Dans cette Politique de Confidentialité, \"Conditions de Service\" signifie nos Conditions de Service applicables de temps à autre et actuellement trouvées à imchatty.com/terms \"Données Personnelles\" signifie toute information que nous possédons relative à un utilisateur identifié ou identifiable d'imchatty ; les autres termes en majuscules ont les significations qui leur sont données dans les Conditions de Service.",
+      "information-title": "QUELLES INFORMATIONS COLLECTONS-NOUS ?",
+      "information-text1": "Afin de vous fournir l'accès à imchatty, nous pouvons rassembler et traiter certaines ou toutes les informations suivantes :",
+      "information-text2": "Contenu : toute information qui est collectée ou stockée par ou des utilisateurs d'imchatty, autre que les Informations d'Inscription, les Communications de Service Client ou les Informations de Journal.",
+      "information-text3": "Informations d'Inscription : toute information fournie lors de l'inscription volontaire pour l'utilisation d'imchatty, y compris, mais sans s'y limiter, le nom d'utilisateur et le mot de passe et l'adresse e-mail.",
+      "information-text4": "Communications de Service Client : toute information qui nous est rapportée sur le fonctionnement d'imchatty, y compris les rapports de bogues ou les demandes d'améliorations.",
+      "information-text5": "Informations de Journal : Lorsque vous utilisez certains services, nos serveurs enregistrent automatiquement les informations de base que votre application envoie. Ces journaux de serveur peuvent inclure des informations telles que votre message, l'adresse de Protocole Internet, d'autres informations d'adressage, la date et l'heure de votre demande et un jeton d'authentification utilisé pour valider l'identité de vous et votre ordinateur.",
+      "how-we-use-title": "COMMENT UTILISONS-NOUS VOS INFORMATIONS ET À QUELLE FIN ?",
+      "how-we-use-intro": "Notre objectif principal en collectant des informations est de vous fournir une expérience utilisateur efficace. Nous pouvons utiliser les informations définies dans cette Politique de Confidentialité pour : fournir les services et tout support client que vous demandez ; résoudre les litiges, collecter les frais et résoudre les problèmes ; faire respecter nos Conditions de Service ; personnaliser, mesurer et améliorer imchatty, le contenu et la mise en page ; vous informer des mises à jour de service ; comparer les informations pour l'exactitude et vérifier votre identité ; fournir d'autres services pour vous comme décrit quand nous collectons les informations. De plus, nous pouvons utiliser vos informations comme décrit ci-dessous.",
+      "registration-title": "INFORMATIONS D'INSCRIPTION",
+      "registration-intro": "Nous demandons des Informations d'Inscription afin de vérifier votre identité et de permettre votre utilisation d'imchatty.",
+      "registration-text": "Nous respectons la vie privée des comptes e-mail personnels et nous stockerons vos adresses e-mail aussi sécurisément que d'autres Données Personnelles. Nous ne vendrons pas ou ne distribuerons pas vos messages e-mail, et vos détails ne seront pas vendus à des tiers pour leurs fins de marketing sans votre permission explicite. Cependant, nous utiliserons l'e-mail pour vous envoyer des messages sur les défauts et les problèmes de service. Nous pouvons également utiliser l'e-mail pour vous tenir au courant des nouvelles concernant imchatty.",
+      "content-title": "CONTENU",
+      "content-text": "En général, nous ne réviserons pas ou ne fournirons pas aux tiers l'accès à votre Contenu. Cependant, si requis par la loi, nous nous réservons le droit de pré-examiner, réviser, signaler, filtrer, modifier, refuser ou supprimer tout ou partie du Contenu d'imchatty.",
+      "customer-service-title": "COMMUNICATIONS DE SERVICE CLIENT",
+      "customer-service-text": "Les informations qui sont volontairement soumises dans les commentaires sont utilisées aux fins de révision de ces commentaires et d'amélioration d'imchatty. Nous nous réservons le droit d'utiliser des informations anonymes à des fins de marketing, par exemple en affichant des commentaires sélectionnés sur imchatty ou dans d'autres communications. De plus, nous pouvons de temps à autre vous demander de fournir des informations sur vos expériences qui seront utilisées pour mesurer et améliorer la qualité. Vous n'êtes à aucun moment dans l'obligation de fournir de telles données. Nous n'utiliserons jamais d'informations personnellement identifiables (commentaires) sans votre permission explicite à cet effet.",
+      "log-information-title": "INFORMATIONS DE JOURNAL",
+      "log-information-text": "Nous utiliserons ces informations pour contrôler et auditer l'accès à imchatty et pour des informations statistiques.",
+      "to-whom-title": "À QUI TRANSFÉRONS-NOUS VOS INFORMATIONS PERSONNELLES",
+      "to-whom-text1": "Sauf comme indiqué ci-dessous, nous ne vendrons, ne louerons, n'échangerons ou ne transférerons pas autrement les Informations d'Inscription ou le Contenu à un tiers sans votre permission explicite, sauf si nous sommes obligés de le faire sous les lois applicables ou par ordre des autorités compétentes.",
+      "to-whom-text2": "Nous pouvons partager vos informations avec nos affiliés et autres fournisseurs de services. Nous pouvons offrir certains de nos services en relation avec d'autres fournisseurs de services. Les Informations d'Inscription que vous nous fournissez peuvent être envoyées à ces fournisseurs afin de livrer le service fourni par eux ; de même, les informations personnelles que vous fournissez à ces sites peuvent nous être envoyées afin d'exploiter imchatty.",
+      "to-whom-text3": "Les informations collectées par nous peuvent être stockées et traitées dans tout pays où nous et nos affiliés maintenons des installations. Nous nous réservons le droit de transférer des informations en dehors du pays où vous résidez et/ou d'où vous utilisez imchatty, y compris les pays que les lois de confidentialité et règlements de votre propre pays peuvent juger déficients pour assurer un niveau adéquat de protection pour ces informations. Si vous n'êtes pas sûr que cette déclaration de confidentialité soit en conflit avec les règles locales applicables, vous ne devriez pas soumettre vos informations. Néanmoins, en utilisant imchatty, vous consentez à tout transfert et/ou stockage d'informations aux États-Unis d'Amérique.",
+      "to-whom-text4": "Alors que nous continuons à développer notre entreprise, nous pourrions vendre ou acheter des filiales ou des unités commerciales. Dans de telles transactions ainsi que dans le cas où tous ou substantiellement tous nos actifs sont acquis par un tiers, les informations personnelles de nos utilisateurs seront généralement l'un des actifs commerciaux transférés. Nous nous réservons le droit d'inclure vos informations personnelles, collectées comme un actif, dans tout transfert à un tiers. Nonobstant tout ce qui est contraire dans cette Politique de Confidentialité ou les Conditions de Service, nous pouvons accéder, utiliser, préserver ou divulguer toute information à laquelle nous avons accès si nous avons une croyance de bonne foi qu'un tel accès, utilisation, préservation ou divulgation de toute information est raisonnablement nécessaire pour (a) satisfaire toute loi applicable, règlement, processus légal ou demande gouvernementale exécutoire, (b) faire respecter les Conditions de Service, y compris l'enquête sur les violations potentielles de celles-ci, (c) détecter, prévenir, ou autrement aborder la fraude, la sécurité ou les problèmes techniques, ou (d) protéger contre un préjudice imminent aux droits, propriété ou sécurité de nous, nos utilisateurs ou le public comme requis ou permis par la loi.",
+      "how-we-protect-title": "COMMENT PROTÉGEONS-NOUS VOS INFORMATIONS PERSONNELLES ?",
+      "how-we-protect-text": "Nous prenons des mesures organisationnelles et techniques appropriées pour protéger les données qui nous sont fournies ou collectées par nous. Vous devriez être conscient que les communications internet ne sont pas toujours sécurisées. Bien que nous prenions ce que nous considérons comme des mesures appropriées pour protéger vos données, la protection des informations disponibles sur internet est sujette à des attaques de tiers, et en conséquence nous ne pouvons pas vous promettre que des tiers ne peuvent pas accéder à votre Contenu.",
+      "how-long-title": "COMBIEN DE TEMPS VOS DONNÉES PERSONNELLES SONT-ELLES CONSERVÉES PAR NOUS ?",
+      "how-long-text": "Nous ne conservons pas vos informations plus longtemps que permis afin d'exécuter nos services ou comme requis sous la législation pertinente, avec due observance des obligations applicables et exceptions sous la législation pertinente. Spécifiquement, vos informations ne sont conservées que aussi longtemps que nécessaire pour : (1) fournir l'utilisation d'imchatty ; (2) vous facturer votre utilisation d'imchatty et maintenir des enregistrements jusqu'à ce que la facturation pour imchatty ne puisse être légalement contestée et que les procédures légales ne puissent plus être poursuivies ; (3) communiquer avec vous concernant d'autres services que nous offrons ; (4) se conformer à la législation applicable, aux demandes réglementaires et aux ordres pertinents des tribunaux compétents ; (5) faire respecter nos Conditions de Service ; ou (6) remplir l'un des autres objectifs détaillés dans cette Politique de Confidentialité.",
+      "what-are-cookies-title": "QUE SONT LES COOKIES ET COMMENT LES UTILISONS-NOUS ?",
+      "what-are-cookies-text": "Un cookie est un morceau de données stocké sur le disque dur de l'utilisateur contenant des informations sur l'utilisateur. L'utilisation d'un cookie ne sera en aucun cas liée à des informations personnellement identifiables sur imchatty. Une fois que l'utilisateur ferme son navigateur, le cookie se termine simplement. Par exemple, en définissant un cookie sur imchatty, l'utilisateur n'aurait pas à se connecter avec un mot de passe plus d'une fois, économisant ainsi du temps sur imchatty. Si un utilisateur rejette le cookie, il peut toujours utiliser imchatty. Le seul inconvénient est que l'utilisateur sera limité dans certaines zones d'imchatty. Nous n'utilisons pas de cookies pour suivre ou améliorer votre expérience sur imchatty mais pourrions pour l'analytique. Certains de nos partenaires commerciaux peuvent utiliser des cookies sur imchatty. Cependant, nous n'avons aucun accès ou contrôle sur ces cookies. De plus, si nous choisissons de vous fournir des offres promotionnelles ou de la publicité, le tiers partenaire commercial peut utiliser des cookies à cette fin.",
+      "gdpr-compliance-title": "Conformité au Règlement Général sur la Protection des Données (RGPD)",
+      "gdpr-compliance-intro": "Si vous êtes résident ou situé dans l'Espace économique européen (\"EEE\"), vous pouvez également avoir certains droits sous le Règlement Général sur la Protection des Données (\"RGPD\"). Les données personnelles que vous fournissez sur notre site web ou via nos produits ne sont collectées qu'avec votre consentement, et peuvent être transmises en dehors de l'EEE vers l'imchatty (ou les serveurs informatiques maintenus au bénéfice d'imchatty) conformément à ce consentement.",
+      "gdpr-compliance-text1": "En général, sous le RGPD vous pouvez :",
+      "gdpr-compliance-text2": "demander l'accès à vos données personnelles",
+      "gdpr-compliance-text3": "faire corriger des données incomplètes ou incorrectes",
+      "gdpr-compliance-text4": "faire supprimer vos données personnelles",
+      "gdpr-compliance-text5": "suspendre ou restreindre notre utilisation de vos données personnelles, ou retirer votre consentement",
+      "gdpr-compliance-text6": "porter plainte auprès d'une autorité de surveillance si vous croyez que vos droits sous le RGPD ne sont pas respectés",
+      "gdpr-compliance-text7": "Si vous demandez une copie de vos données personnelles, nous vous fournirons une copie de vos données personnelles. La première copie sera fournie gratuitement, mais des copies supplémentaires peuvent être soumises à des frais raisonnables. Si vous demandez la suppression de vos données personnelles, imchatty le fera généralement dès que possible, bien que votre droit de faire supprimer vos données personnelles soit soumis à des exceptions, telles que, par exemple, la conformité à une obligation légale ou pour l'établissement, l'exercice ou la défense de réclamations légales.",
+      "gdpr-compliance-text8": "Si vous considérez que notre traitement de vos informations personnelles enfreint les lois de protection des données, vous avez un droit légal de porter plainte auprès d'une autorité de surveillance responsable de la protection des données. Vous pouvez le faire dans l'État membre de l'UE de votre résidence habituelle, votre lieu de travail ou le lieu de l'infraction alléguée.",
+      "gdpr-compliance-text9": "Contactez ",
+      "gdpr-compliance-text10": " si vous avez des préoccupations concernant vos données personnelles, ou souhaitez exercer l'un de ces droits listés.",
+      "gdpr-compliance-text11": "Notez que, si vous êtes dans l'EEE, nous pouvons transférer vos données personnelles en dehors de l'EEE, y compris vers les États-Unis. Par exemple, cela peut arriver si vos données personnelles sont transférées vers nos serveurs situés dans un pays en dehors de l'EEE. Ces pays peuvent ne pas avoir des lois de protection des données similaires à l'EEE. En soumettant vos données personnelles, vous acceptez ce transfert, stockage ou traitement. Si nous transférons vos informations en dehors de l'EEE de cette manière, nous prendrons des mesures pour nous assurer que des mesures de sécurité appropriées sont prises dans le but de s'assurer que vos droits de confidentialité continuent d'être protégés comme décrit dans cette politique.",
+      "how-far-title": "JUSQU'OÙ S'ÉTEND NOTRE RESPONSABILITÉ ?",
+      "how-far-text": "Cette Politique de Confidentialité s'applique aux services qui sont détenus et exploités par nous. Nous n'exerçons pas de contrôle sur d'autres utilisateurs ou systèmes de tiers qui peuvent lier à imchatty. Ils peuvent placer leurs propres fichiers ou d'autres fichiers sur leurs systèmes, collecter des données ou solliciter des informations personnelles de votre part. Nous n'acceptons aucune responsabilité pour ces autres sites ou services.",
+      "privacy-modified-title": "CETTE POLITIQUE DE CONFIDENTIALITÉ PEUT-ELLE ÊTRE MODIFIÉE ?",
+      "privacy-modified-text": "Nous nous réservons le droit de modifier les dispositions de cette Politique de Confidentialité si jugé nécessaire. Nous vous informerons de ces changements en publiant la Politique de Confidentialité révisée à imchatty.com/privacy. La Politique de Confidentialité révisée deviendra effective dans les trente (30) jours de cette publication, sauf si vous acceptez expressément la déclaration révisée plus tôt en cliquant sur le bouton d'acceptation. Vous acceptez que l'acceptation expresse par vous, ou votre utilisation continue d'imchatty, constituera votre acceptation de la Politique de Confidentialité.",
+      "rights-contact-title": "QUELS DROITS AVEZ-VOUS ET COMMENT POUVEZ-VOUS NOUS CONTACTER ?",
+      "rights-contact-text1": "Si vous souhaitez exercer votre droit de voir, corriger, compléter ou supprimer vos Données Personnelles, veuillez nous contacter à ",
+      "rights-contact-text2": "Après vérification de votre identité, nous tenterons de répondre rapidement à votre demande, à condition que nous n'agissions pas contrairement à la législation applicable en répondant à votre demande.",
+      "meta": {
+        "title": "Politique de confidentialité | ImChatty",
+        "description": "Découvrez comment ImChatty gère vos données, votre vie privée et l’expérience de chat anonyme.",
+        "ogTitle": "Politique de confidentialité ImChatty",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/privacy",
+        "ogDescription": "Lisez comment ImChatty protège votre vie privée et gère les données dans un environnement totalement anonyme et open source.",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterTitle": "Politique de confidentialité ImChatty",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "Découvrez comment votre vie privée est protégée sur ImChatty — une plateforme de chat anonyme et open source. Lisez la politique complète.",
+        "twitterImage": "https://imchatty.com/images/article-image.webp"
+      }
+    },
+    "admin": {
+      "title": "Tableau de Bord Admin",
+      "sections-title": "Sections",
+      "sections": {
+        "dashboard": "Tableau de Bord",
+        "articles": "Articles",
+        "categories": "Catégories",
+        "tags": "Étiquettes",
+        "reports": "Rapports"
+      }
+    },
+    "articles": {
+      "index": {
+        "explore": "Explorez Nos Articles",
+        "categories": "Catégories",
+        "tags": "Étiquettes",
+        "search": "Rechercher des Articles...",
+        "no-articles": "Aucun article trouvé pour",
+        "meta": {
+          "title": "Blog ImChatty – Conseils, Mises à Jour et Histoires Communautaires",
+          "description": "Découvrez les derniers conseils, mises à jour de plateforme et vraies histoires communautaires sur le Blog ImChatty. Restez connecté et informé.",
+          "ogTitle": "Blog ImChatty – Conseils, Mises à Jour et Histoires Communautaires",
+          "ogType": "Website",
+          "ogUrl": "https://imchatty.com/articles",
+          "ogDescription": "Explorez des articles utiles, des nouvelles de plateforme et des histoires inspirantes de la communauté ImChatty. Mis à jour régulièrement avec de nouveaux aperçus.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterDescription": "Restez informé avec les derniers articles de blog d'ImChatty. Des mises à jour de plateforme aux conseils de rencontres et de chat, nous avons tout ce qu'il vous faut.",
+          "twitterTitle": "Blog ImChatty – Votre Source de Conseils et Mises à Jour",
+          "twitterCard": "summary_large_image",
+          "twitterImage": "https://imchatty.com/images/robot.png"
+        }
+      }
+    },
+    "categories": {
+      "index": {
+        "title": "Toutes les Différentes Catégories",
+        "meta": {
+          "title": "Catégories d'Articles Populaires",
+          "description": "Découvrez nos catégories les plus populaires ! Parcourez les articles les mieux notés avec de vraies informations, des détails personnalisés et des intérêts authentiques.",
+          "ogTitle": "Catégories d'Articles",
+          "ogType": "Website",
+          "ogUrl": "https://imchatty.com/categories",
+          "ogDescription": "Découvrez nos catégories les plus populaires ! Parcourez les catégories les mieux notées avec de vraies informations, des détails personnalisés et des intérêts authentiques.",
+          "twitterTitle": "Catégories Récentes Populaires",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Découvrez nos catégories les plus populaires ! Parcourez les membres les mieux notés avec de vraies informations, des détails personnalisés et des intérêts authentiques."
+        }
+      },
+      "slug": {
+        "no-articles": "Aucun article trouvé pour cette catégorie",
+        "meta": {
+          "articles": "Articles",
+          "description1": "Parcourez les articles étiquetés avec ",
+          "description2": " sur ImChatty. Explorez les aperçus, histoires et ressources liés à ",
+          "ogDescription1": "Trouvez les derniers articles et contenus sur ",
+          "ogDescription2": " chez ImChatty. Voyez comment les vrais utilisateurs et l'IA explorent ce sujet.",
+          "twitterDescription1": "Apprenez-en plus sur ",
+          "twitterDescription2": " dans notre dernier contenu lié au chat. Articles mis à jour de perspectives réelles et IA."
+        }
+      }
+    },
+    "tags": {
+      "index": {
+        "title": "Toutes les Différentes Étiquettes",
+        "meta": {
+          "title": "Parcourir les tags | ImChatty",
+          "description": "Découvrez les tags populaires sur ImChatty et explorez des contenus adaptés à vos centres d’intérêt réels et conversations authentiques.",
+          "ogTitle": "Explorer les tags sur ImChatty",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/tags",
+          "ogDescription": "Plongez dans les tags les plus populaires d’ImChatty. Trouvez des articles et discussions classés par thèmes et intérêts réels.",
+          "twitterTitle": "Tags tendance | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Parcourez les tags tendance sur ImChatty pour découvrir des contenus organisés par sujet, pertinence et intérêt partagé."
+        }
+      },
+      "slug": {
+        "no-articles": "Aucun article trouvé pour cette étiquette"
+      }
+    },
+    "guides": {
+      "title": "Tous nos Guides",
+      "no-articles": "Aucun article trouvé pour ce type",
+      "meta": {
+        "title": "Guides Populaires",
+        "description": "Découvrez nos guides les plus récents ! Parcourez les guides d'intérêt authentique.",
+        "ogTitle": "Guides Populaires - Aide",
+        "ogUrl": "https://imchatty.com/guides",
+        "ogDescription": "Découvrez nos guides les plus récents ! Aide pour commencer, conseils et comment vous protéger.",
+        "twitterTitle": "Aperçus de Guides Populaires",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "Découvrez nos guides et aperçus les plus populaires ! Parcourez les guides d'intérêt authentique, créés par un humain, et possiblement révolutionnaires !"
+      }
+    },
+    "insights": {
+      "title": "Tous nos articles non-guides",
+      "meta": {
+        "title": "Aperçus d'Articles Populaires",
+        "description": "Découvrez nos aperçus les plus récents ! Parcourez les articles d'intérêt authentique.",
+        "ogTitle": "Aperçus d'Articles Populaires",
+        "ogUrl": "https://imchatty.com/insights",
+        "ogType": "Website",
+        "ogDescription": "Découvrez nos aperçus les plus récents ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterTitle": "Aperçus d'Articles Populaires",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "Découvrez nos aperçus d'articles les plus populaires ! Parcourez les articles d'intérêt authentique, créés par un humain, et possiblement révolutionnaires !"
+      }
+    },
+    "profiles": {
+      "ai": {
+        "title": "Profils IA Populaires",
+        "meta": {
+          "title": "Profils IA populaires | ImChatty",
+          "description": "Découvrez les profils de chatbots les plus populaires sur ImChatty. Des personnalités uniques, des réponses adaptées et des centres d’intérêt variés.",
+          "ogTitle": "Profils IA en vogue sur ImChatty",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/profiles/ai",
+          "ogDescription": "Explorez les profils IA les plus consultés sur ImChatty. Chatbots personnalisés, réponses engageantes et interactions authentiques.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "Profils IA tendance | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Découvrez les chatbots les plus populaires sur ImChatty — profils interactifs, réponses intelligentes et intérêts partagés."
+        }
+      },
+      "female": {
+        "title": "Profils Féminins Populaires",
+        "meta": {
+          "title": "Profils féminins populaires | ImChatty",
+          "description": "Découvrez les profils féminins les plus populaires sur ImChatty. Parcourez des profils authentiques avec photos réelles, centres d’intérêt uniques et détails personnalisés.",
+          "ogTitle": "Meilleurs profils féminins sur ImChatty",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/profiles/female",
+          "ogDescription": "Explorez les profils féminins les plus consultés sur ImChatty. Informations vérifiées, intérêts communs et conversations authentiques.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "Profils féminins populaires | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Découvrez les profils féminins les plus appréciés sur ImChatty — détails authentiques et intérêts personnalisés."
+        }
+      },
+      "male": {
+        "title": "Profils Masculins Populaires",
+        "meta": {
+          "title": "Profils masculins populaires | ImChatty",
+          "description": "Découvrez les profils masculins les plus populaires sur ImChatty. Parcourez des profils authentiques avec des centres d’intérêt partagés et des présentations personnalisées.",
+          "ogTitle": "Meilleurs profils masculins sur ImChatty",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/profiles/male",
+          "ogDescription": "Explorez les profils masculins les plus en vogue sur ImChatty. Informations réelles, biographies authentiques et connexions sincères.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "Profils masculins populaires | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Découvrez les profils masculins les plus consultés sur ImChatty. Informations vérifiées, personnes réelles et échanges enrichissants."
+        }
+      },
+      "popular": {
+        "title": "Profils les Plus Populaires",
+        "meta": {
+          "title": "Profils populaires | ImChatty",
+          "description": "Explorez les profils les plus populaires sur ImChatty. Parcourez des membres authentiques avec des centres d’intérêt personnalisés et des conversations de qualité.",
+          "ogTitle": "Profils populaires sur ImChatty",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/profiles/popular",
+          "ogDescription": "Découvrez les profils les plus appréciés sur ImChatty. Des membres réels, des détails authentiques et des échanges significatifs.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "Profils en tendance | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Découvrez les profils les plus consultés et les mieux notés sur ImChatty. Des utilisateurs réels, des infos fiables et des conversations intéressantes."
+        }
+      },
+      "recent": {
+        "title": "Profils Récents Populaires",
+        "meta": {
+          "title": "Plus de Profils Récents Populaires",
+          "description": "Découvrez nos profils récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
+          "ogTitle": "Profils Récents Populaires",
+          "ogType": "Website",
+          "ogUrl": "https://imchatty.com/profiles/recent",
+          "ogDescription": "Découvrez nos profils récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "Profils Récents Populaires",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Découvrez nos profils récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques."
+        }
+      },
+      "index": {
+        "title": "Profils Publics",
+        "meta": {
+          "title": "Plus de Profils",
+          "description": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
+          "ogTitle": "Profils Publics",
+          "ogType": "Website",
+          "ogUrl": "https://imchatty.com/profiles/",
+          "ogDescription": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "Profils Publics",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques."
+        }
+      }
+    },
+    "loginemail": {
+      "welcome": "Bienvenue, vous êtes maintenant connecté",
+      "choices": "Vous pouvez aller à votre profil ou chatter maintenant.",
+      "get-chatting": "Commencer à chatter !",
+      "profile": "Aller à mon profil"
+    },
+    "logout": {
+      "meta": {
+        "title": "Déconnexion",
+        "description": "Application de chat anonyme gratuite (Réel ou IA) pour tous.",
+        "ogTitle": "Imchatty - Déconnexion",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/logout",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "ogDescription": "Application de chat anonyme gratuite (Réel ou IA) pour tous.",
+        "twitterTitle": "Imchatty - Déconnexion",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "Application de chat anonyme gratuite (Réel ou IA) pour tous."
+      }
+    },
+    "signin": {
+      "note": "Vous ne devriez jamais être ici...",
+      "meta": {
+        "title": "Se connecter à ImChatty",
+        "description": "Connectez-vous à ImChatty avec Google, Facebook ou votre e-mail pour commencer à discuter anonymement.",
+        "ogTitle": "Connexion ImChatty",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/signin",
+        "ogDescription": "Accédez à votre profil ImChatty et discutez anonymement en vous connectant via Google, Facebook ou votre e-mail. Une plateforme sécurisée et open source pour échanger avec des personnes réelles ou des profils d’IA.",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterTitle": "Connexion | ImChatty",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "Connectez-vous pour commencer des conversations anonymes sur ImChatty avec des personnes réelles ou des profils IA. Utilisez Google, Facebook ou votre e-mail.",
+        "twitterImage": "https://imchatty.com/images/article-image.webp"
+      }
+    }
+  },
+  "components": {
+    "navbar": {
+      "imchatty": "ImChatty",
+      "blog": "Blog",
+      "chat": "Chat",
+      "settings": "Paramètres",
+      "logout": "Déconnexion",
+      "signin": "Se connecter",
+      "aboutus": "À Propos de Nous",
+      "free-chat": "Chat Gratuit"
+    },
+    "footer": {
+      "about": "À Propos de Nous",
+      "terms": "Conditions de Service",
+      "privacy": "Politique de Confidentialité",
+      "cookies": "Politique des Cookies",
+      "public-profiles": "Profils Publics",
+      "consent-preferences": "Préférences de Consentement"
+    },
+    "button-favorite": {
+      "log-in": "Se Connecter",
+      "cancel": "Annuler",
+      "please-log-in": "Veuillez Vous Connecter",
+      "need-log-in": "Vous devez vous connecter pour sauvegarder les profils comme favoris."
+    },
+    "home": {
+      "ai": {
+        "title": "Profils IA Récents",
+        "see-more": "Voir Plus de Profils IA"
+      },
+      "female": {
+        "title": "Profils Féminins Récents",
+        "see-more": "Voir Plus de Profils Féminins"
+      },
+      "main": {
+        "sign-in": "Se Connecter",
+        "google": "Avec Google",
+        "facebook": "Avec Facebook",
+        "email": "Avec E-mail"
+      },
+      "male": {
+        "title": "Profils Masculins Récents",
+        "see-more": "Voir Plus de Profils Masculins"
+      },
+      "most-popular": {
+        "title": "Profils les Plus Populaires",
+        "see-more": "Voir Plus de Profils Populaires"
+      },
+      "recent": {
+        "title": "Profils Réels Récents",
+        "see-more": "Voir Plus de Profils Récents"
+      }
+    },
+    "activeChats": {
+      "confirm": "Confirmer",
+      "cancel": "Annuler",
+      "delete-title": "Supprimer Ce Chat",
+      "delete-confirm": "Êtes-vous sûr de vouloir supprimer ce chat ? Cette action ne peut pas être annulée.",
+      "block": "Bloquer cet utilisateur ?"
+    },
+    "blockedUsers": {
+      "no-blocked-users": "Vous n'avez aucun utilisateur bloqué"
+    },
+    "chatcontainer": {
+      "replying-to": "En réponse à : ",
+      "chat": "Chatter avec un ",
+      "ai": " IA",
+      "message": "Message ",
+      "select-user": "Sélectionnez un utilisateur pour chatter",
+      "send": "Envoyer",
+      "message-sent": "vous a envoyé un message"
+    },
+    "chatheader": {
+      "years-old": " ans, ",
+      "remove-favorites": "Retirer des Favoris",
+      "add-favorites": "Ajouter aux Favoris",
+      "block-user": "Bloquer l'Utilisateur",
+      "unblock-user": "Débloquer l'Utilisateur",
+      "report-user": "Signaler l'Utilisateur",
+      "favorited": "vous a ajouté en favori !",
+      "report-success": "Merci d'avoir signalé cet utilisateur. Nous examinerons le rapport et prendrons les mesures appropriées si nécessaire.",
+      "report-failure": "Il y a eu une erreur lors du signalement de cet utilisateur. Veuillez réessayer plus tard."
+    },
+    "loginAi": {
+      "titleText": "Créez Votre Profil Anonyme"
+    },
+    "dialogAiSignUp": {
+      "create-profile": "Créer un Profil",
+      "type-response": "Tapez votre réponse ici...",
+      "titleText": "Créez Votre Profil Anonyme",
+      "titleText2": "Finissons de créer votre profil",
+      "reminder": "Assurez-vous d'entrer votre e-mail et de compléter votre profil pour débloquer toutes les fonctionnalités !"
+    },
+    "favorites": {
+      "i-favorited": "J'ai Favorisé",
+      "no-favorites": "Aucun utilisateur favorisé trouvé",
+      "favorited-me": "M'a favorisé",
+      "no-favorited-me": "Personne ne vous a encore favorisé"
+    },
+    "filter-menu": {
+      "logged-in": "Connecté en tant que ",
+      "filters": "Filtres",
+      "gender": "Genre",
+      "status": "Statut",
+      "age-range": "Tranche d'Âge",
+      "anonymity": "Anonymat",
+      "interests": "Intérêts",
+      "country": "Pays",
+      "clear": "Effacer",
+      "apply": "Appliquer",
+      "cancel": "Annuler",
+      "male": "Homme",
+      "female": "Femme",
+      "other": "Autre",
+      "all": "Tous",
+      "registered": "Utilisateurs Enregistrés Uniquement",
+      "anony": "Utilisateurs Anonymes Uniquement"
+    },
+    "finish-profile": {
+      "finish-up": "Finissons de configurer votre profil - vous avez",
+      "type-response": "Tapez votre réponse ici...",
+      "skip": "Passer",
+      "close": "Fermer",
+      "no-ask": "Ne plus demander"
+    },
+    "gender-selection": {
+      "gender": "Genre",
+      "select-gender": "Vous devez sélectionner un genre."
+    },
+    "location-selection": {
+      "country": "Pays",
+      "country2": "Pays :",
+      "state": "État",
+      "state2": "État :",
+      "city": "Ville",
+      "city2": "Ville :"
+    },
+    "loginEmail": {
+      "sign-in": "Se Connecter avec E-mail",
+      "18years": "J'ai 18 ans ou plus et j'accepte les Conditions de Service",
+      "checkmail1": "Vérifiez votre e-mail pour le lien de connexion !",
+      "checkmail2": "(Il peut être dans votre dossier spam.)",
+      "registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos et plein d'autres choses. En créant un compte, vous acceptez nos",
+      "terms": "Conditions de Service",
+      "invalid-email": "Adresse e-mail invalide",
+      "confirmAge": "Vous devez confirmer votre âge"
+    },
+    "loginFacebook": {
+      "sign-in": "Se Connecter avec Facebook",
+      "18years": "J'ai 18 ans ou plus et j'accepte les Conditions de Service",
+      "registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos, utiliser des filtres avancés et avoir une expérience IA plus complète. Facebook partagera votre nom, adresse e-mail et photo de profil avec imchatty. En créant un compte, vous acceptez nos",
+      "confirmAge": "Vous devez confirmer votre âge"
+    },
+    "loginGoogle": {
+      "sign-in": "Se Connecter Avec Google",
+      "continue": "Continuer avec Google",
+      "registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos, utiliser des filtres avancés et avoir une expérience IA plus complète. Facebook partagera votre nom, adresse e-mail et photo de profil avec imchatty. En créant un compte, vous acceptez nos",
+      "confirmAge": "Vous devez confirmer votre âge"
+    },
+    "lookingFor": {
+      "looking-for": "Recherche",
+      "cancel": "Annuler",
+      "save": "Sauvegarder"
+    },
+    "message": {
+      "accept-image": "Accepter l'Image",
+      "replied-to": "En réponse à : ",
+      "save": "Sauvegarder",
+      "cancel": "Annuler",
+      "edit-hint": "Ctrl+Entrée pour sauvegarder • Échap pour annuler",
+      "edited": "(modifié)"
+    },
+    "morefemale": {
+      "title": "Plus de Profils Féminins",
+      "back": "Retour"
+    },
+    "notification-dropdown": {
+      "none": "Aucune notification"
+    },
+    "profile-age": {
+      "age": "Âge",
+      "required": "L'âge est requis"
+    },
+    "profile-bio": {
+      "bio": "Bio"
+    },
+    "profile-card": {
+      "remove-favorite": "Retirer des Favoris",
+      "remove-upvote": "Retirer le Vote Positif",
+      "remove": "Retirer"
+    },
+    "profile-container": {
+      "status": "Statut :",
+      "gender": "Genre :",
+      "age": "Âge :",
+      "about-me": "À Propos de Moi :",
+      "generate-bio": "Générer une Bio",
+      "sound-notifs": "Notifications Sonores",
+      "on": "Activé",
+      "off": "Désactivé",
+      "save": "Sauvegarder",
+      "edit": "Modifier",
+      "cancel": "Annuler",
+      "go-to-chat": "Aller au Chat",
+      "delete": "Supprimer Mon Compte",
+      "delete-confirm": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action ne peut pas être annulée.",
+      "restore": "Restaurer le Compte",
+      "finish": "Finaliser le Profil",
+      "public": "Profil Public",
+      "copy": "Copier le Lien du Profil",
+      "snackbar-copy-text": "Lien du profil copié dans le presse-papiers !",
+      "loading": "Chargement...",
+      "confirm": "Confirmer",
+      "close": "Fermer",
+      "gender-male": "Homme",
+      "gender-female": "Femme",
+      "gender-other": "Autre"
+    },
+    "profile-displayname": {
+      "display-name": "Nom d'Affichage",
+      "no-spaces": "Aucun espace autorisé",
+      "min-4": "Minimum 4 caractères requis",
+      "max-15": "Maximum 15 caractères autorisés",
+      "less-3-special": "Moins de 3 caractères spéciaux requis",
+      "required": "Le Nom d'Affichage est requis"
+    },
+    "profile-photo": {
+      "add-photo": "Ajouter une Photo",
+      "add-avatar-deco": "Ajouter une Décoration d'Avatar",
+      "upload-photo": "Télécharger une Photo de Profil",
+      "upload": "Télécharger",
+      "cancel": "Annuler"
+    },
+    "profile-site": {
+      "label": "URL du Site Public",
+      "valid": "URL valide requise"
+    },
+    "profile-tagline": {
+      "label": "Slogan",
+      "min-4": "Minimum 4 caractères requis",
+      "max-30": "Maximum 30 caractères autorisés",
+      "less-3-special": "Moins de 3 caractères spéciaux requis",
+      "no-domain": "Les noms de domaine ou liens ne sont pas autorisés"
+    },
+    "public-user-profile": {
+      "looking-for": "Recherche : ",
+      "about-me": "À Propos de Moi : ",
+      "visit1": "Visiter ",
+      "visit2": "'s site web",
+      "back": "Retour au Profil",
+      "chat": "Chatter avec ",
+      "back-home": "Retour à l'Accueil"
+    },
+    "registration-dialog": {
+      "register": "S'inscrire pour Continuer",
+      "close": "Fermer"
+    },
+    "report-user-modal": {
+      "title": "Signaler l'Utilisateur",
+      "select-issues": "Sélectionnez tous les problèmes pertinents",
+      "describe-problem": "Décrivez le problème",
+      "select-message": "Sélectionnez des messages spécifiques (optionnel)",
+      "selected-messages": "Messages sélectionnés : ",
+      "10": "10",
+      "cancel": "Annuler",
+      "submit": "Soumettre le Rapport",
+      "photo": "Leur photo",
+      "username": "Leur nom d'utilisateur",
+      "descriptors": "Leurs descripteurs de texte",
+      "actions": "Leurs actions",
+      "10-max": "Vous pouvez sélectionner jusqu'à 10 messages"
+    },
+    "select-avatar-decoration": {
+      "title": "Décoration d'Avatar",
+      "choose": "Choisissez une Décoration d'Avatar pour votre profil",
+      "done": "Terminé",
+      "cancel": "Annuler"
+    },
+    "settings-container": {
+      "profile": "Mon Profil",
+      "favorites": "Mes Favoris",
+      "blocked": "Utilisateurs Bloqués",
+      "upvotes": "Votes Positifs",
+      "loading": "Chargement...",
+      "registered-only": "Utilisateurs enregistrés seulement"
+    },
+    "status-selection": {
+      "status": "Statut"
+    },
+    "toggle-ai": {
+      "ai": "Utilisateurs IA",
+      "real": "Vrais Utilisateurs"
+    },
+    "upvotes": {
+      "no-upvotes": "Vous n'avez aucun vote positif",
+      "upvoted-me": "M'a voté positivement",
+      "i-upvoted": "J'ai Voté Positivement",
+      "no-upvoted-me": "Personne ne vous a encore voté positivement"
+    },
+    "users": {
+      "online": "en ligne",
+      "offline": "hors ligne",
+      "active": "actif",
+      "no-anonymous": "Aucun utilisateur anonyme trouvé"
+    },
+    "users-ai": {
+      "ai-users": "Utilisateurs IA",
+      "active": "actif"
+    }
+  },
+  "composables": {
+    "presenceChannel": {
+      "online": "est en ligne !"
+    },
+    "presenceStatus": {
+      "online": "En ligne",
+      "away": "Absent",
+      "dnd": "Ne Pas Déranger"
+    }
+  }
 }
