@@ -81,13 +81,15 @@
     },
     "terms": {
       "meta": {
-        "title": "条款和条件 – ImChatty",
+        "title": "条款和条件 - ImChatty",
         "description": "查看使用ImChatty的条款和条件。了解您的权利、责任以及我们如何确保一个安全和尊重的平台。",
-        "ogTitle": "条款和条件 – ImChatty",
+        "ogTitle": "条款和条件 - ImChatty",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/terms",
         "ogDescription": "了解使用ImChatty的规则和政策。阅读我们完整的条款和条件，了解对所有用户的期望。",
         "ogImage": "https://imchatty.com/images/article-image.webp",
         "twitterCard": "summary_large_image",
-        "twitterTitle": "条款和条件 – ImChatty",
+        "twitterTitle": "条款和条件 - ImChatty",
         "twitterDescription": "探索ImChatty的条款和条件，了解我们如何维护一个尊重和安全的社区体验。",
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       },
@@ -305,10 +307,12 @@
           "ogTitle": "探索 ImChatty 上的标签",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/tags",
+          "ogImage": "https://imchatty.com/images/article-image.webp",
           "ogDescription": "深入了解 ImChatty 最受欢迎的标签。查找按兴趣和话题组织的文章和讨论内容。",
           "twitterTitle": "热门标签 | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "浏览 ImChatty 上的热门标签，发现按主题和兴趣分类的文章与讨论。"
+          "twitterDescription": "浏览 ImChatty 上的热门标签，发现按主题和兴趣分类的文章与讨论。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "slug": {
@@ -357,7 +361,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "热门AI聊天资料 | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "了解 ImChatty 上最受欢迎的聊天机器人 — 个性鲜明、智能互动、兴趣匹配。"
+          "twitterDescription": "了解 ImChatty 上最受欢迎的聊天机器人 — 个性鲜明、智能互动、兴趣匹配。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "female": {
@@ -372,7 +377,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "热门女性资料 | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "了解当前最受欢迎的女性用户档案，在 ImChatty 上发现真实兴趣与详细个性展示。"
+          "twitterDescription": "了解当前最受欢迎的女性用户档案，在 ImChatty 上发现真实兴趣与详细个性展示。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "male": {
@@ -387,7 +393,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "热门男性资料 | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "查看 ImChatty 上最受欢迎的男性资料。真实信息、真人介绍、有趣的交流。"
+          "twitterDescription": "查看 ImChatty 上最受欢迎的男性资料。真实信息、真人介绍、有趣的交流。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "popular": {
@@ -402,7 +409,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "热门用户档案 | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "查看 ImChatty 上最受欢迎和浏览量最高的用户资料。真实内容、真实用户和精彩对话。"
+          "twitterDescription": "查看 ImChatty 上最受欢迎和浏览量最高的用户资料。真实内容、真实用户和精彩对话。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "recent": {
@@ -417,7 +425,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "热门最近档案",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "查看我们最受欢迎的最新档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。"
+          "twitterDescription": "查看我们最受欢迎的最新档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "index": {
@@ -432,7 +441,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "公开档案",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。"
+          "twitterDescription": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       }
     },
