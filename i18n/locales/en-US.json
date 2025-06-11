@@ -81,9 +81,11 @@
     },
     "terms": {
       "meta": {
-        "title": "Terms & Conditions – ImChatty",
+        "title": "Terms & Conditions - ImChatty",
         "description": "Review the Terms and Conditions of using ImChatty. Learn your rights, responsibilities, and how we ensure a safe and respectful platform.",
-        "ogTitle": "Terms & Conditions – ImChatty",
+        "ogTitle": "Terms & Conditions - ImChatty",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/terms",
         "ogDescription": "Understand the rules and policies for using ImChatty. Read our full Terms and Conditions to know what’s expected from all users.",
         "ogImage": "https://imchatty.com/images/article-image.webp",
         "twitterCard": "summary_large_image",
@@ -300,17 +302,17 @@
       "index": {
         "title": "All the different Tags",
         "meta": {
-          "meta": {
-            "title": "Browse Tags | ImChatty",
-            "description": "Explore popular tags on ImChatty and discover content matched to real interests, personalized topics, and authentic conversations.",
-            "ogTitle": "Explore Tags on ImChatty",
-            "ogType": "website",
-            "ogUrl": "https://imchatty.com/tags",
-            "ogDescription": "Dive into ImChatty’s most popular tags. Find articles and discussions organized by real interests and personalized content.",
-            "twitterTitle": "Trending Tags | ImChatty",
-            "twitterCard": "summary_large_image",
-            "twitterDescription": "Browse trending tags on ImChatty to discover articles and discussions sorted by relevance, topic, and shared interest."
-          }
+          "title": "Browse Tags | ImChatty",
+          "description": "Explore popular tags on ImChatty and discover content matched to real interests, personalized topics, and authentic conversations.",
+          "ogTitle": "Explore Tags on ImChatty",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/tags",
+          "ogImage": "https://imchatty.com/images/article-image.webp",
+          "ogDescription": "Dive into ImChatty’s most popular tags. Find articles and discussions organized by real interests and personalized content.",
+          "twitterTitle": "Trending Tags | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Browse trending tags on ImChatty to discover articles and discussions sorted by relevance, topic, and shared interest.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "slug": {
@@ -359,7 +361,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Trending AI Profiles | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Meet the most popular AI chatbots on ImChatty — explore profiles with real personality, intelligent replies, and shared interests."
+          "twitterDescription": "Meet the most popular AI chatbots on ImChatty — explore profiles with real personality, intelligent replies, and shared interests.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "female": {
@@ -374,7 +377,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Popular Female Profiles | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "See who’s trending — explore the most viewed and rated female profiles on ImChatty with authentic details and personalized interests."
+          "twitterDescription": "See who’s trending — explore the most viewed and rated female profiles on ImChatty with authentic details and personalized interests.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "male": {
@@ -389,7 +393,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Popular Male Profiles | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Meet the most viewed and top-rated male profiles on ImChatty. Real information, real people, and engaging conversations."
+          "twitterDescription": "Meet the most viewed and top-rated male profiles on ImChatty. Real information, real people, and engaging conversations.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "popular": {
@@ -404,7 +409,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Trending Profiles | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Meet the most viewed and top-rated profiles on ImChatty. Real users, real info, and conversations that matter."
+          "twitterDescription": "Meet the most viewed and top-rated profiles on ImChatty. Real users, real info, and conversations that matter.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "recent": {
@@ -419,7 +425,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Popular Recent Profiles",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
+          "twitterDescription": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "index": {
@@ -434,7 +441,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Public Profiles",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests."
+          "twitterDescription": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       }
     },

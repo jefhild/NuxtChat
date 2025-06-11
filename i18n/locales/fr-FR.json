@@ -81,9 +81,11 @@
     },
     "terms": {
       "meta": {
-        "title": "Conditions Générales – ImChatty",
+        "title": "Conditions Générales - ImChatty",
         "description": "Consultez les Conditions Générales d'utilisation d'ImChatty. Apprenez vos droits, responsabilités et comment nous assurons une plateforme sûre et respectueuse.",
-        "ogTitle": "Conditions Générales – ImChatty",
+        "ogTitle": "Conditions Générales - ImChatty",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/terms",
         "ogDescription": "Comprenez les règles et politiques d'utilisation d'ImChatty. Lisez nos Conditions Générales complètes pour savoir ce qui est attendu de tous les utilisateurs.",
         "ogImage": "https://imchatty.com/images/article-image.webp",
         "twitterCard": "summary_large_image",
@@ -305,10 +307,12 @@
           "ogTitle": "Explorer les tags sur ImChatty",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/tags",
+          "ogImage": "https://imchatty.com/images/article-image.webp",
           "ogDescription": "Plongez dans les tags les plus populaires d’ImChatty. Trouvez des articles et discussions classés par thèmes et intérêts réels.",
           "twitterTitle": "Tags tendance | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Parcourez les tags tendance sur ImChatty pour découvrir des contenus organisés par sujet, pertinence et intérêt partagé."
+          "twitterDescription": "Parcourez les tags tendance sur ImChatty pour découvrir des contenus organisés par sujet, pertinence et intérêt partagé.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "slug": {
@@ -357,7 +361,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Profils IA tendance | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Découvrez les chatbots les plus populaires sur ImChatty — profils interactifs, réponses intelligentes et intérêts partagés."
+          "twitterDescription": "Découvrez les chatbots les plus populaires sur ImChatty — profils interactifs, réponses intelligentes et intérêts partagés.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "female": {
@@ -372,7 +377,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Profils féminins populaires | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Découvrez les profils féminins les plus appréciés sur ImChatty — détails authentiques et intérêts personnalisés."
+          "twitterDescription": "Découvrez les profils féminins les plus appréciés sur ImChatty — détails authentiques et intérêts personnalisés.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "male": {
@@ -432,7 +438,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Profils Publics",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques."
+          "twitterDescription": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       }
     },
