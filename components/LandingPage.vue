@@ -278,7 +278,7 @@ const aiDialog = ref(false);
 const isAuthenticated = ref(false);
 const userProfile = ref(null);
 const loggedInUser = ref("??");
-const titleText = computed(() => t("components.dialogAiSignUp.titleText"));
+const titleText = ref(t("components.dialogAiSignUp.titleText"));
 const logoutDialog = ref(false);
 
 const {
@@ -321,7 +321,8 @@ onMounted(async () => {
       // console.log("User profile data:", userProfileData);
 
       if (!userProfileData) {
-        titleText.value = computed(() => t("components.dialogAiSignUp.titleText2"));
+        titleText.value =  t("components.dialogAiSignUp.titleText2");
+        aiDialog.value = true;
       }
     } else {
       isAuthenticated.value = false;
