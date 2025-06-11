@@ -8,6 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "clean": "rm -rf node_modules .output .nuxt package-lock.json && npm cache clean --force",
+    "rebuild": "npm run clean && npm install && npm run build",
     "start": "node .output/server/index.mjs"
   },
   "devDependencies": {

@@ -178,6 +178,7 @@ export default defineNuxtConfig({
       GOOGLE_ANALYTICS_ID: process.env.GOOGLE_ANALYTICS_ID,
       TERMLY_ID: process.env.TERMLY_ID,
       ADSENSE_CLIENT: process.env.ADSENSE_CLIENT || "",
+      SITE_URL: process.env.SITE_URL || "http://localhost:3000",
     },
   },
 
