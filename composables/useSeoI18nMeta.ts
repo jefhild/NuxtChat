@@ -9,7 +9,7 @@ export function useSeoI18nMeta(
   const baseUrl = config.public.SITE_URL;
   const canonicalHref = options?.overrideUrl || `${baseUrl}${route.fullPath}`;
 
-  console.log("baseUrl ", baseUrl)
+  console.log("baseUrl ", baseUrl);
 
   const key = (suffix: string) => `pages.${section}.meta.${suffix}`;
   const tf = (suffix: string) => {
