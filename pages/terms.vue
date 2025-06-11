@@ -31,7 +31,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <h4> {{ $t("pages.terms.page.service-title") }}</h4>
+        <h4>{{ $t("pages.terms.page.service-title") }}</h4>
         <p class="text-body-2">
           {{ $t("pages.terms.page.service-text") }}
         </p>
@@ -55,7 +55,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <h4> {{ $t("pages.terms.page.eligibility-title") }}</h4>
+        <h4>{{ $t("pages.terms.page.eligibility-title") }}</h4>
         <p class="text-body-2">
           {{ $t("pages.terms.page.eligibility-text") }}
         </p>
@@ -100,7 +100,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <h4> {{ $t("pages.terms.page.privacy-policy-title") }}</h4>
+        <h4>{{ $t("pages.terms.page.privacy-policy-title") }}</h4>
         <p class="text-body-2">
           {{ $t("pages.terms.page.privacy-policy-text") }}
         </p>
@@ -387,34 +387,6 @@
   </v-container>
 </template>
 
-
 <script setup>
-import { useI18n } from "vue-i18n";
-import { computed } from "vue";
-
-const { t } = useI18n();
-
-const seoTitle = computed(() => t("pages.terms.meta.title"));
-const seoDescription = computed(() => t("pages.terms.meta.description"));
-const ogTitle = computed(() => t("pages.terms.meta.ogTitle"));
-const ogDescription = computed(() => t("pages.terms.meta.ogDescription"));
-const ogImage = computed(() => t("pages.terms.meta.ogImage"));
-const twitterCard = computed(() => t("pages.terms.meta.twitterCard"));
-const twitterTitle = computed(() => t("pages.terms.meta.twitterTitle"));
-const twitterDescription = computed(() => t("pages.terms.meta.twitterDescription"));
-const twitterImage = computed(() => t("pages.terms.meta.twitterImage"));
-
-useSeoMeta({
-  title: seoTitle,
-  description: seoDescription,
-  ogTitle,
-  ogDescription,
-  ogImage,
-  ogUrl: "https://imchatty.com/terms",
-  ogType: "website",
-  twitterCard,
-  twitterTitle,
-  twitterDescription,
-  twitterImage
-});
+useSeoI18nMeta("terms");
 </script>
