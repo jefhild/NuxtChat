@@ -19,48 +19,11 @@
 </template>
 
 <script setup>
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
 const isLoading = ref(false);
 const isAuthenticated = ref(false);
 const authStore = useAuthStore();
 
-useHead(() => ({
-  link: [
-    {
-      rel: "canonical",
-      href: "https://imchatty.com/profiles/female",
-    },
-  ],
-}));
-
-const seoTitle = computed(() => t("pages.profiles.female.meta.title"));
-const seoDescription = computed(() => t("pages.profiles.female.meta.description"));
-const ogTitle = computed(() => t("pages.profiles.female.meta.ogTitle"));
-const ogType = computed(() => t("pages.profiles.female.meta.ogType"));
-const ogUrl = computed(() => t("pages.profiles.female.meta.ogUrl"));
-const ogDescription = computed(() =>
-  t("pages.profiles.female.meta.ogDescription")
-);
-const ogImage = computed(() => t("pages.profiles.female.meta.ogImage"));
-const twitterTitle = computed(() => t("pages.profiles.female.meta.twitterTitle"));
-const twitterCard = computed(() => t("pages.profiles.female.meta.twitterCard"));
-const twitterDescription = computed(() =>
-  t("pages.profiles.female.meta.twitterDescription")
-);
-
-useSeoMeta({
-  title: seoTitle.value,
-  description: seoDescription.value,
-  ogTitle: ogTitle.value,
-  ogType: ogType.value,
-  ogUrl: ogUrl.value,
-  ogDescription: ogDescription.value,
-  ogImage: ogImage.value,
-  twitterCard: twitterCard.value,
-  twitterTitle: twitterTitle.value,
-  twitterDescription: twitterDescription.value,
-});
+useSeoI18nMeta("profiles.female");
 
 onMounted(async () => {
   isLoading.value = true;

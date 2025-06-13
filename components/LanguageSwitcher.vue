@@ -1,17 +1,8 @@
 <template>
-  <div class="relative">
-    <select
-      v-model="currentLocale"
-      @change="switchLanguage"
-      class="language-select"
-      :style="{ backgroundImage: `url('${selectedFlag}')` }"
-    >
-      <option
-        v-for="locale in localesWithFlags"
-        :key="locale.code"
-        :value="locale.code"
-      >
-        {{ locale.code }}
+  <div class="language-switcher">
+    <select v-model="currentLocale" @change="switchLanguage" :style="{ backgroundImage: `url('${selectedFlag}')` }">
+      <option v-for="locale in localesWithFlags" :key="locale.code" :value="locale.code">
+        {{ locale.label }}
       </option>
     </select>
   </div>
@@ -23,7 +14,6 @@ const { locale, availableLocales: rawLocales, setLocale } = useI18n();
 
 const currentLocale = ref(locale.value);
 
-// Static flag paths
 const flagPaths = {
   en: "/images/flags/icon_us.png",
   fr: "/images/flags/icon_fr.png",
@@ -31,16 +21,24 @@ const flagPaths = {
   ru: "/images/flags/icon_ru.png",
 };
 
+const selectedFlag = computed(() =>
+{
+  const match = localesWithFlags.find((l) => l.code === currentLocale.value);
+  return match?.flag || "/images/flags/default.png";
+});
+
+const localeLabels = {
+  en: "English",
+  fr: "Français",
+  zh: "中文",
+  ru: "Русский",
+};
+
 const localesWithFlags = rawLocales.map((code) => ({
   code,
+  label: `${localeLabels[code] || code}`,
   flag: flagPaths[code] || "/images/flags/default.png",
 }));
-
-const selectedFlag = computed(() => {
-  const match = localesWithFlags.find((l) => l.code === currentLocale.value);
-  console.log("Selected flag:", match?.flag);
-  return match?.flag || "";
-});
 
 const switchLanguage = () => {
   setLocale(currentLocale.value);
@@ -48,29 +46,28 @@ const switchLanguage = () => {
 </script>
 
 <style scoped>
-.language-select {
-  width: 32px;
-  height: 48px;
-  cursor: pointer;
-  border: none;
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 24px 18px;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  color: transparent;
-  text-shadow: 0 0 0 transparent;
-
-  /* 👇 Remove border and focus styles */
-  outline: none;
-  box-shadow: none;
+.language-switcher {
+  display: inline-block;
+  position: relative;
 }
 
-.language-select:focus {
+select {
+  appearance: none;
+  padding: 6px 12px 6px 36px;
+  font-size: 14px;
+  border-radius: 6px;
+  background-repeat: no-repeat;
+  background-position: 8px center;
+  background-size: 20px 15px;
+}
+
+select:focus {
   outline: none;
-  box-shadow: none;
-  border: none;
+  border-color: #66afe9;
+}
+
+/* Dynamically update flag based on selected option */
+.language-switcher select {
+  background-image: url("/images/flags/icon_us.png"); /* fallback default */
 }
 </style>

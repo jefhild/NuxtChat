@@ -26,7 +26,9 @@
     <!-- Categories Row -->
     <v-row class="mb-2">
       <v-col cols="12">
-        <h2 class="section-title">{{ $t("pages.articles.index.categories") }}</h2>
+        <h2 class="section-title">
+          {{ $t("pages.articles.index.categories") }}
+        </h2>
         <div class="chip-group">
           <v-chip
             v-for="cat in categories"
@@ -85,7 +87,7 @@
           border="top"
           border-color="primary"
         >
-        {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
+          {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
         </v-alert>
       </v-col>
     </v-row>
@@ -111,7 +113,7 @@
 
 <script setup>
 const localPath = useLocalePath();
-import { useI18n } from 'vue-i18n';
+import { useI18n } from "vue-i18n";
 const { getAllPublishedArticlesWithTags, getAllTags, getAllCategories } =
   useDb();
 
@@ -120,9 +122,7 @@ const userProfile = ref(null);
 const isLoading = ref(true);
 
 const { t } = useI18n();
-const searchArticlesLabel = computed(() =>
-  t("pages.articles.index.search")
-);
+const searchArticlesLabel = computed(() => t("pages.articles.index.search"));
 
 const searchQuery = ref("");
 const articles = ref([]);
@@ -161,45 +161,7 @@ onMounted(async () => {
   if (categoryData) categories.value = categoryData;
   isLoading.value = false;
 });
-
-const seoTitle = computed(() => t("pages.articles.index.meta.title"));
-const seoDescription = computed(() => t("pages.articles.index.meta.description"));
-const ogTitle = computed(() => t("pages.articles.index.meta.ogTitle"));
-const ogType = computed(() => t("pages.articles.index.meta.ogType"));
-const ogUrl = computed(() => t("pages.articles.index.meta.ogUrl"));
-const ogDescription = computed(() =>
-  t("pages.articles.index.meta.ogDescription")
-);
-const ogImage = computed(() => t("pages.articles.index.meta.ogImage"));
-const twitterTitle = computed(() => t("pages.articles.index.meta.twitterTitle"));
-const twitterCard = computed(() => t("pages.articles.index.meta.twitterCard"));
-const twitterDescription = computed(() =>
-  t("pages.articles.index.meta.twitterDescription")
-);
-const twitterImage = computed(() => t("pages.articles.index.meta.twitterImage"));
-
-useHead(() => ({
-  link: [
-    {
-      rel: "canonical",
-      href: "https://imchatty.com/articles",
-    },
-  ],
-}));
-
-useSeoMeta({
-  title: seoTitle.value,
-  description: seoDescription.value,
-  ogTitle: ogTitle.value,
-  ogType: ogType.value,
-  ogUrl: ogUrl.value,
-  ogDescription: ogDescription.value,
-  ogImage: ogImage.value,
-  twitterCard: twitterCard.value,
-  twitterTitle: twitterTitle.value,
-  twitterDescription: twitterDescription.value,
-  twitterImage: twitterImage.value,
-});
+useSeoI18nMeta("articles.index");
 </script>
 
 <style scoped>
