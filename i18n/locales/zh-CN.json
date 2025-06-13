@@ -1,775 +1,806 @@
 {
-	"pages": {
-		"home": {
-			"homeRow1": {
-				"offlineUsersOnline": "现在有很多用户在线",
-				"onlineUsersOnline": "用户在线",
-				"freeAnonymousChat": "免费匿名聊天"
-			},
-			"landing_page": {
-				"title-text": "匿名聊天。即时连接。",
-				"title-text2": "AI朋友，真实的人，匿名登录。",
-				"cta_button": "开始聊天",
-				"learn_more": "了解更多",
-				"welcome_back": "欢迎回来，",
-				"chat": "聊天",
-				"settings": "设置",
-				"logout": "退出",
-				"meet_people": "遇见志同道合的人",
-				"discover_connections": "通过匿名聊天发现真实的连接。",
-				"realtime_conversations": "与来自世界各地的人进行实时对话。更智能、更友好的选择。",
-				"get_chatting": "开始聊天",
-				"popular_ai_profiles": "我们最受欢迎的AI档案",
-				"see_more_profiles": "查看更多热门档案",
-				"check_articles": "查看我们的一些文章",
-				"see_more_articles": "查看更多文章",
-				"final_cta_title": "准备开始聊天了吗？",
-				"final_cta_description": "无论您是来结识新朋友还是探索有趣的AI个性，一切都只需一键即可。",
-				"get_chatting_now": "立即开始聊天",
-				"logout_title": "退出我的账户",
-				"logout_confirm": "您确定要退出吗？",
-				"logout_confirm_button": "确认退出",
-				"cancel": "取消"
-			},
-			"meta": {
-				"title": "免费匿名聊天（真实或AI）",
-				"description": "在imchatty.com上探索真实和AI聊天档案",
-				"ogTitle": "真实和AI聊天档案",
-				"twitterTitle": "热门免费聊天",
-				"twitterCard": "summary_large_image"
-			}
-		},
-		"about": {
-			"meta": {
-				"title": "关于ImChatty – 真实和AI聊天平台",
-				"description": "了解更多关于ImChatty的信息——一个独特的平台，您可以与真实的人或AI伙伴匿名聊天。发现我们的使命、我们的团队，以及我们如何创建一个更安全、更有吸引力的在线聊天空间。",
-				"ogTitle": "关于ImChatty – 真实和AI聊天平台",
-				"ogType": "Website",
-				"ogUrl": "https://imchatty.com/about",
-				"ogDescription": "了解更多关于ImChatty的信息——一个与真实用户或AI匿名聊天的独特平台。探索我们的使命、愿景和价值观。",
-				"ogImage": "https://imchatty.com/images/robot.png",
-				"twitterCard": "summary_large_image",
-				"twitterTitle": "关于ImChatty – 与真实的人或AI聊天",
-				"twitterDescription": "了解ImChatty——与真实的人或AI档案进行匿名、有意义对话的平台。认识这个体验背后的团队。",
-				"twitterImage": "https://imchatty.com/images/article-image.webp"
-			},
-			"page": {
-				"title-text": "关于我们",
-				"welcome-title": "嗨！欢迎来到Imchatty.com",
-				"welcome-text": "欢迎来到Imchatty，一个免费的聊天网站，您可以在这里与他人匿名连接。我们的使命是为人们提供一个安全和免费的平台来聊天和分享他们的想法，而无需提供大量的个人信息。在Imchatty，我们相信对话的力量和隐私的重要性。",
-				"who_we_are-title": "我们是谁",
-				"who_we_are-text1": "Imchatty是一个项目，由",
-				"who_we_are-text2": "IT咨询行业的资深玩家创建。我们创建这个网站是为了更深入地研究实时数据库和存在技术、AI聊天机器人和LLM。我们使用Imchatty作为测试和开发的动态沙盒。我们很想看看我们能把这项技术推进到什么程度，以及我们是否能构建一些有用的东西。您可以在这里找到这个网站的开源代码",
-				"who_we_are-text3": "这里",
-				"our_mission-title": "我们的使命和愿景",
-				"our_mission-text": "我们的使命很简单：提供一个由广告支持的免费和安全的聊天平台，这将覆盖基础设施成本。我们的愿景是不断添加服务和功能，将Imchatty发展成为我们用户的强大和有价值的工具。我们渴望创建一个用户可以享受无缝沟通的空间，同时感到安全和受到尊重。",
-				"unique_approach-title": "我们独特的方法",
-				"unique_approach-text": "Imchatty的与众不同之处在于我们致力于提供真正免费的服务，而不会损害用户安全。我们理解隐私的重要性，我们的匿名注册确保您的个人信息保持机密。此外，Imchatty作为创新技术的试验场，帮助我们保持在IT进步的前沿。",
-				"building_community-title": "建设社区",
-				"building_community-text": "我们的目标不仅仅是提供聊天服务，而是建设一个社区。我们鼓励我们的用户提供反馈并分享他们的经验，以帮助我们改进和扩展平台。通过共同努力，我们希望创建一个满足用户需求并适应他们不断发展的偏好的服务。",
-				"looking_ahead-title": "展望未来",
-				"looking_ahead-text": "随着我们的持续发展，我们的重点仍然是维护一个免费和安全的平台，同时探索新功能和改进。我们对Imchatty的未来感到兴奋，并致力于使其成为我们用户的宝贵资源。",
-				"join_us-title": "加入我们",
-				"join_us-text": "我们邀请您加入Imchatty并成为我们旅程的一部分。无论您是在寻找聊天的地方、分享想法，还是只是结识新朋友，Imchatty都为您而来。我们可以一起创建一个充满活力和有趣的社区。"
-			}
-		},
-		"terms": {
-			"meta": {
-				"title": "条款和条件 – ImChatty",
-				"description": "查看使用ImChatty的条款和条件。了解您的权利、责任以及我们如何确保一个安全和尊重的平台。",
-				"ogTitle": "条款和条件 – ImChatty",
-				"ogDescription": "了解使用ImChatty的规则和政策。阅读我们完整的条款和条件，了解对所有用户的期望。",
-				"ogImage": "https://imchatty.com/images/article-image.webp",
-				"twitterCard": "summary_large_image",
-				"twitterTitle": "条款和条件 – ImChatty",
-				"twitterDescription": "探索ImChatty的条款和条件，了解我们如何维护一个尊重和安全的社区体验。",
-				"twitterImage": "https://imchatty.com/images/article-image.webp"
-			},
-			"page": {
-				"title": "条款和条件",
-				"intro": "欢迎来到Imchatty网站。请查看这些服务条款（\"条款\"），它们管理您对网站和其提供的服务的使用。",
-				"intro-2": "网站imchatty.com（\"网站\"）在保护用户隐私的安全环境中促进实时互动（\"服务\"）。条款描述了向您提供此服务的条件，以及您对网站和服务的访问和使用。仔细阅读条款。通过使用服务，您将被视为已接受它。如果您不接受条款，您不得使用此服务。通过访问网站，您同意遵守这些服务条款（\"条款\"），它们管理您对网站的使用，这进一步受我们的隐私政策和安全指南的约束。",
-				"intro-3": "在本文档中，\"我们\"或\"我们的\"指imchatty.com及其所有者、经理、官员、员工、合作伙伴、代理人、代表、关联公司、承包商、服务提供商和/或指定人员；\"我们双方\"指您和我们；\"服务条款\"或\"条款\"指这些服务条款和通过引用纳入的文档；\"我们的材料\"指我们可能通过服务提供的信息、数据、文本、软件、音乐、声音、照片、图形、视频、消息或其他材料；\"服务\"指我们在网站上为您提供的服务；\"网站\"指www.imchatty.com和我们指定为受条款约束的任何其他网站；\"您\"指使用服务的个人或公司；\"内容\"指您或服务的其他用户通过服务提供或访问的信息、数据、文本、软件、音乐、声音、照片、图形、视频、消息、图像或其他材料。",
-				"service-title": "服务",
-				"service-text": "我们目前处于测试阶段，提供简单的聊天功能进行有趣的对话。我们希望很快提供其他服务，并将在这些服务可用时更新我们的政策和条款文档。",
-				"acquisition-title": "服务获取",
-				"acquisition-text": "您通过在imchatty.com注册服务，根据这些条款获得使用服务的权利。",
-				"use-of-service-title": "服务使用",
-				"use-of-service-text": "除了下面\"其他协议\"中规定的情况外，我们授权您仅为您自己的个人、非商业目的使用服务。将服务用于任何公共或商业目的（包括但不限于为第三方利益使用服务）是严格禁止的。如果您制作我们材料的副本，您必须在任何此类副本上保留我们材料中包含的所有版权和其他专有通知，如我们提供的。您不得修改、公开展示、公开表演或分发我们的材料。在您和我们之间，我们拥有服务、网站和我们的材料。服务、网站和我们的材料受美国和国际版权法保护。任何未经授权使用服务、网站或我们的材料可能违反版权、商标和其他法律。",
-				"eligibility-title": "资格",
-				"eligibility-text": "行为和禁止使用。您必须年满十八（18）岁才能使用本网站上的服务。您同意并保证您的内容不得具有色情性质（包括但不限于儿童色情）、暴力、歧视性、非法、仇恨、淫秽、淫荡、裸体、部分裸体或性暗示性质、与毒品或恐怖主义相关、有害、欺骗性、极其亵渎、种族主义、诽谤、辱骂、威胁或以任何方式令人反感（统称为\"令人反感的内容\"）。",
-				"eligibility-text-2": "您声明并保证您不会向十八（18）岁以下的任何人索取个人信息或以性或暴力方式剥削。您还声明并保证您的内容不会侵犯任何其他第三方的权利。Imchatty不承担监控您内容性质的任何义务，并不承担对您的任何内容的任何责任。",
-				"eligibility-text-3": "您还声明并保证您不会\"跟踪\"或以其他方式骚扰本网站的任何其他用户，冒充其他人或组织，向Imchatty提供虚假、误导或不准确的信息，干扰我们的服务器或软件，试图访问网站上的任何受限区域，发布有害或破坏性的html/javascript，上传或传输包含病毒或其他可能损害其他设备的对象的文件，通过机器人、代理、抓取、自动化设备或智能搜索访问网站，或将网站用于垃圾邮件目的、未经授权的广告或促销目的或进行任何性质的调查（统称为\"禁止使用\"）。",
-				"eligibility-text-4": "修改。我们保留随时修改或替换这些条款的权利。任何更新的条款将在此链接上提供。这些条款可能会不时更新、审查或修改，完全由我们自行决定。这些条款的重大变化可能会或可能不会在我们的主页上传达。您应该定期参考对这些条款所做的任何更改。继续使用网站，或使用任何服务或购买任何产品，此后将构成您对修订条款的视为接受。",
-				"registration-title": "您的注册义务",
-				"registration-text": "服务的某些部分可能需要注册并由您向我们提供关于您自己的某些信息。如果您注册，您声明您至少18岁，并且不是根据美国、欧盟或其他适用管辖区的法律被禁止接受服务的人。您必须：(a) 提供关于您自己的真实、准确、当前和完整的信息，如服务注册表格所提示的（此类信息为\"注册数据\"）和 (b) 维护并及时更新注册数据以保持其真实、准确、当前和完整。如果您提供任何不真实、不准确、不当前或不完整的信息，或者我们有合理理由怀疑此类信息不真实、不准确、不当前或不完整，我们有权暂停或终止您的账户并拒绝任何和所有当前或未来对服务（或其任何部分）的使用。",
-				"member-title": "会员账户、密码和安全",
-				"member-text": "完成服务注册过程后，您可能会收到或创建密码和账户指定。您负责维护密码和账户指定的机密性，并对在您的密码或账户下发生的所有活动承担全部责任。您必须 (a) 立即通知我们任何未经授权使用您的密码或账户或任何其他安全漏洞，以及 (b) 确保您在每次会话结束时退出您的账户。我们不能也不会对因您未能遵守本节而产生的任何损失或损害承担责任。",
-				"privacy-policy-title": "隐私政策；个人可识别数据的使用",
-				"privacy-policy-text": "注册数据和关于您的某些其他信息受我们的隐私政策约束。有关更多信息，请参阅我们的完整隐私政策。通过使用服务，您同意收集和使用（如隐私政策中所述）此信息，包括将此信息传输到美国和/或其他国家供我们和我们的关联公司存储、处理和使用。",
-				"gpdr-title": "通用数据保护条例（GDPR）合规",
-				"gpdr-text1": "如果您是欧盟或欧洲经济区（\"EEA\"）的居民或位于其中，您也可能在通用数据保护条例（\"GDPR\"）下拥有某些权利。您在imchatty.com网站上或通过其产品提供的个人信息（\"个人数据\"）仅在您同意的情况下收集，并受公司隐私政策条款的约束，可在此处找到。联系",
-				"gpdr-text2": "如果您对您的个人数据有担忧，或希望行使您在GDPR下的任何权利。",
-				"billing-title": "计费；税收",
-				"billing-text": "目前imchatty.com是一个没有消费者税收影响的服务。",
-				"member-conduct-title": "会员行为",
-				"member-conduct-text": "您理解所有内容，无论是公开发布还是私下传输，都是产生此类内容的人的唯一责任。这意味着您，而不是我们，完全负责您上传、发布、通过电子邮件发送、传输或以其他方式提供或通过服务访问的所有内容。我们不控制通过服务发布或访问的内容，因此，不保证此类内容的准确性、完整性或质量。您理解通过使用服务，您可能会接触到令人反感、不雅或令人反感的内容。在任何情况下，我们都不会以任何方式对任何内容承担责任，包括但不限于任何内容中的任何错误或遗漏，或因使用通过服务发布、通过电子邮件发送、传输或以其他方式提供或访问的任何内容而产生的任何种类的损失或损害。",
-				"member-conduct-text-2": "服务的任何使用都受我们的行为准则约束。",
-				"member-conduct-text-3": "我们可能会或可能不会预先筛选内容；但是，我们和我们的指定人员有权（但没有义务）根据我们的唯一判断预先筛选、拒绝或移动任何内容或阻止通过服务可用或可访问的任何网站。在不限制前述内容的情况下，我们和我们的指定人员有权删除或阻止访问任何违反条款或以其他方式令人反感的内容。您必须评估并承担与使用任何内容相关的所有风险，包括对此类内容的准确性、完整性或有用性的任何依赖。",
-				"member-conduct-text-4": "如果法律要求或出于善意相信此类访问保存或披露对以下方面合理必要，我们可能会访问、保存和披露您的账户信息和内容：(a) 遵守法律程序；(b) 执行条款；(c) 回应声称任何内容违反第三方权利的索赔；(d) 回应您的客户服务请求；或 (e) 保护我们（或我们的用户或公众）的权利、财产或人身安全。",
-				"member-conduct-text-5": "服务的技术处理和传输，包括您的内容，可能涉及 (a) 通过各种网络的传输；和 (b) 为符合和适应连接网络或设备的技术要求而进行的更改。",
-				"member-conduct-text-6": "服务和服务中体现的软件可能包括允许保护数字材料的安全组件，这些材料的使用受我们和/或向服务提供内容的内容提供商设定的使用规则约束。您不得试图覆盖或规避嵌入服务中的任何使用规则。严格禁止未经授权复制、发布、进一步分发或公开展示服务上提供的材料，无论是全部还是部分。",
-				"ownership-title": "提交或可供包含在服务中的内容的所有权和使用",
-				"ownership-text": "我们不声称拥有您提交或可供包含在服务中的内容。但是，对于您提交或可供包含在服务中其他成员可访问区域的内容，许可使用、分发、复制、修改、改编、公开表演和公开展示此类内容在服务上，仅用于提供和推广提交或可供此类内容的成员的目的。此许可仅在您选择继续在服务中包含此类内容时存在，并将在您删除或我们从服务中删除此类内容时终止。",
-				"ownership-text-2": "您可能会自愿提供（与使用服务、使用我们的产品或其他方式相关）关于我们在服务上或以其他方式提供的项目或信息的建议、评论或其他反馈。我们不需要对此类反馈保密，此类反馈可能被我们用于任何目的而无任何义务；但是，我们不会在未经您同意的情况下披露特定反馈的来源；条款中的任何内容都不限制您使用您向我们提供的此类反馈或想法。",
-				"ownership-text-3": "您上传到网站或与本网站其他用户分享的任何内容，包括但不限于照片、图片、图像和视频剪辑（\"您的内容\"）归您所有。imchatty不声称拥有您的内容的任何所有权。您授予imchatty非独家、免版税、永久、可再许可、全球许可，根据我们网站的隐私政策使用您的内容。您可以选择在聊天时与我们网站的其他用户分享您的内容。您声明并保证您是您内容的所有者，并且通过在我们的网站上发布或分享您的内容不会违反任何第三方权利。我们不一定认可您的内容，也没有义务监控、编辑、删除或预先筛选您的内容。您对在本网站上发布或分享的任何您的内容承担唯一责任。您还对您在本网站上与其他用户的互动（无论是在线还是离线）承担唯一责任，imchatty不对其任何用户的行为承担责任。如果您认为imchatty的某个用户通过我们的网站侵犯了您的知识产权，您可以立即联系我们，我们保留删除涉嫌侵权内容的权利，甚至终止重复侵权者的账户。",
-				"indemnity-title": "赔偿",
-				"indemnity-text": "您在此赔偿并使我们和我们的子公司、关联公司、官员、代理人、共同品牌商或其他合作伙伴以及员工、顾问和代理人免受任何第三方因您提交、发布、传输或通过服务提供的内容、您对服务的使用、您与服务的连接、您违反条款或您违反他人的任何权利而提出的任何索赔或要求（包括偿还我们在为任何此类索赔或要求进行辩护时产生的任何合理律师费）的损害。我们保留根据我们的唯一判断选择我们选择的律师的权利。此外，您必须善意合作以协助我们进行辩护和与此相关的任何和解谈判，并偿还我们合理的和解金额（如果有）。",
-				"general-practices-title": "关于使用和存储的一般做法",
-				"general-practices-text": "您承认我们可能建立关于使用服务的一般做法和限制，包括但不限于服务将保留上传内容的最大天数、可能通过服务上的账户进行的发布的最大数量和大小，以及您可能在给定时间段内访问服务的最大次数（和最大持续时间）。我们对删除或未能存储服务维护或传输的任何发布和其他通信或其他内容不承担责任。我们可能会不时修改这些一般做法和限制。",
-				"modifications-title": "服务修改",
-				"modifications-text": "我们可能随时不时地修改或停止，暂时或永久地，服务（或其任何部分），无论是否通知。我们不对您或任何第三方因服务的任何修改、暂停或停止承担责任。",
-				"termination-title": "终止",
-				"termination-text": "在某些情况下，我们可能在没有事先通知的情况下立即终止您的账户和对服务的访问。此类终止的原因包括但不限于：(a) 违反或违反条款或其他纳入的协议或指导原则，(b) 执法部门或其他政府机构的要求，(c) 您的要求（自发的账户删除），(d) 服务的停止或重大修改（或其任何部分），(e) 意外的技术或安全问题，(f) 长期不活动，(g) 您参与了欺诈或非法活动，和/或 (h) 您未支付与服务相关的任何费用。终止您的账户包括 (a) 删除对服务内所有产品的访问，(b) 删除您的密码和与您的账户相关或在您的账户内的所有相关信息、文件和内容（或其任何部分），以及 (c) 禁止进一步使用服务。此外，所有因故终止都应根据我们的唯一判断进行，我们不对您或任何第三方因终止您的账户、任何相关电子邮件地址或对服务的访问承担责任。",
-				"dealings-title": "与第三方的交易",
-				"dealings-text": "服务可能使您能够访问其他网站或资源。因为我们无法控制此类网站和资源，我们不对此类外部网站或资源的可用性负责，我们不认可也不对此类网站或资源上或可从此类网站或资源获得的任何内容、产品或其他材料负责。我们不对因使用或依赖通过任何此类网站或资源可用的任何此类内容或服务而直接或间接造成或声称造成的任何损害或损失负责。我们可能会或可能不会预先筛选其他网站或资源；但是，我们和我们的指定人员有权（但没有义务）根据我们的唯一判断预先筛选、拒绝或阻止访问任何违反条款或以其他方式令人反感的网站或其他资源。",
-				"property-title": "我们的专有权利",
-				"property-text": "服务和与服务相关使用的任何必要软件（\"软件\"）包含受适用知识产权和其他法律保护的专有和机密信息。您不得通过我们为访问服务而提供的界面以外的任何方式访问服务。",
-				"property-text-2": "一般来说，服务以不导致您下载或使用我们任何软件的方式提供。但是，如果我们确实为您提供软件（例如插件或类似项目），我们授予您个人、不可转让和非独家的权利和许可，在与您访问服务相关的单台计算机上使用软件的目标代码；但是，您不得（也不允许任何第三方）复制、修改、创建衍生作品、逆向工程、逆向汇编或以其他方式试图发现任何源代码、出售、分配、再许可、授予担保权益或以其他方式转让软件中的任何权利。您不得以任何方式或形式修改软件，或使用软件的修改版本，包括（但不限于）为了获得对服务的未经授权访问的目的。您不得出租、租赁、借出、出售、分发或基于软件创建衍生作品，无论是全部还是部分。",
-				"property-text-3": "您不得为任何商业目的复制、复制、复制、出售、交易、转售或利用服务的任何部分（包括您的账户名称）、服务的使用或对服务的访问。",
-				"disclaimer-title": "免责声明",
-				"disclaimer-text": "您使用服务的风险由您自己承担。服务按\"原样\"和\"可用\"基础提供。我们明确否认任何种类的所有保证，无论是明示还是暗示，包括但不限于适销性、特定用途适用性和非侵权的暗示保证。",
-				"disclaimer-text-2": "我们不保证 (i) 服务将满足您的要求，(ii) 服务将不间断、及时、安全或无错误，(iii) 从使用服务可能获得的结果将准确或可靠，(iv) 您通过服务购买或获得的任何产品、服务、信息或其他材料的质量将满足您的期望，以及 (v) 软件中的任何错误将得到纠正。",
-				"disclaimer-text-3": "通过使用服务下载或以其他方式获得的任何材料都是您自己的判断和风险，您将对因下载任何此类材料而对您的计算机系统造成的任何损害或数据丢失承担唯一责任。",
-				"disclaimer-text-4": "您从我们或通过或从服务获得的任何建议或信息，无论是口头还是书面，都不会创建条款中未明确说明的任何保证。",
-				"limitation-title": "责任限制",
-				"limitation-text": "我们不对您承担任何直接、间接、偶然、特殊、后果性或惩戒性损害的责任，包括但不限于利润损失、商誉、使用、数据或其他无形损失的损害（即使我们已被告知此类损害的可能性），由以下原因造成：(i) 使用或无法使用服务；(ii) 因通过或从服务购买或获得的任何商品、数据、信息或服务或收到的消息或通过或从服务进行的交易而产生的替代商品和服务的采购成本；(iii) 未经授权访问或更改您的传输或数据；(iv) 服务上任何第三方的声明或行为；或 (v) 与服务相关的任何其他事项。",
-				"exclusions-title": "排除和限制",
-				"exclusions-text": "某些司法管辖区不允许排除某些保证或限制或排除偶然或后果性损害的责任。因此，上述某些限制可能不适用于您。",
-				"general-info-title": "一般信息",
-				"general-info-text": "完整协议。条款构成我们双方之间的完整协议，并管理您对服务的使用，取代我们双方之间关于服务的任何先前协议。当您使用或购买某些其他服务、关联服务、第三方内容或第三方软件时，您也可能受到可能适用的其他条款和条件的约束。",
-				"general-info-text-2": "法律和论坛的选择。条款和我们双方之间的关系应完全受欧盟法律管辖，不考虑其法律冲突条款。您对我们提起任何索赔或诉讼的专属论坛是位于法国巴黎市的法院。您在此接受并服从此类法院在任何程序或诉讼中的个人和专属管辖权。对于在此类法院提起的任何此类程序或诉讼，您在此不可撤销地放弃，在法律允许的最大范围内：(a) 您现在或将来可能对此类管辖权或地点的任何异议，以及 (b) 任何声称此类诉讼或程序以不便的形式提起的主张。没有任何内容限制我们在任何有管辖权的法院开始和进行任何法律或衡平诉讼或程序以获得禁令或任何其他形式的救济的权利。无论任何相反的法规或法律如何，任何因使用服务或条款而产生或与之相关的索赔或诉讼原因必须在此类索赔或诉讼原因产生后九十（90）天内（或者，如果不同，法律允许的最短时间）提起，否则将被永远禁止。",
-				"general-info-text-3": "仲裁。尽管此处有任何规定，如果我们根据我们的唯一判断选择通过仲裁解决任何索赔，您必须充分配合并受此类仲裁约束，无任何进一步追索权。欧洲仲裁法院（ECA）应主持此类仲裁。此类仲裁应完全受欧盟法律管辖，不考虑其法律冲突条款。所有程序应在巴黎市进行。如果ECA规则与条款的任何条款之间存在冲突，条款应管辖。您负责您在仲裁中产生的所有费用，包括但不限于专家证人或律师。合理的申请费和仲裁员的费用和开支应由我们预付。但是，如果仲裁决定有利于我们，您必须偿还我们与仲裁相关的所有费用、成本和开支，包括但不限于与申请、仲裁员、专家证人、律师和其他第三方相关的所有费用、成本和开支。",
-				"general-info-text-4": "条款的放弃和可分割性。我们未能行使或执行条款的任何权利或条款不构成对此类权利或条款的放弃。如果条款的任何条款被有管辖权的法院认定为无效，各方仍然同意法院应努力实现条款中反映的各方意图，条款的其他条款仍然完全有效。",
-				"general-info-text-5": "无第三方受益人。除条款中另有明确规定外，条款不应有第三方受益人。",
-				"general-info-text-6": "转让限制。这些条款以及此处的所有权利、利益或义务不得由我们任何一方直接或间接转让，包括但不限于通过法律操作，未经非转让方的事先书面同意，不得无理扣留、延迟或附加条件；但是，任何一方都可以在合并、合并、收购、重组、控制权变更或其他情况下将条款全部或部分转让给任何关联公司、子公司或利益继承人，而无需任何此类同意要求，但是：(i) 转让和收购实体在此类转让时通知非转让方，收购实体书面同意受条款约束，以及 (ii) 收购实体不是非收购实体的竞争对手。",
-				"general-info-text-7": "诉讼时效。无论任何相反的法规或法律如何，任何因使用服务或条款而产生或与之相关的索赔或诉讼原因必须在此类索赔或诉讼原因产生后一（1）年内提起，否则将被永远禁止。",
-				"general-info-text-8": "条款中的章节标题仅为方便起见，没有法律或合同效力。",
-				"accepting-title": "接受条款",
-				"accepting-text": "同意条款。为了使用服务，您必须首先同意条款。如果您不接受条款，您不得使用服务。您可以通过执行点击接受或同意条款来接受条款，在我们在服务的用户界面中为您提供此选项的地方，或者通过实际使用服务。您同意我们将从那时起将您对服务的使用视为接受条款。",
-				"accepting-text-2": "使用服务的资格。如果 (a) 您未达到法定年龄（您居住或使用服务的司法管辖区的法律）与我们签订有约束力的合同，或 (b) 您是根据欧盟、美国或其他国家（包括您居住或使用服务的国家）的法律被禁止使用服务的人，您不得使用服务且不得接受条款。",
-				"accepting-text-3": "资格声明。在上述任何情况下，您声明您满足所有上述资格条件。如果您不满足上述条件，或者如果您不同意条款，您不得使用服务或其任何部分；在这种情况下，我们也可能立即终止条款和您对服务的使用，而不对您承担责任。",
-				"accepting-text-4": "电子提交的接受。您承认您的电子提交构成您的协议和受条款约束的意图。根据任何适用的法规、规定、规则、条例或其他法律，您在此同意使用电子签名、合同、订单和其他记录以及通过服务启动或完成的交易的通知、政策和记录的电子交付。此外，您在此放弃在任何司法管辖区的任何法规、规定、规则、条例或其他法律下的任何权利或要求，这些法律要求原始签名或非电子记录的交付或保留。",
-				"amendments-title": "条款的修改和更新",
-				"amendments-text": "我们可能希望不时对这些条款进行更改以更新它们，例如添加对不同产品或服务的引用。我们可能指定适用于在此类修改或更新的生效日期之后使用服务的修改或更新条款，我们将为您提供这些条款的新副本，并可能要求您接受它作为继续向您提供服务的条件。此外，在收到此类修改条款后继续使用服务应构成您对此类条款的同意。"
-			}
-		},
-		"privacy": {
-			"title": "隐私政策",
-			"intro": "您的隐私对我们很重要。因此，我们致力于尊重您的隐私以及您的个人数据和内容的机密性。本隐私政策旨在帮助您了解我们如何使用和保护您在使用imchatty时提供的信息。在本隐私政策中，\"服务条款\"指我们不时适用的服务条款，目前可在imchatty.com/terms找到\"个人数据\"指我们拥有的与imchatty的已识别或可识别用户相关的任何信息；其他大写术语具有服务条款中给出的含义。",
-			"information-title": "我们收集什么信息？",
-			"information-text1": "为了为您提供imchatty的访问权限，我们可能收集和处理以下部分或全部信息：",
-			"information-text2": "内容：imchatty用户收集或存储的任何信息，除注册信息、客户服务通信或日志信息外。",
-			"information-text3": "注册信息：自愿注册使用imchatty时提供的任何信息，包括但不限于用户名和密码以及电子邮件地址。",
-			"information-text4": "客户服务通信：向我们报告的关于imchatty操作的任何信息，包括错误报告或增强请求。",
-			"information-text5": "日志信息：当您使用某些服务时，我们的服务器会自动记录您的应用程序发送的基本信息。这些服务器日志可能包括诸如您的消息、互联网协议地址、其他寻址信息、您的请求的日期和时间以及用于验证您和您的计算机身份的身份验证令牌等信息。",
-			"how-we-use-title": "我们如何使用您的信息以及出于什么目的？",
-			"how-we-use-intro": "我们收集信息的主要目的是为您提供高效的用户体验。我们可能使用本隐私政策中定义的信息来：提供您请求的服务和任何客户支持；解决争议、收取费用和解决问题；执行我们的服务条款；定制、测量和改进imchatty、内容和布局；通知您服务更新；比较信息的准确性并验证您的身份；为您提供收集信息时描述的其他服务。此外，我们可能如下所述使用您的信息。",
-			"registration-title": "注册信息",
-			"registration-intro": "我们要求注册信息以验证您的身份并使您能够使用imchatty。",
-			"registration-text": "我们尊重个人电子邮件账户的隐私，我们将像其他个人数据一样安全地存储您的电子邮件地址。我们不会出售或分发您的电子邮件消息，您的详细信息不会在未经您明确许可的情况下出售给第三方用于其营销目的。但是，我们将使用电子邮件向您发送有关故障和服务问题的消息。我们也可能使用电子邮件让您了解imchatty的最新消息。",
-			"content-title": "内容",
-			"content-text": "一般来说，我们不会审查或向第三方提供对您内容的访问。但是，如果法律要求，我们保留预先筛选、审查、标记、过滤、修改、拒绝或从imchatty删除任何或所有内容的权利。",
-			"customer-service-title": "客户服务通信",
-			"customer-service-text": "在反馈中自愿提交的信息用于审查此反馈和改进imchatty的目的。我们保留将匿名信息用于营销目的的权利，例如在imchatty或其他通信中显示选定的评论。此外，我们可能不时要求您提供关于您体验的信息，这些信息将用于测量和改进质量。您在任何时候都没有义务提供任何此类数据。我们永远不会在未经您明确许可的情况下使用任何个人可识别的（反馈）信息。",
-			"log-information-title": "日志信息",
-			"log-information-text": "我们将使用此信息来控制和审计对imchatty的访问以及用于统计信息。",
-			"to-whom-title": "我们向谁传输您的个人信息",
-			"to-whom-text1": "除下文规定外，我们不会在未经您明确许可的情况下向任何第三方出售、出租、交易或以其他方式转移任何注册信息或内容，除非我们有义务根据适用法律或主管当局的命令这样做。",
-			"to-whom-text2": "我们可能与我们的关联公司和其他服务提供商分享您的信息。我们可能与其他服务提供商合作提供我们的一些服务。您向我们提供的注册信息可能会发送给这些提供商，以便他们提供服务；同样，您向这些网站提供的个人信息可能会发送给我们以运营imchatty。",
-			"to-whom-text3": "我们收集的信息可能在我们和我们的关联公司维护设施的任何国家存储和处理。我们保留将信息传输到您居住和/或使用imchatty的国家之外的权利，包括您自己国家的隐私法律和法规可能认为在确保此类信息的充分保护水平方面不足的国家。如果您不确定此隐私声明是否与适用的当地规则冲突，您不应提交您的信息。尽管如此，通过使用imchatty，您同意在美利坚合众国的任何此类信息传输和/或存储。",
-			"to-whom-text4": "随着我们继续发展业务，我们可能会出售或购买子公司或业务单位。在此类交易中，以及在我们的全部或大部分资产被第三方收购的情况下，我们用户的个人信息通常将是转移的业务资产之一。我们保留将您的个人信息作为资产包含在任何此类向第三方的转移中的权利。尽管本隐私政策或服务条款中有任何相反规定，如果我们有善意的信念认为此类访问、使用、保存或披露任何信息对以下方面合理必要，我们可能会访问、使用、保存或披露我们有权访问的任何信息：(a) 满足任何适用的法律、法规、法律程序或可执行的政府要求，(b) 执行服务条款，包括调查其潜在违规行为，(c) 检测、预防或以其他方式解决欺诈、安全或技术问题，或 (d) 根据法律要求或许可保护我们、我们的用户或公众的权利、财产或安全免受迫在眉睫的伤害。",
-			"how-we-protect-title": "我们如何保护您的个人信息？",
-			"how-we-protect-text": "我们采取适当的组织和技术措施来保护提供给我们或我们收集的数据。您应该意识到互联网通信并不总是安全的。尽管我们确实采取了我们认为适当的步骤来保护您的数据，但通过互联网提供的信息保护容易受到第三方攻击，因此我们不能向您承诺第三方无法访问您的内容。",
-			"how-long-title": "您的个人数据被我们保存多长时间？",
-			"how-long-text": "我们不会保留您的信息超过执行我们服务所允许的时间或相关立法要求的时间，并适当遵守相关立法下的适用义务和例外。具体来说，您的信息仅在以下情况下保留必要的时间：(1) 提供imchatty的使用；(2) 向您开具imchatty使用发票并维护记录，直到imchatty的发票不能合法质疑且法律程序不能再进行；(3) 与您就我们提供的其他服务进行沟通；(4) 遵守适用立法、监管要求和主管法院的相关命令；(5) 执行我们的服务条款；或 (6) 履行本隐私政策中详述的任何其他目的。",
-			"what-are-cookies-title": "什么是Cookie，我们如何使用它们？",
-			"what-are-cookies-text": "Cookie是存储在用户硬盘上包含有关用户信息的一段数据。Cookie的使用在imchatty上绝不会与任何个人可识别信息相关联。一旦用户关闭浏览器，cookie就会终止。例如，通过在imchatty上设置cookie，用户不必多次登录密码，从而在imchatty上节省时间。如果用户拒绝cookie，他们仍然可以使用imchatty。这样做的唯一缺点是用户在imchatty的某些区域会受到限制。我们不使用cookie来跟踪或增强您在imchatty上的体验，但可能用于分析。我们的一些业务合作伙伴可能在imchatty上使用cookie。但是，我们无法访问或控制这些cookie。此外，如果我们选择为您提供促销优惠或广告，第三方业务合作伙伴可能为此目的使用cookie。",
-			"gdpr-compliance-title": "通用数据保护条例（GDPR）合规",
-			"gdpr-compliance-intro": "如果您是欧洲经济区（\"EEA\"）的居民或位于其中，您也可能在通用数据保护条例（\"GDPR\"）下拥有某些权利。您在我们网站上或通过我们产品提供的个人数据仅在您同意的情况下收集，并可能根据该同意传输到EEA之外的imchatty（或为imchatty利益维护的计算机服务器）。",
-			"gdpr-compliance-text1": "一般来说，在GDPR下您可以：",
-			"gdpr-compliance-text2": "请求访问您的个人数据",
-			"gdpr-compliance-text3": "更正不完整或不正确的数据",
-			"gdpr-compliance-text4": "删除您的个人数据",
-			"gdpr-compliance-text5": "暂停或限制我们使用您的个人数据，或撤回您的同意",
-			"gdpr-compliance-text6": "如果您认为您在GDPR下的权利没有得到尊重，向监管机构投诉",
-			"gdpr-compliance-text7": "如果您要求您的个人数据副本，我们将向您提供您的个人数据副本。第一份副本将免费提供，但额外副本可能需要支付合理费用。如果您要求删除您的个人数据，imchatty通常会尽快这样做，尽管您删除个人数据的权利受到例外情况的限制，例如遵守法律义务或为建立、行使或辩护法律主张。",
-			"gdpr-compliance-text8": "如果您认为我们对您个人信息的处理违反了数据保护法，您有合法权利向负责数据保护的监管机构投诉。您可以在您惯常居住的欧盟成员国、您的工作地点或涉嫌违规的地点这样做。",
-			"gdpr-compliance-text9": "联系",
-			"gdpr-compliance-text10": "如果您对您的个人数据有担忧，或希望行使这些列出的权利中的任何一项。",
-			"gdpr-compliance-text11": "请注意，如果您在EEA，我们可能会将您的个人数据传输到EEA之外，包括美国。例如，如果您的个人数据被传输到我们位于EEA之外国家的服务器，这可能会发生。这些国家可能没有与EEA类似的数据保护法。通过提交您的个人数据，您同意这种传输、存储或处理。如果我们以这种方式将您的信息传输到EEA之外，我们将采取措施确保采取适当的安全措施，目的是确保您的隐私权继续受到本政策中概述的保护。",
-			"how-far-title": "我们的责任延伸到多远？",
-			"how-far-text": "本隐私政策适用于我们拥有和运营的服务。我们不对可能链接到imchatty的其他用户或第三方系统行使控制。他们可能在其系统上放置自己的或其他文件，收集数据或向您索取个人信息。我们不对这些其他网站或服务承担责任。",
-			"privacy-modified-title": "本隐私政策可以修改吗？",
-			"privacy-modified-text": "如果认为有必要，我们保留修改本隐私政策条款的权利。我们将通过在imchatty.com/privacy发布修订的隐私政策来通知您这些更改。修订的隐私政策将在此类发布后三十（30）天内生效，除非您通过点击接受按钮提前明确接受修订声明。您同意您的明确接受或您继续使用imchatty将构成您对隐私政策的接受。",
-			"rights-contact-title": "您有什么权利，如何联系我们？",
-			"rights-contact-text1": "如果您想行使查看、更正、完善或删除您个人数据的权利，请通过以下方式联系我们",
-			"rights-contact-text2": "在验证您的身份后，我们将尝试快速满足您的请求，前提是我们不会通过满足您的请求而违反适用立法。",
-			"meta": {
-				"title": "隐私政策 – ImChatty",
-				"description": "了解ImChatty如何保护您的隐私并改善您的体验。阅读我们完整的隐私政策。",
-				"ogTitle": "隐私政策 – ImChatty",
-				"ogImage": "https://imchatty.com/images/article-image.webp",
-				"ogDescription": "看看ImChatty如何保护您的隐私并改善您的体验。阅读我们完整的隐私政策。",
-				"twitterTitle": "隐私政策 – ImChatty",
-				"twitterCard": "summary_large_image",
-				"twitterDescription": "了解ImChatty如何保护您的隐私并改善您的体验。阅读我们完整的隐私政策。",
-				"twitterImage": "https://imchatty.com/images/article-image.webp"
-			}
-		},
-		"admin": {
-			"title": "管理员仪表板",
-			"sections-title": "部分",
-			"sections": {
-				"dashboard": "仪表板",
-				"articles": "文章",
-				"categories": "分类",
-				"tags": "标签",
-				"reports": "报告"
-			}
-		},
-		"articles": {
-			"index": {
-				"explore": "探索我们的文章",
-				"categories": "分类",
-				"tags": "标签",
-				"search": "搜索文章...",
-				"no-articles": "未找到文章",
-				"meta": {
-					"title": "ImChatty博客 – 技巧、更新和社区故事",
-					"description": "在ImChatty博客上发现最新技巧、平台更新和真实社区故事。保持联系和了解。",
-					"ogTitle": "ImChatty博客 – 技巧、更新和社区故事",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/articles",
-					"ogDescription": "探索有用的文章、平台新闻和来自ImChatty社区的鼓舞人心的故事。定期更新新见解。",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterDescription": "通过ImChatty的最新博客文章保持了解。从平台更新到约会和聊天技巧，我们为您提供全面覆盖。",
-					"twitterTitle": "ImChatty博客 – 您的技巧和更新来源",
-					"twitterCard": "summary_large_image",
-					"twitterImage": "https://imchatty.com/images/robot.png"
-				}
-			}
-		},
-		"categories": {
-			"index": {
-				"title": "所有不同的分类",
-				"meta": {
-					"title": "热门文章分类",
-					"description": "查看我们最受欢迎的分类！浏览具有真实信息、个性化详细信息和真正兴趣的高评分文章。",
-					"ogTitle": "文章分类",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/categories",
-					"ogDescription": "查看我们最受欢迎的分类！浏览具有真实信息、个性化详细信息和真正兴趣的高评分分类。",
-					"twitterTitle": "热门最近分类",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "查看我们最受欢迎的分类！浏览具有真实信息、个性化详细信息和真正兴趣的高评分成员。"
-				}
-			},
-			"slug": {
-				"no-articles": "此分类未找到文章",
-				"meta": {
-					"articles": "文章",
-					"description1": "浏览标记为",
-					"description2": "的文章在ImChatty上。探索与",
-					"ogDescription1": "在ImChatty上找到关于",
-					"ogDescription2": "的最新文章和内容。看看真实用户和AI如何探索这个话题。",
-					"twitterDescription1": "在我们最新的聊天相关内容中了解",
-					"twitterDescription2": "。来自真实和AI视角的更新文章。"
-				}
-			}
-		},
-		"tags": {
-			"index": {
-				"title": "所有不同的标签"
-			},
-			"slug": {
-				"no-articles": "此标签未找到文章"
-			}
-		},
-		"guides": {
-			"title": "我们所有的指南",
-			"no-articles": "此类型未找到文章",
-			"meta": {
-				"title": "热门指南",
-				"description": "查看我们最新的指南！浏览真正感兴趣的指南。",
-				"ogTitle": "热门指南 - 帮助",
-				"ogUrl": "https://imchatty.com/guides",
-				"ogDescription": "查看我们最新的指南！帮助入门、技巧和如何保护自己。",
-				"twitterTitle": "热门指南见解",
-				"twitterCard": "summary_large_image",
-				"twitterDescription": "查看我们最受欢迎的指南和见解！浏览真正感兴趣的指南，由人类构建，可能改变生活！"
-			}
-		},
-		"insights": {
-			"title": "我们所有的非指南文章",
-			"meta": {
-				"title": "热门文章见解",
-				"description": "查看我们最新的见解！浏览真正感兴趣的文章。",
-				"ogTitle": "热门文章见解",
-				"ogUrl": "https://imchatty.com/insights",
-				"ogType": "Website",
-				"ogDescription": "查看我们最新的见解！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-				"ogImage": "https://imchatty.com/images/robot.png",
-				"twitterTitle": "热门文章见解",
-				"twitterCard": "summary_large_image",
-				"twitterDescription": "查看我们最受欢迎的文章见解！浏览真正感兴趣的文章，由人类构建，可能改变生活！"
-			}
-		},
-		"profiles": {
-			"ai": {
-				"title": "热门AI档案",
-				"meta": {
-					"title": "更多热门AI档案",
-					"description": "查看我们最受欢迎的最新AI档案！浏览具有个性化详细信息和真正兴趣的高评分聊天机器人。",
-					"ogTitle": "热门AI档案",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/ai",
-					"ogDescription": "查看我们最受欢迎的最新AI档案！浏览具有个性化详细信息和真正兴趣的高评分聊天机器人。",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "热门最近档案",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "查看我们最受欢迎的最新AI档案！浏览具有个性化详细信息和真正兴趣的高评分聊天机器人。"
-				}
-			},
-			"female": {
-				"title": "热门女性档案",
-				"meta": {
-					"title": "更多热门女性档案",
-					"description": "查看我们最受欢迎的最新女性档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-					"ogTitle": "热门女性档案",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/female",
-					"ogDescription": "查看我们最受欢迎的最新女性档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "热门女性档案",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "查看我们最受欢迎的最新女性档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。"
-				}
-			},
-			"male": {
-				"title": "热门男性档案",
-				"meta": {
-					"title": "更多热门男性档案",
-					"description": "查看我们最受欢迎的最新男性档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-					"ogTitle": "热门男性档案",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/male",
-					"ogDescription": "查看我们最受欢迎的最新男性档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "热门男性档案",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "查看我们最受欢迎的最新男性档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。"
-				}
-			},
-			"popular": {
-				"title": "最受欢迎的档案",
-				"meta": {
-					"title": "更多热门档案",
-					"description": "查看我们最受欢迎的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-					"ogTitle": "热门档案",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/popular",
-					"ogDescription": "查看我们最受欢迎的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "热门档案",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "查看我们最受欢迎的最新档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。"
-				}
-			},
-			"recent": {
-				"title": "热门最近档案",
-				"meta": {
-					"title": "更多热门最近档案",
-					"description": "查看我们最受欢迎的最新档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-					"ogTitle": "热门最近档案",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/recent",
-					"ogDescription": "查看我们最受欢迎的最新档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "热门最近档案",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "查看我们最受欢迎的最新档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。"
-				}
-			},
-			"index": {
-				"title": "公开档案",
-				"meta": {
-					"title": "更多档案",
-					"description": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-					"ogTitle": "公开档案",
-					"ogType": "Website",
-					"ogUrl": "https://imchatty.com/profiles/",
-					"ogDescription": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-					"ogImage": "https://imchatty.com/images/robot.png",
-					"twitterTitle": "公开档案",
-					"twitterCard": "summary_large_image",
-					"twitterDescription": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。"
-				}
-			}
-		},
-		"loginemail": {
-			"welcome": "欢迎，您现在已登录",
-			"choices": "您可以转到您的档案或立即开始聊天。",
-			"get-chatting": "开始聊天！",
-			"profile": "转到我的档案"
-		},
-		"logout": {
-			"meta": {
-				"title": "退出",
-				"description": "面向所有人的免费匿名聊天应用（真实或AI）。",
-				"ogTitle": "Imchatty - 退出",
-				"ogType": "Website",
-				"ogUrl": "https://imchatty.com/logout",
-				"ogImage": "https://imchatty.com/images/robot.png",
-				"ogDescription": "面向所有人的免费匿名聊天应用（真实或AI）。",
-				"twitterTitle": "Imchatty - 退出",
-				"twitterCard": "summary_large_image",
-				"twitterDescription": "面向所有人的免费匿名聊天应用（真实或AI）。"
-			}
-		},
-		"signin": {
-			"note": "您不应该在这里...",
-			"meta": {
-				"title": "登录 – 访问您的ImChatty账户",
-				"description": "使用Google、Facebook或电子邮件安全登录您的ImChatty账户。在几秒钟内与真实的人或AI聊天伙伴加入对话。",
-				"ogTitle": "登录ImChatty",
-				"ogImage": "https://imchatty.com/images/article-image.webp",
-				"ogDescription": "通过Google、Facebook或电子邮件安全登录，开始与真实或AI用户匿名聊天。您的聊天之旅从这里开始。",
-				"twitterTitle": "登录 – 与ImChatty匿名聊天",
-				"twitterCard": "summary_large_image",
-				"twitterDescription": "通过Google、Facebook或电子邮件登录轻松访问您的ImChatty账户。今天就开始与真实或AI档案进行匿名对话。",
-				"twitterImage": "https://imchatty.com/images/article-image.webp"
-			}
-		}
-	},
-	"components": {
-		"navbar": {
-			"imchatty": "ImChatty",
-			"blog": "博客",
-			"chat": "聊天",
-			"settings": "设置",
-			"logout": "退出",
-			"signin": "登录",
-			"aboutus": "关于我们",
-			"free-chat": "免费聊天"
-		},
-		"footer": {
-			"about": "关于我们",
-			"terms": "服务条款",
-			"privacy": "隐私政策",
-			"cookies": "Cookie政策",
-			"public-profiles": "公开档案",
-			"consent-preferences": "同意偏好"
-		},
-		"button-favorite": {
-			"log-in": "登录",
-			"cancel": "取消",
-			"please-log-in": "请登录",
-			"need-log-in": "您需要登录才能将档案保存为收藏。"
-		},
-		"home": {
-			"ai": {
-				"title": "最近的AI档案",
-				"see-more": "查看更多AI档案"
-			},
-			"female": {
-				"title": "最近的女性档案",
-				"see-more": "查看更多女性档案"
-			},
-			"main": {
-				"sign-in": "登录",
-				"google": "使用Google",
-				"facebook": "使用Facebook",
-				"email": "使用电子邮件"
-			},
-			"male": {
-				"title": "最近的男性档案",
-				"see-more": "查看更多男性档案"
-			},
-			"most-popular": {
-				"title": "最受欢迎的档案",
-				"see-more": "查看更多热门档案"
-			},
-			"recent": {
-				"title": "最近的真实档案",
-				"see-more": "查看更多最近档案"
-			}
-		},
-		"activeChats": {
-			"confirm": "确认",
-			"cancel": "取消",
-			"delete-title": "删除此聊天",
-			"delete-confirm": "您确定要删除此聊天吗？此操作无法撤销。",
-			"block": "屏蔽此用户？"
-		},
-		"blockedUsers": {
-			"no-blocked-users": "您没有屏蔽的用户"
-		},
-		"chatcontainer": {
-			"replying-to": "回复：",
-			"chat": "与",
-			"ai": " AI聊天",
-			"message": "消息",
-			"select-user": "选择要聊天的用户",
-			"send": "发送",
-			"message-sent": "给您发送了消息"
-		},
-		"chatheader": {
-			"years-old": "岁，",
-			"remove-favorites": "从收藏中移除",
-			"add-favorites": "添加到收藏",
-			"block-user": "屏蔽用户",
-			"unblock-user": "取消屏蔽用户",
-			"report-user": "举报用户",
-			"favorited": "收藏了您！",
-			"report-success": "感谢您举报此用户。我们将审查举报并在必要时采取适当行动。",
-			"report-failure": "举报用户时出错。请稍后再试。"
-		},
-		"loginAi": {
-			"titleText": "创建您的匿名档案"
-		},
-		"dialogAiSignUp": {
-			"create-profile": "创建档案",
-			"type-response": "在此输入您的回复...",
-			"titleText": "创建您的匿名档案",
-			"titleText2": "让我们完成创建您的档案",
-			"reminder": "确保输入您的电子邮件并完成您的档案以解锁所有功能！"
-		},
-		"favorites": {
-			"i-favorited": "我收藏的",
-			"no-favorites": "未找到收藏的用户",
-			"favorited-me": "收藏了我",
-			"no-favorited-me": "还没有人收藏您"
-		},
-		"filter-menu": {
-			"logged-in": "登录为",
-			"filters": "过滤器",
-			"gender": "性别",
-			"status": "状态",
-			"age-range": "年龄范围",
-			"anonymity": "匿名性",
-			"interests": "兴趣",
-			"country": "国家",
-			"clear": "清除",
-			"apply": "应用",
-			"cancel": "取消",
-			"male": "男性",
-			"female": "女性",
-			"other": "其他",
-			"all": "全部",
-			"registered": "仅注册用户",
-			"anony": "仅匿名用户"
-		},
-		"finish-profile": {
-			"finish-up": "让我们完成设置您的档案 - 您有",
-			"type-response": "在此输入您的回复...",
-			"skip": "跳过",
-			"close": "关闭",
-			"no-ask": "不再询问"
-		},
-		"gender-selection": {
-			"gender": "性别",
-			"select-gender": "您必须选择性别。"
-		},
-		"location-selection": {
-			"country": "国家",
-			"country2": "国家：",
-			"state": "州",
-			"state2": "州：",
-			"city": "城市",
-			"city2": "城市："
-		},
-		"loginEmail": {
-			"sign-in": "使用电子邮件登录",
-			"18years": "我已年满18岁并同意服务条款",
-			"checkmail1": "检查您的电子邮件以获取登录链接！",
-			"checkmail2": "（可能在您的垃圾邮件文件夹中。）",
-			"registeredInfo": "注册用户可以联系离线用户、保存收藏、分享照片和许多其他功能。通过创建账户，您同意我们的",
-			"terms": "服务条款",
-			"invalid-email": "无效的电子邮件地址",
-			"confirmAge": "您必须确认您的年龄"
-		},
-		"loginFacebook": {
-			"sign-in": "使用Facebook登录",
-			"18years": "我已年满18岁并同意服务条款",
-			"registeredInfo": "注册用户可以联系离线用户、保存收藏、分享照片、使用高级过滤器并拥有更完整的AI体验。Facebook将与imchatty分享您的姓名、电子邮件地址和个人资料图片。通过创建账户，您同意我们的",
-			"confirmAge": "您必须确认您的年龄"
-		},
-		"loginGoogle": {
-			"sign-in": "使用Google登录",
-			"continue": "继续使用Google",
-			"registeredInfo": "注册用户可以联系离线用户、保存收藏、分享照片、使用高级过滤器并拥有更完整的AI体验。Google将与imchatty分享您的姓名、电子邮件地址和个人资料图片。通过创建账户，您同意我们的",
-			"confirmAge": "您必须确认您的年龄"
-		},
-		"lookingFor": {
-			"looking-for": "寻找",
-			"cancel": "取消",
-			"save": "保存"
-		},
-		"message": {
-			"accept-image": "接受图片",
-			"replied-to": "回复：",
-			"save": "保存",
-			"cancel": "取消",
-			"edit-hint": "Ctrl+Enter保存 • Esc取消",
-			"edited": "（已编辑）"
-		},
-		"morefemale": {
-			"title": "更多女性档案",
-			"back": "返回"
-		},
-		"notification-dropdown": {
-			"none": "无通知"
-		},
-		"profile-age": {
-			"age": "年龄",
-			"required": "年龄是必需的"
-		},
-		"profile-bio": {
-			"bio": "个人简介"
-		},
-		"profile-card": {
-			"remove-favorite": "移除收藏",
-			"remove-upvote": "移除点赞",
-			"remove": "移除"
-		},
-		"profile-container": {
-			"status": "状态：",
-			"gender": "性别：",
-			"age": "年龄：",
-			"about-me": "关于我：",
-			"generate-bio": "生成个人简介",
-			"sound-notifs": "声音通知",
-			"on": "开",
-			"off": "关",
-			"save": "保存",
-			"edit": "编辑",
-			"cancel": "取消",
-			"go-to-chat": "转到聊天",
-			"delete": "删除我的账户",
-			"delete-confirm": "您确定要删除您的账户吗？此操作无法撤销。",
-			"restore": "恢复账户",
-			"finish": "完成档案",
-			"public": "公开档案",
-			"copy": "复制档案链接",
-			"snackbar-copy-text": "档案链接已复制到剪贴板！",
-			"loading": "加载中...",
-			"confirm": "确认",
-			"close": "关闭",
-			"gender-male": "男性",
-			"gender-female": "女性",
-			"gender-other": "其他"
-		},
-		"profile-displayname": {
-			"display-name": "显示名称",
-			"no-spaces": "不允许空格",
-			"min-4": "至少需要4个字符",
-			"max-15": "最多允许15个字符",
-			"less-3-special": "需要少于3个特殊字符",
-			"required": "显示名称是必需的"
-		},
-		"profile-photo": {
-			"add-photo": "添加照片",
-			"add-avatar-deco": "添加头像装饰",
-			"upload-photo": "上传个人资料照片",
-			"upload": "上传",
-			"cancel": "取消"
-		},
-		"profile-site": {
-			"label": "公开网站URL",
-			"valid": "需要有效的URL"
-		},
-		"profile-tagline": {
-			"label": "标语",
-			"min-4": "至少需要4个字符",
-			"max-30": "最多允许30个字符",
-			"less-3-special": "需要少于3个特殊字符",
-			"no-domain": "不允许域名或链接"
-		},
-		"public-user-profile": {
-			"looking-for": "寻找：",
-			"about-me": "关于我：",
-			"visit1": "访问",
-			"visit2": "的网站",
-			"back": "返回档案",
-			"chat": "与",
-			"back-home": "返回首页"
-		},
-		"registration-dialog": {
-			"register": "注册以继续",
-			"close": "关闭"
-		},
-		"report-user-modal": {
-			"title": "举报用户",
-			"select-issues": "选择所有相关问题",
-			"describe-problem": "描述问题",
-			"select-message": "选择特定消息（可选）",
-			"selected-messages": "选定的消息：",
-			"10": "10",
-			"cancel": "取消",
-			"submit": "提交举报",
-			"photo": "他们的照片",
-			"username": "他们的用户名",
-			"descriptors": "他们的文本描述符",
-			"actions": "他们的行为",
-			"10-max": "您最多可以选择10条消息"
-		},
-		"select-avatar-decoration": {
-			"title": "头像装饰",
-			"choose": "为您的档案选择头像装饰",
-			"done": "完成",
-			"cancel": "取消"
-		},
-		"settings-container": {
-			"profile": "我的档案",
-			"favorites": "我的收藏",
-			"blocked": "屏蔽的用户",
-			"upvotes": "点赞",
-			"loading": "加载中...",
-			"registered-only": "仅限注册用户"
-		},
-		"status-selection": {
-			"status": "状态"
-		},
-		"toggle-ai": {
-			"ai": "AI用户",
-			"real": "真实用户"
-		},
-		"upvotes": {
-			"no-upvotes": "您没有点赞",
-			"upvoted-me": "点赞了我",
-			"i-upvoted": "我点赞的",
-			"no-upvoted-me": "还没有人点赞您"
-		},
-		"users": {
-			"online": "在线",
-			"offline": "离线",
-			"active": "活跃",
-			"no-anonymous": "未找到匿名用户"
-		},
-		"users-ai": {
-			"ai-users": "AI用户",
-			"active": "活跃"
-		}
-	},
-	"composables": {
-		"presenceChannel": {
-			"online": "在线！"
-		},
-		"presenceStatus": {
-			"online": "在线",
-			"away": "离开",
-			"dnd": "请勿打扰"
-		}
-	}
+  "pages": {
+    "home": {
+      "homeRow1": {
+        "offlineUsersOnline": "现在有很多用户在线",
+        "onlineUsersOnline": "用户在线",
+        "freeAnonymousChat": "免费匿名聊天"
+      },
+      "landing_page": {
+        "title-text": "匿名聊天。即时连接。",
+        "title-text2": "AI朋友，真实的人，匿名登录。",
+        "cta_button": "开始聊天",
+        "learn_more": "了解更多",
+        "welcome_back": "欢迎回来，",
+        "chat": "聊天",
+        "settings": "设置",
+        "logout": "退出",
+        "meet_people": "遇见志同道合的人",
+        "discover_connections": "通过匿名聊天发现真实的连接。",
+        "realtime_conversations": "与来自世界各地的人进行实时对话。更智能、更友好的选择。",
+        "get_chatting": "开始聊天",
+        "popular_ai_profiles": "我们最受欢迎的AI档案",
+        "see_more_profiles": "查看更多热门档案",
+        "check_articles": "查看我们的一些文章",
+        "see_more_articles": "查看更多文章",
+        "final_cta_title": "准备开始聊天了吗？",
+        "final_cta_description": "无论您是来结识新朋友还是探索有趣的AI个性，一切都只需一键即可。",
+        "get_chatting_now": "立即开始聊天",
+        "logout_title": "退出我的账户",
+        "logout_confirm": "您确定要退出吗？",
+        "logout_confirm_button": "确认退出",
+        "cancel": "取消"
+      },
+      "meta": {
+        "title": "免费匿名聊天（真人或AI）",
+        "description": "在 imchatty.com 探索真人和AI聊天档案",
+        "ogTitle": "真人与AI聊天档案",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com",
+        "ogDescription": "ImChatty 是一个独特的匿名聊天平台。我们是开源的，致力于打造现有聊天选项的替代方案。",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterTitle": "匿名免费聊天",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "了解 ImChatty — 一个与真人或AI档案进行匿名、有意义对话的平台。认识这个项目背后的团队。",
+        "twitterImage": "https://imchatty.com/images/article-image.webp"
+      }
+    },
+    "about": {
+      "meta": {
+        "title": "关于ImChatty – 真实和AI聊天平台",
+        "description": "了解更多关于ImChatty的信息——一个独特的平台，您可以与真实的人或AI伙伴匿名聊天。发现我们的使命、我们的团队，以及我们如何创建一个更安全、更有吸引力的在线聊天空间。",
+        "ogTitle": "关于ImChatty – 真实和AI聊天平台",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/about",
+        "ogDescription": "了解更多关于ImChatty的信息——一个与真实用户或AI匿名聊天的独特平台。探索我们的使命、愿景和价值观。",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "关于ImChatty – 与真实的人或AI聊天",
+        "twitterDescription": "了解ImChatty——与真实的人或AI档案进行匿名、有意义对话的平台。认识这个体验背后的团队。",
+        "twitterImage": "https://imchatty.com/images/article-image.webp"
+      },
+      "page": {
+        "title-text": "关于我们",
+        "welcome-title": "嗨！欢迎来到Imchatty.com",
+        "welcome-text": "欢迎来到Imchatty，一个免费的聊天网站，您可以在这里与他人匿名连接。我们的使命是为人们提供一个安全和免费的平台来聊天和分享他们的想法，而无需提供大量的个人信息。在Imchatty，我们相信对话的力量和隐私的重要性。",
+        "who_we_are-title": "我们是谁",
+        "who_we_are-text1": "Imchatty是一个项目，由",
+        "who_we_are-text2": "IT咨询行业的资深玩家创建。我们创建这个网站是为了更深入地研究实时数据库和存在技术、AI聊天机器人和LLM。我们使用Imchatty作为测试和开发的动态沙盒。我们很想看看我们能把这项技术推进到什么程度，以及我们是否能构建一些有用的东西。您可以在这里找到这个网站的开源代码",
+        "who_we_are-text3": "这里",
+        "our_mission-title": "我们的使命和愿景",
+        "our_mission-text": "我们的使命很简单：提供一个由广告支持的免费和安全的聊天平台，这将覆盖基础设施成本。我们的愿景是不断添加服务和功能，将Imchatty发展成为我们用户的强大和有价值的工具。我们渴望创建一个用户可以享受无缝沟通的空间，同时感到安全和受到尊重。",
+        "unique_approach-title": "我们独特的方法",
+        "unique_approach-text": "Imchatty的与众不同之处在于我们致力于提供真正免费的服务，而不会损害用户安全。我们理解隐私的重要性，我们的匿名注册确保您的个人信息保持机密。此外，Imchatty作为创新技术的试验场，帮助我们保持在IT进步的前沿。",
+        "building_community-title": "建设社区",
+        "building_community-text": "我们的目标不仅仅是提供聊天服务，而是建设一个社区。我们鼓励我们的用户提供反馈并分享他们的经验，以帮助我们改进和扩展平台。通过共同努力，我们希望创建一个满足用户需求并适应他们不断发展的偏好的服务。",
+        "looking_ahead-title": "展望未来",
+        "looking_ahead-text": "随着我们的持续发展，我们的重点仍然是维护一个免费和安全的平台，同时探索新功能和改进。我们对Imchatty的未来感到兴奋，并致力于使其成为我们用户的宝贵资源。",
+        "join_us-title": "加入我们",
+        "join_us-text": "我们邀请您加入Imchatty并成为我们旅程的一部分。无论您是在寻找聊天的地方、分享想法，还是只是结识新朋友，Imchatty都为您而来。我们可以一起创建一个充满活力和有趣的社区。"
+      }
+    },
+    "terms": {
+      "meta": {
+        "title": "条款和条件 - ImChatty",
+        "description": "查看使用ImChatty的条款和条件。了解您的权利、责任以及我们如何确保一个安全和尊重的平台。",
+        "ogTitle": "条款和条件 - ImChatty",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/terms",
+        "ogDescription": "了解使用ImChatty的规则和政策。阅读我们完整的条款和条件，了解对所有用户的期望。",
+        "ogImage": "https://imchatty.com/images/article-image.webp",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "条款和条件 - ImChatty",
+        "twitterDescription": "探索ImChatty的条款和条件，了解我们如何维护一个尊重和安全的社区体验。",
+        "twitterImage": "https://imchatty.com/images/article-image.webp"
+      },
+      "page": {
+        "title": "条款和条件",
+        "intro": "欢迎来到Imchatty网站。请查看这些服务条款（\"条款\"），它们管理您对网站和其提供的服务的使用。",
+        "intro-2": "网站imchatty.com（\"网站\"）在保护用户隐私的安全环境中促进实时互动（\"服务\"）。条款描述了向您提供此服务的条件，以及您对网站和服务的访问和使用。仔细阅读条款。通过使用服务，您将被视为已接受它。如果您不接受条款，您不得使用此服务。通过访问网站，您同意遵守这些服务条款（\"条款\"），它们管理您对网站的使用，这进一步受我们的隐私政策和安全指南的约束。",
+        "intro-3": "在本文档中，\"我们\"或\"我们的\"指imchatty.com及其所有者、经理、官员、员工、合作伙伴、代理人、代表、关联公司、承包商、服务提供商和/或指定人员；\"我们双方\"指您和我们；\"服务条款\"或\"条款\"指这些服务条款和通过引用纳入的文档；\"我们的材料\"指我们可能通过服务提供的信息、数据、文本、软件、音乐、声音、照片、图形、视频、消息或其他材料；\"服务\"指我们在网站上为您提供的服务；\"网站\"指www.imchatty.com和我们指定为受条款约束的任何其他网站；\"您\"指使用服务的个人或公司；\"内容\"指您或服务的其他用户通过服务提供或访问的信息、数据、文本、软件、音乐、声音、照片、图形、视频、消息、图像或其他材料。",
+        "service-title": "服务",
+        "service-text": "我们目前处于测试阶段，提供简单的聊天功能进行有趣的对话。我们希望很快提供其他服务，并将在这些服务可用时更新我们的政策和条款文档。",
+        "acquisition-title": "服务获取",
+        "acquisition-text": "您通过在imchatty.com注册服务，根据这些条款获得使用服务的权利。",
+        "use-of-service-title": "服务使用",
+        "use-of-service-text": "除了下面\"其他协议\"中规定的情况外，我们授权您仅为您自己的个人、非商业目的使用服务。将服务用于任何公共或商业目的（包括但不限于为第三方利益使用服务）是严格禁止的。如果您制作我们材料的副本，您必须在任何此类副本上保留我们材料中包含的所有版权和其他专有通知，如我们提供的。您不得修改、公开展示、公开表演或分发我们的材料。在您和我们之间，我们拥有服务、网站和我们的材料。服务、网站和我们的材料受美国和国际版权法保护。任何未经授权使用服务、网站或我们的材料可能违反版权、商标和其他法律。",
+        "eligibility-title": "资格",
+        "eligibility-text": "行为和禁止使用。您必须年满十八（18）岁才能使用本网站上的服务。您同意并保证您的内容不得具有色情性质（包括但不限于儿童色情）、暴力、歧视性、非法、仇恨、淫秽、淫荡、裸体、部分裸体或性暗示性质、与毒品或恐怖主义相关、有害、欺骗性、极其亵渎、种族主义、诽谤、辱骂、威胁或以任何方式令人反感（统称为\"令人反感的内容\"）。",
+        "eligibility-text-2": "您声明并保证您不会向十八（18）岁以下的任何人索取个人信息或以性或暴力方式剥削。您还声明并保证您的内容不会侵犯任何其他第三方的权利。Imchatty不承担监控您内容性质的任何义务，并不承担对您的任何内容的任何责任。",
+        "eligibility-text-3": "您还声明并保证您不会\"跟踪\"或以其他方式骚扰本网站的任何其他用户，冒充其他人或组织，向Imchatty提供虚假、误导或不准确的信息，干扰我们的服务器或软件，试图访问网站上的任何受限区域，发布有害或破坏性的html/javascript，上传或传输包含病毒或其他可能损害其他设备的对象的文件，通过机器人、代理、抓取、自动化设备或智能搜索访问网站，或将网站用于垃圾邮件目的、未经授权的广告或促销目的或进行任何性质的调查（统称为\"禁止使用\"）。",
+        "eligibility-text-4": "修改。我们保留随时修改或替换这些条款的权利。任何更新的条款将在此链接上提供。这些条款可能会不时更新、审查或修改，完全由我们自行决定。这些条款的重大变化可能会或可能不会在我们的主页上传达。您应该定期参考对这些条款所做的任何更改。继续使用网站，或使用任何服务或购买任何产品，此后将构成您对修订条款的视为接受。",
+        "registration-title": "您的注册义务",
+        "registration-text": "服务的某些部分可能需要注册并由您向我们提供关于您自己的某些信息。如果您注册，您声明您至少18岁，并且不是根据美国、欧盟或其他适用管辖区的法律被禁止接受服务的人。您必须：(a) 提供关于您自己的真实、准确、当前和完整的信息，如服务注册表格所提示的（此类信息为\"注册数据\"）和 (b) 维护并及时更新注册数据以保持其真实、准确、当前和完整。如果您提供任何不真实、不准确、不当前或不完整的信息，或者我们有合理理由怀疑此类信息不真实、不准确、不当前或不完整，我们有权暂停或终止您的账户并拒绝任何和所有当前或未来对服务（或其任何部分）的使用。",
+        "member-title": "会员账户、密码和安全",
+        "member-text": "完成服务注册过程后，您可能会收到或创建密码和账户指定。您负责维护密码和账户指定的机密性，并对在您的密码或账户下发生的所有活动承担全部责任。您必须 (a) 立即通知我们任何未经授权使用您的密码或账户或任何其他安全漏洞，以及 (b) 确保您在每次会话结束时退出您的账户。我们不能也不会对因您未能遵守本节而产生的任何损失或损害承担责任。",
+        "privacy-policy-title": "隐私政策；个人可识别数据的使用",
+        "privacy-policy-text": "注册数据和关于您的某些其他信息受我们的隐私政策约束。有关更多信息，请参阅我们的完整隐私政策。通过使用服务，您同意收集和使用（如隐私政策中所述）此信息，包括将此信息传输到美国和/或其他国家供我们和我们的关联公司存储、处理和使用。",
+        "gpdr-title": "通用数据保护条例（GDPR）合规",
+        "gpdr-text1": "如果您是欧盟或欧洲经济区（\"EEA\"）的居民或位于其中，您也可能在通用数据保护条例（\"GDPR\"）下拥有某些权利。您在imchatty.com网站上或通过其产品提供的个人信息（\"个人数据\"）仅在您同意的情况下收集，并受公司隐私政策条款的约束，可在此处找到。联系",
+        "gpdr-text2": "如果您对您的个人数据有担忧，或希望行使您在GDPR下的任何权利。",
+        "billing-title": "计费；税收",
+        "billing-text": "目前imchatty.com是一个没有消费者税收影响的服务。",
+        "member-conduct-title": "会员行为",
+        "member-conduct-text": "您理解所有内容，无论是公开发布还是私下传输，都是产生此类内容的人的唯一责任。这意味着您，而不是我们，完全负责您上传、发布、通过电子邮件发送、传输或以其他方式提供或通过服务访问的所有内容。我们不控制通过服务发布或访问的内容，因此，不保证此类内容的准确性、完整性或质量。您理解通过使用服务，您可能会接触到令人反感、不雅或令人反感的内容。在任何情况下，我们都不会以任何方式对任何内容承担责任，包括但不限于任何内容中的任何错误或遗漏，或因使用通过服务发布、通过电子邮件发送、传输或以其他方式提供或访问的任何内容而产生的任何种类的损失或损害。",
+        "member-conduct-text-2": "服务的任何使用都受我们的行为准则约束。",
+        "member-conduct-text-3": "我们可能会或可能不会预先筛选内容；但是，我们和我们的指定人员有权（但没有义务）根据我们的唯一判断预先筛选、拒绝或移动任何内容或阻止通过服务可用或可访问的任何网站。在不限制前述内容的情况下，我们和我们的指定人员有权删除或阻止访问任何违反条款或以其他方式令人反感的内容。您必须评估并承担与使用任何内容相关的所有风险，包括对此类内容的准确性、完整性或有用性的任何依赖。",
+        "member-conduct-text-4": "如果法律要求或出于善意相信此类访问保存或披露对以下方面合理必要，我们可能会访问、保存和披露您的账户信息和内容：(a) 遵守法律程序；(b) 执行条款；(c) 回应声称任何内容违反第三方权利的索赔；(d) 回应您的客户服务请求；或 (e) 保护我们（或我们的用户或公众）的权利、财产或人身安全。",
+        "member-conduct-text-5": "服务的技术处理和传输，包括您的内容，可能涉及 (a) 通过各种网络的传输；和 (b) 为符合和适应连接网络或设备的技术要求而进行的更改。",
+        "member-conduct-text-6": "服务和服务中体现的软件可能包括允许保护数字材料的安全组件，这些材料的使用受我们和/或向服务提供内容的内容提供商设定的使用规则约束。您不得试图覆盖或规避嵌入服务中的任何使用规则。严格禁止未经授权复制、发布、进一步分发或公开展示服务上提供的材料，无论是全部还是部分。",
+        "ownership-title": "提交或可供包含在服务中的内容的所有权和使用",
+        "ownership-text": "我们不声称拥有您提交或可供包含在服务中的内容。但是，对于您提交或可供包含在服务中其他成员可访问区域的内容，许可使用、分发、复制、修改、改编、公开表演和公开展示此类内容在服务上，仅用于提供和推广提交或可供此类内容的成员的目的。此许可仅在您选择继续在服务中包含此类内容时存在，并将在您删除或我们从服务中删除此类内容时终止。",
+        "ownership-text-2": "您可能会自愿提供（与使用服务、使用我们的产品或其他方式相关）关于我们在服务上或以其他方式提供的项目或信息的建议、评论或其他反馈。我们不需要对此类反馈保密，此类反馈可能被我们用于任何目的而无任何义务；但是，我们不会在未经您同意的情况下披露特定反馈的来源；条款中的任何内容都不限制您使用您向我们提供的此类反馈或想法。",
+        "ownership-text-3": "您上传到网站或与本网站其他用户分享的任何内容，包括但不限于照片、图片、图像和视频剪辑（\"您的内容\"）归您所有。imchatty不声称拥有您的内容的任何所有权。您授予imchatty非独家、免版税、永久、可再许可、全球许可，根据我们网站的隐私政策使用您的内容。您可以选择在聊天时与我们网站的其他用户分享您的内容。您声明并保证您是您内容的所有者，并且通过在我们的网站上发布或分享您的内容不会违反任何第三方权利。我们不一定认可您的内容，也没有义务监控、编辑、删除或预先筛选您的内容。您对在本网站上发布或分享的任何您的内容承担唯一责任。您还对您在本网站上与其他用户的互动（无论是在线还是离线）承担唯一责任，imchatty不对其任何用户的行为承担责任。如果您认为imchatty的某个用户通过我们的网站侵犯了您的知识产权，您可以立即联系我们，我们保留删除涉嫌侵权内容的权利，甚至终止重复侵权者的账户。",
+        "indemnity-title": "赔偿",
+        "indemnity-text": "您在此赔偿并使我们和我们的子公司、关联公司、官员、代理人、共同品牌商或其他合作伙伴以及员工、顾问和代理人免受任何第三方因您提交、发布、传输或通过服务提供的内容、您对服务的使用、您与服务的连接、您违反条款或您违反他人的任何权利而提出的任何索赔或要求（包括偿还我们在为任何此类索赔或要求进行辩护时产生的任何合理律师费）的损害。我们保留根据我们的唯一判断选择我们选择的律师的权利。此外，您必须善意合作以协助我们进行辩护和与此相关的任何和解谈判，并偿还我们合理的和解金额（如果有）。",
+        "general-practices-title": "关于使用和存储的一般做法",
+        "general-practices-text": "您承认我们可能建立关于使用服务的一般做法和限制，包括但不限于服务将保留上传内容的最大天数、可能通过服务上的账户进行的发布的最大数量和大小，以及您可能在给定时间段内访问服务的最大次数（和最大持续时间）。我们对删除或未能存储服务维护或传输的任何发布和其他通信或其他内容不承担责任。我们可能会不时修改这些一般做法和限制。",
+        "modifications-title": "服务修改",
+        "modifications-text": "我们可能随时不时地修改或停止，暂时或永久地，服务（或其任何部分），无论是否通知。我们不对您或任何第三方因服务的任何修改、暂停或停止承担责任。",
+        "termination-title": "终止",
+        "termination-text": "在某些情况下，我们可能在没有事先通知的情况下立即终止您的账户和对服务的访问。此类终止的原因包括但不限于：(a) 违反或违反条款或其他纳入的协议或指导原则，(b) 执法部门或其他政府机构的要求，(c) 您的要求（自发的账户删除），(d) 服务的停止或重大修改（或其任何部分），(e) 意外的技术或安全问题，(f) 长期不活动，(g) 您参与了欺诈或非法活动，和/或 (h) 您未支付与服务相关的任何费用。终止您的账户包括 (a) 删除对服务内所有产品的访问，(b) 删除您的密码和与您的账户相关或在您的账户内的所有相关信息、文件和内容（或其任何部分），以及 (c) 禁止进一步使用服务。此外，所有因故终止都应根据我们的唯一判断进行，我们不对您或任何第三方因终止您的账户、任何相关电子邮件地址或对服务的访问承担责任。",
+        "dealings-title": "与第三方的交易",
+        "dealings-text": "服务可能使您能够访问其他网站或资源。因为我们无法控制此类网站和资源，我们不对此类外部网站或资源的可用性负责，我们不认可也不对此类网站或资源上或可从此类网站或资源获得的任何内容、产品或其他材料负责。我们不对因使用或依赖通过任何此类网站或资源可用的任何此类内容或服务而直接或间接造成或声称造成的任何损害或损失负责。我们可能会或可能不会预先筛选其他网站或资源；但是，我们和我们的指定人员有权（但没有义务）根据我们的唯一判断预先筛选、拒绝或阻止访问任何违反条款或以其他方式令人反感的网站或其他资源。",
+        "property-title": "我们的专有权利",
+        "property-text": "服务和与服务相关使用的任何必要软件（\"软件\"）包含受适用知识产权和其他法律保护的专有和机密信息。您不得通过我们为访问服务而提供的界面以外的任何方式访问服务。",
+        "property-text-2": "一般来说，服务以不导致您下载或使用我们任何软件的方式提供。但是，如果我们确实为您提供软件（例如插件或类似项目），我们授予您个人、不可转让和非独家的权利和许可，在与您访问服务相关的单台计算机上使用软件的目标代码；但是，您不得（也不允许任何第三方）复制、修改、创建衍生作品、逆向工程、逆向汇编或以其他方式试图发现任何源代码、出售、分配、再许可、授予担保权益或以其他方式转让软件中的任何权利。您不得以任何方式或形式修改软件，或使用软件的修改版本，包括（但不限于）为了获得对服务的未经授权访问的目的。您不得出租、租赁、借出、出售、分发或基于软件创建衍生作品，无论是全部还是部分。",
+        "property-text-3": "您不得为任何商业目的复制、复制、复制、出售、交易、转售或利用服务的任何部分（包括您的账户名称）、服务的使用或对服务的访问。",
+        "disclaimer-title": "免责声明",
+        "disclaimer-text": "您使用服务的风险由您自己承担。服务按\"原样\"和\"可用\"基础提供。我们明确否认任何种类的所有保证，无论是明示还是暗示，包括但不限于适销性、特定用途适用性和非侵权的暗示保证。",
+        "disclaimer-text-2": "我们不保证 (i) 服务将满足您的要求，(ii) 服务将不间断、及时、安全或无错误，(iii) 从使用服务可能获得的结果将准确或可靠，(iv) 您通过服务购买或获得的任何产品、服务、信息或其他材料的质量将满足您的期望，以及 (v) 软件中的任何错误将得到纠正。",
+        "disclaimer-text-3": "通过使用服务下载或以其他方式获得的任何材料都是您自己的判断和风险，您将对因下载任何此类材料而对您的计算机系统造成的任何损害或数据丢失承担唯一责任。",
+        "disclaimer-text-4": "您从我们或通过或从服务获得的任何建议或信息，无论是口头还是书面，都不会创建条款中未明确说明的任何保证。",
+        "limitation-title": "责任限制",
+        "limitation-text": "我们不对您承担任何直接、间接、偶然、特殊、后果性或惩戒性损害的责任，包括但不限于利润损失、商誉、使用、数据或其他无形损失的损害（即使我们已被告知此类损害的可能性），由以下原因造成：(i) 使用或无法使用服务；(ii) 因通过或从服务购买或获得的任何商品、数据、信息或服务或收到的消息或通过或从服务进行的交易而产生的替代商品和服务的采购成本；(iii) 未经授权访问或更改您的传输或数据；(iv) 服务上任何第三方的声明或行为；或 (v) 与服务相关的任何其他事项。",
+        "exclusions-title": "排除和限制",
+        "exclusions-text": "某些司法管辖区不允许排除某些保证或限制或排除偶然或后果性损害的责任。因此，上述某些限制可能不适用于您。",
+        "general-info-title": "一般信息",
+        "general-info-text": "完整协议。条款构成我们双方之间的完整协议，并管理您对服务的使用，取代我们双方之间关于服务的任何先前协议。当您使用或购买某些其他服务、关联服务、第三方内容或第三方软件时，您也可能受到可能适用的其他条款和条件的约束。",
+        "general-info-text-2": "法律和论坛的选择。条款和我们双方之间的关系应完全受欧盟法律管辖，不考虑其法律冲突条款。您对我们提起任何索赔或诉讼的专属论坛是位于法国巴黎市的法院。您在此接受并服从此类法院在任何程序或诉讼中的个人和专属管辖权。对于在此类法院提起的任何此类程序或诉讼，您在此不可撤销地放弃，在法律允许的最大范围内：(a) 您现在或将来可能对此类管辖权或地点的任何异议，以及 (b) 任何声称此类诉讼或程序以不便的形式提起的主张。没有任何内容限制我们在任何有管辖权的法院开始和进行任何法律或衡平诉讼或程序以获得禁令或任何其他形式的救济的权利。无论任何相反的法规或法律如何，任何因使用服务或条款而产生或与之相关的索赔或诉讼原因必须在此类索赔或诉讼原因产生后九十（90）天内（或者，如果不同，法律允许的最短时间）提起，否则将被永远禁止。",
+        "general-info-text-3": "仲裁。尽管此处有任何规定，如果我们根据我们的唯一判断选择通过仲裁解决任何索赔，您必须充分配合并受此类仲裁约束，无任何进一步追索权。欧洲仲裁法院（ECA）应主持此类仲裁。此类仲裁应完全受欧盟法律管辖，不考虑其法律冲突条款。所有程序应在巴黎市进行。如果ECA规则与条款的任何条款之间存在冲突，条款应管辖。您负责您在仲裁中产生的所有费用，包括但不限于专家证人或律师。合理的申请费和仲裁员的费用和开支应由我们预付。但是，如果仲裁决定有利于我们，您必须偿还我们与仲裁相关的所有费用、成本和开支，包括但不限于与申请、仲裁员、专家证人、律师和其他第三方相关的所有费用、成本和开支。",
+        "general-info-text-4": "条款的放弃和可分割性。我们未能行使或执行条款的任何权利或条款不构成对此类权利或条款的放弃。如果条款的任何条款被有管辖权的法院认定为无效，各方仍然同意法院应努力实现条款中反映的各方意图，条款的其他条款仍然完全有效。",
+        "general-info-text-5": "无第三方受益人。除条款中另有明确规定外，条款不应有第三方受益人。",
+        "general-info-text-6": "转让限制。这些条款以及此处的所有权利、利益或义务不得由我们任何一方直接或间接转让，包括但不限于通过法律操作，未经非转让方的事先书面同意，不得无理扣留、延迟或附加条件；但是，任何一方都可以在合并、合并、收购、重组、控制权变更或其他情况下将条款全部或部分转让给任何关联公司、子公司或利益继承人，而无需任何此类同意要求，但是：(i) 转让和收购实体在此类转让时通知非转让方，收购实体书面同意受条款约束，以及 (ii) 收购实体不是非收购实体的竞争对手。",
+        "general-info-text-7": "诉讼时效。无论任何相反的法规或法律如何，任何因使用服务或条款而产生或与之相关的索赔或诉讼原因必须在此类索赔或诉讼原因产生后一（1）年内提起，否则将被永远禁止。",
+        "general-info-text-8": "条款中的章节标题仅为方便起见，没有法律或合同效力。",
+        "accepting-title": "接受条款",
+        "accepting-text": "同意条款。为了使用服务，您必须首先同意条款。如果您不接受条款，您不得使用服务。您可以通过执行点击接受或同意条款来接受条款，在我们在服务的用户界面中为您提供此选项的地方，或者通过实际使用服务。您同意我们将从那时起将您对服务的使用视为接受条款。",
+        "accepting-text-2": "使用服务的资格。如果 (a) 您未达到法定年龄（您居住或使用服务的司法管辖区的法律）与我们签订有约束力的合同，或 (b) 您是根据欧盟、美国或其他国家（包括您居住或使用服务的国家）的法律被禁止使用服务的人，您不得使用服务且不得接受条款。",
+        "accepting-text-3": "资格声明。在上述任何情况下，您声明您满足所有上述资格条件。如果您不满足上述条件，或者如果您不同意条款，您不得使用服务或其任何部分；在这种情况下，我们也可能立即终止条款和您对服务的使用，而不对您承担责任。",
+        "accepting-text-4": "电子提交的接受。您承认您的电子提交构成您的协议和受条款约束的意图。根据任何适用的法规、规定、规则、条例或其他法律，您在此同意使用电子签名、合同、订单和其他记录以及通过服务启动或完成的交易的通知、政策和记录的电子交付。此外，您在此放弃在任何司法管辖区的任何法规、规定、规则、条例或其他法律下的任何权利或要求，这些法律要求原始签名或非电子记录的交付或保留。",
+        "amendments-title": "条款的修改和更新",
+        "amendments-text": "我们可能希望不时对这些条款进行更改以更新它们，例如添加对不同产品或服务的引用。我们可能指定适用于在此类修改或更新的生效日期之后使用服务的修改或更新条款，我们将为您提供这些条款的新副本，并可能要求您接受它作为继续向您提供服务的条件。此外，在收到此类修改条款后继续使用服务应构成您对此类条款的同意。"
+      }
+    },
+    "privacy": {
+      "title": "隐私政策",
+      "intro": "您的隐私对我们很重要。因此，我们致力于尊重您的隐私以及您的个人数据和内容的机密性。本隐私政策旨在帮助您了解我们如何使用和保护您在使用imchatty时提供的信息。在本隐私政策中，\"服务条款\"指我们不时适用的服务条款，目前可在imchatty.com/terms找到\"个人数据\"指我们拥有的与imchatty的已识别或可识别用户相关的任何信息；其他大写术语具有服务条款中给出的含义。",
+      "information-title": "我们收集什么信息？",
+      "information-text1": "为了为您提供imchatty的访问权限，我们可能收集和处理以下部分或全部信息：",
+      "information-text2": "内容：imchatty用户收集或存储的任何信息，除注册信息、客户服务通信或日志信息外。",
+      "information-text3": "注册信息：自愿注册使用imchatty时提供的任何信息，包括但不限于用户名和密码以及电子邮件地址。",
+      "information-text4": "客户服务通信：向我们报告的关于imchatty操作的任何信息，包括错误报告或增强请求。",
+      "information-text5": "日志信息：当您使用某些服务时，我们的服务器会自动记录您的应用程序发送的基本信息。这些服务器日志可能包括诸如您的消息、互联网协议地址、其他寻址信息、您的请求的日期和时间以及用于验证您和您的计算机身份的身份验证令牌等信息。",
+      "how-we-use-title": "我们如何使用您的信息以及出于什么目的？",
+      "how-we-use-intro": "我们收集信息的主要目的是为您提供高效的用户体验。我们可能使用本隐私政策中定义的信息来：提供您请求的服务和任何客户支持；解决争议、收取费用和解决问题；执行我们的服务条款；定制、测量和改进imchatty、内容和布局；通知您服务更新；比较信息的准确性并验证您的身份；为您提供收集信息时描述的其他服务。此外，我们可能如下所述使用您的信息。",
+      "registration-title": "注册信息",
+      "registration-intro": "我们要求注册信息以验证您的身份并使您能够使用imchatty。",
+      "registration-text": "我们尊重个人电子邮件账户的隐私，我们将像其他个人数据一样安全地存储您的电子邮件地址。我们不会出售或分发您的电子邮件消息，您的详细信息不会在未经您明确许可的情况下出售给第三方用于其营销目的。但是，我们将使用电子邮件向您发送有关故障和服务问题的消息。我们也可能使用电子邮件让您了解imchatty的最新消息。",
+      "content-title": "内容",
+      "content-text": "一般来说，我们不会审查或向第三方提供对您内容的访问。但是，如果法律要求，我们保留预先筛选、审查、标记、过滤、修改、拒绝或从imchatty删除任何或所有内容的权利。",
+      "customer-service-title": "客户服务通信",
+      "customer-service-text": "在反馈中自愿提交的信息用于审查此反馈和改进imchatty的目的。我们保留将匿名信息用于营销目的的权利，例如在imchatty或其他通信中显示选定的评论。此外，我们可能不时要求您提供关于您体验的信息，这些信息将用于测量和改进质量。您在任何时候都没有义务提供任何此类数据。我们永远不会在未经您明确许可的情况下使用任何个人可识别的（反馈）信息。",
+      "log-information-title": "日志信息",
+      "log-information-text": "我们将使用此信息来控制和审计对imchatty的访问以及用于统计信息。",
+      "to-whom-title": "我们向谁传输您的个人信息",
+      "to-whom-text1": "除下文规定外，我们不会在未经您明确许可的情况下向任何第三方出售、出租、交易或以其他方式转移任何注册信息或内容，除非我们有义务根据适用法律或主管当局的命令这样做。",
+      "to-whom-text2": "我们可能与我们的关联公司和其他服务提供商分享您的信息。我们可能与其他服务提供商合作提供我们的一些服务。您向我们提供的注册信息可能会发送给这些提供商，以便他们提供服务；同样，您向这些网站提供的个人信息可能会发送给我们以运营imchatty。",
+      "to-whom-text3": "我们收集的信息可能在我们和我们的关联公司维护设施的任何国家存储和处理。我们保留将信息传输到您居住和/或使用imchatty的国家之外的权利，包括您自己国家的隐私法律和法规可能认为在确保此类信息的充分保护水平方面不足的国家。如果您不确定此隐私声明是否与适用的当地规则冲突，您不应提交您的信息。尽管如此，通过使用imchatty，您同意在美利坚合众国的任何此类信息传输和/或存储。",
+      "to-whom-text4": "随着我们继续发展业务，我们可能会出售或购买子公司或业务单位。在此类交易中，以及在我们的全部或大部分资产被第三方收购的情况下，我们用户的个人信息通常将是转移的业务资产之一。我们保留将您的个人信息作为资产包含在任何此类向第三方的转移中的权利。尽管本隐私政策或服务条款中有任何相反规定，如果我们有善意的信念认为此类访问、使用、保存或披露任何信息对以下方面合理必要，我们可能会访问、使用、保存或披露我们有权访问的任何信息：(a) 满足任何适用的法律、法规、法律程序或可执行的政府要求，(b) 执行服务条款，包括调查其潜在违规行为，(c) 检测、预防或以其他方式解决欺诈、安全或技术问题，或 (d) 根据法律要求或许可保护我们、我们的用户或公众的权利、财产或安全免受迫在眉睫的伤害。",
+      "how-we-protect-title": "我们如何保护您的个人信息？",
+      "how-we-protect-text": "我们采取适当的组织和技术措施来保护提供给我们或我们收集的数据。您应该意识到互联网通信并不总是安全的。尽管我们确实采取了我们认为适当的步骤来保护您的数据，但通过互联网提供的信息保护容易受到第三方攻击，因此我们不能向您承诺第三方无法访问您的内容。",
+      "how-long-title": "您的个人数据被我们保存多长时间？",
+      "how-long-text": "我们不会保留您的信息超过执行我们服务所允许的时间或相关立法要求的时间，并适当遵守相关立法下的适用义务和例外。具体来说，您的信息仅在以下情况下保留必要的时间：(1) 提供imchatty的使用；(2) 向您开具imchatty使用发票并维护记录，直到imchatty的发票不能合法质疑且法律程序不能再进行；(3) 与您就我们提供的其他服务进行沟通；(4) 遵守适用立法、监管要求和主管法院的相关命令；(5) 执行我们的服务条款；或 (6) 履行本隐私政策中详述的任何其他目的。",
+      "what-are-cookies-title": "什么是Cookie，我们如何使用它们？",
+      "what-are-cookies-text": "Cookie是存储在用户硬盘上包含有关用户信息的一段数据。Cookie的使用在imchatty上绝不会与任何个人可识别信息相关联。一旦用户关闭浏览器，cookie就会终止。例如，通过在imchatty上设置cookie，用户不必多次登录密码，从而在imchatty上节省时间。如果用户拒绝cookie，他们仍然可以使用imchatty。这样做的唯一缺点是用户在imchatty的某些区域会受到限制。我们不使用cookie来跟踪或增强您在imchatty上的体验，但可能用于分析。我们的一些业务合作伙伴可能在imchatty上使用cookie。但是，我们无法访问或控制这些cookie。此外，如果我们选择为您提供促销优惠或广告，第三方业务合作伙伴可能为此目的使用cookie。",
+      "gdpr-compliance-title": "通用数据保护条例（GDPR）合规",
+      "gdpr-compliance-intro": "如果您是欧洲经济区（\"EEA\"）的居民或位于其中，您也可能在通用数据保护条例（\"GDPR\"）下拥有某些权利。您在我们网站上或通过我们产品提供的个人数据仅在您同意的情况下收集，并可能根据该同意传输到EEA之外的imchatty（或为imchatty利益维护的计算机服务器）。",
+      "gdpr-compliance-text1": "一般来说，在GDPR下您可以：",
+      "gdpr-compliance-text2": "请求访问您的个人数据",
+      "gdpr-compliance-text3": "更正不完整或不正确的数据",
+      "gdpr-compliance-text4": "删除您的个人数据",
+      "gdpr-compliance-text5": "暂停或限制我们使用您的个人数据，或撤回您的同意",
+      "gdpr-compliance-text6": "如果您认为您在GDPR下的权利没有得到尊重，向监管机构投诉",
+      "gdpr-compliance-text7": "如果您要求您的个人数据副本，我们将向您提供您的个人数据副本。第一份副本将免费提供，但额外副本可能需要支付合理费用。如果您要求删除您的个人数据，imchatty通常会尽快这样做，尽管您删除个人数据的权利受到例外情况的限制，例如遵守法律义务或为建立、行使或辩护法律主张。",
+      "gdpr-compliance-text8": "如果您认为我们对您个人信息的处理违反了数据保护法，您有合法权利向负责数据保护的监管机构投诉。您可以在您惯常居住的欧盟成员国、您的工作地点或涉嫌违规的地点这样做。",
+      "gdpr-compliance-text9": "联系",
+      "gdpr-compliance-text10": "如果您对您的个人数据有担忧，或希望行使这些列出的权利中的任何一项。",
+      "gdpr-compliance-text11": "请注意，如果您在EEA，我们可能会将您的个人数据传输到EEA之外，包括美国。例如，如果您的个人数据被传输到我们位于EEA之外国家的服务器，这可能会发生。这些国家可能没有与EEA类似的数据保护法。通过提交您的个人数据，您同意这种传输、存储或处理。如果我们以这种方式将您的信息传输到EEA之外，我们将采取措施确保采取适当的安全措施，目的是确保您的隐私权继续受到本政策中概述的保护。",
+      "how-far-title": "我们的责任延伸到多远？",
+      "how-far-text": "本隐私政策适用于我们拥有和运营的服务。我们不对可能链接到imchatty的其他用户或第三方系统行使控制。他们可能在其系统上放置自己的或其他文件，收集数据或向您索取个人信息。我们不对这些其他网站或服务承担责任。",
+      "privacy-modified-title": "本隐私政策可以修改吗？",
+      "privacy-modified-text": "如果认为有必要，我们保留修改本隐私政策条款的权利。我们将通过在imchatty.com/privacy发布修订的隐私政策来通知您这些更改。修订的隐私政策将在此类发布后三十（30）天内生效，除非您通过点击接受按钮提前明确接受修订声明。您同意您的明确接受或您继续使用imchatty将构成您对隐私政策的接受。",
+      "rights-contact-title": "您有什么权利，如何联系我们？",
+      "rights-contact-text1": "如果您想行使查看、更正、完善或删除您个人数据的权利，请通过以下方式联系我们",
+      "rights-contact-text2": "在验证您的身份后，我们将尝试快速满足您的请求，前提是我们不会通过满足您的请求而违反适用立法。",
+      "meta": {
+        "title": "隐私政策 | ImChatty",
+        "description": "了解 ImChatty 如何处理您的数据、保护隐私并提供匿名聊天体验。",
+        "ogTitle": "ImChatty 隐私政策",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/privacy",
+        "ogDescription": "阅读 ImChatty 如何在完全匿名和开源的环境中保护您的隐私并管理数据。",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterTitle": "ImChatty 隐私政策",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "了解 ImChatty 如何保护您的隐私 — 一个匿名且开源的聊天平台。阅读完整隐私政策。",
+        "twitterImage": "https://imchatty.com/images/article-image.webp"
+      }
+    },
+    "admin": {
+      "title": "管理员仪表板",
+      "sections-title": "部分",
+      "sections": {
+        "dashboard": "仪表板",
+        "articles": "文章",
+        "categories": "分类",
+        "tags": "标签",
+        "reports": "报告"
+      }
+    },
+    "articles": {
+      "index": {
+        "explore": "探索我们的文章",
+        "categories": "分类",
+        "tags": "标签",
+        "search": "搜索文章...",
+        "no-articles": "未找到文章",
+        "meta": {
+          "title": "ImChatty博客 – 技巧、更新和社区故事",
+          "description": "在ImChatty博客上发现最新技巧、平台更新和真实社区故事。保持联系和了解。",
+          "ogTitle": "ImChatty博客 – 技巧、更新和社区故事",
+          "ogType": "Website",
+          "ogUrl": "https://imchatty.com/articles",
+          "ogDescription": "探索有用的文章、平台新闻和来自ImChatty社区的鼓舞人心的故事。定期更新新见解。",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterDescription": "通过ImChatty的最新博客文章保持了解。从平台更新到约会和聊天技巧，我们为您提供全面覆盖。",
+          "twitterTitle": "ImChatty博客 – 您的技巧和更新来源",
+          "twitterCard": "summary_large_image",
+          "twitterImage": "https://imchatty.com/images/robot.png"
+        }
+      }
+    },
+    "categories": {
+      "index": {
+        "title": "所有不同的分类",
+        "meta": {
+          "title": "热门文章分类",
+          "description": "查看我们最受欢迎的分类！浏览具有真实信息、个性化详细信息和真正兴趣的高评分文章。",
+          "ogTitle": "文章分类",
+          "ogType": "Website",
+          "ogUrl": "https://imchatty.com/categories",
+          "ogDescription": "查看我们最受欢迎的分类！浏览具有真实信息、个性化详细信息和真正兴趣的高评分分类。",
+          "twitterTitle": "热门最近分类",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "查看我们最受欢迎的分类！浏览具有真实信息、个性化详细信息和真正兴趣的高评分成员。"
+        }
+      },
+      "slug": {
+        "no-articles": "此分类未找到文章",
+        "meta": {
+          "articles": "文章",
+          "description1": "浏览标记为",
+          "description2": "的文章在ImChatty上。探索与",
+          "ogDescription1": "在ImChatty上找到关于",
+          "ogDescription2": "的最新文章和内容。看看真实用户和AI如何探索这个话题。",
+          "twitterDescription1": "在我们最新的聊天相关内容中了解",
+          "twitterDescription2": "。来自真实和AI视角的更新文章。"
+        }
+      }
+    },
+    "tags": {
+      "index": {
+        "title": "所有不同的标签",
+        "meta": {
+          "title": "浏览标签 | ImChatty",
+          "description": "探索 ImChatty 上的热门标签，发现与你兴趣匹配的内容和真实讨论。",
+          "ogTitle": "探索 ImChatty 上的标签",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/tags",
+          "ogImage": "https://imchatty.com/images/article-image.webp",
+          "ogDescription": "深入了解 ImChatty 最受欢迎的标签。查找按兴趣和话题组织的文章和讨论内容。",
+          "twitterTitle": "热门标签 | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "浏览 ImChatty 上的热门标签，发现按主题和兴趣分类的文章与讨论。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
+      },
+      "slug": {
+        "no-articles": "此标签未找到文章"
+      }
+    },
+    "guides": {
+      "title": "我们所有的指南",
+      "no-articles": "此类型未找到文章",
+      "meta": {
+        "title": "热门指南",
+        "description": "查看我们最新的指南！浏览真正感兴趣的指南。",
+        "ogTitle": "热门指南 - 帮助",
+        "ogUrl": "https://imchatty.com/guides",
+        "ogDescription": "查看我们最新的指南！帮助入门、技巧和如何保护自己。",
+        "twitterTitle": "热门指南见解",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "查看我们最受欢迎的指南和见解！浏览真正感兴趣的指南，由人类构建，可能改变生活！"
+      }
+    },
+    "insights": {
+      "title": "我们所有的非指南文章",
+      "meta": {
+        "title": "热门文章见解",
+        "description": "查看我们最新的见解！浏览真正感兴趣的文章。",
+        "ogTitle": "热门文章见解",
+        "ogUrl": "https://imchatty.com/insights",
+        "ogType": "Website",
+        "ogDescription": "查看我们最新的见解！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterTitle": "热门文章见解",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "查看我们最受欢迎的文章见解！浏览真正感兴趣的文章，由人类构建，可能改变生活！"
+      }
+    },
+    "profiles": {
+      "ai": {
+        "title": "热门AI档案",
+        "meta": {
+          "title": "热门AI资料 | ImChatty",
+          "description": "探索 ImChatty 上最受欢迎的 AI 聊天资料。浏览具有个性化特点、智能回复和兴趣标签的聊天机器人。",
+          "ogTitle": "ImChatty 热门AI档案",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/profiles/ai",
+          "ogDescription": "发现 ImChatty 上最受欢迎的 AI 聊天档案。体验真实互动、个性回复和智能对话。",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "热门AI聊天资料 | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "了解 ImChatty 上最受欢迎的聊天机器人 — 个性鲜明、智能互动、兴趣匹配。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
+      },
+      "female": {
+        "title": "热门女性档案",
+        "meta": {
+          "title": "热门女性资料 | ImChatty",
+          "description": "探索 ImChatty 上最受欢迎的女性资料页面。查看真实照片、个性化兴趣和详细信息。",
+          "ogTitle": "ImChatty 热门女性档案",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/profiles/female",
+          "ogDescription": "浏览 ImChatty 上最受关注的女性资料。查看真实信息、兴趣标签和有意义的对话内容。",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "热门女性资料 | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "了解当前最受欢迎的女性用户档案，在 ImChatty 上发现真实兴趣与详细个性展示。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
+      },
+      "male": {
+        "title": "热门男性档案",
+        "meta": {
+          "title": "热门男性资料 | ImChatty",
+          "description": "浏览 ImChatty 上最受欢迎的男性资料页面，了解真实信息、共同兴趣和个性化介绍。",
+          "ogTitle": "ImChatty 热门男性档案",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/profiles/male",
+          "ogDescription": "发现 ImChatty 上受欢迎的男性用户档案。查看真实资料、兴趣爱好和真诚互动。",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "热门男性资料 | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "查看 ImChatty 上最受欢迎的男性资料。真实信息、真人介绍、有趣的交流。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
+      },
+      "popular": {
+        "title": "最受欢迎的档案",
+        "meta": {
+          "title": "热门用户资料 | ImChatty",
+          "description": "探索 ImChatty 上最受欢迎的用户资料。查看真实成员的详细介绍、兴趣爱好和优质对话。",
+          "ogTitle": "ImChatty 热门资料页面",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/profiles/popular",
+          "ogDescription": "发现 ImChatty 上最受欢迎的用户档案。了解真实信息、兴趣标签和有意义的互动。",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "热门用户档案 | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "查看 ImChatty 上最受欢迎和浏览量最高的用户资料。真实内容、真实用户和精彩对话。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
+      },
+      "recent": {
+        "title": "热门最近档案",
+        "meta": {
+          "title": "更多热门最近档案",
+          "description": "查看我们最受欢迎的最新档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
+          "ogTitle": "热门最近档案",
+          "ogType": "Website",
+          "ogUrl": "https://imchatty.com/profiles/recent",
+          "ogDescription": "查看我们最受欢迎的最新档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "热门最近档案",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "查看我们最受欢迎的最新档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
+      },
+      "index": {
+        "title": "公开档案",
+        "meta": {
+          "title": "更多档案",
+          "description": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
+          "ogTitle": "公开档案",
+          "ogType": "Website",
+          "ogUrl": "https://imchatty.com/profiles/",
+          "ogDescription": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "公开档案",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
+      }
+    },
+    "loginemail": {
+      "welcome": "欢迎，您现在已登录",
+      "choices": "您可以转到您的档案或立即开始聊天。",
+      "get-chatting": "开始聊天！",
+      "profile": "转到我的档案"
+    },
+    "logout": {
+      "meta": {
+        "title": "退出",
+        "description": "面向所有人的免费匿名聊天应用（真实或AI）。",
+        "ogTitle": "Imchatty - 退出",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/logout",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "ogDescription": "面向所有人的免费匿名聊天应用（真实或AI）。",
+        "twitterTitle": "Imchatty - 退出",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "面向所有人的免费匿名聊天应用（真实或AI）。"
+      }
+    },
+    "signin": {
+      "note": "您不应该在这里...",
+      "meta": {
+        "title": "登录 ImChatty",
+        "description": "通过 Google、Facebook 或邮箱登录 ImChatty，开始匿名聊天。",
+        "ogTitle": "ImChatty 登录",
+        "ogType": "Website",
+        "ogUrl": "https://imchatty.com/signin",
+        "ogDescription": "使用 Google、Facebook 或电子邮件登录您的 ImChatty 账号，在一个安全、开源的环境中与真人或 AI 进行匿名聊天。",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterTitle": "登录 | ImChatty",
+        "twitterCard": "summary_large_image",
+        "twitterDescription": "登录以开始在 ImChatty 上与真人或 AI 进行匿名对话。支持 Google、Facebook 或邮箱登录。",
+        "twitterImage": "https://imchatty.com/images/article-image.webp"
+      }
+    }
+  },
+  "components": {
+    "navbar": {
+      "imchatty": "ImChatty",
+      "blog": "博客",
+      "chat": "聊天",
+      "settings": "设置",
+      "logout": "退出",
+      "signin": "登录",
+      "aboutus": "关于我们",
+      "free-chat": "免费聊天"
+    },
+    "footer": {
+      "about": "关于我们",
+      "terms": "服务条款",
+      "privacy": "隐私政策",
+      "cookies": "Cookie政策",
+      "public-profiles": "公开档案",
+      "consent-preferences": "同意偏好"
+    },
+    "button-favorite": {
+      "log-in": "登录",
+      "cancel": "取消",
+      "please-log-in": "请登录",
+      "need-log-in": "您需要登录才能将档案保存为收藏。"
+    },
+    "home": {
+      "ai": {
+        "title": "最近的AI档案",
+        "see-more": "查看更多AI档案"
+      },
+      "female": {
+        "title": "最近的女性档案",
+        "see-more": "查看更多女性档案"
+      },
+      "main": {
+        "sign-in": "登录",
+        "google": "使用Google",
+        "facebook": "使用Facebook",
+        "email": "使用电子邮件"
+      },
+      "male": {
+        "title": "最近的男性档案",
+        "see-more": "查看更多男性档案"
+      },
+      "most-popular": {
+        "title": "最受欢迎的档案",
+        "see-more": "查看更多热门档案"
+      },
+      "recent": {
+        "title": "最近的真实档案",
+        "see-more": "查看更多最近档案"
+      }
+    },
+    "activeChats": {
+      "confirm": "确认",
+      "cancel": "取消",
+      "delete-title": "删除此聊天",
+      "delete-confirm": "您确定要删除此聊天吗？此操作无法撤销。",
+      "block": "屏蔽此用户？"
+    },
+    "blockedUsers": {
+      "no-blocked-users": "您没有屏蔽的用户"
+    },
+    "chatcontainer": {
+      "replying-to": "回复：",
+      "chat": "与",
+      "ai": " AI聊天",
+      "message": "消息",
+      "select-user": "选择要聊天的用户",
+      "send": "发送",
+      "message-sent": "给您发送了消息"
+    },
+    "chatheader": {
+      "years-old": "岁，",
+      "remove-favorites": "从收藏中移除",
+      "add-favorites": "添加到收藏",
+      "block-user": "屏蔽用户",
+      "unblock-user": "取消屏蔽用户",
+      "report-user": "举报用户",
+      "favorited": "收藏了您！",
+      "report-success": "感谢您举报此用户。我们将审查举报并在必要时采取适当行动。",
+      "report-failure": "举报用户时出错。请稍后再试。"
+    },
+    "loginAi": {
+      "titleText": "创建您的匿名档案"
+    },
+    "dialogAiSignUp": {
+      "create-profile": "创建档案",
+      "type-response": "在此输入您的回复...",
+      "titleText": "创建您的匿名档案",
+      "titleText2": "让我们完成创建您的档案",
+      "reminder": "确保输入您的电子邮件并完成您的档案以解锁所有功能！"
+    },
+    "favorites": {
+      "i-favorited": "我收藏的",
+      "no-favorites": "未找到收藏的用户",
+      "favorited-me": "收藏了我",
+      "no-favorited-me": "还没有人收藏您"
+    },
+    "filter-menu": {
+      "logged-in": "登录为",
+      "filters": "过滤器",
+      "gender": "性别",
+      "status": "状态",
+      "age-range": "年龄范围",
+      "anonymity": "匿名性",
+      "interests": "兴趣",
+      "country": "国家",
+      "clear": "清除",
+      "apply": "应用",
+      "cancel": "取消",
+      "male": "男性",
+      "female": "女性",
+      "other": "其他",
+      "all": "全部",
+      "registered": "仅注册用户",
+      "anony": "仅匿名用户"
+    },
+    "finish-profile": {
+      "finish-up": "让我们完成设置您的档案 - 您有",
+      "type-response": "在此输入您的回复...",
+      "skip": "跳过",
+      "close": "关闭",
+      "no-ask": "不再询问"
+    },
+    "gender-selection": {
+      "gender": "性别",
+      "select-gender": "您必须选择性别。"
+    },
+    "location-selection": {
+      "country": "国家",
+      "country2": "国家：",
+      "state": "州",
+      "state2": "州：",
+      "city": "城市",
+      "city2": "城市："
+    },
+    "loginEmail": {
+      "sign-in": "使用电子邮件登录",
+      "18years": "我已年满18岁并同意服务条款",
+      "checkmail1": "检查您的电子邮件以获取登录链接！",
+      "checkmail2": "（可能在您的垃圾邮件文件夹中。）",
+      "registeredInfo": "注册用户可以联系离线用户、保存收藏、分享照片和许多其他功能。通过创建账户，您同意我们的",
+      "terms": "服务条款",
+      "invalid-email": "无效的电子邮件地址",
+      "confirmAge": "您必须确认您的年龄"
+    },
+    "loginFacebook": {
+      "sign-in": "使用Facebook登录",
+      "18years": "我已年满18岁并同意服务条款",
+      "registeredInfo": "注册用户可以联系离线用户、保存收藏、分享照片、使用高级过滤器并拥有更完整的AI体验。Facebook将与imchatty分享您的姓名、电子邮件地址和个人资料图片。通过创建账户，您同意我们的",
+      "confirmAge": "您必须确认您的年龄"
+    },
+    "loginGoogle": {
+      "sign-in": "使用Google登录",
+      "continue": "继续使用Google",
+      "registeredInfo": "注册用户可以联系离线用户、保存收藏、分享照片、使用高级过滤器并拥有更完整的AI体验。Google将与imchatty分享您的姓名、电子邮件地址和个人资料图片。通过创建账户，您同意我们的",
+      "confirmAge": "您必须确认您的年龄"
+    },
+    "lookingFor": {
+      "looking-for": "寻找",
+      "cancel": "取消",
+      "save": "保存"
+    },
+    "message": {
+      "accept-image": "接受图片",
+      "replied-to": "回复：",
+      "save": "保存",
+      "cancel": "取消",
+      "edit-hint": "Ctrl+Enter保存 • Esc取消",
+      "edited": "（已编辑）"
+    },
+    "morefemale": {
+      "title": "更多女性档案",
+      "back": "返回"
+    },
+    "notification-dropdown": {
+      "none": "无通知"
+    },
+    "profile-age": {
+      "age": "年龄",
+      "required": "年龄是必需的"
+    },
+    "profile-bio": {
+      "bio": "个人简介"
+    },
+    "profile-card": {
+      "remove-favorite": "移除收藏",
+      "remove-upvote": "移除点赞",
+      "remove": "移除"
+    },
+    "profile-container": {
+      "status": "状态：",
+      "gender": "性别：",
+      "age": "年龄：",
+      "about-me": "关于我：",
+      "generate-bio": "生成个人简介",
+      "sound-notifs": "声音通知",
+      "on": "开",
+      "off": "关",
+      "save": "保存",
+      "edit": "编辑",
+      "cancel": "取消",
+      "go-to-chat": "转到聊天",
+      "delete": "删除我的账户",
+      "delete-confirm": "您确定要删除您的账户吗？此操作无法撤销。",
+      "restore": "恢复账户",
+      "finish": "完成档案",
+      "public": "公开档案",
+      "copy": "复制档案链接",
+      "snackbar-copy-text": "档案链接已复制到剪贴板！",
+      "loading": "加载中...",
+      "confirm": "确认",
+      "close": "关闭",
+      "gender-male": "男性",
+      "gender-female": "女性",
+      "gender-other": "其他"
+    },
+    "profile-displayname": {
+      "display-name": "显示名称",
+      "no-spaces": "不允许空格",
+      "min-4": "至少需要4个字符",
+      "max-15": "最多允许15个字符",
+      "less-3-special": "需要少于3个特殊字符",
+      "required": "显示名称是必需的"
+    },
+    "profile-photo": {
+      "add-photo": "添加照片",
+      "add-avatar-deco": "添加头像装饰",
+      "upload-photo": "上传个人资料照片",
+      "upload": "上传",
+      "cancel": "取消"
+    },
+    "profile-site": {
+      "label": "公开网站URL",
+      "valid": "需要有效的URL"
+    },
+    "profile-tagline": {
+      "label": "标语",
+      "min-4": "至少需要4个字符",
+      "max-30": "最多允许30个字符",
+      "less-3-special": "需要少于3个特殊字符",
+      "no-domain": "不允许域名或链接"
+    },
+    "public-user-profile": {
+      "looking-for": "寻找：",
+      "about-me": "关于我：",
+      "visit1": "访问",
+      "visit2": "的网站",
+      "back": "返回档案",
+      "chat": "与",
+      "back-home": "返回首页"
+    },
+    "registration-dialog": {
+      "register": "注册以继续",
+      "close": "关闭"
+    },
+    "report-user-modal": {
+      "title": "举报用户",
+      "select-issues": "选择所有相关问题",
+      "describe-problem": "描述问题",
+      "select-message": "选择特定消息（可选）",
+      "selected-messages": "选定的消息：",
+      "10": "10",
+      "cancel": "取消",
+      "submit": "提交举报",
+      "photo": "他们的照片",
+      "username": "他们的用户名",
+      "descriptors": "他们的文本描述符",
+      "actions": "他们的行为",
+      "10-max": "您最多可以选择10条消息"
+    },
+    "select-avatar-decoration": {
+      "title": "头像装饰",
+      "choose": "为您的档案选择头像装饰",
+      "done": "完成",
+      "cancel": "取消"
+    },
+    "settings-container": {
+      "profile": "我的档案",
+      "favorites": "我的收藏",
+      "blocked": "屏蔽的用户",
+      "upvotes": "点赞",
+      "loading": "加载中...",
+      "registered-only": "仅限注册用户"
+    },
+    "status-selection": {
+      "status": "状态"
+    },
+    "toggle-ai": {
+      "ai": "AI用户",
+      "real": "真实用户"
+    },
+    "upvotes": {
+      "no-upvotes": "您没有点赞",
+      "upvoted-me": "点赞了我",
+      "i-upvoted": "我点赞的",
+      "no-upvoted-me": "还没有人点赞您"
+    },
+    "users": {
+      "online": "在线",
+      "offline": "离线",
+      "active": "活跃",
+      "no-anonymous": "未找到匿名用户"
+    },
+    "users-ai": {
+      "ai-users": "AI用户",
+      "active": "活跃"
+    }
+  },
+  "composables": {
+    "presenceChannel": {
+      "online": "在线！"
+    },
+    "presenceStatus": {
+      "online": "在线",
+      "away": "离开",
+      "dnd": "请勿打扰"
+    }
+  }
 }

@@ -1,7 +1,9 @@
 <template>
   <v-container>
     <v-row
-      ><v-col><h1>{{ $t("pages.privacy.title") }}</h1></v-col></v-row
+      ><v-col
+        ><h1>{{ $t("pages.privacy.title") }}</h1></v-col
+      ></v-row
     >
     <v-row
       ><v-col
@@ -17,9 +19,7 @@
           {{ $t("pages.privacy.information-text1") }}
         </p>
         <v-list density="compact" class="text-subtitle-2">
-          <v-list-item
-            >{{ $t("pages.privacy.information-text2") }}</v-list-item
-          >
+          <v-list-item>{{ $t("pages.privacy.information-text2") }}</v-list-item>
           <v-list-item>
             {{ $t("pages.privacy.information-text3") }}
           </v-list-item>
@@ -121,13 +121,19 @@
     >
     <v-row
       ><v-col
-        ><p class="text-body-2">{{ $t("pages.privacy.gdpr-compliance-text1") }}</p>
+        ><p class="text-body-2">
+          {{ $t("pages.privacy.gdpr-compliance-text1") }}
+        </p>
         <v-list density="compact" class="text-subtitle-2">
-          <v-list-item> {{ $t("pages.privacy.gdpr-compliance-text2") }} </v-list-item>
+          <v-list-item>
+            {{ $t("pages.privacy.gdpr-compliance-text2") }}
+          </v-list-item>
           <v-list-item>
             {{ $t("pages.privacy.gdpr-compliance-text3") }}
           </v-list-item>
-          <v-list-item> {{ $t("pages.privacy.gdpr-compliance-text4") }} </v-list-item>
+          <v-list-item>
+            {{ $t("pages.privacy.gdpr-compliance-text4") }}
+          </v-list-item>
           <v-list-item>
             {{ $t("pages.privacy.gdpr-compliance-text5") }}
           </v-list-item>
@@ -191,36 +197,9 @@
         </p>
       </v-col></v-row
     >
-
   </v-container>
 </template>
 
 <script setup>
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
-const seoTitle = computed(() => t("pages.privacy.meta.title"));
-const seoDescription = computed(() => t("pages.privacy.meta.description"));
-const ogTitle = computed(() => t("pages.privacy.meta.ogTitle"));
-const ogImage = computed(() => t("pages.privacy.meta.ogImage"));
-const ogDescription = computed(() =>
-  t("pages.privacy.meta.ogDescription")
-);
-const twitterTitle = computed(() => t("pages.privacy.meta.twitterTitle"));
-const twitterCard = computed(() => t("pages.privacy.meta.twitterCard"));
-const twitterDescription = computed(() =>
-  t("pages.privacy.meta.twitterDescription")
-);
-const twitterImage = computed(() => t("pages.privacy.meta.twitterImage"));
-
-useSeoMeta({
-  title: seoTitle.value,
-  description: seoDescription.value,
-  ogTitle: ogTitle.value,
-  ogImage: ogImage.value,
-  ogDescription: ogDescription.value,
-  twitterCard: twitterCard.value,
-  twitterTitle: twitterTitle.value,
-  twitterDescription: twitterDescription.value,
-  twitterImage: twitterImage.value,
-});
+useSeoI18nMeta("privacy");
 </script>
