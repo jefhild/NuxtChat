@@ -11,12 +11,13 @@ await fetchUserProfileFromSlug(slug);
 useHead(() => {
   const gender = profile.value?.gender;
   const slug = profile.value?.slug;
+  const currentLocale = locale.value || "en"; // fallback
 
   return {
     link: [
       {
         rel: "canonical",
-        href: `https://imchatty.com/profiles/${
+        href: `https://imchatty.com/${currentLocale}/profiles/${
           typeof gender === "string" ? gender.toLowerCase() : "unknown"
         }/${slug || "unknown"}`,
       },
@@ -46,5 +47,4 @@ useSeoMeta({
   ),
   twitterImage: profile.value?.avatar_url,
 });
-
 </script>

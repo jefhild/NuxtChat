@@ -2,14 +2,15 @@ export function useSeoI18nMeta(
   section: string,
   options?: { overrideUrl?: string }
 ) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const route = useRoute();
   const config = useRuntimeConfig();
-
   const baseUrl = config.public.SITE_URL;
-  const canonicalHref = options?.overrideUrl || `${baseUrl}${route.fullPath}`;
 
-  console.log("baseUrl ", baseUrl);
+  // Inject locale into the canonical path
+  const localePrefix = locale.value === "en" ? "" : `/${locale.value}`;
+  const canonicalHref =
+    options?.overrideUrl || `${baseUrl}${localePrefix}${route.fullPath}`;
 
   const key = (suffix: string) => `pages.${section}.meta.${suffix}`;
   const tf = (suffix: string) => {
@@ -23,12 +24,7 @@ export function useSeoI18nMeta(
 
   useHead(() => ({
     title: tf("title"),
-    link: [
-      {
-        rel: "canonical",
-        href: canonicalHref,
-      },
-    ],
+    link: [{ rel: "canonical", href: canonicalHref }],
     meta: [
       { name: "description", content: tf("description") },
       { property: "og:title", content: tf("ogTitle") },
