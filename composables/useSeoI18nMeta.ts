@@ -7,10 +7,17 @@ export function useSeoI18nMeta(
   const config = useRuntimeConfig();
   const baseUrl = config.public.SITE_URL;
 
+
+
   // Inject locale into the canonical path
   const localePrefix = locale.value === "en" ? "" : `/${locale.value}`;
+  // const canonicalHref =
+  //   options?.overrideUrl || `${baseUrl}${localePrefix}${route.fullPath}`;
+  
+  const pathWithoutLocale = route.fullPath.replace(/^\/(en|fr)(?=\/|$)/, "");
   const canonicalHref =
-    options?.overrideUrl || `${baseUrl}${localePrefix}${route.fullPath}`;
+    options?.overrideUrl || `${baseUrl}${localePrefix}${pathWithoutLocale}`;
+  
 
   const key = (suffix: string) => `pages.${section}.meta.${suffix}`;
   const tf = (suffix: string) => {
