@@ -13,7 +13,10 @@
           <span class="ml-1">{{ $t("components.navbar.imchatty") }}</span>
           •
           <v-icon>mdi-folder</v-icon>
-          <NuxtLink :to="localPath(`/categories/${article.category.slug}`)" class="ml-1 unstyled-link">
+          <NuxtLink
+            :to="localPath(`/categories/${article.category.slug}`)"
+            class="ml-1 unstyled-link"
+          >
             {{ article.category.name }}
           </NuxtLink>
           •
@@ -38,9 +41,18 @@
     <v-row>
       <v-col cols="12" md="8">
         <div class="d-flex align-center flex-wrap">
-          <span class="font-weight-medium mr-2">{{ $t("pages.admin.sections.tags") }}:</span>
-          <v-chip v-for="tag in article.tags" :key="tag.id" class="ma-1" color="deep-purple-lighten-2" size="small"
-            variant="outlined" :to="localPath(`/tags/${tag.slug}`)">
+          <span class="font-weight-medium mr-2"
+            >{{ $t("pages.admin.sections.tags") }}:</span
+          >
+          <v-chip
+            v-for="tag in article.tags"
+            :key="tag.id"
+            class="ma-1"
+            color="deep-purple-lighten-2"
+            size="small"
+            variant="outlined"
+            :to="localPath(`/tags/${tag.slug}`)"
+          >
             #{{ tag.name }}
           </v-chip>
         </div>
@@ -52,16 +64,30 @@
         <h3 class="">Share</h3>
 
         <div class="d-inline-flex align-center justify-center">
-          <v-btn class="ma-2 share-btn" color="primary" :href="`https://twitter.com/intent/tweet?url=${shareUrl}`"
-            target="_blank" icon>
+          <v-btn
+            class="ma-2 share-btn"
+            color="primary"
+            :href="`https://twitter.com/intent/tweet?url=${shareUrl}`"
+            target="_blank"
+            icon
+          >
             <v-icon>mdi-twitter</v-icon>
           </v-btn>
-          <v-btn class="ma-2 share-btn" color="primary"
-            :href="`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`" target="_blank" icon>
+          <v-btn
+            class="ma-2 share-btn"
+            color="primary"
+            :href="`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`"
+            target="_blank"
+            icon
+          >
             <v-icon>mdi-facebook</v-icon>
           </v-btn>
-          <v-btn class="ma-2 share-btn" color="primary" :href="`mailto:?subject=${article.title}&body=${shareUrl}`"
-            icon>
+          <v-btn
+            class="ma-2 share-btn"
+            color="primary"
+            :href="`mailto:?subject=${article.title}&body=${shareUrl}`"
+            icon
+          >
             <v-icon>mdi-email</v-icon>
           </v-btn>
         </div>
@@ -76,6 +102,7 @@
 
 <script setup>
 import { marked } from "marked"; // or use @nuxt/content if preferred
+const { locale } = useI18n();
 const localPath = useLocalePath();
 
 const authStore = useAuthStore();
@@ -88,16 +115,12 @@ const shareUrl = `https://imchatty.com/articles/${slug}`;
 
 const { getArticleBySlug } = useDb(); // You'd need to define this helper
 
-onMounted(async () =>
-{
+onMounted(async () => {
   authStore.checkAuth();
   const data = await getArticleBySlug(slug);
-  if (data)
-  {
+  if (data) {
     article.value = data;
-
     const markdown = (data.content || "").replace(/\\n/g, "\n");
-
     renderedMarkdown.value = await marked(markdown); // Convert Markdown to HTML
   }
 });
@@ -109,14 +132,25 @@ const formatDate = (date) =>
     day: "numeric",
   });
 
-watchEffect(() =>
-{
+watchEffect(() => {
   if (!article.value) return;
 
   // To not have the html content when i use article.value.content in the SEO meta
-  const plainText = article.value.content?.replace(/<[^>]+>/g, '') || '';
-  const safeDescription = plainText.trim().slice(0, 160) + '…';
+  const plainText = article.value.content?.replace(/<[^>]+>/g, "") || "";
+  const safeDescription = plainText.trim().slice(0, 160) + "…";
 
+  useHead(() => {
+    const currentLocale = locale.value || "en"; // fallback
+
+    return {
+      link: [
+        {
+          rel: "canonical",
+          href: `https://imchatty.com/${currentLocale}/articles/${slug || ""}`,
+        },
+      ],
+    };
+  });
 
   useSeoMeta({
     title: `${article.value.title} – ImChatty`,
@@ -124,20 +158,19 @@ watchEffect(() =>
     ogTitle: `${article.value.title} – ImChatty`,
     ogDescription: safeDescription,
     ogUrl: shareUrl,
-    ogImage: 'https://imchatty.com/images/article-image.webp',
-    ogType: 'article',
-    ogLocale: 'en_US',
-    ogSiteName: 'ImChatty',
-    twitterCard: 'summary_large_image',
+    ogImage: "https://imchatty.com/images/article-image.webp",
+    ogType: "article",
+    ogLocale: "en_US",
+    ogSiteName: "ImChatty",
+    twitterCard: "summary_large_image",
     twitterTitle: `${article.value.title} – ImChatty`,
     twitterDescription: safeDescription,
-    twitterImage: 'https://imchatty.com/images/article-image.webp',
-    articleSection: article.value.category?.name || 'Article',
+    twitterImage: "https://imchatty.com/images/article-image.webp",
+    articleSection: article.value.category?.name || "Article",
     articlePublishedTime: article.value.created_at,
-    canonical: shareUrl
+    canonical: shareUrl,
   });
 });
-
 </script>
 
 <style scoped>

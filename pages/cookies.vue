@@ -47,7 +47,7 @@
           ><span style="color: rgb(0, 58, 250); font-size: 15px"
             ><span data-custom-class="body_text"
               ><span class="question"
-                ><NuxtLink :to="localPath('/')" rel="noopener" class="link">
+                ><NuxtLink to="/" rel="noopener" class="link">
                   https://imchatty.com
                 </NuxtLink></span
               ></span
