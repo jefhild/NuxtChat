@@ -281,10 +281,12 @@
           "ogTitle": "Catégories d'Articles",
           "ogType": "Website",
           "ogUrl": "https://imchatty.com/categories",
+          "ogImage": "https://imchatty.com/images/article-image.webp",
           "ogDescription": "Découvrez nos catégories les plus populaires ! Parcourez les catégories les mieux notées avec de vraies informations, des détails personnalisés et des intérêts authentiques.",
           "twitterTitle": "Catégories Récentes Populaires",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Découvrez nos catégories les plus populaires ! Parcourez les membres les mieux notés avec de vraies informations, des détails personnalisés et des intérêts authentiques."
+          "twitterDescription": "Découvrez nos catégories les plus populaires ! Parcourez les membres les mieux notés avec de vraies informations, des détails personnalisés et des intérêts authentiques.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "slug": {
@@ -395,7 +397,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Profils masculins populaires | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Découvrez les profils masculins les plus consultés sur ImChatty. Informations vérifiées, personnes réelles et échanges enrichissants."
+          "twitterDescription": "Découvrez les profils masculins les plus consultés sur ImChatty. Informations vérifiées, personnes réelles et échanges enrichissants.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "popular": {
@@ -410,7 +413,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Profils en tendance | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Découvrez les profils les plus consultés et les mieux notés sur ImChatty. Des utilisateurs réels, des infos fiables et des conversations intéressantes."
+          "twitterDescription": "Découvrez les profils les plus consultés et les mieux notés sur ImChatty. Des utilisateurs réels, des infos fiables et des conversations intéressantes.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "recent": {

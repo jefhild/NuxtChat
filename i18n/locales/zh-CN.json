@@ -281,10 +281,12 @@
           "ogTitle": "文章分类",
           "ogType": "Website",
           "ogUrl": "https://imchatty.com/categories",
+          "ogImage": "https://imchatty.com/images/article-image.webp",
           "ogDescription": "查看我们最受欢迎的分类！浏览具有真实信息、个性化详细信息和真正兴趣的高评分分类。",
           "twitterTitle": "热门最近分类",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "查看我们最受欢迎的分类！浏览具有真实信息、个性化详细信息和真正兴趣的高评分成员。"
+          "twitterDescription": "查看我们最受欢迎的分类！浏览具有真实信息、个性化详细信息和真正兴趣的高评分成员。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "slug": {

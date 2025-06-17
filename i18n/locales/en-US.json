@@ -281,10 +281,12 @@
           "ogTitle": "Article Categories",
           "ogType": "Website",
           "ogUrl": "https://imchatty.com/categories",
+          "ogImage": "https://imchatty.com/images/article-image.webp",
           "ogDescription": "Check out our most popular categories! Browse top-rated categories with real information, personalized details, and genuine interests.",
           "twitterTitle": "Popular Recent Categories",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Check out our most popular categories! Browse top-rated members with real information, personalized details, and genuine interests."
+          "twitterDescription": "Check out our most popular categories! Browse top-rated members with real information, personalized details, and genuine interests.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "slug": {
