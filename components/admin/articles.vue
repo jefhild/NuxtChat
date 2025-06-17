@@ -2,9 +2,7 @@
 	<v-card class="pa-6" elevation="3">
 		<v-card-title>Existing Articles</v-card-title>
 
-		<v-card-text v-if="loadingArticles" class="text-center">
-			<v-progress-circular indeterminate color="primary"></v-progress-circular>
-		</v-card-text>
+		<LoadingContainer v-if="loadingArticles" :text="$t('pages.articles.index.loading')" />
 		<v-card-text v-else>
 			<v-col>
 				<div class="articles-wrapper">
@@ -108,6 +106,8 @@
 
 
 <script setup>
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 import { useDisplay } from 'vuetify';
 const { getAllArticlesWithTags, getAllCategories, getAllTags, insertArticle, updateArticle, updateArticleTags } = useDb();
 

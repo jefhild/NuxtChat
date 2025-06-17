@@ -1,10 +1,8 @@
 <template>
 	<v-card class="pa-6" elevation="3">
 		<v-card-title>Existing Categories</v-card-title>
-		<v-card-text v-if="loadingCategories" class="text-center">
-			<v-progress-circular indeterminate color="primary"></v-progress-circular>
-		</v-card-text>
-		<v-card-text v-else>
+		<v-card-text >
+			<LoadingContainer v-if="loadingCategories" :text="$t('pages.categories.index.loading')" />
 			<v-chip v-for="cat in categories" :key="cat.slug" class="ma-1" color="primary" variant="outlined"
 				@click="toggleEditDialog(cat)">
 				{{ cat.name }}

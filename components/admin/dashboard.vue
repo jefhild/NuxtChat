@@ -1,8 +1,6 @@
 <template>
 	<v-container>
-		<v-row v-if="isLoading" justify="center" class="py-12 text-center">
-			<v-progress-circular indeterminate color="primary"></v-progress-circular>
-		</v-row>
+		<LoadingContainer v-if="isLoading"/>
 
 		<v-row v-else>
 			<v-col cols="12">

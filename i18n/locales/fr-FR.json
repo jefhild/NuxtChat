@@ -250,6 +250,7 @@
     },
     "articles": {
       "index": {
+        "loading": "Chargement des articles...",
         "explore": "Explorez Nos Articles",
         "categories": "Catégories",
         "tags": "Étiquettes",
@@ -272,6 +273,7 @@
     },
     "categories": {
       "index": {
+        "loading": "Chargement des catégories...",
         "title": "Toutes les Différentes Catégories",
         "meta": {
           "title": "Catégories d'Articles Populaires",
@@ -792,6 +794,9 @@
     "users-ai": {
       "ai-users": "Utilisateurs IA",
       "active": "actif"
+    },
+    "loadingContainer": {
+      "loading": "Chargement..."
     }
   },
   "composables": {

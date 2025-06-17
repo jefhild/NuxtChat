@@ -1,9 +1,5 @@
 <template>
-  <v-row v-if="isLoading" justify="center" no-gutters>
-    <v-col class="text-center">
-      <v-progress-circular indeterminate color="primary" size="64" />
-    </v-col>
-  </v-row>
+  <LoadingContainer v-if="isLoading"/>
 
   <v-container v-else fluid>
     <!-- Hero Section -->

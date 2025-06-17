@@ -14,7 +14,7 @@
 
 		<v-divider class="mb-4" />
 
-		<v-progress-circular v-if="isLoading" indeterminate color="primary" class="ma-auto" />
+		<LoadingContainer v-if="isLoading" />
 
 		<v-alert v-else-if="reports.length === 0" type="info" class="mt-4">
 			No reports found.
