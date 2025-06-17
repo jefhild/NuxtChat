@@ -72,14 +72,15 @@ export function useProfilePhoto() {
 
     // console.log("File uploaded successfully to storage:", filePath);
 
-    const publicURL = `${config.public.SUPABASE_BUCKET}profile-images/${filePath}`;
+    const publicURL = `${config.public.SUPABASE_BUCKET}profile-images/${filePath}?t=${new Date().getTime()}`;
 
     const updateError = await updateProfilePhoto(publicURL, userId);
 
     console.log("updateError", updateError);
     if (updateError.status === 204){
       console.log("File is updating:", filePath);
-      photopath.value = `${publicURL}?t=${new Date().getTime()}`;
+      photopath.value = publicURL;
+      console.log("File updated successfully:", photopath.value);
       emit("updateAvatarUrl", photopath.value);
     }
   };
