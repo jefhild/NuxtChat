@@ -1,22 +1,9 @@
 <template>
   <!-- Loading Spinner -->
-  <v-container
-    v-if="isLoading"
-    class="d-flex align-center justify-center fill-height"
-  >
-    <v-progress-circular
-      indeterminate
-      color="primary"
-      size="64"
-    ></v-progress-circular>
-  </v-container>
+  <LoadingContainer v-if="isLoading" />
 
   <!-- Sign-in screen -->
-  <v-container
-    fluid
-    v-else-if="!isAuthenticated"
-    class="d-flex flex-column align-center justify-center fill-height"
-  >
+  <v-container fluid v-else-if="!isAuthenticated" class="d-flex flex-column align-center justify-center fill-height">
     <div class="w-100">
       <HomeRow1 />
     </div>

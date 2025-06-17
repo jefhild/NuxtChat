@@ -250,6 +250,7 @@
     },
     "articles": {
       "index": {
+        "loading": "加载文章中...",
         "explore": "探索我们的文章",
         "categories": "分类",
         "tags": "标签",
@@ -272,6 +273,7 @@
     },
     "categories": {
       "index": {
+        "loading": "加载分类中...",
         "title": "所有不同的分类",
         "meta": {
           "title": "热门文章分类",
@@ -791,6 +793,9 @@
     "users-ai": {
       "ai-users": "AI用户",
       "active": "活跃"
+    },
+    "loadingContainer": {
+      "loading": "加载中..."
     }
   },
   "composables": {

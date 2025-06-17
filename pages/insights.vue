@@ -6,45 +6,20 @@
       </v-col>
     </v-row>
 
-    <v-container v-if="isLoading">
-      <v-row justify="center" class="py-12 text-center">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-        ></v-progress-circular>
-      </v-row>
-    </v-container>
+    <LoadingContainer v-if="isLoading" />
 
     <v-container v-else>
-      <v-text-field
-        v-model="searchQuery"
-        :label="searchArticlesLabel"
-        prepend-inner-icon="mdi-magnify"
-        clearable
-        class="mb-4"
-      />
+      <v-text-field v-model="searchQuery" :label="searchArticlesLabel" prepend-inner-icon="mdi-magnify" clearable
+        class="mb-4" />
 
       <v-row>
-        <v-col
-          v-for="article in filteredArticles"
-          :key="article.id"
-          cols="12"
-          sm="6"
-          md="4"
-          class="d-flex"
-        >
+        <v-col v-for="article in filteredArticles" :key="article.id" cols="12" sm="6" md="4" class="d-flex">
           <ArticleCard :article="article" />
         </v-col>
       </v-row>
 
-      <v-alert
-        v-if="!filteredArticles.length"
-        type="info"
-        variant="tonal"
-        border="top"
-        border-color="primary"
-      >
-      {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
+      <v-alert v-if="!filteredArticles.length" type="info" variant="tonal" border="top" border-color="primary">
+        {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
       </v-alert>
       <v-row v-if="!articlesData?.length">
         <v-col class="text-center">

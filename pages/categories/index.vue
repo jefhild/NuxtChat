@@ -6,28 +6,13 @@
       </v-col>
     </v-row>
 
-    <v-container v-if="isLoading">
-      <v-row justify="center" class="py-12 text-center">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-        ></v-progress-circular>
-      </v-row>
-    </v-container>
+    <LoadingContainer v-if="isLoading" :text="$t('pages.categories.index.loading')" />
 
     <v-container v-else>
       <v-row justify="center" class="category-container">
-        <v-col
-          v-for="category in categories"
-          :key="category.slug"
-          cols="auto"
-          class="my-2"
-        >
-          <NuxtLink
-            :to="localPath(`/categories/${category.slug}`)"
-            class="category-link"
-            v-if="category.articleCount > 0"
-          >
+        <v-col v-for="category in categories" :key="category.slug" cols="auto" class="my-2">
+          <NuxtLink :to="localPath(`/categories/${category.slug}`)" class="category-link"
+            v-if="category.articleCount > 0">
             {{ category.name }}
             <v-chip class="ma-1" size="small" color="black">
               {{ category.articleCount }}

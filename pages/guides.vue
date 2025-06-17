@@ -6,14 +6,7 @@
       </v-col>
     </v-row>
 
-    <v-container v-if="isLoading">
-      <v-row justify="center" class="py-12 text-center">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-        ></v-progress-circular>
-      </v-row>
-    </v-container>
+    <LoadingContainer v-if="isLoading" />
 
     <v-container v-else>
       <v-text-field

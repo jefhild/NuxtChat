@@ -162,8 +162,7 @@
     <v-card-text v-else>
       <v-row>
         <v-col cols="12">
-          <v-progress-circular indeterminate color="primary"></v-progress-circular>
-          <span>{{ $t("components.profile-container.loading") }}</span>
+          <LoadingContainer :text="$t('components.profile-container.loading')" />
         </v-col>
       </v-row>
     </v-card-text>

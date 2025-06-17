@@ -6,25 +6,11 @@
       </v-col>
     </v-row>
 
-    <v-container v-if="isLoading">
-      <v-row justify="center" class="py-12 text-center">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-        ></v-progress-circular>
-      </v-row>
-    </v-container>
+    <LoadingContainer v-if="isLoading" :text="$t('pages.articles.index.loading')" />
 
     <v-container v-else>
       <v-row>
-        <v-col
-          v-for="article in articles"
-          :key="article.id"
-          cols="12"
-          sm="6"
-          md="4"
-          class="d-flex"
-        >
+        <v-col v-for="article in articles" :key="article.id" cols="12" sm="6" md="4" class="d-flex">
           <ArticleCard :article="article" />
         </v-col>
       </v-row>

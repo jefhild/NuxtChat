@@ -250,6 +250,7 @@
     },
     "articles": {
       "index": {
+        "loading": "Loading articles...",
         "explore": "Explore Our Articles",
         "categories": "Categories",
         "tags": "Tags",
@@ -272,6 +273,7 @@
     },
     "categories": {
       "index": {
+        "loading": "Loading categories...",
         "title": "All the different Categories",
         "meta": {
           "title": "Popular Article Categories",
@@ -791,6 +793,9 @@
     "users-ai": {
       "ai-users": "AI Users",
       "active": "active"
+    },
+    "loadingContainer": {
+      "loading": "Loading..."
     }
   },
   "composables": {

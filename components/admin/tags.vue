@@ -1,9 +1,7 @@
 <template>
 	<v-card class="pa-6" elevation="3">
 		<v-card-title>Existing Tags</v-card-title>
-		<v-card-text v-if="loadingTags" class="text-center">
-			<v-progress-circular indeterminate color="primary"></v-progress-circular>
-		</v-card-text>
+		<LoadingContainer v-if="loadingTags" />
 		<v-card-text v-else>
 			<v-chip v-for="tag in tags" :key="tag.slug" class="ma-1" color="deep-purple-lighten-2" variant="outlined"
 				@click="toggleEditDialog(tag)">
@@ -52,6 +50,8 @@
 </template>
 
 <script setup>
+import LoadingContainer from '../LoadingContainer.vue';
+
 const { getAllTags, insertTag, updateTag } = useDb();
 
 const editDialog = ref(false);
