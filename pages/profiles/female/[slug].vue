@@ -3,6 +3,7 @@
 </template>
 
 <script setup>
+const { locale } = useI18n();
 const route = useRoute();
 const slug = route.params.slug;
 
@@ -12,17 +13,18 @@ await fetchUserProfileFromSlug(slug);
 useHead(() => {
   const gender = profile.value?.gender;
   const slug = profile.value?.slug;
+  const currentLocale = locale.value || "en"; // fallback
 
   return {
     link: [
       {
         rel: "canonical",
-        href: `https://imchatty.com/profiles/${
+        href: `https://imchatty.com/${currentLocale}/profiles/${
           typeof gender === "string" ? gender.toLowerCase() : "unknown"
         }/${slug || "unknown"}`,
       },
     ],
-  };
+  };  
 });
 
 const getLimitedDescription = (text) =>

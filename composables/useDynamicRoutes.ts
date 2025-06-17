@@ -12,6 +12,7 @@ import { getGenderFromId } from "../lib/dbUtils";
  * Used for Nitro prerendering (must return string[]).
  */
 const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
+// const SUPPORTED_LOCALES = ["en", "fr", "zh"];
 
 export async function getAllDynamicRoutes(): Promise<string[]> {
   try {

@@ -1,8 +1,6 @@
 <template>
   <!-- Loading Spinner -->
-  <v-container v-if="isLoading" class="d-flex align-center justify-center fill-height">
-    <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-  </v-container>
+  <LoadingContainer v-if="isLoading" />
 
   <!-- Sign-in screen -->
   <v-container fluid v-else-if="!isAuthenticated" class="d-flex flex-column align-center justify-center fill-height">
@@ -24,8 +22,6 @@
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
 const router = useRouter();
 // Track the current step
 const authStore = useAuthStore();
@@ -34,42 +30,16 @@ const isLoading = ref(false);
 const localPath = useLocalePath();
 isLoading.value = true; // Set loading to true initially
 
-onMounted(async () =>
-{
+useSeoI18nMeta("signin");
+
+onMounted(async () => {
   await authStore.checkAuth();
   isAuthenticated.value = authStore.user !== null;
   isLoading.value = false;
 
-  if (isAuthenticated.value)
-  {
+  if (isAuthenticated.value) {
     router.push(localPath("/"));
     return;
   }
-});
-
-const seoTitle = computed(() => t("pages.signin.meta.title"));
-const seoDescription = computed(() => t("pages.signin.meta.description"));
-const ogTitle = computed(() => t("pages.signin.meta.ogTitle"));
-const ogImage = computed(() => t("pages.signin.meta.ogImage"));
-const ogDescription = computed(() =>
-  t("pages.signin.meta.ogDescription")
-);
-const twitterTitle = computed(() => t("pages.signin.meta.twitterTitle"));
-const twitterCard = computed(() => t("pages.signin.meta.twitterCard"));
-const twitterDescription = computed(() =>
-  t("pages.signin.meta.twitterDescription")
-);
-const twitterImage = computed(() => t("pages.signin.meta.twitterImage"));
-
-useSeoMeta({
-  title: seoTitle.value,
-  description: seoDescription.value,
-  ogTitle: ogTitle.value,
-  ogImage: ogImage.value,
-  ogDescription: ogDescription.value,
-  twitterCard: twitterCard.value,
-  twitterTitle: twitterTitle.value,
-  twitterDescription: twitterDescription.value,
-  twitterImage: twitterImage.value,
 });
 </script>

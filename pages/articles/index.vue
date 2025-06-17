@@ -1,7 +1,5 @@
 <template>
-  <v-container v-if="isLoading" class="text-center">
-    <v-progress-circular indeterminate color="primary"></v-progress-circular>
-  </v-container>
+  <LoadingContainer v-if="isLoading" :text="$t('pages.articles.index.loading')" />
 
   <v-container fluid v-else>
     <HomeRow1 />
@@ -10,33 +8,20 @@
         <h1>{{ $t("pages.articles.index.explore") }}</h1>
       </v-col>
       <v-col cols="12" md="6" class="d-flex justify-end">
-        <v-text-field
-          v-model="searchQuery"
-          :label="searchArticlesLabel"
-          prepend-inner-icon="mdi-magnify"
-          clearable
-          dense
-          outlined
-          hide-details
-          class="search-bar"
-        />
+        <v-text-field v-model="searchQuery" :label="searchArticlesLabel" prepend-inner-icon="mdi-magnify" clearable
+          dense outlined hide-details class="search-bar" />
       </v-col>
     </v-row>
 
     <!-- Categories Row -->
     <v-row class="mb-2">
       <v-col cols="12">
-        <h2 class="section-title">{{ $t("pages.articles.index.categories") }}</h2>
+        <h2 class="section-title">
+          {{ $t("pages.articles.index.categories") }}
+        </h2>
         <div class="chip-group">
-          <v-chip
-            v-for="cat in categories"
-            :key="cat.slug"
-            class="ma-1"
-            color="primary"
-            variant="outlined"
-            size="small"
-            :to="localPath(`/categories/${cat.slug}`)"
-          >
+          <v-chip v-for="cat in categories" :key="cat.slug" class="ma-1" color="primary" variant="outlined" size="small"
+            :to="localPath(`/categories/${cat.slug}`)">
             {{ cat.name }}
           </v-chip>
         </div>
@@ -48,15 +33,8 @@
       <v-col cols="12">
         <h2 class="section-title">{{ $t("pages.articles.index.tags") }}</h2>
         <div class="chip-group">
-          <v-chip
-            v-for="tag in tags"
-            :key="tag.slug"
-            class="ma-1"
-            size="small"
-            color="deep-purple-lighten-2"
-            variant="outlined"
-            :to="localPath(`/tags/${tag.slug}`)"
-          >
+          <v-chip v-for="tag in tags" :key="tag.slug" class="ma-1" size="small" color="deep-purple-lighten-2"
+            variant="outlined" :to="localPath(`/tags/${tag.slug}`)">
             {{ tag.name }}
           </v-chip>
         </div>
@@ -65,13 +43,7 @@
 
     <!-- Articles List -->
     <v-row dense>
-      <v-col
-        v-for="article in paginatedArticles"
-        :key="article.id"
-        cols="12"
-        sm="6"
-        md="4"
-      >
+      <v-col v-for="article in paginatedArticles" :key="article.id" cols="12" sm="6" md="4">
         <ArticleCard :article="article" />
       </v-col>
     </v-row>
@@ -79,13 +51,8 @@
     <!-- No Articles Found -->
     <v-row v-if="!paginatedArticles.length" justify="center">
       <v-col cols="12" class="text-center">
-        <v-alert
-          type="info"
-          variant="tonal"
-          border="top"
-          border-color="primary"
-        >
-        {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
+        <v-alert type="info" variant="tonal" border="top" border-color="primary">
+          {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
         </v-alert>
       </v-col>
     </v-row>
@@ -97,12 +64,7 @@
 
     <!-- Admin Button -->
     <v-row justify="center" class="mt-6">
-      <v-btn
-        v-if="userProfile?.is_admin"
-        :to="localPath('/admin')"
-        color="primary"
-        variant="tonal"
-      >
+      <v-btn v-if="userProfile?.is_admin" :to="localPath('/admin')" color="primary" variant="tonal">
         Admin Panel
       </v-btn>
     </v-row>
@@ -111,7 +73,7 @@
 
 <script setup>
 const localPath = useLocalePath();
-import { useI18n } from 'vue-i18n';
+import { useI18n } from "vue-i18n";
 const { getAllPublishedArticlesWithTags, getAllTags, getAllCategories } =
   useDb();
 
@@ -120,9 +82,7 @@ const userProfile = ref(null);
 const isLoading = ref(true);
 
 const { t } = useI18n();
-const searchArticlesLabel = computed(() =>
-  t("pages.articles.index.search")
-);
+const searchArticlesLabel = computed(() => t("pages.articles.index.search"));
 
 const searchQuery = ref("");
 const articles = ref([]);
@@ -161,45 +121,7 @@ onMounted(async () => {
   if (categoryData) categories.value = categoryData;
   isLoading.value = false;
 });
-
-const seoTitle = computed(() => t("pages.articles.index.meta.title"));
-const seoDescription = computed(() => t("pages.articles.index.meta.description"));
-const ogTitle = computed(() => t("pages.articles.index.meta.ogTitle"));
-const ogType = computed(() => t("pages.articles.index.meta.ogType"));
-const ogUrl = computed(() => t("pages.articles.index.meta.ogUrl"));
-const ogDescription = computed(() =>
-  t("pages.articles.index.meta.ogDescription")
-);
-const ogImage = computed(() => t("pages.articles.index.meta.ogImage"));
-const twitterTitle = computed(() => t("pages.articles.index.meta.twitterTitle"));
-const twitterCard = computed(() => t("pages.articles.index.meta.twitterCard"));
-const twitterDescription = computed(() =>
-  t("pages.articles.index.meta.twitterDescription")
-);
-const twitterImage = computed(() => t("pages.articles.index.meta.twitterImage"));
-
-useHead(() => ({
-  link: [
-    {
-      rel: "canonical",
-      href: "https://imchatty.com/articles",
-    },
-  ],
-}));
-
-useSeoMeta({
-  title: seoTitle.value,
-  description: seoDescription.value,
-  ogTitle: ogTitle.value,
-  ogType: ogType.value,
-  ogUrl: ogUrl.value,
-  ogDescription: ogDescription.value,
-  ogImage: ogImage.value,
-  twitterCard: twitterCard.value,
-  twitterTitle: twitterTitle.value,
-  twitterDescription: twitterDescription.value,
-  twitterImage: twitterImage.value,
-});
+useSeoI18nMeta("articles.index");
 </script>
 
 <style scoped>
