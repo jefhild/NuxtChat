@@ -26,14 +26,24 @@ export function useProfilePhoto() {
       return "";
     }
 
-    if (data?.avatar_url) {
-      photopath.value = data.avatar_url.startsWith("http")
-        ? data.avatar_url
-        : `${config.public.supabase.url}/storage/v1/object/public/avatars/${data.avatar_url}`;
-    } else {
-      photopath.value = "";
-    }
     genderId.value = data?.gender_id || 0;
+
+    if (data?.avatar_url) {
+      photopath.value =
+        data.avatar_url.startsWith("http") || data.avatar_url.startsWith("/")
+          ? data.avatar_url
+          : `${config.public.supabase.url}/storage/v1/object/public/avatars/${data.avatar_url}`;
+    } else {
+      const defaultImages = {
+        1: "/images/avatars/male_placeholder.png",
+        2: "/images/avatars/female-placeholder.png",
+        3: "/images/avatars/trans-placeholder.png",
+      };
+      photopath.value =
+        defaultImages[genderId.value] ||
+        "/images/avatars/unknown-anonymous.webp";
+    }
+
     return photopath.value;
   };
 
