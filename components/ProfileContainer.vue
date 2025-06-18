@@ -2,13 +2,7 @@
   <v-card class="mx-auto mb-3" max-width="700">
     <v-card-title v-if="userProfile">
       <v-row no-gutters class="mb-0"><v-col cols="3">
-          <!-- {{ userProfile}} -->
-          <ProfilePhoto2 :editable="isEditable" :userId="userProfile.user_id" @updateAvatarUrl="updateAvatarUrl" />
-          <!-- <LookingForMenu
-            :userProfile="userProfile"
-            @lookingForUpdated="refreshLookingForDisplay"
-          /> -->
-          <!-- <OnlineStatus :userId="userProfile.user_id" />  -->
+          <ProfilePhoto :editable="isEditable" :userId="userProfile.user_id" @updateAvatarUrl="updateAvatarUrl" />
         </v-col>
 
         <v-col cols="9" class="d-flex flex-column align-center">
@@ -32,7 +26,6 @@
         </v-col>
       </v-row>
     </v-card-title>
-
     <v-card-text v-if="userProfile">
       <v-row class="mt-6" v-if="isEditable">
         <v-col cols="12" md="4">

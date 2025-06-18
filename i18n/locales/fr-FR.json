@@ -429,7 +429,8 @@
           "ogImage": "https://imchatty.com/images/robot.png",
           "twitterTitle": "Profils Récents Populaires",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Découvrez nos profils récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques."
+          "twitterDescription": "Découvrez nos profils récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "index": {
