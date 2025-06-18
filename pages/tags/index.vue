@@ -6,23 +6,12 @@
       </v-col>
     </v-row>
 
-    <v-container v-if="isLoading">
-      <v-row justify="center" class="py-12 text-center">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-        ></v-progress-circular>
-      </v-row>
-    </v-container>
+    <LoadingContainer v-if="isLoading" />
 
     <v-container v-else>
       <v-row justify="center" class="tag-container">
         <v-col v-for="tag in tags" :key="tag.slug" cols="auto" class="my-2">
-          <NuxtLink
-            :to="localPath(`/tags/${tag.slug}`)"
-            class="tag-link"
-            v-if="tag.articleCount > 0"
-          >
+          <NuxtLink :to="localPath(`/tags/${tag.slug}`)" class="tag-link" v-if="tag.articleCount > 0">
             {{ tag.name }}
             <v-chip class="ma-1" size="small" color="white">
               {{ tag.articleCount }}

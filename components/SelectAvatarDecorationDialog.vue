@@ -1,8 +1,10 @@
 <template>
   <v-card>
-    <v-card-title>{{ $t('components.select-avatar-decoration.title') }}</v-card-title>
+    <v-card-title>{{
+      $t("components.select-avatar-decoration.title")
+    }}</v-card-title>
     <v-card-text>
-      <p>{{ $t('components.select-avatar-decoration.choose') }}</p>
+      <p>{{ $t("components.select-avatar-decoration.choose") }}</p>
       <v-row>
         <v-col
           v-for="decoration in allAvatarDecorations"
@@ -16,7 +18,12 @@
             @click="handleDecorationClick(decoration.url)"
           >
             <div class="photo-container">
-              <NuxtImg v-if="photopath" :src="photopath" class="cover-image" alt="Profile Main Image"/>
+              <NuxtImg
+                v-if="photopath"
+                :src="photopath"
+                class="cover-image"
+                alt="Profile Main Image"
+              />
               <NuxtImg
                 v-if="decoration.url"
                 :src="decoration.url"
@@ -33,8 +40,12 @@
       </v-row>
     </v-card-text>
     <v-card-actions>
-      <v-btn color="primary" @click="selectDecoration">{{ $t('components.select-avatar-decoration.done') }}</v-btn>
-      <v-btn @click="closeDialog">{{ $t('components.select-avatar-decoration.cancel') }}</v-btn>
+      <v-btn color="primary" @click="selectDecoration">{{
+        $t("components.select-avatar-decoration.done")
+      }}</v-btn>
+      <v-btn @click="closeDialog">{{
+        $t("components.select-avatar-decoration.cancel")
+      }}</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -71,10 +82,8 @@ const formatName = (name: string) => {
 
 onMounted(async () => {
   const decorations = await getAllAvatarDecorations();
-
   allAvatarDecorations.value = [{ name: "None", url: "" }, ...decorations];
-
-  console.log(allAvatarDecorations.value);
+  // console.log(allAvatarDecorations.value);
 });
 
 const handleDecorationClick = (url: string) => {
@@ -86,9 +95,9 @@ const selectDecoration = async () => {
 
   await updateAvatarDecoration(props.userId, selectedDecoration.value);
   if (authStore.userProfile) {
-  authStore.userProfile.avatar_decoration_url = selectedDecoration.value;
-}
-  console.log("userprofile", authStore.userProfile);
+    authStore.userProfile.avatar_decoration_url = selectedDecoration.value;
+  }
+  // console.log("userprofile", authStore.userProfile);
   closeDialog();
 };
 

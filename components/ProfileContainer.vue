@@ -2,13 +2,7 @@
   <v-card class="mx-auto mb-3" max-width="700">
     <v-card-title v-if="userProfile">
       <v-row no-gutters class="mb-0"><v-col cols="3">
-          <!-- {{ userProfile}} -->
-          <ProfilePhoto2 :editable="isEditable" :userId="userProfile.user_id" @updateAvatarUrl="updateAvatarUrl" />
-          <!-- <LookingForMenu
-            :userProfile="userProfile"
-            @lookingForUpdated="refreshLookingForDisplay"
-          /> -->
-          <!-- <OnlineStatus :userId="userProfile.user_id" />  -->
+          <ProfilePhoto :editable="isEditable" :userId="userProfile.user_id" @updateAvatarUrl="updateAvatarUrl" />
         </v-col>
 
         <v-col cols="9" class="d-flex flex-column align-center">
@@ -32,7 +26,6 @@
         </v-col>
       </v-row>
     </v-card-title>
-
     <v-card-text v-if="userProfile">
       <v-row class="mt-6" v-if="isEditable">
         <v-col cols="12" md="4">
@@ -162,8 +155,7 @@
     <v-card-text v-else>
       <v-row>
         <v-col cols="12">
-          <v-progress-circular indeterminate color="primary"></v-progress-circular>
-          <span>{{ $t("components.profile-container.loading") }}</span>
+          <LoadingContainer :text="$t('components.profile-container.loading')" />
         </v-col>
       </v-row>
     </v-card-text>

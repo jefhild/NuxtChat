@@ -16,9 +16,7 @@
 					</div>
 					<v-sheet class="message-scroll-list" elevation="1" max-height="200" rounded style="overflow-y: auto"
 						@scroll.passive="handleScroll">
-						<div v-if="isLoadingMore" class="text-center py-2">
-							<v-progress-circular indeterminate color="primary" size="20" />
-						</div>
+						<LoadingContainer v-if="isLoadingMore" />
 						<v-list density="compact">
 							<v-list-item v-for="message in messages" :key="message.id" :value="message"
 								@click="selectMessage(message)"

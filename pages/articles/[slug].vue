@@ -95,9 +95,7 @@
     </v-row>
   </v-container>
 
-  <v-container v-else class="py-12 text-center">
-    <v-progress-circular indeterminate color="primary"></v-progress-circular>
-  </v-container>
+  <LoadingContainer v-else />
 </template>
 
 <script setup>

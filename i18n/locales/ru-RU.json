@@ -250,6 +250,7 @@
     },
     "articles": {
       "index": {
+        "loading": "Загрузка статей...",
         "explore": "Исследуйте наши статьи",
         "categories": "Категории",
         "tags": "Теги",
@@ -272,6 +273,7 @@
     },
     "categories": {
       "index": {
+        "loading": "Загрузка категорий...",
         "title": "Все различные категории",
         "meta": {
           "title": "Популярные категории статей",
@@ -793,6 +795,9 @@
     "users-ai": {
       "ai-users": "ИИ пользователи",
       "active": "активен"
+    },
+    "loadingContainer": {
+      "loading": "Загрузка..."
     }
   },
   "composables": {

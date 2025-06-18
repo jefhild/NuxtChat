@@ -1,7 +1,5 @@
 <template>
-  <v-container v-if="isLoading" class="text-center">
-    <v-progress-circular indeterminate color="primary"></v-progress-circular>
-  </v-container>
+  <LoadingContainer v-if="isLoading" :text="$t('pages.articles.index.loading')" />
 
   <v-container fluid v-else>
     <HomeRow1 />
@@ -10,16 +8,8 @@
         <h1>{{ $t("pages.articles.index.explore") }}</h1>
       </v-col>
       <v-col cols="12" md="6" class="d-flex justify-end">
-        <v-text-field
-          v-model="searchQuery"
-          :label="searchArticlesLabel"
-          prepend-inner-icon="mdi-magnify"
-          clearable
-          dense
-          outlined
-          hide-details
-          class="search-bar"
-        />
+        <v-text-field v-model="searchQuery" :label="searchArticlesLabel" prepend-inner-icon="mdi-magnify" clearable
+          dense outlined hide-details class="search-bar" />
       </v-col>
     </v-row>
 
@@ -30,15 +20,8 @@
           {{ $t("pages.articles.index.categories") }}
         </h2>
         <div class="chip-group">
-          <v-chip
-            v-for="cat in categories"
-            :key="cat.slug"
-            class="ma-1"
-            color="primary"
-            variant="outlined"
-            size="small"
-            :to="localPath(`/categories/${cat.slug}`)"
-          >
+          <v-chip v-for="cat in categories" :key="cat.slug" class="ma-1" color="primary" variant="outlined" size="small"
+            :to="localPath(`/categories/${cat.slug}`)">
             {{ cat.name }}
           </v-chip>
         </div>
@@ -50,15 +33,8 @@
       <v-col cols="12">
         <h2 class="section-title">{{ $t("pages.articles.index.tags") }}</h2>
         <div class="chip-group">
-          <v-chip
-            v-for="tag in tags"
-            :key="tag.slug"
-            class="ma-1"
-            size="small"
-            color="deep-purple-lighten-2"
-            variant="outlined"
-            :to="localPath(`/tags/${tag.slug}`)"
-          >
+          <v-chip v-for="tag in tags" :key="tag.slug" class="ma-1" size="small" color="deep-purple-lighten-2"
+            variant="outlined" :to="localPath(`/tags/${tag.slug}`)">
             {{ tag.name }}
           </v-chip>
         </div>
@@ -67,13 +43,7 @@
 
     <!-- Articles List -->
     <v-row dense>
-      <v-col
-        v-for="article in paginatedArticles"
-        :key="article.id"
-        cols="12"
-        sm="6"
-        md="4"
-      >
+      <v-col v-for="article in paginatedArticles" :key="article.id" cols="12" sm="6" md="4">
         <ArticleCard :article="article" />
       </v-col>
     </v-row>
@@ -81,12 +51,7 @@
     <!-- No Articles Found -->
     <v-row v-if="!paginatedArticles.length" justify="center">
       <v-col cols="12" class="text-center">
-        <v-alert
-          type="info"
-          variant="tonal"
-          border="top"
-          border-color="primary"
-        >
+        <v-alert type="info" variant="tonal" border="top" border-color="primary">
           {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
         </v-alert>
       </v-col>
@@ -99,12 +64,7 @@
 
     <!-- Admin Button -->
     <v-row justify="center" class="mt-6">
-      <v-btn
-        v-if="userProfile?.is_admin"
-        :to="localPath('/admin')"
-        color="primary"
-        variant="tonal"
-      >
+      <v-btn v-if="userProfile?.is_admin" :to="localPath('/admin')" color="primary" variant="tonal">
         Admin Panel
       </v-btn>
     </v-row>
