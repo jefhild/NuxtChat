@@ -50,12 +50,12 @@ useHead({
       type: "text/javascript",
       async: true,
     },
-    {
-      src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${config.public.ADSENSE_CLIENT}`,
-      type: "text/javascript",
-      crossorigin: "anonymous",
-      async: true,
-    },
+    // {
+    //   src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${config.public.ADSENSE_CLIENT}`,
+    //   type: "text/javascript",
+    //   crossorigin: "anonymous",
+    //   async: true,
+    // },
   ],
   htmlAttrs: { lang: "en" },
 });
