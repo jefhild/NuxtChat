@@ -3,27 +3,51 @@
     <v-tabs v-model="tab" align-tabs="center" color="deep-purple-accent-4">
       <!-- <v-btn icon="mdi-refresh" variant="text" @click="refreshData"></v-btn> -->
       <v-spacer></v-spacer>
-      <v-tab :value="1">{{ $t('components.users.online') }}</v-tab>
-      <v-tab :value="2">{{ $t('components.users.offline') }}</v-tab>
+      <v-tab :value="1">{{ $t("components.users.online") }}</v-tab>
+      <v-tab :value="2">{{ $t("components.users.offline") }}</v-tab>
       <v-tab :value="3">
-        <span class="tab-title">{{ $t('components.users.active') }}</span>
-        <v-badge v-if="unreadMessageCount > 0" :content="unreadMessageCount" color="red" overlap class="mb-7"></v-badge>
+        <span class="tab-title">{{ $t("components.users.active") }}</span>
+        <v-badge
+          v-if="unreadMessageCount > 0"
+          :content="unreadMessageCount"
+          color="red"
+          overlap
+          class="mb-7"
+        ></v-badge>
       </v-tab>
       <v-spacer></v-spacer>
     </v-tabs>
     <v-tabs-window v-model="tab">
       <v-tabs-window-item :value="1">
-        <OnlineUsers :users="onlineUsers" :selectedUserId="selectedUserId" :isTabVisible="isTabVisible"
-          @user-selected="selectUser" />
+        <OnlineUsers
+          :users="onlineUsers"
+          :selectedUserId="selectedUserId"
+          :isTabVisible="isTabVisible"
+          @user-selected="selectUser"
+        />
       </v-tabs-window-item>
       <v-tabs-window-item :value="2">
-        <v-row><v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">{{ $t('components.users.no-anonymous') }}</v-col></v-row>
-        <OfflineUsers :users="offlineUsers" :selectedUserId="selectedUserId" @user-selected="selectUser"
-          :isLoading="isLoading" />
+        <v-row
+          ><v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">{{
+            $t("components.users.no-anonymous")
+          }}</v-col></v-row
+        >
+        <OfflineUsers
+          :users="offlineUsers"
+          :selectedUserId="selectedUserId"
+          @user-selected="selectUser"
+          :isLoading="isLoading"
+        />
       </v-tabs-window-item>
       <v-tabs-window-item :value="3">
-        <ActiveChats :users="activeChats" :selectedUserId="selectedUserId" :isTabVisible="isTabVisible"
-          :isLoading="isLoading" @user-selected="selectUser" @chat-deleted="handleChatDeleted" />
+        <ActiveChats
+          :users="activeChats"
+          :selectedUserId="selectedUserId"
+          :isTabVisible="isTabVisible"
+          :isLoading="isLoading"
+          @user-selected="selectUser"
+          @chat-deleted="handleChatDeleted"
+        />
       </v-tabs-window-item>
     </v-tabs-window>
   </v-card>
@@ -73,27 +97,26 @@ watch(
   { immediate: true, deep: true } // Run immediately on initialization and watch deeply
 );
 
-onMounted(() =>
-{
+onMounted(() => {
   // console.log("ActiveChats mounted", props.users);
   subscribeToNewMessages();
 });
 
-
-
-const subscribeToNewMessages = () =>
-{
-  if (!messageChannel)
-  {
+const subscribeToNewMessages = () => {
+  if (!messageChannel) {
     messageChannel = supabase.channel(`messages:notify:${myUserId.value.id}`);
   }
 
-  if (!messageChannel._subscribed){
+  if (!messageChannel._subscribed) {
     messageChannel.on(
       "postgres_changes",
-      { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${myUserId.value.id}` },
-      (payload) =>
       {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `receiver_id=eq.${myUserId.value.id}`,
+      },
+      (payload) => {
         // console.log("New message received:", payload);
 
         const senderId = payload.new.sender_id;
@@ -102,26 +125,22 @@ const subscribeToNewMessages = () =>
     );
 
     const { error } = messageChannel.subscribe();
-    if (!error)
-    {
+    if (!error) {
       messageChannel._subscribed = true;
-    }
-    else
-    {
+    } else {
       console.error("Failed to subscribe to new messages:", error);
     }
   }
 };
 
-const updateUnreadCount = (senderId) =>
-{
-  const index = props.activeChats.findIndex(u => u.user_id === senderId);
+const updateUnreadCount = (senderId) => {
+  const index = props.activeChats.findIndex((u) => u.user_id === senderId);
   if (index === -1) return;
   const user = props.activeChats[index];
 
-  const isChattingWithSender = senderId === props.selectedUserId && props.isTabVisible;
-  if (!isChattingWithSender)
-  {
+  const isChattingWithSender =
+    senderId === props.selectedUserId && props.isTabVisible;
+  if (!isChattingWithSender) {
     user.unread_count = (user.unread_count || 0) + 1;
     unreadCountUpdated(user);
   }
@@ -139,26 +158,22 @@ const handleChatDeleted = (user) => {
 
 const unreadCountUpdated = (user) => {
   // console.log("Inside unreadCountUpdated: User - ", user);
-  
+
   // find user in onlineUsers and update unread_count
-  const onlineUser = props.onlineUsers.find(u => u.user_id === user.user_id);
+  const onlineUser = props.onlineUsers.find((u) => u.user_id === user.user_id);
   if (onlineUser) {
     // console.log("Updating unread count for user:", onlineUser.user_id);
     onlineUser.unread_count = user.unread_count;
   }
 };
 
-onBeforeUnmount(() =>
-{
-  if (messageChannel?._subscribed)
-  {
+onBeforeUnmount(() => {
+  if (messageChannel?._subscribed) {
     messageChannel.unsubscribe();
     messageChannel._subscribed = false;
     messageChannel = null;
   }
 });
-
-
 </script>
 <style scoped>
 .refresh-icon {
