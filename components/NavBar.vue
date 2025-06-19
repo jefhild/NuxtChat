@@ -13,37 +13,39 @@
       </v-app-bar-title>
 
       <template v-slot:append>
-        <v-row class="d-none d-md-flex" align="center">
-          <OnlineStatus v-if="navProfileUserId" />
-          <NuxtLink
-            :to="localPath('/articles')"
-            class="v-btn text-button navItem mr-3"
-            exact
-          >
-            <v-icon start>mdi-post-outline</v-icon
-            >{{ $t("components.navbar.blog") }}
-          </NuxtLink>
-          <NuxtLink
-            :to="localPath('/chat')"
-            class="v-btn text-button navItem mr-3"
-            exact
-          >
-            <v-icon start>mdi-chat</v-icon>{{ $t("components.navbar.chat") }}
-          </NuxtLink>
-          <NuxtLink
-            :to="localPath('/settings')"
-            class="v-btn text-button navItem mr-3"
-            exact
-          >
-            <v-icon start>mdi-cog</v-icon>{{ $t("components.navbar.settings") }}
-          </NuxtLink>
-          <NotificationDropdown />
-          <LanguageSwitcher class="ml-3" />
-          <v-btn @click="showLogoutDialog" variant="text">{{
-            $t("components.navbar.logout")
-          }}</v-btn>
-        </v-row>
-
+        <nav role="navigation" aria-label="Main Navigation">
+          <v-row class="d-none d-md-flex" align="center">
+            <OnlineStatus v-if="navProfileUserId" />
+            <NuxtLink
+              :to="localPath('/articles')"
+              class="v-btn text-button navItem mr-3"
+              exact
+            >
+              <v-icon start>mdi-post-outline</v-icon
+              >{{ $t("components.navbar.blog") }}
+            </NuxtLink>
+            <NuxtLink
+              :to="localPath('/chat')"
+              class="v-btn text-button navItem mr-3"
+              exact
+            >
+              <v-icon start>mdi-chat</v-icon>{{ $t("components.navbar.chat") }}
+            </NuxtLink>
+            <NuxtLink
+              :to="localPath('/settings')"
+              class="v-btn text-button navItem mr-3"
+              exact
+            >
+              <v-icon start>mdi-cog</v-icon
+              >{{ $t("components.navbar.settings") }}
+            </NuxtLink>
+            <NotificationDropdown />
+            <LanguageSwitcher class="ml-3" />
+            <v-btn @click="showLogoutDialog" variant="text">{{
+              $t("components.navbar.logout")
+            }}</v-btn>
+          </v-row>
+        </nav>
         <!-- Mobile menu -->
         <div class="d-flex d-md-none">
           <NotificationDropdown />
@@ -98,50 +100,46 @@
       <v-spacer></v-spacer>
 
       <template v-slot:append>
-        <v-row class="d-none d-md-flex" align="center">
-          <NuxtLink
-            :to="localPath('/articles')"
-            class="v-btn text-button navItem mr-3"
-            exact
-          >
-            <v-icon start>mdi-post-outline</v-icon>
-            {{ $t("components.navbar.blog") }}
-          </NuxtLink>
+        <nav role="navigation" aria-label="Main Navigation">
+          <v-row class="d-none d-md-flex" align="center">
+            <NuxtLink
+              :to="localPath('/articles')"
+              class="v-btn text-button navItem mr-3"
+              exact
+            >
+              <v-icon start>mdi-post-outline</v-icon>
+              {{ $t("components.navbar.blog") }}
+            </NuxtLink>
 
-          <NuxtLink
-            :to="localPath('/signin')"
-            class="v-btn text-button navItem mr-3"
-            exact
-          >
-            <v-icon start>mdi-login</v-icon>
-            {{ $t("components.navbar.signin") }}
-          </NuxtLink>
+            <NuxtLink
+              :to="localPath('/signin')"
+              class="v-btn text-button navItem mr-3"
+              exact
+            >
+              <v-icon start>mdi-login</v-icon>
+              {{ $t("components.navbar.signin") }}
+            </NuxtLink>
 
-          <NuxtLink
-            :to="localPath('/about')"
-            class="v-btn text-button navItem mr-3"
-            exact
-          >
-            <v-icon start>mdi-account-group</v-icon>
-            {{ $t("components.navbar.aboutus") }}
-          </NuxtLink>
+            <NuxtLink
+              :to="localPath('/about')"
+              class="v-btn text-button navItem mr-3"
+              exact
+            >
+              <v-icon start>mdi-account-group</v-icon>
+              {{ $t("components.navbar.aboutus") }}
+            </NuxtLink>
 
-          <NuxtLink
-            :to="localPath('/profiles')"
-            class="v-btn text-button navItem mr-3"
-            exact
-          >
-            <v-icon start>mdi-monitor-account</v-icon>
-            {{ $t("components.navbar.free-chat") }}
-          </NuxtLink>
-        </v-row>
-
-        <!-- <v-select :items="availableLocales" v-model="currentLocale" class="ml-3" hide-details
-          prepend-inner-icon="mdi-earth" density="compact" variant="outlined"
-          @update:modelValue="switchLanguage"></v-select> -->
-
-          <LanguageSwitcher class="ml-3" />
- 
+            <NuxtLink
+              :to="localPath('/profiles')"
+              class="v-btn text-button navItem mr-3"
+              exact
+            >
+              <v-icon start>mdi-monitor-account</v-icon>
+              {{ $t("components.navbar.free-chat") }}
+            </NuxtLink>
+          </v-row>
+        </nav>
+        <LanguageSwitcher class="ml-3" />
 
         <!-- Mobile menu -->
         <div class="d-flex d-md-none">
@@ -150,7 +148,7 @@
               <v-app-bar-nav-icon v-bind="props" />
             </template>
 
-            <v-list>
+            <v-list aria-label="Mobile Navigation">
               <v-list-item
                 :to="localPath('/articles')"
                 prepend-icon="mdi-post-outline"

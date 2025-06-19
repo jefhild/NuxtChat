@@ -234,6 +234,7 @@ export default defineNuxtConfig({
     sources: ["/api/sitemap/urls"],
     exclude: [
       "/login",
+      "/logout",
       "/loginemail",
       "/loginfacebook",
       "/terms",
