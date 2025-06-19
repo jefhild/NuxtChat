@@ -8,27 +8,49 @@
     <v-card-text no-gutters class="pa-0">
       <v-virtual-scroll :items="users" height="300" item-height="10">
         <template v-slot:default="{ item: user }">
-          <div :class="[
-            { 'selected-user': user.user_id === selectedUserId },
-            user.user_id === selectedUserId ? `selected-gender-${user.gender_id}` : ''
-          ]">
+          <div
+            :class="[
+              { 'selected-user': user.user_id === selectedUserId },
+              user.user_id === selectedUserId
+                ? `selected-gender-${user.gender_id}`
+                : '',
+            ]"
+          >
             <v-list-item @click="selectUser(user)">
               <template v-slot:prepend>
-                <v-icon :color="getGenderColor(user.gender_id)" :icon="getAvatarIcon(user.gender_id)"
-                  size="small"></v-icon>
+                <v-icon
+                  :color="getGenderColor(user.gender_id)"
+                  :icon="getAvatarIcon(user.gender_id)"
+                  size="small"
+                ></v-icon>
 
                 <div class="avatar-wrapper">
-                  <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
+                  <v-avatar
+                    :image="getAvatar(user.avatar_url, user.gender_id)"
+                  ></v-avatar>
 
-                  <NuxtImg :src="user.avatar_decoration_url" v-if="user.avatar_decoration_url" class="avatar-decoration"
-                    :alt="`${user.displayname}'s image`" />
+                  <NuxtImg
+                    :src="user.avatar_decoration_url"
+                    v-if="user.avatar_decoration_url"
+                    class="avatar-decoration"
+                    :alt="`${user.displayname}'s image`"
+                  />
 
-                  <v-icon v-if="user.provider != 'ChatGPT'" color="white" size="x-small"
-                    class="status-badge">mdi-circle</v-icon>
-                  <v-icon v-if="user.provider != 'ChatGPT'" size="small" :color="statusColor(user.user_id)"
-                    :icon="statusIcon(user.user_id)" class="status-badge" />
+                  <v-icon
+                    v-if="user.provider != 'ChatGPT'"
+                    color="white"
+                    size="x-small"
+                    class="status-badge"
+                    >mdi-circle</v-icon
+                  >
+                  <v-icon
+                    v-if="user.provider != 'ChatGPT'"
+                    size="small"
+                    :color="statusColor(user.user_id)"
+                    :icon="statusIcon(user.user_id)"
+                    class="status-badge"
+                  />
                 </div>
-
               </template>
               <v-list-item-title :class="getGenderColorClass(user.gender_id)">
                 {{ user.displayname }}
@@ -54,71 +76,93 @@
   </v-container>
 
   <v-dialog v-model="deleteDialog" width="auto">
-    <v-card max-width="400" prepend-icon="mdi-message" :title="$t('components.activeChats.delete-title')">
+    <v-card
+      max-width="400"
+      prepend-icon="mdi-message"
+      :title="$t('components.activeChats.delete-title')"
+    >
       <v-card-text>
         <v-row justify="center">
-          <v-col class="text-center">{{ $t("components.activeChats.delete-confirm") }}</v-col></v-row>
+          <v-col class="text-center">{{
+            $t("components.activeChats.delete-confirm")
+          }}</v-col></v-row
+        >
       </v-card-text>
-      <v-card-text><v-row><v-col><v-checkbox v-model="checkboxBlockUser"
-              :label="$t('components.activeChats.block')"></v-checkbox></v-col></v-row></v-card-text>
+      <v-card-text
+        ><v-row
+          ><v-col
+            ><v-checkbox
+              v-model="checkboxBlockUser"
+              :label="$t('components.activeChats.block')"
+            ></v-checkbox></v-col></v-row
+      ></v-card-text>
 
       <template v-slot:actions>
-        <v-btn color="primary" text @click="confirmDelete()">{{ $t("components.activeChats.confirm") }}</v-btn>
+        <v-btn color="primary" text @click="confirmDelete()">{{
+          $t("components.activeChats.confirm")
+        }}</v-btn>
         <v-spacer></v-spacer>
-        <v-btn class="ms-auto" @click="deleteDialog = false">{{ $t("components.activeChats.cancel") }}</v-btn>
+        <v-btn class="ms-auto" @click="deleteDialog = false">{{
+          $t("components.activeChats.cancel")
+        }}</v-btn>
       </template>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
-// import {
-//   getAvatarIcon,
-//   getAvatar,
-//   getGenderColor,
-//   getGenderColorClass,
-// } from "/utils/userUtils";
-
-import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
+import {
+  getAvatar,
+  getAvatarIcon,
+  getGenderColor,
+  getGenderColorClass,
+} from "@/composables/useUserUtils";
 import { usePresenceStatus } from "@/composables/usePresenceStatus";
 import { useAuthStore } from "@/stores/authStore";
 import { useI18n } from "vue-i18n";
+import { useDb } from "@/composables/useDB"; // assuming useDb provides deleteChatWithUser & insertBlockedUser
+
 const { t } = useI18n();
+const { statusColor, statusIcon } = usePresenceStatus();
 const { insertBlockedUser, deleteChatWithUser } = useDb();
+
+const authStore = useAuthStore();
+const myUserId = ref(authStore.user); // ✅ current logged-in user
 
 const deleteDialog = ref(false);
 const checkboxBlockUser = ref(false);
+
 const props = defineProps({
   users: Array,
-  selectedUserId: String,
+  selectedUserId: String, // this is the OTHER user you're chatting with
   isTabVisible: Boolean,
   isLoading: Boolean,
 });
 
 const emit = defineEmits(["user-selected", "chat-deleted"]);
+
 const selectedUser = ref(null);
 const selectedUserForDelete = ref(null);
 
+// User clicks delete icon
 const deleteChat = (user) => {
-  // console.log("Selected user", user);
   selectedUserForDelete.value = user;
   deleteDialog.value = true;
 };
 
+// User confirms deletion
 const confirmDelete = async () => {
   if (checkboxBlockUser.value) {
-    // console.log("Block user");
-
     await insertBlockedUser(
-      myUserId.value.user_id,
-      selectedUserForDelete.value.user_id
+      myUserId.value.id, // current user
+      selectedUserForDelete.value.user_id // user to block
     );
   }
 
   try {
     const error = await deleteChatWithUser(
-      myUserId.value.id,
-      selectedUserForDelete.value.user_id
+      myUserId.value.id, // current user
+      selectedUserForDelete.value.user_id // other user
     );
 
     if (error) {
@@ -126,17 +170,15 @@ const confirmDelete = async () => {
       return;
     }
 
-    // console.log("Messages deleted:");
-
     emit("chat-deleted");
   } catch (error) {
     console.error("Unexpected error deleting messages:", error);
   }
-  // emit("update-active-chats");
 
   deleteDialog.value = false;
 };
 
+// Handle user selection
 const selectUser = (user) => {
   if (user) {
     selectedUser.value = user;
@@ -144,8 +186,6 @@ const selectUser = (user) => {
     emit("user-selected", user);
   }
 };
-
-const { statusColor, statusIcon } = usePresenceStatus();
 </script>
 
 <style scoped>

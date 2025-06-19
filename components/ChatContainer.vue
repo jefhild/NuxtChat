@@ -4,7 +4,11 @@
       <v-col cols="12" md="4" class="pa-2">
         <v-row class="align-center">
           <v-col>
-            <FilterMenu2 :userProfile="userProfile" :showAIUsers="showAIUsers" @filter-changed="updateFilters" />
+            <FilterMenu2
+              :userProfile="userProfile"
+              :showAIUsers="showAIUsers"
+              @filter-changed="updateFilters"
+            />
           </v-col>
           <v-col>
             <ToggleAi v-model="showAIUsers" />
@@ -18,13 +22,31 @@
     <v-row>
       <!-- Left Column: Online Users -->
       <v-col cols="12" md="4" class="pa-2">
-        <Users v-if="!showAIUsers" @user-selected="selectUser" :onlineUsers="arrayOnlineUsers"
-          :offlineUsers="arrayOfflineUsers" :activeChats="activeChats" :userProfile="userProfile"
-          :selected-user-id="selectedUser?.user_id" :is-tab-visible="isTabVisible" :isLoading="isLoading"
-          @refresh-data="refreshData" @unread-count="updateTabTitle" />
-        <UsersAI v-if="showAIUsers" @user-selected="selectUser" :aiUsers="aiUsers" :activeChats="activeChats"
-          :userProfile="userProfile" :selected-user-id="selectedUser?.user_id" :is-tab-visible="isTabVisible"
-          :updateFilters="updateFilters" @refresh-data="refreshData" @unread-count="updateTabTitle" />
+        <Users
+          v-if="!showAIUsers"
+          @user-selected="selectUser"
+          :onlineUsers="arrayOnlineUsers"
+          :offlineUsers="arrayOfflineUsers"
+          :activeChats="activeChats"
+          :userProfile="userProfile"
+          :selected-user-id="selectedUser?.user_id"
+          :is-tab-visible="isTabVisible"
+          :isLoading="isLoading"
+          @refresh-data="refreshData"
+          @unread-count="updateTabTitle"
+        />
+        <UsersAI
+          v-if="showAIUsers"
+          @user-selected="selectUser"
+          :aiUsers="aiUsers"
+          :activeChats="activeChats"
+          :userProfile="userProfile"
+          :selected-user-id="selectedUser?.user_id"
+          :is-tab-visible="isTabVisible"
+          :updateFilters="updateFilters"
+          @refresh-data="refreshData"
+          @unread-count="updateTabTitle"
+        />
         <!-- add profile here -->
         <ProfileCard :profile="userProfile" class="mt-2" />
       </v-col>
@@ -34,13 +56,27 @@
         <!-- <ChatHeader :currentUser="user" :selectedUser="selectedUser" /> -->
 
         <v-card class="flex-grow-1">
-          <v-card-text class="chat-messages" ref="chatContainer" @scroll.passive="handleScroll">
+          <v-card-text
+            class="chat-messages"
+            ref="chatContainer"
+            @scroll.passive="handleScroll"
+          >
             <div v-if="loadingMore" class="text-center py-2">
               <v-progress-circular indeterminate color="primary" size="24" />.
             </div>
-            <div v-for="(message, index) in messages" :key="message.id" @click="replyingToMessage = message"
-              :class="message.sender_id === user.id ? 'sent' : 'received'" :ref="index === 0 ? 'firstMessage' : null">
-              <Message :message="message" :user="user" @edit-message="editMessage" @removeReplying="removeReplyingToMessage" />
+            <div
+              v-for="(message, index) in messages"
+              :key="message.id"
+              @click="replyingToMessage = message"
+              :class="message.sender_id === user.id ? 'sent' : 'received'"
+              :ref="index === 0 ? 'firstMessage' : null"
+            >
+              <Message
+                :message="message"
+                :user="user"
+                @edit-message="editMessage"
+                @removeReplying="removeReplyingToMessage"
+              />
             </div>
             <!-- Typing Indicator -->
             <div v-if="isTyping" class="typing-indicator bot-message">
@@ -51,21 +87,46 @@
 
         <div v-if="replyingToMessage" class="d-flex align-center">
           <div class="text-caption mr-2 flex-grow-1">
-            {{ $t('components.chatcontainer.replying-to') }} {{ replyingToMessage.content.length > 50 ? replyingToMessage.content.substring(0, 50) + '...' :
-              replyingToMessage.content }}
+            {{ $t("components.chatcontainer.replying-to") }}
+            {{
+              replyingToMessage.content.length > 50
+                ? replyingToMessage.content.substring(0, 50) + "..."
+                : replyingToMessage.content
+            }}
           </div>
-          <v-btn icon @click="replyingToMessage = null" size="small" class="flex-shrink-0 mt-2">
+          <v-btn
+            icon
+            @click="replyingToMessage = null"
+            size="small"
+            class="flex-shrink-0 mt-2"
+          >
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </div>
         <!-- Message Input Row -->
         <v-form @submit.prevent="sendMessage">
           <v-row v-if="attachedFile">
-            <v-col cols="auto" class="position-relative d-inline-block mt-4 ml-4">
-              <NuxtImg :src="previewUrl" :alt="attachedFile.name" width="100" height="100" class="rounded elevation-2"
-                cover />
+            <v-col
+              cols="auto"
+              class="position-relative d-inline-block mt-4 ml-4"
+            >
+              <NuxtImg
+                :src="previewUrl"
+                :alt="attachedFile.name"
+                width="100"
+                height="100"
+                class="rounded elevation-2"
+                cover
+              />
               <!-- Remove button -->
-              <v-btn icon size="x-small" class="remove-image-btn" @click="clearAttachment" color="red" variant="flat">
+              <v-btn
+                icon
+                size="x-small"
+                class="remove-image-btn"
+                @click="clearAttachment"
+                color="red"
+                variant="flat"
+              >
                 <v-icon size="16">mdi-close</v-icon>
               </v-btn>
             </v-col>
@@ -77,43 +138,83 @@
               <v-row>
                 <v-col cols="10" class="d-flex align-center">
                   <!-- Emoji Button -->
-                  <v-btn icon class="mr-2" @click="toggleEmojiPicker" :disabled="!selectedUser || sendingMessage">
+                  <v-btn
+                    icon
+                    class="mr-2"
+                    @click="toggleEmojiPicker"
+                    :disabled="!selectedUser || sendingMessage"
+                  >
                     <v-icon>mdi-emoticon-happy-outline</v-icon>
                   </v-btn>
 
                   <!-- Emoji Picker Panel -->
-                  <div class="emoji-picker-container" v-if="showEmojiPicker" ref="emojiPickerRef">
+                  <div
+                    class="emoji-picker-container"
+                    v-if="showEmojiPicker"
+                    ref="emojiPickerRef"
+                  >
                     <client-only>
                       <EmojiPicker @select="onSelectEmoji" />
                     </client-only>
                   </div>
 
-
-                  <label class="upload-bubble mr-3" :class="{
+                  <label
+                    class="upload-bubble mr-3"
+                    :class="{
                       'upload-bubble--disabled':
                         !selectedUser || sendingMessage,
-                    }">
+                    }"
+                  >
                     <v-icon>mdi-plus</v-icon>
-                    <input type="file" accept="image/*" @change="handleFileUpload"
-                      :disabled="!selectedUser || sendingMessage" style="display: none" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      @change="handleFileUpload"
+                      :disabled="!selectedUser || sendingMessage"
+                      style="display: none"
+                    />
                   </label>
 
-                  <v-text-field v-model="newMessage" :label="
+                  <v-text-field
+                    v-model="newMessage"
+                    :label="
                       selectedUser
                         ? selectedUser.is_ai
-                          ? $t('components.chatcontainer.chat') + selectedUser.displayname + $t('components.chatcontainer.ai')
-                          : $t('components.chatcontainer.message') + selectedUser.displayname
+                          ? $t('components.chatcontainer.chat') +
+                            selectedUser.displayname +
+                            $t('components.chatcontainer.ai')
+                          : $t('components.chatcontainer.message') +
+                            selectedUser.displayname
                         : $t('components.chatcontainer.select-user')
-                    " variant="underlined" dense :readonly="!selectedUser || sendingMessage" />
+                    "
+                    variant="underlined"
+                    dense
+                    :readonly="!selectedUser || sendingMessage"
+                  />
                 </v-col>
               </v-row>
             </v-col>
 
             <v-col cols="2">
-              <v-btn type="submit" :disabled="!selectedUser || sendingMessage || (!newMessage.trim() && !attachedFile)"
-                color="primary" class="mt-4 ml-3">
-                <v-progress-circular v-if="sendingMessage" indeterminate color="white" size="18" />
-                <span v-if="!sendingMessage">{{ $t("components.chatcontainer.send") }}</span>
+              <v-btn
+                type="submit"
+                :disabled="
+                  !selectedUser ||
+                  sendingMessage ||
+                  (!newMessage.trim() && !attachedFile)
+                "
+                color="primary"
+                class="mt-4 ml-3"
+              >
+                <v-progress-circular
+                  v-if="sendingMessage"
+                  indeterminate
+                  color="white"
+                  size="18"
+                />
+                <span v-if="!sendingMessage">{{
+                  $t("components.chatcontainer.send")
+                }}</span>
               </v-btn>
             </v-col>
           </v-row>
@@ -138,8 +239,8 @@ import { useFetchOfflineUsers } from "@/composables/useFetchOfflineUsers";
 import { useFetchOnlineUsers } from "@/composables/useFetchOnlineUsers";
 import { useFetchActiveChats } from "@/composables/useFetchActiveChats";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
-import { defineAsyncComponent } from 'vue';
-import { onClickOutside } from '@vueuse/core';
+import { defineAsyncComponent } from "vue";
+import { onClickOutside } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
@@ -157,7 +258,7 @@ const {
   insertInteractionCount,
   getChatFilePublicUrl,
   uploadChatFile,
-  updateMessage
+  updateMessage,
 } = useDb();
 
 const notificationSound = new Audio("/sounds/notification.wav");
@@ -202,7 +303,7 @@ const sendingMessage = ref(false);
 
 const showEmojiPicker = ref(false);
 const emojiPickerRef = ref(null);
-const EmojiPicker = defineAsyncComponent(() => import('vue3-emoji-picker'));
+const EmojiPicker = defineAsyncComponent(() => import("vue3-emoji-picker"));
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
@@ -222,20 +323,16 @@ const scrollToBottom = () => {
   });
 };
 
-const toggleEmojiPicker = () =>
-{
+const toggleEmojiPicker = () => {
   showEmojiPicker.value = !showEmojiPicker.value;
 };
 
-const onSelectEmoji = (emoji) =>
-{
-  newMessage.value += emoji.i; 
+const onSelectEmoji = (emoji) => {
+  newMessage.value += emoji.i;
   showEmojiPicker.value = false;
 };
 
-
-onClickOutside(emojiPickerRef, () =>
-{
+onClickOutside(emojiPickerRef, () => {
   showEmojiPicker.value = false;
 });
 
@@ -380,7 +477,8 @@ const handleRealtimeMessages = async (payload) => {
 
       notificationStore.addNotification(
         "message",
-        `${senderProfile.data.displayname || "Someone"} ` + t("components.chatcontainer.message-sent"),
+        `${senderProfile.data.displayname || "Someone"} ` +
+          t("components.chatcontainer.message-sent"),
         newRow.sender_id
       );
       lastUnreadSenderId.value = newRow.sender_id;
@@ -447,11 +545,9 @@ onMounted(async () => {
   // Select the user we want to chat with
   const query = route.query;
   const userSlug = query?.userSlug;
-  
+
   if (userSlug) {
-    const userProfileData  = await getUserProfileFromSlug(
-      userSlug
-    );
+    const userProfileData = await getUserProfileFromSlug(userSlug);
 
     if (userProfileData) {
       selectedUser.value = userProfileData[0];
@@ -508,67 +604,64 @@ onMounted(async () => {
   // Set up real-time subscription to messages table
   if (!realtimeMessages) {
     realtimeMessages = supabase.channel(`messages:user:${user.value.id}`);
-    if (!realtimeMessages._subscribed)
-    {
-      realtimeMessages
-        .on("postgres_changes", {
+    if (!realtimeMessages._subscribed) {
+      realtimeMessages.on(
+        "postgres_changes",
+        {
           event: "INSERT",
           schema: "public",
           table: "messages",
           filter: `receiver_id=eq.${user.value.id}`,
-        }, handleRealtimeMessages);
+        },
+        handleRealtimeMessages
+      );
 
       const { error } = realtimeMessages.subscribe();
-      if (!error)
-      {
+      if (!error) {
         realtimeMessages._subscribed = true;
-      } else
-      {
+      } else {
         console.error("Realtime message subscription failed:", error);
       }
     }
   }
 
-  if (!realtimeUpdateMessages)
-  {
-    realtimeUpdateMessages = supabase.channel(`messages:update:${user.value.id}`);
-    if (!realtimeUpdateMessages._subscribed)
-    {
-      realtimeUpdateMessages
-        .on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "messages",
-            filter: `receiver_id=eq.${user.value.id}`,
-          },
-          (payload) =>
-          {
-            // console.log("Realtime update payload:", payload);
+  if (!realtimeUpdateMessages) {
+    realtimeUpdateMessages = supabase.channel(
+      `messages:update:${user.value.id}`
+    );
+    if (!realtimeUpdateMessages._subscribed) {
+      realtimeUpdateMessages.on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=eq.${user.value.id}`,
+        },
+        (payload) => {
+          // console.log("Realtime update payload:", payload);
 
-            const messageIndex = messages.value.findIndex(msg => msg.id === payload.old.id);
-            if (messageIndex !== -1)
-            {
-              messages.value[messageIndex] = {
-                ...messages.value[messageIndex],
-                content: payload.new.content,
-                edited_at: payload.new.edited_at,
-              };
-            }
+          const messageIndex = messages.value.findIndex(
+            (msg) => msg.id === payload.old.id
+          );
+          if (messageIndex !== -1) {
+            messages.value[messageIndex] = {
+              ...messages.value[messageIndex],
+              content: payload.new.content,
+              edited_at: payload.new.edited_at,
+            };
           }
-        )
+        }
+      );
 
       const { error } = realtimeUpdateMessages.subscribe();
-      if (!error)
-      {
+      if (!error) {
         realtimeUpdateMessages._subscribed = true;
-      } else
-      {
+      } else {
         console.error("Realtime message subscription failed:", error);
       }
+    }
   }
-}
 
   document.addEventListener("visibilitychange", async () => {
     isTabVisible.value = document.visibilityState === "visible";
@@ -591,20 +684,16 @@ onMounted(async () => {
   isLoading.value = false;
 });
 
-onBeforeUnmount(() =>
-{
-  if (realtimeMessages?._subscribed)
-  {
+onBeforeUnmount(() => {
+  if (realtimeMessages?._subscribed) {
     realtimeMessages.unsubscribe();
     realtimeMessages._subscribed = false;
   }
-  if (realtimeUpdateMessages?._subscribed)
-  {
+  if (realtimeUpdateMessages?._subscribed) {
     realtimeUpdateMessages.unsubscribe();
     realtimeUpdateMessages._subscribed = false;
   }
 });
-
 
 // Select user to chat with
 const selectUser = (user) => {
@@ -849,33 +938,30 @@ const removeReplyingToMessage = () => {
   console.log("Replying to message removed", replyingToMessage.value);
   replyingToMessage.value = null;
   console.log("Replying to message removed", replyingToMessage.value);
-
 };
 
-const editMessage = async (editData) =>
-{
-  try
-  {
+const editMessage = async (editData) => {
+  try {
     const { messageId, newContent } = editData;
 
     // Update in database
     const updatedMessage = await updateMessage(messageId, newContent);
 
     // Update local messages array
-    const messageIndex = messages.value.findIndex(msg => msg.id === messageId);
-    if (messageIndex !== -1)
-    {
+    const messageIndex = messages.value.findIndex(
+      (msg) => msg.id === messageId
+    );
+    if (messageIndex !== -1) {
       messages.value[messageIndex] = {
         ...messages.value[messageIndex],
         content: newContent,
-        edited_at: updatedMessage.edited_at
+        edited_at: updatedMessage.edited_at,
       };
     }
 
     // console.log('Message updated successfully');
-  } catch (error)
-  {
-    console.error('Error editing message:', error);
+  } catch (error) {
+    console.error("Error editing message:", error);
     // You could show a toast notification here
   }
   removeReplyingToMessage();
