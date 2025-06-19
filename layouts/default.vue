@@ -25,23 +25,6 @@ const { t } = useI18n();
 const config = useRuntimeConfig();
 const authStore = useAuthStore();
 
-// useHead({
-//   script: [
-//     {
-//       src: "https://app.termly.io/resource-blocker/e30952b7-b801-4ffb-b6b8-733d8d45d0b3?autoBlock=on",
-//       type: "text/javascript",
-//       async: true,
-//     },
-//     {
-//       src: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7753517892076802",
-//       type: "text/javascript",
-//       crossorigin: "anonymous",
-//       async: true,
-//     },
-//   ],
-//   htmlAttrs: { lang: "en" },
-// });
-
 
 useHead({
   script: [
