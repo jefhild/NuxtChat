@@ -107,39 +107,39 @@
               class="v-btn text-button navItem mr-3"
               exact
             >
-              <v-icon start>mdi-post-outline</v-icon>
+              <!-- <v-icon start>mdi-post-outline</v-icon> -->
               {{ $t("components.navbar.blog") }}
             </NuxtLink>
 
             <NuxtLink
               :to="localPath('/signin')"
-              class="v-btn text-button navItem mr-3"
+              class="v-btn text-button navItem mr-4"
               exact
             >
-              <v-icon start>mdi-login</v-icon>
+              <!-- <v-icon start>mdi-login</v-icon> -->
               {{ $t("components.navbar.signin") }}
             </NuxtLink>
 
             <NuxtLink
               :to="localPath('/about')"
-              class="v-btn text-button navItem mr-3"
+              class="v-btn text-button navItem mr-4"
               exact
             >
-              <v-icon start>mdi-account-group</v-icon>
+              <!-- <v-icon start>mdi-account-group</v-icon> -->
               {{ $t("components.navbar.aboutus") }}
             </NuxtLink>
 
             <NuxtLink
               :to="localPath('/profiles')"
-              class="v-btn text-button navItem mr-3"
+              class="v-btn text-button navItem mr-4"
               exact
             >
-              <v-icon start>mdi-monitor-account</v-icon>
+              <!-- <v-icon start>mdi-monitor-account</v-icon> -->
               {{ $t("components.navbar.free-chat") }}
             </NuxtLink>
           </v-row>
         </nav>
-        <LanguageSwitcher class="ml-3" />
+        <LanguageSwitcher class="ml-3 mb-2" />
 
         <!-- Mobile menu -->
         <div class="d-flex d-md-none">
