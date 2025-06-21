@@ -1,49 +1,72 @@
 <template>
-  <LoadingContainer v-if="isLoading" :text="$t('pages.articles.index.loading')" />
+  <LoadingContainer
+    v-if="isLoading"
+    :text="$t('pages.articles.index.loading')"
+  />
 
   <v-container fluid v-else>
     <HomeRow1 />
-    <v-row align="center" justify="space-between" class="m-3">
+    <v-row align="center" justify="space-between" class="">
       <v-col cols="12" md="6">
         <h1>{{ $t("pages.articles.index.explore") }}</h1>
       </v-col>
-      <v-col cols="12" md="6" class="d-flex justify-end">
-        <v-text-field v-model="searchQuery" :label="searchArticlesLabel" prepend-inner-icon="mdi-magnify" clearable
-          dense outlined hide-details class="search-bar" />
-      </v-col>
     </v-row>
 
-    <!-- Categories Row -->
-    <v-row class="mb-2">
-      <v-col cols="12">
-        <h2 class="section-title">
-          {{ $t("pages.articles.index.categories") }}
-        </h2>
-        <div class="chip-group">
-          <v-chip v-for="cat in categories" :key="cat.slug" class="ma-1" color="primary" variant="outlined" size="small"
-            :to="localPath(`/categories/${cat.slug}`)">
-            {{ cat.name }}
-          </v-chip>
-        </div>
+    <!-- Unified Search, Categories, and Tags Row -->
+    <v-row align="center" justify="space-between" class="m-3">
+      <!-- Categories Dropdown -->
+      <v-col cols="12" md="4" class="d-flex">
+        <v-select
+          :items="categories"
+          item-title="name"
+          item-value="slug"
+          label="Select Category"
+          outlined
+          density="compact"
+          hide-details
+          @update:modelValue="goToCategory"
+          class="flex-grow-1"
+        />
       </v-col>
-    </v-row>
 
-    <!-- Tags Row -->
-    <v-row class="mb-8">
-      <v-col cols="12">
-        <h2 class="section-title">{{ $t("pages.articles.index.tags") }}</h2>
-        <div class="chip-group">
-          <v-chip v-for="tag in tags" :key="tag.slug" class="ma-1" size="small" color="deep-purple-lighten-2"
-            variant="outlined" :to="localPath(`/tags/${tag.slug}`)">
-            {{ tag.name }}
-          </v-chip>
-        </div>
+      <!-- Tags Dropdown -->
+      <v-col cols="12" md="4" class="d-flex">
+        <v-select
+          :items="tags"
+          item-title="name"
+          item-value="slug"
+          label="Select Tag"
+          outlined
+          density="compact"
+          hide-details
+          @update:modelValue="goToTag"
+          class="flex-grow-1"
+        />
+      </v-col>
+      <!-- Search Bar -->
+      <v-col cols="12" md="4" class="d-flex">
+        <v-text-field
+          v-model="searchQuery"
+          :label="searchArticlesLabel"
+          prepend-inner-icon="mdi-magnify"
+          clearable
+          density="compact"
+          outlined
+          hide-details
+          class="search-bar"
+        />
       </v-col>
     </v-row>
 
     <!-- Articles List -->
     <v-row dense>
-      <v-col v-for="article in paginatedArticles" :key="article.id" cols="12" sm="6" md="4">
+      <v-col
+        v-for="article in paginatedArticles"
+        :key="article.id"
+        cols="12"
+        sm="6"
+        md="4"
+      >
         <ArticleCard :article="article" />
       </v-col>
     </v-row>
@@ -51,7 +74,12 @@
     <!-- No Articles Found -->
     <v-row v-if="!paginatedArticles.length" justify="center">
       <v-col cols="12" class="text-center">
-        <v-alert type="info" variant="tonal" border="top" border-color="primary">
+        <v-alert
+          type="info"
+          variant="tonal"
+          border="top"
+          border-color="primary"
+        >
           {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
         </v-alert>
       </v-col>
@@ -64,7 +92,12 @@
 
     <!-- Admin Button -->
     <v-row justify="center" class="mt-6">
-      <v-btn v-if="userProfile?.is_admin" :to="localPath('/admin')" color="primary" variant="tonal">
+      <v-btn
+        v-if="userProfile?.is_admin"
+        :to="localPath('/admin')"
+        color="primary"
+        variant="tonal"
+      >
         Admin Panel
       </v-btn>
     </v-row>
@@ -109,6 +142,16 @@ const pageCount = computed(() =>
   Math.ceil(filteredArticles.value.length / perPage)
 );
 
+const router = useRouter();
+
+function goToCategory(slug) {
+  if (slug) router.push(localPath(`/categories/${slug}`));
+}
+
+function goToTag(slug) {
+  if (slug) router.push(localPath(`/tags/${slug}`));
+}
+
 onMounted(async () => {
   await authStore.checkAuth();
   userProfile.value = authStore.userProfile;
@@ -125,13 +168,6 @@ useSeoI18nMeta("articles.index");
 </script>
 
 <style scoped>
-/* .page-title {
-  font-family: "Poppins", sans-serif;
-  font-weight: 700;
-  font-size: 1.5rem;
-  margin-bottom: 0;
-} */
-
 .section-title {
   font-family: "Poppins", sans-serif;
   font-weight: 600;
@@ -149,11 +185,6 @@ useSeoI18nMeta("articles.index");
   flex-wrap: wrap;
   gap: 4px;
 }
-
-/* .article-list-container {
-  max-width: 1400px;
-  margin: 0 auto;
-} */
 
 .v-chip {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
