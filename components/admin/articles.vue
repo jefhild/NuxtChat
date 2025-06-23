@@ -1,333 +1,541 @@
 <template>
-	<v-card class="pa-6" elevation="3">
-		<v-card-title>Existing Articles</v-card-title>
+  <v-card class="pa-6" elevation="3">
+    <v-card-title>Existing Articles</v-card-title>
 
-		<LoadingContainer v-if="loadingArticles" :text="$t('pages.articles.index.loading')" />
-		<v-card-text v-else>
-			<v-col>
-				<div class="articles-wrapper">
-					<!-- Search -->
-					<v-text-field v-model="searchQuery" label="Search articles..." prepend-inner-icon="mdi-magnify"
-						clearable class="mb-4" />
+    <LoadingContainer
+      v-if="loadingArticles"
+      :text="$t('pages.articles.index.loading')"
+    />
+    <v-card-text v-else>
+      <v-col>
+        <div class="articles-wrapper">
+          <!-- Search -->
+          <v-text-field
+            v-model="searchQuery"
+            label="Search articles..."
+            prepend-inner-icon="mdi-magnify"
+            clearable
+            class="mb-4"
+          />
 
-					<!-- Article Cards -->
-					<v-row dense>
-						<v-col v-for="article in paginatedArticles" :key="article.id" cols="12" sm="6" md="6" lg="4">
-							<ArticleCard :article="article" disableNavigation admin
-								@click="toggleEditDialog(article)" />
-						</v-col>
-					</v-row>
+          <!-- Article Cards -->
+          <v-row dense>
+            <v-col
+              v-for="article in paginatedArticles"
+              :key="article.id"
+              cols="12"
+              sm="6"
+              md="6"
+              lg="4"
+            >
+              <ArticleCard
+                :article="article"
+                disableNavigation
+                admin
+                @click="toggleEditDialog(article)"
+              />
+            </v-col>
+          </v-row>
 
-					<v-alert v-if="!paginatedArticles.length" type="info" variant="tonal" border="top"
-						border-color="primary">
-						No articles found for "{{ searchQuery }}".
-					</v-alert>
+          <v-alert
+            v-if="!paginatedArticles.length"
+            type="info"
+            variant="tonal"
+            border="top"
+            border-color="primary"
+          >
+            No articles found for "{{ searchQuery }}".
+          </v-alert>
 
+          <!-- Pagination -->
+          <v-pagination
+            v-model="currentPage"
+            :length="pageCount"
+            class="mt-6"
+            color="primary"
+          ></v-pagination>
+        </div>
+      </v-col>
+    </v-card-text>
+  </v-card>
+  <v-card class="pa-6 mt-5" elevation="3">
+    <v-card-title>Create New Article</v-card-title>
+    <v-card-text>
+      <v-form @submit.prevent="handleSubmit" ref="articleForm">
+        <!-- <NuxtImg
+          v-if="form.image_path"
+          :src="`https://ijpxzfojvakcttvucfde.supabase.co/storage/v1/object/public/articles/${form.image_path}`"
+          width="150"
+          height="auto"
+          class="mt-2 rounded"
+        /> -->
 
-					<!-- Pagination -->
-					<v-pagination v-model="currentPage" :length="pageCount" class="mt-6" color="primary"></v-pagination>
+        <NuxtImg
+          v-if="form.image_path"
+          :src="`${config.public.SUPABASE_BUCKET}/articles/${form.image_path}`"
+          width="150"
+          height="auto"
+          class="mt-2 rounded"
+        />
 
-				</div>
-			</v-col>
-		</v-card-text>
-	</v-card>
-	<v-card class="pa-6 mt-5" elevation="3">
-		<v-card-title>Create New Article</v-card-title>
-		<v-card-text>
-			<v-form @submit.prevent="handleSubmit" ref="articleForm">
-				<v-text-field v-model="form.title" label="Title" required :rules="[v => !!v || 'Title is required']" />
-				<v-select v-model="form.category_id" :items="categories" item-title="name" item-value="id"
-					label="Category" :rules="[v => !!v || 'Category is required']" required />
+        <!-- Image Upload -->
+        <v-file-input
+          accept="image/*"
+          label="Upload Image"
+          @change="handleImageChange"
+        />
+        <!-- <v-text-field
+          v-model="form.photo_credits_url"
+          label="Photo Credit URL"
+          :rules="[isValidUrl]"
+        /> -->
 
-				<v-select v-model="form.tag_ids" :items="tags" item-title="name" item-value="id" label="Tags" multiple
-					chips :rules="[v => v.length > 0 || 'At least one tag is required']" />
+        <v-text-field
+          v-if="form.image_path"
+          v-model="form.photo_credits_url"
+          label="Photo Credit URL"
+          :rules="[isValidUrl]"
+        />
+        <v-text-field
+          v-model="form.title"
+          label="Title"
+          required
+          :rules="[(v) => !!v || 'Title is required']"
+        />
+        <v-select
+          v-model="form.category_id"
+          :items="categories"
+          item-title="name"
+          item-value="id"
+          label="Category"
+          :rules="[(v) => !!v || 'Category is required']"
+          required
+        />
 
-				<v-select v-model="form.type" :items="types" item-title="name" item-value="id" label="Type"
-					:rules="[v => v.length > 0 || 'Pick a type']" required />
+        <v-select
+          v-model="form.tag_ids"
+          :items="tags"
+          item-title="name"
+          item-value="id"
+          label="Tags"
+          multiple
+          chips
+          :rules="[(v) => v.length > 0 || 'At least one tag is required']"
+        />
 
-				<!-- HTML Content Editor -->
-				<v-textarea v-model="form.content" label="HTML Content" rows="10" auto-grow class="mb-4"
-					placeholder="<h2>Hello</h2><p>This is an article</p>"
-					:rules="[v => !!v || 'Content is required']" />
+        <v-select
+          v-model="form.type"
+          :items="types"
+          item-title="name"
+          item-value="id"
+          label="Type"
+          :rules="[(v) => v.length > 0 || 'Pick a type']"
+          required
+        />
 
-				<!-- Live Preview -->
-				<div class="html-preview" v-html="form.content"></div>
+        <!-- HTML Content Editor -->
+        <v-textarea
+          v-model="form.content"
+          label="HTML Content"
+          rows="10"
+          auto-grow
+          class="mb-4"
+          placeholder="<h2>Hello</h2><p>This is an article</p>"
+          :rules="[(v) => !!v || 'Content is required']"
+        />
 
-				<v-switch v-model="form.is_published" label="Published" color="primary" />
-				<v-btn :loading="loading" :disabled="loading" type="submit" color="primary" class="mt-4">
-					Create Article
-				</v-btn>
-			</v-form>
-		</v-card-text>
-	</v-card>
-	<v-snackbar v-model="snackbar.show" :timeout="3000" color="red" location="top">
-		{{ snackbar.message }}
-	</v-snackbar>
+        <!-- Live Preview -->
+        <div class="html-preview" v-html="form.content"></div>
 
-	<v-dialog v-model="editDialog" max-width="700px">
-		<v-card>
-			<v-card-title>Edit Article</v-card-title>
+        <v-switch
+          v-model="form.is_published"
+          label="Published"
+          color="primary"
+        />
+        <v-btn
+          :loading="loading"
+          :disabled="loading"
+          type="submit"
+          color="primary"
+          class="mt-4"
+        >
+          Create Article
+        </v-btn>
+      </v-form>
+    </v-card-text>
+  </v-card>
+  <v-snackbar
+    v-model="snackbar.show"
+    :timeout="3000"
+    color="red"
+    location="top"
+  >
+    {{ snackbar.message }}
+  </v-snackbar>
 
-			<v-card-text v-if="loadingUpdate" class="text-center">
-				<v-progress-circular indeterminate color="primary" />
-			</v-card-text>
+  <v-dialog v-model="editDialog" max-width="700px">
+    <v-card>
+      <v-card-title>Edit Article</v-card-title>
 
-			<v-card-text v-else>
-				<v-form ref="editForm" @submit.prevent="handleArticleUpdate">
-					<v-text-field v-model="selectedArticle.title" label="Title"
-						:rules="[v => !!v || 'Title is required']" />
-					<v-select v-model="selectedArticle.category_id" :items="categories" item-title="name"
-						item-value="id" label="Category" />
+      <v-card-text v-if="loadingUpdate" class="text-center">
+        <v-progress-circular indeterminate color="primary" />
+      </v-card-text>
 
-					<v-select v-model="selectedArticle.tag_ids" :items="tags" item-title="name" item-value="id"
-						label="Tags" multiple chips />
+      <v-card-text v-else>
+        <NuxtImg
+          v-if="selectedArticle.image_path"
+          :src="`${config.public.SUPABASE_BUCKET}/articles/${selectedArticle.image_path}`"
+          width="150"
+          height="auto"
+          class="mt-2 rounded"
+        />
+        <v-form ref="editForm" @submit.prevent="handleArticleUpdate">
+          <v-file-input
+            accept="image/*"
+            label="Upload Image"
+            @change="handleEditImageChange"
+          />
+          <!-- <v-text-field
+            v-model="selectedArticle.photo_credits_url"
+            label="Photo Credit URL"
+            :rules="[isValidUrl]"
+          /> -->
+          <v-text-field
+            v-if="selectedArticle.image_path"
+            v-model="selectedArticle.photo_credits_url"
+            label="Photo Credit URL"
+            :rules="[isValidUrl]"
+          />
+          <v-text-field
+            v-model="selectedArticle.title"
+            label="Title"
+            :rules="[(v) => !!v || 'Title is required']"
+          />
+          <v-select
+            v-model="selectedArticle.category_id"
+            :items="categories"
+            item-title="name"
+            item-value="id"
+            label="Category"
+          />
 
-					<v-select v-model="selectedArticle.type" :items="types" label="Type" />
+          <v-select
+            v-model="selectedArticle.tag_ids"
+            :items="tags"
+            item-title="name"
+            item-value="id"
+            label="Tags"
+            multiple
+            chips
+          />
 
-					<v-textarea v-model="selectedArticle.content" label="HTML Content" rows="6" auto-grow
-						:rules="[v => !!v || 'Content is required']" />
+          <v-select
+            v-model="selectedArticle.type"
+            :items="types"
+            label="Type"
+          />
 
-					<div class="html-preview" v-html="selectedArticle.content"></div>
-					<v-switch v-model="selectedArticle.is_published" label="Published" color="primary" />
-				</v-form>
-			</v-card-text>
+          <v-textarea
+            v-model="selectedArticle.content"
+            label="HTML Content"
+            rows="6"
+            auto-grow
+            :rules="[(v) => !!v || 'Content is required']"
+          />
 
-			<v-card-actions>
-				<v-btn :disabled="loadingUpdate" color="primary" :to="`/articles/${selectedArticle.slug}`">
-					Go to Article Page
-				</v-btn>
-				<v-spacer />
-				<v-btn :disabled="loadingUpdate" color="primary" @click="handleArticleUpdate">Save</v-btn>
-				<v-btn :disabled="loadingUpdate" color="red" @click="toggleEditDialog(null)">Cancel</v-btn>
-			</v-card-actions>
-		</v-card>
-	</v-dialog>
+          <div class="html-preview" v-html="selectedArticle.content"></div>
+          <v-switch
+            v-model="selectedArticle.is_published"
+            label="Published"
+            color="primary"
+          />
+        </v-form>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-btn
+          :disabled="loadingUpdate"
+          color="primary"
+          :to="`/articles/${selectedArticle.slug}`"
+        >
+          Go to Article Page
+        </v-btn>
+        <v-spacer />
+        <v-btn
+          :disabled="loadingUpdate"
+          color="primary"
+          @click="handleArticleUpdate"
+          >Save</v-btn
+        >
+        <v-btn
+          :disabled="loadingUpdate"
+          color="red"
+          @click="toggleEditDialog(null)"
+          >Cancel</v-btn
+        >
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
-
 
 <script setup>
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
-import { useDisplay } from 'vuetify';
-const { getAllArticlesWithTags, getAllCategories, getAllTags, insertArticle, updateArticle, updateArticleTags } = useDb();
+import { useDisplay } from "vuetify";
+const {
+  getAllArticlesWithTags,
+  getAllCategories,
+  getAllTags,
+  insertArticle,
+  updateArticle,
+  updateArticleTags,
+  uploadArticleImage,
+} = useDb();
 
-const editDialog = ref(false)
-const selectedArticle = ref({})
-const editForm = ref(null)
-const loadingUpdate = ref(false)
+const editDialog = ref(false);
+const selectedArticle = ref({});
+const editForm = ref(null);
+const loadingUpdate = ref(false);
 
-const searchQuery = ref('');
+const searchQuery = ref("");
 
 const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
-const types = ref(['blog', 'guide']);
+const types = ref(["blog", "guide"]);
 const loading = ref(false);
 const loadingArticles = ref(true);
 
-
 const currentPage = ref(1);
+const config = useRuntimeConfig();
 const { md, smAndDown, xs } = useDisplay();
 
-const perPage = computed(() =>
-{
-	if (xs.value) return 1;         // Extra small: 1 card per page
-	if (smAndDown.value) return 2;  // Small screen: 2 per page
-	if (md.value) return 2;    // Medium and up: 3 per page
-	return 3;                       // Fallback
+const perPage = computed(() => {
+  if (xs.value) return 1; // Extra small: 1 card per page
+  if (smAndDown.value) return 2; // Small screen: 2 per page
+  if (md.value) return 2; // Medium and up: 3 per page
+  return 3; // Fallback
 });
 
 const articleForm = ref(null); // ref to <v-form>
-const form = useState('articleForm', () => ({
-	title: '',
-	slug: '',
-	category_id: '',
-	tag_ids: [],
-	content: '',
-	is_published: true,
-	type: ''
+const form = useState("articleForm", () => ({
+  title: "",
+  slug: "",
+  category_id: "",
+  tag_ids: [],
+  content: "",
+  is_published: true,
+  type: "",
+  image_path: "",
+  photo_credits_url: "",
 }));
 
 const snackbar = ref({
-	show: false,
-	message: ''
+  show: false,
+  message: "",
 });
 
-onMounted(async () =>
-{
-	articles.value = await getAllArticlesWithTags(false);
-	console.log("articles", articles.value);
-	categories.value = await getAllCategories() || [];
-	tags.value = await getAllTags() || [];
-	loadingArticles.value = false;
+onMounted(async () => {
+  articles.value = await getAllArticlesWithTags(false);
+  console.log("articles", articles.value);
+  categories.value = (await getAllCategories()) || [];
+  tags.value = (await getAllTags()) || [];
+  loadingArticles.value = false;
 });
 
-const filteredArticles = computed(() =>
-{
-	if (!searchQuery.value.trim()) return articles.value;
+const filteredArticles = computed(() => {
+  if (!searchQuery.value.trim()) return articles.value;
 
-	return articles.value.filter(article =>
-		article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-	);
+  return articles.value.filter((article) =>
+    article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
 });
 
-const paginatedArticles = computed(() =>
-{
-	const start = (currentPage.value - 1) * perPage.value;
-	return filteredArticles.value.slice(start, start + perPage.value);
+const paginatedArticles = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value;
+  return filteredArticles.value.slice(start, start + perPage.value);
 });
 
-const pageCount = computed(() =>
-{
-	return Math.ceil(filteredArticles.value.length / perPage.value);
+const pageCount = computed(() => {
+  return Math.ceil(filteredArticles.value.length / perPage.value);
 });
 
 const formatName = (name) =>
-	name
-		.split(' ')
-		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(' ');
+  name
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
 const slugify = (text) =>
-	text
-		.toLowerCase()
-		.trim()
-		.replace(/\s+/g, '-')
-		.replace(/[^\w-]+/g, '');
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "");
 
-const handleSubmit = async () =>
-{
-	loading.value = true;
-	const { valid } = await articleForm.value.validate();
-	console.log("form validation", valid);
-	if (!valid)
-	{
-		console.error("Form validation failed");
-		snackbar.value.message = "Please fill in all required fields.";
-		snackbar.value.show = true;
-		loading.value = false;
-		return;
-	}
+const handleImageChange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
 
-	try {
-		form.value.title = formatName(form.value.title);
-		form.value.slug = slugify(form.value.title);
-
-		// Check for duplicate name or slug
-		const duplicate = articles.value.find(art =>
-			art.title === form.value.title || art.slug === form.value.slug
-		);
-
-		if (duplicate)
-		{
-			snackbar.value.message = "This article name already exists.";
-			snackbar.value.show = true;
-			loading.value = false;
-			return;
-		}
-
-		const res = await insertArticle(form.value);
-		if (res?.error) throw res.error;
-
-		// Reset + update
-		articleForm.value.reset();
-		await nextTick();
-		articleForm.value.resetValidation();
-		articles.value = await getAllArticlesWithTags(false);
-
-	} catch (err)
-	{
-		console.error("Error creating article:", err.message || err);
-		snackbar.value.message = "Failed to create article.";
-		snackbar.value.show = true;
-	} finally
-	{
-		loading.value = false;
-	}
+  const imagePath = await uploadArticleImage(file);
+  if (imagePath) {
+    form.value.image_path = imagePath;
+  }
 };
 
-const toggleEditDialog = (article) =>
-{
-	if (!article)
-	{
-		editDialog.value = false;
-		selectedArticle.value = {};
-		return;
-	}
+const handleEditImageChange = async (event) => {
+  const file = event.target.files[0];
+  if (!file || !selectedArticle.value.slug) return;
 
-	selectedArticle.value = {
-		id: article.id,
-		title: article.title,
-		content: article.content,
-		slug: article.slug,
-		type: article.type || '',
-
-		// Get the category ID based on the name
-		category_id: categories.value.find(cat => cat.name === article.category_name)?.id || '',
-
-		// Map tag names to their corresponding IDs
-		tag_ids: article.tags.map(tagName =>
-		{
-			const match = tags.value.find(t => t.name === tagName);
-			return match?.id || null;
-		}).filter(Boolean), // remove any nulls
-		is_published: article.is_published ?? true,
-	};
-
-	editDialog.value = true;
+  //   const imagePath = await uploadArticleImage(file);
+  const imagePath = await uploadArticleImage(file, selectedArticle.value.id);
+  if (imagePath) {
+    selectedArticle.value.image_path = imagePath;
+  }
 };
 
-const handleArticleUpdate = async () =>
-{
-	loadingUpdate.value = true
-	const { valid } = await editForm.value.validate()
-	if (!valid)
-	{
-		loadingUpdate.value = false
-		return
-	}
+const handleSubmit = async () => {
+  loading.value = true;
+  const { valid } = await articleForm.value.validate();
+  console.log("form validation", valid);
+  if (!valid) {
+    console.error("Form validation failed");
+    snackbar.value.message = "Please fill in all required fields.";
+    snackbar.value.show = true;
+    loading.value = false;
+    return;
+  }
 
-	const payload = {
-		title: formatName(selectedArticle.value.title),
-		content: selectedArticle.value.content,
-		slug: slugify(selectedArticle.value.title),
-		category_id: selectedArticle.value.category_id,
-		type: selectedArticle.value.type,
-		is_published: selectedArticle.value.is_published,
-	}
+  try {
+    form.value.title = formatName(form.value.title);
+    form.value.slug = slugify(form.value.title);
 
-	await updateArticle(selectedArticle.value.id, payload);
+    // Check for duplicate name or slug
+    const duplicate = articles.value.find(
+      (art) => art.title === form.value.title || art.slug === form.value.slug
+    );
 
-	await updateArticleTags(selectedArticle.value.id, selectedArticle.value.tag_ids);
+    if (duplicate) {
+      snackbar.value.message = "This article name already exists.";
+      snackbar.value.show = true;
+      loading.value = false;
+      return;
+    }
 
-	articles.value = await getAllArticlesWithTags(false);
-	toggleEditDialog(null)
-	loadingUpdate.value = false
+    const res = await insertArticle(form.value);
+    if (res?.error) throw res.error;
 
-}
+    // Reset + update
+    articleForm.value.reset();
+    await nextTick();
+    articleForm.value.resetValidation();
+    articles.value = await getAllArticlesWithTags(false);
+  } catch (err) {
+    console.error("Error creating article:", err.message || err);
+    snackbar.value.message = "Failed to create article.";
+    snackbar.value.show = true;
+  } finally {
+    loading.value = false;
+  }
+};
+
+const toggleEditDialog = (article) => {
+  if (!article) {
+    editDialog.value = false;
+    selectedArticle.value = {};
+    return;
+  }
+
+  selectedArticle.value = {
+    id: article.id,
+    title: article.title,
+    content: article.content,
+    image_path: article.image_path,
+    photo_credits_url: article.photo_credits_url,
+    slug: article.slug,
+    type: article.type || "",
+
+    // Get the category ID based on the name
+    category_id:
+      categories.value.find((cat) => cat.name === article.category_name)?.id ||
+      "",
+
+    // Map tag names to their corresponding IDs
+    tag_ids: article.tags
+      .map((tagName) => {
+        const match = tags.value.find((t) => t.name === tagName);
+        return match?.id || null;
+      })
+      .filter(Boolean), // remove any nulls
+    is_published: article.is_published ?? true,
+  };
+
+  editDialog.value = true;
+};
+
+const handleArticleUpdate = async () => {
+  loadingUpdate.value = true;
+  const { valid } = await editForm.value.validate();
+  if (!valid) {
+    loadingUpdate.value = false;
+    return;
+  }
+
+  const payload = {
+    title: formatName(selectedArticle.value.title),
+    content: selectedArticle.value.content,
+    image_path: selectedArticle.value.image_path,
+    photo_credits_url: selectedArticle.value.photo_credits_url,
+    slug: slugify(selectedArticle.value.title),
+    category_id: selectedArticle.value.category_id,
+    type: selectedArticle.value.type,
+    is_published: selectedArticle.value.is_published,
+  };
+
+  await updateArticle(selectedArticle.value.id, payload);
+
+  await updateArticleTags(
+    selectedArticle.value.id,
+    selectedArticle.value.tag_ids
+  );
+
+  articles.value = await getAllArticlesWithTags(false);
+  toggleEditDialog(null);
+  loadingUpdate.value = false;
+};
+
+const isValidUrl = (value) => {
+  if (!value) return true; // allow empty (optional)
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return "Must be a valid URL";
+  }
+};
 </script>
 
 <style scoped>
 .v-pagination .v-pagination__item--is-active {
-	background-color: #1976d2 !important;
-	color: white !important;
-	border-radius: 8px;
+  background-color: #1976d2 !important;
+  color: white !important;
+  border-radius: 8px;
 }
 
 .articles-wrapper {
-	min-height: 100px;
-	display: flex;
-	flex-direction: column;
-	justify-content: flex-start;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .html-preview {
-	border: 1px solid #ccc;
-	border-radius: 8px;
-	padding: 1rem;
-	margin-top: 1rem;
-	background-color: #fafafa;
-	font-family: "Segoe UI", sans-serif;
-	line-height: 1.6;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  background-color: #fafafa;
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.6;
 }
 </style>
