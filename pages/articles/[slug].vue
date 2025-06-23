@@ -1,10 +1,32 @@
 <template>
-  <v-container class="py-8" v-if="article">
-    <v-row justify="center">
+  <v-container class="py-8" v-if="article" fluid>
+    <HomeRow1 />
+    <v-row>
+      <v-img
+        class="align-end text-white"
+        height="350"
+        :src="`${config.public.SUPABASE_BUCKET}/articles/${article.image_path}`"
+        cover
+      >
+        <div class="w-100 text-center px-4">
+          <div
+            class="font-weight-bold text-subtitle-1 text-md-h5 text-lg-h4"
+            style="white-space: normal; word-break: break-word"
+          >
+            {{ article.title }}
+          </div>
+        </div>
+        <div class="d-flex justify-end pr-4 pb-2">
+          <span class="ml-1">{{ formatDate(article.created_at) }}</span>
+        </div>
+      </v-img>
+    </v-row>
+
+    <!-- <v-row justify="center">
       <v-col cols="12" md="8">
         <h1>{{ article.title }}</h1>
       </v-col>
-    </v-row>
+    </v-row> -->
 
     <v-row>
       <v-col cols="12">
@@ -19,9 +41,6 @@
           >
             {{ article.category.name }}
           </NuxtLink>
-          •
-          <v-icon>mdi-calendar-blank</v-icon>
-          <span class="ml-1">{{ formatDate(article.created_at) }}</span>
         </div>
 
         <!-- Render Markdown content -->
@@ -110,6 +129,7 @@ const slug = route.params.slug;
 const article = ref(null);
 const renderedMarkdown = ref("");
 const shareUrl = `https://imchatty.com/articles/${slug}`;
+const config = useRuntimeConfig();
 
 const { getArticleBySlug } = useDb(); // You'd need to define this helper
 
@@ -192,7 +212,7 @@ watchEffect(() => {
 }
 
 .prose {
-  max-width: 750px;
+  max-width: 800px;
   margin: auto;
   line-height: 1.7;
   font-size: 1rem;

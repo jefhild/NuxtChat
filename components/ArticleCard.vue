@@ -1,24 +1,48 @@
 <template>
   <v-col>
-    <v-card :to="disableNavigation ? undefined : localPath(`/articles/${article.slug}`)"
-      class="article-card pa-4 d-flex flex-column justify-between" elevation="3" @click.stop="handleClick"
-      :style="{ minHeight: props.admin ? '360px' : '280px' }">
-      <v-card-title class="font-weight-bold text-wrap">
-        {{ article.title }}
-      </v-card-title>
-
-      <v-card-subtitle class="mb-2 text-medium-emphasis">
-        <div class="d-flex align-center">
-          <v-icon>mdi-account</v-icon>
-          <span class="ml-1">ImChatty</span>
-
-          <v-icon class="ml-5">mdi-calendar-blank</v-icon>
+    <v-card
+      :to="
+        disableNavigation ? undefined : localPath(`/articles/${article.slug}`)
+      "
+      class="article-card pa-4 d-flex flex-column justify-between"
+      elevation="3"
+      @click.stop="handleClick"
+      :style="{ minHeight: props.admin ? '360px' : '280px' }"
+    >
+      <v-img
+        class="align-end text-white"
+        height="200"
+        :src="`${config.public.SUPABASE_BUCKET}/articles/${article.image_path}`"
+        cover
+      >
+        <div class="w-100 text-center px-4">
+          <div
+            class="font-weight-bold text-subtitle-1 text-md-h5"
+            style="white-space: normal; word-break: break-word"
+          >
+            {{ article.title }}
+          </div>
+        </div>
+        <div class="d-flex justify-end pr-4 pb-2">
           <span class="ml-1">{{ formatDate(article.created_at) }}</span>
         </div>
-
-        <div class="d-flex align-center mt-2">
-          <v-icon>mdi-folder</v-icon>
-          <span class="ml-1">{{ article.category_name }}</span>
+      </v-img>
+      <v-card-subtitle class="mb-2 text-medium-emphasis">
+        <div class="d-flex align-center justify-space-between mt-2 w-100">
+          <div class="d-flex align-center">
+            <v-icon>mdi-folder</v-icon>
+            <span class="ml-1">{{ article.category_name }}</span>
+          </div>
+          <a
+            v-if="article.photo_credits_url"
+            :href="article.photo_credits_url"
+            class="text-caption text-decoration-underline"
+            target="_blank"
+            rel="noopener noreferrer"
+            @click.stop
+          >
+            Photo credits
+          </a>
         </div>
       </v-card-subtitle>
 
@@ -37,7 +61,13 @@
       </v-card-text>
 
       <v-card-actions v-if="props.admin">
-        <v-chip v-if="article.is_published" color="success" size="x-small" class="ml-2" label>
+        <v-chip
+          v-if="article.is_published"
+          color="success"
+          size="x-small"
+          class="ml-2"
+          label
+        >
           Published
         </v-chip>
         <v-chip v-else color="grey" size="x-small" class="ml-2" label>
@@ -50,6 +80,7 @@
 
 <script setup>
 const localPath = useLocalePath();
+const config = useRuntimeConfig();
 const props = defineProps({
   article: {
     type: Object,

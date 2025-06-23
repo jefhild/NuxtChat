@@ -1,11 +1,11 @@
 <template>
   <v-container fluid>
     <!-- Top Bar -->
-    <v-row justify="center" class="title-bar">
+    <!-- <v-row justify="center" class="title-bar">
       <v-col cols="12" md="8">
         <h1 class="page-title">{{ $t("pages.admin.title") }}</h1>
       </v-col>
-    </v-row>
+    </v-row> -->
 
     <v-row>
       <!-- Sidebar -->

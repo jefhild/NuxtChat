@@ -117,10 +117,8 @@ export const useDb = () => {
     return data;
   };
 
-  const getGenderFromId = async (id) =>
-  {
-    if (!id)
-    {
+  const getGenderFromId = async (id) => {
+    if (!id) {
       return null;
     }
     const { data, error } = await supabase
@@ -129,15 +127,13 @@ export const useDb = () => {
       .eq("id", id)
       .single();
 
-    if (error || !data?.name)
-    {
+    if (error || !data?.name) {
       console.error("Failed to get gender name:", error?.message);
       return null;
     }
 
     return data.name;
   };
-
 
   const getLookingForId = async (name) => {
     const { data, error } = await supabase
@@ -161,36 +157,37 @@ export const useDb = () => {
       .eq("user_id", id)
       .maybeSingle();
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching avatar decoration:", error);
     }
 
     return data.avatar_decoration_url;
   };
 
-  const getMessageById = async (id) =>
-  {
+  const getMessageById = async (id) => {
     const { data, error } = await supabase
       .from("messages")
       .select("id, content, sender_id")
       .eq("id", id)
       .single();
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching message by ID:", error);
     }
 
     return { data, error };
   };
-  
 
-  const getMessagesBetweenUsers = async (senderUserId, receiverUserId, before = null, limit = 20) =>
-  {
+  const getMessagesBetweenUsers = async (
+    senderUserId,
+    receiverUserId,
+    before = null,
+    limit = 20
+  ) => {
     let query = supabase
       .from("messages")
-      .select(`
+      .select(
+        `
         id,
         sender_id,
         receiver_id,
@@ -203,15 +200,15 @@ export const useDb = () => {
         reply_to_message_id,
         reply_to:reply_to_message_id ( id, content, sender_id ),
         profiles!messages_sender_id_fkey(displayname)
-      `)
+      `
+      )
       .or(
         `and(sender_id.eq.${senderUserId},receiver_id.eq.${receiverUserId}),and(sender_id.eq.${receiverUserId},receiver_id.eq.${senderUserId})`
       )
       .order("created_at", { ascending: false })
       .limit(limit);
 
-    if (before)
-    {
+    if (before) {
       query = query.lt("created_at", before);
     }
 
@@ -221,10 +218,16 @@ export const useDb = () => {
     return data;
   };
 
-  const getMessagesOfAUserWithUser =  async (senderUserId, receiverUserId, before = null,  limit = 20) => {
+  const getMessagesOfAUserWithUser = async (
+    senderUserId,
+    receiverUserId,
+    before = null,
+    limit = 20
+  ) => {
     let query = supabase
       .from("messages")
-      .select(`
+      .select(
+        `
         id,
         sender_id,
         receiver_id,
@@ -237,23 +240,23 @@ export const useDb = () => {
         reply_to_message_id,
         reply_to:reply_to_message_id ( id, content, sender_id ),
         profiles!messages_sender_id_fkey(displayname)
-      `)
-      .eq('sender_id',senderUserId)
-      .eq('receiver_id', receiverUserId)
+      `
+      )
+      .eq("sender_id", senderUserId)
+      .eq("receiver_id", receiverUserId)
       .order("created_at", { ascending: false })
       .limit(limit);
 
-      if (before) {
-        query = query.lt("created_at", before);
-      }
+    if (before) {
+      query = query.lt("created_at", before);
+    }
 
     const { data, error } = await query;
-      
+
     // console.log("getMessagesOfAUserWithUser", data, error);
     if (error) throw error;
     return data;
-  }
-  
+  };
 
   const getAIInteractionCount = async (senderUserId) => {
     const { data: interactionData, error: updateError } = await supabase
@@ -331,10 +334,10 @@ export const useDb = () => {
     userIds = [],
     genderId,
     minAge,
-    maxAge, 
+    maxAge,
     is_anonymous,
     interests,
-    country_id, 
+    country_id,
     status_id,
     userId
   ) => {
@@ -365,7 +368,6 @@ export const useDb = () => {
   };
 
   const getUserDisplayNameFromId = async (userId) => {
-
     const { data, error } = await supabase
       .from("profiles")
       .select("displayname")
@@ -377,7 +379,6 @@ export const useDb = () => {
     }
 
     return data?.displayname;
-
   };
 
   const getUserFromName = async (displayName) => {
@@ -395,13 +396,13 @@ export const useDb = () => {
   };
 
   const getUserProfileFromId = async (userId) => {
-
-    if (!userId)
-    {
-      console.error("No userId provided to getUserProfileFromId. This is normal if there is no user autheniticated");
+    if (!userId) {
+      console.error(
+        "No userId provided to getUserProfileFromId. This is normal if there is no user autheniticated"
+      );
       return { data: null, error: new Error("Missing userId") };
     }
-    
+
     const { data, error } = await supabase
       .from("profiles")
       .select(
@@ -431,15 +432,15 @@ export const useDb = () => {
   };
 
   const getUserProfileFromDisplayName = async (displayName) => {
-    const { data, error } = await supabase.rpc("get_user_profile_by_displayname", {
-      p_displayname: displayName,
-    })
+    const { data, error } = await supabase.rpc(
+      "get_user_profile_by_displayname",
+      {
+        p_displayname: displayName,
+      }
+    );
 
     if (error) {
-      console.error(
-        "Error fetching user profile with RPC:",
-        error
-      )
+      console.error("Error fetching user profile with RPC:", error);
     }
 
     return data;
@@ -448,18 +449,14 @@ export const useDb = () => {
   const getUserProfileFromSlug = async (slug) => {
     const { data, error } = await supabase.rpc("get_user_profile_by_slug", {
       p_slug: slug,
-    })
+    });
 
-    if (error)
-    {
-      console.error(
-        "Error fetching user profile with RPC slug:",
-        error
-      )
+    if (error) {
+      console.error("Error fetching user profile with RPC slug:", error);
     }
 
     return data;
-  }
+  };
 
   const getUserProfilePhoto = async (userId) => {
     const { data, error } = await supabase
@@ -490,14 +487,16 @@ export const useDb = () => {
   };
 
   const getAllProfiles = async (withAI) => {
-    const { data, error } = await supabase.rpc("get_all_profiles", {p_is_ai: withAI});
+    const { data, error } = await supabase.rpc("get_all_profiles", {
+      p_is_ai: withAI,
+    });
 
     if (error) {
       console.error("Error fetching all profiles:", error);
       return [];
     }
 
-    return data ;
+    return data;
   };
 
   const getRecentFemales = async (profileLimit) => {
@@ -542,8 +541,16 @@ export const useDb = () => {
     return { data, error };
   };
 
-  const getActiveChats = async (userId, genderId, minAge, maxAge, is_anonymous, interests, country_id, status_id) =>
-  {
+  const getActiveChats = async (
+    userId,
+    genderId,
+    minAge,
+    maxAge,
+    is_anonymous,
+    interests,
+    country_id,
+    status_id
+  ) => {
     const { data, error } = await supabase.rpc("fetch_filtered_active_chats", {
       logged_in_user_id: userId,
       gender_filter: genderId,
@@ -555,8 +562,7 @@ export const useDb = () => {
       p_status_id: status_id,
     });
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching active chats:", error);
     }
 
@@ -684,7 +690,6 @@ export const useDb = () => {
     return data;
   };
 
-
   const getUserUpvotedProfiles = async (userId) => {
     const { data, error } = await supabase.rpc("get_upvoted_profiles", {
       upvoter_id: userId,
@@ -699,21 +704,19 @@ export const useDb = () => {
 
   const getAllAvatarDecorations = async () => {
     const config = useRuntimeConfig();
-    const { data, error } = await supabase
-      .storage
-      .from('avatar-decorations')
-      .list('decorations', {
+    const { data, error } = await supabase.storage
+      .from("avatar-decorations")
+      .list("decorations", {
         limit: 100,
-        sortBy: { column: 'name', order: 'asc' },
+        sortBy: { column: "name", order: "asc" },
       });
 
-    if (error)
-    {
-      console.error('Error loading decorations:', error.message);
+    if (error) {
+      console.error("Error loading decorations:", error.message);
       return [];
     }
 
-    return data.map(file => ({
+    return data.map((file) => ({
       name: file.name,
       url: `${config.public.SUPABASE_URL}/storage/v1/object/public/avatar-decorations/decorations/${file.name}`,
     }));
@@ -731,10 +734,10 @@ export const useDb = () => {
     return data;
   };
 
-  const getUserFavoritedMeProfiles = async(userId) => {
+  const getUserFavoritedMeProfiles = async (userId) => {
     const { data, error } = await supabase.rpc("get_users_who_favorited_me", {
       input_user_id: userId,
-    })
+    });
 
     if (error) {
       console.error("Error fetching favorited me profiles: ", error);
@@ -743,15 +746,13 @@ export const useDb = () => {
     return data;
   };
 
-  const getAllTags = async () =>
-  {
+  const getAllTags = async () => {
     const { data, error } = await supabase
       .from("tags")
       .select("id, name, slug")
       .order("name", { ascending: true });
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching tags:", error.message);
       return [];
     }
@@ -759,15 +760,13 @@ export const useDb = () => {
     return data;
   };
 
-  const getAllCategories = async () =>
-  {
+  const getAllCategories = async () => {
     const { data, error } = await supabase
       .from("categories")
       .select("id, name, slug")
       .order("name", { ascending: true });
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching categories:", error.message);
       return [];
     }
@@ -775,131 +774,132 @@ export const useDb = () => {
     return data;
   };
 
-  const getAllArticlesWithTags = async () =>
-  {
+  const getAllArticlesWithTags = async () => {
     const { data, error } = await supabase
       .from("articles")
-      .select(`
+      .select(
+        `
       id,
       title,
       type,
       slug,
       content,
+      image_path,
+      photo_credits_url,
       is_published,
       created_at,
       category:category_id(name),
       article_tags(tag:tag_id(name))
-    `)
+    `
+      )
       .order("created_at", { ascending: false });
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching articles:", error.message);
       return [];
     }
 
     // Flatten tags and category
-    return data.map(article => ({
+    return data.map((article) => ({
       ...article,
       category_name: article.category?.name ?? "Uncategorized",
-      tags: article.article_tags?.map(t => t.tag.name) ?? []
+      tags: article.article_tags?.map((t) => t.tag.name) ?? [],
     }));
   };
 
-  const getAllPublishedArticlesWithTags = async (limit) =>
-  {
+  const getAllPublishedArticlesWithTags = async (limit) => {
     const { data, error } = await supabase
       .from("articles")
-      .select(`
+      .select(
+        `
       id,
       title,
       type,
       slug,
       content,
+      image_path,
+      photo_credits_url,
       is_published,
       created_at,
       category:category_id(name),
       article_tags(tag:tag_id(name))
-    `)
+    `
+      )
       .eq("is_published", true)
       .limit(limit)
       .order("created_at", { ascending: false });
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching articles:", error.message);
       return [];
     }
 
     // Flatten tags and category
-    return data.map(article => ({
+    return data.map((article) => ({
       ...article,
       category_name: article.category?.name ?? "Uncategorized",
-      tags: article.article_tags?.map(t => t.tag.name) ?? []
+      tags: article.article_tags?.map((t) => t.tag.name) ?? [],
     }));
   };
 
-
-  const getArticleBySlug = async (slug) =>
-  {
+  const getArticleBySlug = async (slug) => {
     const { data, error } = await supabase
       .from("articles")
-      .select(`
+      .select(
+        `
       id,
       title,
       slug,
       content,
+      image_path,
+      photo_credits_url,
       created_at,
       is_published,
       category:category_id ( id, name, slug ),
       tags:article_tags (
         tag:tag_id ( id, name, slug )
       )
-    `)
+    `
+      )
       .eq("slug", slug)
       .eq("is_published", true)
       .single();
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching article:", error);
       return null;
     }
 
     // Flatten tag data
-    if (data.tags)
-    {
+    if (data.tags) {
       data.tags = data.tags.map((tag) => tag.tag);
     }
 
     return data;
   };
 
-  const getCountArticleByTag = async (tagId) =>{
+  const getCountArticleByTag = async (tagId) => {
     const { error, count } = await supabase
-      .from('article_tags')
-      .select('*', { count: 'exact', head: true })
-      .eq('tag_id', tagId);
+      .from("article_tags")
+      .select("*", { count: "exact", head: true })
+      .eq("tag_id", tagId);
 
-    if (error)
-    {
-      console.error('Error fetching article count for tag:', error.message);
+    if (error) {
+      console.error("Error fetching article count for tag:", error.message);
       return 0;
     }
 
     return count || 0;
   };
 
-  const getCountArticleByCategory = async (categoryId) =>
-  {
+  const getCountArticleByCategory = async (categoryId) => {
     const { count, error } = await supabase
       .from("articles")
       .select("*", { count: "exact", head: true })
       .eq("category_id", categoryId)
       .eq("is_published", true); // Optional: only count published articles
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching article count by category:", error);
       return 0;
     }
@@ -907,14 +907,12 @@ export const useDb = () => {
     return count || 0;
   };
 
-  const getArticlesByTagSlug = async (slug) =>
-  {
+  const getArticlesByTagSlug = async (slug) => {
     const { data, error } = await supabase.rpc("get_articles_by_tag_slug", {
       tag_slug: slug,
     });
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching articles by tag slug:", error);
       return [];
     }
@@ -922,16 +920,14 @@ export const useDb = () => {
     return data;
   };
 
-  const getTagsByArticle = async (articleSlug) =>
-  {
+  const getTagsByArticle = async (articleSlug) => {
     const { data, error } = await supabase
       .from("articles")
       .select("tags(name, slug)")
       .eq("slug", articleSlug)
       .single();
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching tags for article:", error);
       return [];
     }
@@ -940,12 +936,14 @@ export const useDb = () => {
   };
 
   const getArticlesbyCategorySlug = async (slug) => {
-    const { data, error } = await supabase.rpc("get_articles_by_category_slug", {
-      cat_slug: slug,
-    });
+    const { data, error } = await supabase.rpc(
+      "get_articles_by_category_slug",
+      {
+        cat_slug: slug,
+      }
+    );
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching articles by category slug:", error);
       return [];
     }
@@ -953,16 +951,17 @@ export const useDb = () => {
     return data;
   };
 
-  const getArticlesByType = async (type) => { 
-    if (type != 'guide' && type != 'blog')
-    {
+  const getArticlesByType = async (type) => {
+    if (type != "guide" && type != "blog") {
       console.error("Invalid article type:", type);
       return null;
     }
 
     const { data, error } = await supabase
       .from("articles")
-      .select("id, title, slug, content, created_at, is_published,  category:category_id (name)")
+      .select(
+        "id, title, slug, content, image_path, photo_credits_url, created_at, is_published,  category:category_id (name)"
+      )
       .eq("type", type)
       .order("created_at", { ascending: false });
 
@@ -976,12 +975,14 @@ export const useDb = () => {
   const getAllReports = async () => {
     const { data, error } = await supabase
       .from("reports")
-      .select(`
+      .select(
+        `
         *, 
         report_messages:report_messages (
           message:messages (*)
         )
-      `)
+      `
+      )
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -992,14 +993,13 @@ export const useDb = () => {
   };
 
   const getUserSlugFromId = async (userId) => {
-    const {data, error} = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select("slug")
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (error)
-    {
+    if (error) {
       console.error("Error fetching user slug:", error);
     }
 
@@ -1010,10 +1010,9 @@ export const useDb = () => {
     const { data } = supabase.storage
       .from("chat-files")
       .getPublicUrl(`messages/${fileName}`);
-  
+
     return data.publicUrl;
   };
-
 
   /*------------------*/
   /* Update functions */
@@ -1131,21 +1130,19 @@ export const useDb = () => {
     }
   };
 
-  const updateMessage = async (messageId, newContent) =>
-  {
+  const updateMessage = async (messageId, newContent) => {
     const { data, error } = await supabase
-      .from('messages')
+      .from("messages")
       .update({
         content: newContent,
-        edited_at: new Date().toISOString()
+        edited_at: new Date().toISOString(),
       })
-      .eq('id', messageId)
+      .eq("id", messageId)
       .select()
       .single();
 
-    if (error)
-    {
-      console.error('Error updating message:', error);
+    if (error) {
+      console.error("Error updating message:", error);
       throw error;
     }
 
@@ -1221,48 +1218,41 @@ export const useDb = () => {
     }*/
   };
 
-  const updateAvatarDecoration = async (userId, avatarDecUrl) =>{
-    console.log("in db",userId, avatarDecUrl);
-    const { error } = await supabase 
-    .from("profiles")
-    .update({ avatar_decoration_url: avatarDecUrl })
-    .eq("user_id", userId);
+  const updateAvatarDecoration = async (userId, avatarDecUrl) => {
+    console.log("in db", userId, avatarDecUrl);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ avatar_decoration_url: avatarDecUrl })
+      .eq("user_id", userId);
 
-
-    if (error && error.status !== 204)
-    {
+    if (error && error.status !== 204) {
       console.error("Error updating decoration:", error);
     }
   };
 
   const updateCategory = async (slug, data) => {
     const { error } = await supabase
-      .from('categories')
+      .from("categories")
       .update(data)
-      .eq('slug', slug);
-  
-    if (error && error.status !== 204)
-    {
+      .eq("slug", slug);
+
+    if (error && error.status !== 204) {
       console.error("Error udpating category:", error);
     }
   };
 
   const updateTag = async (slug, data) => {
-    const { error } = await supabase
-      .from('tags')
-      .update(data)
-      .eq('slug', slug);
+    const { error } = await supabase.from("tags").update(data).eq("slug", slug);
 
-    if (error && error.status !== 204)
-    {
+    if (error && error.status !== 204) {
       console.error("Error udpating tag:", error);
     }
   };
 
-  const updateArticle = async (id, payload) =>
-  {
+  const updateArticle = async (id, payload) => {
     const { error } = await supabase
       .from("articles")
+      
       .update(payload)
       .eq("id", id);
 
@@ -1271,22 +1261,18 @@ export const useDb = () => {
     }
   };
 
-  const updateArticleTags = async (articleId, tagIds) =>
-  {
+  const updateArticleTags = async (articleId, tagIds) => {
     //Remove the existing tags
-    await supabase
-      .from("article_tags")
-      .delete()
-      .eq("article_id", articleId);
+    await supabase.from("article_tags").delete().eq("article_id", articleId);
 
     // Re-insert tag associations
-    const insertData = tagIds.map(tag_id => ({ article_id: articleId, tag_id }));
-    const { error } = await supabase
-      .from("article_tags")
-      .insert(insertData);
+    const insertData = tagIds.map((tag_id) => ({
+      article_id: articleId,
+      tag_id,
+    }));
+    const { error } = await supabase.from("article_tags").insert(insertData);
 
-    if (error)
-    {
+    if (error) {
       console.error("Error updating article tags:", error);
     }
   };
@@ -1302,16 +1288,13 @@ export const useDb = () => {
     }
   };
 
-  const updateSoundSetting = async (userId, enabled) =>
-  {
+  const updateSoundSetting = async (userId, enabled) => {
     return await supabase
       .from("profiles")
       .update({ sound_notifications_enabled: enabled })
       .eq("user_id", userId);
   };
 
-
-  
   /*------------------*/
   /* Insert functions */
   /*------------------*/
@@ -1332,38 +1315,36 @@ export const useDb = () => {
     siteUrl,
     bio
   ) => {
+    const slugUser = displayname
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w-]+/g, "")
+      .replace("_", "-");
 
-      const slugUser = displayname
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w-]+/g, '')
-        .replace('_', '-');
-        
     const { data, error } = await supabase
       .from("profiles")
       .insert({
-          gender_id: genderId,
-          status_id: statusId,
-          age: age,
-          country_id: countryId,
-          state_id: stateId,
-          city_id: cityId,
-          username: username,
-          avatar_url: avatarUrl,
-          user_id: userId,
-          provider: provider,
-          displayname: displayname,
-          slug: slugUser,
-          ip: ip,
-          site_url: siteUrl,
-          bio: bio,
-        })
+        gender_id: genderId,
+        status_id: statusId,
+        age: age,
+        country_id: countryId,
+        state_id: stateId,
+        city_id: cityId,
+        username: username,
+        avatar_url: avatarUrl,
+        user_id: userId,
+        provider: provider,
+        displayname: displayname,
+        slug: slugUser,
+        ip: ip,
+        site_url: siteUrl,
+        bio: bio,
+      })
       .select("user_id")
       .maybeSingle();
 
-    if (error || !data?.user_id)
-    {
+    if (error || !data?.user_id) {
       console.error("Error inserting profile or no ID returned:", error);
       return { error };
     }
@@ -1371,20 +1352,25 @@ export const useDb = () => {
     const profileId = data.user_id;
     const defaultFavoriteId = "7d20548d-8a9d-4190-bce5-90c8d74c4a56"; // this is santa clause
 
-    try
-    {
+    try {
       await insertFavorite(profileId, defaultFavoriteId);
       await upvoteUserProfile(defaultFavoriteId, profileId);
-    } catch (e)
-    {
+    } catch (e) {
       console.error("Error inserting default favorite/upvote:", e);
     }
 
     return { error: null };
   };
 
-  const insertMessage = async (receiverId, senderId, message, replyToMessageId = null, fileUrl = null, fileType = null, fileName = null) =>
-  {
+  const insertMessage = async (
+    receiverId,
+    senderId,
+    message,
+    replyToMessageId = null,
+    fileUrl = null,
+    fileType = null,
+    fileName = null
+  ) => {
     const { data, error } = await supabase
       .from("messages")
       .insert({
@@ -1398,8 +1384,7 @@ export const useDb = () => {
       })
       .select("*");
 
-    if (error)
-    {
+    if (error) {
       console.error("Error sending message:", error);
     }
 
@@ -1477,8 +1462,7 @@ export const useDb = () => {
     return error;
   };
 
-  const insertArticle = async (article) =>
-  {
+  const insertArticle = async (article) => {
     // Step 1: Insert article and return the id
     const { data, error } = await supabase
       .from("articles")
@@ -1486,6 +1470,8 @@ export const useDb = () => {
         title: article.title,
         slug: article.slug,
         content: article.content,
+        image_path: article.image_path,
+        photo_credits_url: article.photo_credits_url,
         category_id: article.category_id,
         type: article.type,
         is_published: article.is_published,
@@ -1495,8 +1481,7 @@ export const useDb = () => {
       .single();
 
     console.log("Inserted article:", data);
-    if (error)
-    {
+    if (error) {
       console.error("Error inserting article:", error);
       return error;
     }
@@ -1504,7 +1489,7 @@ export const useDb = () => {
     const articleId = data.id;
 
     // Step 2: Insert tag relations
-    const tagInserts = article.tag_ids.map(tagId => ({
+    const tagInserts = article.tag_ids.map((tagId) => ({
       article_id: articleId,
       tag_id: tagId,
     }));
@@ -1515,8 +1500,7 @@ export const useDb = () => {
       .from("article_tags")
       .insert(tagInserts);
 
-    if (tagInsertError)
-    {
+    if (tagInsertError) {
       console.error("Error linking tags to article:", tagInsertError);
       return tagInsertError;
     }
@@ -1528,77 +1512,70 @@ export const useDb = () => {
 
   const insertCategory = async (category) => {
     // console.log("Inserting category:", category);
-    const { error } = await supabase
-      .from("categories")
-      .insert({
-        name: category.name,
-        slug: category.slug,
-      });
+    const { error } = await supabase.from("categories").insert({
+      name: category.name,
+      slug: category.slug,
+    });
 
-    
-    if (error)
-    {
+    if (error) {
       console.error("Error inserting category:", error);
     }
     return error;
   };
 
   const insertTag = async (tag) => {
-    const { error } = await supabase
-      .from("tags")
-      .insert({
-        name: tag.name,
-        slug: tag.slug,
-      });
+    const { error } = await supabase.from("tags").insert({
+      name: tag.name,
+      slug: tag.slug,
+    });
 
-
-    if (error)
-    {
+    if (error) {
       console.error("Error inserting tag:", error);
     }
     return error;
   };
 
-  const insertReport = async(currentUserId, reportedUserId, categories, reason, messages) => {
-    const { data,  error } = await supabase
+  const insertReport = async (
+    currentUserId,
+    reportedUserId,
+    categories,
+    reason,
+    messages
+  ) => {
+    const { data, error } = await supabase
       .from("reports")
       .insert({
         reporter_id: currentUserId,
         reported_user_id: reportedUserId,
-        categories, 
+        categories,
         reason,
       })
       .select("id") // important to get the inserted id
       .single();
 
-    if (error)
-    {
+    if (error) {
       console.error("Error submitting report:", error);
       return error;
-    } 
+    }
 
     const reportId = data.id;
 
     // Insert messages related to the report
     for (const message of messages) {
       await insertReportMessages(reportId, message.id);
-    };
-  }
+    }
+  };
 
   const insertReportMessages = async (reportId, messageId) => {
-    const { error } = await supabase
-    .from("report_messages")
-    .insert({
+    const { error } = await supabase.from("report_messages").insert({
       report_id: reportId,
       message_id: messageId,
     });
 
-    if (error)
-    {
+    if (error) {
       console.error("Error inserting report message:", error);
       return error;
     }
-    
   };
 
   /*------------------*/
@@ -1661,21 +1638,21 @@ export const useDb = () => {
     return error;
   };
 
-const deleteUpvoteFromUser = async (userId, upvotedProfileId) => {
-const { data, error } = await supabase
-  .from("votes")
-  .delete({ returning: "representation" }) // THIS is key!
-  .eq("user_id", userId)
-  .eq("profile_id", upvotedProfileId);
+  const deleteUpvoteFromUser = async (userId, upvotedProfileId) => {
+    const { data, error } = await supabase
+      .from("votes")
+      .delete({ returning: "representation" }) // THIS is key!
+      .eq("user_id", userId)
+      .eq("profile_id", upvotedProfileId);
 
-  console.log("Deleted rows:", data);
+    console.log("Deleted rows:", data);
 
-  if (error && error.status !== 204) {
-    console.error("Error deleting upvote:", error.message);
-  }
+    if (error && error.status !== 204) {
+      console.error("Error deleting upvote:", error.message);
+    }
 
-  return { data, error };
-};
+    return { data, error };
+  };
 
   const deleteReport = async (reportId) => {
     const { error } = await supabase
@@ -1689,7 +1666,6 @@ const { data, error } = await supabase
       console.log("Report deleted successfully");
     }
   };
-
 
   /*-----------------*/
   /* Other Functions */
@@ -1782,13 +1758,47 @@ const { data, error } = await supabase
       .from("chat-files")
       .upload(`messages/${fileName}`, file);
 
-    if (error)
-    {
+    if (error) {
       console.error("Upload error:", error);
     }
 
     return error;
   };
+
+  const uploadArticleImage = async (file, articleId) => {
+    if (!file || !articleId) return null;
+
+    const extension = file.name.split(".").pop();
+    const timestamp = Date.now();
+    const fileName = `article-${articleId}-${timestamp}.${extension}`;
+
+    const { data, error } = await supabase.storage
+      .from("articles")
+      .upload(fileName, file);
+
+    if (error) {
+      console.error("Upload failed:", error.message);
+      return null;
+    }
+
+    return data.path;
+  };
+
+  // const uploadArticleImage = async (file) => {
+  //   if (!file) return null;
+
+  //   const fileName = `${Date.now()}-${file.name}`;
+  //   const { data, error } = await supabase.storage
+  //     .from("articles")
+  //     .upload(fileName, file, { upsert: true });
+
+  //   if (error) {
+  //     console.error("Upload failed:", error.message);
+  //     return null;
+  //   }
+
+  //   return data.path; // returns the relative path to store in image_path
+  // };
 
   const checkInactivityForAllUsers = async () => {
     console.log("checking inactivity for ALL users");
@@ -1841,27 +1851,25 @@ const { data, error } = await supabase
     }
   };
 
-  const markUserForDeletion = async (userId) =>
-  {
-    await $fetch('/api/markUser', {
-      method: 'POST',
+  const markUserForDeletion = async (userId) => {
+    await $fetch("/api/markUser", {
+      method: "POST",
       body: {
         userId,
         deleteMe: true,
-        deleteRequestedAt: new Date().toISOString()
-      }
+        deleteRequestedAt: new Date().toISOString(),
+      },
     });
   };
 
-  const unmarkUserForDeletion = async (userId) =>
-  {
-    await $fetch('/api/markUser', {
-      method: 'POST',
+  const unmarkUserForDeletion = async (userId) => {
+    await $fetch("/api/markUser", {
+      method: "POST",
       body: {
         userId,
         deleteMe: false,
-        deleteRequestedAt: null
-      }
+        deleteRequestedAt: null,
+      },
     });
   };
 
@@ -1893,21 +1901,20 @@ const { data, error } = await supabase
     }
 
     return data?.is_ai ?? false;
-  }
-
+  };
 
   /*----------------*/
   /* Auth functions */
   /*----------------*/
   /*Get*/
-const authGetUser = async () => {
-  if (!import.meta.client) {
-    return { data: { user: null }, error: null };
-  }
+  const authGetUser = async () => {
+    if (!import.meta.client) {
+      return { data: { user: null }, error: null };
+    }
 
-  const { data, error } = await supabase.auth.getUser();
-  return { data, error };
-};
+    const { data, error } = await supabase.auth.getUser();
+    return { data, error };
+  };
 
   const authRefreshSession = async () => {
     const { data, error } = await supabase.auth.refreshSession();
@@ -1972,7 +1979,6 @@ const authGetUser = async () => {
   //   });
   // };
 
-
   // const signInWithOAuth = async (provider, path = "/callback") => {
   //   const origin = window.location.origin;
   //   const redirectUrl = `${origin}${path}`;
@@ -1983,7 +1989,6 @@ const authGetUser = async () => {
   //     },
   //   });
   // };
-
 
   const signInWithOAuth = async (provider, next = "/chat") => {
     const origin = window.location.origin;
@@ -2150,6 +2155,7 @@ const authGetUser = async () => {
     downvoteUserProfile,
     uploadProfilePhoto,
     uploadChatFile,
+    uploadArticleImage,
     trackPresence,
     stopTracking,
     checkInactivityForAllUsers,
