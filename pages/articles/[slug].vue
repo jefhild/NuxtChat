@@ -118,56 +118,40 @@
 </template>
 
 <script setup>
-import { marked } from "marked"; // or use @nuxt/content if preferred
+import { marked } from "marked";
 const { locale } = useI18n();
 const localPath = useLocalePath();
-
-const authStore = useAuthStore();
+const config = useRuntimeConfig();
 const route = useRoute();
 const slug = route.params.slug;
+const currentLocale = locale.value || "en";
+const shareUrl = `https://imchatty.com/${currentLocale}/articles/${slug}`;
+const { getArticleBySlug } = useDb();
 
-const article = ref(null);
+const { data: article, error } = await useAsyncData(`article-${slug}`, () =>
+  getArticleBySlug(slug)
+);
+
 const renderedMarkdown = ref("");
-const shareUrl = `https://imchatty.com/articles/${slug}`;
-const config = useRuntimeConfig();
 
-const { getArticleBySlug } = useDb(); // You'd need to define this helper
+if (article.value?.content) {
+  const markdown = article.value.content.replace(/\\n/g, "\n");
+  renderedMarkdown.value = await marked(markdown);
 
-onMounted(async () => {
-  authStore.checkAuth();
-  const data = await getArticleBySlug(slug);
-  if (data) {
-    article.value = data;
-    const markdown = (data.content || "").replace(/\\n/g, "\n");
-    renderedMarkdown.value = await marked(markdown); // Convert Markdown to HTML
-  }
-});
+  const htmlContent = renderedMarkdown.value;
+  const plainText = htmlContent.replace(/<[^>]+>/g, " ");
+  const condensed = plainText.replace(/\s+/g, " ").trim();
+  const safeDescription = condensed.slice(0, 160) + "…";
+  const localizedShareUrl = `https://imchatty.com/${currentLocale}/articles/${slug}`;
+  const imageUrl = `${config.public.SUPABASE_BUCKET}/articles/${article.value.image_path}`;
 
-const formatDate = (date) =>
-  new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-
-watchEffect(() => {
-  if (!article.value) return;
-
-  // To not have the html content when i use article.value.content in the SEO meta
-  const plainText = article.value.content?.replace(/<[^>]+>/g, "") || "";
-  const safeDescription = plainText.trim().slice(0, 160) + "…";
-
-  useHead(() => {
-    const currentLocale = locale.value || "en"; // fallback
-
-    return {
-      link: [
-        {
-          rel: "canonical",
-          href: `https://imchatty.com/${currentLocale}/articles/${slug || ""}`,
-        },
-      ],
-    };
+  useHead({
+    link: [
+      {
+        rel: "canonical",
+        href: localizedShareUrl,
+      },
+    ],
   });
 
   useSeoMeta({
@@ -175,20 +159,31 @@ watchEffect(() => {
     description: safeDescription,
     ogTitle: `${article.value.title} – ImChatty`,
     ogDescription: safeDescription,
-    ogUrl: shareUrl,
-    ogImage: "https://imchatty.com/images/article-image.webp",
+    ogUrl: localizedShareUrl,
+    ogImage: imageUrl,
     ogType: "article",
-    ogLocale: "en_US",
+    ogLocale:
+      currentLocale === "en"
+        ? "en_US"
+        : `${currentLocale}_${currentLocale.toUpperCase()}`,
     ogSiteName: "ImChatty",
     twitterCard: "summary_large_image",
     twitterTitle: `${article.value.title} – ImChatty`,
     twitterDescription: safeDescription,
-    twitterImage: "https://imchatty.com/images/article-image.webp",
+    twitterImage: imageUrl,
     articleSection: article.value.category?.name || "Article",
     articlePublishedTime: article.value.created_at,
-    canonical: shareUrl,
+    canonical: localizedShareUrl,
   });
-});
+}
+
+// Format date utility
+const formatDate = (date) =>
+  new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 </script>
 
 <style scoped>
