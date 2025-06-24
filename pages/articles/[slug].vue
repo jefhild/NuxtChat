@@ -181,16 +181,7 @@ const formatDate = (date) =>
 </script>
 
 <style scoped>
-.title-bar {
-  border-radius: 20px;
-  margin: 10px 0px;
-  padding: 20px;
-  background-image: url("/images/bkg/tiediebkg.webp");
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  color: black;
-}
+
 
 .page-title {
   font-family: "Poppins", sans-serif;

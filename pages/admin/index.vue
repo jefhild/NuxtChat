@@ -1,11 +1,6 @@
 <template>
   <v-container fluid>
-    <!-- Top Bar -->
-    <!-- <v-row justify="center" class="title-bar">
-      <v-col cols="12" md="8">
-        <h1 class="page-title">{{ $t("pages.admin.title") }}</h1>
-      </v-col>
-    </v-row> -->
+
 
     <v-row>
       <!-- Sidebar -->
@@ -81,16 +76,6 @@ const getSectionComponent = (section) =>
 </script>
 
 <style scoped>
-.title-bar {
-  border-radius: 20px;
-  margin: 10px 10px;
-  padding: 20px;
-  background-image: url('/images/bkg/tiediebkg.webp');
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  color: black;
-}
 
 .page-title {
   font-family: "Poppins", sans-serif;
