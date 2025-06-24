@@ -10,53 +10,21 @@ const slug = route.params.slug;
 const { profile, fetchUserProfileFromSlug } = useUserProfile();
 await fetchUserProfileFromSlug(slug);
 
-useHead(() => {
-  const gender = profile.value?.gender;
-  const slug = profile.value?.slug;
-  const currentLocale = locale.value || "en"; // fallback
-
-  return {
-    link: [
-      {
-        rel: "canonical",
-        href: `https://imchatty.com/${currentLocale}/profiles/${
-          typeof gender === "string" ? gender.toLowerCase() : "unknown"
-        }/${slug || "unknown"}`,
-      },
-    ],
-  };  
-});
-
+// ✅ Define before it's used
 const getLimitedDescription = (text) =>
   text && text.length > 160 ? text.slice(0, 157) + "..." : text;
 
-useSeoMeta({
-  title: profile.value?.displayname || "Default Title",
-  description: getLimitedDescription(
-    profile.value?.bio || "Default Description"
-  ),
-  ogTitle: profile.value?.displayname,
-  ogDescription: getLimitedDescription(
-    profile.value?.bio || "Default Description"
-  ),
-  ogImage: profile.value?.avatar_url,
-  twitterCard: "summary_large_image",
-  twitterTitle: profile.value?.displayname,
-  twitterDescription: getLimitedDescription(
-    profile.value?.bio || "Default Description"
-  ),
-  twitterImage: profile.value?.avatar_url,
+// ✅ Call composable AFTER the function is declared
+useSeoI18nMeta("profiles.female", {
+  dynamic: {
+    title: profile.value?.displayname,
+    description: getLimitedDescription(profile.value?.bio),
+    ogTitle: profile.value?.displayname,
+    ogDescription: getLimitedDescription(profile.value?.bio),
+    ogImage: profile.value?.avatar_url,
+    twitterTitle: profile.value?.displayname,
+    twitterDescription: getLimitedDescription(profile.value?.bio),
+    twitterImage: profile.value?.avatar_url,
+  },
 });
-
-// useSeoMeta({
-//   title: profile.value?.displayname || "Default Title",
-//   description: profile.value?.bio || "Default Description",
-//   ogTitle: profile.value?.displayname,
-//   ogDescription: profile.value?.bio,
-//   ogImage: profile.value?.avatar_url,
-//   twitterCard: "summary_large_image",
-//   twitterTitle: profile.value?.displayname,
-//   twitterDescription: profile.value?.bio,
-//   twitterImage: profile.value?.avatar_url,
-// });
 </script>
