@@ -22,6 +22,14 @@
           >
             {{ article.title }}
           </div>
+
+          <!-- <component
+            :is="headingLevel"
+            class="font-weight-bold text-subtitle-1 text-md-h5"
+            style="white-space: normal; word-break: break-word"
+          >
+            {{ article.title }}
+          </component> -->
         </div>
         <div class="d-flex justify-end pr-4 pb-2">
           <span class="ml-1">{{ formatDate(article.created_at) }}</span>

@@ -118,6 +118,7 @@ export default defineNuxtConfig({
         "/tags",
         "/*/cookies",
         "/cookies",
+        "/categories",
         "/*/categories/*",
         "/*/categories",
         "/categories/*",
