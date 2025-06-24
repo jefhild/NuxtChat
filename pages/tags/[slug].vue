@@ -1,21 +1,43 @@
 <template>
-  <v-container>
-    <v-row justify="center">
-      <v-col cols="12" md="8">
-        <h1>{{ route.params.slug.toUpperCase() }}</h1>
+  <v-container fluid>
+    <HomeRow1 />
+    <v-row align="center" justify="space-between" class="">
+      <v-col cols="12" md="6">
+        <h1>{{ route.params.slug.replaceAll("-", " ").toUpperCase() }}</h1>
       </v-col>
     </v-row>
 
-    <LoadingContainer v-if="isLoading" :text="$t('pages.articles.index.loading')" />
+    <LoadingContainer
+      v-if="isLoading"
+      :text="$t('pages.articles.index.loading')"
+    />
 
-    <v-container v-else>
+    <v-container fluid v-else>
+      <!-- ✅ Search + Dropdown Filters -->
+      <ArticleSearchFilters
+        v-if="categories.length || tags.length"
+        :categories="categories"
+        :tags="tags"
+        v-model:searchQuery="searchQuery"
+        :searchLabel="searchArticlesLabel"
+        @categorySelected="goToCategory"
+        @tagSelected="goToTag"
+      />
+
       <v-row>
-        <v-col v-for="article in articles" :key="article.id" cols="12" sm="6" md="4" class="d-flex">
+        <v-col
+          v-for="article in filteredArticles"
+          :key="article.id"
+          cols="12"
+          sm="6"
+          md="4"
+          class="d-flex"
+        >
           <ArticleCard :article="article" />
         </v-col>
       </v-row>
 
-      <v-row v-if="!articles.length">
+      <v-row v-if="!filteredArticles.length">
         <v-col class="text-center">
           <p>{{ $t("pages.tags.slug.no-articles") }}</p>
         </v-col>
@@ -25,29 +47,64 @@
 </template>
 
 <script setup>
-const { getArticlesByTagSlug, getTagsByArticle } = useDb();
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const route = useRoute();
-const isLoading = ref(true);
+const router = useRouter();
+const localPath = useLocalePath();
 
+import ArticleSearchFilters from "@/components/ArticleSearchFilters.vue";
+const { getArticlesByTagSlug, getTagsByArticle, getAllCategories } = useDb();
+
+const isLoading = ref(true);
 const articles = ref([]);
+const categories = ref([]);
+const tags = ref([]);
+const searchQuery = ref("");
+const searchArticlesLabel = computed(() => t("pages.articles.index.search"));
+
+// ✅ Routing functions for filters
+const goToTag = (slug) => {
+  if (slug) router.push(localPath(`/tags/${slug}`));
+};
+const goToCategory = (slug) => {
+  if (slug) router.push(localPath(`/categories/${slug}`));
+};
+
+// ✅ Filtered articles by search
+const filteredArticles = computed(() => {
+  if (!searchQuery.value) return articles.value;
+  return articles.value.filter((article) =>
+    article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
 
 onMounted(async () => {
+  categories.value = await getAllCategories();
+
   const data = await getArticlesByTagSlug(route.params.slug);
   if (data) {
     const articlesWithTags = await Promise.all(
-      data.map(async article => ({
-			...article,
-			tags: await getTagsByArticle(article.slug),
-		}))
+      data.map(async (article) => ({
+        ...article,
+        tags: await getTagsByArticle(article.slug),
+      }))
     );
 
     articles.value = articlesWithTags;
+
+    // ✅ Deduplicate tags by slug
+    const tagMap = new Map();
+    for (const article of articlesWithTags) {
+      article.tags.forEach((tag) => {
+        tagMap.set(tag.slug, tag);
+      });
+    }
+    tags.value = Array.from(tagMap.values());
   }
+
   isLoading.value = false;
 });
-
 </script>
 
 <style scoped>
@@ -55,7 +112,7 @@ onMounted(async () => {
   border-radius: 20px;
   margin: 10px 10px;
   padding: 20px;
-  background-image: url('/images/bkg/tiedie4.webp');
+  background-image: url("/images/bkg/tiedie4.webp");
   background-size: cover;
   background-position: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

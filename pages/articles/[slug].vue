@@ -13,7 +13,7 @@
             class="font-weight-bold text-subtitle-1 text-md-h5 text-lg-h4"
             style="white-space: normal; word-break: break-word"
           >
-            {{ article.title }}
+            <h1>{{ article.title }}</h1>
           </div>
         </div>
         <div class="d-flex justify-end pr-4 pb-2">
@@ -21,12 +21,6 @@
         </div>
       </v-img>
     </v-row>
-
-    <!-- <v-row justify="center">
-      <v-col cols="12" md="8">
-        <h1>{{ article.title }}</h1>
-      </v-col>
-    </v-row> -->
 
     <v-row>
       <v-col cols="12">

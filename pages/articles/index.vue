@@ -11,10 +11,18 @@
         <h1>{{ $t("pages.articles.index.explore") }}</h1>
       </v-col>
     </v-row>
+    <v-row
+      ><ArticleSearchFilters
+        :categories="categories"
+        :tags="tags"
+        v-model:searchQuery="searchQuery"
+        :searchLabel="searchArticlesLabel"
+        @categorySelected="goToCategory"
+        @tagSelected="goToTag"
+    /></v-row>
 
     <!-- Unified Search, Categories, and Tags Row -->
-    <v-row align="center" justify="space-between" class="m-3">
-      <!-- Categories Dropdown -->
+    <!-- <v-row align="center" justify="space-between" class="m-3">
       <v-col cols="12" md="4" class="d-flex">
         <v-select
           :items="categories"
@@ -29,7 +37,6 @@
         />
       </v-col>
 
-      <!-- Tags Dropdown -->
       <v-col cols="12" md="4" class="d-flex">
         <v-select
           :items="tags"
@@ -43,7 +50,7 @@
           class="flex-grow-1"
         />
       </v-col>
-      <!-- Search Bar -->
+
       <v-col cols="12" md="4" class="d-flex">
         <v-text-field
           v-model="searchQuery"
@@ -56,7 +63,7 @@
           class="search-bar"
         />
       </v-col>
-    </v-row>
+    </v-row> -->
 
     <!-- Articles List -->
     <v-row dense>

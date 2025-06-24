@@ -1,18 +1,30 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <v-row justify="center">
       <v-col cols="12" md="8">
         <h1>{{ $t("pages.categories.index.title") }}</h1>
       </v-col>
     </v-row>
 
-    <LoadingContainer v-if="isLoading" :text="$t('pages.categories.index.loading')" />
+    <LoadingContainer
+      v-if="isLoading"
+      :text="$t('pages.categories.index.loading')"
+    />
 
-    <v-container v-else>
+    <v-container fluid v-else>
+
       <v-row justify="center" class="category-container">
-        <v-col v-for="category in categories" :key="category.slug" cols="auto" class="my-2">
-          <NuxtLink :to="localPath(`/categories/${category.slug}`)" class="category-link"
-            v-if="category.articleCount > 0">
+        <v-col
+          v-for="category in categories"
+          :key="category.slug"
+          cols="auto"
+          class="my-2"
+        >
+          <NuxtLink
+            :to="localPath(`/categories/${category.slug}`)"
+            class="category-link"
+            v-if="category.articleCount > 0"
+          >
             {{ category.name }}
             <v-chip class="ma-1" size="small" color="black">
               {{ category.articleCount }}
@@ -34,6 +46,8 @@ const authStore = useAuthStore();
 const categories = ref([]);
 
 useSeoI18nMeta("categories.index");
+
+
 
 onMounted(async () => {
   authStore.checkAuth();
