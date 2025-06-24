@@ -18,7 +18,7 @@
   </v-container>
 </template>
 
-<script setup>
+<script setup>   
 const isAuthenticated = ref(false);
 const authStore = useAuthStore();
 const isLoading = ref(false);
