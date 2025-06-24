@@ -21,7 +21,7 @@ export function useSeoI18nMeta(
 
   const currentLocale = locale.value || "en";
   const localePrefix = currentLocale === "en" ? "" : `/${currentLocale}`;
-  const pathWithoutLocale = route.fullPath.replace(/^\/(en|fr)(?=\/|$)/, "");
+  const pathWithoutLocale = route.fullPath.replace(/^\/[a-z]{2}(?=\/|$)/, "");
   const canonicalHref =
     options?.overrideUrl || `${baseUrl}${localePrefix}${pathWithoutLocale}`;
 
