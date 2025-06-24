@@ -3,7 +3,7 @@
     <v-app-bar
       scroll-behavior="hide"
       scroll-threshold="61"
-      image="/images/bkg/tiediebkg.webp"
+      image="/images/bkg/tiediebkg2.webp"
       alt="navbar background image"
     >
       <v-app-bar-title class="siteTitle">
