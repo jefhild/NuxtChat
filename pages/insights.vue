@@ -1,24 +1,36 @@
 <template>
-  <v-container>
-    <v-row justify="center" class="title-bar">
-      <v-col cols="12" md="8">
-        <h1 class="page-title">{{ $t("pages.insights.title") }}</h1>
-      </v-col>
-    </v-row>
-
+  <v-container fluid>
     <LoadingContainer v-if="isLoading" />
 
-    <v-container v-else>
-      <v-text-field v-model="searchQuery" :label="searchArticlesLabel" prepend-inner-icon="mdi-magnify" clearable
-        class="mb-4" />
+    <v-container fluid v-else>
+      <v-text-field
+        v-model="searchQuery"
+        :label="searchArticlesLabel"
+        prepend-inner-icon="mdi-magnify"
+        clearable
+        class="mb-4"
+      />
 
       <v-row>
-        <v-col v-for="article in filteredArticles" :key="article.id" cols="12" sm="6" md="4" class="d-flex">
+        <v-col
+          v-for="article in filteredArticles"
+          :key="article.id"
+          cols="12"
+          sm="6"
+          md="4"
+          class="d-flex"
+        >
           <ArticleCard :article="article" />
         </v-col>
       </v-row>
 
-      <v-alert v-if="!filteredArticles.length" type="info" variant="tonal" border="top" border-color="primary">
+      <v-alert
+        v-if="!filteredArticles.length"
+        type="info"
+        variant="tonal"
+        border="top"
+        border-color="primary"
+      >
         {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
       </v-alert>
       <v-row v-if="!articlesData?.length">
@@ -36,10 +48,7 @@ const { getArticlesByType, getTagsByArticle } = useDb();
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
-const searchArticlesLabel = computed(() =>
-  t("pages.articles.index.search")
-);
-
+const searchArticlesLabel = computed(() => t("pages.articles.index.search"));
 
 const { data: articlesData, pending: isLoading } = await useAsyncData(
   "articles",
@@ -81,9 +90,7 @@ const ogTitle = computed(() => t("pages.insights.meta.ogTitle"));
 const ogUrl = computed(() => t("pages.insights.meta.ogUrl"));
 const ogType = computed(() => t("pages.insights.meta.ogType"));
 const ogImage = computed(() => t("pages.insights.meta.ogImage"));
-const ogDescription = computed(() =>
-  t("pages.insights.meta.ogDescription")
-);
+const ogDescription = computed(() => t("pages.insights.meta.ogDescription"));
 const twitterTitle = computed(() => t("pages.insights.meta.twitterTitle"));
 const twitterCard = computed(() => t("pages.insights.meta.twitterCard"));
 const twitterDescription = computed(() =>
@@ -105,17 +112,6 @@ useSeoMeta({
 </script>
 
 <style scoped>
-.title-bar {
-  border-radius: 20px;
-  margin: 10px 10px;
-  padding: 20px;
-  background-image: url("/images/bkg/tiediebkg.webp");
-  background-position: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  color: black;
-  margin-bottom: 1.5rem;
-}
-
 .page-title {
   font-family: "Poppins", sans-serif;
   font-weight: 700;

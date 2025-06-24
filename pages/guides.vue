@@ -1,14 +1,14 @@
 <template>
-  <v-container>
-    <v-row justify="center" class="title-bar">
+  <v-container fluid>
+    <!-- <v-row justify="center" class="title-bar">
       <v-col cols="12" md="8">
         <h1 class="page-title">{{ $t("pages.guides.title") }}</h1>
       </v-col>
-    </v-row>
+    </v-row> -->
 
     <LoadingContainer v-if="isLoading" />
 
-    <v-container v-else>
+    <v-container fluid v-else>
       <v-text-field
         v-model="searchQuery"
         :label="searchArticlesLabel"
@@ -119,16 +119,6 @@ useSeoMeta({
 </script>
 
 <style scoped>
-.title-bar {
-  border-radius: 20px;
-  margin: 10px 10px;
-  padding: 20px;
-  background-image: url("/images/bkg/tiediebkg.webp");
-  background-position: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  color: black;
-  margin-bottom: 1.5rem;
-}
 
 .page-title {
   font-family: "Poppins", sans-serif;

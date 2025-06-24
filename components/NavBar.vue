@@ -91,7 +91,7 @@
     </v-app-bar>
   </nav>
   <nav v-else>
-    <v-app-bar image="/images/bkg/tiediebkg.webp" alt="navbar background image">
+    <v-app-bar image="/images/bkg/tiediebkg2.webp" alt="navbar background image">
       <v-app-bar-title class="siteTitle">
         <NuxtLink :to="localPath('/')">{{
           $t("components.navbar.imchatty")

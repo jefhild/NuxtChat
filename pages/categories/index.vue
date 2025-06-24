@@ -67,16 +67,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.title-bar {
-  border-radius: 20px;
-  margin: 10px 10px;
-  padding: 20px;
-  background-image: url("/images/bkg/tiedie2.webp");
-  background-position: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  color: black;
-  margin-bottom: 1.5rem;
-}
+
 
 .page-title {
   font-family: "Poppins", sans-serif;
