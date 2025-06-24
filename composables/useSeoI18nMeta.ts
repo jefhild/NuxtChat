@@ -14,16 +14,48 @@ export function useSeoI18nMeta(
     };
   }
 ) {
-  const { t, locale } = useI18n();
+  const { t, locale, locales, localeCodes } = useI18n();
   const route = useRoute();
   const config = useRuntimeConfig();
   const baseUrl = config.public.SITE_URL;
-
   const currentLocale = locale.value || "en";
-  const localePrefix = currentLocale === "en" ? "" : `/${currentLocale}`;
+
+  // Strip any leading locale prefix
   const pathWithoutLocale = route.fullPath.replace(/^\/[a-z]{2}(?=\/|$)/, "");
+
+  // Canonical URL (current locale)
+  const localePrefix = currentLocale === "en" ? "" : `/${currentLocale}`;
   const canonicalHref =
     options?.overrideUrl || `${baseUrl}${localePrefix}${pathWithoutLocale}`;
+
+  // Build hreflang links for all locales
+
+
+  const hreflangMap: Record<string, string> = {
+    en: "en-US",
+    fr: "fr-FR",
+    ru: "ru-RU",
+    zh: "zh-CN",
+  };
+  const hreflangLinks = (localeCodes?.value || []).map((code) => {
+    const hreflang = hreflangMap[code] || code;
+    const href =
+      code === "en"
+        ? `${baseUrl}${pathWithoutLocale}`
+        : `${baseUrl}/${code}${pathWithoutLocale}`;
+    return {
+      rel: "alternate",
+      hreflang,
+      href,
+    };
+  });
+
+  // Add x-default fallback (point to English)
+  hreflangLinks.push({
+    rel: "alternate",
+    hreflang: "x-default",
+    href: `${baseUrl}${pathWithoutLocale}`,
+  });
 
   const key = (suffix: string) => `pages.${section}.meta.${suffix}`;
   const tf = (suffix: string): string => {
@@ -39,7 +71,10 @@ export function useSeoI18nMeta(
 
   useHead(() => ({
     title: dynamic.title || tf("title"),
-    link: [{ rel: "canonical", href: canonicalHref }],
+    link: [
+      { rel: "canonical", href: canonicalHref },
+      ...hreflangLinks, // ✅ Add all hreflangs
+    ],
     meta: [
       {
         name: "description",
