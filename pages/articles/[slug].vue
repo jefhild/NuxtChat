@@ -136,7 +136,7 @@ if (article.value?.content) {
   const plainText = htmlContent.replace(/<[^>]+>/g, " ");
   const condensed = plainText.replace(/\s+/g, " ").trim();
   const safeDescription = condensed.slice(0, 160) + "…";
-  const localizedShareUrl = `https://imchatty.com/${currentLocale}/articles/${slug}`;
+  const localizedShareUrl = `https://imchatty.com${currentLocale === 'en' ? '' : `/${currentLocale}`}/articles/${slug}`;
   const imageUrl = `${config.public.SUPABASE_BUCKET}/articles/${article.value.image_path}`;
 
   useHead({
