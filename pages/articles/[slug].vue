@@ -48,8 +48,8 @@
       </v-col>
     </v-row>
 
-    <v-row class="ml-2 mt-10">
-      <v-col cols="12" md="4">
+    <v-row justify="center" class="mb-4">
+      <v-col cols="12" class="text-center">
         <v-btn color="primary" :to="localPath('/chat')">
           {{ $t("pages.home.landing_page.cta_button") }}!
           <v-icon end>mdi-chat</v-icon>
@@ -57,12 +57,12 @@
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col cols="12" md="8">
-        <div class="d-flex align-center flex-wrap">
-          <span class="font-weight-medium mr-2"
-            >{{ $t("pages.admin.sections.tags") }}:</span
-          >
+    <v-row justify="center">
+      <v-col cols="12" md="8" class="text-center">
+        <div class="d-flex justify-center align-center flex-wrap">
+          <span class="font-weight-medium mr-2">
+            {{ $t("pages.admin.sections.tags") }}:
+          </span>
           <v-chip
             v-for="tag in article.tags"
             :key="tag.id"
