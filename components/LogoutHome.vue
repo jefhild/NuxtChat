@@ -43,7 +43,10 @@
                 <v-row justify="center" align="center" class="mx-0" dense>
                   <v-col cols="12" sm="auto" class="mb-2 mb-sm-0">
                     <v-btn color="primary" block>
-                      <NuxtLink :to="localPath('/')" class="text-dec-none text-white">
+                      <NuxtLink
+                        :to="localPath('/')"
+                        class="text-dec-none text-white"
+                      >
                         {{ $t("pages.home.landing_page.cta_button") }}
                       </NuxtLink>
                     </v-btn>
