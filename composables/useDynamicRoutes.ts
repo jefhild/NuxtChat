@@ -12,7 +12,11 @@ import { getGenderFromId } from "../lib/dbUtils";
  * Used for Nitro prerendering (must return string[]).
  */
 const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
-// const SUPPORTED_LOCALES = ["en", "fr", "zh"];
+const defaultLocale = "en";
+
+function localizePath(path: string, locale: string) {
+  return locale === defaultLocale ? path : `/${locale}${path}`;
+}
 
 export async function getAllDynamicRoutes(): Promise<string[]> {
   try {
@@ -41,16 +45,26 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
     const categoryRoutes = categoryData.map((c) => `/categories/${c.slug}`);
     const tagRoutes = tagData.map((t) => `/tags/${t.slug}`);
 
+    const staticPages = [
+      "/about",
+      "/guides",
+      "/cookies",
+      "/insights",
+      "/settings",
+    ];
+    const homeRoutes = ["/"];
+
     const allRoutes = [
+      ...homeRoutes,
+      ...staticPages,
       ...profileRoutes,
       ...articleRoutes,
       ...categoryRoutes,
       ...tagRoutes,
     ];
 
-    // Now prefix each route with each locale
     const localizedRoutes = allRoutes.flatMap((route) =>
-      SUPPORTED_LOCALES.map((locale) => `/${locale}${route}`)
+      SUPPORTED_LOCALES.map((locale) => localizePath(route, locale))
     );
 
     return localizedRoutes;
