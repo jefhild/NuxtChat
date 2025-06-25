@@ -54,7 +54,7 @@ const switchLanguage = () => {
 select {
   appearance: none;
   padding: 6px 12px 6px 36px;
-  font-size: 14px;
+  font-size: 11px;
   border-radius: 6px;
   background-repeat: no-repeat;
   background-position: 8px center;

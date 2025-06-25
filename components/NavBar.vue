@@ -1,97 +1,9 @@
 <template>
-  <nav aria-label="Main Navigation" v-if="isAuthenticated">
+  <nav>
     <v-app-bar
-      scroll-behavior="hide"
-      scroll-threshold="61"
       image="/images/bkg/tiediebkg2.webp"
       alt="navbar background image"
     >
-      <v-app-bar-title class="siteTitle">
-        <NuxtLink :to="localPath('/')">{{
-          $t("components.navbar.imchatty")
-        }}</NuxtLink>
-      </v-app-bar-title>
-
-      <template v-slot:append>
-        <nav role="navigation" aria-label="Main Navigation">
-          <v-row class="d-none d-md-flex" align="center">
-            <OnlineStatus v-if="navProfileUserId" />
-            <NuxtLink
-              :to="localPath('/articles')"
-              class="v-btn text-button navItem mr-3"
-              exact
-            >
-              <v-icon start>mdi-post-outline</v-icon
-              >{{ $t("components.navbar.blog") }}
-            </NuxtLink>
-            <NuxtLink
-              :to="localPath('/chat')"
-              class="v-btn text-button navItem mr-3"
-              exact
-            >
-              <v-icon start>mdi-chat</v-icon>{{ $t("components.navbar.chat") }}
-            </NuxtLink>
-            <NuxtLink
-              :to="localPath('/settings')"
-              class="v-btn text-button navItem mr-3"
-              exact
-            >
-              <v-icon start>mdi-cog</v-icon
-              >{{ $t("components.navbar.settings") }}
-            </NuxtLink>
-            <NotificationDropdown />
-            <LanguageSwitcher class="ml-3" />
-            <v-btn @click="showLogoutDialog" variant="text">{{
-              $t("components.navbar.logout")
-            }}</v-btn>
-          </v-row>
-        </nav>
-        <!-- Mobile menu -->
-        <div class="d-flex d-md-none">
-          <NotificationDropdown />
-          <LanguageSwitcher class="ml-3" />
-          <v-menu>
-            <template #activator="{ props }">
-              <v-app-bar-nav-icon v-bind="props" />
-            </template>
-            <v-list>
-              <v-list-item
-                :to="localPath('/articles')"
-                prepend-icon="mdi-post-outline"
-                link
-              >
-                <v-list-item-title>{{
-                  $t("components.navbar.blog")
-                }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item
-                :to="localPath('/chat')"
-                prepend-icon="mdi-chat"
-                link
-              >
-                <v-list-item-title>{{
-                  $t("components.navbar.chat")
-                }}</v-list-item-title>
-              </v-list-item>
-              <!-- <v-list-item to="/chat" prepend-icon="mdi-chat">Chat</v-list-item> -->
-              <v-list-item
-                :to="localPath('/settings')"
-                prepend-icon="mdi-cog"
-                >{{ $t("components.navbar.settings") }}</v-list-item
-              >
-              <v-list-item
-                @click="showLogoutDialog"
-                prepend-icon="mdi-logout"
-                >{{ $t("components.navbar.logout") }}</v-list-item
-              >
-            </v-list>
-          </v-menu>
-        </div>
-      </template>
-    </v-app-bar>
-  </nav>
-  <nav v-else>
-    <v-app-bar image="/images/bkg/tiediebkg2.webp" alt="navbar background image">
       <v-app-bar-title class="siteTitle">
         <NuxtLink :to="localPath('/')">{{
           $t("components.navbar.imchatty")
@@ -101,45 +13,69 @@
 
       <template v-slot:append>
         <nav role="navigation" aria-label="Main Navigation">
-          <v-row class="d-none d-md-flex" align="center">
-            <NuxtLink
-              :to="localPath('/articles')"
-              class="v-btn text-button navItem mr-3"
-              exact
-            >
-              <!-- <v-icon start>mdi-post-outline</v-icon> -->
-              {{ $t("components.navbar.blog") }}
-            </NuxtLink>
+          <!-- <v-row class="d-none d-md-flex" align="center"> -->
+          <div class="d-none d-md-flex flex-column align-end">
+            <v-row align="center">
+              <NuxtLink
+                :to="localPath('/articles')"
+                class="v-btn text-button navItem mr-3"
+                exact
+              >
+                <!-- <v-icon start>mdi-post-outline</v-icon> -->
+                {{ $t("components.navbar.blog") }}
+              </NuxtLink>
 
-            <NuxtLink
-              :to="localPath('/signin')"
-              class="v-btn text-button navItem mr-4"
-              exact
-            >
-              <!-- <v-icon start>mdi-login</v-icon> -->
-              {{ $t("components.navbar.signin") }}
-            </NuxtLink>
+              <NuxtLink
+                :to="localPath('/about')"
+                class="v-btn text-button navItem mr-4"
+                exact
+              >
+                <!-- <v-icon start>mdi-account-group</v-icon> -->
+                {{ $t("components.navbar.aboutus") }}
+              </NuxtLink>
 
-            <NuxtLink
-              :to="localPath('/about')"
-              class="v-btn text-button navItem mr-4"
-              exact
-            >
-              <!-- <v-icon start>mdi-account-group</v-icon> -->
-              {{ $t("components.navbar.aboutus") }}
-            </NuxtLink>
+              <NuxtLink
+                :to="localPath('/profiles')"
+                class="v-btn text-button navItem mr-4"
+                exact
+              >
+                <!-- <v-icon start>mdi-monitor-account</v-icon> -->
+                {{ $t("components.navbar.free-chat") }}
+              </NuxtLink>
 
-            <NuxtLink
-              :to="localPath('/profiles')"
-              class="v-btn text-button navItem mr-4"
-              exact
-            >
-              <!-- <v-icon start>mdi-monitor-account</v-icon> -->
-              {{ $t("components.navbar.free-chat") }}
-            </NuxtLink>
-          </v-row>
+              <NuxtLink
+                v-if="isAuthenticated"
+                :to="localPath('/settings')"
+                class="v-btn text-button navItem mr-3"
+                exact
+              >
+                <v-icon start>mdi-cog</v-icon>
+                {{ $t("components.navbar.settings") }}
+              </NuxtLink>
+
+              <v-btn
+                v-if="isAuthenticated"
+                @click="showLogoutDialog"
+                variant="text"
+              >
+                <v-icon start>mdi-logout</v-icon>
+                {{ $t("components.navbar.logout") }}
+              </v-btn>
+
+              <v-btn
+                v-else
+                :to="localPath('/signin')"
+                variant="text"
+                class="navItem mr-4"
+              >
+                <v-icon start>mdi-login</v-icon>
+                {{ $t("components.navbar.signin") }}
+              </v-btn>
+            </v-row>
+
+            <v-row><LanguageSwitcher /></v-row>
+          </div>
         </nav>
-        <LanguageSwitcher class="ml-3 mb-2" />
 
         <!-- Mobile menu -->
         <div class="d-flex d-md-none">
@@ -149,26 +85,50 @@
             </template>
 
             <v-list aria-label="Mobile Navigation">
+              <v-list-item :to="localPath('/articles')" link>
+                <v-list-item-title>{{
+                  $t("components.navbar.blog")
+                }}</v-list-item-title>
+              </v-list-item>
+
+              <v-list-item :to="localPath('/about')" link>
+                <v-list-item-title>{{
+                  $t("components.navbar.aboutus")
+                }}</v-list-item-title>
+              </v-list-item>
+
+              <v-list-item :to="localPath('/profiles')" link>
+                <v-list-item-title>{{
+                  $t("components.navbar.free-chat")
+                }}</v-list-item-title>
+              </v-list-item>
+
               <v-list-item
-                :to="localPath('/articles')"
-                prepend-icon="mdi-post-outline"
-                >{{ $t("components.navbar.blog") }}</v-list-item
+                v-if="isAuthenticated"
+                :to="localPath('/settings')"
+                link
               >
+                <v-list-item-title>{{
+                  $t("components.navbar.settings")
+                }}</v-list-item-title>
+              </v-list-item>
+
+              <v-list-item v-if="isAuthenticated" @click="showLogoutDialog">
+                <v-list-item-title>{{
+                  $t("components.navbar.logout")
+                }}</v-list-item-title>
+              </v-list-item>
+
               <v-list-item
+                v-else
                 :to="localPath('/signin')"
                 prepend-icon="mdi-login"
-                >{{ $t("components.navbar.signin") }}</v-list-item
+                link
               >
-              <v-list-item
-                :to="localPath('/about')"
-                prepend-icon="mdi-account-group"
-                >{{ $t("components.navbar.aboutus") }}</v-list-item
-              >
-              <v-list-item
-                :to="localPath('/profiles')"
-                prepend-icon="mdi-monitor-account"
-                >{{ $t("components.navbar.free-chat") }}</v-list-item
-              >
+                <v-list-item-title>{{
+                  $t("components.navbar.signin")
+                }}</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-menu>
         </div>
@@ -221,6 +181,8 @@ const currentLocale = ref(locale.value);
 const flagPaths = {
   en: "/images/flags/icon_us.png",
   fr: "/images/flags/icon_fr.png",
+  zh: "/images/flags/icon_zh.png",
+  ru: "/images/flags/icon_ru.png",
 };
 
 // const availableLocales = rawLocales.map((code) => ({
@@ -260,5 +222,10 @@ const confirmLogout = async () => {
 .flag-dropdown .v-field {
   border: none !important;
   box-shadow: none !important;
+}
+
+.language-switcher-row {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
