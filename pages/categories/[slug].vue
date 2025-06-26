@@ -46,25 +46,26 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
-const { getArticlesbyCategorySlug, getTagsByArticle } = useDb();
+import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta"; // update path as needed
+
+const { getArticlesbyCategorySlug, getTagsByArticle, getAllCategories } = useDb();
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const localPath = useLocalePath();
-
-const formattedSlug = computed(() => {
-  const raw = route.params.slug;
-  if (!raw) return "";
-  return raw.replaceAll("-", " ").replace(/\b\w/g, (l) => l.toUpperCase());
-});
+const config = useRuntimeConfig();
 
 const isLoading = ref(true);
 const articles = ref([]);
-
-const searchQuery = ref("");
-const { getAllCategories, getAllTags } = useDb(); // Add this
 const categories = ref([]);
-const tags = ref([]); // optional – fetch if needed
+const tags = ref([]);
+const searchQuery = ref("");
+
+const formattedSlug = computed(() => {
+  const raw = route.params.slug;
+  return raw ? raw.replaceAll("-", " ").replace(/\b\w/g, (l) => l.toUpperCase()) : "";
+});
+
 const searchArticlesLabel = computed(() => t("pages.articles.index.search"));
 
 const goToTag = (slug) => {
@@ -75,11 +76,35 @@ const goToCategory = (slug) => {
   if (slug) router.push(localPath(`/categories/${slug}`));
 };
 
+const supabaseBucket = config.public.SUPABASE_BUCKET;
+const firstImage = computed(() => {
+  const filename = articles.value[0]?.image_path;
+  if (!filename) return "/default-og-image.jpg";
+  return `${supabaseBucket}/articles/${filename.replace(/^articles\//, "")}`;
+});
+
+useSeoI18nMeta("categories.index", {
+  dynamic: {
+    title: computed(() => `${formattedSlug.value} ${t("pages.categories.slug.meta.articles")} – ImChatty`),
+    description: computed(() =>
+      `${t("pages.categories.slug.meta.description1")}"${formattedSlug.value.toLowerCase()}"${t("pages.categories.slug.meta.description2")}`
+    ),
+    ogTitle: computed(() => `${formattedSlug.value} ${t("pages.categories.slug.meta.articles")} – ImChatty`),
+    ogDescription: computed(() =>
+      `${t("pages.categories.slug.meta.ogDescription1")}"${formattedSlug.value.toLowerCase()}"${t("pages.categories.slug.meta.ogDescription2")}`
+    ),
+    ogImage: firstImage,
+    twitterTitle: computed(() => `${formattedSlug.value} Articles`),
+    twitterDescription: computed(() =>
+      `${t("pages.categories.slug.meta.twitterDescription1")}"${formattedSlug.value.toLowerCase()}"${t("pages.categories.slug.meta.twitterDescription2")}`
+    ),
+    twitterImage: firstImage,
+  },
+});
+
 onMounted(async () => {
-  // Load categories for the dropdown
   categories.value = await getAllCategories();
 
-  // Load articles by category slug
   const data = await getArticlesbyCategorySlug(route.params.slug);
   if (data) {
     const articlesWithTags = await Promise.all(
@@ -91,7 +116,6 @@ onMounted(async () => {
 
     articles.value = articlesWithTags;
 
-    // Deduplicate tags using slug as the key
     const tagMap = new Map();
     for (const article of articlesWithTags) {
       article.tags.forEach((tag) => {
@@ -102,45 +126,6 @@ onMounted(async () => {
   }
 
   isLoading.value = false;
-});
-
-const articlesSeo = computed(() => t("pages.categories.slug.meta.articles"));
-const seoDescription = computed(
-  () =>
-    t("pages.categories.slug.meta.description1") +
-    '"' +
-    formattedSlug.value.toLowerCase() +
-    '"' +
-    t("pages.categories.slug.meta.description2")
-);
-const ogDescription = computed(
-  () =>
-    t("pages.categories.slug.meta.ogDescription1") +
-    '"' +
-    formattedSlug.value.toLowerCase() +
-    '"' +
-    t("pages.categories.slug.meta.ogDescription2")
-);
-const twitterDescription = computed(
-  () =>
-    t("pages.categories.slug.meta.twitterDescription1") +
-    '"' +
-    formattedSlug.value.toLowerCase() +
-    '"' +
-    t("pages.categories.slug.meta.twitterDescription2")
-);
-
-useSeoMeta({
-  title: computed(
-    () => `${formattedSlug.value} ${articlesSeo.value} – ImChatty`
-  ),
-  description: seoDescription,
-  ogTitle: computed(
-    () => `${formattedSlug.value} ${articlesSeo.value} – ImChatty`
-  ),
-  ogDescription: ogDescription,
-  twitterTitle: computed(() => `${formattedSlug.value} Articles`),
-  twitterDescription: twitterDescription,
 });
 </script>
 

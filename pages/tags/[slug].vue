@@ -48,22 +48,59 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
+import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta"; // adjust path
 const { t } = useI18n();
+const searchArticlesLabel = computed(() => t("pages.articles.index.search"));
 const route = useRoute();
 const router = useRouter();
 const localPath = useLocalePath();
-
-import ArticleSearchFilters from "@/components/ArticleSearchFilters.vue";
+const config = useRuntimeConfig();
+const supabaseBucket = config.public.SUPABASE_BUCKET;
 const { getArticlesByTagSlug, getTagsByArticle, getAllCategories } = useDb();
-
-const isLoading = ref(true);
 const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
 const searchQuery = ref("");
-const searchArticlesLabel = computed(() => t("pages.articles.index.search"));
+const isLoading = ref(true);
 
-// ✅ Routing functions for filters
+const tagSlug = computed(() => route.params.slug);
+const tagName = computed(() =>
+  tagSlug.value.replaceAll("-", " ").toUpperCase()
+);
+
+const getLimitedDescription = (text) =>
+  text && text.length > 160 ? text.slice(0, 157) + "..." : text;
+
+const firstImage = computed(() => {
+  const filename = articles.value[0]?.image_path;
+  if (!filename) return "/default-og-image.jpg";
+
+  return `${supabaseBucket}/articles/${filename.replace(/^articles\//, "")}`;
+});
+
+// ✅ Apply SEO meta using computed values
+useSeoI18nMeta("tags.index", {
+  dynamic: {
+    title: tagName,
+    description: computed(() =>
+      getLimitedDescription(`Browse articles tagged under ${tagName.value}.`)
+    ),
+    ogTitle: tagName,
+    ogDescription: computed(() =>
+      getLimitedDescription(
+        `Insights and resources categorized under ${tagName.value}.`
+      )
+    ),
+    ogImage: firstImage,
+    twitterTitle: tagName,
+    twitterDescription: computed(() =>
+      getLimitedDescription(`Curated content about ${tagName.value}.`)
+    ),
+    twitterImage: firstImage,
+  },
+});
+
+// ✅ Functions
 const goToTag = (slug) => {
   if (slug) router.push(localPath(`/tags/${slug}`));
 };
@@ -71,7 +108,6 @@ const goToCategory = (slug) => {
   if (slug) router.push(localPath(`/categories/${slug}`));
 };
 
-// ✅ Filtered articles by search
 const filteredArticles = computed(() => {
   if (!searchQuery.value) return articles.value;
   return articles.value.filter((article) =>
@@ -81,8 +117,8 @@ const filteredArticles = computed(() => {
 
 onMounted(async () => {
   categories.value = await getAllCategories();
+  const data = await getArticlesByTagSlug(tagSlug.value);
 
-  const data = await getArticlesByTagSlug(route.params.slug);
   if (data) {
     const articlesWithTags = await Promise.all(
       data.map(async (article) => ({
@@ -93,7 +129,6 @@ onMounted(async () => {
 
     articles.value = articlesWithTags;
 
-    // ✅ Deduplicate tags by slug
     const tagMap = new Map();
     for (const article of articlesWithTags) {
       article.tags.forEach((tag) => {
@@ -108,8 +143,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
-
 .page-title {
   font-family: "Poppins", sans-serif;
   font-weight: 700;
