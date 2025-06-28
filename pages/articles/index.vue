@@ -6,55 +6,14 @@
 
   <v-container fluid v-else>
     <HomeRow1 />
-    <v-row align="center" justify="space-between" class="">
-      <v-col cols="12" md="6">
+    <v-row>
+      <v-col>
         <h1>{{ $t("pages.articles.index.explore") }}</h1>
       </v-col>
-    </v-row>
-    <v-row
-      ><ArticleSearchFilters
-        :categories="categories"
-        :tags="tags"
-        v-model:searchQuery="searchQuery"
-        :searchLabel="searchArticlesLabel"
-        @categorySelected="goToCategory"
-        @tagSelected="goToTag"
-    /></v-row>
-
-    <!-- Unified Search, Categories, and Tags Row -->
-    <!-- <v-row align="center" justify="space-between" class="m-3">
-      <v-col cols="12" md="4" class="d-flex">
-        <v-select
-          :items="categories"
-          item-title="name"
-          item-value="slug"
-          label="Select Category"
-          outlined
-          density="compact"
-          hide-details
-          @update:modelValue="goToCategory"
-          class="flex-grow-1"
-        />
-      </v-col>
-
-      <v-col cols="12" md="4" class="d-flex">
-        <v-select
-          :items="tags"
-          item-title="name"
-          item-value="slug"
-          label="Select Tag"
-          outlined
-          density="compact"
-          hide-details
-          @update:modelValue="goToTag"
-          class="flex-grow-1"
-        />
-      </v-col>
-
-      <v-col cols="12" md="4" class="d-flex">
+      <v-col>
         <v-text-field
           v-model="searchQuery"
-          :label="searchArticlesLabel"
+          :label="searchLabel"
           prepend-inner-icon="mdi-magnify"
           clearable
           density="compact"
@@ -63,7 +22,99 @@
           class="search-bar"
         />
       </v-col>
-    </v-row> -->
+    </v-row>
+    <!-- <v-row
+      ><ArticleSearchFilters
+        :categories="categories"
+        :tags="tags"
+        v-model:searchQuery="searchQuery"
+        :searchLabel="searchArticlesLabel"
+        @categorySelected="goToCategory"
+        @tagSelected="goToTag"
+    /></v-row> -->
+
+    <v-row
+      ><v-col>
+        <v-expansion-panels variant="inset" class="my-4">
+          <v-expansion-panel>
+            <v-expansion-panel-title>
+              Categories<span
+                >:
+                {{
+                  selectedCategoriesName || $t("pages.categories.index.title")
+                }}</span
+              >
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <v-row no-gutters>
+                <v-col
+                  v-for="category in categories"
+                  :key="category.slug"
+                  cols="auto"
+                  class="my-1 mx-3"
+                >
+                  <NuxtLink
+                    :to="
+                      category.slug === 'all'
+                        ? localPath('/categories')
+                        : localPath(`/categories/${category.slug}`)
+                    "
+                    :class="[
+                      'text-decoration-none font-weight-medium',
+                      {
+                        'text-primary':
+                          route.params?.slug === category.slug ||
+                          (!route.params?.slug && category.slug === 'all'),
+                      },
+                    ]"
+                  >
+                    {{ category.name }}
+                  </NuxtLink>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels></v-col
+      ><v-col>
+        <v-expansion-panels variant="inset" class="my-4">
+          <v-expansion-panel>
+            <v-expansion-panel-title
+              >Tags<span
+                >: {{ selectedTagName || $t("pages.tags.index.title") }}</span
+              ></v-expansion-panel-title
+            >
+            <v-expansion-panel-text>
+              <v-row no-gutters>
+                <v-col
+                  v-for="tag in tags"
+                  :key="tag.slug"
+                  cols="auto"
+                  class="my-1 mx-3"
+                >
+                  <NuxtLink
+                    :to="
+                      tag.slug === 'all'
+                        ? localPath('/tags')
+                        : localPath(`/tags/${tag.slug}`)
+                    "
+                    :class="[
+                      'text-decoration-none font-weight-medium',
+                      {
+                        'text-primary':
+                          route.params?.slug === tag.slug ||
+                          (!route.params?.slug && tag.slug === 'all'),
+                      },
+                    ]"
+                  >
+                    {{ tag.name }}
+                  </NuxtLink>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-col></v-row
+    >
 
     <!-- Articles List -->
     <v-row dense>
@@ -112,29 +163,26 @@
 </template>
 
 <script setup>
-const localPath = useLocalePath();
 import { useI18n } from "vue-i18n";
+const localPath = useLocalePath();
+const route = useRoute();
 const { getAllPublishedArticlesWithTags, getAllTags, getAllCategories } =
   useDb();
-
 const authStore = useAuthStore();
+const { t } = useI18n();
 const userProfile = ref(null);
 const isLoading = ref(true);
-
-const { t } = useI18n();
-const searchArticlesLabel = computed(() => t("pages.articles.index.search"));
-
 const searchQuery = ref("");
+const searchLabel = computed(() => t("pages.articles.index.search"));
 const articles = ref([]);
 const tags = ref([]);
 const categories = ref([]);
-
 const currentPage = ref(1);
 const perPage = 10;
 
+// Filter and paginate articles
 const filteredArticles = computed(() => {
   if (!searchQuery.value) return articles.value;
-
   return articles.value.filter((article) =>
     article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
@@ -149,32 +197,42 @@ const pageCount = computed(() =>
   Math.ceil(filteredArticles.value.length / perPage)
 );
 
-const router = useRouter();
+// Selected display names for UI
+const selectedTagName = computed(() => {
+  const slug = route.params?.slug;
+  return tags.value.find((t) => t.slug === slug)?.name || null;
+});
 
-function goToCategory(slug) {
-  if (slug) router.push(localPath(`/categories/${slug}`));
-}
+const selectedCategoriesName = computed(() => {
+  const slug = route.params?.slug;
+  return categories.value.find((c) => c.slug === slug)?.name || null;
+});
 
-function goToTag(slug) {
-  if (slug) router.push(localPath(`/tags/${slug}`));
-}
 
+// Load data
 onMounted(async () => {
   await authStore.checkAuth();
   userProfile.value = authStore.userProfile;
-  const articleData = await getAllPublishedArticlesWithTags();
-  const tagData = await getAllTags();
-  const categoryData = await getAllCategories();
 
-  if (articleData) articles.value = articleData;
-  if (tagData) tags.value = tagData;
-  if (categoryData) categories.value = categoryData;
+  const [articleData, tagData, categoryData] = await Promise.all([
+    getAllPublishedArticlesWithTags(),
+    getAllTags(),
+    getAllCategories(),
+  ]);
+
+  articles.value = articleData || [];
+  tags.value = tagData || [];
+  categories.value = categoryData || [];
   isLoading.value = false;
 });
+
 useSeoI18nMeta("articles.index");
 </script>
 
 <style scoped>
+h1 {
+  font-size: 1.6rem;
+}
 .section-title {
   font-family: "Poppins", sans-serif;
   font-weight: 600;
@@ -187,18 +245,4 @@ useSeoI18nMeta("articles.index");
   width: 100%;
 }
 
-.chip-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.v-chip {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.v-chip:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
 </style>

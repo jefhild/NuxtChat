@@ -62,13 +62,6 @@
     <v-card-title>Create New Article</v-card-title>
     <v-card-text>
       <v-form @submit.prevent="handleSubmit" ref="articleForm">
-        <!-- <NuxtImg
-          v-if="form.image_path"
-          :src="`https://ijpxzfojvakcttvucfde.supabase.co/storage/v1/object/public/articles/${form.image_path}`"
-          width="150"
-          height="auto"
-          class="mt-2 rounded"
-        /> -->
 
         <NuxtImg
           v-if="form.image_path"
@@ -82,13 +75,8 @@
         <v-file-input
           accept="image/*"
           label="Upload Image"
-          @change="handleImageChange"
+          @update:modelValue="handleImageChange"
         />
-        <!-- <v-text-field
-          v-model="form.photo_credits_url"
-          label="Photo Credit URL"
-          :rules="[isValidUrl]"
-        /> -->
 
         <v-text-field
           v-if="form.image_path"
@@ -373,8 +361,7 @@ const slugify = (text) =>
     .replace(/\s+/g, "-")
     .replace(/[^\w-]+/g, "");
 
-const handleImageChange = async (event) => {
-  const file = event.target.files[0];
+const handleImageChange = async (file) => {
   if (!file) return;
 
   const imagePath = await uploadArticleImage(file);
