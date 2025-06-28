@@ -274,7 +274,7 @@
     "categories": {
       "index": {
         "loading": "Loading categories...",
-        "title": "All the different Categories",
+        "title": "All Categories",
         "meta": {
           "title": "Popular Article Categories",
           "description": "Check out our most popular categories! Browse top-rated articles with real information, personalized details, and genuine interests.",
@@ -304,7 +304,7 @@
     },
     "tags": {
       "index": {
-        "title": "All the different Tags",
+        "title": "All Tags",
         "meta": {
           "title": "Browse Tags | ImChatty",
           "description": "Explore popular tags on ImChatty and discover content matched to real interests, personalized topics, and authentic conversations.",

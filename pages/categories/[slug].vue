@@ -1,19 +1,12 @@
 <template>
   <v-container fluid>
-    <HomeRow1 />
-    <v-row align="center" justify="space-between" class="">
-      <v-col cols="12" md="6">
-        <h1>{{ route.params.slug.replaceAll("-", " ").toUpperCase() }}</h1>
-      </v-col>
-    </v-row>
-
     <LoadingContainer
       v-if="isLoading"
       :text="$t('pages.articles.index.loading')"
     />
 
     <v-container fluid v-else>
-      <ArticleSearchFilters
+      <!-- <ArticleSearchFilters
         v-if="categories.length || tags.length"
         :categories="categories"
         :tags="tags"
@@ -21,7 +14,144 @@
         :searchLabel="searchArticlesLabel"
         @categorySelected="goToCategory"
         @tagSelected="goToTag"
-      />
+      /> -->
+
+      <!-- <v-expansion-panels variant="inset" class="my-4">
+        <v-expansion-panel>
+          <v-expansion-panel-title> Categories </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <v-row class="px-2">
+              <v-col
+                v-for="category in categories"
+                :key="category.slug"
+                cols="auto"
+                class="my-1"
+              >
+                <NuxtLink
+                  :to="
+                    category.slug === 'all'
+                      ? localPath('/categories')
+                      : localPath(`/categories/${category.slug}`)
+                  "
+                  :class="[
+                    'text-decoration-none font-weight-medium',
+                    {
+                      'text-primary':
+                        route.params?.slug === category.slug ||
+                        (!route.params?.slug && category.slug === 'all'),
+                    },
+                  ]"
+                >
+                  {{ category.name }}
+                </NuxtLink>
+              </v-col>
+            </v-row>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels> -->
+      <HomeRow1 />
+
+      <v-row>
+        <v-col>
+          <h1>{{ route.params.slug.replaceAll("-", " ").toUpperCase() }}</h1>
+        </v-col>
+        <v-col>
+          <v-text-field
+            v-model="searchQuery"
+            :label="searchLabel"
+            prepend-inner-icon="mdi-magnify"
+            clearable
+            density="compact"
+            outlined
+            hide-details
+            class="search-bar"
+          />
+        </v-col>
+      </v-row>
+
+      <v-row
+        ><v-col>
+          <v-expansion-panels variant="inset" class="my-4">
+            <v-expansion-panel>
+              <v-expansion-panel-title>
+                Categories<span
+                  >:
+                  {{
+                    selectedCategoriesName || $t("pages.categories.index.title")
+                  }}</span
+                >
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <v-row no-gutters>
+                  <v-col
+                    v-for="category in categories"
+                    :key="category.slug"
+                    cols="auto"
+                    class="my-1 mx-3"
+                  >
+                    <NuxtLink
+                      :to="
+                        category.slug === 'all'
+                          ? localPath('/categories')
+                          : localPath(`/categories/${category.slug}`)
+                      "
+                      :class="[
+                        'text-decoration-none font-weight-medium',
+                        {
+                          'text-primary':
+                            route.params?.slug === category.slug ||
+                            (!route.params?.slug && category.slug === 'all'),
+                        },
+                      ]"
+                    >
+                      {{ category.name }}
+                    </NuxtLink>
+                  </v-col>
+                </v-row>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels></v-col
+        ><v-col>
+          <v-expansion-panels variant="inset" class="my-4">
+            <v-expansion-panel>
+              <v-expansion-panel-title
+                >Tags<span
+                  >: {{ selectedTagName || $t("pages.tags.index.title") }}</span
+                ></v-expansion-panel-title
+              >
+              <v-expansion-panel-text>
+                <v-row no-gutters>
+                  <v-col
+                    v-for="tag in tags"
+                    :key="tag.slug"
+                    cols="auto"
+                    class="my-1 mx-3"
+                  >
+                    <NuxtLink
+                      :to="
+                        tag.slug === 'all'
+                          ? localPath('/tags')
+                          : localPath(`/tags/${tag.slug}`)
+                      "
+                      :class="[
+                        'text-decoration-none font-weight-medium',
+                        {
+                          'text-primary':
+                            route.params?.slug === tag.slug ||
+                            (!route.params?.slug && tag.slug === 'all'),
+                        },
+                      ]"
+                    >
+                      {{ tag.name }}
+                    </NuxtLink>
+                  </v-col>
+                </v-row>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </v-col></v-row
+      >
+
       <v-row>
         <v-col
           v-for="article in articles"
@@ -46,35 +176,62 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
-import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta"; // update path as needed
+import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta";
 
-const { getArticlesbyCategorySlug, getTagsByArticle, getAllCategories } = useDb();
+const {
+  getArticlesbyCategorySlug,
+  getTagsByArticle,
+  getAllCategories,
+  getAllTags,
+} = useDb();
+
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const localPath = useLocalePath();
 const config = useRuntimeConfig();
-
 const isLoading = ref(true);
 const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
 const searchQuery = ref("");
+const currentPage = ref(1);
+const perPage = 10;
 
 const formattedSlug = computed(() => {
   const raw = route.params.slug;
-  return raw ? raw.replaceAll("-", " ").replace(/\b\w/g, (l) => l.toUpperCase()) : "";
+  return raw
+    ? raw.replaceAll("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())
+    : "";
 });
 
-const searchArticlesLabel = computed(() => t("pages.articles.index.search"));
+const searchLabel = computed(() => t("pages.articles.index.search"));
+const selectedTagName = computed(() => {
+  const slug = route.params?.slug;
+  return tags.value.find((t) => t.slug === slug)?.name || null;
+});
 
-const goToTag = (slug) => {
-  if (slug) router.push(localPath(`/tags/${slug}`));
-};
+const selectedCategoriesName = computed(() => {
+  const slug = route.params?.slug;
+  return categories.value.find((c) => c.slug === slug)?.name || null;
+});
 
-const goToCategory = (slug) => {
-  if (slug) router.push(localPath(`/categories/${slug}`));
-};
+const filteredArticles = computed(() => {
+  if (!searchQuery.value) return articles.value;
+
+  return articles.value.filter((article) =>
+    article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
+const paginatedArticles = computed(() => {
+  const start = (currentPage.value - 1) * perPage;
+  return filteredArticles.value.slice(start, start + perPage);
+});
+
+const pageCount = computed(() =>
+  Math.ceil(filteredArticles.value.length / perPage)
+);
 
 const supabaseBucket = config.public.SUPABASE_BUCKET;
 const firstImage = computed(() => {
@@ -83,32 +240,66 @@ const firstImage = computed(() => {
   return `${supabaseBucket}/articles/${filename.replace(/^articles\//, "")}`;
 });
 
+// SEO setup
 useSeoI18nMeta("categories.index", {
   dynamic: {
-    title: computed(() => `${formattedSlug.value} ${t("pages.categories.slug.meta.articles")} – ImChatty`),
-    description: computed(() =>
-      `${t("pages.categories.slug.meta.description1")}"${formattedSlug.value.toLowerCase()}"${t("pages.categories.slug.meta.description2")}`
+    title: computed(
+      () =>
+        `${formattedSlug.value} ${t(
+          "pages.categories.slug.meta.articles"
+        )} – ImChatty`
     ),
-    ogTitle: computed(() => `${formattedSlug.value} ${t("pages.categories.slug.meta.articles")} – ImChatty`),
-    ogDescription: computed(() =>
-      `${t("pages.categories.slug.meta.ogDescription1")}"${formattedSlug.value.toLowerCase()}"${t("pages.categories.slug.meta.ogDescription2")}`
+    description: computed(
+      () =>
+        `${t(
+          "pages.categories.slug.meta.description1"
+        )}"${formattedSlug.value.toLowerCase()}"${t(
+          "pages.categories.slug.meta.description2"
+        )}`
+    ),
+    ogTitle: computed(
+      () =>
+        `${formattedSlug.value} ${t(
+          "pages.categories.slug.meta.articles"
+        )} – ImChatty`
+    ),
+    ogDescription: computed(
+      () =>
+        `${t(
+          "pages.categories.slug.meta.ogDescription1"
+        )}"${formattedSlug.value.toLowerCase()}"${t(
+          "pages.categories.slug.meta.ogDescription2"
+        )}`
     ),
     ogImage: firstImage,
     twitterTitle: computed(() => `${formattedSlug.value} Articles`),
-    twitterDescription: computed(() =>
-      `${t("pages.categories.slug.meta.twitterDescription1")}"${formattedSlug.value.toLowerCase()}"${t("pages.categories.slug.meta.twitterDescription2")}`
+    twitterDescription: computed(
+      () =>
+        `${t(
+          "pages.categories.slug.meta.twitterDescription1"
+        )}"${formattedSlug.value.toLowerCase()}"${t(
+          "pages.categories.slug.meta.twitterDescription2"
+        )}`
     ),
     twitterImage: firstImage,
   },
 });
 
 onMounted(async () => {
-  categories.value = await getAllCategories();
+  isLoading.value = true;
 
-  const data = await getArticlesbyCategorySlug(route.params.slug);
-  if (data) {
+  const [categoryData, tagData, articleData] = await Promise.all([
+    getAllCategories(),
+    getAllTags(),
+    getArticlesbyCategorySlug(route.params.slug),
+  ]);
+
+  categories.value = categoryData || [];
+  tags.value = tagData || [];
+
+  if (articleData) {
     const articlesWithTags = await Promise.all(
-      data.map(async (article) => ({
+      articleData.map(async (article) => ({
         ...article,
         tags: await getTagsByArticle(article.slug),
       }))
@@ -116,11 +307,10 @@ onMounted(async () => {
 
     articles.value = articlesWithTags;
 
+    // Flatten tags into a unique set from the article content
     const tagMap = new Map();
     for (const article of articlesWithTags) {
-      article.tags.forEach((tag) => {
-        tagMap.set(tag.slug, tag);
-      });
+      article.tags.forEach((tag) => tagMap.set(tag.slug, tag));
     }
     tags.value = Array.from(tagMap.values());
   }
@@ -130,8 +320,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
-
 .page-title {
   font-family: "Poppins", sans-serif;
   font-weight: 700;

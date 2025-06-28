@@ -1,6 +1,91 @@
 <template>
   <v-container class="py-8" v-if="article" fluid>
     <HomeRow1 />
+
+    <v-row
+      ><v-col>
+        <v-expansion-panels variant="inset" class="my-4">
+          <v-expansion-panel>
+            <v-expansion-panel-title>
+              Categories<span
+                >:
+                {{
+                  selectedCategoriesName || $t("pages.categories.index.title")
+                }}</span
+              >
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <v-row no-gutters>
+                <v-col
+                  v-for="category in categories"
+                  :key="category.slug"
+                  cols="auto"
+                  class="my-1 mx-3"
+                >
+                  <NuxtLink
+                    :to="
+                      category.slug === 'all'
+                        ? localPath('/categories')
+                        : localPath(`/categories/${category.slug}`)
+                    "
+                    :class="[
+                      'text-decoration-none font-weight-medium',
+                      {
+                        'text-primary':
+                          route.params?.slug === category.slug ||
+                          (!route.params?.slug && category.slug === 'all'),
+                      },
+                    ]"
+                  >
+                    {{ category.name }}
+                  </NuxtLink>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels></v-col
+      ><v-col>
+        <v-expansion-panels variant="inset" class="my-4">
+          <v-expansion-panel>
+            <v-expansion-panel-title
+              >Tags<span
+                >: {{ selectedTagName || $t("pages.tags.index.title") }}</span
+              ></v-expansion-panel-title
+            >
+            <v-expansion-panel-text>
+              <v-row no-gutters>
+                <v-col
+                  v-for="tag in tags"
+                  :key="tag.slug"
+                  cols="auto"
+                  class="my-1 mx-3"
+                >
+                  <NuxtLink
+                    :to="
+                      tag.slug === 'all'
+                        ? localPath('/tags')
+                        : localPath(`/tags/${tag.slug}`)
+                    "
+                    :class="[
+                      'text-decoration-none font-weight-medium',
+                      {
+                        'text-primary':
+                          route.params?.slug === tag.slug ||
+                          (!route.params?.slug && tag.slug === 'all'),
+                      },
+                    ]"
+                  >
+                    {{ tag.name }}
+                  </NuxtLink>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-col></v-row
+    >
+
+
     <v-row>
       <v-img
         class="align-end text-white"
@@ -120,11 +205,35 @@ const route = useRoute();
 const slug = route.params.slug;
 const currentLocale = locale.value || "en";
 const shareUrl = `https://imchatty.com/${currentLocale}/articles/${slug}`;
-const { getArticleBySlug } = useDb();
+const { getArticleBySlug, getAllCategories, getAllTags  } = useDb();
 
 const { data: article, error } = await useAsyncData(`article-${slug}`, () =>
   getArticleBySlug(slug)
 );
+
+const categories = ref([]);
+const tags = ref([]);
+
+const selectedCategoriesName = computed(() => {
+  const currentSlug = article.value?.category?.slug;
+  return categories.value.find((c) => c.slug === currentSlug)?.name || null;
+});
+
+const selectedTagName = computed(() => {
+  const currentSlug = article.value?.tags?.[0]?.slug;
+  return tags.value.find((t) => t.slug === currentSlug)?.name || null;
+});
+
+// Navigation helpers
+const goToCategory = (slug) => {
+  const path = slug === "all" ? localPath("/categories") : localPath(`/categories/${slug}`);
+  if (route.fullPath !== path) router.push(path);
+};
+
+const goToTag = (slug) => {
+  const path = slug === "all" ? localPath("/tags") : localPath(`/tags/${slug}`);
+  if (route.fullPath !== path) router.push(path);
+};
 
 const renderedMarkdown = ref("");
 
@@ -138,6 +247,17 @@ if (article.value?.content) {
   const safeDescription = condensed.slice(0, 160) + "…";
   const localizedShareUrl = `https://imchatty.com${currentLocale === 'en' ? '' : `/${currentLocale}`}/articles/${slug}`;
   const imageUrl = `${config.public.SUPABASE_BUCKET}/articles/${article.value.image_path}`;
+
+  onMounted(async () => {
+  const [categoryData, tagData] = await Promise.all([
+    getAllCategories(),
+    getAllTags(),
+  ]);
+
+  categories.value = categoryData || [];
+  tags.value = tagData || [];
+});
+
 
   useHead({
     link: [
