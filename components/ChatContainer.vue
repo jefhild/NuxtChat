@@ -307,6 +307,21 @@ const EmojiPicker = defineAsyncComponent(() => import("vue3-emoji-picker"));
 
 const { aiData, fetchAiUsers } = useFetchAiUsers(user);
 const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
+
+watch(
+  () => arrayOnlineUsers.value,
+  (newUsers) => {
+    if (!selectedUser.value && newUsers?.length) {
+      const imchatty = newUsers.find(u => u.user_id === 'imchatty-id'); // Replace with real ID
+      if (imchatty) selectedUser.value = imchatty;
+    }
+  },
+  { immediate: true }
+);
+
+
+
+
 const { arrayOfflineUsers, fetchOfflineUsers } = useFetchOfflineUsers(user);
 const { activeChatsData, fetchActiveChats } = useFetchActiveChats(user);
 const { blockedUsers, loadBlockedUsers } = useBlockedUsers(user);
@@ -336,17 +351,6 @@ onClickOutside(emojiPickerRef, () => {
   showEmojiPicker.value = false;
 });
 
-// Method to toggle between Users and UsersAI components
-// const toggleUsers = () => {
-//   showAIUsers.value = !showAIUsers.value;
-
-//   console.log("aiUsers:", aiUsers.value);
-//   // Fetch AI users if switching to AI view
-//   if (showAIUsers.value && aiUsers.value.length === 0) {
-//     fetchAiUsers(filters.value);
-//     // console.log("aiUsers inside if:", aiUsers.value);
-//   }
-// };
 
 // Load chat messages between current user and selected user
 const loadChatMessages = async (receiverUserId, senderUserId) => {
@@ -726,15 +730,6 @@ const sendMessage = async () => {
       uploadedFileType.value = file.type;
     }
 
-    // console.log(
-    //   "Sender ID:",
-    //   senderUserId,
-    //   "Receiver ID:",
-    //   receiverUserId,
-    //   "Message:",
-    //   newMessage.value
-    // );
-
     if (!senderUserId || !receiverUserId) {
       console.error("Sender or Receiver ID is missing");
       sendingMessage.value = false;
@@ -991,31 +986,6 @@ const showRegistrationPrompt = () => {
   dialogVisible.value = true;
 };
 
-/*
-// Function to submit the registration form
-const submitRegistration = async () => {
-  if (!userEmail.value) {
-    console.error("Email is required");
-    return;
-  }
-
-  // Call your registration logic here, e.g., send the email to the server
-  console.log("Registering with email:", userEmail.value);
-  registrationDialog.value = false; // Close the dialog after submission
-};
-
-// Function to close the dialog without action
-const closeRegistrationDialog = () => {
-  registrationDialog.value = false;
-};*/
-
-// const toggleUsers = (aiView) => {
-//   showAIUsers.value = aiView;
-
-//   // Update the router to reflect the current user type
-//   const query = { ...route.query, user: aiView ? "ai" : "human" };
-//   router.push({ query });
-// };
 
 const updateFilters = async (newFilters) => {
   // console.log("Filters updated:", newFilters); // Debug log
