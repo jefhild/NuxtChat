@@ -319,9 +319,6 @@ watch(
   { immediate: true }
 );
 
-
-
-
 const { arrayOfflineUsers, fetchOfflineUsers } = useFetchOfflineUsers(user);
 const { activeChatsData, fetchActiveChats } = useFetchActiveChats(user);
 const { blockedUsers, loadBlockedUsers } = useBlockedUsers(user);
@@ -1005,13 +1002,31 @@ const updateFilters = async (newFilters) => {
 };
 
 // Watch the data from composable
+// watch(aiData, (newData) => {
+//   aiUsers.value = newData;
+// });
+
 watch(aiData, (newData) => {
-  aiUsers.value = newData;
+  // Avoid duplicating imchatty if it's already in online users
+  const imchattyId = "a3962087-516b-48df-a3ff-3b070406d832";
+  const filteredData = newData.filter(
+    (user) => user.user_id !== imchattyId
+  );
+  aiUsers.value = filteredData;
 });
 
 // Watch the data from composable
+// watch(activeChatsData, (newData) => {
+//   activeChats.value = newData;
+// });
+
 watch(activeChatsData, (newData) => {
-  activeChats.value = newData;
+  const seen = new Set();
+  activeChats.value = newData.filter((user) => {
+    if (seen.has(user.user_id)) return false;
+    seen.add(user.user_id);
+    return true;
+  });
 });
 
 const refreshData = async () => {
