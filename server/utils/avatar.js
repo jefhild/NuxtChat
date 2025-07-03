@@ -1,8 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
+const config = useRuntimeConfig(); // Nitro-safe access
+
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  config.public.SUPABASE_URL,
+  config.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export const uploadAvatarFromURL = async (userId, avatarUrl) => {
