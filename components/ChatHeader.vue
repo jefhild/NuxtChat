@@ -29,11 +29,14 @@
 
             {{ selectedUser ? selectedUser.displayname : "..." }}
             <v-icon size="18" class="ml-1">mdi-account-search</v-icon>
+            <span class="ml-2"
+              >({{ selectedUser ? selectedUser.age : "..." }})</span
+            >
           </NuxtLink>
         </v-col>
-        <v-col class="text-subtitle-1 text-center">{{
-          selectedUser ? selectedUser.tagline : "..."
-        }}</v-col> </v-row
+        <v-col class="text-subtitle-1 text-center"
+          >{{ selectedUser ? selectedUser.tagline : "..." }}
+        </v-col> </v-row
       ><v-row no-gutters>
         <ChatHeaderActions2
           v-if="selectedUser"
@@ -48,7 +51,7 @@
       </v-row>
     </v-card-title>
 
-    <v-card-text class="py-1">
+    <!-- <v-card-text class="py-1">
       <v-row no-gutters
         ><v-col>
           {{ selectedUser ? selectedUser.age : "..." }}
@@ -56,7 +59,7 @@
           {{ selectedUser?.country_name ?? "" }}</v-col
         >
       </v-row>
-    </v-card-text>
+    </v-card-text> -->
   </v-card>
   <v-card flat v-else>
     <v-card-title>{{
@@ -371,7 +374,7 @@ onBeforeUnmount(() => {
   text-decoration: none;
 }
 
-.male {
+/* .male {
   color: darkblue;
   background-color: #e3f2fd;
 }
@@ -382,5 +385,21 @@ onBeforeUnmount(() => {
 
 .other {
   color: purple;
+} */
+.male {
+  background-color: var(--v-theme-blue-lighten4) !important;
+  color: var(--v-theme-on-surface); /* optional: contrast text */
 }
+
+.female {
+  background-color: var(--v-theme-pink-lighten4) !important;
+  color: var(--v-theme-on-surface);
+}
+
+.other {
+  background-color: var(--v-theme-purple-lighten4) !important;
+  color: var(--v-theme-on-surface);
+}
+
+
 </style>

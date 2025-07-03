@@ -1,8 +1,24 @@
 <template>
   <v-card class="mx-auto mb-3" max-width="700">
     <v-card-title v-if="userProfile">
-      <v-row no-gutters class="mb-0"><v-col cols="3">
-          <ProfilePhoto :editable="isEditable" :userId="userProfile.user_id" @updateAvatarUrl="updateAvatarUrl" />
+      <v-row no-gutters class="mb-0"
+        ><v-col cols="3">
+          <!-- <ProfilePhoto
+            :editable="isEditable"
+            :userId="userProfile.user_id"
+            @updateAvatarUrl="updateAvatarUrl"
+          /> -->
+
+          <ProfilePhoto
+            :editable="isEditable"
+            :userId="userProfile.user_id"
+            :avatarUrl="avatar"
+            @updateAvatarUrl="updateAvatarUrl"
+          />
+
+          <!-- <img :src="avatar" alt="User Avatar" /> -->
+          <v-btn @click="previewAvatar">Shuffle Avatar</v-btn>
+          <v-btn @click="confirmAvatar" color="primary">Use This Avatar</v-btn>
         </v-col>
 
         <v-col cols="9" class="d-flex flex-column align-center">
@@ -17,11 +33,17 @@
             {{ userProfile.site_url }}
           </h5>
           <p class="mt-3">
-            <LookingForDisplay :key="displayKey" :userId="userProfile.user_id" />
+            <LookingForDisplay
+              :key="displayKey"
+              :userId="userProfile.user_id"
+            />
           </p>
           <p class="mt-2">
-            <LookingForMenu :userProfile="userProfile" :refreshLookingForMenu="refreshLookingForMenu"
-              @lookingForUpdated="refreshLookingForDisplay" />
+            <LookingForMenu
+              :userProfile="userProfile"
+              :refreshLookingForMenu="refreshLookingForMenu"
+              @lookingForUpdated="refreshLookingForDisplay"
+            />
           </p>
         </v-col>
       </v-row>
@@ -29,66 +51,137 @@
     <v-card-text v-if="userProfile">
       <v-row class="mt-6" v-if="isEditable">
         <v-col cols="12" md="4">
-          <ProfileDisplayName2 :displayName="userProfile.displayname" :isEditable="isEditable"
-            @updateDisplayName="updateDisplayName" @validation="updateFormValidity" />
+          <ProfileDisplayName2
+            :displayName="userProfile.displayname"
+            :isEditable="isEditable"
+            @updateDisplayName="updateDisplayName"
+            @validation="updateFormValidity"
+          />
         </v-col>
         <v-col cols="12" md="4">
-          <ProfileTagLine :tagLine="userProfile.tagline ?? '...'" :isEditable="isEditable"
-            @updateTagLine="updateTagLine" />
+          <ProfileTagLine
+            :tagLine="userProfile.tagline ?? '...'"
+            :isEditable="isEditable"
+            @updateTagLine="updateTagLine"
+          />
         </v-col>
         <v-col cols="12" md="4">
-          <ProfileSite :siteUrl="userProfile.site_url ?? ''" :isEditable="isEditable" @updateSite="updateSite" />
+          <ProfileSite
+            :siteUrl="userProfile.site_url ?? ''"
+            :isEditable="isEditable"
+            @updateSite="updateSite"
+          />
         </v-col>
       </v-row>
     </v-card-text>
     <v-card-text v-if="userProfile">
       <v-row>
         <v-col cols="12" md="4">
-          <v-row><v-col v-if="!isEditable" cols="auto" class="mt-1">
-              <label class="font-weight-bold">{{ $t("components.profile-container.status") }}</label></v-col><v-col>
-              <StatusSelection :selectedStatus="userProfile?.status_id ?? 1" :status="status" :isEditable="isEditable"
-                @updateStatus="updateStatus" />
-            </v-col></v-row>
+          <v-row
+            ><v-col v-if="!isEditable" cols="auto" class="mt-1">
+              <label class="font-weight-bold">{{
+                $t("components.profile-container.status")
+              }}</label></v-col
+            ><v-col>
+              <StatusSelection
+                :selectedStatus="userProfile?.status_id ?? 1"
+                :status="status"
+                :isEditable="isEditable"
+                @updateStatus="updateStatus"
+              /> </v-col
+          ></v-row>
         </v-col>
         <v-col cols="12" md="4">
-          <v-row><v-col v-if="!isEditable" cols="auto" class="mt-1"><label
-                class="font-weight-bold">{{ $t("components.profile-container.gender") }}</label></v-col><v-col>
-              <GenderSelection v-model="selectedGender" :genders="genders" :isEditable="isEditable"
-                @validation="handleGenderValidation" />
-            </v-col></v-row>
+          <v-row
+            ><v-col v-if="!isEditable" cols="auto" class="mt-1"
+              ><label class="font-weight-bold">{{
+                $t("components.profile-container.gender")
+              }}</label></v-col
+            ><v-col>
+              <GenderSelection
+                v-model="selectedGender"
+                :genders="genders"
+                :isEditable="isEditable"
+                @validation="handleGenderValidation"
+              /> </v-col
+          ></v-row>
         </v-col>
         <v-col cols="12" md="4">
-          <v-row><v-col v-if="!isEditable" cols="auto" class="mt-1"><label
-                class="font-weight-bold">{{ $t("components.profile-container.age") }}</label></v-col><v-col>
-              <ProfileAge :age="userProfile.age ?? 18" :isEditable="isEditable" @updateAge="updateAge" />
-            </v-col></v-row>
+          <v-row
+            ><v-col v-if="!isEditable" cols="auto" class="mt-1"
+              ><label class="font-weight-bold">{{
+                $t("components.profile-container.age")
+              }}</label></v-col
+            ><v-col>
+              <ProfileAge
+                :age="userProfile.age ?? 18"
+                :isEditable="isEditable"
+                @updateAge="updateAge"
+              /> </v-col
+          ></v-row>
         </v-col>
       </v-row>
 
       <v-row>
         <v-col cols="12">
-          <LocationSelection :selectedCountry="userProfile.country" :selectedState="userProfile.state"
-            :selectedCity="userProfile.city" :countries="countries" :states="states" :cities="cities"
-            :isEditable="isEditable" @updateCountry="updateCountry" @updateState="updateState"
-            @updateCity="updateCity" />
+          <LocationSelection
+            :selectedCountry="userProfile.country"
+            :selectedState="userProfile.state"
+            :selectedCity="userProfile.city"
+            :countries="countries"
+            :states="states"
+            :cities="cities"
+            :isEditable="isEditable"
+            @updateCountry="updateCountry"
+            @updateState="updateState"
+            @updateCity="updateCity"
+          />
         </v-col>
       </v-row>
       <v-row>
-        <v-col><label class="font-weight-bold">{{ $t("components.profile-container.about-me") }}</label> </v-col>
+        <v-col
+          ><label class="font-weight-bold">{{
+            $t("components.profile-container.about-me")
+          }}</label>
+        </v-col>
         <v-col align="right">
-          <v-btn v-if="isEditable" flat variant="text" class="text-link-btn" @click="openGenerateBioDialog">Generate a
-            bio</v-btn></v-col> </v-row><v-row no-gutters>
+          <v-btn
+            v-if="isEditable"
+            flat
+            variant="text"
+            class="text-link-btn"
+            @click="openGenerateBioDialog"
+            >Generate a bio</v-btn
+          ></v-col
+        > </v-row
+      ><v-row no-gutters>
         <v-col>
-          <ProfileBio :bio="userProfile.bio ?? ''" :isEditable="isEditable" @updateBio="updateBio" />
+          <ProfileBio
+            :bio="userProfile.bio ?? ''"
+            :isEditable="isEditable"
+            @updateBio="updateBio"
+          />
           <!-- <v-btn v-if="isEditable" flat variant="text" class="text-link-btn" @click="openGenerateBioDialog">Generate a bio</v-btn> -->
         </v-col>
       </v-row>
 
       <v-row>
         <v-col cols="12" md="12">
-          <v-switch v-model="soundNotificationsEnabled"
-            :label="t('components.profile-container.sound-notifs') + `: ${soundNotificationsEnabled ? t('components.profile-container.on') : t('components.profile-container.off')}`" color="primary" hide-details
-            inset @change="updateSoundNotifications" />
+          <v-switch
+            v-model="soundNotificationsEnabled"
+            :label="
+              t('components.profile-container.sound-notifs') +
+              `: ${
+                soundNotificationsEnabled
+                  ? t('components.profile-container.on')
+                  : t('components.profile-container.off')
+              }`
+            "
+            color="primary"
+            hide-details
+            inset
+            @change="updateSoundNotifications"
+          />
         </v-col>
       </v-row>
 
@@ -105,41 +198,93 @@
     <v-card-text v-if="userProfile">
       <v-row>
         <v-col cols="8">
-          <v-btn color="primary" :disabled="!isFormValid" @click="toggleEditMode">
-            {{ isEditable ? t('components.profile-container.save') : t('components.profile-container.edit') }}
+          <v-btn
+            color="primary"
+            :disabled="!isFormValid"
+            @click="toggleEditMode"
+          >
+            {{
+              isEditable
+                ? t("components.profile-container.save")
+                : t("components.profile-container.edit")
+            }}
           </v-btn>
-          <v-btn class="ml-4" color="secondary" v-if="isEditable" @click="cancelEdit">
+          <v-btn
+            class="ml-4"
+            color="secondary"
+            v-if="isEditable"
+            @click="cancelEdit"
+          >
             {{ $t("components.profile-container.cancel") }}
           </v-btn>
         </v-col>
         <v-col cols="4" class="d-flex justify-end">
-          <v-btn color="primary" :disabled="!isFormValid" @click="gotoChat()">{{ $t("components.profile-container.go-to-chat") }}</v-btn>
+          <v-btn color="primary" :disabled="!isFormValid" @click="gotoChat()">{{
+            $t("components.profile-container.go-to-chat")
+          }}</v-btn>
         </v-col>
       </v-row>
       <v-row>
         <v-col>
-          <v-btn v-if="!isMarkedForDeletion" flat variant="text" @click="deleteDialog = true" class="text-link-btn">
+          <v-btn
+            v-if="!isMarkedForDeletion"
+            flat
+            variant="text"
+            @click="deleteDialog = true"
+            class="text-link-btn"
+          >
             {{ $t("components.profile-container.delete") }}
           </v-btn>
-          <v-btn v-else flat variant="text" @click="deleteDialog = true" class="text-link-btn">
+          <v-btn
+            v-else
+            flat
+            variant="text"
+            @click="deleteDialog = true"
+            class="text-link-btn"
+          >
             {{ $t("components.profile-container.restore") }}
           </v-btn>
         </v-col>
 
         <v-col class="d-flex justify-center">
-          <v-btn v-if="!isFinished && isEditable" flat variant="text" class="text-link-btn"
-            @click="openFinishProfileDialog">{{ $t("components.profile-container.finish") }}</v-btn>
+          <v-btn
+            v-if="!isFinished && isEditable"
+            flat
+            variant="text"
+            class="text-link-btn"
+            @click="openFinishProfileDialog"
+            >{{ $t("components.profile-container.finish") }}</v-btn
+          >
         </v-col>
 
         <v-col class="d-flex justify-center">
-          <v-btn flat variant="text" color="blue"
-            @click="router.push(localPath(`/profiles/${userProfile.gender}/${userProfile.slug}`))" class="text-link-btn">
+          <v-btn
+            flat
+            variant="text"
+            color="blue"
+            @click="
+              router.push(
+                localPath(`/profiles/${userProfile.gender}/${userProfile.slug}`)
+              )
+            "
+            class="text-link-btn"
+          >
             {{ $t("components.profile-container.public") }}
           </v-btn>
 
-          <v-tooltip :text="t('components.profile-container.copy')" location="top">
+          <v-tooltip
+            :text="t('components.profile-container.copy')"
+            location="top"
+          >
             <template #activator="{ props: tooltipProps }">
-              <v-btn icon color="primary" size="small" class="ml-5" v-bind="tooltipProps" @click="copyPublicProfileLink">
+              <v-btn
+                icon
+                color="primary"
+                size="small"
+                class="ml-5"
+                v-bind="tooltipProps"
+                @click="copyPublicProfileLink"
+              >
                 <v-icon>mdi-content-copy</v-icon>
               </v-btn>
             </template>
@@ -155,39 +300,76 @@
     <v-card-text v-else>
       <v-row>
         <v-col cols="12">
-          <LoadingContainer :text="$t('components.profile-container.loading')" />
+          <LoadingContainer
+            :text="$t('components.profile-container.loading')"
+          />
         </v-col>
       </v-row>
     </v-card-text>
   </v-card>
 
   <v-dialog v-model="deleteDialog" width="auto">
-    <v-card max-width="400" prepend-icon="mdi-account-remove" title="Delete My Account">
+    <v-card
+      max-width="400"
+      prepend-icon="mdi-account-remove"
+      title="Delete My Account"
+    >
       <v-card-text>
         <v-row justify="center">
-          <v-col class="text-center">{{ $t("components.profile-container.delete-confirm") }}</v-col></v-row>
+          <v-col class="text-center">{{
+            $t("components.profile-container.delete-confirm")
+          }}</v-col></v-row
+        >
       </v-card-text>
 
       <template v-slot:actions>
-        <v-btn v-if="!isMarkedForDeletion" color="primary" text @click="confirmDelete">{{ $t("components.profile-container.confirm") }}</v-btn>
-        <v-btn v-else color="primary" text @click="cancelDelete">{{ $t("components.profile-container.restore") }}</v-btn>
+        <v-btn
+          v-if="!isMarkedForDeletion"
+          color="primary"
+          text
+          @click="confirmDelete"
+          >{{ $t("components.profile-container.confirm") }}</v-btn
+        >
+        <v-btn v-else color="primary" text @click="cancelDelete">{{
+          $t("components.profile-container.restore")
+        }}</v-btn>
         <v-spacer></v-spacer>
-        <v-btn class="ms-auto" :text="t('components.profile-container.cancel')" @click="deleteDialog = false"></v-btn>
+        <v-btn
+          class="ms-auto"
+          :text="t('components.profile-container.cancel')"
+          @click="deleteDialog = false"
+        ></v-btn>
       </template>
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="linkAccountDialog" width="auto" transition="dialog-transition">
+  <v-dialog
+    v-model="linkAccountDialog"
+    width="auto"
+    transition="dialog-transition"
+  >
     <LinkAccount />
   </v-dialog>
 
-  <v-dialog v-model="generateBioDialog" max-width="600" transition="dialog-transition">
+  <v-dialog
+    v-model="generateBioDialog"
+    max-width="600"
+    transition="dialog-transition"
+  >
     <GenerateBioDialog v-model="generateBioDialog" @updateBio="updateBio" />
   </v-dialog>
 
-  <v-dialog v-model="finishProfileDialog" :overlay="false" max-width="500px" transition="dialog-transition">
-    <FinishProfile :infoLeft="infoLeft" @closeDialog="closeFinishProfileDialog"
-      @lookingForUpdated="refreshLookingForDisplay" />
+  <v-dialog
+    v-model="finishProfileDialog"
+    :overlay="false"
+    max-width="500px"
+    transition="dialog-transition"
+  >
+    <FinishProfile
+      :infoLeft="infoLeft"
+      @closeDialog="closeFinishProfileDialog"
+      @lookingForUpdated="refreshLookingForDisplay"
+    />
   </v-dialog>
 
   <v-snackbar v-model="snackbar" :timeout="3000">
@@ -217,6 +399,7 @@ const {
   hasEmail,
   updateProfile,
   authUpdateProfile,
+  saveAvatar,
 } = useDb();
 
 const localPath = useLocalePath();
@@ -225,11 +408,12 @@ const route = useRoute();
 const authStore = useAuthStore();
 const user = ref(authStore.user);
 const userProfile = ref(authStore.userProfile);
+const avatar = ref("");
 
 // const genders = ref([]);
 
 const genders = ref([
-  { id: null, name:  t("components.gender-selection.select-gender") },
+  { id: null, name: t("components.gender-selection.select-gender") },
   { id: 1, name: t("components.profile-container.gender-male") },
   { id: 2, name: t("components.profile-container.gender-female") },
   { id: 3, name: t("components.profile-container.gender-other") },
@@ -276,9 +460,33 @@ const finishProfileDialog = ref(false);
 const isMarkedForDeletion = ref(false);
 const snackbar = ref(false);
 const snackbarText = ref("");
-const soundNotificationsEnabled = ref(userProfile.value?.sound_notifications_enabled ?? true);
+const soundNotificationsEnabled = ref(
+  userProfile.value?.sound_notifications_enabled ?? true
+);
 
+const { generateAvatar, getRandomStyle, getPreviewAvatarUrl } =
+  useAvatarGenerator();
 
+const currentSeed = ref(null);
+const currentStyle = ref(null);
+
+const previewAvatar = () => {
+  const seed = `${userProfile.value.displayname}-${Math.random()
+    .toString(36)
+    .substring(2, 8)}`;
+  const style = getRandomStyle(userProfile.value.gender_id);
+  avatar.value = getPreviewAvatarUrl(seed, style);
+  currentSeed.value = seed;
+  currentStyle.value = style;
+};
+
+const confirmAvatar = async () => {
+  const userId = userProfile.value.user_id;
+  const success = await saveAvatar(userId, avatar.value);
+  if (success) {
+    updateAvatarUrl(avatar.value);
+  }
+};
 
 const updateFormValidity = (isValid) => {
   // console.log("Form validity updated:", isValid);
@@ -357,7 +565,7 @@ const loadData = async () => {
 
     // Now update userProfile from the store
     userProfile.value = authStore.userProfile;
-    
+    avatar.value = userProfile.value.avatar_url || "";
 
     if (userProfile.value) {
       const { country_id, state_id, city_id, gender_id } = userProfile.value;
@@ -428,7 +636,8 @@ const checkIfFinished = async () => {
   // console.log("userHasInterests: ", userHasInterests);
   // console.log("userHasEmail: ", userHasEmail);
 
-  isFinished.value = userProfile.value.tagline && userHasInterests && userHasEmail;
+  isFinished.value =
+    userProfile.value.tagline && userHasInterests && userHasEmail;
   infoLeft.value = []; // Clear the array
 
   const skipSiteURL = localStorage.getItem("skipSiteURLPrompt") === "true";
@@ -504,14 +713,13 @@ watch(selectedGender, (newGenderId) => {
   updateTheGender(newGenderId);
 });
 
-const updateSoundNotifications = async () =>
-{
-    const { error } = await updateSoundSetting(
-      userProfile.value.user_id,
-      soundNotificationsEnabled.value
-    );
-    
-    // console.log("Sound setting updated successfully", soundNotificationsEnabled.value);
+const updateSoundNotifications = async () => {
+  const { error } = await updateSoundSetting(
+    userProfile.value.user_id,
+    soundNotificationsEnabled.value
+  );
+
+  // console.log("Sound setting updated successfully", soundNotificationsEnabled.value);
 };
 
 const updateStatus = (newStatusId) => {
@@ -552,18 +760,20 @@ const updateAge = (newAge) => {
 const toggleEditMode = async () => {
   if (isEditable.value) {
     try {
-      await updateProfile( userProfile.value.user_id,
-                    userProfile.value.displayname,
-                    userProfile.value.tagline,
-                    userProfile.value.gender_id,
-                    userProfile.value.status_id,
-                    userProfile.value.age,
-                    userProfile.value.bio,
-                    userProfile.value.country_id,
-                    userProfile.value.state_id,
-                    userProfile.value.city_id,
-                    userProfile.value.avatar_url,
-                    userProfile.value.site_url);
+      await updateProfile(
+        userProfile.value.user_id,
+        userProfile.value.displayname,
+        userProfile.value.tagline,
+        userProfile.value.gender_id,
+        userProfile.value.status_id,
+        userProfile.value.age,
+        userProfile.value.bio,
+        userProfile.value.country_id,
+        userProfile.value.state_id,
+        userProfile.value.city_id,
+        userProfile.value.avatar_url,
+        userProfile.value.site_url
+      );
 
       originalGenderId.value = userProfile.value.gender_id;
       originalStatusId.value = userProfile.value.status_id;
@@ -637,16 +847,12 @@ const cancelDelete = async () => {
   }
 };
 
-const copyPublicProfileLink = async () =>
-{
-  try
-  {
+const copyPublicProfileLink = async () => {
+  try {
     const publicUrl = `${window.location.origin}/profiles/${userProfile.value.gender}/${userProfile.value.slug}`;
     await navigator.clipboard.writeText(publicUrl);
     snackbarText.value = t("components.profile-container.snackbar-copy-text");
-
-  } catch (err)
-  {
+  } catch (err) {
     console.error("Failed to copy:", err);
   }
 

@@ -87,7 +87,7 @@ export function useFetchOnlineUsers() {
       }
 
       arrayOnlineUsers.value = combinedUsers;
-      console.log("Online users (with imchatty):", arrayOnlineUsers.value);
+      // console.log("Online users (with imchatty):", arrayOnlineUsers.value);
     }
 
     // console.log("Fetched online users:", arrayOnlineUsers.value); // Debug log

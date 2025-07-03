@@ -225,7 +225,7 @@ const validateResponse = async (index, input) => {
           }
 
           // Check if the username already exists
-          console.log("Checking if username exists:", userPseudo);
+          // console.log("Checking if username exists:", userPseudo);
           if (await checkUsernameExists(userPseudo)) {
             return {
               valid: false,

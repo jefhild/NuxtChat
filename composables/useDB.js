@@ -1,5 +1,7 @@
 import { checkPrintable } from "vuetify/lib/util/helpers.mjs";
 
+import { v4 as uuidv4 } from "uuid";
+
 export const useDb = () => {
   const supabase = useSupabaseClient();
   const config = useRuntimeConfig();
@@ -1252,7 +1254,7 @@ export const useDb = () => {
   const updateArticle = async (id, payload) => {
     const { error } = await supabase
       .from("articles")
-      
+
       .update(payload)
       .eq("id", id);
 
@@ -1293,6 +1295,21 @@ export const useDb = () => {
       .from("profiles")
       .update({ sound_notifications_enabled: enabled })
       .eq("user_id", userId);
+  };
+
+  const saveAvatar = async (userId, avatarUrl) => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: avatarUrl })
+        .eq("user_id", userId);
+
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error("Error saving avatar:", err.message);
+      return false;
+    }
   };
 
   /*------------------*/
@@ -1679,7 +1696,7 @@ export const useDb = () => {
       .limit(1)
       .maybeSingle();
 
-    console.log("Checking displayname:", data);
+    // console.log("Checking displayname:", data);
 
     if (error && error.code !== "PGRST116") {
       console.error("Error checking displayname:", error);
@@ -1766,11 +1783,18 @@ export const useDb = () => {
   };
 
   const uploadArticleImage = async (file, articleId) => {
-    if (!file || !articleId) return null;
+    if (!file) return null;
 
-    const extension = file.name.split(".").pop();
+    const extension = file?.name?.split(".").pop();
+    if (!extension) {
+      console.error("Could not determine file extension.");
+      return null;
+    }
     const timestamp = Date.now();
-    const fileName = `article-${articleId}-${timestamp}.${extension}`;
+    const suffix = articleId ? `-${articleId}` : `-${uuidv4()}`;
+    const fileName = `article${suffix}-${timestamp}.${extension}`;
+
+    console.log("Uploading image:", file.name, "articleId:", articleId);
 
     const { data, error } = await supabase.storage
       .from("articles")
@@ -1784,21 +1808,7 @@ export const useDb = () => {
     return data.path;
   };
 
-  // const uploadArticleImage = async (file) => {
-  //   if (!file) return null;
 
-  //   const fileName = `${Date.now()}-${file.name}`;
-  //   const { data, error } = await supabase.storage
-  //     .from("articles")
-  //     .upload(fileName, file, { upsert: true });
-
-  //   if (error) {
-  //     console.error("Upload failed:", error.message);
-  //     return null;
-  //   }
-
-  //   return data.path; // returns the relative path to store in image_path
-  // };
 
   const checkInactivityForAllUsers = async () => {
     console.log("checking inactivity for ALL users");
@@ -2127,6 +2137,7 @@ export const useDb = () => {
     updateArticleTags,
     updateLastActive,
     updateSoundSetting,
+    saveAvatar,
 
     insertProfile,
     insertMessage,

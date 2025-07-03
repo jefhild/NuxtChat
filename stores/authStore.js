@@ -428,8 +428,8 @@ export const useAuthStore = defineStore("authStore", {
     }) {
       await this.getRawLocationData();
       const locationData = this.userLocation;
-      console.log("locationData: ", locationData);
-      console.log("userLocation: ", this.userLocation);
+      // console.log("locationData: ", locationData);
+      // console.log("userLocation: ", this.userLocation);
 
       try {
         const { getCountryByIsoCode } = useDb();
@@ -437,8 +437,8 @@ export const useAuthStore = defineStore("authStore", {
         const { data: countryData, error: countryError } =
           await getCountryByIsoCode(locationData.country_code);
 
-        console.log("locdata: ", locationData.country_code);
-        console.log("countryData: ", countryData);
+        // console.log("locdata: ", locationData.country_code);
+        // console.log("countryData: ", countryData);
         if (countryError || !countryData) {
           console.error("Error fetching country data:", countryError);
           this.setDefaultProfileData();
