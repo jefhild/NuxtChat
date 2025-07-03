@@ -1,14 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 
-const config = useRuntimeConfig(); // Nitro-safe access
-
-const supabase = createClient(
-  config.public.SUPABASE_URL,
-  config.SUPABASE_SERVICE_ROLE_KEY
-);
-
 export const uploadAvatarFromURL = async (userId, avatarUrl) => {
   try {
+    const config = useRuntimeConfig(); // ✅ now inside the function
+    const supabase = createClient(
+      config.public.SUPABASE_URL,
+      config.SUPABASE_SERVICE_ROLE_KEY
+    );
+
     const response = await fetch(avatarUrl);
     if (!response.ok) throw new Error("Failed to fetch avatar from URL.");
 
