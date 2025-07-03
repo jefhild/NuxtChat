@@ -159,7 +159,6 @@ export default defineNuxtConfig({
       "/settings",
       "/chat",
       "/admin",
-      "_nuxt",
       "/cdn-cgi",
     ],
     allow: "/",
