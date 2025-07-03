@@ -79,18 +79,23 @@ const avatarDecorationURL = ref(null);
 const props = defineProps({
   userId: { type: String, required: true },
   editable: { type: Boolean, default: true },
+  avatarUrl: { type: String, default: "" },
 });
 
 const emit = defineEmits(["updateAvatarUrl"]);
 const dialog = ref(false);
 const avatarDecDialog = ref(false);
 
-const {
-  photopath,
-  getProfilePhoto,
-  deletePhoto,
-  handleFileChangeAndUpload,
-} = useProfilePhoto();
+const { photopath, getProfilePhoto, deletePhoto, handleFileChangeAndUpload } =
+  useProfilePhoto();
+
+watch(
+  () => props.avatarUrl,
+  (newUrl) => {
+    if (newUrl) photopath.value = newUrl;
+  },
+  { immediate: true }
+);
 
 const openDialog = () => (dialog.value = true);
 

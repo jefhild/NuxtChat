@@ -62,10 +62,10 @@
     <v-card-title>Create New Article</v-card-title>
     <v-card-text>
       <v-form @submit.prevent="handleSubmit" ref="articleForm">
-
+        <!-- Image Preview -->
         <NuxtImg
-          v-if="form.image_path"
-          :src="`${config.public.SUPABASE_BUCKET}/articles/${form.image_path}`"
+          v-if="uploadedImagePath"
+          :src="`${config.public.SUPABASE_BUCKET}/articles/${uploadedImagePath}`"
           width="150"
           height="auto"
           class="mt-2 rounded"
@@ -75,11 +75,13 @@
         <v-file-input
           accept="image/*"
           label="Upload Image"
+          show-size
           @update:modelValue="handleImageChange"
         />
 
+        <!-- Photo Credit URL -->
         <v-text-field
-          v-if="form.image_path"
+          v-if="uploadedImagePath"
           v-model="form.photo_credits_url"
           label="Photo Credit URL"
           :rules="[isValidUrl]"
@@ -297,6 +299,7 @@ const loadingArticles = ref(true);
 const currentPage = ref(1);
 const config = useRuntimeConfig();
 const { md, smAndDown, xs } = useDisplay();
+const uploadedImagePath = ref(""); // used to preview image and show URL field before final submit
 
 const perPage = computed(() => {
   if (xs.value) return 1; // Extra small: 1 card per page
@@ -325,7 +328,7 @@ const snackbar = ref({
 
 onMounted(async () => {
   articles.value = await getAllArticlesWithTags(false);
-  console.log("articles", articles.value);
+  // console.log("articles", articles.value);
   categories.value = (await getAllCategories()) || [];
   tags.value = (await getAllTags()) || [];
   loadingArticles.value = false;
@@ -361,12 +364,32 @@ const slugify = (text) =>
     .replace(/\s+/g, "-")
     .replace(/[^\w-]+/g, "");
 
+// const handleImageChange = async (file) => {
+//   if (!file) return;
+
+//   const imagePath = await uploadArticleImage(file);
+//   if (imagePath) {
+//     form.value.image_path = imagePath;
+//   }
+// };
+
 const handleImageChange = async (file) => {
-  if (!file) return;
+  // console.log("Selected file:", file);
+
+  if (!file || !file.name) {
+    console.warn("Invalid file:", file);
+    return;
+  }
 
   const imagePath = await uploadArticleImage(file);
+  // console.log("Returned image path:", imagePath);
+
   if (imagePath) {
+    uploadedImagePath.value = imagePath;
     form.value.image_path = imagePath;
+    // console.log("Image path set:", uploadedImagePath.value);
+  } else {
+    console.warn("Upload failed or returned null.");
   }
 };
 
