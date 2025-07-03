@@ -1,5 +1,5 @@
 <template>
-  <LoadingContainer v-if="isLoading"/>
+  <LoadingContainer v-if="isLoading" />
 
   <v-container v-else fluid>
     <!-- Hero Section -->
@@ -39,7 +39,6 @@
             <v-col cols="12" md="8">
               <h1 class="text-h4 text-md-h2 font-weight-bold mb-4 text-white">
                 {{ $t("pages.home.landing_page.title-text") }}
-                
               </h1>
               <p class="text-body-1 text-md-subtitle-1 mb-6 text-white">
                 {{ $t("pages.home.landing_page.title-text2") }}
@@ -53,7 +52,7 @@
                       @click.prevent="handleClick"
                       class="text-dec-none text-white"
                     >
-                    {{ $t("pages.home.landing_page.cta_button") }}
+                      {{ $t("pages.home.landing_page.cta_button") }}
                     </NuxtLink>
                   </v-btn>
                 </v-col>
@@ -64,7 +63,7 @@
                     block
                     @click="$router.push(localPath('/about'))"
                   >
-                  {{ $t("pages.home.landing_page.learn_more") }}
+                    {{ $t("pages.home.landing_page.learn_more") }}
                   </v-btn>
                 </v-col>
               </v-row>
@@ -99,15 +98,24 @@
               />
             </div>
 
-            <h2 class="mb-2 font-weight-bold">{{ $t("pages.home.landing_page.welcome_back") }}</h2>
+            <h2 class="mb-2 font-weight-bold">
+              {{ $t("pages.home.landing_page.welcome_back") }}
+            </h2>
             <h3 class="text-h5 mb-4 primary--text">{{ loggedInUser }}</h3>
 
             <v-divider class="mb-4" />
 
             <v-row justify="center" align="center" dense>
               <v-col cols="12" sm="4">
-                <v-btn :to="localPath('/chat')" block color="primary" variant="flat" rounded>
-                  <v-icon left>mdi-chat</v-icon> {{ $t("pages.home.landing_page.chat") }}
+                <v-btn
+                  :to="localPath('/chat')"
+                  block
+                  color="primary"
+                  variant="flat"
+                  rounded
+                >
+                  <v-icon left>mdi-chat</v-icon>
+                  {{ $t("pages.home.landing_page.chat") }}
                 </v-btn>
               </v-col>
               <v-col cols="12" sm="4">
@@ -118,7 +126,8 @@
                   variant="flat"
                   rounded
                 >
-                  <v-icon left>mdi-cog</v-icon> {{ $t("pages.home.landing_page.settings") }}
+                  <v-icon left>mdi-cog</v-icon>
+                  {{ $t("pages.home.landing_page.settings") }}
                 </v-btn>
               </v-col>
               <v-col cols="12" sm="4">
@@ -129,7 +138,8 @@
                   variant="flat"
                   rounded
                 >
-                  <v-icon left>mdi-logout</v-icon> {{ $t("pages.home.landing_page.logout") }}
+                  <v-icon left>mdi-logout</v-icon>
+                  {{ $t("pages.home.landing_page.logout") }}
                 </v-btn>
               </v-col>
             </v-row>
@@ -146,9 +156,9 @@
         border-radius: 100px;
       "
     >
-      <v-chip color="primary" variant="tonal" class="mb-4"
-        >{{ $t("pages.home.landing_page.meet_people") }}</v-chip
-      >
+      <v-chip color="primary" variant="tonal" class="mb-4">{{
+        $t("pages.home.landing_page.meet_people")
+      }}</v-chip>
       <div class="text-h5 font-weight-medium mb-2">
         {{ $t("pages.home.landing_page.discover_connections") }}
       </div>
@@ -161,7 +171,7 @@
           @click.prevent="handleClick"
           class="text-dec-none text-white"
         >
-        {{ $t("pages.home.landing_page.get_chatting") }}
+          {{ $t("pages.home.landing_page.get_chatting") }}
         </NuxtLink>
       </v-btn>
     </v-container>
@@ -199,8 +209,8 @@
     <!-- AI Profiles Section -->
     <v-container class="py-12 mt-8">
       <!-- <HomeRecent :limit="4" @loaded="handleLoaded" /> -->
-      <HomeAi :limit="4"  />
-      <HomeMale :limit="4"  />
+      <HomeAi :limit="4" />
+      <HomeMale :limit="4" />
       <HomeFemale :limit="4" />
 
       <!-- <HomeRecent :limit="4" @loaded="handleLoaded" />
@@ -217,7 +227,9 @@
         border-radius: 100px;
       "
     >
-      <h2 class="text-h4 font-weight-bold mb-2">{{ $t("pages.home.landing_page.final_cta_title") }}</h2>
+      <h2 class="text-h4 font-weight-bold mb-2">
+        {{ $t("pages.home.landing_page.final_cta_title") }}
+      </h2>
       <p class="text-body-1 mb-5">
         {{ $t("pages.home.landing_page.final_cta_description") }}
       </p>
@@ -227,7 +239,7 @@
           @click.prevent="handleClick"
           class="text-dec-none text-white"
         >
-        {{ $t("pages.home.landing_page.get_chatting_now") }}
+          {{ $t("pages.home.landing_page.get_chatting_now") }}
         </NuxtLink>
       </v-btn>
     </v-container>
@@ -238,20 +250,21 @@
   </v-dialog>
 
   <v-dialog v-model="logoutDialog" width="auto">
-    <v-card
-      max-width="400"
-      prepend-icon="mdi-account-remove"
-    >
+    <v-card max-width="400" prepend-icon="mdi-account-remove">
       <v-card-title>
         {{ $t("pages.home.landing_page.logout_title") }}
       </v-card-title>
-      <v-card-text>{{ $t("pages.home.landing_page.logout_confirm") }}</v-card-text>
+      <v-card-text>{{
+        $t("pages.home.landing_page.logout_confirm")
+      }}</v-card-text>
       <template v-slot:actions>
-        <v-btn color="primary" text @click="confirmLogout"
-          >{{ $t("pages.home.landing_page.logout_confirm_button") }}</v-btn
-        >
+        <v-btn color="primary" text @click="confirmLogout">{{
+          $t("pages.home.landing_page.logout_confirm_button")
+        }}</v-btn>
         <v-spacer />
-        <v-btn text @click="logoutDialog = false">{{ $t("pages.home.landing_page.cancel") }}</v-btn>
+        <v-btn text @click="logoutDialog = false">{{
+          $t("pages.home.landing_page.cancel")
+        }}</v-btn>
       </template>
     </v-card>
   </v-dialog>
@@ -317,7 +330,7 @@ onMounted(async () => {
       // console.log("User profile data:", userProfileData);
 
       if (!userProfileData) {
-        titleText.value =  t("components.dialogAiSignUp.titleText2");
+        titleText.value = t("components.dialogAiSignUp.titleText2");
         aiDialog.value = true;
       }
     } else {
@@ -341,12 +354,9 @@ const handleClick = () => {
 
 //useless
 const loadedCount = ref(0);
-const handleLoaded = () =>
-{
+const handleLoaded = () => {
   loadedCount.value++;
 };
-
-
 
 // Logout
 function showLogoutDialog() {
