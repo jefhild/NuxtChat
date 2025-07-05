@@ -2,8 +2,9 @@
   <v-container fluid>
     <v-row class="align-center">
       <v-col cols="12" md="4" class="pa-2">
-        <v-row class="align-center">
-          <v-col>
+        <!-- Filter and Toggle Row -->
+        <v-row no-gutters class="align-center">
+          <v-col class="mr-2">
             <FilterMenu2
               :userProfile="userProfile"
               :showAIUsers="showAIUsers"
@@ -16,13 +17,87 @@
         </v-row>
       </v-col>
       <v-col cols="12" md="8" class="pa-2 d-flex flex-column">
-        <ChatHeader :currentUser="user" :selectedUser="selectedUser" />
+        <ChatHeader
+          v-if="!smAndDown"
+          :currentUser="user"
+          :selectedUser="selectedUser"
+        />
       </v-col>
     </v-row>
+    <!-- Main Chat Row with Users and Chat Panel -->
     <v-row>
       <!-- Left Column: Online Users -->
       <v-col cols="12" md="4" class="pa-2">
-        <Users
+        <!-- Mobile: Collapse Users Panel -->
+        <template v-if="smAndDown">
+          <v-expansion-panels>
+            <v-expansion-panel>
+              <v-expansion-panel-title>
+                <ChatHeader :currentUser="user" :selectedUser="selectedUser" />
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <Users
+                  v-if="!showAIUsers"
+                  @user-selected="selectUser"
+                  :onlineUsers="arrayOnlineUsers"
+                  :offlineUsers="arrayOfflineUsers"
+                  :activeChats="activeChats"
+                  :userProfile="userProfile"
+                  :selected-user-id="selectedUser?.user_id"
+                  :is-tab-visible="isTabVisible"
+                  :isLoading="isLoading"
+                  @refresh-data="refreshData"
+                  @unread-count="updateTabTitle"
+                />
+                <UsersAI
+                  v-if="showAIUsers"
+                  @user-selected="selectUser"
+                  :aiUsers="aiUsers"
+                  :activeChats="activeChats"
+                  :userProfile="userProfile"
+                  :selected-user-id="selectedUser?.user_id"
+                  :is-tab-visible="isTabVisible"
+                  :updateFilters="updateFilters"
+                  @refresh-data="refreshData"
+                  @unread-count="updateTabTitle"
+                />
+                <ProfileCard :profile="userProfile" class="mt-2" />
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </template>
+
+        <!-- Desktop: Normal Display -->
+        <template v-else>
+          <Users
+            v-if="!showAIUsers"
+            @user-selected="selectUser"
+            :onlineUsers="arrayOnlineUsers"
+            :offlineUsers="arrayOfflineUsers"
+            :activeChats="activeChats"
+            :userProfile="userProfile"
+            :selected-user-id="selectedUser?.user_id"
+            :is-tab-visible="isTabVisible"
+            :isLoading="isLoading"
+            @refresh-data="refreshData"
+            @unread-count="updateTabTitle"
+          />
+          <UsersAI
+            v-if="showAIUsers"
+            @user-selected="selectUser"
+            :aiUsers="aiUsers"
+            :activeChats="activeChats"
+            :userProfile="userProfile"
+            :selected-user-id="selectedUser?.user_id"
+            :is-tab-visible="isTabVisible"
+            :updateFilters="updateFilters"
+            @refresh-data="refreshData"
+            @unread-count="updateTabTitle"
+          />
+          <ProfileCard :profile="userProfile" class="mt-2" />
+        </template>
+
+        <!-- <Users
           v-if="!showAIUsers"
           @user-selected="selectUser"
           :onlineUsers="arrayOnlineUsers"
@@ -34,8 +109,8 @@
           :isLoading="isLoading"
           @refresh-data="refreshData"
           @unread-count="updateTabTitle"
-        />
-        <UsersAI
+        /> -->
+        <!-- <UsersAI
           v-if="showAIUsers"
           @user-selected="selectUser"
           :aiUsers="aiUsers"
@@ -46,16 +121,13 @@
           :updateFilters="updateFilters"
           @refresh-data="refreshData"
           @unread-count="updateTabTitle"
-        />
-        <!-- add profile here -->
-        <ProfileCard :profile="userProfile" class="mt-2" />
+        /> -->
+        <!-- <ProfileCard :profile="userProfile" class="mt-2" /> -->
       </v-col>
 
       <!-- Main Chat Area -->
       <v-col cols="12" md="8" class="pa-2 d-flex flex-column">
-        <!-- <ChatHeader :currentUser="user" :selectedUser="selectedUser" /> -->
-
-        <v-card class="flex-grow-1">
+        <v-card v-if="selectedUser" class="flex-grow-1">
           <v-card-text
             class="chat-messages"
             ref="chatContainer"
@@ -108,7 +180,7 @@
           <v-row v-if="attachedFile">
             <v-col
               cols="auto"
-              class="position-relative d-inline-block mt-4 ml-4"
+              class="position-relative d-inline-block mt-2 ml-2"
             >
               <NuxtImg
                 :src="previewUrl"
@@ -118,7 +190,6 @@
                 class="rounded elevation-2"
                 cover
               />
-              <!-- Remove button -->
               <v-btn
                 icon
                 size="x-small"
@@ -133,21 +204,41 @@
           </v-row>
 
           <v-row no-gutters class="pa-2">
-            <v-col cols="10">
-              <!-- Message input and upload button -->
-              <v-row>
-                <v-col cols="10" class="d-flex align-center">
+            <v-col cols="12" md="10" class="d-flex align-center pa-0">
+              <v-row class="w-100" no-gutters>
+                <v-col cols="auto" class="d-flex align-center">
                   <!-- Emoji Button -->
                   <v-btn
                     icon
-                    class="mr-2"
+                    size="x-small"
+                    class="mr-1 pa-0"
                     @click="toggleEmojiPicker"
                     :disabled="!selectedUser || sendingMessage"
                   >
                     <v-icon>mdi-emoticon-happy-outline</v-icon>
                   </v-btn>
 
-                  <!-- Emoji Picker Panel -->
+                  <!-- Upload Button -->
+                  <label
+                    class="upload-bubble mr-2"
+                    :class="{
+                      'upload-bubble--disabled':
+                        !selectedUser || sendingMessage,
+                    }"
+                  >
+                    <v-icon size="18">mdi-plus</v-icon>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      @change="handleFileUpload"
+                      :disabled="!selectedUser || sendingMessage"
+                      style="display: none"
+                    />
+                  </label>
+                </v-col>
+
+                <v-col>
+                  <!-- Emoji Picker -->
                   <div
                     class="emoji-picker-container"
                     v-if="showEmojiPicker"
@@ -158,23 +249,7 @@
                     </client-only>
                   </div>
 
-                  <label
-                    class="upload-bubble mr-3"
-                    :class="{
-                      'upload-bubble--disabled':
-                        !selectedUser || sendingMessage,
-                    }"
-                  >
-                    <v-icon>mdi-plus</v-icon>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      @change="handleFileUpload"
-                      :disabled="!selectedUser || sendingMessage"
-                      style="display: none"
-                    />
-                  </label>
-
+                  <!-- Text Input -->
                   <v-text-field
                     v-model="newMessage"
                     :label="
@@ -195,16 +270,20 @@
               </v-row>
             </v-col>
 
-            <v-col cols="2">
+            <v-col
+              cols="12"
+              md="2"
+              class="d-flex justify-end pa-0 mt-2 mt-md-0"
+            >
               <v-btn
                 type="submit"
+                size="small"
                 :disabled="
                   !selectedUser ||
                   sendingMessage ||
                   (!newMessage.trim() && !attachedFile)
                 "
                 color="primary"
-                class="mt-4 ml-3"
               >
                 <v-progress-circular
                   v-if="sendingMessage"
@@ -243,6 +322,8 @@ import { defineAsyncComponent } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
+import { useDisplay } from "vuetify";
+const { smAndDown } = useDisplay();
 
 const {
   getUserProfileFromId,
@@ -312,7 +393,7 @@ watch(
   () => arrayOnlineUsers.value,
   (newUsers) => {
     if (!selectedUser.value && newUsers?.length) {
-      const imchatty = newUsers.find(u => u.user_id === 'imchatty-id'); // Replace with real ID
+      const imchatty = newUsers.find((u) => u.user_id === "imchatty-id"); // Replace with real ID
       if (imchatty) selectedUser.value = imchatty;
     }
   },
@@ -347,7 +428,6 @@ const onSelectEmoji = (emoji) => {
 onClickOutside(emojiPickerRef, () => {
   showEmojiPicker.value = false;
 });
-
 
 // Load chat messages between current user and selected user
 const loadChatMessages = async (receiverUserId, senderUserId) => {
@@ -983,7 +1063,6 @@ const showRegistrationPrompt = () => {
   dialogVisible.value = true;
 };
 
-
 const updateFilters = async (newFilters) => {
   // console.log("Filters updated:", newFilters); // Debug log
   filters.value = newFilters;
@@ -1009,9 +1088,7 @@ const updateFilters = async (newFilters) => {
 watch(aiData, (newData) => {
   // Avoid duplicating imchatty if it's already in online users
   const imchattyId = "a3962087-516b-48df-a3ff-3b070406d832";
-  const filteredData = newData.filter(
-    (user) => user.user_id !== imchattyId
-  );
+  const filteredData = newData.filter((user) => user.user_id !== imchattyId);
   aiUsers.value = filteredData;
 });
 
@@ -1062,8 +1139,8 @@ const refreshData = async () => {
   background-color: #1976d2;
   color: white;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   cursor: pointer;
 }
 

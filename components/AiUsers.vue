@@ -6,9 +6,14 @@
           <div :class="{ 'selected-user': user.user_id === selectedUserId }">
             <v-list-item @click="selectUser(user)">
               <template v-slot:prepend>
-                <v-icon :color="getGenderColor(user.gender_id)" :icon="getAvatarIcon(user.gender_id)"
-                  size="small"></v-icon>
-                <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
+                <v-icon
+                  :color="getGenderColor(user.gender_id)"
+                  :icon="getAvatarIcon(user.gender_id)"
+                  size="small"
+                ></v-icon>
+                <v-avatar
+                  :image="getAvatar(user.avatar_url, user.gender_id)"
+                ></v-avatar>
               </template>
               <v-list-item-title :class="getGenderColorClass(user.gender_id)">
                 {{ user.displayname }}
@@ -34,7 +39,12 @@
 // } from "/utils/userUtils";
 
 // do I need this?
-import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
+import {
+  getAvatar,
+  getAvatarIcon,
+  getGenderColor,
+  getGenderColorClass,
+} from "@/composables/useUserUtils";
 
 const props = defineProps({
   users: Array,
@@ -49,13 +59,9 @@ const selectUser = (user) => {
   selectedUser.value = user;
   emit("user-selected", user);
 };
-
-
-
 </script>
 
 <style scoped>
-
 .selected-user {
   background-color: #e3f2fd;
   border-left: 10px solid #1976d2;
@@ -66,6 +72,4 @@ const selectUser = (user) => {
 .v-list-item {
   margin-top: 10px;
 }
-
 </style>
-

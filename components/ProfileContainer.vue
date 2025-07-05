@@ -17,8 +17,8 @@
           />
 
           <!-- <img :src="avatar" alt="User Avatar" /> -->
-          <v-btn @click="previewAvatar">Shuffle Avatar</v-btn>
-          <v-btn @click="confirmAvatar" color="primary">Use This Avatar</v-btn>
+          <v-btn variant="text" size="small" @click="previewAvatar">Shuffle Avatar</v-btn>
+          <v-btn variant="text" size="small"  @click="confirmAvatar" color="primary">Use This Avatar</v-btn>
         </v-col>
 
         <v-col cols="9" class="d-flex flex-column align-center">

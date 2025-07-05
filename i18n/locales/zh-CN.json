@@ -560,6 +560,7 @@
       "message-sent": "给您发送了消息"
     },
     "chatheader": {
+      "chatting-with": "你正在和…聊天 ",
       "years-old": "岁，",
       "remove-favorites": "从收藏中移除",
       "add-favorites": "添加到收藏",

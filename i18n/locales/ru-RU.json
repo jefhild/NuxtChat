@@ -560,6 +560,7 @@
       "message-sent": "отправил вам сообщение"
     },
     "chatheader": {
+      "chatting-with": "Ты общаешься с ",
       "years-old": " лет,",
       "remove-favorites": "Удалить из избранного",
       "add-favorites": "Добавить в избранное",
