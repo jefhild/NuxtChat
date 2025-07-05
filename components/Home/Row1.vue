@@ -3,17 +3,20 @@
     <v-col class="text-center" v-if="isAuthenticated">
       <OnlineUsersCount />
     </v-col>
-    <v-col class="text-center" v-else> {{ $t("pages.home.homeRow1.offlineUsersOnline") }} </v-col>
+    <v-col class="text-center" v-else>
+      {{ $t("pages.home.homeRow1.offlineUsersOnline") }}
+    </v-col>
 
-    <v-col class="fill-height">
+    <v-col class="fill-height d-none d-md-flex">
       <div class="fill-height d-flex align-center justify-center">
-        <!-- <AdSenseAdBanner ad-slot="2131952668" /> --> Should we put an ad here?
+        <!-- <AdSenseAdBanner ad-slot="2131952668" /> -->
+        Should we put an ad here?
       </div>
     </v-col>
-    <v-col class="text-center">{{ $t("pages.home.homeRow1.freeAnonymousChat") }}</v-col>
+    <v-col class="text-center">{{
+      $t("pages.home.homeRow1.freeAnonymousChat")
+    }}</v-col>
   </v-row>
-  <!-- </v-card-text> -->
-  <!-- </v-card> -->
 </template>
 
 <script lang="ts" setup>
