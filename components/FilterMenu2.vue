@@ -1,10 +1,10 @@
 <template>
   <v-row>
-    <v-row no-gutters class="ma-0 pa-0">
+    <!-- <v-row no-gutters class="ma-0 pa-0">
       <v-col class="text-caption text-grey-darken-1 ma-0 pa-0">
         {{ $t("components.filter-menu.logged-in") }} {{ userProfile.displayname }}
       </v-col>
-    </v-row>
+    </v-row> -->
 
     <v-col cols="12" sm="auto">
       <v-menu v-model="menu" :close-on-content-click="false" location="end">

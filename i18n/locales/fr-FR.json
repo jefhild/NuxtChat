@@ -560,6 +560,7 @@
       "message-sent": "vous a envoyé un message"
     },
     "chatheader": {
+      "chatting-with": "Vous discutez avec: ",
       "years-old": " ans, ",
       "remove-favorites": "Retirer des Favoris",
       "add-favorites": "Ajouter aux Favoris",

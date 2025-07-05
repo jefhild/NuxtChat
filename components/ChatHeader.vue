@@ -1,12 +1,36 @@
 <template>
+  <!-- Mobile (single-line view) -->
+  <v-card
+    flat
+    v-if="smAndDown && selectedUser"
+    class="responsive-title"
+    :class="getGenderColorClass(selectedUser.gender_id)"
+  >
+    <v-card-title class="pa-0 d-flex align-center responsive-title text-center">
+      <v-avatar
+        size="18"
+        class="mr-2"
+        :image="getAvatar(selectedUser.avatar_url, selectedUser.gender_id)"
+      />
+
+      {{ $t("components.chatheader.chatting-with") }}
+      {{ selectedUser.displayname }} ({{ selectedUser.age }})
+      <v-icon
+        :icon="getAvatarIcon(selectedUser.gender_id)"
+        :color="getGenderColor(selectedUser.gender_id)"
+        size="18"
+        class="mr-1"
+      />
+    </v-card-title>
+  </v-card>
   <v-card
     flat
     variant="tonal"
     :class="getGenderColorClass(selectedUser.gender_id)"
-    v-if="selectedUser"
+    v-else-if="selectedUser"
     class="mb-2"
   >
-    <v-card-title class="py-1">
+    <v-card-title class="responsive-title text-center">
       <v-row no-gutters dense class="align-center">
         <v-col :class="getGenderColorClass(selectedUser.gender_id)">
           <NuxtLink
@@ -62,9 +86,9 @@
     </v-card-text> -->
   </v-card>
   <v-card flat v-else>
-    <v-card-title>{{
-      $t("components.chatcontainer.select-user")
-    }}</v-card-title>
+    <v-card-title class="responsive-title text-center">
+      {{ $t("components.chatcontainer.select-user") }}
+    </v-card-title>
   </v-card>
 
   <v-dialog
@@ -98,13 +122,7 @@
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore";
-
-// import {
-//   getAvatar,
-//   getAvatarIcon,
-//   getGenderColor,
-//   getGenderColorClass,
-// } from "@/utils/userUtils";
+import { useDisplay } from "vuetify";
 import {
   getAvatar,
   getAvatarIcon,
@@ -113,7 +131,7 @@ import {
 } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
-
+const { smAndDown } = useDisplay();
 const {
   getUserProfileFromId,
   getGenderFromId,
@@ -401,5 +419,24 @@ onBeforeUnmount(() => {
   color: var(--v-theme-on-surface);
 }
 
+.responsive-title {
+  font-size: 1.25rem;
+}
 
+.small-text {
+  font-size: 0.85rem; /* Or try 0.875rem */
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  .responsive-title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .responsive-title {
+    font-size: 0.875rem;
+  }
+}
 </style>
