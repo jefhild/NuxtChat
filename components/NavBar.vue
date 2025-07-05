@@ -124,6 +124,16 @@
 
                 <v-list-item
                   v-if="isAuthenticated"
+                  :to="localPath('/chat')"
+                  link
+                >
+                  <v-list-item-title>{{
+                    $t("components.navbar.chat")
+                  }}</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item
+                  v-if="isAuthenticated"
                   :to="localPath('/settings')"
                   link
                 >
