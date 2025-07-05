@@ -96,33 +96,6 @@
           />
           <ProfileCard :profile="userProfile" class="mt-2" />
         </template>
-
-        <!-- <Users
-          v-if="!showAIUsers"
-          @user-selected="selectUser"
-          :onlineUsers="arrayOnlineUsers"
-          :offlineUsers="arrayOfflineUsers"
-          :activeChats="activeChats"
-          :userProfile="userProfile"
-          :selected-user-id="selectedUser?.user_id"
-          :is-tab-visible="isTabVisible"
-          :isLoading="isLoading"
-          @refresh-data="refreshData"
-          @unread-count="updateTabTitle"
-        /> -->
-        <!-- <UsersAI
-          v-if="showAIUsers"
-          @user-selected="selectUser"
-          :aiUsers="aiUsers"
-          :activeChats="activeChats"
-          :userProfile="userProfile"
-          :selected-user-id="selectedUser?.user_id"
-          :is-tab-visible="isTabVisible"
-          :updateFilters="updateFilters"
-          @refresh-data="refreshData"
-          @unread-count="updateTabTitle"
-        /> -->
-        <!-- <ProfileCard :profile="userProfile" class="mt-2" /> -->
       </v-col>
 
       <!-- Main Chat Area -->
@@ -391,10 +364,37 @@ const { arrayOnlineUsers, fetchOnlineUsers } = useFetchOnlineUsers(user);
 
 watch(
   () => arrayOnlineUsers.value,
-  (newUsers) => {
+  async (newUsers) => {
     if (!selectedUser.value && newUsers?.length) {
-      const imchatty = newUsers.find((u) => u.user_id === "imchatty-id"); // Replace with real ID
-      if (imchatty) selectedUser.value = imchatty;
+      const imchattyId = "a3962087-516b-48df-a3ff-3b070406d832";
+      const imchatty = newUsers.find((u) => u.user_id === imchattyId);
+      if (imchatty) {
+        selectedUser.value = imchatty;
+
+        const existingMessages = await getMessagesBetweenUsers(
+          imchatty.user_id,
+          user.value.id
+        );
+
+        if (existingMessages.length === 0) {
+          // Build a personalized welcome message
+          const age = userProfile.value?.age;
+          const country = userProfile.value?.country;
+          const name = userProfile.value?.displayname || "there";
+          const welcomeMessage = `👋 Hey ${name}! I'm ImChatty. ${
+            age ? `You're ${age}, right?` : ""
+          } And from ${country}? Cool! Ask me anything or just say hi!`;
+
+          await insertMessage(
+            user.value.id, // receiver is the current user
+            imchatty.user_id, // sender is imchatty
+            welcomeMessage
+          );
+
+          // Refresh messages
+          await loadChatMessages(user.value.id, imchatty.user_id);
+        }
+      }
     }
   },
   { immediate: true }
