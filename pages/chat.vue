@@ -6,8 +6,8 @@
     <LoadingContainer v-if="isLoading" :text="$t('components.loadingContainer.loading')" />
 
     <!-- Conditional rendering based on authentication status -->
-    <v-row v-else>
-      <v-col v-if="isAuthenticated" cols="12">
+    <v-row no-gutters v-else>
+      <v-col v-if="isAuthenticated">
         <ChatContainer />
       </v-col>
     </v-row>

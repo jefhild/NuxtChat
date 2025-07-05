@@ -5,7 +5,10 @@
     </ClientOnly>
 
     <v-main class="d-flex flex-column flex-grow-1">
-      <v-container fluid class="d-flex flex-column flex-grow-1 pa-0">
+      <v-container
+        fluid
+        class="d-flex flex-column flex-grow-1 pa-0 px-sm-6 px-0"
+      >
         <div class="d-flex flex-column flex-grow-1">
           <NuxtPage />
         </div>
@@ -25,10 +28,9 @@ const { t } = useI18n();
 const config = useRuntimeConfig();
 const authStore = useAuthStore();
 
-
 useHead({
   script: [
-  {
+    {
       src: `https://app.termly.io/resource-blocker/${config.public.TERMLY_ID}?autoBlock=on`,
       type: "text/javascript",
       async: true,
@@ -42,7 +44,6 @@ useHead({
   ],
   htmlAttrs: { lang: "en" },
 });
-
 
 watch(
   () => authStore.user?.id,

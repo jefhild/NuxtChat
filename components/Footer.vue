@@ -2,7 +2,7 @@
   <v-footer>
     <v-row>
       <v-col class="text-center">
-        <v-card>
+        <v-card flat>
           <v-card-text>
             <!-- Footer Content -->
             <!-- <v-row>&copy; 2024 Oliver W. Jones</v-row> -->
@@ -22,6 +22,15 @@
               rel="noopener"
             >
               <v-icon>mdi-github</v-icon>
+            </a>
+            |
+            <!-- GitHub Icon -->
+            <a
+              href="https://www.instagram.com/imchatty_site/"
+              target="_blank"
+              rel="noopener"
+            >
+              <v-icon>mdi-instagram</v-icon>
             </a>
           </v-card-text>
         </v-card>
