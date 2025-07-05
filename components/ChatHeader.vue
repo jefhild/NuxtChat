@@ -86,7 +86,7 @@
     </v-card-text> -->
   </v-card>
   <v-card flat v-else>
-    <v-card-title class="responsive-title text-center">
+    <v-card-title class="pa-0 d-flex align-center responsive-title text-center">
       {{ $t("components.chatcontainer.select-user") }}
     </v-card-title>
   </v-card>
