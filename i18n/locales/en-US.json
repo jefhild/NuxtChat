@@ -454,6 +454,21 @@
           "twitterDescription": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
+      },
+      "other": {
+        "meta": {
+          "title": "Profile Not Found",
+          "description": "The profile you are looking for does not exist or has been removed.",
+          "ogTitle": "Profile Not Found | ImChatty",
+          "ogType": "Website",
+          "ogUrl": "https://imchatty.com/profiles",
+          "ogDescription": "The profile you are looking for does not exist or has been removed.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "Profile Not Found | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "The profile you are looking for does not exist or has been removed.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
       }
     },
     "loginemail": {
