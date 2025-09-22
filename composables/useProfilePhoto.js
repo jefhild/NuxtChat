@@ -1,8 +1,15 @@
 import { ref } from "vue";
-import { useSupabaseClient, useRuntimeConfig } from "#imports";
+// import { useSupabaseClient, useRuntimeConfig } from "#imports";
+
+import { useDb } from "@/composables/useDB"; 
+const {
+  getClient
+} = useDb();
+
 
 export function useProfilePhoto() {
-  const supabase = useSupabaseClient();
+  // const supabase = useSupabaseClient();
+  const supabase = getClient();
   const config = useRuntimeConfig();
   const photopath = ref("");
   const genderId = ref(0);
@@ -52,18 +59,26 @@ export function useProfilePhoto() {
 
     const filePath = `${userId}/${file.value.name}`;
 
-    const { error } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from("profile-images")
       .upload(filePath, file.value, { upsert: true });
 
-    if (error) {
-      console.error("Error uploading image:", error);
+    if (uploadError) {
+      console.error("Error uploading image:", uploadError);
       return;
     }
 
-    const publicURL = `${
-      config.public.SUPABASE_BUCKET
-    }${filePath}?t=${new Date().getTime()}`;
+    // ✅ Get correct public URL
+    const { data: publicData, error: publicUrlError } = supabase.storage
+      .from("profile-images")
+      .getPublicUrl(filePath);
+
+    if (publicUrlError || !publicData?.publicUrl) {
+      console.error("Error getting public URL:", publicUrlError);
+      return;
+    }
+
+    const publicURL = publicData.publicUrl;
 
     const { error: updateError } = await supabase
       .from("profiles")

@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import { useAuthStore } from "@/stores/authStore"; // Replace with your actual store path
+import { useAuthStore } from "@/stores/authStore1"; 
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
@@ -83,7 +83,7 @@ const handleFavoriteToggle = async () => {
 
 // Redirect to login
 const redirectToLogin = () => {
-  router.push(localPath("/signin"));
+  router.push(localPath("/signin1"));
 };
 
 // Run on component mount

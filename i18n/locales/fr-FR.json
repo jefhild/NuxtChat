@@ -7,6 +7,11 @@
         "freeAnonymousChat": "Chat Anonyme Gratuit"
       },
       "landing_page": {
+        "heading_unauthenticated": "Chattez Anonymement. Connectez-vous Instantanément.",
+        "heading_guest": "Chattez Anonymement. Connectez-vous Instantanément.",
+        "heading_onboarding": "Chattez Anonymement. Connectez-vous Instantanément.",
+        "heading_anon_authenticated": "Chattez Anonymement. Connectez-vous Instantanément.",
+        "heading_authenticated": "Welcome Back. Enjoy!",
         "title-text": "Chattez Anonymement. Connectez-vous Instantanément.",
         "title-text2": "Amis IA, vraies personnes, connectez-vous anonymement.",
         "cta_button": "Commencer à Chatter",
@@ -525,6 +530,7 @@
         "sign-in": "Se Connecter",
         "google": "Avec Google",
         "facebook": "Avec Facebook",
+        "github": "Avec GitHub",
         "email": "Avec E-mail"
       },
       "male": {
@@ -637,14 +643,23 @@
     },
     "loginFacebook": {
       "sign-in": "Se Connecter avec Facebook",
+      "continue": "Continuer avec Facebook",
       "18years": "J'ai 18 ans ou plus et j'accepte les Conditions de Service",
       "registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos, utiliser des filtres avancés et avoir une expérience IA plus complète. Facebook partagera votre nom, adresse e-mail et photo de profil avec imchatty. En créant un compte, vous acceptez nos",
       "confirmAge": "Vous devez confirmer votre âge"
     },
     "loginGoogle": {
       "sign-in": "Se Connecter Avec Google",
+      "18years": "J'ai 18 ans ou plus et j'accepte les Conditions de Service",
       "continue": "Continuer avec Google",
-      "registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos, utiliser des filtres avancés et avoir une expérience IA plus complète. Facebook partagera votre nom, adresse e-mail et photo de profil avec imchatty. En créant un compte, vous acceptez nos",
+      "registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos, utiliser des filtres avancés et avoir une expérience IA plus complète. Google partagera votre nom, adresse e-mail et photo de profil avec imchatty. En créant un compte, vous acceptez nos",
+      "confirmAge": "Vous devez confirmer votre âge"
+    },
+    "loginGitHub": {
+      "sign-in": "Se Connecter Avec GitHub",
+      "18years": "J'ai 18 ans ou plus et j'accepte les Conditions de Service",
+      "continue": "Continuer avec GitHub",
+      "registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos, utiliser des filtres avancés et avoir une expérience IA plus complète. GitHub partagera votre nom, adresse e-mail et photo de profil avec imchatty. En créant un compte, vous acceptez nos",
       "confirmAge": "Vous devez confirmer votre âge"
     },
     "lookingFor": {
@@ -791,7 +806,8 @@
       "online": "en ligne",
       "offline": "hors ligne",
       "active": "actif",
-      "no-anonymous": "Aucun utilisateur anonyme trouvé"
+      "no-anonymous": "Aucun utilisateur anonyme trouvé",
+      "requires-profile": "Profil minimal requis"
     },
     "users-ai": {
       "ai-users": "Utilisateurs IA",
@@ -810,5 +826,36 @@
       "away": "Absent",
       "dnd": "Ne Pas Déranger"
     }
+  },
+  "onboarding": {
+    "welcome": "👋 Bienvenue sur ImChatty. Prêt à créer un profil ?",
+    "guestStart": "Super, on commence ! Quel pseudo veux-tu afficher ?",
+    "resume": "On reprend là où on s’était arrêtés ✨",
+    "yes": "Oui",
+    "no": "Non",
+    "askName": "Quel nom d'affichage souhaitez-vous utiliser ?",
+    "askAge": "Quel âge avez-vous ? (18–100)",
+    "askGender": "Quel est votre genre ?",
+    "gender": { "male": "Homme", "female": "Femme", "other": "Autre" },
+    "summary": "Récapitulons :",
+    "name": "Nom",
+    "age": "Âge",
+    "genderLabel": "Genre",
+    "confirm": "Répondez \"confirm\" pour enregistrer, ou \"edit\" pour modifier quelque chose.",
+    "moreInfo": "Merci de fournir un peu plus d'informations.",
+    "done": "Parfait ✨ Votre profil est prêt !",
+    "sessionError": "Impossible de démarrer votre session. Veuillez réessayer.",
+    "saveError": "Oups, une erreur est survenue lors de l'enregistrement. Veuillez réessayer.",
+    "finishCta": "Terminer le profil",
+    "editName": "Modifier le nom",
+    "editAge": "Modifier l'âge",
+    "editGender": "Modifier le genre",
+    "startCta": "Commencer l’inscription",
+    "loginCta": "Se connecter",
+    "consentDeclined": "Pas de souci. Quand vous serez prêt, vous pourrez commencer l’inscription, ou vous connecter si vous avez déjà un compte.",
+    "loginHelp": "Parfait — utilisez le bouton Se connecter dans l’en-tête. Je vous attends ici.",
+    "generateBio": "Generate Bio",
+    "bioSaved": "Bio saved successfully!",
+    "skip": "Skip"
   }
 }

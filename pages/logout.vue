@@ -6,11 +6,11 @@
 </template>
 
 <script setup>
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore1";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
-const authStore = useAuthStore();
+const auth = useAuthStore();
 
 useHead(() => ({
   link: [
@@ -50,8 +50,9 @@ useSeoMeta({
 });
 
 onMounted(async () => {
-  // console.log("logout");
-  await authStore.logout();
+  // await auth.logout();                    // wait until fully cleared
+  // await nextTick();
+  // await navigateTo("/", { replace: true }); // to a route that doesn't auto-login
 });
 </script>
 

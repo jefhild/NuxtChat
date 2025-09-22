@@ -1,11 +1,19 @@
-export function useBlockedUsers(user) {
+export function useBlockedUsers() {
   const { getUserBlockedProfiles } = useDb();
   const blockedUsers = ref([]);
 
-  const loadBlockedUsers = async () => {
-    try {
-      const data = await getUserBlockedProfiles(user.value.id);
+  /**
+   * Loads the list of user IDs that the given user has blocked.
+   * @param {string|null} userId - The ID of the current user.
+   */
+  const loadBlockedUsers = async (userId) => {
+    if (!userId) {
+      console.warn("loadBlockedUsers called with null userId");
+      return;
+    }
 
+    try {
+      const data = await getUserBlockedProfiles(userId);
       blockedUsers.value = data.map((item) => item.blocked_user_id);
       // console.log("Blocked users:", blockedUsers.value);
     } catch (error) {
@@ -13,7 +21,6 @@ export function useBlockedUsers(user) {
     }
   };
 
-  // Just return the state and function without calling `onMounted`
   return {
     blockedUsers,
     loadBlockedUsers,

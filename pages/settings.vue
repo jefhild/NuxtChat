@@ -3,29 +3,34 @@
     <HomeRow1 />
     <v-row>
       <v-col>
-        <SettingsContainer/>
+        <SettingsLayout />
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script setup>
-import { useAuthStore } from "@/stores/authStore";
-
+import { useAuthStore } from "@/stores/authStore1";
 const authStore = useAuthStore();
+
+// defineRouteRules({ prerender: false })
+
 const router = useRouter();
-const isLoading = ref(true);
 const localPath = useLocalePath();
 
-const { getUserProfileFromId } = useDb();
+const isLoading = ref(true);
 
-onMounted(async () =>
-{
-  const { data: userProfileData } = await getUserProfileFromId(authStore.user?.id);
+onMounted(async () => {
+  console.log("[settings] onMounted: checking auth...");
+  await authStore.checkAuth();
 
-  if (!userProfileData)
-  {
-    router.push(localPath("/")); // Redirect to home page
+  // Check against valid statuses
+  if (
+    authStore.authStatus !== "authenticated" &&
+    authStore.authStatus !== "anon_authenticated"
+  ) {
+    console.warn(`[settings] Invalid authStatus: ${authStore.authStatus}`);
+    router.push(localPath("/"));
     return;
   }
 

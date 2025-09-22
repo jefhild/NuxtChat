@@ -7,8 +7,14 @@
         "freeAnonymousChat": "Free Anonymous Chat"
       },
       "landing_page": {
+        "heading_unauthenticated": "Chat Anonymously. Connect Instantly.",
+        "heading_guest": "Chat Anonymously. Connect Instantly.",
+        "heading_onboarding": "You're Almost Ready. Connect Instantly.",
+        "heading_anon_authenticated": "Welcome Back. Register Now.",
+        "heading_authenticated": "Welcome Back. Enjoy!",
         "title-text": "Chat Anonymously. Connect Instantly.",
         "title-text2": "AI friends, real people, log in anonymously.",
+        "start_chatting": "Start Chatting",
         "cta_button": "Start Chatting",
         "learn_more": "Learn More",
         "welcome_back": "Welcome back,",
@@ -525,6 +531,7 @@
         "sign-in": "Sign In",
         "google": "With Google",
         "facebook": "With Facebook",
+        "github": "With GitHub",
         "email": "With Email"
       },
       "male": {
@@ -643,8 +650,16 @@
     },
     "loginGoogle": {
       "sign-in": "Sign In With Google",
+      "18years": "I am 18 years or older and agree to the Terms of Service",
       "continue": "Continue with Google",
-      "registeredInfo": "Registered users can contact offline users, save favorites, share photos, use advanced filters and have a more complete AI experience. Facebook will share your name, email address, and profile picture with imchatty. By creating an account, you agree to our",
+      "registeredInfo": "Registered users can contact offline users, save favorites, share photos, use advanced filters and have a more complete AI experience. Google will share your name, email address, and profile picture with imchatty. By creating an account, you agree to our",
+      "confirmAge": "You must confirm your age"
+    },
+    "loginGitHub": {
+      "sign-in": "Sign In With GitHub",
+      "18years": "I am 18 years or older and agree to the Terms of Service",
+      "continue": "Continue with GitHub",
+      "registeredInfo": "Registered users can contact offline users, save favorites, share photos, use advanced filters and have a more complete AI experience. GitHub will share your name, email address, and profile picture with imchatty. By creating an account, you agree to our",
       "confirmAge": "You must confirm your age"
     },
     "lookingFor": {
@@ -791,7 +806,8 @@
       "online": "online",
       "offline": "offline",
       "active": "active",
-      "no-anonymous": "No anonymous users found"
+      "no-anonymous": "No anonymous users found",
+      "requires-profile": "Requires a minimum profile"
     },
     "users-ai": {
       "ai-users": "AI Users",
@@ -810,5 +826,40 @@
       "away": "Away",
       "dnd": "Do Not Disturb"
     }
+  },
+  "onboarding": {
+    "welcome": "👋 Welcome to ImChatty. Ready to create a profile?",
+    "guestStart": "Great, let's start! What display name do you want?",
+    "resume": "Let's pick up where we left off ✨",
+    "yes": "Yes",
+    "no": "No",
+    "askName": "What display name do you want?",
+    "askAge": "How old are you? (18–100)",
+    "askGender": "What is your gender?",
+    "gender": { "male": "Male", "female": "Female", "other": "Other" },
+    "summary": "Let’s recap:",
+    "name": "Name",
+    "age": "Age",
+    "genderLabel": "Gender",
+    "confirm": "Reply \"confirm\" to save, or \"edit\" to change something.",
+    "moreInfo": "Please share a bit more info.",
+    "done": "All set ✨ Your profile is ready!",
+    "sessionError": "I couldn't start your session. Please try again.",
+    "saveError": "Oops, I had trouble saving. Please try again.",
+    "finishCta": "Finish profile",
+    "editName": "Edit name",
+    "editAge": "Edit age",
+    "editGender": "Edit gender",
+    "startCta": "Start onboarding",
+    "loginCta": "Log in",
+    "consentDeclined": "No problem. Whenever you’re ready, you can start onboarding, or log in if you already have an account.",
+    "loginHelp": "Great — use the Log in button in the header to sign in. I’ll be here when you’re ready.",
+    "generateBio": "Generate Bio",
+    "bioSaved": "Bio saved successfully!",
+    "askBioKeywords": "What keywords would you like to include in your bio? (e.g., hobbies, interests, personality traits)",
+    "skip": "Skip",
+    "resumeDraftIntro": "You already started a profile. Here’s what I have:",
+    "startOver": "Start over",
+    "continue": "Continue"
   }
 }

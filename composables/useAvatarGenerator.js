@@ -1,9 +1,32 @@
 export const useAvatarGenerator = () => {
-  const styleMap = {
-    1: ["adventurer", "micah", "male"],
-    2: ["avataaars", "notionists", "female"],
-    3: ["big-ears", "lorelei", "bottts"],
-  };
+const styleMap = {
+  1: [
+    // Male
+    "adventurer",
+    "adventurer-neutral",
+    "micah",
+    "notionists",
+    "avataaars",
+  ],
+  2: [
+    // Female
+    "lorelei",
+    "avataaars",
+    "notionists",
+    "croodles",
+    "croodles-neutral",
+  ],
+  3: [
+    // AI / Non-gendered / Other
+    "bottts",
+    "big-ears",
+    "identicon",
+    "shapes",
+    "fun-emoji",
+    "initials",
+    "icons",
+  ],
+};
 
   const getRandomStyle = (genderId) => {
     const styles = styleMap[genderId] || styleMap[2]; // Default to female
