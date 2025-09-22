@@ -44,7 +44,7 @@
                   <v-col cols="12" sm="auto" class="mb-2 mb-sm-0">
                     <v-btn color="primary" block>
                       <NuxtLink
-                        :to="localPath('/')"
+                        :to="localPath('/chat')"
                         class="text-dec-none text-white"
                       >
                         {{ $t("pages.home.landing_page.cta_button") }}
@@ -68,37 +68,16 @@
         </v-sheet>
       </v-col>
     </v-row>
-
-    <!-- Home button -->
-    <!-- <v-row>
-      <v-col cols="12" align="center">
-        <v-btn color="primary" dark class="mt-4" @click="redirectToLogin"
-          >Go to the Home Page</v-btn
-        >
-      </v-col>
-    </v-row> -->
   </v-container>
   <!-- </v-card> -->
 </template>
 
 <script setup>
 const localPath = useLocalePath();
-import { useAuthStore } from "@/stores/authStore";
-import { onMounted } from "vue";
-import { useRouter } from "vue-router";
-const { insertFeedback } = useDb();
 
-const router = useRouter();
-const authStore = useAuthStore();
+import { onMounted } from "vue";
+
 const joke = ref("");
-const submittingtoDatabase = ref(false);
-const userInput = ref("");
-const previosUserInput = ref("");
-const currentQuestionIndex = ref(0);
-const isTyping = ref(false);
-const showUserBubble = ref(false);
-const aiResponse = ref("");
-const triviaQuestion = ref("");
 const mounted = ref(false);
 
 const logoutJokes = [
@@ -114,112 +93,12 @@ const logoutJokes = [
   "Remember: Logging out is just a temporary breakpoint in our friendship! 🛑👨‍💻",
 ];
 
-const questions = [
-  "Would you like to play a quick game before you go?",
-  "",
-  "One last question : If you could improve one thing about this site, what would it be?",
-];
-
-const redirectToLogin = async () => {
-  try {
-    const navigationResult = await router.push(localPath("/"));
-    //window.location.reload();
-  } catch (error) {
-    console.error("Failed to redirect to login page:", error);
-  }
-};
-
 onMounted(() => {
   mounted.value = true;
   joke.value = logoutJokes[Math.floor(Math.random() * logoutJokes.length)];
 });
 
-const sendMessage = async () => {
-  isTyping.value = true;
-  previosUserInput.value = userInput.value;
-  userInput.value = "";
-  showUserBubble.value = true;
-  switch (currentQuestionIndex.value) {
-    case 0:
-      //ask ai to create trivia question if answer yes
-      try {
-        const response = await $fetch("/api/aiTrivia", {
-          method: "POST",
-          body: {
-            userInput: `I asked the user if they wanted to play a game. Based on their response: "${previosUserInput.value}", return ONLY one of the following:  
-                        - A real random trivia question that the user can answer if the user said yes in any way (e.g., "yes", "sure", "okay", "why not", "let's do it").  
-                        - The word "Okay" if the user said no or anything unrelated.  
-                        Do not include any explanations, just return the trivia question or "Okay".`,
-          },
-        });
 
-        //If theres an answer back from the AI
-        if (response.success && response.aiResponse) {
-          if (response.aiResponse === "Okay") {
-            aiResponse.value = "Okay! Maybe next time! ";
-            currentQuestionIndex.value++;
-          } else {
-            triviaQuestion.value = response.aiResponse;
-            aiResponse.value =
-              "Okay! Here's a trivia question for you! : " +
-              response.aiResponse;
-          }
-        }
-      } catch (error) {
-        console.error("Failed to create trivia question:", error);
-      }
-      break;
-
-    case 1:
-      try {
-        aiResponse.value = "";
-        const response = await $fetch("/api/aiTrivia", {
-          method: "POST",
-          body: {
-            userInput: `I asked the user this trivia question : "${triviaQuestion.value}". Based on their response: "${previosUserInput.value}", return ONLY one of the following:  
-                        - the word "okay" if the user answered the trivia question correctly.  
-                        - The word sentence sayin "Incorrect! The correct answer is: ..." (... being the correct answert to the question) if the user answered the trivia question incorrectly or said anything unrelated.
-                        Do not include any explanations, just return "Okay" or the sentence starting with "Incorrect".`,
-          },
-        });
-
-        //If theres an answer back from the AI
-        if (response.success && response.aiResponse) {
-          if (response.aiResponse.includes("Incorrect")) {
-            aiResponse.value = response.aiResponse;
-          } else {
-            aiResponse.value = "Correct! Great job!";
-          }
-        }
-      } catch (error) {
-        console.error("Failed to verify trivia answer:", error);
-      }
-      break;
-
-    case 2:
-      if (!previosUserInput.value.trim()) {
-        aiResponse.value = "Try again!";
-        showUserBubble.value = false;
-        isTyping.value = false;
-        console.warn("User input is empty. Aborting.");
-        return;
-      }
-
-      submittingtoDatabase.value = true;
-      await insertFeedback(previosUserInput.value);
-
-      aiResponse.value =
-        "Thanks! I'll sure to send it to my boss... if I had one! 😅";
-      break;
-
-    default:
-      break;
-  }
-
-  showUserBubble.value = false;
-  currentQuestionIndex.value++;
-  isTyping.value = false;
-};
 </script>
 
 <style scoped>

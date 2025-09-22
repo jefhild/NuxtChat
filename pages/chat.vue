@@ -1,44 +1,34 @@
 <template>
   <v-container fluid>
     <HomeRow1 />
-
-    <!-- Display the loading spinner if the page is loading -->
-    <LoadingContainer v-if="isLoading" :text="$t('components.loadingContainer.loading')" />
-
-    <!-- Conditional rendering based on authentication status -->
-    <v-row no-gutters v-else>
-      <v-col v-if="isAuthenticated">
-        <ChatContainer />
-      </v-col>
-    </v-row>
+    <LoadingContainer
+      v-if="isLoading"
+      :text="$t('components.loadingContainer.loading')"
+    />
+    <ChatLayout
+      v-else
+      :user="authStore.user"
+      :userProfile="authStore.userProfile"
+      :authStatus="authStore.authStatus"
+    />
   </v-container>
 </template>
 
 <script setup>
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore1";
+import { onMounted, ref } from "vue";
 
 const authStore = useAuthStore();
-const isAuthenticated = ref(false);
 const isLoading = ref(true);
-const router = useRouter();
-const localPath = useLocalePath();
-
-const { getUserProfileFromId } = useDb();
 
 onMounted(async () => {
-  await authStore.checkAuth();
-  isAuthenticated.value = authStore.user !== null;
-  const { data: userProfileData } = await getUserProfileFromId(
-    authStore.user?.id
-  );
-
-  if (!userProfileData) {
-    isAuthenticated.value = false; // User doesn't exist, set to false
-    router.push(localPath("/")); // Redirect to home page
-    return;
+  try {
+    console.log("[chat2] onMounted: checking auth...");
+    await authStore.checkAuth(); // safe getSession-based check
+  } catch (e) {
+    console.warn("[auth] checkAuth failed (ok to continue):", e);
+  } finally {
+    isLoading.value = false;
   }
-  isLoading.value = false;
 });
 </script>
-
-<style scoped></style>

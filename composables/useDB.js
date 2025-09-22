@@ -1,17 +1,43 @@
-import { checkPrintable } from "vuetify/lib/util/helpers.mjs";
-
 import { v4 as uuidv4 } from "uuid";
 
+// let _sbSingleton;
+
 export const useDb = () => {
-  const supabase = useSupabaseClient();
-  const config = useRuntimeConfig();
-  let inactivityCheckInterval = null;
+  // if (!_sbSingleton) _sbSingleton = useSupabaseClient();
+
+
 
   /*---------------*/
   /* Get functions */
   /*---------------*/
 
+  // const getClient = () => _sbSingleton;
+
+  const getClient = () => useSupabaseClient();
+  
+  // const config = useRuntimeConfig();
+
+
+   const getConfig = () => {
+     // tolerate being called very early; return minimal shape if no app
+     try {
+       // will throw if no active nuxt instance
+       return useRuntimeConfig();
+     } catch {
+       return { public: {} };
+     }
+   };
+
+
+
+  let inactivityCheckInterval = null;
+  let _messagesChan = null;
+  let _messagesFor = null; // if you track which user it's wired for
+  let _messagesInflight = null;
+
+
   const getCountryByIsoCode = async (isoCode) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("countries")
       .select("*")
@@ -22,6 +48,7 @@ export const useDb = () => {
   };
 
   const getCountries = async () => {
+    const supabase = getClient();
     const { data, error } = await supabase.from("countries").select("*");
     if (error) throw error;
 
@@ -29,6 +56,7 @@ export const useDb = () => {
   };
 
   const getStateByCodeAndCountry = async (regionCode, countryId) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("states")
       .select("*")
@@ -40,17 +68,17 @@ export const useDb = () => {
   };
 
   const getStatesFromCountryId = async (countryId) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("states")
       .select("*")
-      .eq("country_id", countryId)
-      .limit(1)
-      .single();
-
-    return { data, error };
+      .eq("country_id", countryId);
+    if (error) throw error;
+    return data;
   };
 
   const getStatesFromCountryName = async (country) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("states")
       .select("*")
@@ -61,16 +89,18 @@ export const useDb = () => {
   };
 
   const getCitiesFromCountryId = async (countryId) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("cities")
       .select("*")
       .eq("country_id", countryId)
       .limit(1);
 
-    return { data, error };
+    return data;
   };
 
   const getCityByNameAndState = async (cityName, stateId) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("cities")
       .select("*")
@@ -78,10 +108,11 @@ export const useDb = () => {
       .eq("state_id", stateId)
       .single();
 
-    return { data, error };
+    return data;
   };
 
   const getCities = async (state) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("cities")
       .select("*")
@@ -91,22 +122,21 @@ export const useDb = () => {
     return data;
   };
 
-  /*const getUserStatus = async (userId) => {
+  const getCitiesFromStateId = async (stateId) => {
+    const supabase = getClient();
     const { data, error } = await supabase
-      .from("presence")
-      .select("status")
-      .eq("user_id", userId)
-      .single();
+      .from("cities")
+      .select("*")
+      .eq("state_id", stateId)
+      .order("name");
 
-    if (error)
-    {
-      console.error("Error fetching status:", error);
-    }
+    if (error) throw error;
 
     return data;
-  };*/
+  };
 
   const getStatuses = async () => {
+    const supabase = getClient();
     const { data, error } = await supabase.from("status").select("*");
     if (error) throw error;
 
@@ -114,12 +144,14 @@ export const useDb = () => {
   };
 
   const getGenders = async () => {
+    const supabase = getClient();
     const { data, error } = await supabase.from("genders").select("*");
     if (error) throw error;
     return data;
   };
 
   const getGenderFromId = async (id) => {
+    const supabase = getClient();
     if (!id) {
       return null;
     }
@@ -138,6 +170,7 @@ export const useDb = () => {
   };
 
   const getLookingForId = async (name) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("looking_for")
       .select("id")
@@ -153,6 +186,7 @@ export const useDb = () => {
   };
 
   const getAvatarDecorationFromId = async (id) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("profiles")
       .select("avatar_decoration_url")
@@ -167,6 +201,7 @@ export const useDb = () => {
   };
 
   const getMessageById = async (id) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("messages")
       .select("id, content, sender_id")
@@ -186,6 +221,8 @@ export const useDb = () => {
     before = null,
     limit = 20
   ) => {
+    const supabase = getClient();
+
     let query = supabase
       .from("messages")
       .select(
@@ -207,7 +244,8 @@ export const useDb = () => {
       .or(
         `and(sender_id.eq.${senderUserId},receiver_id.eq.${receiverUserId}),and(sender_id.eq.${receiverUserId},receiver_id.eq.${senderUserId})`
       )
-      .order("created_at", { ascending: false })
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
       .limit(limit);
 
     if (before) {
@@ -226,6 +264,7 @@ export const useDb = () => {
     before = null,
     limit = 20
   ) => {
+    const supabase = getClient();
     let query = supabase
       .from("messages")
       .select(
@@ -260,7 +299,32 @@ export const useDb = () => {
     return data;
   };
 
+  const recordAIInteraction = async (userId) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("user_ai_interactions")
+      .select("interaction_count")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    let count = data?.interaction_count || 0;
+
+    if (data) {
+      await supabase
+        .from("user_ai_interactions")
+        .update({ interaction_count: count + 1 })
+        .eq("user_id", userId);
+    } else {
+      await supabase
+        .from("user_ai_interactions")
+        .insert({ user_id: userId, interaction_count: 1 });
+    }
+
+    return count + 1;
+  };
+
   const getAIInteractionCount = async (senderUserId) => {
+    const supabase = getClient();
     const { data: interactionData, error: updateError } = await supabase
       .from("user_ai_interactions")
       .select("interaction_count")
@@ -277,6 +341,7 @@ export const useDb = () => {
   };
 
   const getCurrentAIInteractionCount = async (senderUserId) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("user_ai_interactions")
       .select("interaction_count")
@@ -287,6 +352,7 @@ export const useDb = () => {
   };
 
   const getInterests = async () => {
+    const supabase = getClient();
     const { data, error } = await supabase.from("looking_for").select("*");
 
     if (error) {
@@ -297,6 +363,13 @@ export const useDb = () => {
   };
 
   const getInterestsIds = async (userId) => {
+    const supabase = getClient();
+
+    if (!userId || userId === "undefined") {
+      console.warn("[getInterestsIds] Invalid userId:", userId);
+      return [];
+    }
+
     const { data, error } = await supabase
       .from("user_looking_for")
       .select("looking_for_id")
@@ -304,12 +377,14 @@ export const useDb = () => {
 
     if (error) {
       console.error("Error fetching user interests ids:", error);
+      return [];
     }
 
-    return { data, error };
+    return data;
   };
 
   const getDescriptions = async () => {
+    const supabase = getClient();
     const { data, error } = await supabase.from("descriptions").select("*");
 
     if (error) {
@@ -320,6 +395,7 @@ export const useDb = () => {
   };
 
   const getInterestsIcons = async (lookingForIds) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("looking_for")
       .select("id, name, icon, tooltip, color")
@@ -343,17 +419,19 @@ export const useDb = () => {
     status_id,
     userId
   ) => {
-    if (!userIds.length) return [];
+    const supabase = getClient();
+
+    if (!userIds.length) return { data: [], error: null };
 
     const { data, error } = await supabase.rpc(
       "fetch_filtered_profiles_by_ids",
       {
         user_ids: userIds,
-        logged_in_user_id: userId,
+        logged_in_user_id: userId || null, // ensure it's null-safe
         gender_filter: genderId,
         min_age: minAge,
         max_age: maxAge,
-        is_anonymous: is_anonymous,
+        is_anonymous,
         looking_for_ids: interests,
         p_country_id: country_id,
         p_status_id: status_id,
@@ -362,14 +440,14 @@ export const useDb = () => {
 
     if (error) {
       console.error("Error fetching online profiles:", error.message);
-      return [];
+      return { data: [], error };
     }
 
-    // console.log("Fetched users from IDs:", data);
-    return { data, error };
+    return { data, error: null };
   };
 
   const getUserDisplayNameFromId = async (userId) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("profiles")
       .select("displayname")
@@ -384,6 +462,8 @@ export const useDb = () => {
   };
 
   const getUserFromName = async (displayName) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
@@ -398,6 +478,8 @@ export const useDb = () => {
   };
 
   const getUserProfileFromId = async (userId) => {
+    const supabase = getClient();
+
     if (!userId) {
       console.error(
         "No userId provided to getUserProfileFromId. This is normal if there is no user autheniticated"
@@ -417,23 +499,21 @@ export const useDb = () => {
   };
 
   const getUserProfileFunctionFromId = async (userId) => {
-    const { data, error } = await supabase.rpc("get_user_profile", {
+    const supabase = getClient();
+    const { data, error } = await supabase.rpc("get_user_profile_1", {
       p_user_id: userId,
     });
 
     if (error) {
-      console.error(
-        "Error fetching user profile with RPC:",
-        supabaseError.message
-      );
+      console.error("Error fetching user profile with RPC:", error.message);
+      return null;
     }
-
-    // console.log("Fetched user profile with RPC:", data);
 
     return data;
   };
 
   const getUserProfileFromDisplayName = async (displayName) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc(
       "get_user_profile_by_displayname",
       {
@@ -449,6 +529,7 @@ export const useDb = () => {
   };
 
   const getUserProfileFromSlug = async (slug) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_user_profile_by_slug", {
       p_slug: slug,
     });
@@ -461,6 +542,7 @@ export const useDb = () => {
   };
 
   const getUserProfilePhoto = async (userId) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("profiles")
       .select("avatar_url, gender_id")
@@ -471,6 +553,7 @@ export const useDb = () => {
   };
 
   const getRegisteredUsersIds = async () => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("profiles")
       .select("user_id")
@@ -480,6 +563,7 @@ export const useDb = () => {
   };
 
   const getAllUsersIdsWithoutAvatar = async () => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("profiles")
       .select("user_id")
@@ -489,19 +573,21 @@ export const useDb = () => {
   };
 
   const getAllProfiles = async (withAI) => {
-    const { data, error } = await supabase.rpc("get_all_profiles", {
-      p_is_ai: withAI,
+    const supabase = getClient();
+    const { data, error } = await supabase.rpc("get_all_profiles_1", {
+      p_is_ai: null, // or true / false
     });
 
     if (error) {
       console.error("Error fetching all profiles:", error);
-      return [];
+      return { data: null, error };
     }
 
-    return data;
+    return { data, error: null }; // ✅ Match expected structure
   };
 
   const getRecentFemales = async (profileLimit) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_recent_females", {
       profile_limit: profileLimit,
     });
@@ -514,6 +600,7 @@ export const useDb = () => {
   };
 
   const getRecentMales = async (profileLimit) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_recent_males", {
       profile_limit: profileLimit,
     });
@@ -526,6 +613,11 @@ export const useDb = () => {
   };
 
   const getAiProfiles = async (userId, genderId, minAge, maxAge) => {
+    const supabase = getClient();
+    if (!userId) {
+      console.warn("User ID is null — skipping AI profile fetch.");
+      return { data: [], error: null };
+    }
     const { data, error } = await supabase.rpc("fetch_ai_profiles", {
       logged_in_user_id: userId,
       gender_filter: genderId,
@@ -545,33 +637,38 @@ export const useDb = () => {
 
   const getActiveChats = async (
     userId,
-    genderId,
-    minAge,
-    maxAge,
-    is_anonymous,
-    interests,
-    country_id,
-    status_id
+    genderId = null,
+    minAge = 18,
+    maxAge = 99,
+    is_anonymous = null,
+    interests = null,
+    country_id = null,
+    status_id = null
   ) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase.rpc("fetch_filtered_active_chats", {
-      logged_in_user_id: userId,
-      gender_filter: genderId,
-      min_age: minAge,
-      max_age: maxAge,
-      is_anonymous: is_anonymous,
-      looking_for_ids: interests,
-      p_country_id: country_id,
-      p_status_id: status_id,
+      logged_in_user_id: userId ?? null,
+      gender_filter: genderId ?? null,
+      min_age: minAge ?? 18,
+      max_age: maxAge ?? 99,
+      is_anonymous: is_anonymous ?? null,
+      looking_for_ids: interests ?? null,
+      p_country_id: country_id ?? null,
+      p_status_id: status_id ?? null,
     });
 
     if (error) {
       console.error("Error fetching active chats:", error);
+      return { data: null, error };
     }
 
-    return data;
+    return { data, error: null };
   };
 
   const getOfflineProfiles = async (userId, genderId, minAge, maxAge) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase.rpc("fetch_offline_profiles", {
       logged_in_user_id: userId,
       gender_filter: genderId,
@@ -588,6 +685,8 @@ export const useDb = () => {
   };
 
   const getOnlineProfiles = async (userId, genderId, minAge, maxAge) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase.rpc("fetch_online_profiles", {
       logged_in_user_id: userId,
       gender_filter: genderId,
@@ -602,18 +701,8 @@ export const useDb = () => {
     return { data, error };
   };
 
-  /*const getOnlineUserCount = async () => {
-    const { count, error: supabaseError } = await supabase
-      .from("presence")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "online");
-
-    if (supabaseError) throw supabaseError;
-
-    return count;
-  };*/
-
   const getMostPopularProfiles = async (profileLimit) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_most_popular_profiles", {
       profile_limit: profileLimit,
     });
@@ -625,6 +714,7 @@ export const useDb = () => {
   };
 
   const getRecentProfiles = async (profileLimit) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_recent_profiles", {
       profile_limit: profileLimit,
     });
@@ -637,6 +727,7 @@ export const useDb = () => {
   };
 
   const getMostPopularAiProfiles = async (profileLimit) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_most_popular_ai_profiles", {
       profile_limit: profileLimit,
     });
@@ -648,6 +739,7 @@ export const useDb = () => {
   };
 
   const getBlockedProfiles = async (userId) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_blocked_profiles", {
       blocker_id: userId,
     });
@@ -660,6 +752,7 @@ export const useDb = () => {
   };
 
   const getUserBlockedProfiles = async (userId) => {
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("blocked_users")
       .select("blocked_user_id")
@@ -671,6 +764,7 @@ export const useDb = () => {
   };
 
   const getCountUserFavorites = async (userId, favoriteUserId) => {
+    const supabase = getClient();
     const { count } = await supabase
       .from("favorites")
       .select("*", { count: "exact", head: true })
@@ -681,6 +775,7 @@ export const useDb = () => {
   };
 
   const getUserFavoriteProfiles = async (userId) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_favorite_profiles", {
       current_user_id: userId,
     });
@@ -693,6 +788,7 @@ export const useDb = () => {
   };
 
   const getUserUpvotedProfiles = async (userId) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_upvoted_profiles", {
       upvoter_id: userId,
     });
@@ -705,7 +801,10 @@ export const useDb = () => {
   };
 
   const getAllAvatarDecorations = async () => {
-    const config = useRuntimeConfig();
+    // const config = useRuntimeConfig();
+
+    const config = getConfig();
+    const supabase = getClient();
     const { data, error } = await supabase.storage
       .from("avatar-decorations")
       .list("decorations", {
@@ -725,6 +824,7 @@ export const useDb = () => {
   };
 
   const getUserUpvotedMeProfiles = async (userId) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_users_who_upvoted_me", {
       input_user_id: userId,
     });
@@ -737,6 +837,7 @@ export const useDb = () => {
   };
 
   const getUserFavoritedMeProfiles = async (userId) => {
+    const supabase = getClient();
     const { data, error } = await supabase.rpc("get_users_who_favorited_me", {
       input_user_id: userId,
     });
@@ -749,6 +850,8 @@ export const useDb = () => {
   };
 
   const getAllTags = async () => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("tags")
       .select("id, name, slug")
@@ -763,6 +866,8 @@ export const useDb = () => {
   };
 
   const getAllCategories = async () => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("categories")
       .select("id, name, slug")
@@ -777,6 +882,8 @@ export const useDb = () => {
   };
 
   const getAllArticlesWithTags = async () => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("articles")
       .select(
@@ -810,6 +917,8 @@ export const useDb = () => {
   };
 
   const getAllPublishedArticlesWithTags = async (limit) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("articles")
       .select(
@@ -845,6 +954,8 @@ export const useDb = () => {
   };
 
   const getArticleBySlug = async (slug) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("articles")
       .select(
@@ -881,6 +992,8 @@ export const useDb = () => {
   };
 
   const getCountArticleByTag = async (tagId) => {
+    const supabase = getClient();
+
     const { error, count } = await supabase
       .from("article_tags")
       .select("*", { count: "exact", head: true })
@@ -895,6 +1008,8 @@ export const useDb = () => {
   };
 
   const getCountArticleByCategory = async (categoryId) => {
+    const supabase = getClient();
+
     const { count, error } = await supabase
       .from("articles")
       .select("*", { count: "exact", head: true })
@@ -910,6 +1025,8 @@ export const useDb = () => {
   };
 
   const getArticlesByTagSlug = async (slug) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase.rpc("get_articles_by_tag_slug", {
       tag_slug: slug,
     });
@@ -923,6 +1040,8 @@ export const useDb = () => {
   };
 
   const getTagsByArticle = async (articleSlug) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("articles")
       .select("tags(name, slug)")
@@ -938,6 +1057,8 @@ export const useDb = () => {
   };
 
   const getArticlesbyCategorySlug = async (slug) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase.rpc(
       "get_articles_by_category_slug",
       {
@@ -954,6 +1075,8 @@ export const useDb = () => {
   };
 
   const getArticlesByType = async (type) => {
+    const supabase = getClient();
+
     if (type != "guide" && type != "blog") {
       console.error("Invalid article type:", type);
       return null;
@@ -975,6 +1098,8 @@ export const useDb = () => {
   };
 
   const getAllReports = async () => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("reports")
       .select(
@@ -995,6 +1120,8 @@ export const useDb = () => {
   };
 
   const getUserSlugFromId = async (userId) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("profiles")
       .select("slug")
@@ -1009,6 +1136,8 @@ export const useDb = () => {
   };
 
   const getChatFilePublicUrl = async (fileName) => {
+    const supabase = getClient();
+
     const { data } = supabase.storage
       .from("chat-files")
       .getPublicUrl(`messages/${fileName}`);
@@ -1021,7 +1150,8 @@ export const useDb = () => {
   /*------------------*/
 
   const updateUsername = async (username, userId) => {
-    console.log("Updating username:", username, userId);
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -1035,7 +1165,8 @@ export const useDb = () => {
   };
 
   const updateProvider = async (provider, userId) => {
-    console.log("Updating provider:", provider, userId);
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -1049,6 +1180,8 @@ export const useDb = () => {
   };
 
   const updateBio = async (bio, userId) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -1060,7 +1193,8 @@ export const useDb = () => {
   };
 
   const updateStatus = async (userId, status) => {
-    console.log("Updating status:", status);
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("presence")
       .upsert({ user_id: userId, status: status ? "online" : "offline" });
@@ -1071,6 +1205,8 @@ export const useDb = () => {
   };
 
   const updateGender = async (genderID, userId) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("profiles")
       .update({ gender_id: genderID })
@@ -1082,8 +1218,7 @@ export const useDb = () => {
   };
 
   const updateTagline = async (tagline, userId) => {
-    // console.log("Updating tagline:", tagline);
-    // console.log("User ID:", userId);
+    const supabase = getClient();
 
     const { data, error } = await supabase
       .from("profiles")
@@ -1096,6 +1231,8 @@ export const useDb = () => {
   };
 
   const updateProfilePhoto = async (avatarUrl, userId) => {
+    const supabase = getClient();
+
     const status = await supabase
       .from("profiles")
       .update({ avatar_url: avatarUrl })
@@ -1109,8 +1246,8 @@ export const useDb = () => {
   };
 
   const updateSiteURL = async (siteUrl, userId) => {
-    // console.log("Updating url:", siteUrl);
-    // console.log("User ID:", userId);
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("profiles")
       .update({ site_url: siteUrl })
@@ -1120,6 +1257,8 @@ export const useDb = () => {
   };
 
   const updateInterests = async (interestsArray, userId) => {
+    const supabase = getClient();
+
     for (const interest of interestsArray) {
       const id = await getLookingForId(interest.trim());
       const { data, error } = await supabase
@@ -1133,6 +1272,8 @@ export const useDb = () => {
   };
 
   const updateMessage = async (messageId, newContent) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("messages")
       .update({
@@ -1151,6 +1292,21 @@ export const useDb = () => {
     return data;
   };
 
+  async function updateUserProfileAfterLinking({ user_id, email, provider }) {
+    const supabase = getClient();
+
+    return supabase
+      .from("profiles")
+      .update({
+        email,
+        provider,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user_id)
+      .select()
+      .single();
+  }
+
   const updateProfile = async (
     id,
     displayname,
@@ -1165,6 +1321,8 @@ export const useDb = () => {
     avatar_url,
     site_url
   ) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -1184,7 +1342,32 @@ export const useDb = () => {
     if (error) throw error;
   };
 
+  async function upsertProfileWithJoins(payload) {
+    const supabase = getClient();
+
+    return supabase.rpc("upsert_profile_with_joins", {
+      p_user_id: payload.user_id,
+      p_displayname: payload.displayname,
+      p_age: payload.age,
+      p_gender_id: payload.gender_id,
+      p_status_id: payload.status_id ?? null,
+      p_avatar_url: payload.avatar_url ?? null,
+      p_country_id: payload.country_id ?? null,
+      p_state_id: payload.state_id ?? null,
+      p_city_id: payload.city_id ?? null,
+      p_bio: payload.bio ?? null,
+      p_interests: Array.isArray(payload.interests) ? payload.interests : [],
+      p_descriptions: Array.isArray(payload.descriptions)
+        ? payload.descriptions
+        : [],
+      p_slug: payload.slug ?? null,
+      p_provider: payload.provider ?? "anonymous",
+    });
+  }
+
   const updateMessagesAsRead = async (receiverUserId, senderUserId) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("messages")
       .update({ read: true })
@@ -1196,6 +1379,8 @@ export const useDb = () => {
   };
 
   const updateAIInteractionCount = async (senderUserId, interactionCount) => {
+    const supabase = getClient();
+
     const { error: updateInteractionError } = await supabase
       .from("user_ai_interactions")
       .update({ interaction_count: interactionCount })
@@ -1209,19 +1394,9 @@ export const useDb = () => {
     }
   };
 
-  const updatePresence = async (userId, status) => {
-    const { error } = await supabase
-      .from("presence")
-      .upsert({ user_id: userId, status });
-
-    console.log("Updating presence:", userId, status);
-    /*if (error) {
-      console.error("Error updating presence:", error);
-    }*/
-  };
-
   const updateAvatarDecoration = async (userId, avatarDecUrl) => {
-    console.log("in db", userId, avatarDecUrl);
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("profiles")
       .update({ avatar_decoration_url: avatarDecUrl })
@@ -1233,6 +1408,8 @@ export const useDb = () => {
   };
 
   const updateCategory = async (slug, data) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("categories")
       .update(data)
@@ -1244,6 +1421,8 @@ export const useDb = () => {
   };
 
   const updateTag = async (slug, data) => {
+    const supabase = getClient();
+
     const { error } = await supabase.from("tags").update(data).eq("slug", slug);
 
     if (error && error.status !== 204) {
@@ -1252,6 +1431,8 @@ export const useDb = () => {
   };
 
   const updateArticle = async (id, payload) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("articles")
 
@@ -1264,7 +1445,8 @@ export const useDb = () => {
   };
 
   const updateArticleTags = async (articleId, tagIds) => {
-    //Remove the existing tags
+    const supabase = getClient();
+
     await supabase.from("article_tags").delete().eq("article_id", articleId);
 
     // Re-insert tag associations
@@ -1280,6 +1462,8 @@ export const useDb = () => {
   };
 
   const updateLastActive = async (userId) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("profiles")
       .update({ last_active: new Date() })
@@ -1291,6 +1475,8 @@ export const useDb = () => {
   };
 
   const updateSoundSetting = async (userId, enabled) => {
+    const supabase = getClient();
+
     return await supabase
       .from("profiles")
       .update({ sound_notifications_enabled: enabled })
@@ -1298,6 +1484,8 @@ export const useDb = () => {
   };
 
   const saveAvatar = async (userId, avatarUrl) => {
+    const supabase = getClient();
+
     try {
       const { error } = await supabase
         .from("profiles")
@@ -1332,6 +1520,8 @@ export const useDb = () => {
     siteUrl,
     bio
   ) => {
+    const supabase = getClient();
+
     const slugUser = displayname
       .toLowerCase()
       .trim()
@@ -1379,6 +1569,74 @@ export const useDb = () => {
     return { error: null };
   };
 
+  const insertProfileFromObject = async (profile) => {
+    const supabase = getClient();
+
+    const {
+      gender_id = null,
+      status_id = null,
+      age = null,
+      country_id = null,
+      state_id = null,
+      city_id = null,
+      username = null,
+      avatar_url = null,
+      user_id,
+      provider = "anonymous",
+      displayname,
+      ip = null,
+      site_url = null,
+      bio = null,
+    } = profile;
+
+    if (!user_id) return { error: new Error("user_id is required") };
+    if (!displayname) return { error: new Error("displayname is required") };
+
+    // build a slug and ensure uniqueness
+    const baseSlug = makeSlug(displayname);
+    const slug = await ensureUniqueSlug(supabase, baseSlug);
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .insert({
+        gender_id,
+        status_id,
+        age,
+        country_id,
+        state_id,
+        city_id,
+        username,
+        avatar_url,
+        user_id,
+        provider,
+        displayname,
+        slug, // ← required, now set
+        ip,
+        site_url,
+        bio,
+      })
+      .select("user_id")
+      .maybeSingle();
+
+    if (error || !data?.user_id) {
+      console.error("Error inserting profile or no ID returned:", error);
+      return { error };
+    }
+
+    const profileId = data.user_id;
+    const defaultFavoriteId = "7d20548d-8a9d-4190-bce5-90c8d74c4a56"; // Santa
+
+    try {
+      await insertFavorite(profileId, defaultFavoriteId);
+      await upvoteUserProfile(defaultFavoriteId, profileId);
+    } catch (e) {
+      console.error("Error inserting default favorite/upvote:", e);
+      // non-fatal
+    }
+
+    return { error: null };
+  };
+
   const insertMessage = async (
     receiverId,
     senderId,
@@ -1388,6 +1646,8 @@ export const useDb = () => {
     fileType = null,
     fileName = null
   ) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("messages")
       .insert({
@@ -1409,6 +1669,8 @@ export const useDb = () => {
   };
 
   const insertFeedback = async (feedback, userId) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("feedback")
       .insert({ feedback_text: feedback });
@@ -1419,6 +1681,8 @@ export const useDb = () => {
   };
 
   const insertBlockedUser = async (userId, blockedUserId) => {
+    const supabase = getClient();
+
     const { error } = await supabase.from("blocked_users").insert({
       user_id: userId,
       blocked_user_id: blockedUserId,
@@ -1434,6 +1698,8 @@ export const useDb = () => {
   };
 
   const insertInteractionCount = async (senderUserId, interactionCount) => {
+    const supabase = getClient();
+
     const { insertError } = await supabase.from("user_ai_interactions").insert({
       user_id: senderUserId,
       interaction_count: interactionCount,
@@ -1442,6 +1708,8 @@ export const useDb = () => {
   };
 
   const insertFavorite = async (userId, favoriteUserId) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("favorites")
       .insert({ user_id: userId, favorite_user_id: favoriteUserId });
@@ -1454,6 +1722,8 @@ export const useDb = () => {
   };
 
   const insertUserInterest = async (userId, interestId) => {
+    const supabase = getClient();
+
     const { error } = await supabase.from("user_looking_for").insert({
       user_id: userId,
       looking_for_id: interestId,
@@ -1467,6 +1737,8 @@ export const useDb = () => {
   };
 
   const insertUserDescription = async (userId, descriptionId) => {
+    const supabase = getClient();
+
     const { error } = await supabase.from("user_descriptions").insert({
       user_id: userId,
       descriptions_id: descriptionId,
@@ -1480,7 +1752,8 @@ export const useDb = () => {
   };
 
   const insertArticle = async (article) => {
-    // Step 1: Insert article and return the id
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("articles")
       .insert({
@@ -1528,7 +1801,8 @@ export const useDb = () => {
   };
 
   const insertCategory = async (category) => {
-    // console.log("Inserting category:", category);
+    const supabase = getClient();
+
     const { error } = await supabase.from("categories").insert({
       name: category.name,
       slug: category.slug,
@@ -1541,6 +1815,8 @@ export const useDb = () => {
   };
 
   const insertTag = async (tag) => {
+    const supabase = getClient();
+
     const { error } = await supabase.from("tags").insert({
       name: tag.name,
       slug: tag.slug,
@@ -1559,6 +1835,8 @@ export const useDb = () => {
     reason,
     messages
   ) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("reports")
       .insert({
@@ -1584,6 +1862,8 @@ export const useDb = () => {
   };
 
   const insertReportMessages = async (reportId, messageId) => {
+    const supabase = getClient();
+
     const { error } = await supabase.from("report_messages").insert({
       report_id: reportId,
       message_id: messageId,
@@ -1600,6 +1880,8 @@ export const useDb = () => {
   /*------------------*/
 
   const deleteChatWithUser = async (userId, userToDeleteId) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("messages")
       .delete()
@@ -1615,6 +1897,8 @@ export const useDb = () => {
   };
 
   const deleteFavorite = async (userId, favoriteUserId) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("favorites")
       .delete()
@@ -1629,6 +1913,8 @@ export const useDb = () => {
   };
 
   const deleteUserInterest = async (userId, interestId) => {
+    const supabase = getClient();
+
     const error = await supabase.from("user_looking_for").delete().match({
       user_id: userId,
       looking_for_id: interestId,
@@ -1642,6 +1928,8 @@ export const useDb = () => {
   };
 
   const unblockUser = async (userId, blockedUserId) => {
+    const supabase = getClient();
+
     const error = await supabase
       .from("blocked_users")
       .delete()
@@ -1656,6 +1944,8 @@ export const useDb = () => {
   };
 
   const deleteUpvoteFromUser = async (userId, upvotedProfileId) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("votes")
       .delete({ returning: "representation" }) // THIS is key!
@@ -1672,6 +1962,8 @@ export const useDb = () => {
   };
 
   const deleteReport = async (reportId) => {
+    const supabase = getClient();
+
     const { error } = await supabase
       .from("reports")
       .delete()
@@ -1689,14 +1981,15 @@ export const useDb = () => {
   /*-----------------*/
 
   const checkDisplayNameExists = async (displayName) => {
+    const cleaned = displayName.trim().toLowerCase();
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("profiles")
       .select("displayname", { head: false })
-      .eq("displayname", displayName)
+      .ilike("displayname", cleaned) // case-insensitive match
       .limit(1)
       .maybeSingle();
-
-    // console.log("Checking displayname:", data);
 
     if (error && error.code !== "PGRST116") {
       console.error("Error checking displayname:", error);
@@ -1706,6 +1999,8 @@ export const useDb = () => {
   };
 
   const hasInterests = async (userId) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("user_looking_for")
       .select("*")
@@ -1738,6 +2033,8 @@ export const useDb = () => {
   };
 
   const upvoteUserProfile = async (targetUserId, voterUserId) => {
+    const supabase = getClient();
+
     const { error } = await supabase.rpc("upvote_profile", {
       target_user_id: targetUserId,
       voter_user_id: voterUserId,
@@ -1750,6 +2047,8 @@ export const useDb = () => {
   };
 
   const downvoteUserProfile = async (targetUserId, voterUserId) => {
+    const supabase = getClient();
+
     const { error } = await supabase.rpc("downvote_profile", {
       target_user_id: targetUserId,
       voter_user_id: voterUserId,
@@ -1763,6 +2062,8 @@ export const useDb = () => {
   };
 
   const uploadProfilePhoto = async (filePath, file) => {
+    const supabase = getClient();
+
     const error = await supabase.storage
       .from("profile-images")
       .upload(filePath, file, { upsert: true });
@@ -1771,6 +2072,8 @@ export const useDb = () => {
   };
 
   const uploadChatFile = async (fileName, file) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase.storage
       .from("chat-files")
       .upload(`messages/${fileName}`, file);
@@ -1790,6 +2093,9 @@ export const useDb = () => {
       console.error("Could not determine file extension.");
       return null;
     }
+
+    const supabase = getClient();
+
     const timestamp = Date.now();
     const suffix = articleId ? `-${articleId}` : `-${uuidv4()}`;
     const fileName = `article${suffix}-${timestamp}.${extension}`;
@@ -1808,40 +2114,6 @@ export const useDb = () => {
     return data.path;
   };
 
-
-
-  const checkInactivityForAllUsers = async () => {
-    console.log("checking inactivity for ALL users");
-
-    // Get all online users
-    const { data: onlineUsers, error } = await supabase
-      .from("presence")
-      .select("user_id, last_active")
-      .eq("status", "online");
-
-    if (error) {
-      console.error("Error fetching online users:", error);
-      return;
-    }
-
-    const now = new Date();
-
-    for (const user of onlineUsers) {
-      const lastActiveDate = new Date(user.last_active);
-      lastActiveDate.setHours(lastActiveDate.getHours() + 1);
-      const timeDifference = (now - lastActiveDate) / 1000; // Convert to seconds
-
-      //console.log("now", now);
-      //console.log("lastactive", lastActiveDate);
-      //console.log("timedfference", timeDifference)
-      //console.log("checkinactivityallusers");
-      //30 minutes
-      if (timeDifference > 1800) {
-        await updatePresence(user.user_id, "offline");
-      }
-    }
-  };
-
   const trackPresence = async (userId) => {
     // not sure about this...
     window.addEventListener(
@@ -1849,10 +2121,10 @@ export const useDb = () => {
       async () => await updatePresence(userId, "offline")
     );
 
-    inactivityCheckInterval = setInterval(
-      async () => await checkInactivityForAllUsers(),
-      1800000 // 30 minutes
-    );
+    inactivityCheckInterval = setInterval(async () => {
+      await updatePresence(userId, "online"); // touch + keep-alive
+      await checkInactivityForAllUsers();
+    }, 5 * 60 * 1000);
   };
 
   const stopTracking = async () => {
@@ -1884,6 +2156,8 @@ export const useDb = () => {
   };
 
   const isNotificationsEnabled = async (userId) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("profiles")
       .select("sound_notifications_enabled")
@@ -1899,6 +2173,8 @@ export const useDb = () => {
   };
 
   const isAI = async (userId) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase
       .from("profiles")
       .select("is_ai")
@@ -1921,12 +2197,15 @@ export const useDb = () => {
     if (!import.meta.client) {
       return { data: { user: null }, error: null };
     }
+    const supabase = getClient();
 
     const { data, error } = await supabase.auth.getUser();
     return { data, error };
   };
 
   const authRefreshSession = async () => {
+    const supabase = getClient();
+
     const { data, error } = await supabase.auth.refreshSession();
 
     if (error) {
@@ -1938,7 +2217,8 @@ export const useDb = () => {
 
   /*Update*/
   const authUpdateProfile = async (deleteMe, deleteRequestedAt) => {
-    //console.log("Updating user metadata");
+    const supabase = getClient();
+
     const { data, error } = await supabase.auth.updateUser({
       data: { delete_me: deleteMe, delete_requested_at: deleteRequestedAt },
     });
@@ -1953,7 +2233,8 @@ export const useDb = () => {
 
   /*Others*/
   const authSignOut = async () => {
-    console.log("auth Signing out");
+    const supabase = getClient();
+
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Error signing out:", error);
@@ -1962,6 +2243,8 @@ export const useDb = () => {
   };
 
   const signInWithOtp = async (email) => {
+    const supabase = getClient();
+const config = getConfig();
     const { error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
@@ -1974,35 +2257,18 @@ export const useDb = () => {
   };
 
   const signInAnonymously = async () => {
-    //console.log("Signing in anonymously");
+    const supabase = getClient();
+
     const { data, error } = await supabase.auth.signInAnonymously();
 
     return { data, error };
   };
 
-  // const signInWithOAuth = async (provider, redirectTo) => {
-  //   await supabase.auth.signInWithOAuth({
-  //     provider: provider,
-  //     options: {
-  //       redirectTo: redirectTo, // Redirect after OAuth
-  //     },
-  //   });
-  // };
-
-  // const signInWithOAuth = async (provider, path = "/callback") => {
-  //   const origin = window.location.origin;
-  //   const redirectUrl = `${origin}${path}`;
-  //   await supabase.auth.signInWithOAuth({
-  //     provider,
-  //     options: {
-  //       redirectTo: redirectUrl,
-  //     },
-  //   });
-  // };
-
   const signInWithOAuth = async (provider, next = "/chat") => {
+    const supabase = getClient();
+
     const origin = window.location.origin;
-    const redirectTo = `${origin}/callback?next=${encodeURIComponent(next)}`;
+    const redirectTo = `${origin}/callback1?next=${encodeURIComponent(next)}`;
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -2013,6 +2279,8 @@ export const useDb = () => {
 
   const linkIdentity = async ({ provider, email, redirectTo }) => {
     console.log("Linking identity with provider:", provider);
+    const supabase = getClient();
+
     const { data, error } = await supabase.auth.linkIdentity({
       provider,
       options: {
@@ -2025,6 +2293,8 @@ export const useDb = () => {
   };
 
   const updateUserEmail = async (mappedEmail) => {
+    const supabase = getClient();
+
     const { data, error } = await supabase.auth.updateUser(
       {
         email: mappedEmail,
@@ -2042,13 +2312,278 @@ export const useDb = () => {
   };
 
   const authMarkUserAsAnonymous = async () => {
-    //console.log("Marking user as anonymous");
+    const supabase = getClient();
+
     await supabase.auth.updateUser({
       user_metadata: { isAnonymous: true },
     });
   };
 
+  async function ensureAnonymousUser() {
+    const { authGetUser, signInAnonymously, authMarkUserAsAnonymous } = useDb();
+
+    try {
+      // Check for an existing user session (registered or anonymous)
+      const { data, error } = await authGetUser();
+
+      if (error && error.message !== "Auth session missing!") {
+        console.error(
+          "[ensureAnonymousUser] authGetUser error:",
+          error.message
+        );
+        throw error;
+      }
+
+      if (data?.user) {
+        console.log(
+          "[ensureAnonymousUser] Existing user found:",
+          data.user.email || "anonymous"
+        );
+        return data.user;
+      }
+
+      // No user session, create anonymous user
+      const { data: anonData, error: anonError } = await signInAnonymously();
+
+      if (anonError) {
+        console.error(
+          "[ensureAnonymousUser] signInAnonymously failed:",
+          anonError.message
+        );
+        throw anonError;
+      }
+
+      if (!anonData?.user) {
+        throw new Error("Anonymous sign-in succeeded but no user returned.");
+      }
+
+      await authMarkUserAsAnonymous();
+      console.log(
+        "[ensureAnonymousUser] New anonymous user created:",
+        anonData.user.id
+      );
+      return anonData.user;
+    } catch (err) {
+      console.error("[ensureAnonymousUser] Unexpected error:", err.message);
+      throw err;
+    }
+  }
+
+  const makeSlug = (s) =>
+    String(s || "")
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-") // spaces -> hyphens
+      .replace(/[^\w-]+/g, "") // strip non-word chars
+      .replace(/_+/g, "-") // underscores -> hyphens
+      .replace(/-+/g, "-") // collapse dup hyphens
+      .replace(/^-+|-+$/g, ""); // trim leading/trailing hyphens
+
+  const ensureUniqueSlug = async (supabase, base) => {
+    const trySlugs = [base];
+    // add two random fallbacks if needed
+    for (let i = 0; i < 2; i++) {
+      const rand = Math.random().toString(36).slice(2, 6); // 4 chars
+      trySlugs.push(`${base}-${rand}`);
+    }
+    for (const slug of trySlugs) {
+      const supabase = getClient();
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("slug", slug)
+        .limit(1)
+        .maybeSingle();
+      if (!data && !error) return slug; // slug free
+    }
+    // if everything somehow exists, append timestamp
+    return `${base}-${Date.now().toString(36)}`;
+  };
+
+const subscribeToMessages = async (
+  me,
+  { onInsert, onUpdate, onDelete } = {}
+) => {
+  const supabase = getClient();
+  const meId = String(me);
+
+  // If already wired for this user, just return the existing unsubscribe
+  if (_messagesChan && _messagesFor === meId) {
+    return async () => {
+      const ch = _messagesChan;
+      _messagesChan = null;
+      _messagesFor = null;
+      _messagesInflight = null;
+      try {
+        await ch.unsubscribe?.();
+      } catch {}
+      try {
+        await supabase.removeChannel?.(ch);
+      } catch {}
+    };
+  }
+
+  // If a subscribe is already in-flight for this user, await and return its unsubscribe
+  if (_messagesInflight && _messagesFor === meId) {
+    return _messagesInflight;
+  }
+
+  // Clean previous if it's for a different user
+  if (_messagesChan) {
+    try {
+      await _messagesChan.unsubscribe?.();
+    } catch {}
+    try {
+      await supabase.removeChannel?.(_messagesChan);
+    } catch {}
+    _messagesChan = null;
+    _messagesFor = null;
+    _messagesInflight = null;
+  }
+
+  const mkChannel = (name, opts) =>
+    typeof supabase.channel === "function"
+      ? supabase.channel(name, opts)
+      : supabase.realtime.channel(name, opts);
+
+  const ch = mkChannel(`messages-${meId}`); 
+
+  // Handlers (keep separate INSERT/UPDATE/DELETE or switch to '*' if you prefer)
+  ch.on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "messages",
+      filter: `receiver_id=eq.${meId}`,
+    },
+    (payload) => onInsert?.(payload.new)
+  );
+  ch.on(
+    "postgres_changes",
+    {
+      event: "UPDATE",
+      schema: "public",
+      table: "messages",
+      filter: `receiver_id=eq.${meId}`,
+    },
+    (payload) => onUpdate?.(payload)
+  );
+  ch.on(
+    "postgres_changes",
+    {
+      event: "DELETE",
+      schema: "public",
+      table: "messages",
+      filter: `receiver_id=eq.${meId}`,
+    },
+    (payload) => onDelete?.(payload.old)
+  );
+
+  // Subscribe exactly once
+  if (ch.__didSubscribe) {
+    // Shouldn’t happen; be graceful.
+  } else {
+    ch.__didSubscribe = true;
+  }
+
+  // Single-flight promise for callers
+  _messagesFor = meId;
+  _messagesInflight = (async () => {
+    await new Promise((resolve, reject) => {
+      ch.subscribe((status) => {
+        // (Optional) comment this out to stop console spam
+        // console.log("[rt][messages][status]", status);
+
+        if (status === "SUBSCRIBED") resolve();
+        else if (status === "CHANNEL_ERROR" || status === "CLOSED") {
+          // Let caller decide to resubscribe later; don't recurse here
+          // Resolve anyway to keep API simple; your UI can observe it via onUpdate/onInsert not firing.
+          resolve();
+        }
+      });
+    });
+
+    _messagesChan = ch;
+
+    // Return a stable unsubscribe function
+    return async () => {
+      if (_messagesChan === ch) {
+        _messagesChan = null;
+        _messagesFor = null;
+        _messagesInflight = null;
+      }
+      try {
+        await ch.unsubscribe?.();
+      } catch {}
+      try {
+        await supabase.removeChannel?.(ch);
+      } catch {}
+    };
+  })();
+
+  return _messagesInflight;
+};
+
+  const unsubscribeMessages = async () => {
+    const ch = _messagesChan;
+    if (!ch) return false;
+
+    // Clear module refs early so a new subscribe can start immediately
+    _messagesChan = null;
+    _messagesFor = null;
+
+    try {
+      // 1) Ask the channel to close
+      await ch.unsubscribe?.();
+    } catch (e) {
+      console.warn("[rt] unsubscribe error (safe to ignore):", e?.message || e);
+    }
+
+    try {
+      // 2) Remove it from the client's channel list (optional but tidy)
+      const client = getClient();
+      await client.removeChannel?.(ch);
+    } catch (e) {
+      console.warn(
+        "[rt] removeChannel error (safe to ignore):",
+        e?.message || e
+      );
+    }
+
+    return true;
+  };
+
+  const fetchUnreadCounts = async (me) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("messages")
+      .select("sender_id") // just the column we need
+      .eq("receiver_id", me)
+      .eq("read", false);
+
+    if (error) throw error;
+
+    const map = {};
+    for (const row of data || []) {
+      const k = String(row.sender_id);
+      map[k] = (map[k] || 0) + 1;
+    }
+    return map;
+  };
+
+  const markThreadAsRead = async (me, peerId) => {
+    const supabase = getClient();
+    await supabase
+      .from("messages")
+      .update({ read: true })
+      .eq("receiver_id", me)
+      .eq("sender_id", peerId)
+      .eq("read", false);
+  };
+
   return {
+    getClient,
     getCountryByIsoCode,
     getCountries,
     getStateByCodeAndCountry,
@@ -2057,6 +2592,7 @@ export const useDb = () => {
     getCityByNameAndState,
     getCitiesFromCountryId,
     getCities,
+    getCitiesFromStateId,
     //getUserStatus,
     getStatuses,
     getGenders,
@@ -2067,6 +2603,7 @@ export const useDb = () => {
     getMessagesBetweenUsers,
     getMessagesOfAUserWithUser,
     getAIInteractionCount,
+    recordAIInteraction,
     getCurrentAIInteractionCount,
     getInterests,
     getInterestsIds,
@@ -2117,6 +2654,7 @@ export const useDb = () => {
     getChatFilePublicUrl,
 
     updateUsername,
+    updateUserProfileAfterLinking,
     updateProvider,
     updateBio,
     updateStatus,
@@ -2126,10 +2664,11 @@ export const useDb = () => {
     updateSiteURL,
     updateInterests,
     updateProfile,
+    upsertProfileWithJoins,
     updateMessage,
     updateMessagesAsRead,
     updateAIInteractionCount,
-    updatePresence,
+    // updatePresence,
     updateAvatarDecoration,
     updateCategory,
     updateTag,
@@ -2140,6 +2679,7 @@ export const useDb = () => {
     saveAvatar,
 
     insertProfile,
+    insertProfileFromObject,
     insertMessage,
     insertFeedback,
     insertBlockedUser,
@@ -2169,7 +2709,7 @@ export const useDb = () => {
     uploadArticleImage,
     trackPresence,
     stopTracking,
-    checkInactivityForAllUsers,
+    // checkInactivityForAllUsers,
     markUserForDeletion,
     unmarkUserForDeletion,
     isNotificationsEnabled,
@@ -2185,5 +2725,11 @@ export const useDb = () => {
     linkIdentity,
     updateUserEmail,
     authMarkUserAsAnonymous,
+    ensureAnonymousUser,
+
+    subscribeToMessages,
+    unsubscribeMessages,
+    fetchUnreadCounts,
+    markThreadAsRead,
   };
 };

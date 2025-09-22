@@ -1,5 +1,6 @@
 // composables/useFetchOnlineUsers.js
 export function useFetchOnlineUsers() {
+  // const supabase = getClient()
   const supabase = useSupabaseClient();
   const imchattyId = "a3962087-516b-48df-a3ff-3b070406d832"; // Replace with actual ID or a config value
 
@@ -10,7 +11,11 @@ export function useFetchOnlineUsers() {
   const loading = ref(false);
 
   // Method to fetch online users
-  const fetchOnlineUsers = async (filters, arrayOfUserIds, userId) => {
+  const fetchOnlineUsers = async (filters, arrayOfUserIds = [], userId) => {
+    console.log("[fetchOnlineUsers] called with presenceIds:", arrayOfUserIds);
+    console.log("[fetchOnlineUsers] filters:", filters);
+    console.log("[fetchOnlineUsers] current userId:", userId);
+
     const {
       gender_id,
       age_range,
@@ -20,77 +25,77 @@ export function useFetchOnlineUsers() {
       status_id,
     } = filters;
 
-    // console.log("Fetching online users with filters:", filters); // Debug log
-    loading.value = true; // Set loading state to true
-    // console.log("User ID:", user.value?.id); // Debug log
+    loading.value = true;
 
-    // Set default values for min_age and max_age if they are undefined
-    const min_age = age_range && age_range[0] !== undefined ? age_range[0] : 18; // Default min_age to 18
-    const max_age =
-      age_range && age_range[1] !== undefined ? age_range[1] : 100; // Default max_age to 100
+    const min_age = age_range?.[0] ?? 18;
+    const max_age = age_range?.[1] ?? 100;
 
-    // console.log("Age Range: ", min_age, max_age); // Debug log
+    let combinedUsers = [];
 
-    // const { data, errorDb } = await getUsersFromIds(
-    //   arrayOfUserIds,
-    //   gender_id,
-    //   min_age,
-    //   max_age,
-    //   is_anonymous,
-    //   interests,
-    //   country_id,
-    //   status_id,
-    //   userId
-    // );
+    if (arrayOfUserIds.length) {
+      if (!arrayOfUserIds.length) {
+        console.warn(
+          "[fetchOnlineUsers] No presence IDs provided. Skipping getUsersFromIds"
+        );
+      }
+      const result = await getUsersFromIds(
+        arrayOfUserIds,
+        gender_id,
+        min_age,
+        max_age,
+        is_anonymous,
+        interests,
+        country_id,
+        status_id,
+        userId
+      );
 
-    let data, errorDb;
-    const result = await getUsersFromIds(
-      arrayOfUserIds,
-      gender_id,
-      min_age,
-      max_age,
-      is_anonymous,
-      interests,
-      country_id,
-      status_id,
-      userId
-    );
-    if (Array.isArray(result)) {
-      data = result; // fallback case
-      errorDb = null;
-    } else {
-      data = result.data;
-      errorDb = result.error;
-    }
+      const data = Array.isArray(result) ? result : result.data;
 
-    loading.value = false; // Reset loading state after the fetch
+      const errorDb = Array.isArray(result) ? null : result.error;
 
-    if (errorDb) {
-      error.value = errorDb;
-      arrayOnlineUsers.value = [];
-    } else {
-      let combinedUsers = data;
-
-      // Ensure imchatty is injected
-      if (!data.some((user) => user.user_id === imchattyId)) {
-        const { data: aiUserData, error: aiError } = await supabase
-          .from("profiles") // match your actual table name
-          .select("*")
-          .eq("user_id", imchattyId)
-          .single();
-
-        if (!aiError && aiUserData) {
-          combinedUsers = [aiUserData, ...data];
-        } else {
-          console.error("Failed to fetch imchatty:", aiError?.message);
-        }
+      if (errorDb) {
+        error.value = errorDb;
       }
 
-      arrayOnlineUsers.value = combinedUsers;
-      // console.log("Online users (with imchatty):", arrayOnlineUsers.value);
+      combinedUsers = Array.isArray(data) ? data : [];
     }
 
-    // console.log("Fetched online users:", arrayOnlineUsers.value); // Debug log
+    // Always try to inject imchatty
+    const { data: aiUserData, error: aiError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", imchattyId)
+      .single();
+
+    if (!aiError && aiUserData) {
+      console.log(
+        "[injectImchatty] Successfully fetched imchatty profile:",
+        aiUserData
+      );
+
+      const exists = combinedUsers.some((user) => user.user_id === imchattyId);
+      console.log(
+        `[injectImchatty] Is imchatty already in combinedUsers?`,
+        exists
+      );
+
+      if (!exists) {
+        console.log("[injectImchatty] Injecting imchatty into combinedUsers");
+        combinedUsers.unshift(aiUserData);
+      }
+    } else {
+      console.error(
+        "[injectImchatty] Failed to fetch imchatty:",
+        aiError?.message
+      );
+    }
+    console.log(
+      "[fetchOnlineUsers] Final online users list:",
+      combinedUsers.map((u) => u.displayname || u.user_id)
+    );
+    arrayOnlineUsers.value = combinedUsers;
+    loading.value = false;
   };
 
   // Return reactive states and methods

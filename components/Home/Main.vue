@@ -9,7 +9,9 @@
             </p>
             <v-card>
               <v-card-title
-                ><h1 class="green--text-h1">{{ $t("components.home.main.sign-in") }}</h1></v-card-title
+                ><h1 class="green--text-h1">
+                  {{ $t("components.home.main.sign-in") }}
+                </h1></v-card-title
               >
               <v-card-text>
                 <v-row no-gutters
@@ -19,25 +21,22 @@
                       variant="plain"
                       @click="switchModel('LoginGoogle')"
                     >
-                      <h2 class="green--text-h2">{{ $t("components.home.main.google") }}</h2>
+                      <h2 class="green--text-h2">
+                        {{ $t("components.home.main.google") }}
+                      </h2>
                     </v-btn></v-col
                   ></v-row
                 >
                 <v-row no-gutters
                   ><v-col>
-                    <!-- <v-btn
-                      class="text-blue"
-                      variant="plain"
-                      @click="selectedModel = 'LoginFacebook'"
-                    >
-                      <h2 class="green--text-h2">With Facebook</h2>
-                    </v-btn> -->
                     <v-btn
                       class="text-blue"
                       variant="plain"
                       @click="switchModel('LoginFacebook')"
                     >
-                      <h2 class="green--text-h2">{{ $t("components.home.main.facebook") }}</h2>
+                      <h2 class="green--text-h2">
+                        {{ $t("components.home.main.facebook") }}
+                      </h2>
                     </v-btn>
                   </v-col></v-row
                 >
@@ -46,11 +45,13 @@
                     <v-btn
                       class="text-blue"
                       variant="plain"
-                      @click="switchModel('LoginEmail')"
+                      @click="switchModel('LoginGitHub')"
                     >
-                      <h2 class="green--text-h2">{{ $t("components.home.main.email") }}</h2>
-                    </v-btn></v-col
-                  ></v-row
+                      <h2 class="green--text-h2">
+                        {{ $t("components.home.main.github") }}
+                      </h2>
+                    </v-btn>
+                  </v-col></v-row
                 >
               </v-card-text>
             </v-card>
@@ -60,14 +61,9 @@
 
       <!-- Second Column: Main Content -->
       <v-col cols="12" sm="8" order="2" order-sm="2">
-        <!-- <v-card>
-          <v-card-text>
-            <LoginContainer :selectedModel="selectedModel" />
-          </v-card-text>
-        </v-card> -->
         <v-card :class="{ 'highlight-card': highlight }">
           <v-card-text>
-            <LoginContainer :selectedModel="selectedModel" />
+            <LoginContainer1 :selectedModel="selectedModel" />
           </v-card-text>
         </v-card>
       </v-col>

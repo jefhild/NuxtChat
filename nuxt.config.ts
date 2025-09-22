@@ -89,18 +89,28 @@ export default defineNuxtConfig({
         "/callback",
         "/*/callback",
         "/callback/*",
+        "/callback1",
+        "/*/callback1",
+        "/callback1/*",
+        "*/chat",
+        "/chat",
+        // "*/chat2",
+        // "/chat2",
+        "*/about",
         "/*/about",
         "/about",
-        "/*/login",
-        "/login",
+        // "/*/login",
+        // "/login",
         "/*/logout",
         "/logout",
         "/signin",
         "/*/signin",
-        "/loginemail",
-        "/*/loginemail",
-        "/loginfacebook",
-        "/*/loginfacebook",
+        "/signin1",
+        "/*/signin1",
+        // "/loginemail",
+        // "/*/loginemail",
+        // "/loginfacebook",
+        // "/*/loginfacebook",
         "/terms",
         "/*/terms",
         "/privacy",
@@ -157,7 +167,6 @@ export default defineNuxtConfig({
       "/terms",
       "/privacy",
       "/settings",
-      "/chat",
       "/admin",
       "/cdn-cgi",
     ],
@@ -169,6 +178,7 @@ export default defineNuxtConfig({
     // Private keys (accessible only on the server)
     SUPABASE_KEY: process.env.SUPABASE_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4.1-mini",
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
 
     public: {
@@ -180,6 +190,8 @@ export default defineNuxtConfig({
       TERMLY_ID: process.env.TERMLY_ID,
       ADSENSE_CLIENT: process.env.ADSENSE_CLIENT || "",
       SITE_URL: process.env.SITE_URL || "http://localhost:3000",
+      IMCHATTY_ID:
+        process.env.IMCHATTY_ID || "a3962087-516b-48df-a3ff-3b070406d832",
     },
   },
 
@@ -188,6 +200,14 @@ export default defineNuxtConfig({
     prerender: {
       routes: ["/"],
       crawlLinks: true,
+      ignore: [
+        "/settings",
+        "/fr/settings",
+        "/ru/settings",
+        "/zh/settings",
+        "/**/settings",
+      ],
+      failOnError: false,
     },
     debug: false,
   },
@@ -195,38 +215,12 @@ export default defineNuxtConfig({
   hooks: {
     async "nitro:config"(nitroConfig) {
       if (process.env.NODE_ENV === "development") return;
+      let dynamicRoutes: string[] = await getAllDynamicRoutes().catch(() => []);
+      // guard: never push settings routes into prerender
+      dynamicRoutes = dynamicRoutes.filter((r) => !/\/settings$/.test(r));
 
-      // Fetch dynamic routes asynchronously
-      let dynamicRoutes: string[];
-      try {
-        dynamicRoutes = await getAllDynamicRoutes();
-        // console.log("dynamicRoutes fetched:", dynamicRoutes);
-      } catch (error) {
-        console.error("Error fetching dynamic routes:", error);
-        dynamicRoutes = [];
-      }
-
-      // Log the type of dynamicRoutes to verify it's an array
-      // console.log("Type of dynamicRoutes:", typeof dynamicRoutes);
-      if (!Array.isArray(dynamicRoutes)) {
-        console.error("dynamicRoutes is not an array, it's:", dynamicRoutes);
-        dynamicRoutes = []; // Fallback to an empty array
-      }
-
-      // Add the fetched dynamic routes to Nitro's prerender config
       if (nitroConfig?.prerender?.routes) {
-        console.log(
-          "Adding dynamic routes to Nitro prerender config:",
-          dynamicRoutes
-        );
         nitroConfig.prerender.routes.push(...dynamicRoutes);
-
-        // console.log(
-        //   "Final routes passed to Nitro:",
-        //   nitroConfig.prerender.routes
-        // );
-      } else {
-        console.error("prerender.routes is not defined in nitroConfig.");
       }
     },
   },
@@ -241,7 +235,6 @@ export default defineNuxtConfig({
       "/terms",
       "/privacy",
       "/settings",
-      "/chat",
       "/admin",
     ],
   },

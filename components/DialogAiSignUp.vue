@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore1";
 import { useNotificationStore } from '@/stores/notificationStore';
 import useAgeMapper from "@/composables/useAgeMapper";
 import useGenderMapper from "@/composables/useGenderMapper";
@@ -186,7 +186,7 @@ const validateResponse = async (index, input) => {
   //   return aiValidation; // Return error if AI response is invalid
   // }
 
-  var payload = {};
+  var payload = {};   
 
   switch (index) {
     case 0: // Pseudo validation

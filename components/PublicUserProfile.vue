@@ -146,7 +146,7 @@
 
 <script setup>
 const localPath = useLocalePath();
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore1";
 import { useUserProfile } from "@/composables/useUserProfile";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();

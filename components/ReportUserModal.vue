@@ -109,38 +109,45 @@ const selectMessage = (message) =>
 const formatDate = (ts) =>
 	new Date(ts).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
 
-const loadMessages = async (el = null) =>
-{
-	if (isLoadingMore.value || !props.reportedUserId || !hasMore.value) return;
+	const loadMessages = async (el = null) => {
+  if (
+    isLoadingMore.value ||
+    !props.reportedUserId ||
+    !hasMore.value ||
+    !authStore.userProfile?.user_id
+  ) {
+    return;
+  }
 
-	isLoadingMore.value = true;
-	const prevScrollHeight = el?.scrollHeight ?? 0;
+  isLoadingMore.value = true;
+  const prevScrollHeight = el?.scrollHeight ?? 0;
 
-	const data = await getMessagesOfAUserWithUser(
-		props.reportedUserId,
-		authStore.userProfile.user_id,
-		lastMessageTime.value
-	);
+  try {
+    const data = await getMessagesOfAUserWithUser(
+      props.reportedUserId,
+      authStore.userProfile.user_id,
+      lastMessageTime.value
+    );
 
-	if (data && data.length)
-	{
-		messages.value = [...data, ...messages.value];
-		lastMessageTime.value = data[data.length - 1].created_at;
-		if (data.length < 20) hasMore.value = false;
-	} else
-	{
-		hasMore.value = false;
-	}
+    if (data && data.length) {
+      messages.value = [...data, ...messages.value];
+      lastMessageTime.value = data[data.length - 1].created_at;
+      if (data.length < 20) hasMore.value = false;
+    } else {
+      hasMore.value = false;
+    }
 
-	await nextTick();
+    await nextTick();
 
-	if (el)
-	{
-		const newScrollHeight = el.scrollHeight;
-		el.scrollTop = newScrollHeight - prevScrollHeight;
-	}
-
-	isLoadingMore.value = false;
+    if (el) {
+      const newScrollHeight = el.scrollHeight;
+      el.scrollTop = newScrollHeight - prevScrollHeight;
+    }
+  } catch (err) {
+    console.error("Failed to load messages:", err);
+  } finally {
+    isLoadingMore.value = false;
+  }
 };
 
 const handleScroll = (event) =>
@@ -153,36 +160,35 @@ const handleScroll = (event) =>
 };
 
 watch(
-	() => props.reportedUserId,
-	async (id) =>
-	{
-		if (id)
-		{
-			selectedMessages.value = [];
-			messages.value = [];
-			lastMessageTime.value = null;
-			hasMore.value = true;
-			await loadMessages();
-		}
-	},
-	{ immediate: true }
+  [() => props.reportedUserId, () => authStore.userProfile?.user_id],
+  async ([id, userId]) => {
+    if (id && userId) {
+      selectedMessages.value = [];
+      messages.value = [];
+      lastMessageTime.value = null;
+      hasMore.value = true;
+      await loadMessages();
+    }
+  },
+  { immediate: true }
 );
 
-watch(dialog, async (visible) =>
-{
-	if (visible)
-	{
-		selectedMessages.value = [];
-		messages.value = [];
-		lastMessageTime.value = null;
-		hasMore.value = true;
-		await loadMessages();
-		await nextTick(() =>
-		{
-			const el = document.querySelector(".message-scroll-list");
-			if (el) el.scrollTop = el.scrollHeight;
-		});
-	}
+watch(dialog, async (visible) => {
+  if (
+    visible &&
+    props.reportedUserId &&
+    authStore.userProfile?.user_id
+  ) {
+    selectedMessages.value = [];
+    messages.value = [];
+    lastMessageTime.value = null;
+    hasMore.value = true;
+    await loadMessages();
+    await nextTick(() => {
+      const el = document.querySelector(".message-scroll-list");
+      if (el) el.scrollTop = el.scrollHeight;
+    });
+  }
 });
 
 
