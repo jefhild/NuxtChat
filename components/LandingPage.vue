@@ -131,10 +131,6 @@
     </v-container>
   </v-container>
 
-  <!-- Dialogs -->
-  <v-dialog v-model="aiDialog" :max-width="750">
-    <DialogAiSignUp @closeDialog="handleDialogClose" :titleText="titleText" />
-  </v-dialog>
 
   <v-dialog v-model="logoutDialog" width="auto">
     <v-card max-width="400" prepend-icon="mdi-account-remove">
@@ -172,7 +168,6 @@ const aiDialog = ref(false);
 const logoutDialog = ref(false);
 const articles = ref([]);
 const mostPopularAiProfiles = ref([]);
-const titleText = ref(t("components.dialogAiSignUp.titleText"));
 
 // Derived state
 const authStatus = computed(() => authStore.authStatus);
@@ -182,9 +177,9 @@ const isLoggedIn = computed(() =>
 const userProfile = computed(() => authStore.userProfile);
 const loggedInUser = computed(() => userProfile.value?.displayname || "??");
 
-function handleDialogClose() {
-  aiDialog.value = false;
-}
+// function handleDialogClose() {
+//   aiDialog.value = false;
+// }
 
 
 const getAuthHeading = computed(() => {

@@ -142,7 +142,7 @@ function captureBotMessage(payload) {
   const last = ephemeralThread.value[ephemeralThread.value.length - 1];
   if (last && last.text === text) return;
 
-  console.log("[onb] bot ->", text); // 👈 add this for visibility
+  // console.log("[onb] bot ->", text);
 
   ephemeralThread.value.push({
     id: crypto.randomUUID(),
@@ -156,12 +156,12 @@ function captureBotMessage(payload) {
 
 if (import.meta.client) {
   onMounted(async () => {
-    console.log("[onb] props:", {
-      isPreAuth: props.isPreAuth,
-      isBotSelected: props.isBotSelected,
-      consented: props.consented,
-      authStatus: props.authStatus,
-    });
+    // console.log("[onb] props:", {
+    //   isPreAuth: props.isPreAuth,
+    //   isBotSelected: props.isBotSelected,
+    //   consented: props.consented,
+    //   authStatus: props.authStatus,
+    // });
 
     setOnboardingBotMessageHandler(captureBotMessage);
     if (props.isPreAuth && props.isBotSelected && !booted.value) {

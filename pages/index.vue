@@ -2,7 +2,7 @@
   <!-- Remove margin by forcing pa-0 on the wrapper -->
   <v-container fluid class="pa-0">
     <HomeRow1 />
-    <LandingPage1 />
+    <LandingPage />
   </v-container>
 </template>
 

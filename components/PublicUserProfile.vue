@@ -122,13 +122,18 @@
             </v-col>
           </v-row>
           <v-row class="mt-2" justify="center" v-else>
-            <v-col cols="auto">
-              <NuxtLink :to="localPath('/')">{{
+                        <v-col cols="auto">
+              <NuxtLink :to="localPath('/chat')">{{
                 $t("components.public-user-profile.back-home")
               }}</NuxtLink>
             </v-col>
             <v-col cols="auto">
-              <NuxtLink to="#" @click.prevent="handleAILogin">
+              <NuxtLink :to="localPath('/chat')">{{
+                $t("components.public-user-profile.back-chat")
+              }}</NuxtLink>
+            </v-col>
+            <v-col cols="auto">
+              <NuxtLink :to="localPath('/chat?userSlug=imchatty')">
                 {{ $t("components.public-user-profile.chat") }}
                 {{ profile?.displayname }}
               </NuxtLink>
@@ -139,9 +144,6 @@
     </v-row>
   </v-container>
 
-  <v-dialog v-model="aiDialog" :max-width="750">
-    <DialogAiSignUp :titleText="titleText" @closeDialog="handleDialogClose" />
-  </v-dialog>
 </template>
 
 <script setup>
@@ -160,12 +162,6 @@ const props = defineProps({
 });
 
 const authStore = useAuthStore();
-
-// Computed property to check if user is authenticated
-const isAuthenticated = ref(false);
-const isLoading = ref(true);
-const aiDialog = ref(false);
-const titleText = computed(() => t("components.dialogAiSignUp.titleText"));
 
 const { profile, fetchUserProfileFromSlug } = useUserProfile();
 await fetchUserProfileFromSlug(props.selectedUserSlug);
@@ -186,26 +182,16 @@ const profileSiteUrl = computed(() => {
     : `https://${siteUrl.trim()}`;
 });
 
-function handleDialogClose() {
-  // console.log('Dialog closed!');
-  aiDialog.value = false;
-}
-
-const handleAILogin = async () => {
-  // errorMessages.value = []; // Clear previous error messages
-
-  try {
-    // await authStore.checkAuthGoogle();
-    aiDialog.value = true;
-    // console.log("AI login clicked");
-  } catch (error) {
-    console.error("Error submitting form:", error);
-  }
-};
+const isAuthenticated = computed(() =>
+  ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
+);
+const isLoading = ref(true);
 
 onMounted(async () => {
   await authStore.checkAuth();
-  isAuthenticated.value = authStore.user !== null;
+  // isAuthenticated.value = ["anon_authenticated", "authenticated"].includes(
+  //   authStore.authStatus
+  // );
   isLoading.value = false;
 
   avatarDecoration.value = await getAvatarDecorationFromId(

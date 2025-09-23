@@ -226,6 +226,10 @@ const draft = useOnboardingDraftStore();
 const draftStore = draft; // alias for template
 const presence2 = usePresenceStore2();
 
+const route = useRoute();
+const router = useRouter();
+
+
 const { smAndDown } = useDisplay();
 const { getClient, getActiveChats, insertMessage } = useDb();
 const supabase = getClient();
@@ -530,6 +534,69 @@ function startProfilesRealtime() {
   profilesChan.subscribe((s) => console.log("[profiles][status]", s));
 }
 
+
+
+
+
+// ———————————————————————————————————————————
+// URL-driven selection (?userId|id, ?userSlug|slug, or ?imchatty)
+// ———————————————————————————————————————————
+const selectedFromRouteOnce = ref(false);
+
+function normStr(v) {
+  if (v == null) return null;
+  if (Array.isArray(v)) v = v[0];
+  const s = String(v).trim();
+  return s.length ? s : null;
+}
+
+function findUserByIdOrSlug({ id, slug }) {
+  const idNorm = id ? String(id).trim().toLowerCase() : null;
+  const slugNorm = slug ? String(slug).trim().toLowerCase() : null;
+  const list = Array.isArray(chat.users) ? chat.users : [];
+  return list.find((u) => {
+    const uid = String(u?.user_id ?? u?.id ?? "").trim().toLowerCase();
+    if (idNorm && uid && uid === idNorm) return true;
+    const s = String(u?.slug ?? u?.profile_slug ?? u?.username_slug ?? "")
+      .trim()
+      .toLowerCase();
+    if (slugNorm && s && s === slugNorm) return true;
+    return false;
+  });
+}
+
+async function trySelectFromRoute() {
+  if (selectedFromRouteOnce.value) return; // don’t override a manual selection
+
+  const q = route.query;
+  const id = normStr(q.userId ?? q.id);
+  const slug = normStr(q.userSlug ?? q.slug);
+  const wantsImChatty =
+    Object.prototype.hasOwnProperty.call(q, "imchatty") ||
+    normStr(q.imchatty) === "true";
+
+  let target = null;
+  if (id || slug) {
+    target = findUserByIdOrSlug({ id, slug });
+  } else if (wantsImChatty) {
+    target = findUserByIdOrSlug({ id: IMCHATTY_ID, slug: null });
+  }
+
+  if (target) {
+    chat.setSelectedUser(target);
+    selectedFromRouteOnce.value = true;
+  }
+}
+
+
+
+
+
+
+
+
+
+
 // ---- Lifecycle
 onMounted(async () => {
   draftStore.hydrate?.();
@@ -565,6 +632,28 @@ watch(
   refreshActiveChats,
   { deep: false }
 );
+
+
+
+
+
+// react to query changes and to users list loading
+watch(
+  () => [
+    route.query.userId,
+    route.query.id,
+    route.query.userSlug,
+    route.query.slug,
+    route.query.imchatty,
+    Array.isArray(chat.users) ? chat.users.length : 0,
+  ],
+  async () => {
+    await nextTick();
+    await trySelectFromRoute();
+  }
+);
+
+
 
 
 

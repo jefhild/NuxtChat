@@ -596,13 +596,6 @@
     "loginAi": {
       "titleText": "Create Your Anonymous Profile"
     },
-    "dialogAiSignUp": {
-      "create-profile": "Create Profile",
-      "type-response": "Type your response here...",
-      "titleText": "Create Your Anonymous Profile",
-      "titleText2": "Let's finish creating your profile",
-      "reminder": "Make sure to enter your email and complete your profile to unlock all features!"
-    },
     "favorites": {
       "i-favorited": "I Favorited",
       "no-favorites": "No favorited users found",
@@ -769,7 +762,8 @@
       "visit2": "'s website",
       "back": "Back to Profile",
       "chat": "Chat with ",
-      "back-home": "Back Home"
+      "back-home": "Home",
+      "back-chat": "Back to Chat"
     },
     "registration-dialog": {
       "register": "Register to Continue",
