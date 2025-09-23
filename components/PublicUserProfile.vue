@@ -115,7 +115,7 @@
               }}</NuxtLink>
             </v-col>
             <v-col cols="auto">
-              <NuxtLink :to="localPath(`/chat?userSlug=${profile?.slug}`)">
+              <NuxtLink :to="localPath(`/chat?userslug=${profile?.slug}`)">
                 {{ $t("components.public-user-profile.chat") }}
                 {{ profile?.displayname }}
               </NuxtLink>
@@ -133,7 +133,7 @@
               }}</NuxtLink>
             </v-col>
             <v-col cols="auto">
-              <NuxtLink :to="localPath('/chat?userSlug=imchatty')">
+              <NuxtLink :to="localPath('/chat?userslug=imchatty')">
                 {{ $t("components.public-user-profile.chat") }}
                 {{ profile?.displayname }}
               </NuxtLink>

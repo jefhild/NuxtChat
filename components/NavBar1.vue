@@ -162,33 +162,6 @@
     </v-app-bar>
   </nav>
 
-  <!-- <v-dialog v-model="logoutDialog" width="auto">
-    <v-card
-      max-width="400"
-      prepend-icon="mdi-account-remove"
-      title="Logout Of My Account"
-    >
-      <v-card-text>
-        <v-row justify="center">
-          <v-col class="text-center">{{
-            $t("pages.home.landing_page.logout_confirm")
-          }}</v-col></v-row
-        >
-      </v-card-text>
-
-      <template v-slot:actions>
-        <v-btn color="primary" text @click="confirmLogout">{{
-          $t("pages.home.landing_page.logout_confirm_button")
-        }}</v-btn>
-
-        <v-spacer></v-spacer>
-        <v-btn class="ms-auto" @click="logoutDialog = false">
-          {{ $t("pages.home.landing_page.cancel") }}</v-btn
-        >
-      </template>
-    </v-card>
-  </v-dialog> -->
-
   <v-dialog v-model="logoutDialog" width="auto" :scrim="!isLoggingOut">
     <v-card max-width="420" prepend-icon="mdi-account-remove">
       <template #title>
@@ -287,7 +260,7 @@ function startLogoutAnimation() {
   lineIdx.value = 0;
   rotateTimer = setInterval(() => {
     lineIdx.value++;
-  }, 600);
+  }, 800);
 }
 function stopLogoutAnimation() {
   if (rotateTimer) {

@@ -21,7 +21,7 @@ const props = defineProps({
   label: { type: String, required: true },
   icon: { type: String, default: "" },
   color: { type: String, default: "primary" },
-  next:  { type: String, default: "/chat" }, // allow override if needed
+  next: { type: String, default: "/chat" }, // allow override if needed
 });
 
 const db = useDb();

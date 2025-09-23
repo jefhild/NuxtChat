@@ -6,15 +6,6 @@
     </v-col>
 
     <v-col cols="12" class="d-flex justify-center">
-      <!-- <v-form>
-      <v-btn
-        :disabled="!isFormValid"
-        @click="handleGoogleLogin"
-        color="primary"
-      >
-      {{ $t("components.loginGoogle.continue") }}
-      </v-btn>
-    </v-form> -->
       <LoginOAuthButton
         :disabled="!isFormValid"
         provider="github"
@@ -71,15 +62,6 @@ const updateFormValidity = () => {
   isFormValid.value = isAgeConfirmed.value;
 };
 
-const handleGoogleLogin = async () => {
-  errorMessages.value = []; // Clear previous error messages
-  console.log("[LoginGoogle1] handleGoogleLogin called");
-  try {
-    await authStore.checkAuthGoogle();
-  } catch (error) {
-    console.error("Error submitting form:", error);
-  }
-};
 
 // Ensure initial form validity state is set correctly
 updateFormValidity();

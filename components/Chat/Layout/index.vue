@@ -229,7 +229,6 @@ const presence2 = usePresenceStore2();
 const route = useRoute();
 const router = useRouter();
 
-
 const { smAndDown } = useDisplay();
 const { getClient, getActiveChats, insertMessage } = useDb();
 const supabase = getClient();
@@ -331,23 +330,35 @@ const headerText = computed(() => {
       return {
         line1:
           draft.displayName ||
-          auth.userProfile.displayname + " " + auth.userProfile.country_emoji ||
+          (auth.userProfile?.displayname
+            ? auth.userProfile.displayname +
+              " " +
+              (auth.userProfile.country_emoji || "")
+            : null) ||
           "(anonymous user)",
         line2:
           draft.age ||
-          auth.userProfile.age + " " + auth.userProfile.gender ||
-          "(anonymous user)",
+          (auth.userProfile?.age
+            ? auth.userProfile.age + " " + (auth.userProfile.gender || "")
+            : null) ||
+          "(anonymous guest)",
       };
 
     case "authenticated":
       return {
         line1:
           draft.displayName ||
-          auth.userProfile.displayname + " " + auth.userProfile.country_emoji ||
+          (auth.userProfile?.displayname
+            ? auth.userProfile.displayname +
+              " " +
+              (auth.userProfile.country_emoji || "")
+            : null) ||
           "(anonymous user)",
         line2:
           draft.age ||
-          auth.userProfile.age + " " + auth.userProfile.gender ||
+          (auth.userProfile?.age
+            ? auth.userProfile.age + " " + (auth.userProfile.gender || "")
+            : null) ||
           "(authenticated user)",
       };
 
@@ -534,10 +545,6 @@ function startProfilesRealtime() {
   profilesChan.subscribe((s) => console.log("[profiles][status]", s));
 }
 
-
-
-
-
 // ———————————————————————————————————————————
 // URL-driven selection (?userId|id, ?userSlug|slug, or ?imchatty)
 // ———————————————————————————————————————————
@@ -555,7 +562,9 @@ function findUserByIdOrSlug({ id, slug }) {
   const slugNorm = slug ? String(slug).trim().toLowerCase() : null;
   const list = Array.isArray(chat.users) ? chat.users : [];
   return list.find((u) => {
-    const uid = String(u?.user_id ?? u?.id ?? "").trim().toLowerCase();
+    const uid = String(u?.user_id ?? u?.id ?? "")
+      .trim()
+      .toLowerCase();
     if (idNorm && uid && uid === idNorm) return true;
     const s = String(u?.slug ?? u?.profile_slug ?? u?.username_slug ?? "")
       .trim()
@@ -570,7 +579,7 @@ async function trySelectFromRoute() {
 
   const q = route.query;
   const id = normStr(q.userId ?? q.id);
-  const slug = normStr(q.userSlug ?? q.slug);
+  const slug = normStr(q.userslug ?? q.slug);
   const wantsImChatty =
     Object.prototype.hasOwnProperty.call(q, "imchatty") ||
     normStr(q.imchatty) === "true";
@@ -587,15 +596,6 @@ async function trySelectFromRoute() {
     selectedFromRouteOnce.value = true;
   }
 }
-
-
-
-
-
-
-
-
-
 
 // ---- Lifecycle
 onMounted(async () => {
@@ -633,10 +633,6 @@ watch(
   { deep: false }
 );
 
-
-
-
-
 // react to query changes and to users list loading
 watch(
   () => [
@@ -652,10 +648,6 @@ watch(
     await trySelectFromRoute();
   }
 );
-
-
-
-
 
 async function onSend(text) {
   const selectedPeer = chat.selectedUser; // ✅ define a local alias

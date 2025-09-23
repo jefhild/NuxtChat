@@ -23,7 +23,7 @@ const isLoading = ref(true);
 
 onMounted(async () => {
   try {
-    console.log("[chat2] onMounted: checking auth...");
+    // console.log("[chat2] onMounted: checking auth...");
     await authStore.checkAuth(); // safe getSession-based check
   } catch (e) {
     console.warn("[auth] checkAuth failed (ok to continue):", e);
