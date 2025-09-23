@@ -42,6 +42,7 @@ import { useAuthStore } from "@/stores/authStore1";
 import { useI18n } from "vue-i18n";
 import { useDb } from "@/composables/useDB";
 import { useLocationManager } from "@/composables/useLocationManager";
+import { useGeoLocationDefaults } from "@/composables/useGeoLocationDefaults";
 
 const props = defineProps({
   userProfile: {
@@ -85,6 +86,10 @@ const statuses = ref([]);
 const genders = ref([]);
 
 const editableProfile = ref({ ...props.userProfile });
+const appliedGeoDefaults = ref(false);
+
+const { getDefaults } = useGeoLocationDefaults();
+
 
 // Watch for updates from parent and reset the local copy
 watch(
@@ -170,7 +175,7 @@ const authStateUI = computed(() => {
       };
     case "authenticated":
       return {
-        editable: false,
+        editable: true,
         showForm: true,
         showLoader: false,
         showError: false,
@@ -186,12 +191,6 @@ const authStateUI = computed(() => {
 });
 
 const isEditable = ref(false); // default to false for safety
-
-// watchEffect(() => {
-//   if (typeof authStateUI.value?.editable === "boolean") {
-//     isEditable.value = authStateUI.value.editable;
-//   }
-// });
 
 const onUpdateCountry = (val) => {
   selectedCountry.value = val;
@@ -264,19 +263,44 @@ const confirmAvatar = async () => {
 };
 
 
-// watch(
-//   () => authStore.authStatus,
-//   () => {
-//     isEditable.value = authStateUI.value.editable;
-//   }
-// );
-
 onMounted(async () => {
   try {
     statuses.value = await getStatuses();
     genders.value = await getGenders();
     countries.value = await getCountries();
      isEditable.value = authStateUI.value.editable;
+
+
+
+
+    // 🔹 Prefill location only if missing and not already applied
+    if (!editableProfile.value?.country_id && !appliedGeoDefaults.value) {
+      try {
+        const { countryId, stateId, cityId /*, ip*/ } = await getDefaults();
+        // Only set values we actually resolved; never overwrite existing
+        if (countryId) {
+          selectedCountry.value = countryId;
+          editableProfile.value.country_id = countryId;
+          // If we have a state for that country, set it
+          if (stateId) {
+            selectedState.value = stateId;
+            editableProfile.value.state_id = stateId;
+            // If we have a city for that state, set it
+            if (cityId) {
+              selectedCity.value = cityId;
+              editableProfile.value.city_id = cityId;
+            }
+          }
+          appliedGeoDefaults.value = true;
+        }
+      } catch (e) {
+        console.warn("[geo-defaults] failed to prefill location", e);
+      }
+    }
+
+
+
+
 
   } catch (err) {
     console.error("Error loading profile reference data:", err);

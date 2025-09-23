@@ -24,8 +24,8 @@ const selectedModelComponent = computed(() => {
       return LoginGoogle1;
     case "LoginFacebook":
       return LoginFacebook1;
-    case "LoginEmail":
-      return LoginEmail;
+    // case "LoginEmail":
+    //   return LoginEmail;
     case "LoginGitHub":
       console.log("[LoginContainer1] selectedModel is LoginGithub");
       return LoginGitHub;

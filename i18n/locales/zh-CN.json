@@ -815,7 +815,8 @@
       "offline": "离线",
       "active": "活跃",
       "no-anonymous": "未找到匿名用户",
-      "requires-profile": "需要最低限度的个人资料"
+      "requires-profile": "需要最低限度的个人资料",
+      "none-active": "未找到活跃用户"
     },
     "users-ai": {
       "ai-users": "AI用户",

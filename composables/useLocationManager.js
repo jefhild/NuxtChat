@@ -46,33 +46,33 @@ export function useLocationManager(initialCountry, initialState, initialCity) {
   });
 
   // Watch for changes in selected country and update states
-watch(selectedCountry, async (newCountry) => {
-  if (newCountry) {
-    await fetchStates(newCountry);
+  watch(selectedCountry, async (newCountry) => {
+    if (newCountry) {
+      await fetchStates(newCountry);
 
-    const valid = states.value.find((s) => s.id === selectedState.value);
-    selectedState.value = valid ? selectedState.value : null;
-    cities.value = [];
-  }
-});
+      const valid = states.value.find((s) => s.id === selectedState.value);
+      selectedState.value = valid ? selectedState.value : null;
+      cities.value = [];
+    }
+  });
 
   // Watch for changes in selected state and update cities
-watch(selectedState, async (newState) => {
-  if (newState) {
-    await fetchCities(newState);
-
-    const valid = cities.value.find((c) => c.id === selectedCity.value);
-    selectedCity.value = valid ? selectedCity.value : null;
-  }
-});
-  
   watch(selectedState, async (newState) => {
-    console.log("[watch:selectedState] →", newState);
     if (newState) {
       await fetchCities(newState);
-      console.log("[cities]", cities.value);
+
       const valid = cities.value.find((c) => c.id === selectedCity.value);
-      console.log("[valid selectedCity match]", valid);
+      selectedCity.value = valid ? selectedCity.value : null;
+    }
+  });
+
+  watch(selectedState, async (newState) => {
+    // console.log("[watch:selectedState] →", newState);
+    if (newState) {
+      await fetchCities(newState);
+      // console.log("[cities]", cities.value);
+      const valid = cities.value.find((c) => c.id === selectedCity.value);
+      // console.log("[valid selectedCity match]", valid);
       selectedCity.value = valid ? selectedCity.value : null;
     }
   });

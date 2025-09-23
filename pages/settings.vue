@@ -21,7 +21,7 @@ const localPath = useLocalePath();
 const isLoading = ref(true);
 
 onMounted(async () => {
-  console.log("[settings] onMounted: checking auth...");
+  // console.log("[settings] onMounted: checking auth...");
   await authStore.checkAuth();
 
   // Check against valid statuses
