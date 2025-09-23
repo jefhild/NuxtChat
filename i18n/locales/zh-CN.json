@@ -595,13 +595,6 @@
     "loginAi": {
       "titleText": "创建您的匿名档案"
     },
-    "dialogAiSignUp": {
-      "create-profile": "创建档案",
-      "type-response": "在此输入您的回复...",
-      "titleText": "创建您的匿名档案",
-      "titleText2": "让我们完成创建您的档案",
-      "reminder": "确保输入您的电子邮件并完成您的档案以解锁所有功能！"
-    },
     "favorites": {
       "i-favorited": "我收藏的",
       "no-favorites": "未找到收藏的用户",
@@ -768,7 +761,8 @@
       "visit2": "的网站",
       "back": "返回档案",
       "chat": "与",
-      "back-home": "返回首页"
+      "back-home": "返回首页",
+      "back-chat": "返回聊天"
     },
     "registration-dialog": {
       "register": "注册以继续",

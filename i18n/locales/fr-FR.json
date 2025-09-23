@@ -595,13 +595,6 @@
     "loginAi": {
       "titleText": "Créez Votre Profil Anonyme"
     },
-    "dialogAiSignUp": {
-      "create-profile": "Créer un Profil",
-      "type-response": "Tapez votre réponse ici...",
-      "titleText": "Créez Votre Profil Anonyme",
-      "titleText2": "Finissons de créer votre profil",
-      "reminder": "Assurez-vous d'entrer votre e-mail et de compléter votre profil pour débloquer toutes les fonctionnalités !"
-    },
     "favorites": {
       "i-favorited": "J'ai Favorisé",
       "no-favorites": "Aucun utilisateur favorisé trouvé",
@@ -769,7 +762,8 @@
       "visit2": "'s site web",
       "back": "Retour au Profil",
       "chat": "Chatter avec ",
-      "back-home": "Retour à l'Accueil"
+      "back-home": "Retour à l'Accueil",
+      "back-chat": "Retour au chat"
     },
     "registration-dialog": {
       "register": "S'inscrire pour Continuer",

@@ -34,17 +34,17 @@ export function useOnboardingAi() {
   }
 
   function logDraft(tag) {
-    console.log(`[onboarding][${tag}]`, {
-      consented: draft.consented,
-      summary: {
-        displayName: draft.displayName,
-        age: draft.age,
-        genderId: draft.genderId,
-        bio: draft.bio,
-      },
-      missing: draft.missingFields,
-      isComplete: draft.isComplete,
-    });
+    // console.log(`[onboarding][${tag}]`, {
+    //   consented: draft.consented,
+    //   summary: {
+    //     displayName: draft.displayName,
+    //     age: draft.age,
+    //     genderId: draft.genderId,
+    //     bio: draft.bio,
+    //   },
+    //   missing: draft.missingFields,
+    //   isComplete: draft.isComplete,
+    // });
   }
 
   async function applyActions(actions = []) {
@@ -92,7 +92,7 @@ export function useOnboardingAi() {
         if (auth?.ensureAnonymousUserAfterConsent) {
           await auth.ensureAnonymousUserAfterConsent();
         }
-        console.log("[onboarding][consent]", { consented: draft.consented });
+        // console.log("[onboarding][consent]", { consented: draft.consented });
         continue;
       }
 
@@ -122,14 +122,14 @@ export function useOnboardingAi() {
         } else {
           draft[key] = val;
         }
-        console.log("[onboarding][set_field]", { key, value: val });
+        // console.log("[onboarding][set_field]", { key, value: val });
         sawSet = true;
         continue;
       }
 
       // ---- finalize ----
       if (a.type === "finalize") {
-        console.log("[onboarding][finalize] received action");
+        // console.log("[onboarding][finalize] received action");
         const {
           public: { IMCHATTY_ID },
         } = useRuntimeConfig();
@@ -145,7 +145,7 @@ export function useOnboardingAi() {
             city_id: draft.cityId ?? null,
             ip: draft.ip ?? null,
           });
-          console.log("[onboarding][finalize] DB write done");
+          // console.log("[onboarding][finalize] DB write done");
 
           // 2) Resolve the receiverId (the user's AUTH UID)
           // Prefer the profile’s user_id; fall back to the session/user id
@@ -248,7 +248,7 @@ export function useOnboardingAi() {
         method: "POST",
         body,
       });
-      console.log("[onboarding][api->actions]", actions);
+      // console.log("[onboarding][api->actions]", actions);
       return actions;
     } catch (e) {
       console.warn("[OnboardingAI] /api/aiOnboarding failed:", e?.message || e);
@@ -314,14 +314,14 @@ export function useOnboardingAi() {
     const text = typeof userText === "string" ? userText.trim() : "";
     if (!text) return; // avoid sending empty messages that cause re-prompts
 
-    console.info(
-      "[onboarding] consented:",
-      !!draft.consented,
-      "authStatus:",
-      auth.authStatus,
-      "userId:",
-      auth.user?.id
-    );
+    // console.info(
+    //   "[onboarding] consented:",
+    //   !!draft.consented,
+    //   "authStatus:",
+    //   auth.authStatus,
+    //   "userId:",
+    //   auth.user?.id
+    // );
 
     // ✅ Enforce quota ONLY after consent + when we have a user id
     const hasConsent = !!draft.consented;
