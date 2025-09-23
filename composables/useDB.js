@@ -2268,7 +2268,7 @@ const config = getConfig();
     const supabase = getClient();
 
     const origin = window.location.origin;
-    const redirectTo = `${origin}/callback1?next=${encodeURIComponent(next)}`;
+    const redirectTo = `${origin}/callback?next=${encodeURIComponent(next)}`;
     await supabase.auth.signInWithOAuth({
       provider,
       options: {

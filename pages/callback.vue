@@ -6,7 +6,7 @@
 import { onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useLocalePath } from "#imports";
-import { useAuthStore } from "@/stores/authStore1"; // ✅ Your new auth store
+import { useAuthStore } from "@/stores/authStore1";
 import { useDb } from "@/composables/useDB";
 import LoadingContainer from "~/components/LoadingContainer.vue";
 
