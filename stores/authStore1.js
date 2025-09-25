@@ -55,15 +55,22 @@ export const useAuthStore = defineStore("authStore1", {
     user: null,
     userProfile: null,
     onboardingLocal: false,
+    // authBusy: false, // optional flag you can set
   }),
 
   getters: {
     getAiLimit(state) {
       return AI_LIMITS[state.authStatus] ?? 0;
     },
+
+    // canUseOAuth(state) { return !state.authBusy; },
   },
 
   actions: {
+
+    // setAuthBusy(val) {
+    //   this.onboardingLocal = !!val;
+    // },
     setOnboardingLocal(val) {
       this.onboardingLocal = !!val;
     },
@@ -90,6 +97,7 @@ export const useAuthStore = defineStore("authStore1", {
         this.clear();
         if (import.meta.client) {
           try {
+            const presence = usePresenceStore2();
             await presence.leave();
           } catch {}
         }
@@ -116,11 +124,13 @@ export const useAuthStore = defineStore("authStore1", {
         status = "onboarding";
       }
 
-      this.$patch({
-        user,
-        userProfile: profile,
-        authStatus: resolveAuthStatus({ session, user, profile }),
-      });
+this.$patch({ user, userProfile: profile, authStatus: status });
+
+      // this.$patch({
+      //   user,
+      //   userProfile: profile,
+      //   authStatus: resolveAuthStatus({ session, user, profile }),
+      // });
 
       // console.log("[auth.checkAuth]", {
       //   authStatus: this.authStatus,
