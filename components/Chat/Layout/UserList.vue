@@ -194,11 +194,11 @@ const listHeight = computed(() => props.height ?? innerHeight.value);
   cursor: pointer;
 }
 .row:hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(227, 242, 253, 0.4);
 }
 /* .selected { background: rgba(0,120,255,.08); } */
 .row.selected {
-  background: rgba(58, 58, 58, 0.15);
+  background: rgba(227, 242, 253, 0.9);
   border-left: 3px solid #0078ff;
 }
 
