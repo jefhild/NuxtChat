@@ -25,13 +25,41 @@
       <!-- USERS COLUMN -->
       <v-col cols="12" md="4" class="pa-2 d-flex flex-column overflow-hidden">
         <template v-if="smAndDown">
-          <v-expansion-panels multiple class="flex-grow-1 overflow-hidden">
+          <!-- <v-expansion-panels multiple class="flex-grow-1 overflow-hidden"> -->
+
+          <v-expansion-panels
+            v-model="openPanels"
+            multiple
+            class="flex-grow-1 overflow-hidden"
+          >
             <v-expansion-panel>
-              <v-expansion-panel-title>
+              <!-- <v-expansion-panel-title class="bg-blue-lighten-5 py-1 px-2"> -->
+              <v-expansion-panel-title
+                hide-actions
+                class="bg-blue-lighten-5 py-1 px-2 d-flex justify-center position-relative"
+              >
                 <ChatLayoutHeader
                   :currentUser="user"
                   :selectedUser="chat.selectedUser"
                 />
+
+                <v-btn
+                  size="small"
+                  icon
+                  variant="text"
+                  class="header-chevron"
+                  :aria-label="openPanels.includes(0) ? 'Collapse' : 'Expand'"
+                  :aria-expanded="String(openPanels.includes(0))"
+                  @click.stop="togglePanel0"
+                >
+                  <v-icon
+                    :icon="
+                      openPanels.includes(0)
+                        ? 'mdi-chevron-up'
+                        : 'mdi-chevron-down'
+                    "
+                  />
+                </v-btn>
               </v-expansion-panel-title>
               <v-expansion-panel-text class="pa-0">
                 <!-- Scroll area -->
@@ -200,7 +228,7 @@
         <NuxtLink :to="profileLink" class="text-decoration-none">
           <v-btn variant="outlined" size="small">View full profile</v-btn>
         </NuxtLink>
-        <v-btn color="primary" @click="startChat(modalUser)">Message</v-btn>
+        <v-btn color="primary" :to="`/chat?userslug=${modalUser.slug}`">Message</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -284,7 +312,15 @@ const onlineIds = computed(() => {
     .map((k) => k.trim().toLowerCase());
 });
 
-// you already have this
+const openPanels = ref([0]); // start open; use [] if you want it closed initially
+const togglePanel0 = () => {
+  const idx = openPanels.value.indexOf(0);
+  openPanels.value =
+    idx === -1
+      ? [...openPanels.value, 0]
+      : openPanels.value.filter((n) => n !== 0);
+};
+
 const selectedUserId = computed(
   () => chat.selectedUser?.user_id || chat.selectedUser?.id || null
 );
@@ -839,5 +875,12 @@ async function fetchAiResponse(
 
 .chat-col {
   max-width: 800px;
+}
+
+.header-chevron {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 </style>
