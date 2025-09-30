@@ -3,12 +3,14 @@
   <v-container fluid>
     <v-row no-gutters
       ><v-col>
+        <ChatLayoutTabFilters v-model="tabFiltersModel" class="mb-1 ml-1"/>
         <ChatLayoutFilterMenu
           :userProfile="userProfile || null"
           :disableToggle="shouldDisableToggle"
           :authStatus="authStatus"
           @filter-changed="updateFilters"
-      /></v-col>
+        />
+      </v-col>
 
       <!-- <v-col v-if="userProfile"
         >{{ userProfile.displayname }} - {{ authStatus }}</v-col
@@ -17,8 +19,13 @@
       <v-col>
         <ChatLayoutToggleAi
           v-model="showAIUsers"
-          :disabled="shouldDisableToggle" /></v-col
-    ></v-row>
+          :disabled="shouldDisableToggle"
+      /></v-col>
+
+      <!-- <v-col>
+        <ChatLayoutTabFilters v-model="tabFiltersModel" />
+      </v-col> -->
+    </v-row>
 
     <!-- BODY: fills remaining height, overflow hidden so children manage scroll -->
     <v-row class="flex-grow-1 overflow-hidden">
@@ -65,12 +72,17 @@
                 <!-- Scroll area -->
                 <div class="flex-grow-1 overflow-auto px-2 py-2 users-scroll">
                   <ChatLayoutUsers
+                    v-if="
+                      tabVisibility.online ||
+                      tabVisibility.offline ||
+                      tabVisibility.active
+                    "
                     :users="usersWithPresence"
                     :pinnedId="IMCHATTY_ID"
                     :activeChats="activeChats"
                     :selectedUserId="selectedUserId"
                     :showAIUsers="showAIUsers"
-                    :isTabVisible="isTabVisible"
+                    :tab-visibility="tabVisibility"
                     :isLoading="isLoading"
                     @user-selected="selectUser"
                   />
@@ -89,12 +101,17 @@
           <!-- Scroll area on desktop -->
           <div class="flex-grow-1 overflow-auto users-scroll">
             <ChatLayoutUsers
+              v-if="
+                tabVisibility.online ||
+                tabVisibility.offline ||
+                tabVisibility.active
+              "
               :users="usersWithPresence"
               :activeChats="activeChats"
               :pinnedId="IMCHATTY_ID"
               :selectedUserId="selectedUserId"
               :showAIUsers="showAIUsers"
-              :isTabVisible="isTabVisible"
+              :tab-visibility="tabVisibility"
               :isLoading="isLoading"
               @user-selected="selectUser"
             />
@@ -228,7 +245,9 @@
         <NuxtLink :to="profileLink" class="text-decoration-none">
           <v-btn variant="outlined" size="small">View full profile</v-btn>
         </NuxtLink>
-        <v-btn color="primary" :to="`/chat?userslug=${modalUser.slug}`">Message</v-btn>
+        <v-btn color="primary" :to="`/chat?userslug=${modalUser.slug}`"
+          >Message</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -246,6 +265,7 @@ import { useDisplay } from "vuetify";
 import { useDb } from "@/composables/useDB";
 import { useLocalePath } from "#imports";
 import { useAiQuota } from "~/composables/useAiQuota";
+import { useTabFilters } from "@/composables/useTabFilters";
 
 const auth = useAuthStore();
 const chat = useChatStore();
@@ -277,6 +297,21 @@ const filters = reactive({
 
 // ---- Onboarding AI helpers
 const { sendUserMessage } = useOnboardingAi();
+
+const { tabFilters, canShow, setMany } = useTabFilters();
+
+// v-model proxy: allows the child to "assign" a new object,
+// but we merge it into the existing reactive state.
+const tabFiltersModel = computed({
+  get: () => tabFilters,
+  set: (val) => setMany(val || {}),
+});
+
+const tabVisibility = computed(() => ({
+  online: canShow("online"),
+  offline: canShow("offline"),
+  active: canShow("active"),
+}));
 
 // ---- Basic UI state
 const messageDraft = ref("");
