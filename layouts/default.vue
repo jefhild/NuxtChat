@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <v-layout class="d-flex flex-column" style="min-height: 100vh">
     <ClientOnly>
       <NavBar1 />
@@ -16,6 +16,31 @@
       </v-container>
     </v-main>
   </v-layout>
+</template> -->
+
+<template>
+  <!-- <v-app> -->
+    <!-- Header should render a v-app-bar with the "app" prop -->
+    <ClientOnly>
+      <NavBar1 />
+    </ClientOnly>
+
+    <!-- Main content; let children shrink to create scroll areas -->
+    <v-main class="d-flex flex-column min-h-0">
+      <!-- Optional container; keep min-h-0 so inner flex can shrink -->
+      <v-container fluid class="d-flex flex-column flex-grow-1 min-h-0 pa-0 px-sm-6">
+        <!-- NuxtPage should be allowed to grow/shrink -->
+        <div class="d-flex flex-column flex-grow-1 min-h-0">
+          <NuxtPage />
+        </div>
+      </v-container>
+    </v-main>
+
+    <!-- FOOTER must be an app footer to reserve space -->
+    <v-footer app elevation="0">
+      <Footer />
+    </v-footer>
+  <!-- </v-app> -->
 </template>
 
 <script setup>

@@ -591,7 +591,10 @@
       "report-user": "Report User",
       "favorited": "favorited you!",
       "report-success": "Thank you for reporting this user. We will review the report and take appropriate action if necessary.",
-      "report-failure": "There was an error reporting this user. Please try again later."
+      "report-failure": "There was an error reporting this user. Please try again later.",
+      "unauthenticated-line1": "Please consent to our terms.",
+      "unauthenticated-line2": "unauthenticated - limited.",
+      "action-label": "Open consent information or start chat"
     },
     "loginAi": {
       "titleText": "Create Your Anonymous Profile"

@@ -125,7 +125,12 @@
         sm="6"
         md="4"
       >
-        <ArticleCard :article="article" />
+        <ArticleCard
+          :article="article"
+          :chat-thread-id="
+            threadByArticleId[article.id] || article.thread_id || null
+          "
+        />
       </v-col>
     </v-row>
 
@@ -208,6 +213,11 @@ const selectedCategoriesName = computed(() => {
   return categories.value.find((c) => c.slug === slug)?.name || null;
 });
 
+const { data: chatMap } = await useAsyncData("chat-map", () =>
+  $fetch("/api/articles/chat-map")
+);
+// Fallback to {} if null
+const threadByArticleId = computed(() => chatMap.value || {});
 
 // Load data
 onMounted(async () => {
@@ -244,5 +254,4 @@ h1 {
   max-width: 400px;
   width: 100%;
 }
-
 </style>

@@ -49,14 +49,6 @@ const toggle = (key) => {
     />
     Active
   </label>
-  <!-- <label class="flex items-center gap-1 text-purple-600">
-    <input
-      type="checkbox"
-      :checked="modelValue.articles"
-      @change="toggle('articles')"
-      class="accent-purple-600"
-    />
-    Articles
-  </label> -->
+
 </div>
 </template>

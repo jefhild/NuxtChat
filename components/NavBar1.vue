@@ -1,6 +1,6 @@
 <template>
   <nav>
-    <v-app-bar
+    <v-app-bar app
       image="/images/bkg/tiediebkg2.webp"
       alt="navbar background image"
     >

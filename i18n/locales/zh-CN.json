@@ -590,7 +590,10 @@
       "report-user": "举报用户",
       "favorited": "收藏了您！",
       "report-success": "感谢您举报此用户。我们将审查举报并在必要时采取适当行动。",
-      "report-failure": "举报用户时出错。请稍后再试。"
+      "report-failure": "举报用户时出错。请稍后再试。",
+      "unauthenticated-line1": "请同意我们的条款。",
+      "unauthenticated-line2": "未认证 - 功能受限。",
+      "action-label": "打开同意信息或开始聊天"
     },
     "loginAi": {
       "titleText": "创建您的匿名档案"

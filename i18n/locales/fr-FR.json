@@ -590,7 +590,10 @@
       "report-user": "Signaler l'Utilisateur",
       "favorited": "vous a ajouté en favori !",
       "report-success": "Merci d'avoir signalé cet utilisateur. Nous examinerons le rapport et prendrons les mesures appropriées si nécessaire.",
-      "report-failure": "Il y a eu une erreur lors du signalement de cet utilisateur. Veuillez réessayer plus tard."
+      "report-failure": "Il y a eu une erreur lors du signalement de cet utilisateur. Veuillez réessayer plus tard.",
+      "unauthenticated-line1": "Veuillez accepter nos conditions.",
+      "unauthenticated-line2": "Non authentifié — accès limité.",
+      "action-label": "Ouvrir les informations de consentement ou démarrer le chat"
     },
     "loginAi": {
       "titleText": "Créez Votre Profil Anonyme"

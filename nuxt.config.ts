@@ -6,6 +6,8 @@ export default defineNuxtConfig({
   // devtools: { enabled: true },
   ssr: true,
 
+  css: ["@/assets/css/util.css"],
+
   build: {
     transpile: ["vuetify"],
   },
@@ -93,6 +95,7 @@ export default defineNuxtConfig({
         "/callback/*",
         "*/chat",
         "/chat",
+        "/^/chat/articles(/.*)?$/",
         "*/about",
         "/*/about",
         "/about",
