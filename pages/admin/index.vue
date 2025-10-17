@@ -37,11 +37,11 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
-import AdminDashboard from "~/components/Admin/Dashboard.vue";
-import AdminArticles from "~/components/Admin/Articles.vue";
-import AdminCategories from "~/components/Admin/Categories.vue";
-import AdminTags from "~/components/Admin/Tags.vue";
-import AdminReports from "~/components/Admin/Reports.vue";
+import AdminDashboard from "~/components/Admin2/Dashboard.vue";
+import AdminArticles from "~/components/Admin2/Articles1.vue";
+import AdminCategories from "~/components/Admin2/Categories.vue";
+import AdminTags from "~/components/Admin2/Tags.vue";
+import AdminReports from "~/components/Admin2/Reports.vue";
 import { useAuthStore } from "@/stores/authStore1";
 
 const { t } = useI18n();
