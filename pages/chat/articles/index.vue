@@ -45,24 +45,32 @@ const { data: list, pending, error } = await useAsyncData(
   () => $fetch('/api/articles/threads', { params: { order: ORDER, limit: 25 } }),
   { server: true }
 )
+console.log('list error:', list.value)
 
 const topics = computed(() => list.value || [])
-const firstId = computed(() => list.value?.[0]?.id ?? null)
+// const firstId = computed(() => list.value?.[0]?.id ?? null)
+const firstSlug = computed(() => list.value?.[0]?.slug ?? null)
+console.log('First slug:', firstSlug.value);
 
 // Redirect policy (SSR 302 on server, replace on client)
 const redirecting = ref(false)
-if (firstId.value) {
-  redirecting.value = true
-  if (import.meta.server) {
-    await navigateTo(`/chat/articles/${firstId.value}`, { replace: true, redirectCode: 302 })
-  } else {
-    navigateTo(`/chat/articles/${firstId.value}`, { replace: true })
-  }
-} else {
-  redirecting.value = false
-}
+ // SSR: do the 302 when data is already available server-side
+ if (import.meta.server && firstSlug.value) {
+   redirecting.value = true
+   await navigateTo(`/chat/articles/${firstSlug.value}`, { replace: true, redirectCode: 302 })
+ }
+ // Client: watch for data becoming available and then navigate
+ if (import.meta.client) {
+   watch(firstSlug, (s) => {
+     if (!s) return
+     if (route.params?.slug === s) return // avoid self-redirect if already on slug route
+     redirecting.value = true
+     navigateTo(`/chat/articles/${s}`, { replace: true })
+   }, { immediate: true })
+ }
 
-const openThread = (id) => router.push(`/chat/articles/${id}`)
+// const openThread = (id) => router.push(`/chat/articles/${id}`)
+const openThread = (slug) => router.push(`/chat/articles/${slug}`)
 
 // Date formatter (SSR-safe)
 const dateTimeFmt = new Intl.DateTimeFormat('en-GB', {

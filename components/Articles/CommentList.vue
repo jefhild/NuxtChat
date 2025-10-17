@@ -47,7 +47,6 @@
 import { computed, ref, reactive, watch } from 'vue'
 import CommentItem from './CommentItem.vue'
 import ReplyInline from './ReplyInline.vue'
-import VoteControls from './VoteControls.vue' // keep bundled
 
 /**
  * Expected message shape (minimal):
@@ -58,9 +57,9 @@ const props = defineProps({
   messages: { type: Array, required: true },
   meId: { type: String, default: null },
   loading: { type: Boolean, default: false },
-  canReply: { type: Boolean, default: true },      // 👈 new-ish
+  canReply: { type: Boolean, default: true },     
 })
-const emit = defineEmits(['reply', 'vote', 'menu', 'send-reply', 'login-request']) // 👈 added
+const emit = defineEmits(['reply', 'vote', 'menu', 'send-reply', 'login-request']) 
 
 /* ---------------- helpers ---------------- */
 const byId = computed(() => {

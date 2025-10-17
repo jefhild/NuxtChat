@@ -32,9 +32,9 @@
                 <v-list-item
                   v-for="t in topics"
                   :key="t.id"
-                  :active="t.id === threadId"
+                  :active="t.slug === slug"
                   class="cursor-pointer"
-                  @click="openThread(t.id)"
+                  @click="openThread(t.slug)"
                 >
                   <template #prepend>
                     <v-avatar size="28" v-if="t.botAvatarUrl"
@@ -114,7 +114,7 @@
             :peer-id="threadId"
             :me-id="auth.user?.id || null"
             :conversation-key="`thread:${threadId}`"
-            :disabled="!auth.user?.id"
+            :disabled="!auth.user?.id || !threadId"
             class="w-100 mx-auto"
             @send="onSend"
           />
@@ -220,7 +220,9 @@ const menu = reactive({
   activator: null,
 });
 
-const threadId = computed(() => String(route.params.threadId || ""));
+// const threadId = computed(() => String(route.params.threadId || ""));
+
+const slug = computed(() => String(route.params.slug || ""))
 
 /* ---------- SSR-safe time formatters (unchanged) ---------- */
 const clockFmt = new Intl.DateTimeFormat("en-GB", {
@@ -259,25 +261,36 @@ const formatDateTime = (iso) => {
 const { data: topicsData, pending: loadingTopics } = await useAsyncData(
   "articles:topics",
   () => $fetch("/api/articles/threads")
-);
+)
 const topics = computed(() => topicsData.value || []);
-const openThread = (id) => router.push(`/chat/articles/${id}`);
+// const openThread = (id) => router.push(`/chat/articles/${id}`);
+const openThread = (s) => router.push(`/chat/articles/${s}`);
 
-// Gate the fetch until threadId exists, and use a stable key to avoid Nuxt key collisions on SSR
+// Initial fetch by slug; API returns { thread, items }
 const {
   data: initial,
   pending: loadingInit,
   error: initErr,
 } = await useAsyncData(
-  "articles:thread:messages",
+
+
+  () => `articles:thread:messages:${slug.value}`,
   async () => {
-    const id = threadId.value;
-    if (!id) return { items: [] };
-    return await $fetch(`/api/articles/threads/${id}/messages?limit=50`);
+    if (!slug.value) return { thread: null, items: [] }
+    return await $fetch(`/api/articles/threads/${slug.value}/messages?limit=50`)
   },
-  { watch: [() => threadId.value] }
+  { watch: [() => slug.value] }
+
+
+
+
 );
-const initialItems = computed(() => initial.value?.items ?? []);
+// const initialItems = computed(() => initial.value?.items ?? []);
+
+
+const threadMeta = computed(() => initial.value?.thread || null)
+const threadId = computed(() => threadMeta.value?.id || "")
+const initialItems = computed(() => initial.value?.items ?? [])
 
 /* ---------- Realtime thread store ---------- */
 const {
@@ -460,22 +473,40 @@ const onSend = async (text) => {
 /* expose for template filters/helpers if you need */
 defineExpose({ formatClock, formatDateTime, messagesForUI });
 
+// async function loadMessages() {
+//   loadingMsgs.value = true;
+//   try {
+//     // server route returns { items: [...] } with score/today/myVote merged
+//     const { items } = await $fetch(
+//       `/api/articles/threads/${threadId.value}/messages`
+//     );
+//     messages.value = items;
+//   } finally {
+//     loadingMsgs.value = false;
+//   }
+// }
+
+
 async function loadMessages() {
-  loadingMsgs.value = true;
+  const s = slug.value
+  if (!s) return               // <-- guard: no slug, no call
+  loadingMsgs.value = true
   try {
-    // server route returns { items: [...] } with score/today/myVote merged
-    const { items } = await $fetch(
-      `/api/articles/threads/${threadId.value}/messages`
-    );
-    messages.value = items;
+    const { items } = await $fetch(`/api/articles/threads/${encodeURIComponent(s)}/messages`)
+    messages.value = items ?? []
   } finally {
-    loadingMsgs.value = false;
+    loadingMsgs.value = false
   }
 }
 
+
 onMounted(async () => {
-  await nextTick();
-  await loadMessages();
+  // await nextTick();
+  // await loadMessages();
+  // Run once slug is known (works on client navs too)
+if (import.meta.client) {
+  watch(slug, (s) => { if (s) loadMessages() }, { immediate: true })
+}
 });
 </script>
 <style scoped>

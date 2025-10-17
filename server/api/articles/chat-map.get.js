@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const { data, error } = await supa
     .from("threads")
-    .select("id, article_id")
+    .select("id, slug, article_id")
     .eq("kind", "article");
 
   if (error) {
@@ -20,7 +20,9 @@ export default defineEventHandler(async (event) => {
 
   const map = {};
   for (const t of data || []) {
-    if (t.article_id) map[t.article_id] = t.id;
+    if (!t.article_id) continue;
+    // Prefer slug for routing; fall back to id during migration
+    map[t.article_id] = t.slug || t.id;
   }
   return map;
 });

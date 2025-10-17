@@ -1,6 +1,9 @@
 <template>
   <v-container fluid>
-    <HomeRow1 />
+    <PageHeader
+      :text="$t('pages.about.heading')"
+      :subtitle="$t('pages.about.subtitle')"
+    />
     <About />
   </v-container>
 </template>

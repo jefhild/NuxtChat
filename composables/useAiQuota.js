@@ -16,7 +16,7 @@ export function limitReachedMessage(authStatus, limit) {
     case "guest":
       return `You’ve reached today’s guest AI limit (${limit}). If there's a problem, sign in here.`;
     case "onboarding":
-      return `You’ve reached today’s onboarding AI  limit. If you're having a problem, sign in here.[Signin page](/signin1)`;
+      return `You’ve reached today’s onboarding AI  limit. If you're having a problem, sign in here.[Signin page](/signin)`;
     case "anon_authenticated":
       return `You’ve reached today’s AI limit (${limit}). Verify your email to unlock higher limits and save your chats.`;
     case "authenticated":

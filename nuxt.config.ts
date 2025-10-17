@@ -103,8 +103,6 @@ export default defineNuxtConfig({
         "/logout",
         "/signin",
         "/*/signin",
-        "/signin1",
-        "/*/signin1",
         "/terms",
         "/*/terms",
         "/privacy",

@@ -1,8 +1,8 @@
 <template>
   <v-container class="py-8" v-if="article" fluid>
-    <HomeRow1 />
+    <!-- <HomeRow1 /> -->
 
-    <v-row
+    <!-- <v-row
       ><v-col>
         <v-expansion-panels variant="inset" class="my-4">
           <v-expansion-panel>
@@ -83,26 +83,67 @@
           </v-expansion-panel>
         </v-expansion-panels>
       </v-col></v-row
-    >
+    > -->
 
+    <PageHeader :text="article.title" />
+
+    <v-row>
+      <v-col>
+        <FilterExpansion
+          :title="$t('pages.categories.index.title')"
+          :items="categories"
+          base-path="/categories"
+          :active-slugs="categorySlugs"
+          panels-class="compact-panel"
+          variant="inset"
+        >
+          <template #title="{ selectedName, title }">
+            <span>Categories: {{ selectedName || title }}</span>
+          </template>
+        </FilterExpansion>
+      </v-col>
+      <v-col>
+        <FilterExpansion
+          :title="$t('pages.tags.index.title')"
+          :items="tags"
+          base-path="/tags"
+          :active-slugs="tagSlugs"
+          panels-class="compact-panel"
+          variant="inset"
+        >
+          <template #title="{ selectedName, title }">
+            <span>Tags: {{ selectedName || title }}</span>
+          </template>
+        </FilterExpansion>
+      </v-col>
+    </v-row>
 
     <v-row>
       <v-img
-        class="align-end text-white"
+        class="text-white"
         height="350"
         :src="`${config.public.SUPABASE_BUCKET}/articles/${article.image_path}`"
         cover
       >
-        <div class="w-100 text-center px-4">
-          <div
-            class="font-weight-bold text-subtitle-1 text-md-h5 text-lg-h4"
-            style="white-space: normal; word-break: break-word"
+        <div
+          class="d-flex justify-space-between align-center px-4 pb-3"
+          style="position: absolute; bottom: 0; left: 0; right: 0"
+        >
+          <v-btn
+            color="primary"
+            :to="localPath('/chat/articles/' + encodeURIComponent(chatThreadKey || ''))"
+             :disabled="!chatThreadKey"
+            large
           >
-            <h1>{{ article.title }}</h1>
-          </div>
-        </div>
-        <div class="d-flex justify-end pr-4 pb-2">
-          <span class="ml-1">{{ formatDate(article.created_at) }}</span>
+            {{
+              chatThreadKey
+                ? $t("pages.home.landing_page.cta_button")
+                : "No open chats"
+            }}
+            <v-icon end>mdi-chat</v-icon>
+          </v-btn>
+
+          <span class="text-body-2">{{ formatDate(article.created_at) }}</span>
         </div>
       </v-img>
     </v-row>
@@ -129,10 +170,8 @@
 
     <v-row justify="center" class="mb-4">
       <v-col cols="12" class="text-center">
-        <v-btn color="primary" :to="localPath('/chat')">
-          {{ $t("pages.home.landing_page.cta_button") }}!
-          <v-icon end>mdi-chat</v-icon>
-        </v-btn>
+
+
       </v-col>
     </v-row>
 
@@ -157,7 +196,7 @@
       </v-col>
     </v-row>
 
-    <v-row>
+    <!-- <v-row>
       <v-col cols="12" class="text-center">
         <h3 class="">Share</h3>
 
@@ -190,7 +229,7 @@
           </v-btn>
         </div>
       </v-col>
-    </v-row>
+    </v-row> -->
   </v-container>
 
   <LoadingContainer v-else />
@@ -205,7 +244,17 @@ const route = useRoute();
 const slug = route.params.slug;
 const currentLocale = locale.value || "en";
 const shareUrl = `https://imchatty.com/${currentLocale}/articles/${slug}`;
-const { getArticleBySlug, getAllCategories, getAllTags  } = useDb();
+
+const chatThreadId = ref(null);
+const chatThreadKey = ref(null);
+
+const {
+  getArticleBySlug,
+  getAllCategories,
+  getAllTags,
+  getThreadIdByArticleId,
+  getThreadKeyByArticleId,
+} = useDb();
 
 const { data: article, error } = await useAsyncData(`article-${slug}`, () =>
   getArticleBySlug(slug)
@@ -214,26 +263,27 @@ const { data: article, error } = await useAsyncData(`article-${slug}`, () =>
 const categories = ref([]);
 const tags = ref([]);
 
-const selectedCategoriesName = computed(() => {
-  const currentSlug = article.value?.category?.slug;
-  return categories.value.find((c) => c.slug === currentSlug)?.name || null;
+const categorySlugs = computed(() => {
+  const a = article.value;
+  if (!a) return [];
+  // support single category or an array
+  const single = a.category?.slug ? [a.category.slug] : [];
+  const many = Array.isArray(a.categories)
+    ? a.categories.map((c) => c?.slug).filter(Boolean)
+    : [];
+  return [...new Set([...single, ...many])];
 });
 
-const selectedTagName = computed(() => {
-  const currentSlug = article.value?.tags?.[0]?.slug;
-  return tags.value.find((t) => t.slug === currentSlug)?.name || null;
+const tagSlugs = computed(() => {
+  const a = article.value;
+  if (!a) return [];
+  const list = Array.isArray(a.tags)
+    ? a.tags
+    : Array.isArray(a.article_tags)
+    ? a.article_tags
+    : [];
+  return [...new Set(list.map((t) => t?.slug).filter(Boolean))];
 });
-
-// Navigation helpers
-const goToCategory = (slug) => {
-  const path = slug === "all" ? localPath("/categories") : localPath(`/categories/${slug}`);
-  if (route.fullPath !== path) router.push(path);
-};
-
-const goToTag = (slug) => {
-  const path = slug === "all" ? localPath("/tags") : localPath(`/tags/${slug}`);
-  if (route.fullPath !== path) router.push(path);
-};
 
 const renderedMarkdown = ref("");
 
@@ -245,19 +295,24 @@ if (article.value?.content) {
   const plainText = htmlContent.replace(/<[^>]+>/g, " ");
   const condensed = plainText.replace(/\s+/g, " ").trim();
   const safeDescription = condensed.slice(0, 160) + "…";
-  const localizedShareUrl = `https://imchatty.com${currentLocale === 'en' ? '' : `/${currentLocale}`}/articles/${slug}`;
+  const localizedShareUrl = `https://imchatty.com${
+    currentLocale === "en" ? "" : `/${currentLocale}`
+  }/articles/${slug}`;
   const imageUrl = `${config.public.SUPABASE_BUCKET}/articles/${article.value.image_path}`;
 
   onMounted(async () => {
-  const [categoryData, tagData] = await Promise.all([
-    getAllCategories(),
-    getAllTags(),
-  ]);
+    if (article.value?.id) {
+      // chatThreadId.value = await getThreadIdByArticleId(article.value.id);
+      chatThreadKey.value = await getThreadKeyByArticleId(article.value.id);
+    }
+    const [categoryData, tagData] = await Promise.all([
+      getAllCategories(),
+      getAllTags(),
+    ]);
 
-  categories.value = categoryData || [];
-  tags.value = tagData || [];
-});
-
+    categories.value = categoryData || [];
+    tags.value = tagData || [];
+  });
 
   useHead({
     link: [
@@ -301,8 +356,6 @@ const formatDate = (date) =>
 </script>
 
 <style scoped>
-
-
 .page-title {
   font-family: "Poppins", sans-serif;
   font-weight: 700;

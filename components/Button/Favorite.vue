@@ -83,7 +83,7 @@ const handleFavoriteToggle = async () => {
 
 // Redirect to login
 const redirectToLogin = () => {
-  router.push(localPath("/signin1"));
+  router.push(localPath("/signin"));
 };
 
 // Run on component mount

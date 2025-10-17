@@ -5,12 +5,43 @@
   />
 
   <v-container fluid v-else>
-    <HomeRow1 />
+    <!-- <HomeRow1 /> -->
+
+    <PageHeader
+      :text="$t('pages.articles.index.heading')"
+      :subtitle="$t('pages.articles.index.subtitle')"
+    />
+
     <v-row>
-      <v-col>
+      <!-- <v-col>
         <h1>{{ $t("pages.articles.index.explore") }}</h1>
       </v-col>
+       -->
+
       <v-col>
+        <FilterExpansion
+          :title="$t('pages.categories.index.title')"
+          :selected-name="selectedCategoriesName"
+          :items="categories"
+          base-path="/categories"
+          :selected-slug="route.params?.slug || null"
+          panels-class="compact-panel"
+        />
+      </v-col>
+
+      <v-col>
+        <FilterExpansion
+          :title="$t('pages.tags.index.title')"
+          :selected-name="selectedTagName"
+          :items="tags"
+          base-path="/tags"
+          :selected-slug="route.params?.slug || null"
+          panels-class="compact-panel"
+        />
+
+   </v-col>
+
+      <!-- <v-col>
         <v-text-field
           v-model="searchQuery"
           :label="searchLabel"
@@ -21,18 +52,9 @@
           hide-details
           class="search-bar"
         />
-      </v-col>
+      </v-col> -->
     </v-row>
-    <!-- <v-row
-      ><ArticleSearchFilters
-        :categories="categories"
-        :tags="tags"
-        v-model:searchQuery="searchQuery"
-        :searchLabel="searchArticlesLabel"
-        @categorySelected="goToCategory"
-        @tagSelected="goToTag"
-    /></v-row> -->
-
+    <!-- 
     <v-row
       ><v-col>
         <v-expansion-panels variant="inset" class="my-4">
@@ -114,7 +136,7 @@
           </v-expansion-panel>
         </v-expansion-panels>
       </v-col></v-row
-    >
+    > -->
 
     <!-- Articles List -->
     <v-row dense>
@@ -169,6 +191,7 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
+
 const localPath = useLocalePath();
 const route = useRoute();
 const { getAllPublishedArticlesWithTags, getAllTags, getAllCategories } =
@@ -253,5 +276,16 @@ h1 {
 .search-bar {
   max-width: 400px;
   width: 100%;
+}
+
+.compact-panel .v-expansion-panel-title {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  min-height: 32px !important; /* optional */
+}
+
+.compact-panel .v-expansion-panel-text__wrapper {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
 }
 </style>

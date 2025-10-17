@@ -51,6 +51,8 @@
       }
     },
     "about": {
+      "heading": "关于我们",
+      "subtitle": "了解更多关于 ImChatty —— 一个独特的平台，让您可以与真人或人工智能匿名聊天。",
       "meta": {
         "title": "关于ImChatty – 真实和AI聊天平台",
         "description": "了解更多关于ImChatty的信息——一个独特的平台，您可以与真实的人或AI伙伴匿名聊天。发现我们的使命、我们的团队，以及我们如何创建一个更安全、更有吸引力的在线聊天空间。",
@@ -256,7 +258,8 @@
     "articles": {
       "index": {
         "loading": "加载文章中...",
-        "explore": "探索我们的文章",
+        "heading": "探索我们的文章",
+        "subtitle": "与他人聊天、分享经验并发现新的视角。",
         "categories": "分类",
         "tags": "标签",
         "search": "搜索文章...",
@@ -274,6 +277,20 @@
           "twitterCard": "summary_large_image",
           "twitterImage": "https://imchatty.com/images/robot.png"
         }
+      },
+      "categories": {
+        "heading": "探索分类",
+        "subtitle": "选择一个主题，分享你的经验，发现新的视角。"
+      },
+      "tags": {
+        "heading": "探索标签",
+        "subtitle": "选择一个主题，分享你的经验，发现新的视角。"
+      }
+    },
+    "chat": {
+      "index": {
+        "heading": "与真人一对一聊天",
+        "subtitle": "加入成千上万的用户，与真人聊天、讨论兴趣并建立联系。"
       }
     },
     "categories": {
@@ -305,6 +322,38 @@
           "twitterDescription1": "在我们最新的聊天相关内容中了解",
           "twitterDescription2": "。来自真实和AI视角的更新文章。"
         }
+      },
+      "chatting": {
+        "heading": "聊天",
+        "subtitle": "关于精彩对话的技巧与见解。"
+      },
+      "getting-started": {
+        "heading": "准备好开始了吗？",
+        "subtitle": "关于精彩对话的技巧与见解。"
+      },
+      "making-friends-online": {
+        "heading": "让我们安全地在网上交朋友。",
+        "subtitle": "关于精彩对话的技巧与见解。"
+      },
+      "miscellaneous": {
+        "heading": "一些我们觉得有趣的不同文章。",
+        "subtitle": "有点随机但值得一看的内容。"
+      },
+      "news": {
+        "heading": "有时，时事也很有意义。",
+        "subtitle": "让我们来聊聊吧。"
+      },
+      "online-safety": {
+        "heading": "保持网络安全。",
+        "subtitle": "希望这些资源对你有所帮助。"
+      },
+      "profile-page": {
+        "heading": "关于个人资料，你需要知道的一切。",
+        "subtitle": "设置好自己的资料非常重要。"
+      },
+      "tips": {
+        "heading": "一些让你快速上手的小贴士。",
+        "subtitle": "网上有很多值得参考的建议。"
       }
     },
     "tags": {
@@ -323,6 +372,38 @@
           "twitterDescription": "浏览 ImChatty 上的热门标签，发现按主题和兴趣分类的文章与讨论。",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
+      },
+      "imchatty": {
+        "heading": "探索 ImChatty 精选内容",
+        "subtitle": "ImChatty 在这里，帮你更好地了解这个世界。"
+      },
+      "news": {
+        "heading": "看看最新资讯",
+        "subtitle": "有些新闻，我们无法忽视。"
+      },
+      "friendship": {
+        "heading": "线上友谊是什么？",
+        "subtitle": "要谨慎，要安全，也要聪明。"
+      },
+      "ai": {
+        "heading": "一切都与人工智能有关……",
+        "subtitle": "我们已经生活在未来。"
+      },
+      "anonymous-chat": {
+        "heading": "真的存在匿名聊天吗？",
+        "subtitle": "别太在意，大哥正在看着你。"
+      },
+      "profile": {
+        "heading": "打造一个出色的个人资料",
+        "subtitle": "这也许就是关键所在。"
+      },
+      "communication": {
+        "heading": "秘诀就是沟通。",
+        "subtitle": "我能从你身上学到什么？"
+      },
+      "tips": {
+        "heading": "一些快速的小建议。",
+        "subtitle": "如果你感兴趣的话。"
       },
       "slug": {
         "no-articles": "此标签未找到文章"
@@ -440,6 +521,8 @@
       },
       "index": {
         "title": "公开档案",
+        "heading": "公开资料",
+        "subtitle": "来自真实成员的最新和热门资料",
         "meta": {
           "title": "更多档案",
           "description": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
@@ -593,6 +676,12 @@
       "report-failure": "举报用户时出错。请稍后再试。",
       "unauthenticated-line1": "请同意我们的条款。",
       "unauthenticated-line2": "未认证 - 功能受限。",
+      "authenticated-line1": "欢迎！",
+      "authenticated-line2": "请尽情享受。",
+      "onboarding-line1": "只需回答几个简单的问题。",
+      "onboarding-line2": "请尽情享受，谢谢你的到访。",
+      "anon_authenticated-line1": "欢迎！别忘了注册你的邮箱。",
+      "anon_authenticated-line2": "请尽情享受，祝你聊天愉快。",
       "action-label": "打开同意信息或开始聊天"
     },
     "loginAi": {
@@ -683,7 +772,17 @@
       "save": "保存",
       "cancel": "取消",
       "edit-hint": "Ctrl+Enter保存 • Esc取消",
-      "edited": "（已编辑）"
+      "edited": "（已编辑",
+      "menu-dropdown": {
+        "report": "举报",
+        "signin": "登录",
+        "delete": "删除"
+      },
+      "composer": {
+        "placeholder": "在此输入您的消息...",
+        "send": "发送",
+        "sign-in": "登录以开始聊天"
+      }
     },
     "morefemale": {
       "title": "更多女性档案",

@@ -69,7 +69,7 @@
           authStatus === "guest" || authStatus === "onboarding"
             ? "Finish your profile to message people."
             : authStatus === "unauthenticated"
-            ? "Consent with imchatty, and sign in to start chatting."
+            ? "Please consent to our terms, and start chatting."
             : "Messaging is disabled."
         }}
       </div>
@@ -298,7 +298,7 @@ function onConsentNo() {
 }
 
 function onLogin() {
-  router.push("/signin1");
+  router.push("/signin");
 }
 </script>
 

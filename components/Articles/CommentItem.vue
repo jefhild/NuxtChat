@@ -37,7 +37,7 @@
           icon
           variant="text"
           density="comfortable"
-          @click="$emit('menu', id)"
+          @click="onMenuClick"
         >
           <v-icon size="18">mdi-dots-horizontal</v-icon>
         </v-btn>
@@ -59,12 +59,17 @@
 
       <!-- Row C: actions -->
   <div class="actions d-flex align-center justify-end">
+
+
     <ArticlesVoteControls
+      :id="id"
+      target="message"
       :score="score"
       :my-vote="myVote"
       :disabled="disabled || senderKind === 'system'"
-      @vote="onVote"
+      @vote="(payload) => $emit('vote', payload)"
     />
+
     <v-btn
       variant="text"
       size="small"
@@ -81,6 +86,9 @@
 </template>
 
 <script setup>
+
+const emit = defineEmits(["reply", "vote", "menu", "login"]);
+
 const props = defineProps({
   id: { type: String, required: true },
   depth: { type: Number, default: 0 }, // 0..2
@@ -100,7 +108,8 @@ const props = defineProps({
   canReply: { type: Boolean, default: true },
 });
 
-const emit = defineEmits(["reply", "vote", "menu", "login"]);
+const activatorId = computed(() => `comment-menu-btn-${props.id}`)
+
 
 /** SSR-safe format */
 const timeFmt = new Intl.DateTimeFormat("en-GB", {
@@ -119,7 +128,14 @@ const formatDate = (iso) => {
     return "";
   }
 };
-const onVote = (v) => emit("vote", { id: props.id, value: v });
+function onMenuClick(e) {
+  // Ensure we pass the BUTTON, not an inner SVG/icon
+  const btn =
+    (e.currentTarget instanceof Element ? e.currentTarget : null) ||
+    (e.target instanceof Element ? e.target.closest('button') : null)
+
+  emit('menu', { id: props.id, el: btn || null })
+}
 </script>
 
 <style scoped>

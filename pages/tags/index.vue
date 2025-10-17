@@ -5,12 +5,18 @@
   />
 
   <v-container fluid v-else>
-    <HomeRow1 />
+    <!-- <HomeRow1 /> -->
+
+    <PageHeader
+      :text="$t('pages.articles.tags.heading')"
+      :subtitle="$t('pages.articles.tags.subtitle')"
+    />
+
     <v-row>
-      <v-col>
+      <!-- <v-col>
         <h1>{{ $t("pages.tags.index.title") }}</h1>
-      </v-col>
-      <v-col>
+      </v-col> -->
+      <!-- <v-col>
         <v-text-field
           v-model="searchQuery"
           :label="searchLabel"
@@ -21,94 +27,45 @@
           hide-details
           class="search-bar"
         />
-      </v-col>
+      </v-col> -->
     </v-row>
 
     <LoadingContainer v-if="isLoading" />
 
     <v-container v-else>
-      <v-row
-        ><v-col>
-          <v-expansion-panels variant="inset" class="my-4">
-            <v-expansion-panel>
-              <v-expansion-panel-title>
-                Categories<span
-                  >:
-                  {{
-                    selectedCategoriesName || $t("pages.categories.index.title")
-                  }}</span
-                >
-              </v-expansion-panel-title>
-              <v-expansion-panel-text>
-                <v-row no-gutters>
-                  <v-col
-                    v-for="category in categories"
-                    :key="category.slug"
-                    cols="auto"
-                    class="my-1 mx-3"
-                  >
-                    <NuxtLink
-                      :to="
-                        category.slug === 'all'
-                          ? localPath('/categories')
-                          : localPath(`/categories/${category.slug}`)
-                      "
-                      :class="[
-                        'text-decoration-none font-weight-medium',
-                        {
-                          'text-primary':
-                            route.params?.slug === category.slug ||
-                            (!route.params?.slug && category.slug === 'all'),
-                        },
-                      ]"
-                    >
-                      {{ category.name }}
-                    </NuxtLink>
-                  </v-col>
-                </v-row>
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-          </v-expansion-panels></v-col
-        ><v-col>
-          <v-expansion-panels variant="inset" class="my-4">
-            <v-expansion-panel>
-              <v-expansion-panel-title
-                >Tags<span
-                  >: {{ selectedTagName || $t("pages.tags.index.title") }}</span
-                ></v-expansion-panel-title
-              >
-              <v-expansion-panel-text>
-                <v-row no-gutters>
-                  <v-col
-                    v-for="tag in tags"
-                    :key="tag.slug"
-                    cols="auto"
-                    class="my-1 mx-3"
-                  >
-                    <NuxtLink
-                      :to="
-                        tag.slug === 'all'
-                          ? localPath('/tags')
-                          : localPath(`/tags/${tag.slug}`)
-                      "
-                      :class="[
-                        'text-decoration-none font-weight-medium',
-                        {
-                          'text-primary':
-                            route.params?.slug === tag.slug ||
-                            (!route.params?.slug && tag.slug === 'all'),
-                        },
-                      ]"
-                    >
-                      {{ tag.name }}
-                    </NuxtLink>
-                  </v-col>
-                </v-row>
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-          </v-expansion-panels>
-        </v-col></v-row
-      >
+      <v-row>
+        <v-col>
+          <!-- Categories: neutral (no highlight on tags index) -->
+          <FilterExpansion
+            :title="$t('pages.categories.index.title')"
+            :items="categories"
+            base-path="/categories"
+            :selected-slug="null"
+            panels-class="compact-panel"
+            variant="inset"
+          >
+            <template #title="{ selectedName, title }">
+              <span>Categories: {{ selectedName || title }}</span>
+            </template>
+          </FilterExpansion>
+        </v-col>
+
+        <v-col>
+          <!-- Tags: highlight current route param -->
+          <FilterExpansion
+            :title="$t('pages.tags.index.title')"
+            :items="tags"
+            base-path="/tags"
+            :selected-slug="route.params?.slug || null"
+            panels-class="compact-panel"
+            variant="inset"
+          >
+            <template #title="{ selectedName, title }">
+              <span>Tags: {{ selectedName || title }}</span>
+            </template>
+          </FilterExpansion>
+        </v-col>
+      </v-row>
 
       <!-- Articles List -->
       <v-row dense>
@@ -171,18 +128,6 @@ const perPage = 10;
 const searchLabel = computed(() => t("pages.articles.index.search"));
 
 useSeoI18nMeta("tags.index");
-
-const selectedTagName = computed(() => {
-  const slug = route.params?.slug;
-  if (!slug) return null;
-  return tags.value.find((t) => t.slug === slug)?.name || null;
-});
-
-const selectedCategoriesName = computed(() => {
-  const slug = route.params?.slug;
-  if (!slug) return null;
-  return categories.value.find((c) => c.slug === slug)?.name || null;
-});
 
 const filteredArticles = computed(() => {
   if (!searchQuery.value) return articles.value;

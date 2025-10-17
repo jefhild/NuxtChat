@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   const ascending = order === "oldest";
   const { data: threads, error: threadsErr } = await supa
     .from("threads")
-    .select("id, title, bot_avatar_url, last_activity_at")
+    .select("id, title, slug, bot_avatar_url, last_activity_at")
     .eq("kind", "article")
     .order("last_activity_at", { ascending })
     .limit(limit);
@@ -67,23 +67,9 @@ export default defineEventHandler(async (event) => {
     todayCounts = {};
   }
 
-  // 3) Scores per thread (adjust table/name if yours differs)
-  let scores = {};
-  try {
-    const { data: voteRows, error: votesErr } = await supa
-      .from("votes_articles")
-      .select("target_id, value")
-      .in("target_id", threadIds)
-      .eq("target_type", "thread");
 
-    if (votesErr) throw votesErr;
-    for (const v of voteRows || []) {
-      scores[v.target_id] = (scores[v.target_id] || 0) + (Number(v.value) || 0);
-    }
-  } catch (e) {
-    console.error("[threads.get] votes error:", e);
-    scores = {};
-  }
+  // 3) Scores per thread — not implemented yet; stub zeros
+ const scores = {}; // TODO: implement when thread votes go live
 
   // 4) Shape response
   return list.map((t) => ({
@@ -91,6 +77,7 @@ export default defineEventHandler(async (event) => {
     title: t.title,
     botAvatarUrl: t.bot_avatar_url,
     lastActivityAt: t.last_activity_at,
+    slug: t.slug,
     todayCount: todayCounts[t.id] || 0,
     score: scores[t.id] || 0,
   }));

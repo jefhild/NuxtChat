@@ -3,7 +3,7 @@ import { serverSupabaseUser } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
   // const user = event.context?.auth?.user || null;
-  const user = await serverSupabaseUser(event); 
+  const user = await serverSupabaseUser(event);
   if (!user?.id)
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
@@ -25,26 +25,55 @@ export default defineEventHandler(async (event) => {
   if (upErr)
     throw createError({ statusCode: 500, statusMessage: upErr.message });
 
-  // Simple greet cadence: greet if no bot greet in last 12h
-  const twelveHoursAgo = new Date(
-    Date.now() - 12 * 60 * 60 * 1000
-  ).toISOString();
-  const { data: recentBot, error: botErr } = await supa
+  // Ensure exactly ONE welcome per thread (DB unique index enforces it)
+  const content = await generateWelcomeText({ supa, threadId }).catch(
+    () => null
+  );
+  const welcomeText = content || "Welcome! What’s your take on the article?";
+
+  const { data: exists, error: existsErr } = await supa
     .from("messages_v2")
     .select("id")
     .eq("thread_id", threadId)
-    .eq("sender_kind", "bot")
-    .gte("created_at", twelveHoursAgo)
+    .eq("message_type", "welcome")
     .limit(1);
-
-  if (!botErr && (!recentBot || recentBot.length === 0)) {
-    await supa.from("messages_v2").insert({
+  if (existsErr) console.warn("welcome exist check failed:", existsErr.message);
+  if (!exists?.length) {
+    const { error: insErr } = await supa.from("messages_v2").insert({
       thread_id: threadId,
       sender_kind: "bot",
-      content: "Welcome! What’s your take on the article?",
+      message_type: "welcome",
+      content: welcomeText,
       visible: true,
     });
+    if (insErr && insErr.code !== "23505") {
+      throw createError({ statusCode: 500, statusMessage: insErr.message });
+    }
   }
 
   return { ok: true };
 });
+
+async function generateWelcomeText({ supa, threadId }) {
+  // Try to personalize from article title (if threads has article_id)
+  let title = null;
+  try {
+    const { data: t } = await supa
+      .from("threads")
+      .select("article_id, title") // adjust columns you have
+      .eq("id", threadId)
+      .maybeSingle();
+    title = t?.title || null;
+  } catch {}
+
+  // Simple creative variants (deterministic, no API needed)
+  const variants = [
+    title ? `What stood out to you in “${title}”?` : "What stood out to you?",
+    title ? `Got a take on “${title}”?` : "Got a take? Share it!",
+    title ? `Hot take time: “${title}”.` : "Hot take time.",
+    title ? `Quick thought on “${title}”?` : "Quick thought on the topic?",
+    "Welcome! Jump in with your first comment.",
+  ];
+  const idx = Math.floor(Math.random() * variants.length);
+  return variants[idx];
+}

@@ -43,12 +43,12 @@ onMounted(async () => {
       // await authStore.checkAuth(); 
       router.replace(localPath(safeNextPath));
     } else {
-      console.warn("[callback1] No session found. Redirecting to /signin1.");
-      router.replace(localPath("/signin1"));
+      console.warn("[callback1] No session found. Redirecting to /signin.");
+      router.replace(localPath("/signin"));
     }
   } catch (err) {
     console.error("[callback1] Unexpected error during login redirect:", err);
-    router.replace(localPath("/signin1"));
+    router.replace(localPath("/signin"));
   }
 });
 </script>

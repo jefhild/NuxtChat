@@ -5,7 +5,51 @@ export const useArticleThread = (threadIdRef) => {
   const isValidId = (id) => typeof id === "string" && id.length > 10;
 
   const { getClient } = useDb();
-  const supabase = process.client ? getClient() : null;
+  const supabase = import.meta.client ? getClient() : null;
+
+  //----------------
+
+  // put near the top, after you create `supabase`
+  // const ts = () => new Date().toISOString().slice(11, 23);
+  // const log = (...a) => console.log(`[rt ${ts()}]`, ...a);
+  // const warn = (...a) => console.warn(`[rt ${ts()}]`, ...a);
+  // const err = (...a) => console.error(`[rt ${ts()}]`, ...a);
+
+  // auth lifecycle (client only)
+  let lastToken = null;
+  async function maybeSetAuthOnce() {
+    const { data } = await supabase.auth.getSession();
+    const token = data?.session?.access_token || null;
+    if (token !== lastToken) {
+      // log("setAuth token change", { prev: !!lastToken, next: !!token });
+      lastToken = token;
+      try {
+        supabase.realtime.setAuth(token || undefined);
+      } catch (e) {
+        err("setAuth", e);
+      }
+    } else {
+      log("setAuth skipped (unchanged)");
+    }
+  }
+  if (import.meta.client) {
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+      const t = session?.access_token || null;
+      // log("AUTH change", _evt, { token: !!t });
+      if (t !== lastToken) {
+        lastToken = t;
+        try {
+          supabase.realtime.setAuth(t || undefined);
+        } catch (e) {
+          err("setAuth(onAuth)", e);
+        }
+      }
+    });
+    // store sub?.subscription if you want to unsubscribe on unmount
+  }
+
+  //----------------
+
   const messages = ref([]);
   const isLoading = ref(false);
   const error = ref(null);
@@ -34,64 +78,37 @@ export const useArticleThread = (threadIdRef) => {
           createdAt: r.created_at ?? r.createdAt,
           replyToMessageId: r.reply_to_message_id ?? r.replyToMessageId,
           meta: r.meta ?? null,
-        };
-
-  // const loadInitial = async (limit = 50) => {
-  //   if (!threadIdRef?.value || !isValidId(threadIdRef.value)) return;
-  //   isLoading.value = true;
-  //   error.value = null;
-  //   try {
-  //     const res = await $fetch(
-  //       `/api/articles/threads/${threadIdRef.value}/messages`,
-  //       { query: { limit } }
-  //     );
-  //     const items = Array.isArray(res?.items) ? res.items : [];
-  //     messages.value = items;
-  //     knownIds.clear();
-  //     knownClientIds.clear();
-  //     for (const m of messages.value) {
-  //       if (m?.id) knownIds.add(m.id);
-  //       const cid = m?.meta?.clientId;
-  //       if (cid) knownClientIds.add(cid);
-  //     }
-  //   } catch (e) {
-  //     error.value = e;
-  //   } finally {
-  //     isLoading.value = false;
-  //   }
-  // };
-
-const loadInitial = async (limit = 50) => {
-  if (!threadIdRef?.value || !isValidId(threadIdRef.value)) return;
-  isLoading.value = true;
-  error.value = null;
-  try {
-    const res = await $fetch(
-      `/api/articles/threads/${threadIdRef.value}/messages`,
-      {
-        query: { limit },
+      };
+  
+  const loadInitial = async (limit = 50) => {
+    if (!threadIdRef?.value || !isValidId(threadIdRef.value)) return;
+    isLoading.value = true;
+    error.value = null;
+    try {
+      const res = await $fetch(
+        `/api/articles/threads/${threadIdRef.value}/messages`,
+        {
+          query: { limit },
+        }
+      );
+      const items = Array.isArray(res?.items) ? res.items : [];
+      // only replace if API actually returned items
+      if (items.length) {
+        messages.value = items;
+        knownIds.clear();
+        knownClientIds.clear();
+        for (const m of items) {
+          if (m?.id) knownIds.add(m.id);
+          const cid = m?.meta?.clientId;
+          if (cid) knownClientIds.add(cid);
+        }
       }
-    );
-    const items = Array.isArray(res?.items) ? res.items : [];
-    // only replace if API actually returned items
-    if (items.length) {
-      messages.value = items;
-      knownIds.clear();
-      knownClientIds.clear();
-      for (const m of items) {
-        if (m?.id) knownIds.add(m.id);
-        const cid = m?.meta?.clientId;
-        if (cid) knownClientIds.add(cid);
-      }
+    } catch (e) {
+      error.value = e;
+    } finally {
+      isLoading.value = false;
     }
-  } catch (e) {
-    error.value = e;
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-
+  };
 
   const applyInsert = (row) => {
     const cid = row?.meta?.clientId;
@@ -111,12 +128,13 @@ const loadInitial = async (limit = 50) => {
 
   const subscribe = () => {
     if (
-      !process.client ||
+      !import.meta.client ||
       !supabase ||
       !threadIdRef?.value ||
       !isValidId(threadIdRef.value)
     )
       return () => {};
+    maybeSetAuthOnce().catch(() => {});
     channel = supabase
       .channel(`thread:${threadIdRef.value}`)
       .on(
@@ -140,11 +158,35 @@ const loadInitial = async (limit = 50) => {
         (payload) => applyUpdate(normalizeRow(payload.new))
       )
       .subscribe();
+    // log(
+    //   "CHANNEL create",
+    //   `thread:${threadIdRef.value}`,
+    //   "channels=",
+    //   supabase.getChannels?.().length ?? "n/a"
+    // );
     return () => {
-      try {
-        supabase.removeChannel(channel);
-      } catch {}
+      const ch = channel;
       channel = null;
+      (async () => {
+        try {
+          await ch?.unsubscribe?.();
+        } catch (e) {
+          warn("unsubscribe err", e?.message || e);
+        }
+        setTimeout(() => {
+          try {
+            supabase.removeChannel(ch);
+          } catch (e) {
+            warn("removeChannel err", e?.message || e);
+          }
+          // log(
+          //   "CHANNEL remove (deferred)",
+          //   ch?.topic,
+          //   "channels=",
+          //   supabase.getChannels?.().length ?? "n/a"
+          // );
+        }, 250); // 200–400ms works well
+      })();
     };
   };
 
@@ -192,25 +234,35 @@ const loadInitial = async (limit = 50) => {
     }
   };
 
-onMounted(() => {
-  loadInitial();
-  const unsub = subscribe();
+  onMounted(() => {
+    loadInitial();
+    const unsub = subscribe();
 
-  // 👇 only join if authenticated
-  const me = useSupabaseUser?.()?.value;
-  if (isValidId(threadIdRef.value) && me?.id) {
-    $fetch("/api/articles/join", {
-      method: "POST",
-      body: { threadId: threadIdRef.value },
-    }).catch(() => {});
-  }
+    // 👇 only join if authenticated
+    const me =
+      typeof useSupabaseUser === "function" ? useSupabaseUser()?.value : null;
+    if (isValidId(threadIdRef.value) && me?.id) {
+      $fetch("/api/articles/join", {
+        method: "POST",
+        body: { threadId: threadIdRef.value },
+      })
+        .then((r) => console.debug("join ok", r))
+        .catch((e) => console.error("join failed", e));
+    } else {
+      console.debug(
+        "skip join: me?.id=",
+        me?.id,
+        "threadId=",
+        threadIdRef.value
+      );
+    }
 
-  onUnmounted(() => {
-    try {
-      unsub?.();
-    } catch {}
+    onUnmounted(() => {
+      try {
+        unsub?.();
+      } catch {}
+    });
   });
-});
 
   return { messages, isLoading, error, loadInitial, send, seed };
 };

@@ -988,6 +988,52 @@ export const useDb = () => {
     return data;
   };
 
+  // const getThreadIdByArticleId = async (articleId) => {
+  //   const supabase = getClient();
+
+  //   const { data, error } = await supabase
+  //     .from("threads")
+  //     .select("id")
+  //     .eq("kind", "article")
+  //     .eq("article_id", articleId)
+  //     .limit(1)
+  //     .maybeSingle(); // optional convenience helper if using supabase-js >= 2.0
+
+  //   if (error) {
+  //     console.error("Error fetching thread id:", error);
+  //     return null;
+  //   }
+
+  //   return data?.id || null;
+  // };
+
+
+  // New: returns slug when available (preferred), otherwise falls back to id.
+  const getThreadKeyByArticleId = async (articleId) => {
+    const supabase = getClient()
+    const { data, error } = await supabase
+      .from("threads")
+      .select("slug, id")
+      .eq("kind", "article")
+      .eq("article_id", articleId)
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      console.error("Error fetching thread key:", error)
+      return null
+    }
+    return data?.slug || data?.id || null
+  }
+
+  // (Optional) Keep a shim for old callers during migration.
+  const getThreadIdByArticleId = async (articleId) => {
+    const key = await getThreadKeyByArticleId(articleId)
+    return key // may be slug or id depending on data
+  }
+
+  
+
   const getCountArticleByTag = async (tagId) => {
     const supabase = getClient();
 
@@ -2641,6 +2687,8 @@ export const useDb = () => {
     getAllArticlesWithTags,
     getAllPublishedArticlesWithTags,
     getArticleBySlug,
+    getThreadIdByArticleId,
+    getThreadKeyByArticleId,
     getCountArticleByTag,
     getCountArticleByCategory,
     getArticlesByTagSlug,

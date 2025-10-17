@@ -1,10 +1,18 @@
 <template>
   <v-container fluid class="d-flex flex-column h-100 min-h-0">
-    <HomeRow1 />
+    <!-- <HomeRow1 /> -->
+    
+        <PageHeader
+      :text="$t('pages.chat.index.heading')"
+      :subtitle="$t('pages.chat.index.subtitle')"
+    />
+    
     <LoadingContainer
       v-if="isLoading"
       :text="$t('components.loadingContainer.loading')"
     />
+
+
     <ChatLayout
     class="flex-grow-1 min-h-0"
       v-else

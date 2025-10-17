@@ -80,7 +80,7 @@
                 </v-btn>
                 <v-btn
                   v-else
-                  :to="localPath('/signin1')"
+                  :to="localPath('/signin')"
                   variant="text"
                   class="navItem mr-4"
                 >
@@ -146,7 +146,7 @@
 
                 <v-list-item
                   v-else
-                  :to="localPath('/signin1')"
+                  :to="localPath('/signin')"
                   append-icon="mdi-login"
                   link
                 >
