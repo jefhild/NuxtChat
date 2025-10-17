@@ -381,14 +381,7 @@ const onlineIds = computed(() => {
     .map((k) => k.trim().toLowerCase());
 });
 
-const openPanels = ref([0]); // start open; use [] if you want it closed initially
-const togglePanel0 = () => {
-  const idx = openPanels.value.indexOf(0);
-  openPanels.value =
-    idx === -1
-      ? [...openPanels.value, 0]
-      : openPanels.value.filter((n) => n !== 0);
-};
+
 
 const openPanels = ref([0]); // start open; use [] if you want it closed initially
 const togglePanel0 = () => {
@@ -424,62 +417,6 @@ const profileLink = computed(() => {
 const shouldDisableToggle = computed(() =>
   ["unauthenticated", "guest", "onboarding"].includes(auth.authStatus)
 );
-
-// const headerText = computed(() => {
-//   switch (auth.authStatus) {
-//     case "unauthenticated":
-//       return {
-//         line1: t("components.chatheader.unauthenticated-line1"),
-//         line2: t("components.chatheader.unauthenticated-line2"),
-//       };
-
-//     case "guest":
-//     case "onboarding":
-//       return {
-//         line1: "Welcome, " + draft.displayName + " you're almost there!",
-//         line2: "guest",
-//       };
-
-//     case "anon_authenticated":
-//       return {
-//         line1:
-//           draft.displayName ||
-//           (auth.userProfile?.displayname
-//             ? auth.userProfile.displayname +
-//               " " +
-//               (auth.userProfile.country_emoji || "")
-//             : null) ||
-//           "(anonymous user)",
-//         line2:
-//           draft.age ||
-//           (auth.userProfile?.age
-//             ? auth.userProfile.age + " " + (auth.userProfile.gender || "")
-//             : null) ||
-//           "(anonymous guest)",
-//       };
-
-//     case "authenticated":
-//       return {
-//         line1:
-//           draft.displayName ||
-//           (auth.userProfile?.displayname
-//             ? auth.userProfile.displayname +
-//               " " +
-//               (auth.userProfile.country_emoji || "")
-//             : null) ||
-//           "(anonymous user)",
-//         line2:
-//           draft.age ||
-//           (auth.userProfile?.age
-//             ? auth.userProfile.age + " " + (auth.userProfile.gender || "")
-//             : null) ||
-//           "(authenticated user)",
-//       };
-
-//     default:
-//       return { line1: "", line2: "" };
-//   }
-// });
 
 // ———————————————————————————————————————————
 // Props
@@ -971,10 +908,4 @@ async function fetchAiResponse(
   transform: translateY(-50%);
 }
 
-.header-chevron {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-}
 </style>
