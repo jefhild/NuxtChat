@@ -20,32 +20,6 @@
 
           <!-- Article Cards -->
           <v-row dense>
-            <!-- <v-col
-              v-for="article in paginatedArticles"
-              :key="article.id"
-              cols="12"
-              sm="6"
-              md="6"
-              lg="4"
-            >
-              <ArticleCard
-                :article="article"
-                disableNavigation
-                admin
-                @click="toggleEditDialog(article)"
-              />
-
-    <div class="mt-2 d-flex gap-2">
-      <v-btn size="small" color="primary" @click.stop="publishToChat(article)">
-        Publish to Chat
-      </v-btn>
-      <v-btn size="small" color="grey" variant="tonal" @click.stop="unpublishFromChat(article)">
-        Unpublish
-      </v-btn>
-    </div>
-
-            </v-col> -->
-         
          <v-col
   v-for="article in paginatedArticles"
   :key="article.id"
