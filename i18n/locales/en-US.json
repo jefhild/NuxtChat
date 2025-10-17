@@ -292,7 +292,11 @@
       "index": {
         "heading": "Chat 1 on 1 with Real People",
         "subtitle": "Join thousands of users chatting with real people, discussing interests, and making connections."
-      }
+      },
+      "articles": {
+        "heading": "Chat About Current Articles",
+        "subtitle": "Discuss articles, share insights, and connect with others over shared interests."
+      } 
     },
     "categories": {
       "index": {

@@ -2,7 +2,10 @@
   <v-container fluid class="d-flex flex-column h-100 min-h-0">
     <v-row no-gutters class="min-h-0" style="flex: 0 0 auto">
       <v-col>
-        <div class="ml-2 text-subtitle-2 font-weight-medium">Articles</div>
+     <PageHeader
+      :text="$t('pages.chat.articles.heading')"
+      :subtitle="$t('pages.chat.articles.subtitle')"
+    />
       </v-col>
     </v-row>
     <!-- <HomeRow1 /> -->

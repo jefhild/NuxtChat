@@ -6,7 +6,7 @@
       :style="{ minHeight: props.admin ? '360px' : '280px' }"
     >
       <!-- SEO-friendly real link over image + title -->
-      <NuxtLink
+      <!-- <NuxtLink
         :to="localPath(`/articles/${article.slug}`)"
         class="card-link"
         :aria-label="article.title"
@@ -22,6 +22,45 @@
               {{ article.title }}
             </h2>
           </div>
+          <div class="d-flex justify-end pr-4 pb-2">
+            <span class="ml-1">{{ formatDate(article.created_at) }}</span>
+          </div>
+        </v-img>
+      </NuxtLink> -->
+
+      <NuxtLink
+        :to="localPath(`/articles/${article.slug}`)"
+        class="card-link position-relative"
+        :aria-label="article.title"
+      >
+        <v-img
+          class="align-end text-white article-img"
+          height="200"
+          :src="`${config.public.SUPABASE_BUCKET}/articles/${article.image_path}`"
+          cover
+        >
+          <!-- Overlay button -->
+          <div class="discuss-btn-container top-left">
+            <NuxtLink
+              v-if="chatThreadId"
+              :to="localPath(`/chat/articles/${chatThreadId}`)"
+              class="discuss-link"
+              @click.stop
+            >
+              <v-btn color="primary" size="small"
+                >Discuss…</v-btn
+              >
+            </NuxtLink>
+          </div>
+
+          <!-- Title -->
+          <div class="w-100 text-center px-3">
+            <h2 class="font-weight-bold text-subtitle-1 text-md-h5 title-text">
+              {{ article.title }}
+            </h2>
+          </div>
+
+          <!-- Date -->
           <div class="d-flex justify-end pr-4 pb-2">
             <span class="ml-1">{{ formatDate(article.created_at) }}</span>
           </div>
@@ -171,7 +210,39 @@ const formatTagSlug = (tag) => {
   color: #311b92;
 }
 
-/* Ensure the Discuss link doesn’t inherit card hover behaviors */
+.card-link {
+  display: block;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Overlay container — default fade-in behavior */
+.discuss-btn-container {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  opacity: 0.9;
+  transform: none;
+  transition: opacity 0.3s ease;
+  pointer-events: auto;
+  z-index: 3;
+}
+
+/* Modifier for top-left placement */
+.discuss-btn-container.top-left {
+  top: 12px;
+  left: 12px;
+}
+
+/* Fade in on hover */
+.article-img:hover .discuss-btn-container {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Keep link clean */
 .discuss-link {
   text-decoration: none;
 }

@@ -11,7 +11,7 @@
         "heading_guest": "Chattez Anonymement. Connectez-vous Instantanément.",
         "heading_onboarding": "Chattez Anonymement. Connectez-vous Instantanément.",
         "heading_anon_authenticated": "Chattez Anonymement. Connectez-vous Instantanément.",
-        "heading_authenticated": "Welcome Back. Enjoy!",
+        "heading_authenticated": "Bon retour ! Profitez-en !",
         "title-text": "Chattez Anonymement. Connectez-vous Instantanément.",
         "title-text2": "Amis IA, vraies personnes, connectez-vous anonymement.",
         "cta_button": "Commencer à Chatter",
@@ -291,6 +291,10 @@
       "index": {
         "heading": "Discutez en tête-à-tête avec de vraies personnes",
         "subtitle": "Rejoignez des milliers d’utilisateurs qui discutent avec de vraies personnes, échangent sur leurs centres d’intérêt et créent des liens."
+      },
+      "articles": {
+        "heading": "Discutez des articles actuels",
+        "subtitle": "Échangez autour des articles, partagez vos idées et connectez-vous avec d’autres selon vos centres d’intérêt communs."
       }
     },
     "categories": {
