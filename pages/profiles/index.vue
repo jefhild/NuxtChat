@@ -1,14 +1,20 @@
 <template>
   <v-container fluid>
-    <HomeRow1 />
-    <v-row>
+    <!-- <HomeRow1 />-->
+
+
+    <PageHeader
+      :text="$t('pages.profiles.index.heading')"
+      :subtitle="$t('pages.profiles.index.subtitle')"
+    />
+
+    <!-- <v-row>
       <v-col cols="12">
-        <!-- Page Title -->
         <div class="d-flex justify-center mt-4">
           <h1>{{ $t("pages.profiles.index.title") }}</h1>
         </div>
       </v-col>
-    </v-row>
+    </v-row> -->
     <v-row>
       <v-col cols="12">
         <NewsContainer />

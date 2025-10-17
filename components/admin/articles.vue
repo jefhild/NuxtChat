@@ -20,7 +20,7 @@
 
           <!-- Article Cards -->
           <v-row dense>
-            <v-col
+            <!-- <v-col
               v-for="article in paginatedArticles"
               :key="article.id"
               cols="12"
@@ -34,7 +34,50 @@
                 admin
                 @click="toggleEditDialog(article)"
               />
-            </v-col>
+
+    <div class="mt-2 d-flex gap-2">
+      <v-btn size="small" color="primary" @click.stop="publishToChat(article)">
+        Publish to Chat
+      </v-btn>
+      <v-btn size="small" color="grey" variant="tonal" @click.stop="unpublishFromChat(article)">
+        Unpublish
+      </v-btn>
+    </div>
+
+            </v-col> -->
+         
+         <v-col
+  v-for="article in paginatedArticles"
+  :key="article.id"
+  cols="12"
+  sm="6"
+  md="6"
+  lg="4"
+>
+  <v-card class="d-flex flex-column h-100">
+    <ArticleCard
+      :article="article"
+      disableNavigation
+      admin
+      class="flex-grow-1"
+      @click="toggleEditDialog(article)"
+    />
+
+    <v-divider />
+    <v-card-actions>
+      <v-btn
+        block
+        :color="article.isPublishedToChat ? 'red' : 'primary'"
+        @click="togglePublish(article)"
+      >
+        {{ article.isPublishedToChat ? 'Unpublish from Chat' : 'Publish to Chat' }}
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-col>
+         
+         
+         
           </v-row>
 
           <v-alert
@@ -326,11 +369,122 @@ const snackbar = ref({
   message: "",
 });
 
+
+
+
+
+const publishToChat = async (article) => {
+  try {
+    // quick defaults; you can add a dialog later to edit these
+    const body = {
+      articleId: article.id,
+      title: article.title,
+      botLabel: 'Topic Agent',
+      botAvatarUrl: article.image_path
+        ? `${config.public.SUPABASE_BUCKET}/articles/${article.image_path}`
+        : null,
+      summary: '',           // optional: prefill from a short abstract later
+      points: [],            // optional
+      tags: article.tags || [],
+      rules: ['be respectful', 'stay on topic'],
+      overrides: { lull_minutes: 8, reply_cooldown_seconds: 120 },
+    }
+
+    const res = await $fetch('/api/admin/articles/publish', {
+      method: 'POST',
+      body
+    })
+
+    if (!res?.success) throw new Error(res?.error || 'Publish failed')
+    snackbar.value = { show: true, message: 'Published to chat ✅' }
+  } catch (e) {
+    console.error('[admin] publishToChat', e)
+    snackbar.value = { show: true, message: `Publish failed: ${e.message || e}` }
+  }
+}
+
+
+const togglePublish = async (article) => {
+  try {
+    if (article.isPublishedToChat) {
+      const res = await $fetch('/api/admin/articles/unpublish', {
+        method: 'POST',
+        body: { articleId: article.id, force: true },
+      })
+      if (!res?.success) throw new Error(res?.error)
+      article.isPublishedToChat = false
+      snackbar.value = { show: true, message: 'Unpublished from chat ✅' }
+    } else {
+      const res = await $fetch('/api/admin/articles/publish', {
+        method: 'POST',
+        body: {
+          articleId: article.id,
+          title: article.title,
+          botLabel: 'Topic Agent',
+          botAvatarUrl: article.image_path
+            ? `${config.public.SUPABASE_BUCKET}/articles/${article.image_path}`
+            : null,
+          summary: '',
+          points: [],
+          tags: article.tags || [],
+          rules: ['be respectful', 'stay on topic'],
+          overrides: { lull_minutes: 8, reply_cooldown_seconds: 120 },
+        },
+      })
+      if (!res?.success) throw new Error(res?.error)
+      article.isPublishedToChat = true
+      snackbar.value = { show: true, message: 'Published to chat ✅' }
+    }
+  } catch (e) {
+    console.error('[admin] togglePublish', e)
+    snackbar.value = { show: true, message: `Action failed: ${e.message || e}` }
+  }
+}
+
+
+
+const unpublishFromChat = async (article) => {
+  try {
+    const res = await $fetch('/api/admin/articles/unpublish', {
+      method: 'POST',
+      body: {
+        articleId: article.id,
+        // or threadId: '...'
+        force: false, // set true to delete messages + thread
+      }
+    })
+    if (!res?.success) throw new Error(res?.error || 'Unpublish failed')
+    snackbar.value = { show: true, message: 'Unpublished from chat ✅' }
+  } catch (e) {
+    console.error('[admin] unpublishFromChat', e)
+    snackbar.value = { show: true, message: `Unpublish failed: ${e.message || e}` }
+  }
+}
+
+
+
+
+
+
 onMounted(async () => {
   articles.value = await getAllArticlesWithTags(false);
   // console.log("articles", articles.value);
   categories.value = (await getAllCategories()) || [];
   tags.value = (await getAllTags()) || [];
+
+
+  try {
+    const { data } = await $fetch('/api/admin/articles/published') // we'll create this tiny endpoint
+    const publishedIds = new Set((data || []).map(t => t.article_id))
+    articles.value = articles.value.map(a => ({
+      ...a,
+      isPublishedToChat: publishedIds.has(a.id),
+    }))
+  } catch (e) {
+    console.warn('[admin] failed to fetch publish states', e)
+  }
+
+
   loadingArticles.value = false;
 });
 

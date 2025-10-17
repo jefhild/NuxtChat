@@ -1,22 +1,28 @@
 <template>
   <v-container fluid>
-
-
     <v-row>
       <!-- Sidebar -->
       <v-col cols="12" md="3" class="sidebar">
         <v-card class="mx-auto pa-2" max-width="300">
           <v-list>
-            <v-list-subheader>{{ $t("pages.admin.sections-title") }}</v-list-subheader>
+            <v-list-subheader>{{
+              $t("pages.admin.sections-title")
+            }}</v-list-subheader>
 
-            <v-list-item v-for="(item, i) in items" :key="i" :value="item.value" @click="selectedSection = item.value"
-              :active="selectedSection === item.value" color="primary" rounded="shaped">
+            <v-list-item
+              v-for="(item, i) in items"
+              :key="i"
+              :value="item.value"
+              @click="selectedSection = item.value"
+              :active="selectedSection === item.value"
+              color="primary"
+              rounded="shaped"
+            >
               <template v-slot:prepend>
                 <v-icon :icon="item.icon"></v-icon>
               </template>
               <v-list-item-title>{{ item.text }}</v-list-item-title>
             </v-list-item>
-
           </v-list>
         </v-card>
       </v-col>
@@ -30,12 +36,13 @@
 </template>
 
 <script setup>
-import { useI18n } from 'vue-i18n';
-import AdminDashboard from '@/components/admin/dashboard.vue';
-import AdminArticles from '@/components/admin/articles.vue';
-import AdminCategories from '@/components/admin/categories.vue';
-import AdminTags from '@/components/admin/tags.vue';
-import AdminReports from '@/components/admin/reports.vue';
+import { useI18n } from "vue-i18n";
+import AdminDashboard from "~/components/Admin/Dashboard.vue";
+import AdminArticles from "~/components/Admin/Articles.vue";
+import AdminCategories from "~/components/Admin/Categories.vue";
+import AdminTags from "~/components/Admin/Tags.vue";
+import AdminReports from "~/components/Admin/Reports.vue";
+import { useAuthStore } from "@/stores/authStore1";
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -45,38 +52,54 @@ const localPath = useLocalePath();
 const selectedSection = ref("dashboard");
 
 const items = computed(() => [
-  { text: t("pages.admin.sections.dashboard"), icon: 'mdi-view-dashboard', value: 'dashboard' },
-  { text: t("pages.admin.sections.articles"), icon: 'mdi-post', value: 'articles' },
-  { text: t("pages.admin.sections.categories"), icon: 'mdi-folder', value: 'categories' },
-  { text: t("pages.admin.sections.tags"), icon: 'mdi-tag', value: 'tags' },
-  { text: t("pages.admin.sections.reports"), icon: 'mdi-alert-octagon', value: 'reports' },
+  {
+    text: t("pages.admin.sections.dashboard"),
+    icon: "mdi-view-dashboard",
+    value: "dashboard",
+  },
+  {
+    text: t("pages.admin.sections.articles"),
+    icon: "mdi-post",
+    value: "articles",
+  },
+  {
+    text: t("pages.admin.sections.categories"),
+    icon: "mdi-folder",
+    value: "categories",
+  },
+  { text: t("pages.admin.sections.tags"), icon: "mdi-tag", value: "tags" },
+  {
+    text: t("pages.admin.sections.reports"),
+    icon: "mdi-alert-octagon",
+    value: "reports",
+  },
 ]);
 
-onMounted(async () =>
-{
+onMounted(async () => {
   await authStore.checkAuth();
-  if (!authStore.userProfile?.is_admin)
-  {
+  if (!authStore.userProfile?.is_admin) {
     console.log("Unauthorized access to admin panel");
     router.push(localPath("/")); // or show unauthorized page
   }
 });
 
-const getSectionComponent = (section) =>
-{
-  switch (section)
-  {
-    case 'articles': return AdminArticles;
-    case 'categories': return AdminCategories;
-    case 'tags': return AdminTags;
-    case 'reports': return AdminReports;
-    default: return AdminDashboard;
+const getSectionComponent = (section) => {
+  switch (section) {
+    case "articles":
+      return AdminArticles;
+    case "categories":
+      return AdminCategories;
+    case "tags":
+      return AdminTags;
+    case "reports":
+      return AdminReports;
+    default:
+      return AdminDashboard;
   }
 };
 </script>
 
 <style scoped>
-
 .page-title {
   font-family: "Poppins", sans-serif;
   font-weight: 700;
@@ -94,5 +117,4 @@ const getSectionComponent = (section) =>
   background-color: rgba(63, 81, 181, 0.5) !important;
   transition: background-color 0.2s ease;
 }
-
 </style>

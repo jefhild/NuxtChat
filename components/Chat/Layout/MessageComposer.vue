@@ -1,4 +1,3 @@
-
 <template>
   <form
     ref="composerRef"
@@ -7,9 +6,10 @@
   >
     <input
       v-model="localDraft"
-      placeholder="Type a message…"
+      :placeholder="placeholderText"
       class="flex-1 w-full border rounded px-3 py-2"
       :disabled="isDisabled || !peerId"
+      :title="isDisabled ? placeholderText : ''"
       @input="onInput"
       @keydown="onKey"
     />
@@ -17,7 +17,7 @@
       class="shrink-0 rounded ml-2 px-3 py-2 border"
       :disabled="!peerId || !localDraft.trim()"
     >
-      Send
+      {{ t("components.message.composer.send") }}
     </button>
   </form>
 </template>
@@ -26,6 +26,7 @@
 import { ref, watch, computed, toRef } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { useTypingChannel } from "@/composables/useTypingChannel";
+import { useI18n } from "vue-i18n";
 
 const props = defineProps({
   draft: { type: String, default: "" },
@@ -42,6 +43,8 @@ const localDraft = ref(props.draft);
 
 const auth = useAuthStore();
 const meId = computed(() => props.meId || auth.user?.id || null);
+const { t } = useI18n();
+
 const derivedKey = computed(
   () =>
     props.conversationKey ||
@@ -89,14 +92,6 @@ const sendPing = (() => {
     if (now - last >= WAIT) {
       last = now;
       try {
-        // console.log(
-        //   "[sendPing] meId=",
-        //   meId.value,
-        //   "peerId=",
-        //   props.peerId,
-        //   "key=",
-        //   derivedKey.value
-        // );
         sendTypingPing?.(); // 🔹 send broadcast
       } catch (err) {
         console.error("[sendPing] error:", err);
@@ -104,6 +99,12 @@ const sendPing = (() => {
     }
   };
 })();
+
+const placeholderText = computed(() => {
+  if (!props.peerId) return t("components.message.composer.placeholder"); // optional
+  if (isDisabled.value) return t("components.message.composer.sign-in"); // unauth / blocked
+  return t("components.message.composer.placeholder"); // normal
+});
 
 function onInput() {
   if (props.peerId && meId.value) sendPing();

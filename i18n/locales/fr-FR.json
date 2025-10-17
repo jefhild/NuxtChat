@@ -51,6 +51,8 @@
       }
     },
     "about": {
+      "heading": "À propos de nous",
+      "subtitle": "En savoir plus sur ImChatty — une plateforme unique pour discuter anonymement avec de vrais utilisateurs ou une intelligence artificielle.",
       "meta": {
         "title": "À Propos d'ImChatty – Plateforme de Chat Réel et IA",
         "description": "Apprenez-en plus sur ImChatty — une plateforme unique où vous pouvez chatter anonymement avec de vraies personnes ou des compagnons IA. Découvrez notre mission, notre équipe et comment nous créons un espace en ligne plus sûr et plus engageant pour chatter.",
@@ -256,7 +258,8 @@
     "articles": {
       "index": {
         "loading": "Chargement des articles...",
-        "explore": "Explorez Nos Articles",
+        "heading": "Découvrez nos articles",
+        "subtitle": "Discutez avec d'autres, partagez vos expériences et découvrez de nouvelles perspectives.",
         "categories": "Catégories",
         "tags": "Étiquettes",
         "search": "Rechercher des Articles...",
@@ -274,6 +277,20 @@
           "twitterCard": "summary_large_image",
           "twitterImage": "https://imchatty.com/images/robot.png"
         }
+      },
+      "categories": {
+        "heading": "Explorez une catégorie",
+        "subtitle": "Choisissez un sujet, partagez vos expériences et découvrez de nouvelles perspectives."
+      },
+      "tags": {
+        "heading": "Explorez un tag",
+        "subtitle": "Choisissez un sujet, partagez vos expériences et découvrez de nouvelles perspectives."
+      }
+    },
+    "chat": {
+      "index": {
+        "heading": "Discutez en tête-à-tête avec de vraies personnes",
+        "subtitle": "Rejoignez des milliers d’utilisateurs qui discutent avec de vraies personnes, échangent sur leurs centres d’intérêt et créent des liens."
       }
     },
     "categories": {
@@ -305,6 +322,38 @@
           "twitterDescription1": "Apprenez-en plus sur ",
           "twitterDescription2": " dans notre dernier contenu lié au chat. Articles mis à jour de perspectives réelles et IA."
         }
+      },
+      "chatting": {
+        "heading": "Discussion",
+        "subtitle": "Conseils et idées pour des conversations captivantes."
+      },
+      "getting-started": {
+        "heading": "Prêt à commencer ?",
+        "subtitle": "Conseils et idées pour des conversations captivantes."
+      },
+      "making-friends-online": {
+        "heading": "Faisons-nous des amis en ligne, en toute sécurité.",
+        "subtitle": "Conseils et idées pour des conversations captivantes."
+      },
+      "miscellaneous": {
+        "heading": "Différents articles que nous trouvons intéressants.",
+        "subtitle": "Articles variés et un peu aléatoires."
+      },
+      "news": {
+        "heading": "Parfois, l’actualité est pertinente.",
+        "subtitle": "Mettons-la sur la table."
+      },
+      "online-safety": {
+        "heading": "Restez en sécurité en ligne.",
+        "subtitle": "Des ressources que vous apprécierez, espérons-le."
+      },
+      "profile-page": {
+        "heading": "Tout ce qu’il faut savoir sur les profils.",
+        "subtitle": "Configurer le vôtre est essentiel."
+      },
+      "tips": {
+        "heading": "Quelques conseils pour bien démarrer.",
+        "subtitle": "Il y a beaucoup de bons conseils à découvrir."
       }
     },
     "tags": {
@@ -323,6 +372,38 @@
           "twitterDescription": "Parcourez les tags tendance sur ImChatty pour découvrir des contenus organisés par sujet, pertinence et intérêt partagé.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
+      },
+      "imchatty": {
+        "heading": "Découvrez la collection ImChatty",
+        "subtitle": "ImChatty est là pour vous aider à naviguer dans ce monde."
+      },
+      "news": {
+        "heading": "Découvrez les actualités",
+        "subtitle": "Certaines nouvelles ne peuvent pas être ignorées."
+      },
+      "friendship": {
+        "heading": "L’amitié en ligne, qu’est-ce que c’est ?",
+        "subtitle": "Soyez prudent, restez en sécurité, soyez malin."
+      },
+      "ai": {
+        "heading": "Tout tourne autour de l’IA...",
+        "subtitle": "Nous vivons déjà dans le futur."
+      },
+      "anonymous-chat": {
+        "heading": "Le chat anonyme, est-ce vraiment possible ?",
+        "subtitle": "Pourquoi se fatiguer, Big Brother nous observe."
+      },
+      "profile": {
+        "heading": "Créer un excellent profil",
+        "subtitle": "C’est peut-être bien la clé."
+      },
+      "communication": {
+        "heading": "Le secret, c’est la communication.",
+        "subtitle": "Que puis-je apprendre de vous ?"
+      },
+      "tips": {
+        "heading": "Quelques suggestions rapides.",
+        "subtitle": "Si cela vous intéresse."
       },
       "slug": {
         "no-articles": "Aucun article trouvé pour cette étiquette"
@@ -440,6 +521,8 @@
       },
       "index": {
         "title": "Profils Publics",
+        "heading": "Profils publics",
+        "subtitle": "Profils récents et populaires de vrais membres",
         "meta": {
           "title": "Plus de Profils",
           "description": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
@@ -590,7 +673,16 @@
       "report-user": "Signaler l'Utilisateur",
       "favorited": "vous a ajouté en favori !",
       "report-success": "Merci d'avoir signalé cet utilisateur. Nous examinerons le rapport et prendrons les mesures appropriées si nécessaire.",
-      "report-failure": "Il y a eu une erreur lors du signalement de cet utilisateur. Veuillez réessayer plus tard."
+      "report-failure": "Il y a eu une erreur lors du signalement de cet utilisateur. Veuillez réessayer plus tard.",
+      "unauthenticated-line1": "Veuillez accepter nos conditions.",
+      "unauthenticated-line2": "Non authentifié — accès limité.",
+      "authenticated-line1": "Bienvenue !",
+      "authenticated-line2": "Profitez-en.",
+      "onboarding-line1": "Juste quelques questions simples.",
+      "onboarding-line2": "Profitez-en. Merci de votre visite.",
+      "anon_authenticated-line1": "Bienvenue ! N'oubliez pas d'enregistrer un e-mail.",
+      "anon_authenticated-line2": "Profitez-en. Bonne discussion.",
+      "action-label": "Ouvrir les informations de consentement ou démarrer le chat"
     },
     "loginAi": {
       "titleText": "Créez Votre Profil Anonyme"
@@ -681,7 +773,17 @@
       "save": "Sauvegarder",
       "cancel": "Annuler",
       "edit-hint": "Ctrl+Entrée pour sauvegarder • Échap pour annuler",
-      "edited": "(modifié)"
+      "edited": "(modifié)",
+      "menu-dropdown": {
+        "report": "Signaler",
+        "signin": "Se connecter",
+        "delete": "Supprimer"
+      },
+      "composer": {
+        "placeholder": "Tapez votre message ici...",
+        "send": "Envoyer",
+        "sign-in": "Connectez-vous pour discuter"
+      }
     },
     "morefemale": {
       "title": "Plus de Profils Féminins",

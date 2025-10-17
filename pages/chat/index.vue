@@ -1,11 +1,20 @@
 <template>
-  <v-container fluid>
-    <HomeRow1 />
+  <v-container fluid class="d-flex flex-column h-100 min-h-0">
+    <!-- <HomeRow1 /> -->
+    
+        <PageHeader
+      :text="$t('pages.chat.index.heading')"
+      :subtitle="$t('pages.chat.index.subtitle')"
+    />
+    
     <LoadingContainer
       v-if="isLoading"
       :text="$t('components.loadingContainer.loading')"
     />
+
+
     <ChatLayout
+    class="flex-grow-1 min-h-0"
       v-else
       :user="authStore.user"
       :userProfile="authStore.userProfile"
@@ -13,6 +22,9 @@
     />
   </v-container>
 </template>
+
+
+
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore1";

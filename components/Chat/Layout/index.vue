@@ -1,256 +1,289 @@
 <template>
-  <!-- OUTER SHELL: fixed to viewport height -->
-  <v-container fluid>
-    <v-row no-gutters
-      ><v-col>
-        <ChatLayoutTabFilters v-model="tabFiltersModel" class="mb-1 ml-1"/>
-        <ChatLayoutFilterMenu
-          :userProfile="userProfile || null"
-          :disableToggle="shouldDisableToggle"
-          :authStatus="authStatus"
-          @filter-changed="updateFilters"
-        />
-      </v-col>
+  <!-- OUTER SHELL: fills v-main -->
 
-      <!-- <v-col v-if="userProfile"
+  <div class="d-flex flex-column h-100 min-h-0">
+    <v-container fluid class="d-flex flex-column h-100 min-h-0">
+      <v-row no-gutters class="min-h-0" style="flex: 0 0 auto"
+        ><v-col>
+          <ChatLayoutTabFilters v-model="tabFiltersModel" class="mb-1 ml-1" />
+          <ChatLayoutFilterMenu
+            :userProfile="userProfile || null"
+            :disableToggle="shouldDisableToggle"
+            :authStatus="authStatus"
+            @filter-changed="updateFilters"
+          />
+        </v-col>
+
+        <!-- <v-col v-if="userProfile"
         >{{ userProfile.displayname }} - {{ authStatus }}</v-col
       > -->
 
-      <v-col>
-        <ChatLayoutToggleAi
-          v-model="showAIUsers"
-          :disabled="shouldDisableToggle"
-      /></v-col>
+        <v-col>
+          <ChatLayoutToggleAi
+            v-model="showAIUsers"
+            :disabled="shouldDisableToggle"
+        /></v-col>
 
-      <!-- <v-col>
+        <!-- <v-col>
         <ChatLayoutTabFilters v-model="tabFiltersModel" />
       </v-col> -->
-    </v-row>
+      </v-row>
 
-    <!-- BODY: fills remaining height, overflow hidden so children manage scroll -->
-    <v-row class="flex-grow-1 overflow-hidden">
-      <!-- USERS COLUMN -->
-      <v-col cols="12" md="4" class="pa-2 d-flex flex-column overflow-hidden">
-        <template v-if="smAndDown">
-          <!-- <v-expansion-panels multiple class="flex-grow-1 overflow-hidden"> -->
+      <!-- BODY: fills remaining height, clips, children manage scroll -->
+      <v-row class="flex-grow-1 overflow-hidden min-h-0">
+        <!-- USERS COLUMN -->
+        <v-col
+          cols="12"
+          md="4"
+          class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+        >
+          <template v-if="smAndDown">
+            <!-- <v-expansion-panels multiple class="flex-grow-1 overflow-hidden"> -->
 
-          <v-expansion-panels
-            v-model="openPanels"
-            multiple
-            class="flex-grow-1 overflow-hidden"
-          >
-            <v-expansion-panel>
-              <!-- <v-expansion-panel-title class="bg-blue-lighten-5 py-1 px-2"> -->
-              <v-expansion-panel-title
-                hide-actions
-                class="bg-blue-lighten-5 py-1 px-2 d-flex justify-center position-relative"
-              >
-                <ChatLayoutHeader
-                  :currentUser="user"
-                  :selectedUser="chat.selectedUser"
-                />
-
-                <v-btn
-                  size="small"
-                  icon
-                  variant="text"
-                  class="header-chevron"
-                  :aria-label="openPanels.includes(0) ? 'Collapse' : 'Expand'"
-                  :aria-expanded="String(openPanels.includes(0))"
-                  @click.stop="togglePanel0"
+            <v-expansion-panels
+              v-model="openPanels"
+              multiple
+              class="flex-grow-1 overflow-hidden min-h-0"
+            >
+              <v-expansion-panel>
+                <!-- <v-expansion-panel-title class="bg-blue-lighten-5 py-1 px-2"> -->
+                <v-expansion-panel-title
+                  hide-actions
+                  class="bg-blue-lighten-5 py-1 px-2 d-flex justify-center position-relative"
                 >
-                  <v-icon
-                    :icon="
-                      openPanels.includes(0)
-                        ? 'mdi-chevron-up'
-                        : 'mdi-chevron-down'
-                    "
+                  <ChatLayoutHeader
+                    :currentUser="user"
+                    :selectedUser="chat.selectedUser"
                   />
-                </v-btn>
-              </v-expansion-panel-title>
-              <v-expansion-panel-text class="pa-0">
-                <!-- Scroll area -->
-                <div class="flex-grow-1 overflow-auto px-2 py-2 users-scroll">
-                  <ChatLayoutUsers
-                    v-if="
-                      tabVisibility.online ||
-                      tabVisibility.offline ||
-                      tabVisibility.active
-                    "
-                    :users="usersWithPresence"
-                    :pinnedId="IMCHATTY_ID"
-                    :activeChats="activeChats"
-                    :selectedUserId="selectedUserId"
-                    :showAIUsers="showAIUsers"
-                    :tab-visibility="tabVisibility"
-                    :isLoading="isLoading"
-                    @user-selected="selectUser"
-                  />
-                  <SettingsProfileCard
-                    v-if="userProfile && !smAndDown"
-                    :profile="userProfile"
-                    class="mt-2"
-                  />
-                </div>
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-          </v-expansion-panels>
-        </template>
 
-        <template v-else>
-          <!-- Scroll area on desktop -->
-          <div class="flex-grow-1 overflow-auto users-scroll">
-            <ChatLayoutUsers
-              v-if="
-                tabVisibility.online ||
-                tabVisibility.offline ||
-                tabVisibility.active
-              "
-              :users="usersWithPresence"
-              :activeChats="activeChats"
-              :pinnedId="IMCHATTY_ID"
-              :selectedUserId="selectedUserId"
-              :showAIUsers="showAIUsers"
-              :tab-visibility="tabVisibility"
-              :isLoading="isLoading"
-              @user-selected="selectUser"
+                  <v-btn
+                    size="small"
+                    icon
+                    variant="text"
+                    class="header-chevron"
+                    :aria-label="openPanels.includes(0) ? 'Collapse' : 'Expand'"
+                    :aria-expanded="String(openPanels.includes(0))"
+                    @click.stop="togglePanel0"
+                  >
+                    <v-icon
+                      :icon="
+                        openPanels.includes(0)
+                          ? 'mdi-chevron-up'
+                          : 'mdi-chevron-down'
+                      "
+                    />
+                  </v-btn>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text
+                  class="pa-0 d-flex flex-column min-h-0"
+                  style="flex: 1 1 auto"
+                >
+                  <!-- Scroll area -->
+                  <!-- Virtual scroller will scroll; parent just bounds -->
+                  <div
+                    class="flex-grow-1 overflow-hidden px-2 py-2"
+                    style="flex: 1 1 0"
+                  >
+                    <ChatLayoutUsers
+                      v-if="
+                        tabVisibility.online ||
+                        tabVisibility.offline ||
+                        tabVisibility.active
+                      "
+                      :users="usersWithPresence"
+                      :pinnedId="IMCHATTY_ID"
+                      :activeChats="activeChats"
+                      :selectedUserId="selectedUserId"
+                      :showAIUsers="showAIUsers"
+                      :tab-visibility="tabVisibility"
+                      :isLoading="isLoading"
+                      @user-selected="selectUser"
+                    />
+                    <SettingsProfileCard
+                      v-if="userProfile && !smAndDown"
+                      :profile="userProfile"
+                      class="mt-2"
+                    />
+                  </div>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+          </template>
+
+          <template v-else>
+            <!-- Scroll area on desktop -->
+            <!-- Virtual scroller inside handles scrolling -->
+            <div class="flex-grow-1 overflow-hidden" style="flex: 1 1 0">
+              <ChatLayoutUsers
+                v-if="
+                  tabVisibility.online ||
+                  tabVisibility.offline ||
+                  tabVisibility.active
+                "
+                :users="usersWithPresence"
+                :activeChats="activeChats"
+                :pinnedId="IMCHATTY_ID"
+                :selectedUserId="selectedUserId"
+                :showAIUsers="showAIUsers"
+                :tab-visibility="tabVisibility"
+                :isLoading="isLoading"
+                @user-selected="selectUser"
+              />
+            </div>
+          </template>
+        </v-col>
+
+        <!-- MESSAGES COLUMN -->
+        <v-col
+          cols="12"
+          md="8"
+          class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+        >
+          <!-- Optional sticky header inside messages column -->
+          <div class="messages-sticky-header" v-if="!smAndDown">
+            <ChatLayoutHeader
+              :currentUser="user"
+              :selectedUser="chat.selectedUser"
+              :profileLink="profileLink"
+              @open-profile="openProfileDialog"
             />
           </div>
-        </template>
-      </v-col>
 
-      <!-- MESSAGES COLUMN -->
-      <v-col cols="12" md="8" class="pa-2 d-flex flex-column overflow-hidden">
-        <!-- Optional sticky header inside messages column -->
-        <div class="messages-sticky-header" v-if="!smAndDown">
-          <ChatLayoutHeader
-            :currentUser="user"
-            :selectedUser="chat.selectedUser"
-            :profileLink="profileLink"
-            @open-profile="openProfileDialog"
+          <!-- Onboarding or Regular chat -->
+          <div
+            class="flex-grow-1 d-flex flex-column overflow-hidden min-h-0"
+            style="flex: 1 1 0"
+          >
+            <!-- {{ isPreAuth }} -->
+            <ChatLayoutOnboarding
+              v-if="isPreAuth"
+              ref="onbRef"
+              :key="'onb'"
+              :authStatus="auth.authStatus"
+              :canSend="canSend"
+              :isPreAuth="isPreAuth"
+              :isBotSelected="isBotSelected"
+              :consented="draftStore?.consented ?? false"
+              @send="onSend"
+              class="d-flex flex-column flex-grow-1 overflow-hidden"
+            />
+
+            <ChatLayoutRegular
+              v-else
+              ref="regRef"
+              :key="`reg-${auth.authStatus}`"
+              :authStatus="auth.authStatus"
+              :me-id="auth.user?.id"
+              :peer="chat.selectedUser"
+            />
+          </div>
+        </v-col>
+      </v-row>
+
+      <v-row class="min-h-0" style="flex: 0 0 auto">
+        <v-col
+          cols="12"
+          md="4"
+          class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+        >
+          <ChatLayoutConsentPanel
+            v-if="!smAndDown"
+            :auth-status="auth.authStatus"
+            @action="selectImChatty"
           />
-        </div>
 
-        <!-- Onboarding or Regular chat -->
-        <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-          <!-- {{ isPreAuth }} -->
-          <ChatLayoutOnboarding
-            v-if="isPreAuth"
-            ref="onbRef"
-            :key="'onb'"
-            :authStatus="auth.authStatus"
-            :canSend="canSend"
-            :isPreAuth="isPreAuth"
-            :isBotSelected="isBotSelected"
-            :consented="draftStore?.consented ?? false"
-            @send="onSend"
-            class="d-flex flex-column flex-grow-1 overflow-hidden"
-          />
-
-          <ChatLayoutRegular
-            v-else
-            ref="regRef"
-            :key="`reg-${auth.authStatus}`"
-            :authStatus="auth.authStatus"
-            :me-id="auth.user?.id"
-            :peer="chat.selectedUser"
-          />
-        </div>
-      </v-col>
-    </v-row>
-
-    <v-row>
-      <v-col cols="12" md="4" class="pa-2 d-flex flex-column overflow-hidden">
+          <!--         
         <v-card
           v-if="!smAndDown"
-          class="d-flex flex-column fill-height"
+          class="d-flex flex-column"
           color="grey-lighten-4"
           rounded="lg"
           flat
         >
-          <div class="ml-2 text-subtitle-2 font-weight-medium">
-            {{ headerText.line1 }}
+          <div class="ml-2 text-subtitle-2 font-weight-medium text-primary cursor-pointer text-decoration-underline" @click.prevent="selectImChatty">
+           {{ headerText.line1 }}
           </div>
-          <div class="ml-2 text-body-2 text-medium-emphasis">
+          <div class="ml-2 text-caption text-medium-emphasis">
             {{ headerText.line2 }}
           </div></v-card
+        > -->
+        </v-col>
+        <v-col
+          cols="12"
+          md="8"
+          class="pa-2 d-flex flex-column overflow-hidden min-h-0 chat-col"
         >
-      </v-col>
-      <v-col
-        cols="12"
-        md="8"
-        class="pa-2 d-flex flex-column overflow-hidden chat-col"
-      >
-        <ChatLayoutMessageComposer
-          v-model:draft="messageDraft"
-          :peer-id="peerId"
-          :me-id="meId"
-          :conversation-key="conversationKey"
-          class="w-100 mx-auto"
-          @send="onSend"
-        />
-      </v-col>
-    </v-row>
-  </v-container>
-
-  <!-- Profile modal unchanged -->
-  <v-dialog v-model="isProfileDialogOpen" max-width="640">
-    <v-card>
-      <v-card-title class="d-flex justify-space-between">
-        <span>{{ modalUser?.displayname }}, {{ modalUser?.age }}</span>
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          @click="isProfileDialogOpen = false"
-        />
-      </v-card-title>
-
-      <v-card-text>
-        <div class="d-flex">
-          <v-avatar
-            size="80"
-            :image="getAvatar(modalUser?.avatar_url, modalUser?.gender_id)"
-            class="mr-4"
+          <ChatLayoutMessageComposer
+            v-model:draft="messageDraft"
+            :peer-id="peerId"
+            :me-id="meId"
+            :conversation-key="conversationKey"
+            class="w-100 mx-auto"
+            @send="onSend"
           />
-          <div>
-            <div class="text-subtitle-1 mb-1">{{ modalUser?.tagline }}</div>
-            <div class="text-body-2">{{ modalUser?.bio }}</div>
-            <div class="text-caption mt-2">
-              {{ modalUser?.country }} {{ modalUser?.country_emoji }}
-              <span v-if="modalUser?.city">• {{ modalUser?.city }}</span>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <!-- Profile modal unchanged -->
+    <v-dialog v-model="isProfileDialogOpen" max-width="640">
+      <v-card>
+        <v-card-title class="d-flex justify-space-between">
+          <span>{{ modalUser?.displayname }}, {{ modalUser?.age }}</span>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="isProfileDialogOpen = false"
+          />
+        </v-card-title>
+
+        <v-card-text>
+          <div class="d-flex">
+            <v-avatar
+              size="80"
+              :image="getAvatar(modalUser?.avatar_url, modalUser?.gender_id)"
+              class="mr-4"
+            />
+            <div>
+              <div class="text-subtitle-1 mb-1">{{ modalUser?.tagline }}</div>
+              <div class="text-body-2">{{ modalUser?.bio }}</div>
+              <div class="text-caption mt-2">
+                {{ modalUser?.country }} {{ modalUser?.country_emoji }}
+                <span v-if="modalUser?.city">• {{ modalUser?.city }}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div
-          class="mt-4"
-          v-if="
-            Array.isArray(modalUser?.looking_for) &&
-            modalUser.looking_for.length
-          "
-        >
-          <v-chip
-            v-for="(tag, i) in modalUser.looking_for"
-            :key="i"
-            class="mr-1 mb-1"
-            size="small"
+          <div
+            class="mt-4"
+            v-if="
+              Array.isArray(modalUser?.looking_for) &&
+              modalUser.looking_for.length
+            "
           >
-            {{ tag }}
-          </v-chip>
-        </div>
-      </v-card-text>
+            <v-chip
+              v-for="(tag, i) in modalUser.looking_for"
+              :key="i"
+              class="mr-1 mb-1"
+              size="small"
+            >
+              {{ tag }}
+            </v-chip>
+          </div>
+        </v-card-text>
 
-      <v-card-actions>
-        <v-spacer />
-        <NuxtLink :to="profileLink" class="text-decoration-none">
-          <v-btn variant="outlined" size="small">View full profile</v-btn>
-        </NuxtLink>
-        <v-btn color="primary" :to="`/chat?userslug=${modalUser.slug}`"
-          >Message</v-btn
-        >
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        <v-card-actions>
+          <v-spacer />
+          <NuxtLink :to="profileLink" class="text-decoration-none">
+            <v-btn variant="outlined" size="small">View full profile</v-btn>
+          </NuxtLink>
+          <v-btn color="primary" :to="`/chat?userslug=${modalUser.slug}`"
+            >Message</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
 <script setup>
@@ -266,6 +299,7 @@ import { useDb } from "@/composables/useDB";
 import { useLocalePath } from "#imports";
 import { useAiQuota } from "~/composables/useAiQuota";
 import { useTabFilters } from "@/composables/useTabFilters";
+import { useI18n } from "vue-i18n";
 
 const auth = useAuthStore();
 const chat = useChatStore();
@@ -275,7 +309,7 @@ const draftStore = draft; // alias for template
 const presence2 = usePresenceStore2();
 
 const route = useRoute();
-const router = useRouter();
+const { t } = useI18n();
 
 const { smAndDown } = useDisplay();
 const { getClient, getActiveChats, insertMessage } = useDb();
@@ -382,61 +416,61 @@ const shouldDisableToggle = computed(() =>
   ["unauthenticated", "guest", "onboarding"].includes(auth.authStatus)
 );
 
-const headerText = computed(() => {
-  switch (auth.authStatus) {
-    case "unauthenticated":
-      return {
-        line1: "Please consent to our terms.",
-        line2: "unauthenticated",
-      };
+// const headerText = computed(() => {
+//   switch (auth.authStatus) {
+//     case "unauthenticated":
+//       return {
+//         line1: t("components.chatheader.unauthenticated-line1"),
+//         line2: t("components.chatheader.unauthenticated-line2"),
+//       };
 
-    case "guest":
-    case "onboarding":
-      return {
-        line1: "Welcome, " + draft.displayName + " you're almost there!",
-        line2: "guest",
-      };
+//     case "guest":
+//     case "onboarding":
+//       return {
+//         line1: "Welcome, " + draft.displayName + " you're almost there!",
+//         line2: "guest",
+//       };
 
-    case "anon_authenticated":
-      return {
-        line1:
-          draft.displayName ||
-          (auth.userProfile?.displayname
-            ? auth.userProfile.displayname +
-              " " +
-              (auth.userProfile.country_emoji || "")
-            : null) ||
-          "(anonymous user)",
-        line2:
-          draft.age ||
-          (auth.userProfile?.age
-            ? auth.userProfile.age + " " + (auth.userProfile.gender || "")
-            : null) ||
-          "(anonymous guest)",
-      };
+//     case "anon_authenticated":
+//       return {
+//         line1:
+//           draft.displayName ||
+//           (auth.userProfile?.displayname
+//             ? auth.userProfile.displayname +
+//               " " +
+//               (auth.userProfile.country_emoji || "")
+//             : null) ||
+//           "(anonymous user)",
+//         line2:
+//           draft.age ||
+//           (auth.userProfile?.age
+//             ? auth.userProfile.age + " " + (auth.userProfile.gender || "")
+//             : null) ||
+//           "(anonymous guest)",
+//       };
 
-    case "authenticated":
-      return {
-        line1:
-          draft.displayName ||
-          (auth.userProfile?.displayname
-            ? auth.userProfile.displayname +
-              " " +
-              (auth.userProfile.country_emoji || "")
-            : null) ||
-          "(anonymous user)",
-        line2:
-          draft.age ||
-          (auth.userProfile?.age
-            ? auth.userProfile.age + " " + (auth.userProfile.gender || "")
-            : null) ||
-          "(authenticated user)",
-      };
+//     case "authenticated":
+//       return {
+//         line1:
+//           draft.displayName ||
+//           (auth.userProfile?.displayname
+//             ? auth.userProfile.displayname +
+//               " " +
+//               (auth.userProfile.country_emoji || "")
+//             : null) ||
+//           "(anonymous user)",
+//         line2:
+//           draft.age ||
+//           (auth.userProfile?.age
+//             ? auth.userProfile.age + " " + (auth.userProfile.gender || "")
+//             : null) ||
+//           "(authenticated user)",
+//       };
 
-    default:
-      return { line1: "", line2: "" };
-  }
-});
+//     default:
+//       return { line1: "", line2: "" };
+//   }
+// });
 
 // ———————————————————————————————————————————
 // Props
@@ -592,6 +626,20 @@ const usersWithPresence = computed(() => {
 
 function selectUser(u) {
   chat.setSelectedUser(u);
+}
+
+const pendingSelectImChatty = ref(false);
+
+function selectImChatty() {
+  // reuse your existing finder
+  const target = findUserByIdOrSlug({ id: IMCHATTY_ID, slug: "imchatty" });
+  if (target) {
+    chat.setSelectedUser(target);
+    pendingSelectImChatty.value = false;
+  } else {
+    // users not loaded yet → try again when they appear
+    pendingSelectImChatty.value = true;
+  }
 }
 
 // ---- Profiles realtime so new profiles appear without reload
@@ -881,11 +929,6 @@ async function fetchAiResponse(
 </script>
 
 <style scoped>
-/* Fix outer height to viewport; 100dvh is mobile-friendly */
-.chat-shell {
-  height: 100dvh; /* or calc(100dvh - var(--app-toolbar-height)) if you have a fixed app bar */
-}
-
 /* Keep the messages header visible while content scrolls */
 .messages-sticky-header {
   position: sticky;

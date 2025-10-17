@@ -1,5 +1,4 @@
 import { ref } from "vue";
-// import { useSupabaseClient, useRuntimeConfig } from "#imports";
 
 import { useDb } from "@/composables/useDB"; 
 const {

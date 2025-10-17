@@ -31,52 +31,64 @@
 </template>
 
 <script setup>
+const isLoading = ref(true)
+const tab = ref('registered')
+const profiles = ref([])     // will always be an array after load
+const aiProfiles = ref([])
+const search = ref('')
 
-const isLoading = ref(true);
-const tab = ref('registered');
-const profiles = ref([]);
-const aiProfiles = ref([]);
-const search = ref("");
+const { getAllProfiles } = useDb()
 
-const { getAllProfiles } = useDb();
+// tiny helper to coerce “maybe array” -> array
+const toArray = (val) => {
+  if (Array.isArray(val)) return val
+  if (val && Array.isArray(val.data)) return val.data
+  if (val && Array.isArray(val.items)) return val.items
+  return []
+}
 
-onMounted(async () =>
-{
-	profiles.value = await getAllProfiles(false);
-	aiProfiles.value = await getAllProfiles(true);
-	isLoading.value = false;
-});
+onMounted(async () => {
+  try {
+    const [regRaw, aiRaw] = await Promise.all([
+      getAllProfiles(false),
+      getAllProfiles(true)
+    ])
+    profiles.value = toArray(regRaw)
+    aiProfiles.value = toArray(aiRaw)
+  } catch (e) {
+    console.error('[admin] getAllProfiles failed:', e)
+    profiles.value = []
+    aiProfiles.value = []
+  } finally {
+    isLoading.value = false
+  }
+})
+
+const normSearch = computed(() => (search.value || '').toLowerCase())
 
 const filteredRegistered = computed(() =>
-	profiles.value.filter(
-		p => p.provider !== "anonymous" &&
-			(!search.value || p.displayname.toLowerCase().includes(search.value.toLowerCase()))
-	)
-);
+  profiles.value.filter(p =>
+    // tolerate missing fields
+    (p?.provider !== 'anonymous') &&
+    (!normSearch.value || (p?.displayname || '').toLowerCase().includes(normSearch.value))
+  )
+)
 
 const filteredAI = computed(() =>
-	aiProfiles.value.filter(
-		p => !search.value || p.displayname.toLowerCase().includes(search.value.toLowerCase())
-	)
-);
+  aiProfiles.value.filter(p =>
+    !normSearch.value || (p?.displayname || '').toLowerCase().includes(normSearch.value)
+  )
+)
 
 async function handleUserDeleted(userId) {
-	try {
-		profiles.value = profiles.value.map(profile =>
-		{
-			if (profile.user_id === userId)
-			{
-				// Mark as deleted (example: update local deletion styles)
-				return {
-					...profile,
-					marked_for_deletion_at: new Date().toISOString()
-				};
-			}
-			return profile;
-		});
-	} catch (error) {
-		console.error("Error marking user for deletion:", error);
-	} 
-	
+  try {
+    profiles.value = profiles.value.map(p =>
+      p?.user_id === userId
+        ? { ...p, marked_for_deletion_at: new Date().toISOString() }
+        : p
+    )
+  } catch (error) {
+    console.error('Error marking user for deletion:', error)
+  }
 }
 </script>

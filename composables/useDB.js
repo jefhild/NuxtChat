@@ -1,40 +1,37 @@
 import { v4 as uuidv4 } from "uuid";
-
-// let _sbSingleton;
+import { createClient } from "@supabase/supabase-js";
 
 export const useDb = () => {
-  // if (!_sbSingleton) _sbSingleton = useSupabaseClient();
-
-
-
   /*---------------*/
   /* Get functions */
   /*---------------*/
 
-  // const getClient = () => _sbSingleton;
-
   const getClient = () => useSupabaseClient();
-  
-  // const config = useRuntimeConfig();
 
 
-   const getConfig = () => {
-     // tolerate being called very early; return minimal shape if no app
-     try {
-       // will throw if no active nuxt instance
-       return useRuntimeConfig();
-     } catch {
-       return { public: {} };
-     }
-   };
+  // 👇 Accept `event` explicitly so it works server-side
+ // Build a server client from explicit params (no Nuxt APIs here)
+ const getServerClientFrom = (url, serviceKey) => {
+   if (!url || !serviceKey) {
+     throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+   }
+   return createClient(url, serviceKey, { auth: { persistSession: false } })
+ }
 
-
+  const getConfig = () => {
+    // tolerate being called very early; return minimal shape if no app
+    try {
+      // will throw if no active nuxt instance
+      return useRuntimeConfig();
+    } catch {
+      return { public: {} };
+    }
+  };
 
   let inactivityCheckInterval = null;
   let _messagesChan = null;
   let _messagesFor = null; // if you track which user it's wired for
   let _messagesInflight = null;
-
 
   const getCountryByIsoCode = async (isoCode) => {
     const supabase = getClient();
@@ -990,6 +987,52 @@ export const useDb = () => {
 
     return data;
   };
+
+  // const getThreadIdByArticleId = async (articleId) => {
+  //   const supabase = getClient();
+
+  //   const { data, error } = await supabase
+  //     .from("threads")
+  //     .select("id")
+  //     .eq("kind", "article")
+  //     .eq("article_id", articleId)
+  //     .limit(1)
+  //     .maybeSingle(); // optional convenience helper if using supabase-js >= 2.0
+
+  //   if (error) {
+  //     console.error("Error fetching thread id:", error);
+  //     return null;
+  //   }
+
+  //   return data?.id || null;
+  // };
+
+
+  // New: returns slug when available (preferred), otherwise falls back to id.
+  const getThreadKeyByArticleId = async (articleId) => {
+    const supabase = getClient()
+    const { data, error } = await supabase
+      .from("threads")
+      .select("slug, id")
+      .eq("kind", "article")
+      .eq("article_id", articleId)
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      console.error("Error fetching thread key:", error)
+      return null
+    }
+    return data?.slug || data?.id || null
+  }
+
+  // (Optional) Keep a shim for old callers during migration.
+  const getThreadIdByArticleId = async (articleId) => {
+    const key = await getThreadKeyByArticleId(articleId)
+    return key // may be slug or id depending on data
+  }
+
+  
 
   const getCountArticleByTag = async (tagId) => {
     const supabase = getClient();
@@ -2244,7 +2287,7 @@ export const useDb = () => {
 
   const signInWithOtp = async (email) => {
     const supabase = getClient();
-const config = getConfig();
+    const config = getConfig();
     const { error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
@@ -2400,130 +2443,130 @@ const config = getConfig();
     return `${base}-${Date.now().toString(36)}`;
   };
 
-const subscribeToMessages = async (
-  me,
-  { onInsert, onUpdate, onDelete } = {}
-) => {
-  const supabase = getClient();
-  const meId = String(me);
+  const subscribeToMessages = async (
+    me,
+    { onInsert, onUpdate, onDelete } = {}
+  ) => {
+    const supabase = getClient();
+    const meId = String(me);
 
-  // If already wired for this user, just return the existing unsubscribe
-  if (_messagesChan && _messagesFor === meId) {
-    return async () => {
-      const ch = _messagesChan;
-      _messagesChan = null;
-      _messagesFor = null;
-      _messagesInflight = null;
-      try {
-        await ch.unsubscribe?.();
-      } catch {}
-      try {
-        await supabase.removeChannel?.(ch);
-      } catch {}
-    };
-  }
-
-  // If a subscribe is already in-flight for this user, await and return its unsubscribe
-  if (_messagesInflight && _messagesFor === meId) {
-    return _messagesInflight;
-  }
-
-  // Clean previous if it's for a different user
-  if (_messagesChan) {
-    try {
-      await _messagesChan.unsubscribe?.();
-    } catch {}
-    try {
-      await supabase.removeChannel?.(_messagesChan);
-    } catch {}
-    _messagesChan = null;
-    _messagesFor = null;
-    _messagesInflight = null;
-  }
-
-  const mkChannel = (name, opts) =>
-    typeof supabase.channel === "function"
-      ? supabase.channel(name, opts)
-      : supabase.realtime.channel(name, opts);
-
-  const ch = mkChannel(`messages-${meId}`); 
-
-  // Handlers (keep separate INSERT/UPDATE/DELETE or switch to '*' if you prefer)
-  ch.on(
-    "postgres_changes",
-    {
-      event: "INSERT",
-      schema: "public",
-      table: "messages",
-      filter: `receiver_id=eq.${meId}`,
-    },
-    (payload) => onInsert?.(payload.new)
-  );
-  ch.on(
-    "postgres_changes",
-    {
-      event: "UPDATE",
-      schema: "public",
-      table: "messages",
-      filter: `receiver_id=eq.${meId}`,
-    },
-    (payload) => onUpdate?.(payload)
-  );
-  ch.on(
-    "postgres_changes",
-    {
-      event: "DELETE",
-      schema: "public",
-      table: "messages",
-      filter: `receiver_id=eq.${meId}`,
-    },
-    (payload) => onDelete?.(payload.old)
-  );
-
-  // Subscribe exactly once
-  if (ch.__didSubscribe) {
-    // Shouldn’t happen; be graceful.
-  } else {
-    ch.__didSubscribe = true;
-  }
-
-  // Single-flight promise for callers
-  _messagesFor = meId;
-  _messagesInflight = (async () => {
-    await new Promise((resolve, reject) => {
-      ch.subscribe((status) => {
-        // (Optional) comment this out to stop console spam
-        // console.log("[rt][messages][status]", status);
-
-        if (status === "SUBSCRIBED") resolve();
-        else if (status === "CHANNEL_ERROR" || status === "CLOSED") {
-          // Let caller decide to resubscribe later; don't recurse here
-          // Resolve anyway to keep API simple; your UI can observe it via onUpdate/onInsert not firing.
-          resolve();
-        }
-      });
-    });
-
-    _messagesChan = ch;
-
-    // Return a stable unsubscribe function
-    return async () => {
-      if (_messagesChan === ch) {
+    // If already wired for this user, just return the existing unsubscribe
+    if (_messagesChan && _messagesFor === meId) {
+      return async () => {
+        const ch = _messagesChan;
         _messagesChan = null;
         _messagesFor = null;
         _messagesInflight = null;
-      }
-      try {
-        await ch.unsubscribe?.();
-      } catch {}
-      try {
-        await supabase.removeChannel?.(ch);
-      } catch {}
-    };
-  })();
+        try {
+          await ch.unsubscribe?.();
+        } catch {}
+        try {
+          await supabase.removeChannel?.(ch);
+        } catch {}
+      };
+    }
 
-  return _messagesInflight;
-};
+    // If a subscribe is already in-flight for this user, await and return its unsubscribe
+    if (_messagesInflight && _messagesFor === meId) {
+      return _messagesInflight;
+    }
+
+    // Clean previous if it's for a different user
+    if (_messagesChan) {
+      try {
+        await _messagesChan.unsubscribe?.();
+      } catch {}
+      try {
+        await supabase.removeChannel?.(_messagesChan);
+      } catch {}
+      _messagesChan = null;
+      _messagesFor = null;
+      _messagesInflight = null;
+    }
+
+    const mkChannel = (name, opts) =>
+      typeof supabase.channel === "function"
+        ? supabase.channel(name, opts)
+        : supabase.realtime.channel(name, opts);
+
+    const ch = mkChannel(`messages-${meId}`);
+
+    // Handlers (keep separate INSERT/UPDATE/DELETE or switch to '*' if you prefer)
+    ch.on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `receiver_id=eq.${meId}`,
+      },
+      (payload) => onInsert?.(payload.new)
+    );
+    ch.on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "messages",
+        filter: `receiver_id=eq.${meId}`,
+      },
+      (payload) => onUpdate?.(payload)
+    );
+    ch.on(
+      "postgres_changes",
+      {
+        event: "DELETE",
+        schema: "public",
+        table: "messages",
+        filter: `receiver_id=eq.${meId}`,
+      },
+      (payload) => onDelete?.(payload.old)
+    );
+
+    // Subscribe exactly once
+    if (ch.__didSubscribe) {
+      // Shouldn’t happen; be graceful.
+    } else {
+      ch.__didSubscribe = true;
+    }
+
+    // Single-flight promise for callers
+    _messagesFor = meId;
+    _messagesInflight = (async () => {
+      await new Promise((resolve, reject) => {
+        ch.subscribe((status) => {
+          // (Optional) comment this out to stop console spam
+          // console.log("[rt][messages][status]", status);
+
+          if (status === "SUBSCRIBED") resolve();
+          else if (status === "CHANNEL_ERROR" || status === "CLOSED") {
+            // Let caller decide to resubscribe later; don't recurse here
+            // Resolve anyway to keep API simple; your UI can observe it via onUpdate/onInsert not firing.
+            resolve();
+          }
+        });
+      });
+
+      _messagesChan = ch;
+
+      // Return a stable unsubscribe function
+      return async () => {
+        if (_messagesChan === ch) {
+          _messagesChan = null;
+          _messagesFor = null;
+          _messagesInflight = null;
+        }
+        try {
+          await ch.unsubscribe?.();
+        } catch {}
+        try {
+          await supabase.removeChannel?.(ch);
+        } catch {}
+      };
+    })();
+
+    return _messagesInflight;
+  };
 
   const unsubscribeMessages = async () => {
     const ch = _messagesChan;
@@ -2584,6 +2627,7 @@ const subscribeToMessages = async (
 
   return {
     getClient,
+    getServerClientFrom,
     getCountryByIsoCode,
     getCountries,
     getStateByCodeAndCountry,
@@ -2643,6 +2687,8 @@ const subscribeToMessages = async (
     getAllArticlesWithTags,
     getAllPublishedArticlesWithTags,
     getArticleBySlug,
+    getThreadIdByArticleId,
+    getThreadKeyByArticleId,
     getCountArticleByTag,
     getCountArticleByCategory,
     getArticlesByTagSlug,

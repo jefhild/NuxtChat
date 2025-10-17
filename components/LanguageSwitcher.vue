@@ -1,6 +1,7 @@
 <template>
   <div class="language-switcher">
-    <select v-model="currentLocale" @change="switchLanguage" :style="{ backgroundImage: `url('${selectedFlag}')` }">
+    <!-- <select v-model="currentLocale" @change="switchLanguage" :style="{ backgroundImage: `url('${selectedFlag}')` }"> -->
+          <select v-model="currentLocale" :style="{ backgroundImage: `url('${selectedFlag}')` }">
       <option v-for="locale in localesWithFlags" :key="locale.code" :value="locale.code">
         {{ locale.label }}
       </option>
@@ -43,6 +44,17 @@ const localesWithFlags = rawLocales.map((code) => ({
 const switchLanguage = () => {
   setLocale(currentLocale.value);
 };
+
+// Watch the model and call setLocale with the STRING code (not the Event)
+watch(currentLocale, async (val, old) => {
+  if (!val || val === old) return
+  try {
+    await setLocale(val) // This navigates to the localized route
+  } catch (e) {
+    console.warn('[i18n] setLocale failed:', e)
+  }
+})
+
 </script>
 
 <style scoped>

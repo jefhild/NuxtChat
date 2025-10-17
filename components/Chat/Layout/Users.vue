@@ -22,6 +22,7 @@
           <v-skeleton-loader type="list-item@6" class="pa-2" />
         </template>
         <template v-else>
+          <div class="vs-host d-flex flex-column flex-grow-1 min-h-0">
           <div
             v-if="!onlineUsers.length"
             class="pa-3 text-body-2 text-medium-emphasis"
@@ -33,10 +34,11 @@
             :key="presenceVersion"
             :users="onlineUsers"
             :selectedUserId="selectedUserId"
-            :height="420"
+            :height="vsHeight"
             :unread-by-peer="msgs.unreadByPeer"
             @user-selected="$emit('user-selected', $event)"
           />
+          </div>
         </template>
       </v-window-item>
 
@@ -46,6 +48,7 @@
           <v-skeleton-loader type="list-item@6" class="pa-2" />
         </template>
         <template v-else>
+          <div class="vs-host d-flex flex-column flex-grow-1 min-h-0">
           <div
             v-if="!offlineUsers.length"
             class="pa-3 text-body-2 text-medium-emphasis"
@@ -57,10 +60,11 @@
             :key="presenceVersion"
             :users="offlineUsers"
             :selectedUserId="selectedUserId"
-            :height="420"
+            :height="vsHeight"
             :unread-by-peer="msgs.unreadByPeer"
             @user-selected="$emit('user-selected', $event)"
           />
+          </div>
         </template>
       </v-window-item>
 
@@ -70,6 +74,7 @@
           <v-skeleton-loader type="list-item@6" class="pa-2" />
         </template>
         <template v-else>
+          <div class="vs-host d-flex flex-column flex-grow-1 min-h-0">
           <div
             v-if="!activeUsers.length"
             class="pa-3 text-body-2 text-medium-emphasis"
@@ -81,10 +86,11 @@
             :key="presenceVersion"
             :users="activeUsers"
             :selectedUserId="selectedUserId"
-            :height="420"
+            :height="vsHeight"
             :unread-by-peer="msgs.unreadByPeer"
             @user-selected="$emit('user-selected', $event)"
           />
+          </div>
         </template>
       </v-window-item>
     </v-window>
@@ -151,6 +157,52 @@ const visibleValues = computed(() => {
   if (props.tabVisibility.active) out.push(2);
   return out;
 });
+
+const vsHeight = ref(420) // default fallback
+
+const measureVSHeight = () => {
+  const el = document.querySelector(".v-window-item.v-window-item--active .vs-host")
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  const avail = Math.floor(window.innerHeight - rect.top)
+  vsHeight.value = Math.max(200, avail)
+  // console.log("[users:measure]", { avail, vsHeight: vsHeight.value })
+}
+
+onMounted(() => {
+  measureVSHeight()
+  window.addEventListener("resize", measureVSHeight)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", measureVSHeight)
+})
+
+// const logVSHeight = (src = 'log') => {
+//   const el = document.querySelector('.v-window-item.v-window-item--active .vs-host')
+//   if (!el) {
+//     console.warn('[users]', src, 'active vs-host not found')
+//     return
+//   }
+//   const rect = el.getBoundingClientRect()
+//   const avail = Math.floor(window.innerHeight - rect.top)
+//   console.log(`[users:${src}]`, {
+//     top: Math.round(rect.top),
+//     clientHeight: el.clientHeight,
+//     scrollHeight: el.scrollHeight,
+//     availPxFromViewportBottom: avail
+//   })
+// }
+
+// onMounted(() => {
+//   requestAnimationFrame(() => logVSHeight('mounted'))
+//   window.addEventListener('resize', () => logVSHeight('resize'))
+// })
+
+
+// watch(() => tab.value, () => {
+//   // when switching tabs, let DOM apply display changes before measuring
+//   requestAnimationFrame(() => logVSHeight('tab'))
+// })
 
 watch(
   [visibleValues, tab],

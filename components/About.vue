@@ -1,10 +1,10 @@
 <template>
   <v-container>
-    <v-row>
+    <!-- <v-row>
       <v-col>
         <h1>{{ $t("pages.about.page.title-text") }}</h1>
       </v-col>
-    </v-row>
+    </v-row> -->
 
     <v-row>
       <v-col>

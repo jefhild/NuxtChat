@@ -52,6 +52,8 @@
       }
     },
     "about": {
+      "heading": "About Us",
+      "subtitle": "Learn more about ImChatty — a unique platform for anonymous chatting with real users or AI.",
       "meta": {
         "title": "About ImChatty – Real & AI Chat Platform",
         "description": "Learn more about ImChatty — a unique platform where you can chat anonymously with real people or AI companions. Discover our mission, our team, and how we’re creating a safer, more engaging online space for chatting.",
@@ -257,7 +259,8 @@
     "articles": {
       "index": {
         "loading": "Loading articles...",
-        "explore": "Explore Our Articles",
+        "heading": "Explore Our Articles",
+        "subtitle": "Chat with others, share experiences, and discover new perspectives.",
         "categories": "Categories",
         "tags": "Tags",
         "search": "Search Articles...",
@@ -275,6 +278,20 @@
           "twitterCard": "summary_large_image",
           "twitterImage": "https://imchatty.com/images/robot.png"
         }
+      },
+      "categories": {
+        "heading": "Explore A Category",
+        "subtitle": "Pick a topic, share experiences, and discover new perspectives."
+      },
+      "tags": {
+        "heading": "Explore A Tag",
+        "subtitle": "Pick a topic, share experiences, and discover new perspectives."
+      }
+    },
+    "chat": {
+      "index": {
+        "heading": "Chat 1 on 1 with Real People",
+        "subtitle": "Join thousands of users chatting with real people, discussing interests, and making connections."
       }
     },
     "categories": {
@@ -294,6 +311,38 @@
           "twitterDescription": "Check out our most popular categories! Browse top-rated members with real information, personalized details, and genuine interests.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
+      },
+      "chatting": {
+        "heading": "Chatting",
+        "subtitle": "Tips and insights for engaging conversations."
+      },
+      "getting-started": {
+        "heading": "Ready to Get Started?",
+        "subtitle": "Tips and insights for engaging conversations."
+      },
+      "making-friends-online": {
+        "heading": "Lets make friends online, safely.",
+        "subtitle": "Tips and insights for engaging conversations."
+      },
+      "miscellaneous": {
+        "heading": "Different articles we find interesting.",
+        "subtitle": "Slightly random miscellaneous articles."
+      },
+      "news": {
+        "heading": "Sometimes current events are relevant.",
+        "subtitle": "Lets throw it out there."
+      },
+      "online-safety": {
+        "heading": "Stay safe online.",
+        "subtitle": "Hopefully, resources you'll appreciate."
+      },
+      "profile-page": {
+        "heading": "Everything you need to know about profiles.",
+        "subtitle": "Setting up yours is key."
+      },
+      "tips": {
+        "heading": "A few tips to get you going.",
+        "subtitle": "Lots of advice out there."
       },
       "slug": {
         "no-articles": "No articles found for this category",
@@ -324,6 +373,38 @@
           "twitterDescription": "Browse trending tags on ImChatty to discover articles and discussions sorted by relevance, topic, and shared interest.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
+      },
+      "imchatty": {
+        "heading": "Explore the ImChatty Collection",
+        "subtitle": "Imchatty is here to help navigate this world."
+      },
+      "news": {
+        "heading": "Check out the News",
+        "subtitle": "Some news we can't ignore."
+      },
+      "friendship": {
+        "heading": "Online friendship, what's that?",
+        "subtitle": "Be careful, be safe, be smart."
+      },
+      "ai": {
+        "heading": "It's all about AI...",
+        "subtitle": "We're living in the future."
+      },
+      "anonymous-chat": {
+        "heading": "Is there such a thing as anonymous chat?",
+        "subtitle": "Why bother, big brother is watching."
+      },
+      "profile": {
+        "heading": "Setting up a great profile",
+        "subtitle": "That might just be the key."
+      },
+      "communication": {
+        "heading": "This is the secret, communication.",
+        "subtitle": "What can I learn from you?"
+      },
+      "tips": {
+        "heading": "Some quick suggestions.",
+        "subtitle": "If you're interested."
       },
       "slug": {
         "no-articles": "No articles found for this tag"
@@ -441,6 +522,8 @@
       },
       "index": {
         "title": "Public Profiles",
+        "heading": "Public Profiles",
+        "subtitle": "Recent and popular profiles from real members",
         "meta": {
           "title": "More Profiles",
           "description": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
@@ -591,7 +674,16 @@
       "report-user": "Report User",
       "favorited": "favorited you!",
       "report-success": "Thank you for reporting this user. We will review the report and take appropriate action if necessary.",
-      "report-failure": "There was an error reporting this user. Please try again later."
+      "report-failure": "There was an error reporting this user. Please try again later.",
+      "unauthenticated-line1": "Please consent to our terms.",
+      "unauthenticated-line2": "unauthenticated - limited.",
+      "authenticated-line1": "Welcome!",
+      "authenticated-line2": "Enjoy.",
+      "onboarding-line1": "Only a few simple questions.",
+      "onboarding-line2": "Enjoy. Thanks for stopping by.",
+      "anon_authenticated-line1": "Welcome! Don't forget to register an email.",
+      "anon_authenticated-line2": "Enjoy. Happy chatting.",
+      "action-label": "Open consent information or start chat"
     },
     "loginAi": {
       "titleText": "Create Your Anonymous Profile"
@@ -681,7 +773,17 @@
       "save": "Save",
       "cancel": "Cancel",
       "edit-hint": "Ctrl+Enter to save • Esc to cancel",
-      "edited": "(edited)"
+      "edited": "(edited)",
+      "menu-dropdown": {
+        "report": "Report",
+        "signin": "Sign in",
+        "delete": "Delete"
+      },
+      "composer": {
+        "placeholder": "Type your message here...",
+        "send": "Send",
+        "sign-in": "Sign in to chat"
+      }
     },
     "morefemale": {
       "title": "More Female Profiles",

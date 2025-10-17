@@ -24,7 +24,6 @@
 import { useAuthStore } from "@/stores/authStore1";
 
 const authStore = useAuthStore();
-const logoutDialog = ref(false);
 const isAuthenticated = computed(() => !!authStore.user);
 </script>
 
