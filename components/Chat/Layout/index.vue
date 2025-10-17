@@ -390,6 +390,15 @@ const togglePanel0 = () => {
       : openPanels.value.filter((n) => n !== 0);
 };
 
+const openPanels = ref([0]); // start open; use [] if you want it closed initially
+const togglePanel0 = () => {
+  const idx = openPanels.value.indexOf(0);
+  openPanels.value =
+    idx === -1
+      ? [...openPanels.value, 0]
+      : openPanels.value.filter((n) => n !== 0);
+};
+
 const selectedUserId = computed(
   () => chat.selectedUser?.user_id || chat.selectedUser?.id || null
 );
@@ -953,6 +962,13 @@ async function fetchAiResponse(
 
 .chat-col {
   max-width: 800px;
+}
+
+.header-chevron {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .header-chevron {
