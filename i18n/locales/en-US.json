@@ -11,9 +11,9 @@
         "heading_guest": "Chat Anonymously. Connect Instantly.",
         "heading_onboarding": "You're Almost Ready. Connect Instantly.",
         "heading_anon_authenticated": "Welcome Back. Register Now.",
-        "heading_authenticated": "Welcome Back. Enjoy!",
+        "heading_authenticated": "Chat Anonymously. Discuss Honestly.",
         "title-text": "Chat Anonymously. Connect Instantly.",
-        "title-text2": "AI friends, real people, log in anonymously.",
+        "title-text2": "AI friends, real people, log in for the full experience.",
         "start_chatting": "Start Chatting",
         "cta_button": "Start Chatting",
         "learn_more": "Learn More",
@@ -266,9 +266,9 @@
         "search": "Search Articles...",
         "no-articles": "No articles found for",
         "meta": {
-          "title": "ImChatty Blog – Tips, Updates & Community Stories",
+          "title": "ImChatty Blog – Tips, Updates & Community Discussions",
           "description": "Discover the latest tips, platform updates, and real community stories on the ImChatty Blog. Stay connected and informed.",
-          "ogTitle": "ImChatty Blog – Tips, Updates & Community Stories",
+          "ogTitle": "ImChatty Blog – Tips, Updates & Community Chats",
           "ogType": "Website",
           "ogUrl": "https://imchatty.com/articles",
           "ogDescription": "Explore helpful articles, platform news, and inspiring stories from the ImChatty community. Updated regularly with new insights.",
@@ -598,7 +598,7 @@
   "components": {
     "navbar": {
       "imchatty": "ImChatty",
-      "blog": "Blog",
+      "blog": "Articles",
       "chat": "Chat",
       "settings": "Settings",
       "logout": "Logout",

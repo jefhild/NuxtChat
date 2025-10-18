@@ -14,19 +14,11 @@
           />
         </v-col>
 
-        <!-- <v-col v-if="userProfile"
-        >{{ userProfile.displayname }} - {{ authStatus }}</v-col
-      > -->
-
         <v-col>
           <ChatLayoutToggleAi
             v-model="showAIUsers"
             :disabled="shouldDisableToggle"
         /></v-col>
-
-        <!-- <v-col>
-        <ChatLayoutTabFilters v-model="tabFiltersModel" />
-      </v-col> -->
       </v-row>
 
       <!-- BODY: fills remaining height, clips, children manage scroll -->
@@ -191,22 +183,6 @@
             :auth-status="auth.authStatus"
             @action="selectImChatty"
           />
-
-          <!--         
-        <v-card
-          v-if="!smAndDown"
-          class="d-flex flex-column"
-          color="grey-lighten-4"
-          rounded="lg"
-          flat
-        >
-          <div class="ml-2 text-subtitle-2 font-weight-medium text-primary cursor-pointer text-decoration-underline" @click.prevent="selectImChatty">
-           {{ headerText.line1 }}
-          </div>
-          <div class="ml-2 text-caption text-medium-emphasis">
-            {{ headerText.line2 }}
-          </div></v-card
-        > -->
         </v-col>
         <v-col
           cols="12"
@@ -380,8 +356,6 @@ const onlineIds = computed(() => {
     .filter((k) => !String(k).startsWith("observer:"))
     .map((k) => k.trim().toLowerCase());
 });
-
-
 
 const openPanels = ref([0]); // start open; use [] if you want it closed initially
 const togglePanel0 = () => {
@@ -907,5 +881,4 @@ async function fetchAiResponse(
   top: 50%;
   transform: translateY(-50%);
 }
-
 </style>

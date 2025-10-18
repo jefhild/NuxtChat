@@ -38,8 +38,7 @@
           :selected-slug="route.params?.slug || null"
           panels-class="compact-panel"
         />
-
-   </v-col>
+      </v-col>
 
       <!-- <v-col>
         <v-text-field

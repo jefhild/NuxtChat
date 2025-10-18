@@ -597,7 +597,7 @@
   "components": {
     "navbar": {
       "imchatty": "ImChatty",
-      "blog": "Blog",
+      "blog": "Articles",
       "chat": "Chat",
       "settings": "Paramètres",
       "logout": "Déconnexion",

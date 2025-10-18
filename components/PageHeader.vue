@@ -1,8 +1,15 @@
 <template>
-  <v-row justify="center" align="center" class="mb-4">
+  <v-row justify="center" align="center" class="mb-2">
     <v-col cols="12" class="text-center">
-      <h1 class="page-header-text">{{ text }}</h1>
-      <h2 v-if="subtitle" class="page-header-subtitle">{{ subtitle }}</h2>
+      <h1 class="text-h6 text-md-h5 page-header-text">
+        {{ text }}
+      </h1>
+      <h2
+        v-if="subtitle"
+        class="text-subtitle-1 text-md-h6 page-header-subtitle"
+      >
+        {{ subtitle }}
+      </h2>
     </v-col>
   </v-row>
 </template>
@@ -15,22 +22,22 @@ defineProps({
   },
   subtitle: {
     type: String,
-    default: '',
+    default: "",
   },
-})
+});
 </script>
 
 <style scoped>
 .page-header-text {
   font-family: "Poppins", sans-serif;
-  font-size: 1.2rem;
+  /* font-size: 1.2rem;*/
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  /* margin-bottom: 0.25rem; */
 }
 
 .page-header-subtitle {
   color: #666;
-  font-size: 1rem;
+  /* font-size: 1rem;*/
   font-weight: 400;
   margin-top: 0;
 }
