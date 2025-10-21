@@ -2,16 +2,14 @@
   <v-container fluid class="d-flex flex-column h-100 min-h-0">
     <v-row no-gutters class="min-h-0" style="flex: 0 0 auto">
       <v-col>
-     <PageHeader
-      :text="$t('pages.chat.articles.heading')"
-      :subtitle="$t('pages.chat.articles.subtitle')"
-    />
+        <PageHeader
+          :text="$t('pages.chat.articles.heading')"
+          :subtitle="$t('pages.chat.articles.subtitle')"
+        />
       </v-col>
     </v-row>
     <!-- <HomeRow1 /> -->
 
-
-    
     <v-row class="flex-grow-1 overflow-hidden min-h-0">
       <!-- LEFT: Topics -->
       <v-col
@@ -180,7 +178,9 @@
         prepend-icon="mdi-flag"
         @click="onReport"
       >
-        <v-list-item-title>{{ t('components.message.menu-dropdown.report') }}</v-list-item-title>
+        <v-list-item-title>{{
+          t("components.message.menu-dropdown.report")
+        }}</v-list-item-title>
       </v-list-item>
 
       <!-- Sign in when unauthenticated -->
@@ -189,7 +189,9 @@
         :to="{ path: '/signin', query: { redirect: route.fullPath } }"
         prepend-icon="mdi-login"
       >
-        <v-list-item-title>{{ t('components.message.menu-dropdown.signin') }}</v-list-item-title>
+        <v-list-item-title>{{
+          t("components.message.menu-dropdown.signin")
+        }}</v-list-item-title>
       </v-list-item>
 
       <!-- Delete only for my own message -->
@@ -198,7 +200,9 @@
         prepend-icon="mdi-delete"
         @click="onDelete"
       >
-        <v-list-item-title>{{ t('components.message.menu-dropdown.delete') }}</v-list-item-title>
+        <v-list-item-title>{{
+          t("components.message.menu-dropdown.delete")
+        }}</v-list-item-title>
       </v-list-item>
     </v-list>
   </v-menu>
@@ -215,7 +219,7 @@ const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const menu = reactive({
   open: false,
@@ -225,7 +229,43 @@ const menu = reactive({
 
 // const threadId = computed(() => String(route.params.threadId || ""));
 
-const slug = computed(() => String(route.params.slug || ""))
+const slug = computed(() => String(route.params.slug || ""));
+
+// If no slug: 302 on server (best for SEO/first paint), replace on client as fallback
+if (!slug.value) {
+  const ORDER = ["latest", "oldest", "pinned"].includes(
+    String(route.query.order || "").toLowerCase()
+  )
+    ? String(route.query.order).toLowerCase()
+    : "latest";
+
+  // SSR redirect (executes during the initial server render of /chat/articles)
+  if (import.meta.server) {
+    const list = await $fetch("/api/articles/threads", {
+      params: { order: ORDER, limit: 1 },
+    });
+    const first = Array.isArray(list) ? list[0] : list?.[0]; // adjust to your API shape
+    const firstSlug = first?.slug || null;
+    if (firstSlug) {
+      await navigateTo(`/chat/articles/${firstSlug}`, {
+        replace: true,
+        redirectCode: 302,
+      });
+    }
+  }
+
+  // Client fallback (e.g., user clicks a client-side link to /chat/articles)
+  if (import.meta.client) {
+    try {
+      const list = await $fetch("/api/articles/threads", {
+        params: { order: ORDER, limit: 1 },
+      });
+      const firstSlug = (Array.isArray(list) ? list[0] : list?.[0])?.slug;
+      if (firstSlug)
+        navigateTo(`/chat/articles/${firstSlug}`, { replace: true });
+    } catch {}
+  }
+}
 
 /* ---------- SSR-safe time formatters (unchanged) ---------- */
 const clockFmt = new Intl.DateTimeFormat("en-GB", {
@@ -264,7 +304,7 @@ const formatDateTime = (iso) => {
 const { data: topicsData, pending: loadingTopics } = await useAsyncData(
   "articles:topics",
   () => $fetch("/api/articles/threads")
-)
+);
 const topics = computed(() => topicsData.value || []);
 // const openThread = (id) => router.push(`/chat/articles/${id}`);
 const openThread = (s) => router.push(`/chat/articles/${s}`);
@@ -275,25 +315,20 @@ const {
   pending: loadingInit,
   error: initErr,
 } = await useAsyncData(
-
-
   () => `articles:thread:messages:${slug.value}`,
   async () => {
-    if (!slug.value) return { thread: null, items: [] }
-    return await $fetch(`/api/articles/threads/${slug.value}/messages?limit=50`)
+    if (!slug.value) return { thread: null, items: [] };
+    return await $fetch(
+      `/api/articles/threads/${slug.value}/messages?limit=50`
+    );
   },
   { watch: [() => slug.value] }
-
-
-
-
 );
 // const initialItems = computed(() => initial.value?.items ?? []);
 
-
-const threadMeta = computed(() => initial.value?.thread || null)
-const threadId = computed(() => threadMeta.value?.id || "")
-const initialItems = computed(() => initial.value?.items ?? [])
+const threadMeta = computed(() => initial.value?.thread || null);
+const threadId = computed(() => threadMeta.value?.id || "");
+const initialItems = computed(() => initial.value?.items ?? []);
 
 /* ---------- Realtime thread store ---------- */
 const {
@@ -353,7 +388,7 @@ function onReport() {
 
 async function onDelete() {
   if (!menu.id) return;
-  // TODO: confirm + call your delete endpoint
+  // TODO: confirm  call your delete endpoint
   // const ok = confirm('Delete this comment?')
   // if (!ok) return
   // await $fetch(`/api/comments/${menu.id}`, { method: 'DELETE' })
@@ -476,46 +511,41 @@ const onSend = async (text) => {
 /* expose for template filters/helpers if you need */
 defineExpose({ formatClock, formatDateTime, messagesForUI });
 
-// async function loadMessages() {
-//   loadingMsgs.value = true;
-//   try {
-//     // server route returns { items: [...] } with score/today/myVote merged
-//     const { items } = await $fetch(
-//       `/api/articles/threads/${threadId.value}/messages`
-//     );
-//     messages.value = items;
-//   } finally {
-//     loadingMsgs.value = false;
-//   }
-// }
-
 
 async function loadMessages() {
-  const s = slug.value
-  if (!s) return               // <-- guard: no slug, no call
-  loadingMsgs.value = true
+  const s = slug.value;
+  if (!s) return; // <-- guard: no slug, no call
+  loadingMsgs.value = true;
   try {
-    const { items } = await $fetch(`/api/articles/threads/${encodeURIComponent(s)}/messages`)
-    messages.value = items ?? []
+    const { items } = await $fetch(
+      `/api/articles/threads/${encodeURIComponent(s)}/messages`
+    );
+    messages.value = items ?? [];
   } finally {
-    loadingMsgs.value = false
+    loadingMsgs.value = false;
   }
 }
 
-
 onMounted(async () => {
-  // await nextTick();
-  // await loadMessages();
-  // Run once slug is known (works on client navs too)
-if (import.meta.client) {
-  watch(slug, (s) => { if (s) loadMessages() }, { immediate: true })
-}
+
+  if (import.meta.client) {
+    watch(
+      slug,
+      (s) => {
+        if (s) loadMessages();
+      },
+      { immediate: true }
+    );
+  }
 });
+
+// useSeoI18nMeta("chat.articles");
+
+
+
 </script>
 <style scoped>
-/* .users-scroll {
-  height: 100%;
-} */
+
 .messages-sticky-header {
   position: sticky;
   top: 0;
@@ -529,9 +559,4 @@ if (import.meta.client) {
   z-index: 2;
   background: rgb(var(--v-theme-surface));
 }
-/* .users-scroll {
-  overscroll-behavior: contain;
-} */
-
-/* .users-scroll::after { content: ""; display: block; height: 1500px; background: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,0,0,.06) 28px, rgba(0,0,0,.06) 29px); } */
 </style>

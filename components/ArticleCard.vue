@@ -117,7 +117,7 @@
         </v-chip>
       </v-card-actions>
 
-      <!-- Public “Discuss…” button (real link, separate from the title link) -->
+      <!-- Public “Discuss…” button (real link, separate from the title link)
       <v-card-actions class="pt-0 justify-center">
         <NuxtLink
           v-if="chatThreadId"
@@ -126,7 +126,7 @@
         >
           <v-btn variant="tonal" color="primary" size="small"> Discuss… </v-btn>
         </NuxtLink>
-      </v-card-actions>
+      </v-card-actions> -->
     </v-card>
   </v-col>
 </template>
@@ -192,9 +192,11 @@ const formatTagSlug = (tag) => {
 /* Tags */
 .tags-links {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  flex-wrap: wrap;       /* allow wrapping on smaller screens */
+  justify-content: center; /* horizontally center */
+  gap: 0.5rem;           /* space between tags */
+  text-align: center;    /* center text if lines wrap */
+  margin-top: 0.5rem;
 }
 .tag-link {
   font-size: 0.8rem;

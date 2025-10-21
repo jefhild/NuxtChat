@@ -53,6 +53,19 @@
                     </v-btn>
                   </v-col></v-row
                 >
+                <v-row no-gutters
+                  ><v-col>
+                    <v-btn
+                      class="text-blue"
+                      variant="plain"
+                      @click="switchModel('LoginDiscord')"
+                    >
+                      <h2 class="green--text-h2">
+                        {{ $t("components.home.main.discord") }}
+                      </h2>
+                    </v-btn>
+                  </v-col></v-row
+                >
               </v-card-text>
             </v-card>
           </v-col>

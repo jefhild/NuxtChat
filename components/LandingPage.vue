@@ -3,48 +3,52 @@
 
   <v-container v-else fluid class="pa-0">
     <!-- Hero Section -->
-     <div class="full-bleed">
-    <v-sheet class="hero w-100" height="100vh">
-      <v-img
-        src="/images/background.png"
-        cover
-        class="hero-img w-100"
-        :height="'80%'"
-        gradient="to bottom, rgba(0,0,0,.35), rgba(0,0,0,.65)"
-      >
-        <!-- Make *this* the flex container that fills the image area -->
-        <div class="fill-height w-100 d-flex align-center justify-center">
-          <!-- Constrain and center the content -->
-          <div class="hero-content text-center mx-auto">
-            <h1 class="text-h4 text-md-h2 font-weight-bold mb-4 text-white">
-              {{ getAuthHeading }}
-            </h1>
-            <p class="text-body-1 text-md-subtitle-1 mb-6 text-white">
-              {{ $t("pages.home.landing_page.title-text2") }}
-            </p>
+    <div class="full-bleed">
+      <v-sheet class="hero w-100" height="100vh">
+        <v-img
+          src="/images/background.png"
+          cover
+          class="hero-img w-100"
+          :height="'80%'"
+          gradient="to bottom, rgba(0,0,0,.35), rgba(0,0,0,.65)"
+        >
+          <!-- Make *this* the flex container that fills the image area -->
+          <div class="fill-height w-100 d-flex align-center justify-center">
+            <!-- Constrain and center the content -->
+            <div class="hero-content text-center mx-auto">
+              <h1 class="text-h4 text-md-h2 font-weight-bold mb-4 text-white">
+                {{ getAuthHeading }}
+              </h1>
+              <p class="text-body-1 text-md-subtitle-1 mb-6 text-white">
+                {{ $t("pages.home.landing_page.title-text2") }}
+              </p>
 
-            <div
-              class="d-flex flex-column flex-sm-row ga-2 justify-center align-center"
-            >
-              <v-btn color="primary" :to="localPath('/chat')" class="hero-btn">
-                {{ $t("pages.home.landing_page.cta_button") }}
-              </v-btn>
-              <v-btn
-                color="white"
-                variant="outlined"
-                @click="$router.push(localPath('/about'))"
-                class="hero-btn"
+              <div
+                class="d-flex flex-column flex-sm-row ga-2 justify-center align-center"
               >
-                {{ $t("pages.home.landing_page.learn_more") }}
-              </v-btn>
+                <v-btn
+                  color="primary"
+                  :to="localPath('/chat')"
+                  class="hero-btn"
+                >
+                  {{ $t("pages.home.landing_page.cta_button") }}
+                </v-btn>
+                <v-btn
+                  color="white"
+                  variant="outlined"
+                  @click="$router.push(localPath('/about'))"
+                  class="hero-btn"
+                >
+                  {{ $t("pages.home.landing_page.learn_more") }}
+                </v-btn>
+              </div>
             </div>
           </div>
-        </div>
-      </v-img>
-    </v-sheet>
-</div>
+        </v-img>
+      </v-sheet>
+    </div>
     <!-- CTA Section -->
-    <v-container class="text-center py-16 mt-8 cta">
+    <v-container class="text-center py-8 mt-4 cta">
       <v-chip color="primary" variant="tonal" class="mb-4">
         {{ $t("pages.home.landing_page.meet_people") }}
       </v-chip>
@@ -66,11 +70,7 @@
       </v-btn>
     </v-container>
 
-    <!-- AI and Article Sections -->
-    <v-container class="py-12 mt-8">
-      <HomeRecent :limit="4" />
-    </v-container>
-
+    <!-- Article Sections -->
     <v-container class="mt-10">
       <h2 class="text-h4 text-center font-weight-bold mb-8">
         {{ $t("pages.home.landing_page.check_articles") }}
@@ -96,6 +96,7 @@
     </v-container>
 
     <v-container class="py-12 mt-8">
+      <HomeRecent :limit="4" />
       <HomeAi :limit="4" />
       <HomeMale :limit="4" />
       <HomeFemale :limit="4" />

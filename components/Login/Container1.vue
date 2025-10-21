@@ -7,6 +7,7 @@ import LoginFacebook1 from "~/components/Login/Facebook1.vue";
 import LoginEmail from "~/components/Login/Email.vue";
 import LoginGoogle1 from "~/components/Login/Google1.vue";
 import LoginGitHub from "~/components/Login/GitHub.vue";
+import LoginDiscord from "~/components/Login/Discord.vue";
 
 const props = defineProps({
   selectedModel: {
@@ -29,6 +30,9 @@ const selectedModelComponent = computed(() => {
     case "LoginGitHub":
       console.log("[LoginContainer1] selectedModel is LoginGithub");
       return LoginGitHub;
+    case "LoginDiscord":
+      console.log("[LoginContainer1] selectedModel is LoginDiscord");
+      return LoginDiscord;
     default:
       return null;
   }
