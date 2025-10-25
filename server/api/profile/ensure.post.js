@@ -15,6 +15,7 @@ const pickIdentity = (user) => {
   const identity = Array.isArray(user?.identities)
     ? user.identities.find((i) => i.provider === provider)
     : null;
+
   return { provider, idData: (identity && identity.identity_data) || {} };
 };
 
@@ -55,6 +56,8 @@ export default defineEventHandler(async (event) => {
 
   // 4️⃣ Gather metadata for new profile
   const { provider, idData } = pickIdentity(user);
+    console.log("Picked identity:", { provider, idData });
+
   const { displayname, avatar_url } = extractDisplayAvatar(user, idData);
 
   const ip =
@@ -72,7 +75,7 @@ export default defineEventHandler(async (event) => {
     slug: baseSlug,
     avatar_url,
     username: null,
-    gender_id: null,
+    gender_id: 3,
     status_id: null,
     age: null,
     country_id: null,

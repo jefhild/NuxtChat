@@ -30,13 +30,23 @@
                 class="pa-2"
               />
               <template v-else>
-                <v-list-item
+                <!-- <v-list-item
                   v-for="t in topics"
                   :key="t.id"
                   :active="t.slug === slug"
                   class="cursor-pointer"
                   @click="openThread(t.slug)"
+                > -->
+
+                <v-list-item
+                  v-for="t in topics"
+                  :key="t.id"
+                  :active="t.slug === slug"
+                  class="cursor-pointer"
+                  :to="localePath(`/chat/articles/${t.slug}`)"
+                  link
                 >
+
                   <template #prepend>
                     <v-avatar size="28" v-if="t.botAvatarUrl"
                       ><v-img :src="t.botAvatarUrl"
@@ -218,6 +228,7 @@ import { useI18n } from "vue-i18n";
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+const localePath = useLocalePath()
 
 const { t } = useI18n();
 
