@@ -67,7 +67,6 @@ export const useAuthStore = defineStore("authStore1", {
   },
 
   actions: {
-
     // setAuthBusy(val) {
     //   this.onboardingLocal = !!val;
     // },
@@ -124,19 +123,7 @@ export const useAuthStore = defineStore("authStore1", {
         status = "onboarding";
       }
 
-this.$patch({ user, userProfile: profile, authStatus: status });
-
-      // this.$patch({
-      //   user,
-      //   userProfile: profile,
-      //   authStatus: resolveAuthStatus({ session, user, profile }),
-      // });
-
-      // console.log("[auth.checkAuth]", {
-      //   authStatus: this.authStatus,
-      //   userId: this.user?.id,
-      //   is_anonymous: this.user?.is_anonymous,
-      // });
+      this.$patch({ user, userProfile: profile, authStatus: status });
     },
 
     async ensureAnonymousUserAfterConsent() {

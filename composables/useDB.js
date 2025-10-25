@@ -8,15 +8,14 @@ export const useDb = () => {
 
   const getClient = () => useSupabaseClient();
 
-
   // 👇 Accept `event` explicitly so it works server-side
- // Build a server client from explicit params (no Nuxt APIs here)
- const getServerClientFrom = (url, serviceKey) => {
-   if (!url || !serviceKey) {
-     throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
-   }
-   return createClient(url, serviceKey, { auth: { persistSession: false } })
- }
+  // Build a server client from explicit params (no Nuxt APIs here)
+  const getServerClientFrom = (url, serviceKey) => {
+    if (!url || !serviceKey) {
+      throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    }
+    return createClient(url, serviceKey, { auth: { persistSession: false } });
+  };
 
   const getConfig = () => {
     // tolerate being called very early; return minimal shape if no app
@@ -572,15 +571,19 @@ export const useDb = () => {
   const getAllProfiles = async (withAI) => {
     const supabase = getClient();
     const { data, error } = await supabase.rpc("get_all_profiles_1", {
-      p_is_ai: null, // or true / false
+      // pass through boolean or null (no filter)
+      p_is_ai: typeof withAI === "boolean" ? withAI : null,
     });
 
     if (error) {
-      console.error("Error fetching all profiles:", error);
+      console.error("[useDB.getAllProfiles] RPC error:", error);
       return { data: null, error };
     }
-
-    return { data, error: null }; // ✅ Match expected structure
+    if (!Array.isArray(data)) {
+      console.error("[useDB.getAllProfiles] Unexpected payload:", data);
+      return { data: [], error: null };
+    }
+    return { data, error: null };
   };
 
   const getRecentFemales = async (profileLimit) => {
@@ -1007,32 +1010,29 @@ export const useDb = () => {
   //   return data?.id || null;
   // };
 
-
   // New: returns slug when available (preferred), otherwise falls back to id.
   const getThreadKeyByArticleId = async (articleId) => {
-    const supabase = getClient()
+    const supabase = getClient();
     const { data, error } = await supabase
       .from("threads")
       .select("slug, id")
       .eq("kind", "article")
       .eq("article_id", articleId)
       .limit(1)
-      .maybeSingle()
+      .maybeSingle();
 
     if (error) {
-      console.error("Error fetching thread key:", error)
-      return null
+      console.error("Error fetching thread key:", error);
+      return null;
     }
-    return data?.slug || data?.id || null
-  }
+    return data?.slug || data?.id || null;
+  };
 
   // (Optional) Keep a shim for old callers during migration.
   const getThreadIdByArticleId = async (articleId) => {
-    const key = await getThreadKeyByArticleId(articleId)
-    return key // may be slug or id depending on data
-  }
-
-  
+    const key = await getThreadKeyByArticleId(articleId);
+    return key; // may be slug or id depending on data
+  };
 
   const getCountArticleByTag = async (tagId) => {
     const supabase = getClient();
@@ -2246,6 +2246,28 @@ export const useDb = () => {
     return { data, error };
   };
 
+  const authExchangeCodeForSession = async (code) => {
+    const supabase = getClient();
+
+    // code should be just the ?code=... value, not the full URL
+    if (!code || typeof code !== "string") {
+      console.error(
+        "[authExchangeCodeForSession] missing or invalid code:",
+        code
+      );
+      return { data: null, error: new Error("Missing authorization code") };
+    }
+
+    try {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) console.error("[authExchangeCodeForSession] error:", error);
+      return { data, error };
+    } catch (err) {
+      console.error("[authExchangeCodeForSession] unexpected error:", err);
+      return { data: null, error: err };
+    }
+  };
+
   const authRefreshSession = async () => {
     const supabase = getClient();
 
@@ -2307,17 +2329,18 @@ export const useDb = () => {
     return { data, error };
   };
 
-  const signInWithOAuth = async (provider, next = "/chat") => {
-    const supabase = getClient();
 
+  const signInWithOAuth = async (provider, next = "/chat") => {
     const origin = window.location.origin;
+    
     const redirectTo = `${origin}/callback?next=${encodeURIComponent(next)}`;
-    await supabase.auth.signInWithOAuth({
+    const supabase = getClient();
+    // No skipBrowserRedirect here; let the SDK navigate
+    const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo,
-      },
+      options: { redirectTo },
     });
+    if (error) console.error("[login] signInWithOAuth error", error);
   };
 
   const linkIdentity = async ({ provider, email, redirectTo }) => {
@@ -2763,6 +2786,7 @@ export const useDb = () => {
 
     authGetUser,
     authRefreshSession,
+    authExchangeCodeForSession,
     authUpdateProfile,
     authSignOut,
     signInWithOtp,

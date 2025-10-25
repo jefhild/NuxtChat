@@ -128,6 +128,23 @@ export default defineNuxtConfig({
         "/sitemap.xml",
       ],
     },
+
+    clientOptions: {
+      auth: {
+        flowType: "pkce",
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true, // <-- AUTO exchange on first load of /callback
+        // Derive a stable storageKey from SUPABASE_URL (no hard-coding)
+        storageKey: process.env.SUPABASE_URL?.split("//")[1]?.split(
+          "."
+        )[0] // project ref
+          ? `sb-${
+              process.env.SUPABASE_URL.split("//")[1].split(".")[0]
+            }-auth-token`
+          : "sb-auth-token",
+      },
+    },
   },
 
   vite: {

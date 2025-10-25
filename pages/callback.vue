@@ -2,57 +2,39 @@
   <LoadingContainer />
 </template>
 
-<script setup lang="ts">
-import { onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { useLocalePath } from "#imports";
-import { useAuthStore } from "@/stores/authStore1";
-import { useDb } from "@/composables/useDB";
-import LoadingContainer from "~/components/LoadingContainer.vue";
+<script setup>
+definePageMeta({ ssr: false })
 
-// Composables and stores
-const router = useRouter();
-const route = useRoute();
-const localPath = useLocalePath();
-const authStore = useAuthStore();
-const { authGetUser } = useDb();
+const router = useRouter()
+const route = useRoute()
+const localPath = useLocalePath()
+const supabase = useSupabaseClient()
 
-// 🔒 Normalize and sanitize the next path (query param)
-const rawNext = route.query.next;
-const nextPath: string =
-  typeof rawNext === "string" && rawNext.startsWith("/") && !rawNext.startsWith("//")
+// sanitize ?next
+const rawNext = route.query.next
+const nextPath =
+  typeof rawNext === 'string' && rawNext.startsWith('/') && !rawNext.startsWith('//')
     ? rawNext
-    : "/";
+    : '/'
 
-const isSafePath = (path: string): path is string =>
-  typeof path === "string" && path.startsWith("/") && !path.startsWith("//");
-
-const safeNextPath = isSafePath(nextPath) ? nextPath : "/";
-
-// 🚀 Run after redirect from OAuth
 onMounted(async () => {
-  try {
-    const { data, error } = await authGetUser();
-
-    if (error) {
-      console.error("[callback1] Supabase error during auth check:", error.message);
-    }
-
-    if (data?.user) {
-      // console.log("[callback1] Session exists. Bootstrapping auth store...");
-      // await authStore.checkAuth(); 
-      router.replace(localPath(safeNextPath));
-    } else {
-      console.warn("[callback1] No session found. Redirecting to /signin.");
-      router.replace(localPath("/signin"));
-    }
-  } catch (err) {
-    console.error("[callback1] Unexpected error during login redirect:", err);
-    router.replace(localPath("/signin"));
+  // Facebook sometimes adds "#_=_"
+  if (location.hash === '#_=_') {
+    history.replaceState(null, '', location.pathname + location.search)
   }
-});
-</script>
 
-<style scoped>
-/* Optional loading container style */
-</style>
+  // With detectSessionInUrl: true, the SDK already exchanged the code when this page loaded
+  const { data, error } = await supabase.auth.getUser()
+  if (error || !data?.user) {
+    console.error('[callback] no user after auto-exchange', error)
+    return router.replace(localPath('/signin?error=oauth'))
+  }
+
+  // Ensure a profile exists (idempotent)
+  try { await $fetch('/api/profile/ensure', { method: 'POST' }) } catch (e) {
+    console.warn('[callback] /api/profile/ensure failed (non-fatal)', e)
+  }
+
+  router.replace(localPath(nextPath))
+})
+</script>

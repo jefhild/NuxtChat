@@ -101,6 +101,7 @@ function isAiId(id) {
     error.value = null;
     try {
       const { data, error: dbError } = await db.getAllProfiles();
+      // console.log('[chatStore] fetchChatUsers: fetched data len =', Array.isArray(data) ? data.length : 'n/a');
       if (dbError) throw dbError;
       users.value = Array.isArray(data) ? data : [];
       ensureImchattyPresent();

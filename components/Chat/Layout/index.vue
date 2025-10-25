@@ -76,6 +76,7 @@
                     class="flex-grow-1 overflow-hidden px-2 py-2"
                     style="flex: 1 1 0"
                   >
+
                     <ChatLayoutUsers
                       v-if="
                         tabVisibility.online ||
@@ -106,6 +107,7 @@
             <!-- Scroll area on desktop -->
             <!-- Virtual scroller inside handles scrolling -->
             <div class="flex-grow-1 overflow-hidden" style="flex: 1 1 0">
+
               <ChatLayoutUsers
                 v-if="
                   tabVisibility.online ||
@@ -431,6 +433,8 @@ const canSend = computed(() => {
 
 const usersWithPresence = computed(() => {
   // ——— presence dependency (reactive) ———
+// console.log('[usersWithPresence] src len =', Array.isArray(chat.users) ? chat.users.length : 'n/a');
+  
   const onlineSet = new Set(onlineIds.value);
 
   const resolvePresenceKey = (u) =>
@@ -642,6 +646,11 @@ onMounted(async () => {
   refreshActiveChats();
 
   await chat.fetchChatUsers();
+
+// console.log('[ChatLayout] after fetchChatUsers: chat.users len =', Array.isArray(chat.users) ? chat.users.length : 'n/a');
+
+
+
   await chat.fetchActiveChats(); // server-filtered baseline
   chat.initActiveChatsWatcher(); // realtime merge on new messages
   chat.initializeDefaultUser(auth.authStatus); // ideally selects ImChatty pre-auth

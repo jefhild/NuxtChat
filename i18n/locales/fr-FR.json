@@ -923,7 +923,8 @@
       "active": "actif",
       "no-anonymous": "Aucun utilisateur anonyme trouvé",
       "requires-profile": "Profil minimal requis",
-      "none-active": "Aucun utilisateur actif trouvé"
+      "none-active": "Aucun utilisateur actif trouvé",
+      "none-offline": "Aucun utilisateur hors ligne trouvé"
     },
     "users-ai": {
       "ai-users": "Utilisateurs IA",

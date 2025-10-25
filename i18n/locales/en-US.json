@@ -945,7 +945,8 @@
       "active": "active",
       "no-anonymous": "No anonymous users found",
       "requires-profile": "Requires a minimum profile",
-      "none-active": "No active users found"
+      "none-active": "No active users found",
+      "none-offline": "No offline users found"
     },
     "users-ai": {
       "ai-users": "AI Users",
