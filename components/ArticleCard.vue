@@ -34,9 +34,10 @@
         :aria-label="article.title"
       >
         <v-img
+          v-if="articleImageUrl"
           class="align-end text-white article-img"
           height="200"
-          :src="`${config.public.SUPABASE_BUCKET}/articles/${article.image_path}`"
+          :src="articleImageUrl"
           cover
         >
           <!-- Overlay button -->
@@ -47,9 +48,7 @@
               class="discuss-link"
               @click.stop
             >
-              <v-btn color="primary" size="small"
-                >Discuss…</v-btn
-              >
+              <v-btn color="primary" size="small">Discuss…</v-btn>
             </NuxtLink>
           </div>
 
@@ -133,7 +132,7 @@
 
 <script setup>
 const localPath = useLocalePath();
-const config = useRuntimeConfig();
+const { public: pub } = useRuntimeConfig();
 
 const props = defineProps({
   article: { type: Object, required: true },
@@ -142,9 +141,22 @@ const props = defineProps({
   chatThreadId: { type: String, default: null },
 });
 
+// Build the public image URL from env + prop
+const articleImageUrl = computed(() => {
+  const base = (pub.SUPABASE_BUCKET || "").replace(/\/$/, "");
+  const file = (
+    props.article?.imagePath ||
+    props.article?.image_path ||
+    ""
+  ).replace(/^\//, "");
+  return base && file ? `${base}/articles/${file}` : "";
+});
+
 const truncatedSummary = computed(() => {
   const maxLength = 300;
-  return props.article.content.length > maxLength
+
+  const content = props.article?.content || "";
+  return content.length > maxLength
     ? props.article.content.slice(0, maxLength) + "..."
     : props.article.content;
 });
@@ -192,10 +204,10 @@ const formatTagSlug = (tag) => {
 /* Tags */
 .tags-links {
   display: flex;
-  flex-wrap: wrap;       /* allow wrapping on smaller screens */
+  flex-wrap: wrap; /* allow wrapping on smaller screens */
   justify-content: center; /* horizontally center */
-  gap: 0.5rem;           /* space between tags */
-  text-align: center;    /* center text if lines wrap */
+  gap: 0.5rem; /* space between tags */
+  text-align: center; /* center text if lines wrap */
   margin-top: 0.5rem;
 }
 .tag-link {
