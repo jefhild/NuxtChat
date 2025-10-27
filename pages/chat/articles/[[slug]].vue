@@ -2,8 +2,13 @@
   <v-container fluid class="d-flex flex-column h-100 min-h-0">
     <v-row no-gutters class="min-h-0" style="flex: 0 0 auto">
       <v-col>
-        <PageHeader
+        <!-- <PageHeader
           :text="$t('pages.chat.articles.heading')"
+          :subtitle="$t('pages.chat.articles.subtitle')"
+        /> -->
+
+        <PageHeader
+          :text="topicThread?.article?.title || topicThread?.title || ''"
           :subtitle="$t('pages.chat.articles.subtitle')"
         />
       </v-col>
@@ -72,34 +77,30 @@
       >
         <!-- Sticky header -->
         <div class="messages-sticky-header d-none d-md-block">
-          <v-card
-            flat
-            class="px-3 py-2 d-flex align-center justify-space-between"
+          <v-img
+            v-if="articleImageUrl"
+            :src="articleImageUrl"
+            height="80"
+            cover
+            class="d-flex align-center justify-space-between px-3 py-2"
           >
-            <div class="min-w-0">
-              <!-- Clickable title toggles the panel -->
-              <div
-                class="text-subtitle-2 font-weight-bold text-truncate"
-                role="button"
-                :title="topicThread?.article?.title || 'Thread'"
-                @click="topicThread?.article ? (panelOpen = !panelOpen) : null"
-                style="cursor: pointer"
-              >
-                <h1 class="text-subtitle-1 font-weight-medium">
-                  {{ topicThread?.article?.title || "Thread Title" }}
-                </h1>
+            <div class="min-w-0 text-white w-100 d-flex justify-space-between">
+              <div>
+                <p
+                  class="text-subtitle-1 font-weight-medium text-truncate cursor-pointer"
+                  @click="panelOpen = !panelOpen"
+                >
+                  {{ topicThread?.article?.title || "See the full article" }}
+                </p>
+                <!-- <div class="text-caption text-white text-medium-emphasis">
+                  Public to authenticated users
+                </div> -->
               </div>
-              <div class="text-caption text-medium-emphasis">
-                Public to authenticated users
-              </div>
-            </div>
 
-            <div class="d-flex align-center gap-1">
-              <!-- Chevron to open/close -->
               <v-btn
                 icon
                 size="x-small"
-                color="blue-lighten-4"
+                color="white"
                 :aria-expanded="String(panelOpen)"
                 aria-controls="thread-info-panel"
                 @click="panelOpen = !panelOpen"
@@ -109,7 +110,7 @@
                 />
               </v-btn>
             </div>
-          </v-card>
+          </v-img>
         </div>
 
         <!-- Overlay panel that drops over the scrollable list -->
@@ -266,20 +267,25 @@ import { useAuthStore } from "@/stores/authStore1";
 import { useArticleThread } from "@/composables/articles/useArticleThread";
 import { useArticlePresence } from "@/composables/articles/useArticlePresence";
 import { useI18n } from "vue-i18n";
-
 import DOMPurify from "dompurify";
-const { t: $t } = useI18n(); // avoid name collision with "thread"
 
+const { t: $t } = useI18n(); // avoid name collision with "thread"
+const { public: pub } = useRuntimeConfig();
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const localePath = useLocalePath();
 
 const panelOpen = ref(false);
-
-const panelItems = ["Article"]; // simple dropdown; future-proof if you re-add options
-const panelMode = ref("Article");
 const autoCloseOnScroll = true;
+
+const articleImageUrl = computed(() => {
+  const base = (pub.SUPABASE_BUCKET || "").replace(/\/$/, "");
+  // console.log("base:", base);
+  const file = (topicThread.value?.article?.imagePath || "").replace(/^\//, "");
+  // console.log("file:", file);
+  return base && file ? `${base}/articles/${file}` : null;
+});
 
 const sanitizedArticleHtml = computed(() => {
   const html = topicThread.value?.article?.content ?? "";

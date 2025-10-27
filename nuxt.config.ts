@@ -136,9 +136,7 @@ export default defineNuxtConfig({
         autoRefreshToken: true,
         detectSessionInUrl: true, // <-- AUTO exchange on first load of /callback
         // Derive a stable storageKey from SUPABASE_URL (no hard-coding)
-        storageKey: process.env.SUPABASE_URL?.split("//")[1]?.split(
-          "."
-        )[0] // project ref
+        storageKey: process.env.SUPABASE_URL?.split("//")[1]?.split(".")[0] // project ref
           ? `sb-${
               process.env.SUPABASE_URL.split("//")[1].split(".")[0]
             }-auth-token`
@@ -185,7 +183,7 @@ export default defineNuxtConfig({
 
     public: {
       // Non-sensitive keys (accessible on both server and client)
-      SUPABASE_BUCKET: process.env.SUPABASE_BUCKET,
+      SUPABASE_BUCKET: process.env.NUXT_PUBLIC_SUPABASE_BUCKET,
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_REDIRECT: process.env.SUPABASE_REDIRECT,
       GOOGLE_ANALYTICS_ID: process.env.GOOGLE_ANALYTICS_ID,
