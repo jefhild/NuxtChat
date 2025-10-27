@@ -25,4 +25,6 @@ export default defineEventHandler(async (event) => {
     map[t.article_id] = t.slug || t.id;
   }
   return map;
+
+
 });

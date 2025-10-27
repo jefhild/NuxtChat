@@ -42,6 +42,7 @@
         >
           <!-- Overlay button -->
           <div class="discuss-btn-container top-left">
+            <!-- {{ chatThreadId }} -->
             <NuxtLink
               v-if="chatThreadId"
               :to="localPath(`/chat/articles/${chatThreadId}`)"
