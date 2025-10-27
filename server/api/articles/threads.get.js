@@ -20,9 +20,31 @@ export default defineEventHandler(async (event) => {
 
   // 1) Load threads (no reliance on a `pinned` column)
   const ascending = order === "oldest";
-  const { data: threads, error: threadsErr } = await supa
+  // const { data: threads, error: threadsErr } = await supa
+  //   .from("threads")
+  //   .select("id, title, slug, bot_avatar_url, last_activity_at")
+
+
+
+
+
+
+    const { data: threads, error: threadsErr } = await supa
     .from("threads")
-    .select("id, title, slug, bot_avatar_url, last_activity_at")
+    .select(`
+      id,
+      title,
+      slug,
+      bot_avatar_url,
+      last_activity_at,
+      article:articles (
+        id,
+        slug,
+        title,
+        image_path,
+        content
+      )
+    `)
     .eq("kind", "article")
     .order("last_activity_at", { ascending })
     .limit(limit);
@@ -80,5 +102,14 @@ export default defineEventHandler(async (event) => {
     slug: t.slug,
     todayCount: todayCounts[t.id] || 0,
     score: scores[t.id] || 0,
+        article: t.article
+      ? {
+          id: t.article.id,
+          slug: t.article.slug,
+          title: t.article.title,
+          imagePath: t.article.image_path,
+          content: t.article.content,
+        }
+      : null,
   }));
 });

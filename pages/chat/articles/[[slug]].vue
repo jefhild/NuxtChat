@@ -30,14 +30,6 @@
                 class="pa-2"
               />
               <template v-else>
-                <!-- <v-list-item
-                  v-for="t in topics"
-                  :key="t.id"
-                  :active="t.slug === slug"
-                  class="cursor-pointer"
-                  @click="openThread(t.slug)"
-                > -->
-
                 <v-list-item
                   v-for="t in topics"
                   :key="t.id"
@@ -46,7 +38,6 @@
                   :to="localePath(`/chat/articles/${t.slug}`)"
                   link
                 >
-
                   <template #prepend>
                     <v-avatar size="28" v-if="t.botAvatarUrl"
                       ><v-img :src="t.botAvatarUrl"
@@ -77,23 +68,74 @@
       <v-col
         cols="12"
         md="7"
-        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
       >
-        <!-- Sticky header (like your 1–1 layout) -->
+        <!-- Sticky header -->
         <div class="messages-sticky-header d-none d-md-block">
-          <v-card flat class="pa-2">
-            <div class="text-subtitle-2 font-weight-medium">Thread</div>
-            <div class="text-caption text-medium-emphasis">
-              Public to authenticated users
+          <v-card
+            flat
+            class="px-3 py-2 d-flex align-center justify-space-between"
+          >
+            <div class="min-w-0">
+              <!-- Clickable title toggles the panel -->
+              <div
+                class="text-subtitle-2 font-weight-bold text-truncate"
+                role="button"
+                :title="topicThread?.article?.title || 'Thread'"
+                @click="topicThread?.article ? (panelOpen = !panelOpen) : null"
+                style="cursor: pointer"
+              >
+                <h1 class="text-subtitle-1 font-weight-medium">
+                  {{ topicThread?.article?.title || "Thread Title" }}
+                </h1>
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Public to authenticated users
+              </div>
+            </div>
+
+            <div class="d-flex align-center gap-1">
+              <!-- Chevron to open/close -->
+              <v-btn
+                icon
+                size="x-small"
+                color="blue-lighten-4"
+                :aria-expanded="String(panelOpen)"
+                aria-controls="thread-info-panel"
+                @click="panelOpen = !panelOpen"
+              >
+                <v-icon
+                  :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                />
+              </v-btn>
             </div>
           </v-card>
         </div>
+
+        <!-- Overlay panel that drops over the scrollable list -->
+        <v-expand-transition>
+          <v-card
+            v-if="panelOpen"
+            id="thread-info-panel"
+            class="thread-overlay-panel mx-2"
+            elevation="8"
+            :aria-hidden="String(!panelOpen)"
+          >
+            <div class="px-3 py-3 overlay-scroll">
+              <!-- Always render full article (sanitized) -->
+              <div v-html="sanitizedArticleHtml"></div>
+            </div>
+          </v-card>
+        </v-expand-transition>
 
         <!-- Scrollable messages list -->
         <div
           ref="centerScrollRef"
           class="flex-grow-1 overflow-auto users-scroll min-h-0 px-2 py-2"
           style="flex: 1 1 0"
+          @scroll.passive="
+            panelOpen && autoCloseOnScroll && (panelOpen = false)
+          "
         >
           <v-skeleton-loader
             v-if="loadingMsgs"
@@ -118,7 +160,7 @@
           />
         </div>
 
-        <!-- Composer (simple) -->
+        <!-- Composer -->
         <div class="border-t pt-2" style="flex: 0 0 auto">
           <ChatLayoutMessageComposer
             v-model:draft="draft"
@@ -225,12 +267,29 @@ import { useArticleThread } from "@/composables/articles/useArticleThread";
 import { useArticlePresence } from "@/composables/articles/useArticlePresence";
 import { useI18n } from "vue-i18n";
 
+import DOMPurify from "dompurify";
+const { t: $t } = useI18n(); // avoid name collision with "thread"
+
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
-const localePath = useLocalePath()
+const localePath = useLocalePath();
 
-const { t } = useI18n();
+const panelOpen = ref(false);
+
+const panelItems = ["Article"]; // simple dropdown; future-proof if you re-add options
+const panelMode = ref("Article");
+const autoCloseOnScroll = true;
+
+const sanitizedArticleHtml = computed(() => {
+  const html = topicThread.value?.article?.content ?? "";
+  return process.client ? DOMPurify.sanitize(html) : "";
+});
+
+// Accessibility: close with Escape
+function onKeydown(e) {
+  if (e.key === "Escape" && panelOpen.value) panelOpen.value = false;
+}
 
 const menu = reactive({
   open: false,
@@ -317,8 +376,12 @@ const { data: topicsData, pending: loadingTopics } = await useAsyncData(
   () => $fetch("/api/articles/threads")
 );
 const topics = computed(() => topicsData.value || []);
-// const openThread = (id) => router.push(`/chat/articles/${id}`);
-const openThread = (s) => router.push(`/chat/articles/${s}`);
+
+// the thread (with article) coming from /api/articles/threads
+const topicThread = computed(() => {
+  const s = slug.value;
+  return (topics.value || []).find((t) => t.slug === s) || null;
+});
 
 // Initial fetch by slug; API returns { thread, items }
 const {
@@ -335,10 +398,8 @@ const {
   },
   { watch: [() => slug.value] }
 );
-// const initialItems = computed(() => initial.value?.items ?? []);
-
-const threadMeta = computed(() => initial.value?.thread || null);
-const threadId = computed(() => threadMeta.value?.id || "");
+const thread = computed(() => initial.value?.thread || null);
+const threadId = computed(() => thread.value?.id || "");
 const initialItems = computed(() => initial.value?.items ?? []);
 
 /* ---------- Realtime thread store ---------- */
@@ -511,17 +572,22 @@ const messagesForUI = computed(() => {
 /* ---------- Compose/send ---------- */
 const draft = ref("");
 const replyToId = ref(null);
+// const onSend = async (text) => {
+//   const t = (text ?? draft.value).trim();
+//   if (!t) return;
+//   await send(t, { replyToId: replyToId.value || null });
+
 const onSend = async (text) => {
-  const t = (text ?? draft.value).trim();
-  if (!t) return;
-  await send(t, { replyToId: replyToId.value || null });
+  const msgText = (text ?? draft.value).trim();
+  if (!msgText) return;
+  await send(msgText, { replyToId: replyToId.value || null });
+
   draft.value = "";
   replyToId.value = null;
 };
 
 /* expose for template filters/helpers if you need */
 defineExpose({ formatClock, formatDateTime, messagesForUI });
-
 
 async function loadMessages() {
   const s = slug.value;
@@ -538,7 +604,6 @@ async function loadMessages() {
 }
 
 onMounted(async () => {
-
   if (import.meta.client) {
     watch(
       slug,
@@ -550,20 +615,12 @@ onMounted(async () => {
   }
 });
 
-// useSeoI18nMeta("chat.articles");
+// watch(thread, (v) => console.log('thread:', v), { immediate: true })
 
-
-
+onMounted(() => window.addEventListener("keydown", onKeydown));
+onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 </script>
 <style scoped>
-
-.messages-sticky-header {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: rgb(var(--v-theme-surface));
-}
-
 .messages-sticky-header {
   position: sticky;
   top: 0;
