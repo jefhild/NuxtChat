@@ -30,13 +30,24 @@ export const getGenderColor = (gender_id) => {
     case 1:
       return "blue-darken-2";
     case 2:
-      return "pink-darken-2";
+      return "pink-lighten-2";
     default:
       return "purple-darken-2";
   }
 };
 
 export const getGenderColorClass = (gender_id) => {
+  switch (gender_id) {
+    case 1:
+      return "male";
+    case 2:
+      return "female";
+    default:
+      return "other";
+  }
+};
+
+export const getGenderPath = (gender_id) => {
   switch (gender_id) {
     case 1:
       return "male";

@@ -199,13 +199,36 @@
               <template v-else>
                 <v-list-item v-for="u in now" :key="u.userId">
                   <template #prepend>
-                    <!-- {{ u }} -->
-                    <v-avatar size="24" v-if="u.avatarUrl"
-                      ><v-img :src="u.avatarUrl"
-                    /></v-avatar>
+                    <div class="avatar-with-icon">
+                      <v-avatar size="32">
+                        <v-img :src="getAvatar(u.avatarUrl, u.gender_id)" />
+                      </v-avatar>
+
+                      <!-- Only gender icon, not filled -->
+                      <v-icon
+                        class="gender-icon"
+                        :color="getGenderColor(u.gender_id)"
+                        size="18"
+                        :title="u.gender?.name || 'Other/Unspecified'"
+                        :icon="getAvatarIcon(u.gender_id)"
+                      />
+                    </div>
                   </template>
+
                   <v-list-item-title class="text-body-2">
-                    {{ u.displayname || u.userId }}
+
+
+    <NuxtLink
+      v-if="u.slug"
+      :to="`/profiles/${getGenderPath(u.gender_id)}/${u.slug}`"
+      class="profile-link"
+    >
+      {{ u.displayname || u.userId }}
+    </NuxtLink>
+
+
+
+                    <!-- {{ u.displayname || u.userId }} -->
                   </v-list-item-title>
                 </v-list-item>
               </template>
@@ -266,10 +289,16 @@ import { computed, ref, watch, watchEffect } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { useArticleThread } from "@/composables/articles/useArticleThread";
 import { useArticlePresence } from "@/composables/articles/useArticlePresence";
+import {
+  getAvatar,
+  getAvatarIcon,
+  getGenderColor,
+  getGenderPath
+} from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
 import DOMPurify from "dompurify";
 
-const { t: $t } = useI18n(); // avoid name collision with "thread"
+const { t: $t, locale } = useI18n(); // avoid name collision with "thread"
 const { public: pub } = useRuntimeConfig();
 const route = useRoute();
 const router = useRouter();
@@ -281,9 +310,9 @@ const autoCloseOnScroll = true;
 
 const articleImageUrl = computed(() => {
   const base = (pub.SUPABASE_BUCKET || "").replace(/\/$/, "");
-  // console.log("base:", base);
+  console.log("base:", base);
   const file = (topicThread.value?.article?.imagePath || "").replace(/^\//, "");
-  // console.log("file:", file);
+  console.log("file:", file);
   return base && file ? `${base}/articles/${file}` : null;
 });
 
@@ -625,6 +654,113 @@ onMounted(async () => {
 
 onMounted(() => window.addEventListener("keydown", onKeydown));
 onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
+
+// Absolute canonical (locale-aware)
+const canonicalUrl = computed(() => {
+  // localePath gives you the localized route (e.g. /en/chat/articles/slug)
+  const localizedPath = localePath(`/chat/articles/${slug.value}`);
+  // ensure absolute URL
+  const base = (pub.SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+  return `${base}${localizedPath}`;
+});
+
+// Title (fallbacks are important during SSR before data arrives)
+const seoTitle = computed(() => {
+  const t =
+    topicThread.value?.article?.title || topicThread.value?.title || "Article";
+  return `${t}`;
+});
+
+// Description: prefer explicit excerpt; otherwise strip HTML from content
+const safeDescription = computed(() => {
+  const excerpt = topicThread.value?.article?.excerpt || "";
+  const content = topicThread.value?.article?.content || "";
+  const src = excerpt || content;
+  const text = src
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text.slice(0, 160); // classic meta length
+});
+
+// OG image (fallback to a site default)
+const ogImage = computed(() => {
+  const fallback = `${(pub.SITE_URL || "").replace(/\/$/, "")}/og-default.jpg`;
+  return articleImageUrl.value || fallback;
+});
+
+// Article dates
+const publishedTime = computed(
+  () => topicThread.value?.article?.created_at || null
+);
+const modifiedTime = computed(
+  () =>
+    topicThread.value?.article?.updated_at ||
+    topicThread.value?.lastActivityAt ||
+    null
+);
+
+// Locale to og:locale (e.g., "en" -> "en_US")
+const ogLocale = computed(() => {
+  const cur = (locale.value || "en").toLowerCase();
+  return cur === "en" ? "en_US" : `${cur}_${cur.toUpperCase()}`;
+});
+
+useHead({
+  link: [{ rel: "canonical", href: canonicalUrl.value }],
+  // Optional: preload OG image for speed (tiny win)
+  meta: [{ name: "robots", content: "index,follow" }],
+  // JSON-LD Article
+  script: [
+    {
+      type: "application/ld+json",
+      innerHTML: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: topicThread.value?.article?.title || "Article",
+        description: safeDescription.value,
+        mainEntityOfPage: canonicalUrl.value,
+        image: ogImage.value ? [ogImage.value] : [],
+        datePublished: publishedTime.value || undefined,
+        dateModified: modifiedTime.value || undefined,
+        author: topicThread.value?.article?.author
+          ? { "@type": "Person", name: topicThread.value.article.author }
+          : undefined,
+        publisher: {
+          "@type": "Organization",
+          name: "ImChatty",
+          logo: {
+            "@type": "ImageObject",
+            url: `${(pub.SITE_URL || "").replace(/\/$/, "")}/logo.png`,
+          },
+        },
+      }),
+    },
+  ],
+});
+
+useSeoMeta({
+  title: () => seoTitle.value,
+  description: () => safeDescription.value,
+  // Open Graph
+  ogTitle: () => seoTitle.value,
+  ogDescription: () => safeDescription.value,
+  ogUrl: () => canonicalUrl.value,
+  ogImage: () => ogImage.value,
+  ogType: "article",
+  ogLocale: () => ogLocale.value,
+  ogSiteName: "ImChatty",
+  // Twitter
+  twitterCard: "summary_large_image",
+  twitterTitle: () => seoTitle.value,
+  twitterDescription: () => safeDescription.value,
+  twitterImage: () => ogImage.value,
+  // Article-specific metas
+  articleSection: () => topicThread.value?.article?.category?.name || "Article",
+  articlePublishedTime: () => publishedTime.value || undefined,
+});
 </script>
 <style scoped>
 .messages-sticky-header {
@@ -633,4 +769,26 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   z-index: 2;
   background: rgb(var(--v-theme-surface));
 }
+.avatar-with-icon {
+  position: relative;
+  margin-right: 8px;
+}
+.gender-icon {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  background: var(--v-theme-surface);
+  border-radius: 50%;
+  padding: 1px;
+}
+.profile-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.profile-link:hover {
+  color: var(--v-theme-primary);
+  text-decoration: underline;
+}
+
 </style>
