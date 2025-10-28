@@ -266,15 +266,15 @@
         "search": "Search Articles...",
         "no-articles": "No articles found for",
         "meta": {
-          "title": "ImChatty Blog – Tips, Updates & Community Discussions",
-          "description": "Discover the latest tips, platform updates, and real community stories on the ImChatty Blog. Stay connected and informed.",
-          "ogTitle": "ImChatty Blog – Tips, Updates & Community Chats",
+          "title": "Articles, Tips, Updates & Community Discussions",
+          "description": "Discover the latest tips, platform updates, and real community chats. Stay connected and informed.",
+          "ogTitle": "Articles, Tips, Updates & Community Chats",
           "ogType": "Website",
           "ogUrl": "https://imchatty.com/articles",
-          "ogDescription": "Explore helpful articles, platform news, and inspiring stories from the ImChatty community. Updated regularly with new insights.",
+          "ogDescription": "Explore helpful articles, platform news, and inspiring chats from the ImChatty community. Updated regularly with new insights.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterDescription": "Stay informed with the latest blog posts from ImChatty. From platform updates to dating and chat tips, we've got you covered.",
-          "twitterTitle": "ImChatty Blog – Your Source for Tips and Updates",
+          "twitterDescription": "Stay informed with the latest articles from ImChatty. From platform updates to dating and chat tips, we've got you covered.",
+          "twitterTitle": "ImChatty Articles – Your Source for Tips and Updates",
           "twitterCard": "summary_large_image",
           "twitterImage": "https://imchatty.com/images/robot.png"
         }

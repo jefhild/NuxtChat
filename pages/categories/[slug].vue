@@ -7,10 +7,20 @@
 
     <v-container fluid v-else>
       <!-- <HomeRow1 /> -->
-  <PageHeader
-    :text="t(`pages.categories.${route.params.slug}.heading`, t('pages.articles.categories.heading'))"
-    :subtitle="t(`pages.categories.${route.params.slug}.subtitle`, t('pages.articles.categories.subtitle'))"
-  />
+      <PageHeader
+        :text="
+          t(
+            `pages.categories.${route.params.slug}.heading`,
+            t('pages.articles.categories.heading')
+          )
+        "
+        :subtitle="
+          t(
+            `pages.categories.${route.params.slug}.subtitle`,
+            t('pages.articles.categories.subtitle')
+          )
+        "
+      />
 
       <v-row>
         <!-- <v-col>
@@ -71,8 +81,7 @@
           md="4"
           class="d-flex"
         >
-
-                  <ArticleCard
+          <ArticleCard
             :article="article"
             :chatThreadId="article.thread_slug ?? undefined"
           />
@@ -86,9 +95,7 @@
           <p>{{ $t("pages.categories.slug.no-articles") }}</p>
         </v-col>
       </v-row>
-
     </v-container>
-    
   </v-container>
 </template>
 
@@ -124,7 +131,6 @@ const formattedSlug = computed(() => {
 });
 
 const searchLabel = computed(() => t("pages.articles.index.search"));
-
 
 const filteredArticles = computed(() => {
   if (!searchQuery.value) return articles.value;

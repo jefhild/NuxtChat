@@ -84,7 +84,6 @@
           md="4"
           class="d-flex"
         >
-
           <ArticleCard
             :article="article"
             :chatThreadId="article.thread_slug ?? undefined"
@@ -118,10 +117,9 @@ import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta"; // adjust path as
 const { getArticlesByTagSlug, getTagsByArticle, getAllCategories, getAllTags } =
   useDb();
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const localPath = useLocalePath();
 const config = useRuntimeConfig();
 const supabaseBucket = config.public.SUPABASE_BUCKET;
 
@@ -175,20 +173,25 @@ const formattedSlug = computed(() => {
     : "";
 });
 
+const tagHeading = computed(() => {
+  const key = `pages.tags.${route.params.slug}.heading`;
+  return te(key) ? t(key) : t("pages.articles.tags.heading");
+});
+
 useSeoI18nMeta("tags.index", {
   dynamic: {
-    title: tagName,
+    title: tagHeading,
     description: computed(() =>
       getLimitedDescription(`Browse articles tagged under ${tagName.value}.`)
     ),
-    ogTitle: tagName,
+    ogTitle: tagHeading,
     ogDescription: computed(() =>
       getLimitedDescription(
         `Insights and resources categorized under ${tagName.value}.`
       )
     ),
     ogImage: firstImage,
-    twitterTitle: tagName,
+    twitterTitle: tagHeading,
     twitterDescription: computed(() =>
       getLimitedDescription(`Curated content about ${tagName.value}.`)
     ),
