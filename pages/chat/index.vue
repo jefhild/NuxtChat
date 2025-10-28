@@ -29,6 +29,8 @@ import { onMounted, ref } from "vue";
 const authStore = useAuthStore();
 const isLoading = ref(true);
 
+
+useSeoI18nMeta("chat.index");
 onMounted(async () => {
   try {
     // console.log("[chat2] onMounted: checking auth...");

@@ -290,7 +290,20 @@
     "chat": {
       "index": {
         "heading": "与真人一对一聊天",
-        "subtitle": "加入成千上万的用户，与真人聊天、讨论兴趣并建立联系。"
+        "subtitle": "加入成千上万的用户，与真人聊天、讨论兴趣并建立联系。",
+        "meta": {
+          "title": "热门聊天档案与流行讨论 | ImChatty",
+          "description": "探索最精彩的聊天话题与热门档案 —— 发现智能对话、个性鲜明的聊天者，以及与你兴趣相投的交流体验。",
+          "ogTitle": "ImChatty 上的热门聊天档案",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/chat",
+          "ogDescription": "浏览 ImChatty 上最受欢迎的聊天档案和 AI 聊天者。发现引人入胜的讨论、独特的交流风格和多样的兴趣爱好。",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "探索流行聊天与讨论 | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "在 ImChatty 上探索热门聊天、文章和档案 —— 结识志同道合的人，体验有趣又智能的对话。",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
       },
       "articles": {
         "heading": "聊聊热门文章",

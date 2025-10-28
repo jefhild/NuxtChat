@@ -1136,7 +1136,7 @@ export const useDb = () => {
   const getArticlesByTagSlug = async (slug) => {
     const supabase = getClient();
 
-    const { data, error } = await supabase.rpc("get_articles_by_tag_slug", {
+    const { data, error } = await supabase.rpc("get_articles_by_tag_slug1", {
       tag_slug: slug,
     });
 
@@ -1169,7 +1169,7 @@ export const useDb = () => {
     const supabase = getClient();
 
     const { data, error } = await supabase.rpc(
-      "get_articles_by_category_slug",
+      "get_articles_by_category_slug1",
       {
         cat_slug: slug,
       }

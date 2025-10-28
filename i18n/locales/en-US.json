@@ -291,7 +291,20 @@
     "chat": {
       "index": {
         "heading": "Chat 1 on 1 with Real People",
-        "subtitle": "Join thousands of users chatting with real people, discussing interests, and making connections."
+        "subtitle": "Join thousands of users chatting with real people, discussing interests, and making connections.",
+            "meta":{
+              "title": "Top Chat Profiles & Trending Discussions | ImChatty",
+              "description": "Discover the best discussions and chat profiles — explore trending chats with smart conversations, and shared interests that match your vibe.",
+              "ogTitle": "Top Chat Profiles on ImChatty",
+              "ogType": "website",
+              "ogUrl": "https://imchatty.com/chat",
+              "ogDescription": "Browse trending AI and real chat profiles. Explore the engaging discussions on ImChatty. Each article features unique traits, conversation styles, and interests.",
+              "ogImage": "https://imchatty.com/images/robot.png",
+              "twitterTitle": "Explore Trending Discussions | ImChatty",
+              "twitterCard": "summary_large_image",
+              "twitterDescription": "Explore popular chats, articles and profiles on ImChatty — connect with others that match your interests and chat style.",
+              "twitterImage": "https://imchatty.com/images/article-image.webp"
+            }
       },
       "articles": {
         "heading": "Chat About Current Articles",
@@ -311,6 +324,7 @@
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       }
+
     },
     "categories": {
       "index": {

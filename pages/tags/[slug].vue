@@ -84,7 +84,11 @@
           md="4"
           class="d-flex"
         >
-          <ArticleCard :article="article" />
+
+          <ArticleCard
+            :article="article"
+            :chatThreadId="article.thread_slug ?? undefined"
+          />
         </v-col>
       </v-row>
 

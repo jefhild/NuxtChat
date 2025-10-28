@@ -290,7 +290,20 @@
     "chat": {
       "index": {
         "heading": "Discutez en tête-à-tête avec de vraies personnes",
-        "subtitle": "Rejoignez des milliers d’utilisateurs qui discutent avec de vraies personnes, échangent sur leurs centres d’intérêt et créent des liens."
+        "subtitle": "Rejoignez des milliers d’utilisateurs qui discutent avec de vraies personnes, échangent sur leurs centres d’intérêt et créent des liens.",
+        "meta": {
+          "title": "Profils de Chat et Discussions Tendance | ImChatty",
+          "description": "Découvrez les meilleures discussions et profils de chat — explorez les conversations les plus populaires avec des échanges intelligents et des centres d’intérêt qui vous ressemblent.",
+          "ogTitle": "Meilleurs Profils de Chat sur ImChatty",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/chat",
+          "ogDescription": "Parcourez les profils de chat et d’IA les plus tendance. Découvrez les discussions captivantes sur ImChatty, avec des styles de conversation et des intérêts uniques.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "Découvrez les Discussions Tendance | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Explorez les chats, articles et profils les plus populaires sur ImChatty — échangez avec d’autres utilisateurs qui partagent vos centres d’intérêt et votre style de discussion.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
       },
       "articles": {
         "heading": "Discutez des articles actuels",

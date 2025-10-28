@@ -28,7 +28,7 @@
               >
                 <v-btn
                   color="primary"
-                  :to="localPath('/chat')"
+                  :to="localPath('/chat/articles')"
                   class="hero-btn"
                 >
                   {{ $t("pages.home.landing_page.cta_button") }}
@@ -184,7 +184,7 @@ async function confirmLogout() {
 
 onMounted(async () => {
   try {
-    articles.value = await getAllPublishedArticlesWithTags(3);
+    articles.value = await getAllPublishedArticlesWithTags(6);
     mostPopularAiProfiles.value = await getMostPopularAiProfiles(4);
   } catch (err) {
     console.error("[LandingPage] Error:", err);
