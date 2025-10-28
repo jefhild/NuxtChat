@@ -954,6 +954,48 @@ export const useDb = () => {
   // };
 
   // db/articles.ts (or your composable)
+  // const getAllPublishedArticlesWithTags = async (limit) => {
+  //   const supabase = getClient();
+
+  //   const { data, error } = await supabase
+  //     .from("articles")
+  //     .select(
+  //       `
+  //     id,
+  //     title,
+  //     type,
+  //     slug,
+  //     content,
+  //     image_path,
+  //     photo_credits_url,
+  //     is_published,
+  //     created_at,
+  //     category:category_id(name),
+  //     article_tags(tag:tag_id(name)),
+  //     threads(id)        -- <- embed related threads via FK threads.article_id -> articles.id
+  //   `
+  //     )
+  //     .eq("is_published", true)
+  //     .limit(limit)
+  //     .order("created_at", { ascending: false });
+
+  //   if (error) {
+  //     console.error("Error fetching articles:", error.message);
+  //     return [];
+  //   }
+
+  //   return data.map((article) => ({
+  //     ...article,
+  //     category_name: article.category?.name ?? "Uncategorized",
+  //     tags: article.article_tags?.map((t) => t.tag.name) ?? [],
+  //     threadId:
+  //       Array.isArray(article.threads) && article.threads.length > 0
+  //         ? article.threads[0].id // if multiple, pick the first; adjust if needed
+  //         : null,
+  //   }));
+  // };
+
+ 
   const getAllPublishedArticlesWithTags = async (limit) => {
     const supabase = getClient();
 
@@ -972,7 +1014,7 @@ export const useDb = () => {
       created_at,
       category:category_id(name),
       article_tags(tag:tag_id(name)),
-      threads(id)        -- <- embed related threads via FK threads.article_id -> articles.id
+      threads(slug)        -- <- get thread slug instead of id
     `
       )
       .eq("is_published", true)
@@ -988,13 +1030,14 @@ export const useDb = () => {
       ...article,
       category_name: article.category?.name ?? "Uncategorized",
       tags: article.article_tags?.map((t) => t.tag.name) ?? [],
-      threadId:
+      threadSlug:
         Array.isArray(article.threads) && article.threads.length > 0
-          ? article.threads[0].id // if multiple, pick the first; adjust if needed
+          ? article.threads[0].slug // use first slug if multiple threads
           : null,
     }));
   };
-
+ 
+ 
   const getArticleBySlug = async (slug) => {
     const supabase = getClient();
 

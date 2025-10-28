@@ -84,8 +84,7 @@
           sm="6"
           md="4"
         >
-
-          <ArticleCard :article="article" :chatThreadId="article.threadId ?? undefined"/>
+          <ArticleCard :article="article" :chatThreadId="article.threadSlug ?? undefined"/>
         </v-col>
       </v-row>
 
