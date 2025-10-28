@@ -916,6 +916,44 @@ export const useDb = () => {
     }));
   };
 
+  // const getAllPublishedArticlesWithTags = async (limit) => {
+  //   const supabase = getClient();
+
+  //   const { data, error } = await supabase
+  //     .from("articles")
+  //     .select(
+  //       `
+  //     id,
+  //     title,
+  //     type,
+  //     slug,
+  //     content,
+  //     image_path,
+  //     photo_credits_url,
+  //     is_published,
+  //     created_at,
+  //     category:category_id(name),
+  //     article_tags(tag:tag_id(name))
+  //   `
+  //     )
+  //     .eq("is_published", true)
+  //     .limit(limit)
+  //     .order("created_at", { ascending: false });
+
+  //   if (error) {
+  //     console.error("Error fetching articles:", error.message);
+  //     return [];
+  //   }
+
+  //   // Flatten tags and category
+  //   return data.map((article) => ({
+  //     ...article,
+  //     category_name: article.category?.name ?? "Uncategorized",
+  //     tags: article.article_tags?.map((t) => t.tag.name) ?? [],
+  //   }));
+  // };
+
+  // db/articles.ts (or your composable)
   const getAllPublishedArticlesWithTags = async (limit) => {
     const supabase = getClient();
 
@@ -933,7 +971,8 @@ export const useDb = () => {
       is_published,
       created_at,
       category:category_id(name),
-      article_tags(tag:tag_id(name))
+      article_tags(tag:tag_id(name)),
+      threads(id)        -- <- embed related threads via FK threads.article_id -> articles.id
     `
       )
       .eq("is_published", true)
@@ -945,11 +984,14 @@ export const useDb = () => {
       return [];
     }
 
-    // Flatten tags and category
     return data.map((article) => ({
       ...article,
       category_name: article.category?.name ?? "Uncategorized",
       tags: article.article_tags?.map((t) => t.tag.name) ?? [],
+      threadId:
+        Array.isArray(article.threads) && article.threads.length > 0
+          ? article.threads[0].id // if multiple, pick the first; adjust if needed
+          : null,
     }));
   };
 
@@ -990,25 +1032,6 @@ export const useDb = () => {
 
     return data;
   };
-
-  // const getThreadIdByArticleId = async (articleId) => {
-  //   const supabase = getClient();
-
-  //   const { data, error } = await supabase
-  //     .from("threads")
-  //     .select("id")
-  //     .eq("kind", "article")
-  //     .eq("article_id", articleId)
-  //     .limit(1)
-  //     .maybeSingle(); // optional convenience helper if using supabase-js >= 2.0
-
-  //   if (error) {
-  //     console.error("Error fetching thread id:", error);
-  //     return null;
-  //   }
-
-  //   return data?.id || null;
-  // };
 
   // New: returns slug when available (preferred), otherwise falls back to id.
   const getThreadKeyByArticleId = async (articleId) => {
@@ -2329,10 +2352,9 @@ export const useDb = () => {
     return { data, error };
   };
 
-
   const signInWithOAuth = async (provider, next = "/chat") => {
     const origin = window.location.origin;
-    
+
     const redirectTo = `${origin}/callback?next=${encodeURIComponent(next)}`;
     const supabase = getClient();
     // No skipBrowserRedirect here; let the SDK navigate

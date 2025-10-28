@@ -116,17 +116,6 @@
           Draft
         </v-chip>
       </v-card-actions>
-
-      <!-- Public “Discuss…” button (real link, separate from the title link)
-      <v-card-actions class="pt-0 justify-center">
-        <NuxtLink
-          v-if="chatThreadId"
-          :to="localPath(`/chat/articles/${chatThreadId}`)"
-          class="discuss-link"
-        >
-          <v-btn variant="tonal" color="primary" size="small"> Discuss… </v-btn>
-        </NuxtLink>
-      </v-card-actions> -->
     </v-card>
   </v-col>
 </template>
