@@ -143,7 +143,7 @@
             type="list-item@6"
             class="pa-2"
           />
-
+          <!-- {{ messagesForUI }}  -->
           <ArticlesCommentList
             :messages="messagesForUI"
             :me-id="auth.user?.id || null"
@@ -216,17 +216,13 @@
                   </template>
 
                   <v-list-item-title class="text-body-2">
-
-
-    <NuxtLink
-      v-if="u.slug"
-      :to="`/profiles/${getGenderPath(u.gender_id)}/${u.slug}`"
-      class="profile-link"
-    >
-      {{ u.displayname || u.userId }}
-    </NuxtLink>
-
-
+                    <NuxtLink
+                      v-if="u.slug"
+                      :to="`/profiles/${getGenderPath(u.gender_id)}/${u.slug}`"
+                      class="profile-link"
+                    >
+                      {{ u.displayname || u.userId }}
+                    </NuxtLink>
 
                     <!-- {{ u.displayname || u.userId }} -->
                   </v-list-item-title>
@@ -293,7 +289,7 @@ import {
   getAvatar,
   getAvatarIcon,
   getGenderColor,
-  getGenderPath
+  getGenderPath,
 } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
 import DOMPurify from "dompurify";
@@ -310,9 +306,9 @@ const autoCloseOnScroll = true;
 
 const articleImageUrl = computed(() => {
   const base = (pub.SUPABASE_BUCKET || "").replace(/\/$/, "");
-  console.log("base:", base);
+  // console.log("base:", base);
   const file = (topicThread.value?.article?.imagePath || "").replace(/^\//, "");
-  console.log("file:", file);
+  // console.log("file:", file);
   return base && file ? `${base}/articles/${file}` : null;
 });
 
@@ -489,16 +485,12 @@ const isMineSelected = computed(() => {
 function onReport() {
   if (!menu.id) return;
   // TODO: implement your reporting (dialog or API call)
-  // e.g. reportComment(menu.id)
   menu.open = false;
 }
 
 async function onDelete() {
   if (!menu.id) return;
   // TODO: confirm  call your delete endpoint
-  // const ok = confirm('Delete this comment?')
-  // if (!ok) return
-  // await $fetch(`/api/comments/${menu.id}`, { method: 'DELETE' })
   menu.open = false;
 }
 
@@ -547,10 +539,10 @@ watch(
       if (!m?.authorId) continue;
       const existing = profilesById.value.get(m.authorId);
       if (!existing) {
-        profilesById.value.set(m.authorId, {
-          displayname: m.displayname || "User",
-          avatarUrl: m.avatarUrl || null,
-        });
+        profilesById.value.set(
+          m.authorId,
+          m.author || { displayname: m.displayname || "User", avatarUrl: m.avatarUrl || null }
+        );
       }
     }
   },
@@ -583,34 +575,47 @@ watchEffect(() => {
   profilesById.value.set(meId, { displayname: dn, avatarUrl: av });
 });
 
-/* ---------- View model for the UI ---------- */
-/**
- * Always produce messages with displayname/avatarUrl.
- * - Prefer realtime store when it has items; otherwise show SSR.
- * - Fill missing names via profilesById; fallback to 'User'.
- */
+
+
+
+function getAuthorId(m) {
+  // tolerate different shapes (server, realtime, legacy)
+  return m?.authorId ?? m?.senderUserId ?? m?.sender_user_id ?? null;
+}
+
 const messagesForUI = computed(() => {
   const base =
     (messages.value?.length ? messages.value : initialItems.value) || [];
-  return base.map((m) => {
-    const authorId = m.authorId ?? m.sender_user_id ?? null;
-    const prof = authorId ? profilesById.value.get(authorId) : null;
+
+  return base.map((raw) => {
+    const authorId = getAuthorId(raw);
+
+    // prefer author object from API, fallback to local profile map
+    const authorProfile =
+      raw.author ??
+      (authorId ? profilesById.value.get(authorId) ?? null : null);
+
+    // console.log("authorProfile:", authorProfile);
+
     return {
-      ...m,
+      ...raw,
       authorId,
-      displayname: m.displayname ?? prof?.displayname ?? "User",
-      avatarUrl: m.avatarUrl ?? prof?.avatarUrl ?? null,
+      // authorProfile, 
+      author: raw.author ?? authorProfile ?? null, //
+      displayname: raw.displayname ?? authorProfile?.displayname ?? "User",
+      avatarUrl: raw.avatarUrl ?? authorProfile?.avatarUrl ?? null,
+      // convenience fields for links/tooltip
+      slug: raw.slug ?? authorProfile?.slug ?? null,
     };
   });
 });
 
+
+
+
 /* ---------- Compose/send ---------- */
 const draft = ref("");
 const replyToId = ref(null);
-// const onSend = async (text) => {
-//   const t = (text ?? draft.value).trim();
-//   if (!t) return;
-//   await send(t, { replyToId: replyToId.value || null });
 
 const onSend = async (text) => {
   const msgText = (text ?? draft.value).trim();
@@ -790,5 +795,4 @@ useSeoMeta({
   color: var(--v-theme-primary);
   text-decoration: underline;
 }
-
 </style>

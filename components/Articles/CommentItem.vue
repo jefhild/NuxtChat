@@ -19,7 +19,102 @@
           ><v-img :src="avatarUrl"
         /></v-avatar>
         <div class="d-flex align-center flex-wrap gap-2">
-          <strong class="text-body-2 text-blue-darken-4">{{ displayname }}</strong>
+          <!-- {{ author }}<br></br>
+          {{ author?.id }}<br></br>
+          {{ author?.gender?.name }}
+        <br>  </br>
+        {{ author?.slug }} -->
+
+          <!-- Profile peek on display name -->
+          <v-menu
+            v-if="author"
+            v-model="peekOpen"
+            :close-on-content-click="false"
+            location="bottom start"
+            offset="6"
+          >
+            <template #activator="{ props: actv }">
+              <strong
+                class="text-body-2 text-blue-darken-4 cursor-pointer"
+                v-bind="actv"
+                :aria-haspopup="'dialog'"
+                :aria-expanded="String(peekOpen)"
+              >
+                {{ displayname }}
+              </strong>
+            </template>
+            <v-card
+              width="300"
+              elevation="8"
+              class="pa-3"
+              role="dialog"
+              aria-label="User profile"
+            >
+              <div class="d-flex align-start gap-3">
+                <v-avatar size="40">
+                  <v-img :src="avatarUrl" v-if="avatarUrl" />
+                  <v-icon v-else>mdi-account</v-icon>
+                </v-avatar>
+                <div class="min-w-0">
+                  <div class="text-subtitle-2 font-weight-medium text-truncate">
+                    {{ author.displayname || displayname }}
+                  </div>
+                  <div
+                    v-if="author.username"
+                    class="text-caption text-medium-emphasis"
+                  >
+                    @{{ author.username }}
+                  </div>
+                  <div class="text-caption mt-1 d-flex align-center gap-2">
+                    <span v-if="author.gender?.name">{{
+                      author.gender.name
+                    }}</span>
+                    <span v-if="author.country?.emoji">{{
+                      author.country.emoji
+                    }}</span>
+                    <span
+                      v-if="author.country?.name"
+                      class="text-medium-emphasis"
+                    >
+                      {{ author.country.name }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                v-if="author.bio"
+                class="text-body-2 mt-2"
+                style="
+                  max-height: 6lh;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                "
+              >
+                {{ author.bio }}
+              </div>
+
+              <div class="d-flex align-center justify-end mt-3 gap-2">
+                <v-btn variant="text" size="small" @click="peekOpen = false">
+                  Close
+                </v-btn>
+                <v-btn
+                  v-if="profileHref"
+                  color="primary"
+                  size="small"
+                  :to="profileHref"
+                  @click="peekOpen = false"
+                >
+                  View profile
+                </v-btn>
+              </div>
+            </v-card>
+          </v-menu>
+          <!-- Fallback: no author object, render plain text -->
+          <strong v-else class="text-body-2 text-blue-darken-4">
+            {{ displayname }}
+          </strong>
+
           <v-chip v-if="isOp" size="x-small" variant="tonal">OP</v-chip>
           <v-chip
             v-if="senderKind === 'agent'"
@@ -33,12 +128,7 @@
           >
         </div>
         <v-spacer />
-        <v-btn
-          icon
-          variant="text"
-          density="comfortable"
-          @click="onMenuClick"
-        >
+        <v-btn icon variant="text" density="comfortable" @click="onMenuClick">
           <v-icon size="18">mdi-dots-horizontal</v-icon>
         </v-btn>
       </div>
@@ -58,40 +148,38 @@
       </div>
 
       <!-- Row C: actions -->
-  <div class="actions d-flex align-center justify-end">
+      <div class="actions d-flex align-center justify-end">
+        <ArticlesVoteControls
+          :id="id"
+          target="message"
+          :score="score"
+          :my-vote="myVote"
+          :disabled="disabled || senderKind === 'system'"
+          @vote="(payload) => $emit('vote', payload)"
+        />
 
-
-    <ArticlesVoteControls
-      :id="id"
-      target="message"
-      :score="score"
-      :my-vote="myVote"
-      :disabled="disabled || senderKind === 'system'"
-      @vote="(payload) => $emit('vote', payload)"
-    />
-
-    <v-btn
-      variant="text"
-      size="small"
-      class="ml-1"
-      :disabled="disabled || senderKind === 'system'"
-      @click="canReply ? $emit('reply', id) : $emit('login')"  
-    >
-      Reply
-    </v-btn>
-  </div>
+        <v-btn
+          variant="text"
+          size="small"
+          class="ml-1"
+          :disabled="disabled || senderKind === 'system'"
+          @click="canReply ? $emit('reply', id) : $emit('login')"
+        >
+          Reply
+        </v-btn>
+      </div>
       <slot name="reply-composer"></slot>
     </div>
   </v-sheet>
 </template>
 
 <script setup>
-
 const emit = defineEmits(["reply", "vote", "menu", "login"]);
 
 const props = defineProps({
   id: { type: String, required: true },
   depth: { type: Number, default: 0 }, // 0..2
+  author: { type: Object, default: null },
   displayname: { type: String, required: true },
   avatarUrl: { type: String, default: null },
   senderKind: { type: String, default: "user" }, // 'user'|'agent'|'system'
@@ -108,8 +196,17 @@ const props = defineProps({
   canReply: { type: Boolean, default: true },
 });
 
-const activatorId = computed(() => `comment-menu-btn-${props.id}`)
+const activatorId = computed(() => `comment-menu-btn-${props.id}`);
+const peekOpen = ref(false);
+const profileHref = computed(() => {
+  const slug = props.author?.slug
+  const genderName = props.author?.gender?.name || ""
+  if (!slug || !genderName) return null
 
+  // normalize gender (e.g. "Female" -> "female", "Non-Binary" -> "non-binary")
+  const genderPath = genderName.toLowerCase().replace(/\s+/g, "-")
+  return `/profiles/${genderPath}/${slug}`
+});
 
 /** SSR-safe format */
 const timeFmt = new Intl.DateTimeFormat("en-GB", {
@@ -132,18 +229,18 @@ function onMenuClick(e) {
   // Ensure we pass the BUTTON, not an inner SVG/icon
   const btn =
     (e.currentTarget instanceof Element ? e.currentTarget : null) ||
-    (e.target instanceof Element ? e.target.closest('button') : null)
+    (e.target instanceof Element ? e.target.closest("button") : null);
 
-  emit('menu', { id: props.id, el: btn || null })
+  emit("menu", { id: props.id, el: btn || null });
 }
 </script>
 
 <style scoped>
 /* ── Card container (flat + tight) ─────────────────────────────────────────── */
 .cmt {
-  --indent: 0px;                 /* set via depth classes or inline style */
+  --indent: 0px; /* set via depth classes or inline style */
   position: relative;
-  margin: 0;                     /* no gap between comments */
+  margin: 0; /* no gap between comments */
   border-radius: 0;
   box-shadow: none;
   background: transparent;
@@ -153,19 +250,25 @@ function onMenuClick(e) {
   /* fallback first (works everywhere) */
   background-color: rgba(0, 0, 0, 0.04);
   /* prefer theme vars if available */
-  background-color: rgba(var(--v-theme-on-surface-rgb, 0,0,0), 0.02);
+  background-color: rgba(var(--v-theme-on-surface-rgb, 0, 0, 0), 0.02);
 }
 
 /* Optional: a subtle left accent on hover for clarity */
 .cmt:hover {
-  outline: 1px solid rgba(var(--v-theme-on-surface-rgb, 0,0,0), 0.06);
+  outline: 1px solid rgba(var(--v-theme-on-surface-rgb, 0, 0, 0), 0.06);
   outline-offset: -1px;
 }
 
 /* depth indent (max 2) */
-.cmt--depth-0 { --indent: 0px; }
-.cmt--depth-1 { --indent: 16px; }
-.cmt--depth-2 { --indent: 32px; }
+.cmt--depth-0 {
+  --indent: 0px;
+}
+.cmt--depth-1 {
+  --indent: 16px;
+}
+.cmt--depth-2 {
+  --indent: 32px;
+}
 
 /* ── Inner layout: compact padding + reliable left indent ─────────────────── */
 .cmt-inner {
@@ -193,7 +296,9 @@ function onMenuClick(e) {
   background: color-mix(in oklab, currentColor 15%, transparent);
   opacity: 0.4;
 }
-.cmt--depth-0::before { display: none; }
+.cmt--depth-0::before {
+  display: none;
+}
 
 /* ── Row compaction (header / body / actions) ─────────────────────────────── */
 .cmt .header,
@@ -205,11 +310,19 @@ function onMenuClick(e) {
 }
 
 /* tighten header ↔ body spacing */
-.cmt .header { margin-bottom: 1px !important; }
-.cmt .body   { margin-top: 0 !important; margin-bottom: 2px !important; }
+.cmt .header {
+  margin-bottom: 1px !important;
+}
+.cmt .body {
+  margin-top: 0 !important;
+  margin-bottom: 2px !important;
+}
 
 /* actions bar flush to bottom */
-.cmt .actions { margin-top: 0; margin-bottom: 0; }
+.cmt .actions {
+  margin-top: 0;
+  margin-bottom: 0;
+}
 
 /* "replying to @name" line sits close to header and body */
 .cmt .body .text-caption.text-medium-emphasis {
@@ -227,9 +340,15 @@ function onMenuClick(e) {
 /* ── Sender cues ─────────────────────────────────────────────────────────── */
 .cmt--agent {
   border-left: 2px solid var(--v-theme-primary);
-  background: color-mix(in oklab, var(--v-theme-surface) 96%, var(--v-theme-primary) 4%);
+  background: color-mix(
+    in oklab,
+    var(--v-theme-surface) 96%,
+    var(--v-theme-primary) 4%
+  );
 }
-.cmt--system { opacity: 0.85; }
+.cmt--system {
+  opacity: 0.85;
+}
 
 /* ── Small UI tweaks ─────────────────────────────────────────────────────── */
 .v-chip {
@@ -237,5 +356,7 @@ function onMenuClick(e) {
   font-size: 0.7rem;
   padding: 0 4px;
 }
-.v-avatar { --v-avatar-size: 24px; }
+.v-avatar {
+  --v-avatar-size: 24px;
+}
 </style>

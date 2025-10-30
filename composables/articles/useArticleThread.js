@@ -257,6 +257,8 @@ export const useArticleThread = (threadIdRef) => {
       );
     }
 
+
+    
     onUnmounted(() => {
       try {
         unsub?.();

@@ -45,13 +45,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
     const categoryRoutes = categoryData.map((c) => `/categories/${c.slug}`);
     const tagRoutes = tagData.map((t) => `/tags/${t.slug}`);
 
-    const staticPages = [
-      "/about",
-      "/guides",
-      "/cookies",
-      "/insights",
-      "/settings",
-    ];
+    const staticPages = ["/about", "/cookies", "/settings"];
     const homeRoutes = ["/"];
 
     const allRoutes = [

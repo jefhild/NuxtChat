@@ -178,6 +178,7 @@ export default defineNuxtConfig({
     // Private keys (accessible only on the server)
     SUPABASE_KEY: process.env.SUPABASE_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    openaiApiKey: process.env.OPENAI_API_KEY,
     OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4.1-mini",
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
 

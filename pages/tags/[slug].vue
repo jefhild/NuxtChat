@@ -23,11 +23,11 @@
         "
       />
 
-      <v-row>
-        <!-- <v-col>
+      <!--     <v-row>
+      <v-col>
           <h1>{{ formattedSlug }}</h1>
-        </v-col> -->
-        <!-- <v-col>
+        </v-col> 
+         <v-col>
           <v-text-field
             v-model="searchQuery"
             :label="searchLabel"
@@ -38,8 +38,8 @@
             hide-details
             class="search-bar"
           />
-        </v-col> -->
-      </v-row>
+        </v-col> 
+      </v-row>-->
 
       <v-row>
         <v-col>

@@ -4,9 +4,12 @@
     <v-skeleton-loader v-if="loading" type="list-item@6" class="pa-2" />
     <template v-else>
       <template v-for="item in flatItems" :key="item.id">
+        <!-- {{ item }} -->
+          <!-- {{ item.author }} -->
         <CommentItem
           :id="item.id"
           :depth="item.depth"
+          :author="item.author ?? item.authorProfile ?? null"
           :displayname="item.displayname"
           :avatar-url="item.avatarUrl"
           :sender-kind="item.senderKind"
@@ -139,4 +142,7 @@ watch(() => props.messages.length, () => {
     activeReplyId.value = null
   }
 })
+
+
+
 </script>

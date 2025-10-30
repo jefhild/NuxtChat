@@ -52,6 +52,8 @@ export default defineEventHandler(async (event) => {
     new Set(msgs.map((m) => m.sender_user_id).filter(Boolean))
   );
 
+  // console.log("getting msgs:", msgs);
+
   // 2) Aggregates
   const [{ data: scores, error: sErr }, { data: todays, error: tErr2 }] =
     await Promise.all([
@@ -68,17 +70,34 @@ export default defineEventHandler(async (event) => {
   if (tErr2)
     throw createError({ statusCode: 500, statusMessage: tErr2.message });
 
+  // console.log("getting scores:", scores);
+
   // 3) Profiles (by user_id)
-  let profMap = new Map();
-  if (authorIds.length) {
-    const { data: profs, error: pErr } = await supa
-      .from("profiles")
-      .select("user_id, displayname, avatar_url")
-      .in("user_id", authorIds);
-    if (pErr)
-      throw createError({ statusCode: 500, statusMessage: pErr.message });
-    profMap = new Map((profs || []).map((p) => [p.user_id, p]));
-  }
+ let profMap = new Map();
+ if (authorIds.length) {
+  const { data: profs, error: pErr } = await supa
+    .from("profiles")
+    .select(
+      `
+      user_id,
+      displayname,
+      avatar_url,
+      bio,
+      site_url,
+      gender_id,
+      genders:gender_id ( id, name ),
+      country_id,
+      countries:country_id ( id, name, emoji ),
+      created,
+      last_active,
+      slug
+    `
+    )
+    .in("user_id", authorIds);
+   if (pErr)
+     throw createError({ statusCode: 500, statusMessage: pErr.message });
+   profMap = new Map((profs || []).map((p) => [p.user_id, p]));
+ }
 
   // 4) Current user votes
   let myVotes = [];
@@ -93,13 +112,57 @@ export default defineEventHandler(async (event) => {
     myVotes = data || [];
   }
 
+
+
+const toCamelProfile = (p) =>
+  p
+    ? {
+        id: p.user_id,
+        displayname: p.displayname ?? null,
+        avatarUrl: p.avatar_url ?? null,
+        bio: p.bio ?? null,
+        websiteUrl: p.site_url ?? null,
+        website: p.site_url ?? null, // backward-compat alias
+
+        genderId: p.gender_id ?? null,
+        gender: p.genders
+          ? {
+              id: p.genders.id ?? null,
+              name: p.genders.name ?? null,
+            }
+          : null,
+
+        countryId: p.country_id ?? null,
+        country: p.countries
+          ? {
+              id: p.countries.id ?? null,
+              name: p.countries.name ?? null,
+              emoji: p.countries.emoji ?? null,
+            }
+          : null,
+        countryName: p.countries?.name ?? null, // convenience
+        countryEmoji: p.countries?.emoji ?? null, // convenience
+        createdAt: p.created ?? null,
+        lastActive: p.last_active ?? null,
+        slug: p.slug ?? null,
+      }
+    : null;
+
+
+
+
+  // console.log("getting profile info:", profs);
+
+
+
   // 5) Merge
   const scoreMap = new Map((scores || []).map((r) => [r.message_id, r]));
   const todayMap = new Map((todays || []).map((r) => [r.message_id, r.today]));
   const myMap = new Map((myVotes || []).map((r) => [r.message_id, r.value]));
 
   const items = (msgs || []).map((m) => {
-    const prof = profMap.get(m.sender_user_id) || {};
+    const prof = profMap.get(m.sender_user_id) || null;
+    const author = toCamelProfile(prof);
     const agg = scoreMap.get(m.id) || {};
     return {
       id: m.id,
@@ -108,8 +171,12 @@ export default defineEventHandler(async (event) => {
       content: m.content,
       createdAt: m.created_at,
       authorId: m.sender_user_id,
-      displayname: prof.displayname ?? null,
-      avatarUrl: prof.avatar_url ?? null,
+      // legacy view fields
+      displayname: author?.displayname ?? null,
+      avatarUrl: author?.avatarUrl ?? null,
+      // full profile object + convenience slug
+      author,
+      authorSlug: author?.slug ?? null,
       masked: m.masked,
       deleted: m.deleted,
       score: agg.score ?? 0,
