@@ -287,7 +287,7 @@ import {
   getGenderPath,
 } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
-import DOMPurify from "dompurify";
+import { sanitizeHtml } from "~/utils/sanitizeHtml.js";
 
 const { t: $t, locale } = useI18n(); // avoid name collision with "thread"
 const { public: pub } = useRuntimeConfig();
@@ -301,16 +301,14 @@ const autoCloseOnScroll = true;
 
 const articleImageUrl = computed(() => {
   const base = (pub.SUPABASE_BUCKET || "").replace(/\/$/, "");
-  // console.log("base:", base);
   const file = (topicThread.value?.article?.imagePath || "").replace(/^\//, "");
-  // console.log("file:", file);
   return base && file ? `${base}/articles/${file}` : null;
 });
 
-const sanitizedArticleHtml = computed(() => {
-  const html = topicThread.value?.article?.content ?? ''
-  return isClient ? DOMPurify.sanitize(html) : ''
-})
+// compute reactively, no snapshot const
+const sanitizedArticleHtml = computed(() =>
+  sanitizeHtml(topicThread.value?.article?.content ?? "")
+);
 
 
 // Accessibility: close with Escape
@@ -323,8 +321,6 @@ const menu = reactive({
   id: null,
   activator: null,
 });
-
-// const threadId = computed(() => String(route.params.threadId || ""));
 
 const slug = computed(() => String(route.params.slug || ""));
 
@@ -537,7 +533,10 @@ watch(
       if (!existing) {
         profilesById.value.set(
           m.authorId,
-          m.author || { displayname: m.displayname || "User", avatarUrl: m.avatarUrl || null }
+          m.author || {
+            displayname: m.displayname || "User",
+            avatarUrl: m.avatarUrl || null,
+          }
         );
       }
     }
@@ -571,9 +570,6 @@ watchEffect(() => {
   profilesById.value.set(meId, { displayname: dn, avatarUrl: av });
 });
 
-
-
-
 function getAuthorId(m) {
   // tolerate different shapes (server, realtime, legacy)
   return m?.authorId ?? m?.senderUserId ?? m?.sender_user_id ?? null;
@@ -596,7 +592,7 @@ const messagesForUI = computed(() => {
     return {
       ...raw,
       authorId,
-      // authorProfile, 
+      // authorProfile,
       author: raw.author ?? authorProfile ?? null, //
       displayname: raw.displayname ?? authorProfile?.displayname ?? "User",
       avatarUrl: raw.avatarUrl ?? authorProfile?.avatarUrl ?? null,
@@ -605,9 +601,6 @@ const messagesForUI = computed(() => {
     };
   });
 });
-
-
-
 
 /* ---------- Compose/send ---------- */
 const draft = ref("");
