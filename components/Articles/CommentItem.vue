@@ -19,12 +19,6 @@
           ><v-img :src="avatarUrl"
         /></v-avatar>
         <div class="d-flex align-center flex-wrap gap-2">
-          <!-- {{ author }}<br></br>
-          {{ author?.id }}<br></br>
-          {{ author?.gender?.name }}
-        <br>  </br>
-        {{ author?.slug }} -->
-
           <!-- Profile peek on display name -->
           <v-menu
             v-if="author"
@@ -46,38 +40,60 @@
             <v-card
               width="300"
               elevation="8"
-              class="pa-3"
+              class="pa-3 position-relative"
               role="dialog"
               aria-label="User profile"
             >
+              <!-- Country emoji badge (top-right) -->
+              <!-- <div
+                v-if="author.country?.emoji"
+                class="absolute top-2 right-2 text-2xl select-none"
+                :title="author.country?.name"
+              >
+                {{ author.country.emoji }}
+              </div> -->
+
+              <v-tooltip
+                v-if="author.country?.emoji"
+                :text="author.country?.name"
+                location="top"
+              >
+                <template #activator="{ props }">
+                  <div
+                    v-bind="props"
+                    class="absolute top-2 right-2 text-2xl select-none cursor-default"
+                  >
+                    {{ author.country.emoji }}
+                  </div>
+                </template>
+              </v-tooltip>
+
               <div class="d-flex align-start gap-3">
-                <v-avatar size="40">
-                  <v-img :src="avatarUrl" v-if="avatarUrl" />
-                  <v-icon v-else>mdi-account</v-icon>
-                </v-avatar>
+                <div class="avatar-with-icon relative">
+                  <v-avatar size="32">
+                    <v-img :src="getAvatar(avatarUrl, author.gender.id)" />
+                  </v-avatar>
+
+                  <!-- Gender icon overlay -->
+                  <v-icon
+                    class="gender-icon absolute"
+                    :color="getGenderColor(author.gender.id)"
+                    size="20"
+                    :title="author.gender?.name || 'Other/Unspecified'"
+                    :icon="getAvatarIcon(author.gender.id)"
+                  />
+                </div>
+
                 <div class="min-w-0">
                   <div class="text-subtitle-2 font-weight-medium text-truncate">
                     {{ author.displayname || displayname }}
                   </div>
+
                   <div
                     v-if="author.username"
                     class="text-caption text-medium-emphasis"
                   >
                     @{{ author.username }}
-                  </div>
-                  <div class="text-caption mt-1 d-flex align-center gap-2">
-                    <span v-if="author.gender?.name">{{
-                      author.gender.name
-                    }}</span>
-                    <span v-if="author.country?.emoji">{{
-                      author.country.emoji
-                    }}</span>
-                    <span
-                      v-if="author.country?.name"
-                      class="text-medium-emphasis"
-                    >
-                      {{ author.country.name }}
-                    </span>
                   </div>
                 </div>
               </div>
@@ -95,9 +111,6 @@
               </div>
 
               <div class="d-flex align-center justify-end mt-3 gap-2">
-                <v-btn variant="text" size="small" @click="peekOpen = false">
-                  Close
-                </v-btn>
                 <v-btn
                   v-if="profileHref"
                   color="primary"
@@ -199,13 +212,13 @@ const props = defineProps({
 const activatorId = computed(() => `comment-menu-btn-${props.id}`);
 const peekOpen = ref(false);
 const profileHref = computed(() => {
-  const slug = props.author?.slug
-  const genderName = props.author?.gender?.name || ""
-  if (!slug || !genderName) return null
+  const slug = props.author?.slug;
+  const genderName = props.author?.gender?.name || "";
+  if (!slug || !genderName) return null;
 
   // normalize gender (e.g. "Female" -> "female", "Non-Binary" -> "non-binary")
-  const genderPath = genderName.toLowerCase().replace(/\s+/g, "-")
-  return `/profiles/${genderPath}/${slug}`
+  const genderPath = genderName.toLowerCase().replace(/\s+/g, "-");
+  return `/profiles/${genderPath}/${slug}`;
 });
 
 /** SSR-safe format */
@@ -358,5 +371,34 @@ function onMenuClick(e) {
 }
 .v-avatar {
   --v-avatar-size: 24px;
+}
+
+.avatar-with-icon {
+  position: relative;
+  margin-right: 8px;
+}
+.gender-icon {
+  position: absolute;
+  right: -7px;
+  bottom: -2px;
+  background: var(--v-theme-surface);
+  border-radius: 50%;
+  padding: 1px;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.top-2 {
+  top: 0.5rem;
+}
+
+.right-2 {
+  right: 0.5rem;
 }
 </style>

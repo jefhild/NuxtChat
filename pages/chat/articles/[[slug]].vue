@@ -2,11 +2,6 @@
   <v-container fluid class="d-flex flex-column h-100 min-h-0">
     <v-row no-gutters class="min-h-0" style="flex: 0 0 auto">
       <v-col>
-        <!-- <PageHeader
-          :text="$t('pages.chat.articles.heading')"
-          :subtitle="$t('pages.chat.articles.subtitle')"
-        /> -->
-
         <PageHeader
           :text="topicThread?.article?.title || topicThread?.title || ''"
           :subtitle="$t('pages.chat.articles.subtitle')"
@@ -118,11 +113,11 @@
           <v-card
             v-if="panelOpen"
             id="thread-info-panel"
-            class="thread-overlay-panel mx-2"
-            elevation="8"
+            class="mx-1"
+            elevation="6"
             :aria-hidden="String(!panelOpen)"
           >
-            <div class="px-3 py-3 overlay-scroll">
+            <div class="px-8 py-3">
               <!-- Always render full article (sanitized) -->
               <div v-html="sanitizedArticleHtml"></div>
             </div>
@@ -313,9 +308,10 @@ const articleImageUrl = computed(() => {
 });
 
 const sanitizedArticleHtml = computed(() => {
-  const html = topicThread.value?.article?.content ?? "";
-  return process.client ? DOMPurify.sanitize(html) : "";
-});
+  const html = topicThread.value?.article?.content ?? ''
+  return isClient ? DOMPurify.sanitize(html) : ''
+})
+
 
 // Accessibility: close with Escape
 function onKeydown(e) {
