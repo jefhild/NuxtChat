@@ -606,6 +606,10 @@
         "twitterDescription": "Free anonymous chat app (Real or AI) for everyone."
       }
     },
+    "settings":{
+      "heading": "Settings",
+      "subtitle": "Update your account preferences and personal information."
+    },
     "signin": {
       "note": "You should never be here...",
       "meta": {

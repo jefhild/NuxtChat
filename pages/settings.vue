@@ -1,11 +1,13 @@
 <template>
   <v-container v-if="!isLoading" fluid>
-    <HomeRow1 />
-    <v-row>
-      <v-col>
-        <SettingsLayout />
-      </v-col>
-    </v-row>
+    <!-- <HomeRow1 /> -->
+
+    <PageHeader
+      :text="$t('pages.settings.heading')"
+      :subtitle="$t('pages.settings.subtitle')"
+    />
+
+    <SettingsLayout />
   </v-container>
 </template>
 

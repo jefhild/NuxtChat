@@ -590,6 +590,10 @@
         "twitterDescription": "面向所有人的免费匿名聊天应用（真实或AI）。"
       }
     },
+    "settings": {
+      "heading": " 设置",
+      "subtitle": "更新您的账户偏好和个人信息。"
+    },
     "signin": {
       "note": "您不应该在这里...",
       "meta": {

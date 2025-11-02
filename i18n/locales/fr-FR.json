@@ -590,6 +590,10 @@
         "twitterDescription": "Application de chat anonyme gratuite (Réel ou IA) pour tous."
       }
     },
+    "settings": {
+      "heading": "Paramètres",
+      "subtitle": "Mettez à jour les préférences de votre compte et vos informations personnelles."
+    },
     "signin": {
       "note": "Vous ne devriez jamais être ici...",
       "meta": {
