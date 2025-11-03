@@ -1,6 +1,74 @@
 <template>
   <v-container fluid class="d-flex flex-column h-100 min-h-0">
-    <v-row no-gutters class="min-h-0" style="flex: 0 0 auto">
+    <!-- Mobile controls: left drawer (Topics) + right drawer (Participants) -->
+    <div class="d-md-none d-flex align-center justify-space-between px-2 py-2">
+      <v-btn icon @click="leftOpen = true" aria-label="Open topics"
+        ><v-icon>mdi-menu</v-icon></v-btn
+      >
+      <v-spacer />
+      <v-btn
+        icon
+        variant="text"
+        @click="rightOpen = true"
+        aria-label="Show participants"
+      >
+        <v-icon>mdi-account-multiple-outline</v-icon>
+      </v-btn>
+    </div>
+
+    <!-- <v-row no-gutters class="min-h-0" style="flex: 0 0 auto">
+      <v-col>
+        <PageHeader
+          :text="topicThread?.article?.title || topicThread?.title || ''"
+          :subtitle="
+            !$vuetify.display.smAndDown
+              ? $t('pages.chat.articles.subtitle')
+              : ''
+          "
+        />
+      </v-col>
+    </v-row> -->
+
+    <!-- Mobile header with background image -->
+    <v-row no-gutters class="d-flex d-md-none" style="flex: 0 0 auto">
+      <v-col>
+        <div class="mobile-header-bg">
+          <v-img
+            v-if="articleImageUrl"
+            :src="articleImageUrl"
+            height="148"
+            cover
+            class="mobile-header-img"
+            eager
+          >
+            <!-- darken for readability -->
+            <div class="mobile-header-overlay" />
+            <!-- overlay content -->
+            <div class="absolute inset-0 d-flex align-end">
+              <div class="px-3 py-3 w-100">
+                <PageHeader
+                  class="mobile-header-title"
+                  :text="
+                    topicThread?.article?.title || topicThread?.title || ''
+                  "
+                  :subtitle="''"
+                />
+              </div>
+            </div>
+          </v-img>
+          <!-- fallback when no image -->
+          <div v-else class="px-3 py-3">
+            <PageHeader
+              :text="topicThread?.article?.title || topicThread?.title || ''"
+              :subtitle="''"
+            />
+          </div>
+        </div>
+      </v-col>
+    </v-row>
+
+    <!-- Desktop / tablet header without background -->
+    <v-row no-gutters class="min-h-0 d-none d-md-flex" style="flex: 0 0 auto">
       <v-col>
         <PageHeader
           :text="topicThread?.article?.title || topicThread?.title || ''"
@@ -8,14 +76,14 @@
         />
       </v-col>
     </v-row>
-    <!-- <HomeRow1 /> -->
 
-    <v-row class="flex-grow-1 overflow-hidden min-h-0">
+    <!-- Desktop / tablet (>= md): 3 columns -->
+    <v-row class="flex-grow-1 overflow-hidden min-h-0 d-none d-md-flex">
       <!-- LEFT: Topics -->
       <v-col
         cols="12"
         md="3"
-        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0 d-none d-md-flex"
       >
         <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
           <div
@@ -23,36 +91,13 @@
             class="flex-grow-1 overflow-auto min-h-0 users-scroll"
             style="flex: 1 1 0"
           >
-            <v-list lines="two" density="comfortable">
-              <v-skeleton-loader
-                v-if="loadingTopics"
-                type="list-item@6"
-                class="pa-2"
-              />
-              <template v-else>
-                <v-list-item
-                  v-for="t in topics"
-                  :key="t.id"
-                  :active="t.slug === slug"
-                  class="cursor-pointer"
-                  :to="localePath(`/chat/articles/${t.slug}`)"
-                  link
-                >
-                  <template #prepend>
-                    <v-avatar size="28" v-if="t.botAvatarUrl"
-                      ><v-img :src="t.botAvatarUrl"
-                    /></v-avatar>
-                  </template>
-                  <v-list-item-title class="text-body-2 font-weight-medium">
-                    {{ t.title }}
-                  </v-list-item-title>
-                  <v-list-item-subtitle class="text-caption">
-                    {{ formatDateTime(t.lastActivityAt) }}
-                    <!-- · Today {{ t.todayCount }} · Score {{ t.score }} -->
-                  </v-list-item-subtitle>
-                </v-list-item>
-              </template>
-            </v-list>
+            <ArticlesTopicsPane
+              :topics="topics"
+              :slug="slug"
+              :loading="loadingTopics"
+              :format-date-time="formatDateTime"
+              :locale-path="localePath"
+            />
           </div>
         </v-card>
 
@@ -182,53 +227,148 @@
             class="flex-grow-1 overflow-auto min-h-0 users-scroll"
             style="flex: 1 1 0"
           >
-            <v-card-title class="text-subtitle-2 py-2"
-              >Participants (Now)</v-card-title
-            >
-            <v-divider />
-            <v-list density="compact">
-              <v-list-item
-                v-if="!now.length"
-                title="No one visible right now."
-              />
-              <template v-else>
-                <v-list-item v-for="u in now" :key="u.userId">
-                  <template #prepend>
-                    <div class="avatar-with-icon">
-                      <v-avatar size="32">
-                        <v-img :src="getAvatar(u.avatarUrl, u.gender_id)" />
-                      </v-avatar>
-
-                      <!-- Only gender icon, not filled -->
-                      <v-icon
-                        class="gender-icon"
-                        :color="getGenderColor(u.gender_id)"
-                        size="18"
-                        :title="u.gender?.name || 'Other/Unspecified'"
-                        :icon="getAvatarIcon(u.gender_id)"
-                      />
-                    </div>
-                  </template>
-
-                  <v-list-item-title class="text-body-2">
-                    <NuxtLink
-                      v-if="u.slug"
-                      :to="`/profiles/${getGenderPath(u.gender_id)}/${u.slug}`"
-                      class="profile-link"
-                    >
-                      {{ u.displayname || u.userId }}
-                    </NuxtLink>
-
-                    <!-- {{ u.displayname || u.userId }} -->
-                  </v-list-item-title>
-                </v-list-item>
-              </template>
-            </v-list>
+            <ArticlesParticipantsPane
+              :now="now"
+              :get-avatar="getAvatar"
+              :get-gender-color="getGenderColor"
+              :get-avatar-icon="getAvatarIcon"
+              :get-gender-path="getGenderPath"
+            />
           </div>
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Mobile (< md): only the Thread pane -->
+    <v-row class="flex-grow-1 overflow-hidden min-h-0 d-flex d-md-none">
+      <v-col
+        cols="12"
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
+      >
+        <!-- keep your existing CENTER (Thread) content 1:1 here -->
+        <div class="messages-sticky-header d-none d-md-block"></div>
+        <v-expand-transition>
+          <v-card
+            v-if="panelOpen"
+            id="thread-info-panel"
+            class="mx-1"
+            elevation="6"
+            :aria-hidden="String(!panelOpen)"
+          >
+            <div class="px-8 py-3">
+              <div v-html="sanitizedArticleHtml"></div>
+            </div>
+          </v-card>
+        </v-expand-transition>
+
+        <div
+          ref="centerScrollRef"
+          class="flex-grow-1 overflow-auto users-scroll min-h-0 px-2 py-2"
+          style="flex: 1 1 0"
+          @scroll.passive="
+            panelOpen && autoCloseOnScroll && (panelOpen = false)
+          "
+        >
+          <v-skeleton-loader
+            v-if="loadingMsgs"
+            type="list-item@6"
+            class="pa-2"
+          />
+          <ArticlesCommentList
+            :messages="messagesForUI"
+            :me-id="auth.user?.id || null"
+            :loading="loadingInit || loadingMsgs"
+            :can-reply="Boolean(auth.user?.id)"
+            @send-reply="
+              ({ id, text }) => {
+                replyToId = id;
+                onSend(text);
+              }
+            "
+            @vote="voteOnMessage"
+            @menu="openMessageMenu"
+            @login-request="showLoginDialog = true"
+          />
+        </div>
+
+        <div class="border-t pt-2" style="flex: 0 0 auto">
+          <ChatLayoutMessageComposer
+            v-model:draft="draft"
+            :peer-id="threadId"
+            :me-id="auth.user?.id || null"
+            :conversation-key="`thread:${threadId}`"
+            :disabled="!auth.user?.id || !threadId"
+            class="w-100 mx-auto"
+            @send="onSend"
+          />
+        </div>
+      </v-col>
+    </v-row>
   </v-container>
+
+  <!-- Mobile-only Drawers -->
+  <v-navigation-drawer
+    v-model="leftOpen"
+    location="left"
+    temporary
+    class="d-md-none"
+    width="320"
+    aria-label="Topics drawer"
+  >
+    <div
+      class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+      style="height: 100%"
+    >
+      <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+        <div
+          ref="leftScrollRefMobile"
+          class="flex-grow-1 overflow-auto min-h-0 users-scroll"
+          style="flex: 1 1 0"
+        >
+          <!-- SAME content as desktop Topics column -->
+          <ArticlesTopicsPane
+            :topics="topics"
+            :slug="slug"
+            :loading="loadingTopics"
+            :format-date-time="formatDateTime"
+            :locale-path="localePath"
+            @select="() => (leftOpen = false)"
+          />
+        </div>
+      </v-card>
+    </div>
+  </v-navigation-drawer>
+
+  <v-navigation-drawer
+    v-model="rightOpen"
+    location="right"
+    temporary
+    class="d-md-none"
+    width="300"
+    aria-label="Participants drawer"
+  >
+    <div
+      class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+      style="height: 100%"
+    >
+      <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+        <div
+          ref="rightScrollRefMobile"
+          class="flex-grow-1 overflow-auto min-h-0 users-scroll"
+          style="flex: 1 1 0"
+        >
+          <ArticlesParticipantsPane
+            :now="now"
+            :get-avatar="getAvatar"
+            :get-gender-color="getGenderColor"
+            :get-avatar-icon="getAvatarIcon"
+            :get-gender-path="getGenderPath"
+            @select="() => (rightOpen = false)"
+          />
+        </div>
+      </v-card>
+    </div>
+  </v-navigation-drawer>
 
   <v-menu
     v-model="menu.open"
@@ -289,6 +429,9 @@ import {
 import { useI18n } from "vue-i18n";
 import { sanitizeHtml } from "~/utils/sanitizeHtml.js";
 
+const leftOpen = ref(false);
+const rightOpen = ref(false);
+
 const { t: $t, locale } = useI18n(); // avoid name collision with "thread"
 const { public: pub } = useRuntimeConfig();
 const route = useRoute();
@@ -309,7 +452,6 @@ const articleImageUrl = computed(() => {
 const sanitizedArticleHtml = computed(() =>
   sanitizeHtml(topicThread.value?.article?.content ?? "")
 );
-
 
 // Accessibility: close with Escape
 function onKeydown(e) {
@@ -756,7 +898,35 @@ useSeoMeta({
   articlePublishedTime: () => publishedTime.value || undefined,
 });
 </script>
+
 <style scoped>
+.mobile-header-bg {
+  position: relative;
+  overflow: hidden;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.mobile-header-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+}
+
+/* force white title text inside PageHeader on mobile */
+.mobile-header-title :deep(*) {
+  color: #fff !important;
+}
+/* slight text shadow helps on busy images */
+.mobile-header-title :deep(h1),
+.mobile-header-title :deep(h2),
+.mobile-header-title :deep(.text-h4) {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
 .messages-sticky-header {
   position: sticky;
   top: 0;
