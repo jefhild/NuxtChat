@@ -45,14 +45,32 @@
             <div class="mobile-header-overlay" />
             <!-- overlay content -->
             <div class="absolute inset-0 d-flex align-end">
-              <div class="px-3 py-3 w-100">
+              <div
+                class="px-3 py-3 w-100 d-flex align-center justify-space-between"
+              >
                 <PageHeader
                   class="mobile-header-title"
                   :text="
                     topicThread?.article?.title || topicThread?.title || ''
                   "
                   :subtitle="''"
+                  @click="panelOpen = !panelOpen"
+                  style="cursor: pointer"
                 />
+                <v-btn
+                  icon
+                  size="x-small"
+                  color="white"
+                  variant="text"
+                  class="ml-2"
+                  :aria-expanded="String(panelOpen)"
+                  aria-controls="thread-info-panel"
+                  @click="panelOpen = !panelOpen"
+                >
+                  <v-icon
+                    :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                  />
+                </v-btn>
               </div>
             </div>
           </v-img>
@@ -101,7 +119,7 @@
           </div>
         </v-card>
 
-        <ClientOnly>
+        <ClientOnly v-if="auth.authStatus !== 'authenticated'">
           <ChatLayoutConsentPanel
             :auth-status="auth.authStatus"
             @action="goToImChatty"
@@ -132,9 +150,6 @@
                 >
                   {{ topicThread?.article?.title || "See the full article" }}
                 </p>
-                <!-- <div class="text-caption text-white text-medium-emphasis">
-                  Public to authenticated users
-                </div> -->
               </div>
 
               <v-btn
@@ -913,7 +928,6 @@ useSeoMeta({
   position: absolute;
   inset: 0;
   pointer-events: none;
-
 }
 
 /* force white title text inside PageHeader on mobile */
