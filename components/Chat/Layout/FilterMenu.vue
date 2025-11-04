@@ -1,238 +1,215 @@
 <template>
-  <v-row>
-    <!-- {{ props.authStatus }} -->
-    <v-col cols="12" sm="auto">
-      <!-- {{ showAIUsers }} -->
-      <v-menu v-model="menu" :close-on-content-click="false" location="end">
-        <template v-slot:activator="{ props }">
-          <v-btn
-            variant="tonal"
-            color="primary"
-            v-bind="props"
-            class="rounded-lg"
-            :disabled="disableToggle"
-          >
-            <v-icon start>mdi-filter-variant</v-icon>
-            {{ $t("components.filter-menu.filters") }}
-            <v-badge
-              v-if="
-                selectedGender !== null ||
-                selectedAge[0] !== 18 ||
-                selectedAge[1] !== 100
-              "
-              color="red"
-              dot
-              overlap
-              class="ml-2"
-            />
-          </v-btn>
+  <v-menu v-model="menu" :close-on-content-click="false" location="end">
+    <template v-slot:activator="{ props }">
+      <v-btn
+        v-bind="props"
+        variant="plain"
+        density="comfortable"
+        icon
+        :disabled="disableToggle"
+        class="pa-0 ma-0 mb-1"
+        style="--v-btn-hover-opacity: 0.8"
+        aria-label="Open advanced filters"
+      >
+        <v-icon>mdi-filter-variant</v-icon>
+        <!-- {{ $t("components.filter-menu.filters") }} -->
+        <v-badge
+          v-if="
+            selectedGender !== null ||
+            selectedAge[0] !== 18 ||
+            selectedAge[1] !== 100
+          "
+          color="red"
+          dot
+        />
+      </v-btn>
+    </template>
+
+    <v-card
+      class="pa-4"
+      :width="$vuetify.display.smAndDown ? '100%' : 400"
+      max-height="90vh"
+      style="overflow-y: auto"
+      rounded="lg"
+      elevation="4"
+    >
+      <!-- User Info -->
+      <v-row class="mb-1 mt-2" align="center" no-gutters>
+        <div class="d-flex flex-column justify-center">
+          <span class="text-body-1 font-weight-medium">{{
+            userProfile.displayname
+          }}</span>
+          <span class="text-caption text-grey">{{ userProfile.tagline }}</span>
+        </div>
+      </v-row>
+
+      <v-divider />
+
+      <!-- Gender -->
+      <v-list-subheader>
+        <v-icon size="18" class="mr-1">mdi-gender-male-female</v-icon>
+        {{ $t("components.filter-menu.gender") }}
+      </v-list-subheader>
+      <v-select
+        v-model="selectedGender"
+        :items="genders"
+        item-title="text"
+        item-value="value"
+        density="compact"
+        variant="outlined"
+        class="small-select"
+        :menu-props="{ contentClass: 'small-select-menu' }"
+        :disabled="!isAllowed"
+        @update:modelValue="applyFilters"
+      >
+        <template #selection="{ item }">
+          <v-icon start size="small">{{ item.raw.icon }}</v-icon>
+          {{ item.raw.text }}
         </template>
 
-        <v-card
-          class="pa-4"
-          :width="$vuetify.display.smAndDown ? '100%' : 400"
-          max-height="90vh"
-          style="overflow-y: auto"
-          rounded="lg"
-          elevation="4"
-        >
-          <!-- User Info -->
-          <v-row class="mb-1 mt-2" align="center" no-gutters>
-            <div class="d-flex flex-column justify-center">
-              <span class="text-body-1 font-weight-medium">{{
-                userProfile.displayname
-              }}</span>
-              <span class="text-caption text-grey">{{
-                userProfile.tagline
-              }}</span>
-            </div>
-          </v-row>
-
-          <v-divider />
-
-          <!-- Gender -->
-          <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-gender-male-female</v-icon>
-            {{ $t("components.filter-menu.gender") }}
-          </v-list-subheader>
-          <v-select
-            v-model="selectedGender"
-            :items="genders"
-            item-title="text"
-            item-value="value"
-            density="compact"
-            variant="outlined"
-            class="small-select"
-            :menu-props="{ contentClass: 'small-select-menu' }"
-            :disabled="!isAllowed"
-            @update:modelValue="applyFilters"
-          >
-            <template #selection="{ item }">
-              <v-icon start size="small">{{ item.raw.icon }}</v-icon>
-              {{ item.raw.text }}
-            </template>
-
-            <!-- Dropdown list items -->
-            <template #item="{ item, props }">
-              <v-list-item v-bind="props">
-                <template #prepend>
-                  <v-icon size="small" class="mr-2">{{ item.raw.icon }}</v-icon>
-                </template>
-              </v-list-item>
-            </template>
-          </v-select>
-
-          <!-- Statuses -->
-          <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-ring</v-icon>
-            {{ $t("components.filter-menu.status") }}
-          </v-list-subheader>
-          <v-select
-            v-model="selectedStatus"
-            :items="statuses"
-            item-title="name"
-            item-value="id"
-            density="compact"
-            variant="outlined"
-            class="small-select"
-            :menu-props="{ contentClass: 'small-select-menu' }"
-            label="Select a status"
-            :disabled="!isAllowed"
-            @update:modelValue="applyFilters"
-          >
-            <template #selection="{ item }">
-              <v-icon start size="small">{{ item.raw.icon }}</v-icon>
-              {{ item.raw.name }}
-            </template>
-
-            <!-- Dropdown list items -->
-            <template #item="{ item, props }">
-              <v-list-item v-bind="props">
-                <template #prepend>
-                  <v-icon size="small" class="mr-2">{{ item.raw.icon }}</v-icon>
-                </template>
-                <v-list-item-title>{{ item.raw.text }}</v-list-item-title>
-              </v-list-item>
-            </template>
-          </v-select>
-
-          <!-- Age Range -->
-          <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-calendar-range</v-icon>
-            {{ $t("components.filter-menu.age-range") }}
-          </v-list-subheader>
-          <v-range-slider
-            v-model="selectedAge"
-            :min="18"
-            :max="80"
-            step="1"
-            class=""
-            color="deep-purple"
-            :disabled="!isAllowed"
-            @update:modelValue="applyFilters"
-          >
+        <!-- Dropdown list items -->
+        <template #item="{ item, props }">
+          <v-list-item v-bind="props">
             <template #prepend>
-              <v-chip size="small" color="grey-lighten-1" text-color="black">{{
-                selectedAge[0]
-              }}</v-chip>
+              <v-icon size="small" class="mr-2">{{ item.raw.icon }}</v-icon>
             </template>
-            <template #append>
-              <v-chip size="small" color="grey-lighten-1" text-color="black">{{
-                selectedAge[1]
-              }}</v-chip>
+          </v-list-item>
+        </template>
+      </v-select>
+
+      <!-- Statuses -->
+      <v-list-subheader>
+        <v-icon size="18" class="mr-1">mdi-ring</v-icon>
+        {{ $t("components.filter-menu.status") }}
+      </v-list-subheader>
+      <v-select
+        v-model="selectedStatus"
+        :items="statuses"
+        item-title="name"
+        item-value="id"
+        density="compact"
+        variant="outlined"
+        class="small-select"
+        :menu-props="{ contentClass: 'small-select-menu' }"
+        label="Select a status"
+        :disabled="!isAllowed"
+        @update:modelValue="applyFilters"
+      >
+        <template #selection="{ item }">
+          <v-icon start size="small">{{ item.raw.icon }}</v-icon>
+          {{ item.raw.name }}
+        </template>
+
+        <!-- Dropdown list items -->
+        <template #item="{ item, props }">
+          <v-list-item v-bind="props">
+            <template #prepend>
+              <v-icon size="small" class="mr-2">{{ item.raw.icon }}</v-icon>
             </template>
-          </v-range-slider>
+            <v-list-item-title>{{ item.raw.text }}</v-list-item-title>
+          </v-list-item>
+        </template>
+      </v-select>
 
-          <!-- Anonymity -->
-          <!-- <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-incognito</v-icon>
-            {{ $t("components.filter-menu.anonymity") }}
-          </v-list-subheader>
-          <v-select
-            v-model="selectedAnonymous"
-            :items="anonymity"
-            item-title="text"
-            item-value="value"
-            density="compact"
-            variant="outlined"
-            class="small-select"
-            :menu-props="{ contentClass: 'small-select-menu' }"
-            :disabled="!isAllowed"
-            @update:modelValue="applyFilters"
-          /> -->
+      <!-- Age Range -->
+      <v-list-subheader>
+        <v-icon size="18" class="mr-1">mdi-calendar-range</v-icon>
+        {{ $t("components.filter-menu.age-range") }}
+      </v-list-subheader>
+      <v-range-slider
+        v-model="selectedAge"
+        :min="18"
+        :max="80"
+        step="1"
+        class=""
+        color="deep-purple"
+        :disabled="!isAllowed"
+        @update:modelValue="applyFilters"
+      >
+        <template #prepend>
+          <v-chip size="small" color="grey-lighten-1" text-color="black">{{
+            selectedAge[0]
+          }}</v-chip>
+        </template>
+        <template #append>
+          <v-chip size="small" color="grey-lighten-1" text-color="black">{{
+            selectedAge[1]
+          }}</v-chip>
+        </template>
+      </v-range-slider>
 
-          <!-- Interests -->
-          <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-heart-multiple</v-icon>
-            {{ $t("components.filter-menu.interests") }}
-          </v-list-subheader>
-          <v-select
-            v-model="selectedInterests"
-            :items="interests"
-            item-title="name"
-            item-value="id"
-            label="Choose interests"
-            multiple
-            chips
-            closable-chips
-            variant="outlined"
-            density="compact"
-            class="small-select"
-            :menu-props="{ contentClass: 'small-select-menu' }"
-            :disabled="!isAllowed"
-            @update:modelValue="applyFilters"
-          >
-            <!-- Dropdown Item List -->
-            <template #item="{ item, props }">
-              <v-list-item v-bind="props">
-                <template #prepend>
-                  <v-icon size="small" :color="item.raw.color" class="mr-2">{{
-                    item.raw.icon
-                  }}</v-icon>
-                  <span class="mr-2">{{ item.raw.emoji }}</span>
-                </template>
-              </v-list-item>
+      <!-- Interests -->
+      <v-list-subheader>
+        <v-icon size="18" class="mr-1">mdi-heart-multiple</v-icon>
+        {{ $t("components.filter-menu.interests") }}
+      </v-list-subheader>
+      <v-select
+        v-model="selectedInterests"
+        :items="interests"
+        item-title="name"
+        item-value="id"
+        label="Choose interests"
+        multiple
+        chips
+        closable-chips
+        variant="outlined"
+        density="compact"
+        class="small-select"
+        :menu-props="{ contentClass: 'small-select-menu' }"
+        :disabled="!isAllowed"
+        @update:modelValue="applyFilters"
+      >
+        <!-- Dropdown Item List -->
+        <template #item="{ item, props }">
+          <v-list-item v-bind="props">
+            <template #prepend>
+              <v-icon size="small" :color="item.raw.color" class="mr-2">{{
+                item.raw.icon
+              }}</v-icon>
+              <span class="mr-2">{{ item.raw.emoji }}</span>
             </template>
-          </v-select>
+          </v-list-item>
+        </template>
+      </v-select>
 
-          <!-- Country -->
-          <v-list-subheader>
-            <v-icon size="18" class="mr-1">mdi-flag</v-icon>
-            {{ $t("components.filter-menu.country") }}
-          </v-list-subheader>
-          <v-select
-            v-model="selectedCountry"
-            :items="countries"
-            item-title="name"
-            item-value="id"
-            density="compact"
-            variant="outlined"
-            class="small-select"
-            :menu-props="{ contentClass: 'small-select-menu' }"
-            label="Select a country"
-            :disabled="!isAllowed"
-            @update:modelValue="applyFilters"
-          />
+      <!-- Country -->
+      <v-list-subheader>
+        <v-icon size="18" class="mr-1">mdi-flag</v-icon>
+        {{ $t("components.filter-menu.country") }}
+      </v-list-subheader>
+      <v-select
+        v-model="selectedCountry"
+        :items="countries"
+        item-title="name"
+        item-value="id"
+        density="compact"
+        variant="outlined"
+        class="small-select"
+        :menu-props="{ contentClass: 'small-select-menu' }"
+        label="Select a country"
+        :disabled="!isAllowed"
+        @update:modelValue="applyFilters"
+      />
 
-          <!-- Actions -->
-          <v-divider class="my-3" />
-          <v-card-actions>
-            <v-btn variant="text" color="error" @click="clearFilters">
-              <v-icon start size="small">mdi-close-circle</v-icon>
-              {{ $t("components.filter-menu.clear") }}
-            </v-btn>
-            <v-spacer />
-            <!-- <v-btn variant="text" @click="menu = false">{{
+      <!-- Actions -->
+      <v-divider class="my-3" />
+      <v-card-actions>
+        <v-btn variant="text" color="error" @click="clearFilters">
+          <v-icon start size="small">mdi-close-circle</v-icon>
+          {{ $t("components.filter-menu.clear") }}
+        </v-btn>
+        <v-spacer />
+        <!-- <v-btn variant="text" @click="menu = false">{{
               $t("components.filter-menu.cancel")
             }}</v-btn>
             <v-btn color="primary" variant="flat" @click="saveFilters">{{
               $t("components.filter-menu.apply")
             }}</v-btn> -->
-          </v-card-actions>
-        </v-card>
-      </v-menu>
-    </v-col>
-  </v-row>
+      </v-card-actions>
+    </v-card>
+  </v-menu>
+  <!-- </v-col>
+  </v-row> -->
 </template>
 
 <script setup>
@@ -348,7 +325,6 @@ const clearFilters = () => {
 
   applyFilters(); // emit cleared values
 };
-
 
 const isAllowed = computed(() =>
   ["anon_authenticated", "authenticated"].includes(props.authStatus)

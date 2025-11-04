@@ -88,14 +88,14 @@ export default defineEventHandler(async (event) => {
     resume,
   } = await readBody(event);
 
-  console.log("[OnboardingAI] incoming body:", {
-    messages: messages?.map((m) => m.role + ":" + m.content).slice(-3), // last 3 for context
-    draftSummary,
-    missingFields,
-    consented,
-    isComplete,
-    resume,
-  });
+  // console.log("[OnboardingAI] incoming body:", {
+  //   messages: messages?.map((m) => m.role + ":" + m.content).slice(-3), // last 3 for context
+  //   draftSummary,
+  //   missingFields,
+  //   consented,
+  //   isComplete,
+  //   resume,
+  // });
 
   // ------------------------------------------------------------------
   // (A) HARD CONSENT FALLBACK — runs BEFORE calling OpenAI

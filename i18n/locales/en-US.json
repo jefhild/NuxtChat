@@ -720,7 +720,10 @@
       "onboarding-line2": "Enjoy. Thanks for stopping by.",
       "anon_authenticated-line1": "Welcome! Don't forget to register an email.",
       "anon_authenticated-line2": "Enjoy. Happy chatting.",
-      "action-label": "Open consent information or start chat"
+      "action-label": "Open consent information or start chat",
+      "settings": "Settings",
+      "settings-disabled": "Settings (Disabled in Anonymous Mode)",
+      "settings-aria-label": "Open settings modal to update your account preferences and personal information"
     },
     "loginAi": {
       "titleText": "Create Your Anonymous Profile"

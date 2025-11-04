@@ -3,22 +3,47 @@
 
   <div class="d-flex flex-column h-100 min-h-0">
     <v-container fluid class="d-flex flex-column h-100 min-h-0">
-      <v-row no-gutters class="min-h-0" style="flex: 0 0 auto"
-        ><v-col>
-          <ChatLayoutTabFilters v-model="tabFiltersModel" class="mb-1 ml-1" />
-          <ChatLayoutFilterMenu
-            :userProfile="userProfile || null"
-            :disableToggle="shouldDisableToggle"
-            :authStatus="authStatus"
-            @filter-changed="updateFilters"
-          />
+      <!-- Header row: left chevron (always visible), right collapsible filters -->
+      <v-row
+        no-gutters
+        class="px-1 d-flex align-center"
+        style="min-height: 32px; line-height: 1; flex: 0 0 auto"
+      >
+        <!-- Left: chevron (always visible) -->
+        <v-col cols="auto" class="d-flex align-center pa-0">
+          <v-btn
+            variant="text"
+            density="comfortable"
+            icon
+            :title="filtersVisible ? 'Hide filters' : 'Show filters'"
+            @click="filtersVisible = !filtersVisible"
+            class="pa-0 ma-0"
+          >
+            <v-icon
+              :icon="filtersVisible ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+              size="18"
+            />
+          </v-btn>
         </v-col>
 
-        <v-col>
-          <ChatLayoutToggleAi
-            v-model="showAIUsers"
-            :disabled="shouldDisableToggle"
-        /></v-col>
+        <!-- Right: collapsible panel -->
+        <v-col class="pa-0">
+          <!-- IMPORTANT: no align-center here -->
+          <v-slide-y-transition>
+            <!-- smoother with flex rows -->
+            <div v-show="filtersVisible" class="overflow-hidden">
+              <ChatLayoutTabFilters
+                v-model="tabFiltersModel"
+                v-model:showAi="showAIUsers"
+                :disableToggle="shouldDisableToggle"
+                :userProfile="userProfile"
+                :authStatus="authStatus"
+                @filter-changed="updateFilters"
+                class="ml-1"
+              />
+            </div>
+          </v-slide-y-transition>
+        </v-col>
       </v-row>
 
       <!-- BODY: fills remaining height, clips, children manage scroll -->
@@ -76,7 +101,6 @@
                     class="flex-grow-1 overflow-hidden px-2 py-2"
                     style="flex: 1 1 0"
                   >
-
                     <ChatLayoutUsers
                       v-if="
                         tabVisibility.online ||
@@ -105,9 +129,7 @@
 
           <template v-else>
             <!-- Scroll area on desktop -->
-            <!-- Virtual scroller inside handles scrolling -->
             <div class="flex-grow-1 overflow-hidden" style="flex: 1 1 0">
-
               <ChatLayoutUsers
                 v-if="
                   tabVisibility.online ||
@@ -148,7 +170,6 @@
             class="flex-grow-1 d-flex flex-column overflow-hidden min-h-0"
             style="flex: 1 1 0"
           >
-            <!-- {{ isPreAuth }} -->
             <ChatLayoutOnboarding
               v-if="isPreAuth"
               ref="onbRef"
@@ -183,6 +204,7 @@
           <ChatLayoutConsentPanel
             v-if="!smAndDown"
             :auth-status="auth.authStatus"
+            :user-profile="auth.userProfile"
             @action="selectImChatty"
           />
         </v-col>
@@ -294,6 +316,7 @@ const { getClient, getActiveChats, insertMessage } = useDb();
 const supabase = getClient();
 
 const onbRef = ref(null);
+const filtersVisible = ref(true);
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
@@ -433,8 +456,8 @@ const canSend = computed(() => {
 
 const usersWithPresence = computed(() => {
   // ——— presence dependency (reactive) ———
-// console.log('[usersWithPresence] src len =', Array.isArray(chat.users) ? chat.users.length : 'n/a');
-  
+  // console.log('[usersWithPresence] src len =', Array.isArray(chat.users) ? chat.users.length : 'n/a');
+
   const onlineSet = new Set(onlineIds.value);
 
   const resolvePresenceKey = (u) =>
@@ -646,15 +669,17 @@ onMounted(async () => {
   refreshActiveChats();
 
   await chat.fetchChatUsers();
+  await chat.fetchActiveChats();
+  chat.initActiveChatsWatcher();
+  chat.initializeDefaultUser(auth.authStatus);
+});
 
-// console.log('[ChatLayout] after fetchChatUsers: chat.users len =', Array.isArray(chat.users) ? chat.users.length : 'n/a');
-
-
-
-  await chat.fetchActiveChats(); // server-filtered baseline
-  chat.initActiveChatsWatcher(); // realtime merge on new messages
-  chat.initializeDefaultUser(auth.authStatus); // ideally selects ImChatty pre-auth
-  // startProfilesRealtime();
+onMounted(() => {
+  const v = localStorage.getItem("chat.filtersVisible");
+  if (v !== null) filtersVisible.value = v === "true";
+});
+watch(filtersVisible, (v) => {
+  localStorage.setItem("chat.filtersVisible", String(v));
 });
 
 onBeforeUnmount(async () => {
@@ -854,6 +879,12 @@ async function fetchAiResponse(
     console.error("[AI] fetchAiResponse error", e);
     return null;
   }
+}
+
+function toggleFilters() {
+  filtersVisible.value = !filtersVisible.value;
+  // debug line; remove after verifying
+  console.debug("[filtersVisible]", filtersVisible.value);
 }
 </script>
 
