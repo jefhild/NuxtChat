@@ -64,6 +64,27 @@
         />
       </v-col>
     </v-row>
+    <v-row v-if="props.showEmailLinkPrompt" class="ma-0 pa-0" dense>
+      <v-col cols="12">
+        <v-alert variant="tonal" type="info" density="comfortable">
+          <div
+            class="d-flex flex-column flex-sm-row align-center justify-space-between"
+          >
+            <span class="text-body-2">
+              {{ t("components.profile-email-link.prompt") }}
+            </span>
+            <v-btn
+              variant="text"
+              class="text-link-btn mt-2 mt-sm-0"
+              density="comfortable"
+              @click="emit('linkAnonEmail')"
+            >
+              {{ t("components.profile-email-link.cta") }}
+            </v-btn>
+          </div>
+        </v-alert>
+      </v-col>
+    </v-row>
     <v-row class="ma-0 pa-0" dense>
       <v-col cols="12">
         <SettingsProfileBio
@@ -95,12 +116,18 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+
 const props = defineProps({
   locationProps: Object,
   userProfile: Object,
   isEditable: Boolean,
   statuses: Array,
   genders: Array,
+  showEmailLinkPrompt: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits([
@@ -118,7 +145,28 @@ const emit = defineEmits([
   "save",
   "cancelEdit",
   "startEdit",
+  "linkAnonEmail",
 ]);
 
 const { isEditable } = toRefs(props);
+const { t } = useI18n();
 </script>
+
+<style scoped>
+.text-link-btn {
+  padding: 0;
+  min-width: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: inherit;
+  text-transform: none;
+}
+
+.text-link-btn:hover {
+  text-decoration: underline;
+}
+</style>

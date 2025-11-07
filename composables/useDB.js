@@ -2373,15 +2373,37 @@ export const useDb = () => {
     return { error };
   };
 
-  const signInWithOtp = async (email) => {
+  const signInWithOtp = async (email, { next = "/chat" } = {}) => {
     const supabase = getClient();
     const config = getConfig();
+
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : config.public.SITE_URL || "https://imchatty.com";
+
+    const normalizeRedirect = (value) => {
+      if (!value) return null;
+      if (/^https?:\/\//i.test(value)) {
+        return value;
+      }
+      // allow specifying a path such as "/loginemail"
+      const leadingSlash = value.startsWith("/") ? "" : "/";
+      return `${origin}${leadingSlash}${value}`;
+    };
+
+    const envRedirect = normalizeRedirect(
+      config.public.SUPABASE_REDIRECT?.trim()
+    );
+    const fallbackRedirect = `${origin}/callback?next=${encodeURIComponent(
+      next
+    )}`;
+    const emailRedirectTo = envRedirect || fallbackRedirect;
+
     const { error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
-        // emailRedirectTo: "https://imchatty.com/loginemail",
-        // emailRedirectTo: "http://localhost:3000/loginemail",
-        emailRedirectTo: config.public.SUPABASE_REDIRECT,
+        emailRedirectTo,
       },
     });
     if (error) throw error;

@@ -823,6 +823,20 @@
     "profile-bio": {
       "bio": "Bio"
     },
+    "profile-email-link": {
+      "prompt": "Associez une adresse e-mail pour sécuriser vos discussions et les reprendre où que vous soyez.",
+      "cta": "Associer mon e-mail",
+      "dialog-title": "Associer votre e-mail",
+      "dialog-description": "Saisissez et confirmez l’adresse e-mail que vous souhaitez lier à ce compte anonyme. Nous vous enverrons un lien de confirmation.",
+      "email-label": "E-mail",
+      "confirm-label": "Confirmer l’e-mail",
+      "submit": "Envoyer le lien",
+      "cancel": "Annuler",
+      "success": "Vérifiez votre boîte de réception pour le lien de confirmation.",
+      "invalid": "Veuillez saisir une adresse e-mail valide.",
+      "mismatch": "Les adresses e-mail doivent correspondre.",
+      "generic-error": "Une erreur est survenue lors de l’association de votre e-mail. Veuillez réessayer."
+    },
     "profile-card": {
       "remove-favorite": "Retirer des Favoris",
       "remove-upvote": "Retirer le Vote Positif",

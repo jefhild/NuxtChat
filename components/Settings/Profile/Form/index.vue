@@ -19,6 +19,7 @@
       :statuses="statuses"
       :genders="genders"
       :locationProps="locationProps"
+      :showEmailLinkPrompt="shouldOfferEmailLinkPrompt"
       @update:country="onUpdateCountry"
       @update:state="onUpdateState"
       @update:city="onUpdateCity"
@@ -32,8 +33,68 @@
       @save="saveChanges"
       @startEdit="startEditing"
       @cancelEdit="cancelEditing"
-
+      @linkAnonEmail="openLinkEmailDialog"
     />
+    <v-dialog
+      v-model="linkEmailDialogVisible"
+      max-width="480"
+      :retain-focus="false"
+    >
+      <v-card>
+        <v-card-title class="text-h6">
+          {{ t("components.profile-email-link.dialog-title") }}
+        </v-card-title>
+        <v-card-text>
+          <p class="text-body-2 mb-4">
+            {{ t("components.profile-email-link.dialog-description") }}
+          </p>
+
+          <v-text-field
+            v-model="linkEmailForm.email"
+            type="email"
+            :label="t('components.profile-email-link.email-label')"
+            autocomplete="email"
+            variant="outlined"
+          />
+          <v-text-field
+            v-model="linkEmailForm.confirmEmail"
+            type="email"
+            :label="t('components.profile-email-link.confirm-label')"
+            autocomplete="email"
+            variant="outlined"
+          />
+
+          <v-alert
+            v-if="linkEmailError"
+            type="error"
+            variant="tonal"
+            class="mt-2"
+          >
+            {{ linkEmailError }}
+          </v-alert>
+          <v-alert
+            v-else-if="linkEmailSuccess"
+            type="success"
+            variant="tonal"
+            class="mt-2"
+          >
+            {{ linkEmailSuccess }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn variant="text" @click="closeLinkEmailDialog">
+            {{ t("components.profile-email-link.cancel") }}
+          </v-btn>
+          <v-btn
+            color="primary"
+            :loading="linkEmailSubmitting"
+            @click="submitLinkEmail"
+          >
+            {{ t("components.profile-email-link.submit") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -63,6 +124,8 @@ const {
   getStatesByCountry,
   getCitiesByState,
   updateProfile,
+  hasEmail,
+  updateUserEmail,
 } = useDb();
 
 const {
@@ -104,6 +167,17 @@ const refreshLookingForMenu = ref(false);
 
 const authStore = useAuthStore();
 const { t } = useI18n();
+const linkEmailDialogVisible = ref(false);
+const linkEmailSubmitting = ref(false);
+const linkEmailError = ref("");
+const linkEmailSuccess = ref("");
+const linkEmailForm = reactive({
+  email: "",
+  confirmEmail: "",
+});
+const hasLinkedEmail = ref(authStore.authStatus !== "anon_authenticated");
+const emailPattern =
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const cancelEditing = () => {
   editableProfile.value = { ...props.userProfile };
@@ -189,6 +263,95 @@ const authStateUI = computed(() => {
       };
   }
 });
+
+const shouldOfferEmailLinkPrompt = computed(() => {
+  return (
+    authStore.authStatus === "anon_authenticated" &&
+    authStateUI.value.showForm &&
+    !hasLinkedEmail.value
+  );
+});
+
+const refreshLinkedEmailState = async () => {
+  if (!import.meta.client) return;
+  if (authStore.authStatus !== "anon_authenticated") {
+    hasLinkedEmail.value = true;
+    return;
+  }
+
+  try {
+    hasLinkedEmail.value = await hasEmail(authStore.user?.id);
+  } catch (err) {
+    console.warn("Error checking linked email status:", err);
+    hasLinkedEmail.value = false;
+  }
+};
+
+const resetLinkEmailForm = () => {
+  const existingEmail = authStore.user?.email ?? "";
+  linkEmailForm.email = existingEmail;
+  linkEmailForm.confirmEmail = existingEmail;
+  linkEmailError.value = "";
+  linkEmailSuccess.value = "";
+};
+
+const openLinkEmailDialog = () => {
+  resetLinkEmailForm();
+  linkEmailDialogVisible.value = true;
+};
+
+const closeLinkEmailDialog = () => {
+  linkEmailDialogVisible.value = false;
+};
+
+const submitLinkEmail = async () => {
+  linkEmailError.value = "";
+  linkEmailSuccess.value = "";
+
+  const email = linkEmailForm.email.trim().toLowerCase();
+  const confirm = linkEmailForm.confirmEmail.trim().toLowerCase();
+
+  if (!emailPattern.test(email)) {
+    linkEmailError.value = t("components.profile-email-link.invalid");
+    return;
+  }
+
+  if (email !== confirm) {
+    linkEmailError.value = t("components.profile-email-link.mismatch");
+    return;
+  }
+
+  linkEmailSubmitting.value = true;
+
+  try {
+    const { error } = await updateUserEmail(email);
+    if (error) {
+      throw error;
+    }
+    linkEmailSuccess.value = t("components.profile-email-link.success");
+    await refreshLinkedEmailState();
+  } catch (err) {
+    console.error("Error linking email:", err);
+    linkEmailError.value =
+      err?.message || t("components.profile-email-link.generic-error");
+  } finally {
+    linkEmailSubmitting.value = false;
+  }
+};
+
+watch(
+  () => authStore.authStatus,
+  (status) => {
+    if (!import.meta.client) return;
+    if (status === "anon_authenticated") {
+      refreshLinkedEmailState();
+    } else {
+      hasLinkedEmail.value = true;
+      linkEmailDialogVisible.value = false;
+    }
+  },
+  { immediate: true }
+);
 
 const isEditable = ref(false); // default to false for safety
 
@@ -276,6 +439,9 @@ onMounted(async () => {
     genders.value = await getGenders();
     countries.value = await getCountries();
      isEditable.value = authStateUI.value.editable;
+    if (authStore.authStatus === "anon_authenticated") {
+      await refreshLinkedEmailState();
+    }
 
 
 

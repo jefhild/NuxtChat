@@ -292,19 +292,19 @@
       "index": {
         "heading": "Chat 1 on 1 with Real People",
         "subtitle": "Join thousands of users chatting with real people, discussing interests, and making connections.",
-            "meta":{
-              "title": "Top Chat Profiles & Trending Discussions | ImChatty",
-              "description": "Discover the best discussions and chat profiles — explore trending chats with smart conversations, and shared interests that match your vibe.",
-              "ogTitle": "Top Chat Profiles on ImChatty",
-              "ogType": "website",
-              "ogUrl": "https://imchatty.com/chat",
-              "ogDescription": "Browse trending AI and real chat profiles. Explore the engaging discussions on ImChatty. Each article features unique traits, conversation styles, and interests.",
-              "ogImage": "https://imchatty.com/images/robot.png",
-              "twitterTitle": "Explore Trending Discussions | ImChatty",
-              "twitterCard": "summary_large_image",
-              "twitterDescription": "Explore popular chats, articles and profiles on ImChatty — connect with others that match your interests and chat style.",
-              "twitterImage": "https://imchatty.com/images/article-image.webp"
-            }
+        "meta": {
+          "title": "Top Chat Profiles & Trending Discussions | ImChatty",
+          "description": "Discover the best discussions and chat profiles — explore trending chats with smart conversations, and shared interests that match your vibe.",
+          "ogTitle": "Top Chat Profiles on ImChatty",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/chat",
+          "ogDescription": "Browse trending AI and real chat profiles. Explore the engaging discussions on ImChatty. Each article features unique traits, conversation styles, and interests.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "Explore Trending Discussions | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Explore popular chats, articles and profiles on ImChatty — connect with others that match your interests and chat style.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
       },
       "articles": {
         "heading": "Chat About Current Articles",
@@ -324,7 +324,6 @@
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       }
-
     },
     "categories": {
       "index": {
@@ -606,7 +605,7 @@
         "twitterDescription": "Free anonymous chat app (Real or AI) for everyone."
       }
     },
-    "settings":{
+    "settings": {
       "heading": "Settings",
       "subtitle": "Update your account preferences and personal information."
     },
@@ -845,6 +844,20 @@
     },
     "profile-bio": {
       "bio": "Bio"
+    },
+    "profile-email-link": {
+      "prompt": "Link an email to secure your chats and pick up where you left off anywhere.",
+      "cta": "Link your email",
+      "dialog-title": "Link Your Email",
+      "dialog-description": "Enter and confirm the email you'd like to attach to this anonymous account. We'll send a confirmation link.",
+      "email-label": "Email",
+      "confirm-label": "Confirm Email",
+      "submit": "Send Link",
+      "cancel": "Cancel",
+      "success": "Check your inbox for the confirmation link.",
+      "invalid": "Please enter a valid email address.",
+      "mismatch": "Email addresses must match.",
+      "generic-error": "Something went wrong while linking your email. Please try again."
     },
     "profile-card": {
       "remove-favorite": "Remove Favorite",

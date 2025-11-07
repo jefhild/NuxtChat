@@ -822,6 +822,20 @@
     "profile-bio": {
       "bio": "个人简介"
     },
+    "profile-email-link": {
+      "prompt": "绑定电子邮箱以保护您的聊天，并可随时随地继续对话。",
+      "cta": "绑定邮箱",
+      "dialog-title": "绑定您的邮箱",
+      "dialog-description": "请输入并确认您想要绑定到此匿名账户的电子邮箱地址。我们会发送一封确认邮件。",
+      "email-label": "邮箱",
+      "confirm-label": "确认邮箱",
+      "submit": "发送链接",
+      "cancel": "取消",
+      "success": "请检查您的收件箱并点击确认链接。",
+      "invalid": "请输入有效的电子邮箱地址。",
+      "mismatch": "两次输入的邮箱地址必须一致。",
+      "generic-error": "绑定邮箱时出现错误，请重试。"
+    },
     "profile-card": {
       "remove-favorite": "移除收藏",
       "remove-upvote": "移除点赞",
