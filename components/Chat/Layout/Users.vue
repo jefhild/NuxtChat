@@ -1,112 +1,63 @@
 <template>
-  <v-card flat class="chat-users-container pa-2">
-    <v-tabs v-model="tab" grow>
-      <v-tab v-if="tabVisibility.online" :value="0">
-        {{ $t("components.users.online") }}
-        <v-badge color="primary" :content="onlineUsers.length" inline />
-      </v-tab>
-      <v-tab v-if="tabVisibility.offline" :value="1">
-        {{ $t("components.users.offline") }}
-        <v-badge color="gray" :content="offlineUsers.length" inline />
-      </v-tab>
-      <v-tab v-if="tabVisibility.active" :value="2">
-        {{ $t("components.users.active") }}
-        <v-badge color="success" :content="activeUsers.length" inline />
-      </v-tab>
-    </v-tabs>
+  <v-card flat class="chat-users-container pa-2 d-flex flex-column h-100">
+    <div class="users-header px-3 py-2 mb-2">
+      <div class="header-left">
+        <span class="header-text">
+          {{ $t(headingKey) }}
+        </span>
+        <ChatLayoutFilterMenu
+          v-if="showFilters"
+          class="filter-trigger"
+          :user-profile="userProfile"
+          :auth-status="authStatus"
+          :disable-toggle="disableFilterToggle"
+          @filter-changed="$emit('filter-changed', $event)"
+        />
+      </div>
+      <v-chip
+        v-if="showCount"
+        size="small"
+        :color="chipColor"
+        variant="tonal"
+        class="font-weight-medium"
+      >
+        {{ displayUsers.length }}
+      </v-chip>
+    </div>
 
-    <v-window v-model="tab">
-      <!-- Online -->
-      <v-window-item v-if="tabVisibility.online" :value="0">
-        <template v-if="isLoading">
-          <v-skeleton-loader type="list-item@6" class="pa-2" />
-        </template>
-        <template v-else>
-          <div class="vs-host d-flex flex-column flex-grow-1 min-h-0">
+    <div class="users-section flex-grow-1 overflow-hidden min-h-0">
+      <template v-if="isLoading">
+        <v-skeleton-loader type="list-item@6" class="pa-2" />
+      </template>
+      <template v-else>
+        <div class="users-content d-flex flex-column flex-grow-1 min-h-0">
           <div
-            v-if="!onlineUsers.length"
+            v-if="!displayUsers.length"
             class="pa-3 text-body-2 text-medium-emphasis"
           >
-            {{ $t("components.users.no-anonymous") }}
+            {{ $t(emptyStateKey) }}
           </div>
           <ChatLayoutUserList
             v-else
             :key="presenceVersion"
-            :users="onlineUsers"
+            :users="displayUsers"
             :selectedUserId="selectedUserId"
-            :height="vsHeight"
             :unread-by-peer="msgs.unreadByPeer"
+            :hide-tagline="normalizedListType === 'active'"
             @user-selected="$emit('user-selected', $event)"
           />
-          </div>
-        </template>
-      </v-window-item>
-
-      <!-- Offline -->
-      <v-window-item v-if="tabVisibility.offline" :value="1">
-        <template v-if="isLoading">
-          <v-skeleton-loader type="list-item@6" class="pa-2" />
-        </template>
-        <template v-else>
-          <div class="vs-host d-flex flex-column flex-grow-1 min-h-0">
-          <div
-            v-if="!offlineUsers.length"
-            class="pa-3 text-body-2 text-medium-emphasis"
-          >
-            {{ $t("components.users.none-offline") }}
-          </div>
-          <ChatLayoutUserList
-            v-else
-            :key="presenceVersion"
-            :users="offlineUsers"
-            :selectedUserId="selectedUserId"
-            :height="vsHeight"
-            :unread-by-peer="msgs.unreadByPeer"
-            @user-selected="$emit('user-selected', $event)"
-          />
-          </div>
-        </template>
-      </v-window-item>
-
-      <!-- Active -->
-      <v-window-item v-if="tabVisibility.active" :value="2">
-        <template v-if="isLoading">
-          <v-skeleton-loader type="list-item@6" class="pa-2" />
-        </template>
-        <template v-else>
-          <div class="vs-host d-flex flex-column flex-grow-1 min-h-0">
-          <div
-            v-if="!activeUsers.length"
-            class="pa-3 text-body-2 text-medium-emphasis"
-          >
-            {{ $t("components.users.none-active") }}
-          </div>
-          <ChatLayoutUserList
-            v-else
-            :key="presenceVersion"
-            :users="activeUsers"
-            :selectedUserId="selectedUserId"
-            :height="vsHeight"
-            :unread-by-peer="msgs.unreadByPeer"
-            @user-selected="$emit('user-selected', $event)"
-          />
-          </div>
-        </template>
-      </v-window-item>
-    </v-window>
+        </div>
+      </template>
+    </div>
   </v-card>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { usePresenceStore2 } from "@/stores/presenceStore2";
-const presence = usePresenceStore2();
-const presenceVersion = computed(() => presence.onlineUserIds.join(","));
+import ChatLayoutFilterMenu from "./FilterMenu.vue";
 
-const msgs = useMessagesStore();
-
-const tab = ref(0);
 const props = defineProps({
   users: { type: Array, default: () => [] }, // expects { id/user_id, displayname, online }
   activeChats: { type: Array, default: () => [] },
@@ -116,25 +67,42 @@ const props = defineProps({
     type: String,
     default: "a3962087-516b-48df-a3ff-3b070406d832", // ImChatty
   },
-  tabVisibility: {
-    type: Object,
-    default: () => ({ online: true, offline: true, active: true }),
+  listType: {
+    type: String,
+    default: "online",
+    validator: (val) => ["online", "offline", "active"].includes(val),
   },
+  showCount: { type: Boolean, default: true },
+  userProfile: { type: Object, default: null },
+  authStatus: { type: String, default: "" },
+  disableFilterToggle: { type: Boolean, default: false },
+  showFilters: { type: Boolean, default: true },
 });
-defineEmits(["user-selected"]);
+defineEmits(["user-selected", "filter-changed"]);
+
+const msgs = useMessagesStore();
+const presence = usePresenceStore2();
+const presenceVersion = computed(() =>
+  Array.isArray(presence.onlineUserIds) ? presence.onlineUserIds.join(",") : ""
+);
+
+const normalizedListType = computed(() =>
+  ["online", "offline", "active"].includes(props.listType)
+    ? props.listType
+    : "online"
+);
 
 const idStr = (u) => String(u?.id ?? u?.user_id ?? "").trim();
 const isPinned = (u) => props.pinnedId && idStr(u) === props.pinnedId;
 
-const sortWithPin = (arr = []) => {
-  return [...arr].sort((a, b) => {
+const sortWithPin = (arr = []) =>
+  [...arr].sort((a, b) => {
     const aPinned = isPinned(a);
     const bPinned = isPinned(b);
     if (aPinned && !bPinned) return -1;
     if (!aPinned && bPinned) return 1;
     return (a.displayname || "").localeCompare(b.displayname || "");
   });
-};
 
 const onlineUsers = computed(() =>
   sortWithPin(props.users.filter((u) => !!u.online && !u.hidden))
@@ -144,73 +112,103 @@ const offlineUsers = computed(() =>
 );
 
 const activeSet = computed(
-  () => new Set((props.activeChats || []).map(String))
+  () => new Set((props.activeChats || []).map((id) => String(id)))
 );
 const activeUsers = computed(() =>
-  sortWithPin(props.users.filter((u) => activeSet.value.has(idStr(u))))
+  sortWithPin(
+    props.users.filter(
+      (u) => activeSet.value.has(idStr(u)) && !u.hidden
+    )
+  )
 );
 
-const visibleValues = computed(() => {
-  const out = [];
-  if (props.tabVisibility.online) out.push(0);
-  if (props.tabVisibility.offline) out.push(1);
-  if (props.tabVisibility.active) out.push(2);
-  return out;
+const displayUsers = computed(() => {
+  switch (normalizedListType.value) {
+    case "active":
+      return activeUsers.value;
+    case "offline":
+      return offlineUsers.value;
+    default:
+      return onlineUsers.value;
+  }
 });
 
-const vsHeight = ref(420) // default fallback
+const headingKey = computed(() => {
+  switch (normalizedListType.value) {
+    case "active":
+      return "components.users.active";
+    case "offline":
+      return "components.users.offline";
+    default:
+      return "components.users.online";
+  }
+});
 
-const measureVSHeight = () => {
-  const el = document.querySelector(".v-window-item.v-window-item--active .vs-host")
-  if (!el) return
-  const rect = el.getBoundingClientRect()
-  const avail = Math.floor(window.innerHeight - rect.top)
-  vsHeight.value = Math.max(200, avail)
-  // console.log("[users:measure]", { avail, vsHeight: vsHeight.value })
-}
+const emptyStateKey = computed(() => {
+  switch (normalizedListType.value) {
+    case "active":
+      return "components.users.none-active";
+    case "offline":
+      return "components.users.none-offline";
+    default:
+      return "components.users.no-anonymous";
+  }
+});
 
-onMounted(() => {
-  measureVSHeight()
-  window.addEventListener("resize", measureVSHeight)
-})
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", measureVSHeight)
-})
-
-// const logVSHeight = (src = 'log') => {
-//   const el = document.querySelector('.v-window-item.v-window-item--active .vs-host')
-//   if (!el) {
-//     console.warn('[users]', src, 'active vs-host not found')
-//     return
-//   }
-//   const rect = el.getBoundingClientRect()
-//   const avail = Math.floor(window.innerHeight - rect.top)
-//   console.log(`[users:${src}]`, {
-//     top: Math.round(rect.top),
-//     clientHeight: el.clientHeight,
-//     scrollHeight: el.scrollHeight,
-//     availPxFromViewportBottom: avail
-//   })
-// }
-
-// onMounted(() => {
-//   requestAnimationFrame(() => logVSHeight('mounted'))
-//   window.addEventListener('resize', () => logVSHeight('resize'))
-// })
-
-
-// watch(() => tab.value, () => {
-//   // when switching tabs, let DOM apply display changes before measuring
-//   requestAnimationFrame(() => logVSHeight('tab'))
-// })
-
-watch(
-  [visibleValues, tab],
-  () => {
-    if (!visibleValues.value.includes(tab.value)) {
-      tab.value = visibleValues.value[0] ?? 0; // default to first visible, or 0
-    }
-  },
-  { immediate: true }
-);
+const chipColor = computed(() => {
+  switch (normalizedListType.value) {
+    case "active":
+      return "success";
+    case "offline":
+      return "gray";
+    default:
+      return "primary";
+  }
+});
 </script>
+
+<style scoped>
+.chat-users-container {
+  height: 100%;
+}
+.users-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(13, 37, 63, 0.08);
+  border-radius: 10px;
+  background: #f4f6f8;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.header-text {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #5c677d;
+}
+.filter-trigger {
+  display: flex;
+  align-items: center;
+}
+.filter-trigger :deep(.v-btn) {
+  color: #5c677d;
+  font-size: 18px;
+}
+.users-section {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.users-content {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+</style>

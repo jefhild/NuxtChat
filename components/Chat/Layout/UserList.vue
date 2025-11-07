@@ -30,8 +30,8 @@
 
           <span class="name">
             <div class="displayname">{{ u.displayname || "(no name)" }}</div>
-            <div class="tagline muted">
-              • {{ (u.tagline || u.tagline)?.slice(0, 35) }}
+            <div v-if="!hideTagline && u.tagline" class="tagline muted">
+              • {{ u.tagline?.slice(0, 35) }}
             </div>
           </span>
 
@@ -58,6 +58,7 @@ const props = defineProps({
   // optional: set from parent. if not provided we auto-measure.
   height: { type: Number, default: null },
   unreadByPeer: { type: Object, default: () => ({}) },
+  hideTagline: { type: Boolean, default: false },
 });
 defineEmits(["user-selected"]);
 
@@ -207,12 +208,16 @@ const listHeight = computed(() => props.height ?? innerHeight.value);
   display: flex;
   flex-direction: column;
   line-height: 1.2; /* tighter line spacing */
+  min-width: 0; /* required for ellipsis */
 }
 
 .displayname {
   font-size: 14px;
   font-weight: 500;
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tagline {

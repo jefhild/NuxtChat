@@ -1,637 +1,591 @@
 <template>
-  <div class="d-flex flex-column h-100 min-h-0">
+  <div class="chat-layout-root d-flex flex-column h-100 min-h-0">
     <v-container fluid class="d-flex flex-column h-100 min-h-0">
+      <!-- Mobile controls: left drawer (Topics) + right drawer (Participants) -->
+      <div
+        class="d-md-none d-flex align-center justify-space-between px-2 py-2"
+      >
+        <v-btn
+          icon
+          variant="text"
+          @click="leftOpen = true"
+          aria-label="Show online participants"
+        >
+          <v-icon color="green-darken-2">mdi-account-multiple-outline</v-icon>
+        </v-btn>
+        <v-spacer />
+        <v-btn
+          icon
+          variant="text"
+          @click="rightOpen = true"
+          aria-label="Show active chat participants"
+        >
+          <v-icon>mdi-account-multiple-outline</v-icon>
+        </v-btn>
+      </div>
+      <!-- Desktop / tablet (>= md): 3 columns -->
       <v-row
-        no-gutters
-        class="px-1 d-flex align-center"
-        style="min-height: 32px; line-height: 1; flex: 0 0 auto"
+        v-if="!smAndDown"
+        class="flex-grow-1 overflow-hidden min-h-0 d-none d-md-flex"
       >
-        <v-col cols="auto" class="d-flex align-center pa-0">
-          <v-btn
-            variant="text"
-            density="comfortable"
-            icon
-            :title="filtersVisible ? 'Hide filters' : 'Show filters'"
-            @click="filtersVisible = !filtersVisible"
-            class="pa-0 ma-0"
-          >
-            <v-icon
-              :icon="filtersVisible ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-              size="18"
-            />
-          </v-btn>
-        </v-col>
-
-        <v-col class="pa-0">
-          <v-slide-y-transition>
-            <div v-show="filtersVisible" class="overflow-hidden">
-              <ChatLayoutTabFilters
-                v-model="tabFiltersModel"
-                v-model:showAi="showAIUsers"
-                :disableToggle="shouldDisableToggle"
-                :userProfile="userProfile"
-                :authStatus="authStatus"
+        <!-- LEFT: Topics -->
+        <v-col
+          cols="12"
+          md="3"
+          class="pa-2 d-flex flex-column overflow-hidden min-h-0 d-none d-md-flex"
+        >
+          <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+            <div
+              ref="leftScrollRef"
+              class="flex-grow-1 overflow-auto min-h-0 users-scroll"
+              style="flex: 1 1 0"
+            >
+              <ChatLayoutUsers
+                v-if="tabVisibility.online"
+                list-type="online"
+                :users="usersWithPresence"
+                :pinnedId="IMCHATTY_ID"
+                :activeChats="activeChats"
+                :selectedUserId="selectedUserId"
+                :isLoading="isLoading"
+                :user-profile="userProfile"
+                :auth-status="auth.authStatus"
+                :disable-filter-toggle="shouldDisableToggle"
+                @user-selected="selectUser"
                 @filter-changed="updateFilters"
-                class="ml-1"
               />
-            </div>
-          </v-slide-y-transition>
-        </v-col>
-      </v-row>
-
-      <v-row class="flex-grow-1 overflow-hidden min-h-0">
-        <v-col
-          cols="12"
-          md="3"
-          class="pa-2 d-flex flex-column overflow-hidden min-h-0"
-        >
-          <template v-if="smAndDown">
-            <v-expansion-panels
-              v-model="leftMobilePanels"
-              multiple
-              class="flex-grow-1 overflow-hidden min-h-0"
-            >
-              <v-expansion-panel value="left">
-                <v-expansion-panel-title
-                  hide-actions
-                  class="bg-blue-lighten-5 py-1 px-2 d-flex justify-center position-relative"
-                >
-                  <ChatLayoutHeader
-                    :currentUser="user"
-                    :selectedUser="chat.selectedUser"
-                  />
-
-                  <v-btn
-                    size="small"
-                    icon
-                    variant="text"
-                    class="header-chevron"
-                    :aria-label="
-                      leftMobilePanels.includes('left') ? 'Collapse' : 'Expand'
-                    "
-                    :aria-expanded="String(leftMobilePanels.includes('left'))"
-                    @click.stop="toggleLeftPanel"
-                  >
-                    <v-icon
-                      :icon="
-                        leftMobilePanels.includes('left')
-                          ? 'mdi-chevron-up'
-                          : 'mdi-chevron-down'
-                      "
-                    />
-                  </v-btn>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text
-                  class="pa-0 d-flex flex-column min-h-0"
-                  style="flex: 1 1 auto"
-                >
-                  <div
-                    class="flex-grow-1 overflow-hidden px-2 py-2"
-                    style="flex: 1 1 0"
-                  >
-                    <ChatLayoutUsers
-                      v-if="
-                        tabVisibility.online ||
-                        tabVisibility.offline ||
-                        tabVisibility.active
-                      "
-                      :users="usersWithPresence"
-                      :pinnedId="IMCHATTY_ID"
-                      :activeChats="activeChats"
-                      :selectedUserId="selectedUserId"
-                      :tab-visibility="tabVisibility"
-                      :isLoading="isLoading"
-                      :hide-tabs="true"
-                      @user-selected="selectUser"
-                    />
-                  </div>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
-          </template>
-
-          <template v-else>
-            <div class="flex-grow-1 overflow-hidden" style="flex: 1 1 0">
-              <ChatLayoutUsers
-                v-if="
-                  tabVisibility.online ||
-                  tabVisibility.offline ||
-                  tabVisibility.active
-                "
-                :users="usersWithPresence"
-                :activeChats="activeChats"
-                :pinnedId="IMCHATTY_ID"
-                :selectedUserId="selectedUserId"
-                :tab-visibility="tabVisibility"
-                :isLoading="isLoading"
-                @user-selected="selectUser"
-              />
-            </div>
-          </template>
-        </v-col>
-
-        <v-col
-          cols="12"
-          md="6"
-          class="pa-2 d-flex flex-column overflow-hidden min-h-0"
-        >
-          <div class="messages-sticky-header" v-if="!smAndDown">
-            <ChatLayoutHeader
-              :currentUser="user"
-              :selectedUser="chat.selectedUser"
-              :profileLink="profileLink"
-              @open-profile="openProfileDialog"
-            />
-          </div>
-
-          <div
-            class="flex-grow-1 d-flex flex-column overflow-hidden min-h-0"
-            style="flex: 1 1 0"
-          >
-            <ChatLayoutOnboarding
-              v-if="isPreAuth"
-              ref="onbRef"
-              :key="'onb'"
-              :authStatus="auth.authStatus"
-              :canSend="canSend"
-              :isPreAuth="isPreAuth"
-              :isBotSelected="isBotSelected"
-              :consented="draftStore?.consented ?? false"
-              @send="onSend"
-              class="d-flex flex-column flex-grow-1 overflow-hidden"
-            />
-
-            <ChatLayoutRegular
-              v-else
-              ref="regRef"
-              :key="`reg-${auth.authStatus}`"
-              :authStatus="auth.authStatus"
-              :me-id="auth.user?.id"
-              :peer="chat.selectedUser"
-            />
-          </div>
-
-          <div class="mt-2">
-            <ChatLayoutMessageComposer
-              v-model:draft="messageDraft"
-              :peer-id="peerId"
-              :me-id="meId"
-              :conversation-key="conversationKey"
-              class="w-100 mx-auto"
-              @send="onSend"
-            />
-          </div>
-        </v-col>
-
-        <v-col
-          cols="12"
-          md="3"
-          class="pa-2 d-flex flex-column overflow-hidden min-h-0"
-        >
-          <template v-if="smAndDown">
-            <v-expansion-panels
-              v-model="rightMobilePanels"
-              multiple
-              class="flex-grow-1 overflow-hidden min-h-0"
-            >
-              <v-expansion-panel value="right">
-                <v-expansion-panel-title
-                  hide-actions
-                  class="bg-blue-lighten-5 py-1 px-2 d-flex align-center position-relative"
-                >
-                  <div class="text-subtitle-2 d-flex align-center">
-                    <v-icon icon="mdi-information-outline" size="18" class="mr-2" />
-                    <span>Details</span>
-                  </div>
-                  <v-btn
-                    size="small"
-                    icon
-                    variant="text"
-                    class="header-chevron"
-                    :aria-label="
-                      rightMobilePanels.includes('right') ? 'Collapse' : 'Expand'
-                    "
-                    :aria-expanded="String(rightMobilePanels.includes('right'))"
-                    @click.stop="toggleRightPanel"
-                  >
-                    <v-icon
-                      :icon="
-                        rightMobilePanels.includes('right')
-                          ? 'mdi-chevron-up'
-                          : 'mdi-chevron-down'
-                      "
-                    />
-                  </v-btn>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text class="pa-0">
-                  <div class="flex-grow-1 overflow-auto px-2 py-2 min-h-0">
-                    <ChatLayoutConsentPanel
-                      :auth-status="auth.authStatus"
-                      :user-profile="auth.userProfile"
-                      @action="selectImChatty"
-                    />
-                  </div>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
-          </template>
-
-          <template v-else>
-            <ChatLayoutConsentPanel
-              :auth-status="auth.authStatus"
-              :user-profile="auth.userProfile"
-              @action="selectImChatty"
-            />
-          </template>
-        </v-col>
-      </v-row>
-    </v-container>
-
-    <!-- Profile modal unchanged -->
-    <v-dialog v-model="isProfileDialogOpen" max-width="640">
-      <v-card>
-        <v-card-title class="d-flex justify-space-between">
-          <span>{{ modalUser?.displayname }}, {{ modalUser?.age }}</span>
-          <v-btn
-            icon="mdi-close"
-            variant="text"
-            @click="isProfileDialogOpen = false"
-          />
-        </v-card-title>
-
-        <v-card-text>
-          <div class="d-flex">
-            <v-avatar
-              size="80"
-              :image="getAvatar(modalUser?.avatar_url, modalUser?.gender_id)"
-              class="mr-4"
-            />
-            <div>
-              <div class="text-subtitle-1 mb-1">{{ modalUser?.tagline }}</div>
-              <div class="text-body-2">{{ modalUser?.bio }}</div>
-              <div class="text-caption mt-2">
-                {{ modalUser?.country }} {{ modalUser?.country_emoji }}
-                <span v-if="modalUser?.city">• {{ modalUser?.city }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="mt-4"
-            v-if="
-              Array.isArray(modalUser?.looking_for) &&
-              modalUser.looking_for.length
-            "
-          >
-            <v-chip
-              v-for="(tag, i) in modalUser.looking_for"
-              :key="i"
-              class="mr-1 mb-1"
-              size="small"
-            >
-              {{ tag }}
-            </v-chip>
-          </div>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer />
-          <NuxtLink :to="profileLink" class="text-decoration-none">
-            <v-btn variant="outlined" size="small">View full profile</v-btn>
-          </NuxtLink>
-          <v-btn color="primary" :to="`/chat?userslug=${modalUser.slug}`"
-            >Message</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </div>
-</template>
-
-
-          <template v-else>
-            <div class="flex-grow-1 overflow-hidden" style="flex: 1 1 0">
-              <ChatLayoutUsers
-                v-if="
-                  tabVisibility.online ||
-                  tabVisibility.offline ||
-                  tabVisibility.active
-                "
-                :users="usersWithPresence"
-                :activeChats="activeChats"
-                :pinnedId="IMCHATTY_ID"
-                :selectedUserId="selectedUserId"
-                :tab-visibility="tabVisibility"
-                :isLoading="isLoading"
-                @user-selected="selectUser"
-              />
-            </div>
-          </template>
-        </v-col>
-
-        <v-col
-          cols="12"
-          md="6"
-          class="pa-2 d-flex flex-column overflow-hidden min-h-0"
-        >
-          <div class="messages-sticky-header" v-if="!smAndDown">
-            <ChatLayoutHeader
-              :currentUser="user"
-              :selectedUser="chat.selectedUser"
-              :profileLink="profileLink"
-              @open-profile="openProfileDialog"
-            />
-          </div>
-
-          <div
-            class="flex-grow-1 d-flex flex-column overflow-hidden min-h-0"
-            style="flex: 1 1 0"
-          >
-            <ChatLayoutOnboarding
-              v-if="isPreAuth"
-              ref="onbRef"
-              :key="'onb'"
-              :authStatus="auth.authStatus"
-              :canSend="canSend"
-              :isPreAuth="isPreAuth"
-              :isBotSelected="isBotSelected"
-              :consented="draftStore?.consented ?? false"
-              @send="onSend"
-              class="d-flex flex-column flex-grow-1 overflow-hidden"
-            />
-
-            <ChatLayoutRegular
-              v-else
-              ref="regRef"
-              :key="`reg-${auth.authStatus}`"
-              :authStatus="auth.authStatus"
-              :me-id="auth.user?.id"
-              :peer="chat.selectedUser"
-            />
-          </div>
-
-          <div class="mt-2">
-            <ChatLayoutMessageComposer
-              v-model:draft="messageDraft"
-              :peer-id="peerId"
-              :me-id="meId"
-              :conversation-key="conversationKey"
-              class="w-100 mx-auto"
-              @send="onSend"
-            />
-          </div>
-        </v-col>
-
-        <v-col
-          cols="12"
-          md="3"
-          class="pa-2 d-flex flex-column overflow-hidden min-h-0"
-        >
-          <template v-if="smAndDown">
-            <v-expansion-panels
-              v-model="rightMobilePanels"
-              multiple
-              class="flex-grow-1 overflow-hidden min-h-0"
-            >
-              <v-expansion-panel value="right">
-                <v-expansion-panel-title
-                  hide-actions
-                  class="bg-blue-lighten-5 py-1 px-2 d-flex align-center position-relative"
-                >
-                  <div class="text-subtitle-2 d-flex align-center">
-                    <v-icon icon="mdi-information-outline" size="18" class="mr-2" />
-                    <span>Details</span>
-                  </div>
-                  <v-btn
-                    size="small"
-                    icon
-                    variant="text"
-                    class="header-chevron"
-                    :aria-label="
-                      rightMobilePanels.includes('right') ? 'Collapse' : 'Expand'
-                    "
-                    :aria-expanded="String(rightMobilePanels.includes('right'))"
-                    @click.stop="toggleRightPanel"
-                  >
-                    <v-icon
-                      :icon="
-                        rightMobilePanels.includes('right')
-                          ? 'mdi-chevron-up'
-                          : 'mdi-chevron-down'
-                      "
-                    />
-                  </v-btn>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text class="pa-0">
-                  <div class="flex-grow-1 overflow-auto px-2 py-2 min-h-0">
-                    <ChatLayoutConsentPanel
-                      :auth-status="auth.authStatus"
-                      :user-profile="auth.userProfile"
-                      @action="selectImChatty"
-                    />
-                  </div>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
-          </template>
-
-          <template v-else>
-            <ChatLayoutConsentPanel
-              :auth-status="auth.authStatus"
-              :user-profile="auth.userProfile"
-              @action="selectImChatty"
-            />
-          </template>
-        </v-col>
-      </v-row>
-    </v-container>
-
-    <!-- Profile modal unchanged -->
-    <v-dialog v-model="isProfileDialogOpen" max-width="640">
-      <v-card>
-        <v-card-title class="d-flex justify-space-between">
-          <span>{{ modalUser?.displayname }}, {{ modalUser?.age }}</span>
-          <v-btn
-            icon="mdi-close"
-            variant="text"
-            @click="isProfileDialogOpen = false"
-          />
-        </v-card-title>
-
-        <v-card-text>
-          <div class="d-flex">
-            <v-avatar
-              size="80"
-              :image="getAvatar(modalUser?.avatar_url, modalUser?.gender_id)"
-              class="mr-4"
-            />
-            <div>
-              <div class="text-subtitle-1 mb-1">{{ modalUser?.tagline }}</div>
-              <div class="text-body-2">{{ modalUser?.bio }}</div>
-              <div class="text-caption mt-2">
-                {{ modalUser?.country }} {{ modalUser?.country_emoji }}
-                <span v-if="modalUser?.city">• {{ modalUser?.city }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="mt-4"
-            v-if="
-              Array.isArray(modalUser?.looking_for) &&
-              modalUser.looking_for.length
-            "
-          >
-            <v-chip
-              v-for="(tag, i) in modalUser.looking_for"
-              :key="i"
-              class="mr-1 mb-1"
-              size="small"
-            >
-              {{ tag }}
-            </v-chip>
-          </div>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer />
-          <NuxtLink :to="profileLink" class="text-decoration-none">
-            <v-btn variant="outlined" size="small">View full profile</v-btn>
-          </NuxtLink>
-          <v-btn color="primary" :to="`/chat?userslug=${modalUser.slug}`"
-            >Message</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </div>
-</template>
-
-
-        <template v-else>
-          <div
-            ref="leftDesktopScrollRef"
-            class="flex-grow-1 overflow-auto min-h-0 users-scroll"
-          >
-            <!-- here -->
-
-            Left Desktop Left Content
-          </div>
-        </template>
-      </v-col>
-
-      <!-- CENTER: Empty state (until a thread route is open) -->
-      <v-col
-        cols="12"
-        md="6"
-        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
-      >
-        <div
-          ref="centerScrollRef"
-          class="flex-grow-1 overflow-auto min-h-0 d-flex"
-        >
-          <v-card
-            flat
-            class="d-flex flex-column fill-height justify-center align-center w-100"
-          >
-            <div class="text-body-2 text-medium-emphasis">
-              Chat Content Placeholder
             </div>
           </v-card>
-        </div>
-      </v-col>
 
-      <!-- RIGHT: Participants (hidden on small to avoid SSR mismatch) -->
-      <v-col
-        cols="12"
-        md="3"
-        class="pa-2 d-none d-md-flex flex-column overflow-hidden min-h-0"
-      >
-        <div ref="rightScrollRef" class="flex-grow-1 overflow-auto min-h-0">
-          <!-- here -->
+          <ClientOnly>
+            <div class="d-none d-md-block mt-2">
+              <ChatLayoutConsentPanel
+                :auth-status="auth.authStatus"
+                :user-profile="userProfile"
+                @action="selectImChatty"
+              />
+            </div>
+          </ClientOnly>
+        </v-col>
 
-          Right Content Placeholder
-        </div>
-      </v-col>
-    </v-row>
-
-    <!-- FOOTER ROW (parity with ChatLayout) -->
-    <v-row>
-      <v-col
-        cols="12"
-        md="3"
-        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
-      >
-        <v-card
-          v-if="!smAndDown"
-          class="d-flex flex-column fill-height min-h-0"
-          color="grey-lighten-4"
-          rounded="lg"
-          flat
+        <!-- CENTER: Thread messages -->
+        <v-col
+          cols="12"
+          md="7"
+          class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
         >
-          <div class="ml-2 text-subtitle-2 font-weight-medium">
-            <!-- {{ headerText.line1 }} -->Consent
-          </div>
-          <div class="ml-2 text-body-2 text-medium-emphasis">
-            <!-- {{ headerText.line2 }} -->Banner or profile info here.
-          </div>
-        </v-card>
-      </v-col>
+          <!-- Sticky header -->
+          <div class="messages-sticky-header d-none d-md-block">
+            <div
+              class="profile-header px-4 py-3 d-flex align-center justify-space-between"
+            >
+              <div class="d-flex align-center profile-header-left">
+                <v-avatar size="44" color="primary" variant="tonal">
+                  <v-img
+                    v-if="selectedUser && selectedUser.avatar_url"
+                    :src="selectedUser.avatar_url"
+                    cover
+                  />
+                  <span
+                    v-else
+                    class="avatar-fallback text-body-2 font-weight-medium"
+                  >
+                    {{ selectedUserInitial }}
+                  </span>
+                </v-avatar>
+                <div class="min-w-0 ml-3">
+                  <div class="text-subtitle-1 font-weight-medium text-truncate">
+                    {{ selectedUserTitle }}
+                  </div>
+                  <div class="text-body-2 text-medium-emphasis text-truncate">
+                    {{ selectedUserSubtitle }}
+                  </div>
+                </div>
+              </div>
 
-      <v-col
-        cols="12"
-        md="9"
-        class="pa-2 d-flex flex-column overflow-hidden min-h-0 chat-col"
-      >
-        <!-- Reserve space for a composer if you need it on index -->
-        <!-- <ChatArticlesMessageComposer ... /> -->
-      </v-col>
-    </v-row>
-  </v-container>
-
-  <!-- Profile modal (kept for parity; optional wiring) -->
-  <v-dialog v-model="isProfileDialogOpen" max-width="640">
-    <v-card>
-      <v-card-title class="d-flex justify-space-between">
-        <span>{{ modalUser?.displayname }}, {{ modalUser?.age }}</span>
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          @click="isProfileDialogOpen = false"
-        />
-      </v-card-title>
-
-      <v-card-text>
-        <div class="d-flex">
-          <v-avatar
-            size="80"
-            :image="getAvatar(modalUser?.avatar_url)"
-            class="mr-4"
-          />
-          <div>
-            <div class="text-subtitle-1 mb-1">{{ modalUser?.tagline }}</div>
-            <div class="text-body-2">{{ modalUser?.bio }}</div>
-            <div class="text-caption mt-2">
-              {{ modalUser?.country }} {{ modalUser?.country_emoji }}
-              <span v-if="modalUser?.city">• {{ modalUser?.city }}</span>
+              <div class="d-flex align-center profile-header-actions">
+                <v-chip
+                  v-if="selectedUser"
+                  size="small"
+                  :color="selectedUser?.online ? 'success' : 'grey'"
+                  variant="flat"
+                  class="font-weight-medium mr-2"
+                >
+                  <v-icon size="14" class="mr-1">
+                    {{
+                      selectedUser?.online ? "mdi-circle" : "mdi-circle-outline"
+                    }}
+                  </v-icon>
+                  {{
+                    selectedUser?.online
+                      ? $t("components.users.online")
+                      : $t("components.users.offline")
+                  }}
+                </v-chip>
+                <v-btn
+                  icon
+                  variant="text"
+                  :disabled="!selectedUser"
+                  :aria-expanded="String(panelOpen)"
+                  aria-controls="thread-info-panel"
+                  @click="panelOpen = !panelOpen"
+                >
+                  <v-icon
+                    :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                  />
+                </v-btn>
+              </div>
             </div>
           </div>
-        </div>
-      </v-card-text>
 
-      <v-card-actions>
-        <v-spacer />
-        <NuxtLink :to="profileLink" class="text-decoration-none">
-          <v-btn variant="outlined" size="small">View full profile</v-btn>
-        </NuxtLink>
-        <v-btn color="primary">Message</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+          <!-- Overlay panel that drops over the scrollable list -->
+          <v-expand-transition>
+            <v-card
+              v-if="panelOpen"
+              id="thread-info-panel"
+              class="mx-1"
+              elevation="6"
+              :aria-hidden="String(!panelOpen)"
+            >
+              <div class="px-4 py-4">
+                <template v-if="selectedUser">
+                  <div
+                    v-if="selectedUser?.tagline"
+                    class="text-body-1 font-italic mb-3 text-truncate"
+                    :title="selectedUser.tagline"
+                  >
+                    "{{ selectedUser.tagline }}"
+                  </div>
+
+                  <div
+                    v-if="selectedUserMeta.length"
+                    class="profile-meta-grid text-body-2 mb-3"
+                  >
+                    <div
+                      v-for="item in selectedUserMeta"
+                      :key="item.key"
+                      class="d-flex align-center mb-2"
+                    >
+                      <v-icon size="18" class="mr-2 text-medium-emphasis">
+                        {{ item.icon }}
+                      </v-icon>
+                      <span class="text-medium-emphasis mr-1">
+                        {{ item.label }}:
+                      </span>
+                      <span class="text-truncate">{{ item.value }}</span>
+                    </div>
+                  </div>
+
+                  <div
+                    v-if="selectedUser?.bio"
+                    class="profile-bio text-body-2 text-medium-emphasis mb-3"
+                  >
+                    {{ selectedUser.bio }}
+                  </div>
+
+                  <div
+                    v-if="selectedUserInterests.length"
+                    class="d-flex flex-wrap gap-2 mb-3"
+                  >
+                    <v-chip
+                      v-for="interest in selectedUserInterests"
+                      :key="interest"
+                      size="small"
+                      variant="outlined"
+                      color="primary"
+                    >
+                      {{ interest }}
+                    </v-chip>
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-2">
+                    <NuxtLink
+                      v-if="profileLink"
+                      :to="profileLink"
+                      class="text-decoration-none"
+                    >
+                      <v-btn
+                        size="small"
+                        variant="tonal"
+                        prepend-icon="mdi-open-in-new"
+                      >
+                        View full profile
+                      </v-btn>
+                    </NuxtLink>
+                    <v-btn
+                      size="small"
+                      variant="text"
+                      prepend-icon="mdi-close"
+                      @click="panelOpen = false"
+                    >
+                      Close
+                    </v-btn>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="text-body-2 text-medium-emphasis">
+                    Select a user to view profile details.
+                  </div>
+                </template>
+              </div>
+            </v-card>
+          </v-expand-transition>
+
+          <!-- Scrollable messages list -->
+          <div
+            ref="centerScrollRef"
+            class="flex-grow-1 overflow-auto users-scroll min-h-0 px-2 py-2"
+            style="flex: 1 1 0"
+            @scroll.passive="
+              panelOpen && autoCloseOnScroll && (panelOpen = false)
+            "
+          >
+            <v-skeleton-loader
+              v-if="loadingMsgs"
+              type="list-item@6"
+              class="pa-2"
+            />
+
+            <ChatLayoutOnboarding
+              v-if="isPreAuth"
+              ref="onbRef"
+              :key="'onb'"
+              :authStatus="auth.authStatus"
+              :canSend="canSend"
+              :isPreAuth="isPreAuth"
+              :isBotSelected="isBotSelected"
+              :consented="draftStore?.consented ?? false"
+              @send="onSend"
+              class="d-flex flex-column flex-grow-1 overflow-hidden"
+            />
+
+            <ChatLayoutRegular
+              v-else
+              ref="regRef"
+              :key="`reg-${auth.authStatus}`"
+              :authStatus="auth.authStatus"
+              :me-id="auth.user?.id"
+              :peer="chat.selectedUser"
+            />
+          </div>
+
+          <!-- Composer -->
+          <div class="border-t pt-2" style="flex: 0 0 auto">
+            <ChatLayoutMessageComposer
+              v-model:draft="messageDraft"
+              :peer-id="peerId"
+              :me-id="meId"
+              :conversation-key="conversationKey"
+              class="w-100 mx-auto"
+              @send="onSend"
+            />
+          </div>
+        </v-col>
+
+        <!-- RIGHT: Participants -->
+        <v-col
+          cols="12"
+          md="2"
+          class="pa-2 d-flex flex-column overflow-hidden d-none d-md-flex min-h-0"
+        >
+          <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+            <div
+              ref="rightScrollRef"
+              class="flex-grow-1 overflow-auto min-h-0 users-scroll"
+              style="flex: 1 1 0"
+            >
+              <ChatLayoutUsers
+                v-if="tabVisibility.active"
+                list-type="active"
+                :users="usersWithPresence"
+                :pinnedId="IMCHATTY_ID"
+                :activeChats="activeChats"
+                :selectedUserId="selectedUserId"
+                :isLoading="isLoading"
+                :user-profile="userProfile"
+                :auth-status="auth.authStatus"
+                :disable-filter-toggle="shouldDisableToggle"
+                :show-filters="false"
+                @user-selected="selectUser"
+                @filter-changed="updateFilters"
+              />
+            </div>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Mobile (< md): only the Thread pane -->
+      <v-row
+        v-if="smAndDown"
+        class="flex-grow-1 overflow-hidden min-h-0 d-flex d-md-none"
+      >
+        <v-col
+          cols="12"
+          class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
+        >
+          <div
+            class="messages-sticky-header d-flex d-md-none px-3 py-2 align-center justify-space-between"
+          >
+            <div class="d-flex align-center mobile-profile-left">
+              <v-avatar size="40" color="primary" variant="tonal">
+                <v-img
+                  v-if="selectedUser && selectedUser.avatar_url"
+                  :src="selectedUser.avatar_url"
+                  cover
+                />
+                <span
+                  v-else
+                  class="avatar-fallback text-body-2 font-weight-medium"
+                >
+                  {{ selectedUserInitial }}
+                </span>
+              </v-avatar>
+              <div class="min-w-0 ml-2">
+                <div class="text-subtitle-2 font-weight-medium text-truncate">
+                  {{ selectedUserTitle }}
+                </div>
+                <div class="text-body-2 text-medium-emphasis text-truncate">
+                  {{ selectedUserSubtitle }}
+                </div>
+              </div>
+            </div>
+
+            <v-btn
+              icon
+              variant="text"
+              :disabled="!selectedUser"
+              :aria-expanded="String(panelOpen)"
+              aria-controls="thread-info-panel"
+              @click="panelOpen = !panelOpen"
+            >
+              <v-icon
+                :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+              />
+            </v-btn>
+          </div>
+          <v-expand-transition>
+            <v-card
+              v-if="panelOpen"
+              id="thread-info-panel"
+              class="mx-1"
+              elevation="6"
+              :aria-hidden="String(!panelOpen)"
+            >
+              <div class="px-4 py-4">
+                <template v-if="selectedUser">
+                  <div
+                    v-if="selectedUser?.tagline"
+                    class="text-body-1 font-italic mb-3 text-truncate"
+                    :title="selectedUser.tagline"
+                  >
+                    "{{ selectedUser.tagline }}"
+                  </div>
+
+                  <div
+                    v-if="selectedUserMeta.length"
+                    class="profile-meta-grid text-body-2 mb-3"
+                  >
+                    <div
+                      v-for="item in selectedUserMeta"
+                      :key="item.key"
+                      class="d-flex align-center mb-2"
+                    >
+                      <v-icon size="18" class="mr-2 text-medium-emphasis">
+                        {{ item.icon }}
+                      </v-icon>
+                      <span class="text-medium-emphasis mr-1">
+                        {{ item.label }}:
+                      </span>
+                      <span class="text-truncate">{{ item.value }}</span>
+                    </div>
+                  </div>
+
+                  <div
+                    v-if="selectedUser?.bio"
+                    class="profile-bio text-body-2 text-medium-emphasis mb-3"
+                  >
+                    {{ selectedUser.bio }}
+                  </div>
+
+                  <div
+                    v-if="selectedUserInterests.length"
+                    class="d-flex flex-wrap gap-2 mb-3"
+                  >
+                    <v-chip
+                      v-for="interest in selectedUserInterests"
+                      :key="interest"
+                      size="small"
+                      variant="outlined"
+                      color="primary"
+                    >
+                      {{ interest }}
+                    </v-chip>
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-2">
+                    <NuxtLink
+                      v-if="profileLink"
+                      :to="profileLink"
+                      class="text-decoration-none"
+                    >
+                      <v-btn
+                        size="small"
+                        variant="tonal"
+                        prepend-icon="mdi-open-in-new"
+                      >
+                        View full profile
+                      </v-btn>
+                    </NuxtLink>
+                    <v-btn
+                      size="small"
+                      variant="text"
+                      prepend-icon="mdi-close"
+                      @click="panelOpen = false"
+                    >
+                      Close
+                    </v-btn>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="text-body-2 text-medium-emphasis">
+                    Select a user to view profile details.
+                  </div>
+                </template>
+              </div>
+            </v-card>
+          </v-expand-transition>
+
+          <div
+            ref="centerScrollRef"
+            class="flex-grow-1 overflow-auto users-scroll min-h-0 px-2 py-2"
+            style="flex: 1 1 0"
+            @scroll.passive="
+              panelOpen && autoCloseOnScroll && (panelOpen = false)
+            "
+          >
+            <v-skeleton-loader
+              v-if="loadingMsgs"
+              type="list-item@6"
+              class="pa-2"
+            />
+            <ChatLayoutOnboarding
+              v-if="isPreAuth"
+              ref="onbRef"
+              :key="'onb'"
+              :authStatus="auth.authStatus"
+              :canSend="canSend"
+              :isPreAuth="isPreAuth"
+              :isBotSelected="isBotSelected"
+              :consented="draftStore?.consented ?? false"
+              @send="onSend"
+              class="d-flex flex-column flex-grow-1 overflow-hidden"
+            />
+
+            <ChatLayoutRegular
+              v-else
+              ref="regRef"
+              :key="`reg-${auth.authStatus}`"
+              :authStatus="auth.authStatus"
+              :me-id="auth.user?.id"
+              :peer="chat.selectedUser"
+            />
+          </div>
+
+          <div class="border-t pt-2" style="flex: 0 0 auto">
+            <ChatLayoutMessageComposer
+              v-model:draft="messageDraft"
+              :peer-id="peerId"
+              :me-id="meId"
+              :conversation-key="conversationKey"
+              class="w-100 mx-auto"
+              @send="onSend"
+            />
+          </div>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <!-- Mobile-only Drawers -->
+    <v-navigation-drawer
+      v-model="leftOpen"
+      location="left"
+      temporary
+      class="d-md-none"
+      width="320"
+      aria-label="Topics drawer"
+    >
+      <div
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+        style="height: 100%"
+      >
+        <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+          <div
+            ref="leftScrollRefMobile"
+            class="flex-grow-1 overflow-auto min-h-0 users-scroll"
+            style="flex: 1 1 0"
+          >
+            <!-- SAME content as desktop Topics column -->
+            <ChatLayoutUsers
+              v-if="tabVisibility.online"
+              list-type="online"
+              :users="usersWithPresence"
+              :pinnedId="IMCHATTY_ID"
+              :activeChats="activeChats"
+              :selectedUserId="selectedUserId"
+              :isLoading="isLoading"
+              :user-profile="userProfile"
+              :auth-status="auth.authStatus"
+              :disable-filter-toggle="shouldDisableToggle"
+              @user-selected="selectUser"
+              @filter-changed="updateFilters"
+            />
+          </div>
+        </v-card>
+      </div>
+    </v-navigation-drawer>
+
+    <v-navigation-drawer
+      v-model="rightOpen"
+      location="right"
+      temporary
+      class="d-md-none"
+      width="300"
+      aria-label="Participants drawer"
+    >
+      <div
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+        style="height: 100%"
+      >
+        <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+          <div
+            ref="rightScrollRefMobile"
+            class="flex-grow-1 overflow-auto min-h-0 users-scroll"
+            style="flex: 1 1 0"
+          >
+            <ChatLayoutUsers
+              v-if="tabVisibility.active"
+              list-type="active"
+              :users="usersWithPresence"
+              :pinnedId="IMCHATTY_ID"
+              :activeChats="activeChats"
+              :selectedUserId="selectedUserId"
+              :isLoading="isLoading"
+              :user-profile="userProfile"
+              :auth-status="auth.authStatus"
+              :disable-filter-toggle="shouldDisableToggle"
+              :show-filters="false"
+              @user-selected="selectUser"
+              @filter-changed="updateFilters"
+            />
+          </div>
+        </v-card>
+      </div>
+    </v-navigation-drawer>
+  </div>
 </template>
 
 <script setup>
-import { ref, unref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, unref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useChatStore } from "@/stores/chatStore";
@@ -661,6 +615,11 @@ const supabase = getClient();
 
 const onbRef = ref(null);
 const filtersVisible = ref(true);
+
+const leftOpen = ref(false);
+const rightOpen = ref(false);
+const panelOpen = ref(false);
+const autoCloseOnScroll = false;
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
@@ -739,6 +698,110 @@ const selectedUserId = computed(
   () => chat.selectedUser?.user_id || chat.selectedUser?.id || null
 );
 
+const selectedUserRaw = computed(() => chat.selectedUser || null);
+
+const selectedUser = computed(() => {
+  const raw = selectedUserRaw.value;
+  if (!raw) return null;
+  const rawId = raw.user_id ?? raw.id;
+  if (!rawId) return raw;
+  const match = usersWithPresence.value.find((u) => {
+    const uid = u.user_id ?? u.id;
+    return String(uid) === String(rawId);
+  });
+  return match || raw;
+});
+
+const selectedUserInitial = computed(() => {
+  const name = selectedUser.value?.displayname || "";
+  const trimmed = name.trim();
+  if (trimmed.length) return trimmed[0].toUpperCase();
+  return "?";
+});
+
+const selectedUserTitle = computed(() => {
+  const user = selectedUser.value;
+  if (!user) return "Select a user to start chatting";
+  const parts = [];
+  if (user.displayname) parts.push(String(user.displayname));
+  if (user.age) parts.push(String(user.age));
+  return parts.join(", ");
+});
+
+const selectedUserLocation = computed(() => {
+  const user = selectedUser.value;
+  if (!user) return "";
+  const location = [user.city, user.country].filter(Boolean).join(", ");
+  const emoji = user.country_emoji ? String(user.country_emoji).trim() : "";
+  if (emoji && location) return `${emoji} ${location}`;
+  return emoji || location;
+});
+
+const selectedUserSubtitle = computed(() => {
+  const user = selectedUser.value;
+  if (!user) return "Pick someone from the list on the left.";
+  if (user.tagline) return String(user.tagline);
+  if (selectedUserLocation.value) return selectedUserLocation.value;
+  if (user.bio) {
+    const bio = String(user.bio).trim();
+    return bio.length > 80 ? `${bio.slice(0, 77)}...` : bio;
+  }
+  return "No additional details yet.";
+});
+
+const selectedUserMeta = computed(() => {
+  const user = selectedUser.value;
+  if (!user) return [];
+  const meta = [];
+  if (user.age) {
+    meta.push({
+      key: "age",
+      icon: "mdi-cake-variant",
+      label: "Age",
+      value: String(user.age),
+    });
+  }
+  if (user.gender) {
+    meta.push({
+      key: "gender",
+      icon: "mdi-gender-male-female",
+      label: "Gender",
+      value: String(user.gender),
+    });
+  }
+  if (selectedUserLocation.value) {
+    meta.push({
+      key: "location",
+      icon: "mdi-map-marker",
+      label: "Location",
+      value: selectedUserLocation.value,
+    });
+  }
+  if (user.relationship_status) {
+    meta.push({
+      key: "relationship-status",
+      icon: "mdi-heart-outline",
+      label: "Status",
+      value: String(user.relationship_status),
+    });
+  }
+  return meta;
+});
+
+const selectedUserInterests = computed(() => {
+  const raw = selectedUser.value?.looking_for;
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((entry) => String(entry || "").trim())
+    .filter((entry) => entry.length);
+});
+
+const loadingMsgs = computed(() => chat.loading);
+
+watch(selectedUserId, () => {
+  panelOpen.value = false;
+});
+
 // alias for clarity (ref)
 const peerId = selectedUserId;
 
@@ -769,6 +832,7 @@ const props = defineProps({
   userProfile: Object,
   authStatus: { type: String, required: true },
 });
+const userProfile = computed(() => props.userProfile || null);
 
 if (typeof window !== "undefined") window.__presenceFromLayout = presence2;
 
@@ -917,6 +981,10 @@ const usersWithPresence = computed(() => {
 
 function selectUser(u) {
   chat.setSelectedUser(u);
+  if (smAndDown.value) {
+    leftOpen.value = false;
+    rightOpen.value = false;
+  }
 }
 
 const pendingSelectImChatty = ref(false);
@@ -1122,7 +1190,7 @@ async function onSend(text) {
       const aiText = await fetchAiResponse(
         text,
         selectedPeer,
-        props?.userProfile || null,
+        userProfile.value,
         history,
         replyTo
       );
@@ -1264,5 +1332,30 @@ function toggleFilters() {
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.profile-header {
+  gap: 16px;
+}
+.profile-header-left,
+.mobile-profile-left {
+  gap: 12px;
+}
+.profile-header-actions {
+  gap: 8px;
+}
+.avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+.profile-meta-grid {
+  column-gap: 24px;
+}
+.profile-bio {
+  white-space: pre-line;
 }
 </style>
