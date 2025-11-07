@@ -2373,42 +2373,83 @@ export const useDb = () => {
     return { error };
   };
 
-  const signInWithOtp = async (email, { next = "/chat" } = {}) => {
-    const supabase = getClient();
-    const config = getConfig();
+  // const signInWithOtp = async (email, { next = "/chat" } = {}) => {
+  //   const supabase = getClient();
+  //   const config = getConfig();
 
-    const origin =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : config.public.SITE_URL || "https://imchatty.com";
+  //   const origin =
+  //     typeof window !== "undefined"
+  //       ? window.location.origin
+  //       : config.public.SITE_URL || "https://imchatty.com";
 
-    const normalizeRedirect = (value) => {
-      if (!value) return null;
-      if (/^https?:\/\//i.test(value)) {
-        return value;
-      }
-      // allow specifying a path such as "/loginemail"
-      const leadingSlash = value.startsWith("/") ? "" : "/";
-      return `${origin}${leadingSlash}${value}`;
-    };
+  //   const normalizeRedirect = (value) => {
+  //     if (!value) return null;
+  //     if (/^https?:\/\//i.test(value)) {
+  //       return value;
+  //     }
+  //     // allow specifying a path such as "/loginemail"
+  //     const leadingSlash = value.startsWith("/") ? "" : "/";
+  //     return `${origin}${leadingSlash}${value}`;
+  //   };
 
-    const envRedirect = normalizeRedirect(
-      config.public.SUPABASE_REDIRECT?.trim()
-    );
-    const fallbackRedirect = `${origin}/callback?next=${encodeURIComponent(
-      next
-    )}`;
-    const emailRedirectTo = envRedirect || fallbackRedirect;
+  //   const envRedirect = normalizeRedirect(
+  //     config.public.SUPABASE_REDIRECT?.trim()
+  //   );
+  //   const fallbackRedirect = `${origin}/callback?next=${encodeURIComponent(
+  //     next
+  //   )}`;
+  //   const emailRedirectTo = envRedirect || fallbackRedirect;
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email,
-      options: {
-        emailRedirectTo,
-      },
-    });
-    if (error) throw error;
+  //   const { error } = await supabase.auth.signInWithOtp({
+  //     email: email,
+  //     options: {
+  //       emailRedirectTo,
+  //     },
+  //   });
+  //   if (error) throw error;
+  // };
+
+
+const signInWithOtp = async (
+  email,
+  { next = "/chat", redirectTo } = {}
+) => {
+  const supabase = getClient();
+  const config = getConfig();
+
+  const origin =
+    typeof window !== "undefined" && window.location && window.location.origin
+      ? window.location.origin
+      : config.public.SITE_URL || "https://imchatty.com";
+
+  const normalizeRedirect = (value) => {
+    if (!value) return null;
+    if (/^https?:\/\//i.test(value)) return value;
+    const leadingSlash = value.startsWith("/") ? "" : "/";
+    return `${origin}${leadingSlash}${value}`;
   };
 
+  const envRedirect = normalizeRedirect(
+    (config.public.SUPABASE_REDIRECT || "").trim()
+  );
+  const defaultRedirect = `${origin}/callback?next=${encodeURIComponent(next)}`;
+  const emailRedirectTo =
+    normalizeRedirect(redirectTo) || envRedirect || defaultRedirect;
+
+  console.info("[auth] emailRedirectTo:", emailRedirectTo);
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo,
+      shouldCreateUser: true, // optional
+    },
+  });
+  if (error) throw error;
+};
+
+
+  
   const signInAnonymously = async () => {
     const supabase = getClient();
 

@@ -85,11 +85,25 @@ const updateFormValidity = () => {
   // No need to manually set isFormValid since it's a computed property
 };
 
+// const handleLogin = async () => {
+//   try {
+//     loading.value = true;
+//     await signInWithOtp(email.value);
+//     successMessage.value = true;
+//   } catch (error) {
+//     alert(error.error_description || error.message);
+//   } finally {
+//     loading.value = false;
+//   }
+// };
+
 const handleLogin = async () => {
   try {
     loading.value = true;
-    await signInWithOtp(email.value);
-    // alert("Check your email for the login link!");
+    await signInWithOtp(email.value, {
+      next: "/chat",         // or use route.fullPath
+      redirectTo: "/callback"
+    });
     successMessage.value = true;
   } catch (error) {
     alert(error.error_description || error.message);
@@ -97,4 +111,5 @@ const handleLogin = async () => {
     loading.value = false;
   }
 };
+
 </script>
