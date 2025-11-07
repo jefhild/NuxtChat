@@ -1,15 +1,11 @@
 <template>
-  <!-- OUTER SHELL: fills v-main -->
-
   <div class="d-flex flex-column h-100 min-h-0">
     <v-container fluid class="d-flex flex-column h-100 min-h-0">
-      <!-- Header row: left chevron (always visible), right collapsible filters -->
       <v-row
         no-gutters
         class="px-1 d-flex align-center"
         style="min-height: 32px; line-height: 1; flex: 0 0 auto"
       >
-        <!-- Left: chevron (always visible) -->
         <v-col cols="auto" class="d-flex align-center pa-0">
           <v-btn
             variant="text"
@@ -26,11 +22,8 @@
           </v-btn>
         </v-col>
 
-        <!-- Right: collapsible panel -->
         <v-col class="pa-0">
-          <!-- IMPORTANT: no align-center here -->
           <v-slide-y-transition>
-            <!-- smoother with flex rows -->
             <div v-show="filtersVisible" class="overflow-hidden">
               <ChatLayoutTabFilters
                 v-model="tabFiltersModel"
@@ -46,24 +39,19 @@
         </v-col>
       </v-row>
 
-      <!-- BODY: fills remaining height, clips, children manage scroll -->
       <v-row class="flex-grow-1 overflow-hidden min-h-0">
-        <!-- USERS COLUMN -->
         <v-col
           cols="12"
-          md="4"
+          md="3"
           class="pa-2 d-flex flex-column overflow-hidden min-h-0"
         >
           <template v-if="smAndDown">
-            <!-- <v-expansion-panels multiple class="flex-grow-1 overflow-hidden"> -->
-
             <v-expansion-panels
-              v-model="openPanels"
+              v-model="leftMobilePanels"
               multiple
               class="flex-grow-1 overflow-hidden min-h-0"
             >
-              <v-expansion-panel>
-                <!-- <v-expansion-panel-title class="bg-blue-lighten-5 py-1 px-2"> -->
+              <v-expansion-panel value="left">
                 <v-expansion-panel-title
                   hide-actions
                   class="bg-blue-lighten-5 py-1 px-2 d-flex justify-center position-relative"
@@ -78,13 +66,15 @@
                     icon
                     variant="text"
                     class="header-chevron"
-                    :aria-label="openPanels.includes(0) ? 'Collapse' : 'Expand'"
-                    :aria-expanded="String(openPanels.includes(0))"
-                    @click.stop="togglePanel0"
+                    :aria-label="
+                      leftMobilePanels.includes('left') ? 'Collapse' : 'Expand'
+                    "
+                    :aria-expanded="String(leftMobilePanels.includes('left'))"
+                    @click.stop="toggleLeftPanel"
                   >
                     <v-icon
                       :icon="
-                        openPanels.includes(0)
+                        leftMobilePanels.includes('left')
                           ? 'mdi-chevron-up'
                           : 'mdi-chevron-down'
                       "
@@ -95,8 +85,6 @@
                   class="pa-0 d-flex flex-column min-h-0"
                   style="flex: 1 1 auto"
                 >
-                  <!-- Scroll area -->
-                  <!-- Virtual scroller will scroll; parent just bounds -->
                   <div
                     class="flex-grow-1 overflow-hidden px-2 py-2"
                     style="flex: 1 1 0"
@@ -111,15 +99,10 @@
                       :pinnedId="IMCHATTY_ID"
                       :activeChats="activeChats"
                       :selectedUserId="selectedUserId"
-                      :showAIUsers="showAIUsers"
                       :tab-visibility="tabVisibility"
                       :isLoading="isLoading"
+                      :hide-tabs="true"
                       @user-selected="selectUser"
-                    />
-                    <SettingsProfileCard
-                      v-if="userProfile && !smAndDown"
-                      :profile="userProfile"
-                      class="mt-2"
                     />
                   </div>
                 </v-expansion-panel-text>
@@ -128,7 +111,6 @@
           </template>
 
           <template v-else>
-            <!-- Scroll area on desktop -->
             <div class="flex-grow-1 overflow-hidden" style="flex: 1 1 0">
               <ChatLayoutUsers
                 v-if="
@@ -140,7 +122,6 @@
                 :activeChats="activeChats"
                 :pinnedId="IMCHATTY_ID"
                 :selectedUserId="selectedUserId"
-                :showAIUsers="showAIUsers"
                 :tab-visibility="tabVisibility"
                 :isLoading="isLoading"
                 @user-selected="selectUser"
@@ -149,13 +130,11 @@
           </template>
         </v-col>
 
-        <!-- MESSAGES COLUMN -->
         <v-col
           cols="12"
-          md="8"
+          md="6"
           class="pa-2 d-flex flex-column overflow-hidden min-h-0"
         >
-          <!-- Optional sticky header inside messages column -->
           <div class="messages-sticky-header" v-if="!smAndDown">
             <ChatLayoutHeader
               :currentUser="user"
@@ -165,7 +144,6 @@
             />
           </div>
 
-          <!-- Onboarding or Regular chat -->
           <div
             class="flex-grow-1 d-flex flex-column overflow-hidden min-h-0"
             style="flex: 1 1 0"
@@ -192,35 +170,79 @@
               :peer="chat.selectedUser"
             />
           </div>
-        </v-col>
-      </v-row>
 
-      <v-row class="min-h-0" style="flex: 0 0 auto">
+          <div class="mt-2">
+            <ChatLayoutMessageComposer
+              v-model:draft="messageDraft"
+              :peer-id="peerId"
+              :me-id="meId"
+              :conversation-key="conversationKey"
+              class="w-100 mx-auto"
+              @send="onSend"
+            />
+          </div>
+        </v-col>
+
         <v-col
           cols="12"
-          md="4"
+          md="3"
           class="pa-2 d-flex flex-column overflow-hidden min-h-0"
         >
-          <ChatLayoutConsentPanel
-            v-if="!smAndDown"
-            :auth-status="auth.authStatus"
-            :user-profile="auth.userProfile"
-            @action="selectImChatty"
-          />
-        </v-col>
-        <v-col
-          cols="12"
-          md="8"
-          class="pa-2 d-flex flex-column overflow-hidden min-h-0 chat-col"
-        >
-          <ChatLayoutMessageComposer
-            v-model:draft="messageDraft"
-            :peer-id="peerId"
-            :me-id="meId"
-            :conversation-key="conversationKey"
-            class="w-100 mx-auto"
-            @send="onSend"
-          />
+          <template v-if="smAndDown">
+            <v-expansion-panels
+              v-model="rightMobilePanels"
+              multiple
+              class="flex-grow-1 overflow-hidden min-h-0"
+            >
+              <v-expansion-panel value="right">
+                <v-expansion-panel-title
+                  hide-actions
+                  class="bg-blue-lighten-5 py-1 px-2 d-flex align-center position-relative"
+                >
+                  <div class="text-subtitle-2 d-flex align-center">
+                    <v-icon icon="mdi-information-outline" size="18" class="mr-2" />
+                    <span>Details</span>
+                  </div>
+                  <v-btn
+                    size="small"
+                    icon
+                    variant="text"
+                    class="header-chevron"
+                    :aria-label="
+                      rightMobilePanels.includes('right') ? 'Collapse' : 'Expand'
+                    "
+                    :aria-expanded="String(rightMobilePanels.includes('right'))"
+                    @click.stop="toggleRightPanel"
+                  >
+                    <v-icon
+                      :icon="
+                        rightMobilePanels.includes('right')
+                          ? 'mdi-chevron-up'
+                          : 'mdi-chevron-down'
+                      "
+                    />
+                  </v-btn>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text class="pa-0">
+                  <div class="flex-grow-1 overflow-auto px-2 py-2 min-h-0">
+                    <ChatLayoutConsentPanel
+                      :auth-status="auth.authStatus"
+                      :user-profile="auth.userProfile"
+                      @action="selectImChatty"
+                    />
+                  </div>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+          </template>
+
+          <template v-else>
+            <ChatLayoutConsentPanel
+              :auth-status="auth.authStatus"
+              :user-profile="auth.userProfile"
+              @action="selectImChatty"
+            />
+          </template>
         </v-col>
       </v-row>
     </v-container>
@@ -284,6 +306,328 @@
       </v-card>
     </v-dialog>
   </div>
+</template>
+
+
+          <template v-else>
+            <div class="flex-grow-1 overflow-hidden" style="flex: 1 1 0">
+              <ChatLayoutUsers
+                v-if="
+                  tabVisibility.online ||
+                  tabVisibility.offline ||
+                  tabVisibility.active
+                "
+                :users="usersWithPresence"
+                :activeChats="activeChats"
+                :pinnedId="IMCHATTY_ID"
+                :selectedUserId="selectedUserId"
+                :tab-visibility="tabVisibility"
+                :isLoading="isLoading"
+                @user-selected="selectUser"
+              />
+            </div>
+          </template>
+        </v-col>
+
+        <v-col
+          cols="12"
+          md="6"
+          class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+        >
+          <div class="messages-sticky-header" v-if="!smAndDown">
+            <ChatLayoutHeader
+              :currentUser="user"
+              :selectedUser="chat.selectedUser"
+              :profileLink="profileLink"
+              @open-profile="openProfileDialog"
+            />
+          </div>
+
+          <div
+            class="flex-grow-1 d-flex flex-column overflow-hidden min-h-0"
+            style="flex: 1 1 0"
+          >
+            <ChatLayoutOnboarding
+              v-if="isPreAuth"
+              ref="onbRef"
+              :key="'onb'"
+              :authStatus="auth.authStatus"
+              :canSend="canSend"
+              :isPreAuth="isPreAuth"
+              :isBotSelected="isBotSelected"
+              :consented="draftStore?.consented ?? false"
+              @send="onSend"
+              class="d-flex flex-column flex-grow-1 overflow-hidden"
+            />
+
+            <ChatLayoutRegular
+              v-else
+              ref="regRef"
+              :key="`reg-${auth.authStatus}`"
+              :authStatus="auth.authStatus"
+              :me-id="auth.user?.id"
+              :peer="chat.selectedUser"
+            />
+          </div>
+
+          <div class="mt-2">
+            <ChatLayoutMessageComposer
+              v-model:draft="messageDraft"
+              :peer-id="peerId"
+              :me-id="meId"
+              :conversation-key="conversationKey"
+              class="w-100 mx-auto"
+              @send="onSend"
+            />
+          </div>
+        </v-col>
+
+        <v-col
+          cols="12"
+          md="3"
+          class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+        >
+          <template v-if="smAndDown">
+            <v-expansion-panels
+              v-model="rightMobilePanels"
+              multiple
+              class="flex-grow-1 overflow-hidden min-h-0"
+            >
+              <v-expansion-panel value="right">
+                <v-expansion-panel-title
+                  hide-actions
+                  class="bg-blue-lighten-5 py-1 px-2 d-flex align-center position-relative"
+                >
+                  <div class="text-subtitle-2 d-flex align-center">
+                    <v-icon icon="mdi-information-outline" size="18" class="mr-2" />
+                    <span>Details</span>
+                  </div>
+                  <v-btn
+                    size="small"
+                    icon
+                    variant="text"
+                    class="header-chevron"
+                    :aria-label="
+                      rightMobilePanels.includes('right') ? 'Collapse' : 'Expand'
+                    "
+                    :aria-expanded="String(rightMobilePanels.includes('right'))"
+                    @click.stop="toggleRightPanel"
+                  >
+                    <v-icon
+                      :icon="
+                        rightMobilePanels.includes('right')
+                          ? 'mdi-chevron-up'
+                          : 'mdi-chevron-down'
+                      "
+                    />
+                  </v-btn>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text class="pa-0">
+                  <div class="flex-grow-1 overflow-auto px-2 py-2 min-h-0">
+                    <ChatLayoutConsentPanel
+                      :auth-status="auth.authStatus"
+                      :user-profile="auth.userProfile"
+                      @action="selectImChatty"
+                    />
+                  </div>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+          </template>
+
+          <template v-else>
+            <ChatLayoutConsentPanel
+              :auth-status="auth.authStatus"
+              :user-profile="auth.userProfile"
+              @action="selectImChatty"
+            />
+          </template>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <!-- Profile modal unchanged -->
+    <v-dialog v-model="isProfileDialogOpen" max-width="640">
+      <v-card>
+        <v-card-title class="d-flex justify-space-between">
+          <span>{{ modalUser?.displayname }}, {{ modalUser?.age }}</span>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="isProfileDialogOpen = false"
+          />
+        </v-card-title>
+
+        <v-card-text>
+          <div class="d-flex">
+            <v-avatar
+              size="80"
+              :image="getAvatar(modalUser?.avatar_url, modalUser?.gender_id)"
+              class="mr-4"
+            />
+            <div>
+              <div class="text-subtitle-1 mb-1">{{ modalUser?.tagline }}</div>
+              <div class="text-body-2">{{ modalUser?.bio }}</div>
+              <div class="text-caption mt-2">
+                {{ modalUser?.country }} {{ modalUser?.country_emoji }}
+                <span v-if="modalUser?.city">• {{ modalUser?.city }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="mt-4"
+            v-if="
+              Array.isArray(modalUser?.looking_for) &&
+              modalUser.looking_for.length
+            "
+          >
+            <v-chip
+              v-for="(tag, i) in modalUser.looking_for"
+              :key="i"
+              class="mr-1 mb-1"
+              size="small"
+            >
+              {{ tag }}
+            </v-chip>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <NuxtLink :to="profileLink" class="text-decoration-none">
+            <v-btn variant="outlined" size="small">View full profile</v-btn>
+          </NuxtLink>
+          <v-btn color="primary" :to="`/chat?userslug=${modalUser.slug}`"
+            >Message</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
+</template>
+
+
+        <template v-else>
+          <div
+            ref="leftDesktopScrollRef"
+            class="flex-grow-1 overflow-auto min-h-0 users-scroll"
+          >
+            <!-- here -->
+
+            Left Desktop Left Content
+          </div>
+        </template>
+      </v-col>
+
+      <!-- CENTER: Empty state (until a thread route is open) -->
+      <v-col
+        cols="12"
+        md="6"
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+      >
+        <div
+          ref="centerScrollRef"
+          class="flex-grow-1 overflow-auto min-h-0 d-flex"
+        >
+          <v-card
+            flat
+            class="d-flex flex-column fill-height justify-center align-center w-100"
+          >
+            <div class="text-body-2 text-medium-emphasis">
+              Chat Content Placeholder
+            </div>
+          </v-card>
+        </div>
+      </v-col>
+
+      <!-- RIGHT: Participants (hidden on small to avoid SSR mismatch) -->
+      <v-col
+        cols="12"
+        md="3"
+        class="pa-2 d-none d-md-flex flex-column overflow-hidden min-h-0"
+      >
+        <div ref="rightScrollRef" class="flex-grow-1 overflow-auto min-h-0">
+          <!-- here -->
+
+          Right Content Placeholder
+        </div>
+      </v-col>
+    </v-row>
+
+    <!-- FOOTER ROW (parity with ChatLayout) -->
+    <v-row>
+      <v-col
+        cols="12"
+        md="3"
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+      >
+        <v-card
+          v-if="!smAndDown"
+          class="d-flex flex-column fill-height min-h-0"
+          color="grey-lighten-4"
+          rounded="lg"
+          flat
+        >
+          <div class="ml-2 text-subtitle-2 font-weight-medium">
+            <!-- {{ headerText.line1 }} -->Consent
+          </div>
+          <div class="ml-2 text-body-2 text-medium-emphasis">
+            <!-- {{ headerText.line2 }} -->Banner or profile info here.
+          </div>
+        </v-card>
+      </v-col>
+
+      <v-col
+        cols="12"
+        md="9"
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0 chat-col"
+      >
+        <!-- Reserve space for a composer if you need it on index -->
+        <!-- <ChatArticlesMessageComposer ... /> -->
+      </v-col>
+    </v-row>
+  </v-container>
+
+  <!-- Profile modal (kept for parity; optional wiring) -->
+  <v-dialog v-model="isProfileDialogOpen" max-width="640">
+    <v-card>
+      <v-card-title class="d-flex justify-space-between">
+        <span>{{ modalUser?.displayname }}, {{ modalUser?.age }}</span>
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="isProfileDialogOpen = false"
+        />
+      </v-card-title>
+
+      <v-card-text>
+        <div class="d-flex">
+          <v-avatar
+            size="80"
+            :image="getAvatar(modalUser?.avatar_url)"
+            class="mr-4"
+          />
+          <div>
+            <div class="text-subtitle-1 mb-1">{{ modalUser?.tagline }}</div>
+            <div class="text-body-2">{{ modalUser?.bio }}</div>
+            <div class="text-caption mt-2">
+              {{ modalUser?.country }} {{ modalUser?.country_emoji }}
+              <span v-if="modalUser?.city">• {{ modalUser?.city }}</span>
+            </div>
+          </div>
+        </div>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer />
+        <NuxtLink :to="profileLink" class="text-decoration-none">
+          <v-btn variant="outlined" size="small">View full profile</v-btn>
+        </NuxtLink>
+        <v-btn color="primary">Message</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
