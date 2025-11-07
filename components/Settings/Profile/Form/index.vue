@@ -213,7 +213,14 @@ const localAvatar = avatar;
 
 const updateAvatarUrl = (newUrl) => {
   localAvatar.value = newUrl;
-  // Optional: emit up or update DB here
+
+  if (editableProfile.value) {
+    editableProfile.value.avatar_url = newUrl;
+  }
+
+  if (authStore.userProfile) {
+    authStore.userProfile.avatar_url = newUrl;
+  }
 };
 
 const { generateAvatar, getRandomStyle, getPreviewAvatarUrl } =
