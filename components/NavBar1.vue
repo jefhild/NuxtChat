@@ -26,16 +26,40 @@
                   {{ $t("components.navbar.blog") }}
                 </NuxtLink></v-col
               >
-              <v-col>
+              <!-- <v-col>
                 <NuxtLink
                   :to="localPath('/about')"
                   class="v-btn text-button navItem mr-4"
                   exact
                 >
-                  <!-- <v-icon start>mdi-account-group</v-icon> -->
+
                   {{ $t("components.navbar.aboutus") }}
                 </NuxtLink></v-col
+              > -->
+
+              <v-col>
+                <NuxtLink
+                  :to="localPath('/chat/articles')"
+                  class="v-btn text-button navItem mr-4"
+                  exact
+                >
+                  <!-- <v-icon start>mdi-account-group</v-icon> -->
+                  {{ $t("components.navbar.discussions") }}
+                </NuxtLink></v-col
               >
+
+
+              <v-col>
+                <NuxtLink
+                  :to="localPath('/chat')"
+                  class="v-btn text-button navItem mr-4"
+                  exact
+                >
+                  <!-- <v-icon start>mdi-monitor-account</v-icon> -->
+                  {{ $t("components.navbar.chat") }}
+                </NuxtLink></v-col
+              >
+
 
               <v-col>
                 <NuxtLink
@@ -47,16 +71,7 @@
                   {{ $t("components.navbar.free-chat") }}
                 </NuxtLink></v-col
               >
-              <v-col>
-                <NuxtLink
-                  :to="localPath('/chat')"
-                  class="v-btn text-button navItem mr-4"
-                  exact
-                >
-                  <!-- <v-icon start>mdi-monitor-account</v-icon> -->
-                  {{ $t("components.navbar.chat") }}
-                </NuxtLink></v-col
-              >
+
 
               <v-col v-if="isAuthenticated">
                 <NuxtLink

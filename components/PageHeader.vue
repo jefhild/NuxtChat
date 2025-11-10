@@ -1,12 +1,12 @@
 <template>
   <v-row justify="center" align="center" class="mb-2">
     <v-col cols="12" class="text-center">
-      <h1 class="text-h6 text-md-h5 page-header-text">
+      <h1 class="text-h6 text-sm-h5 text-md-h4 text-lg-h4 page-header-text">
         {{ text }}
       </h1>
       <h2
         v-if="subtitle"
-        class="text-subtitle-1 text-md-h6 page-header-subtitle"
+        class="d-none d-md-block text-subtitle-1 text-md-h6 page-header-subtitle"
       >
         {{ subtitle }}
       </h2>

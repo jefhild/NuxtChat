@@ -1,5 +1,15 @@
 <template>
   <v-container fluid class="d-flex flex-column h-100 min-h-0">
+    <!-- Thread title always at the top -->
+    <v-row no-gutters class="min-h-0" style="flex: 0 0 auto">
+      <v-col>
+        <PageHeader
+          :text="topicThread?.article?.title || topicThread?.title || ''"
+          :subtitle="$t('pages.chat.articles.subtitle')"
+        />
+      </v-col>
+    </v-row>
+
     <!-- Mobile controls: left drawer (Topics) + right drawer (Participants) -->
     <div class="d-md-none d-flex align-center justify-space-between px-2 py-2">
       <v-btn icon @click="leftOpen = true" aria-label="Open topics"
@@ -16,84 +26,39 @@
       </v-btn>
     </div>
 
-    <!-- <v-row no-gutters class="min-h-0" style="flex: 0 0 auto">
-      <v-col>
-        <PageHeader
-          :text="topicThread?.article?.title || topicThread?.title || ''"
-          :subtitle="
-            !$vuetify.display.smAndDown
-              ? $t('pages.chat.articles.subtitle')
-              : ''
-          "
-        />
-      </v-col>
-    </v-row> -->
-
-    <!-- Mobile header with background image -->
-    <v-row no-gutters class="d-flex d-md-none" style="flex: 0 0 auto">
-      <v-col>
-        <div class="mobile-header-bg">
-          <v-img
-            v-if="articleImageUrl"
-            :src="articleImageUrl"
-            height="148"
-            cover
-            class="mobile-header-img"
-            eager
-          >
-            <!-- darken for readability -->
-            <div class="mobile-header-overlay" />
-            <!-- overlay content -->
-            <div class="absolute inset-0 d-flex align-end">
-              <div
-                class="px-3 py-3 w-100 d-flex align-center justify-space-between"
-              >
-                <PageHeader
-                  class="mobile-header-title"
-                  :text="
-                    topicThread?.article?.title || topicThread?.title || ''
-                  "
-                  :subtitle="''"
-                  @click="panelOpen = !panelOpen"
-                  style="cursor: pointer"
-                />
-                <v-btn
-                  icon
-                  size="x-small"
-                  color="white"
-                  variant="text"
-                  class="ml-2"
-                  :aria-expanded="String(panelOpen)"
-                  aria-controls="thread-info-panel"
-                  @click="panelOpen = !panelOpen"
-                >
-                  <v-icon
-                    :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-                  />
-                </v-btn>
-              </div>
-            </div>
-          </v-img>
-          <!-- fallback when no image -->
-          <div v-else class="px-3 py-3">
-            <PageHeader
-              :text="topicThread?.article?.title || topicThread?.title || ''"
-              :subtitle="''"
-            />
-          </div>
-        </div>
-      </v-col>
-    </v-row>
-
-    <!-- Desktop / tablet header without background -->
-    <v-row no-gutters class="min-h-0 d-none d-md-flex" style="flex: 0 0 auto">
-      <v-col>
-        <PageHeader
-          :text="topicThread?.article?.title || topicThread?.title || ''"
-          :subtitle="$t('pages.chat.articles.subtitle')"
-        />
-      </v-col>
-    </v-row>
+    <div v-if="articleImageUrl" class="mobile-image-wrapper d-md-none">
+      <v-img
+        :src="articleImageUrl"
+        height="148"
+        cover
+        class="mobile-header-img"
+        eager
+      />
+      <v-btn
+        icon
+        size="x-small"
+        color="white"
+        class="info-toggle-btn"
+        :aria-expanded="String(panelOpen)"
+        aria-controls="thread-info-panel"
+        @click="panelOpen = !panelOpen"
+      >
+        <v-icon :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
+      </v-btn>
+    </div>
+    <div v-else class="d-flex d-md-none justify-end mb-2 px-2">
+      <v-btn
+        icon
+        variant="text"
+        color="primary"
+        class="info-toggle-inline"
+        :aria-expanded="String(panelOpen)"
+        aria-controls="thread-info-panel"
+        @click="panelOpen = !panelOpen"
+      >
+        <v-icon :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
+      </v-btn>
+    </div>
 
     <!-- Desktop / tablet (>= md): 3 columns -->
     <v-row class="flex-grow-1 overflow-hidden min-h-0 d-none d-md-flex">
@@ -915,30 +880,24 @@ useSeoMeta({
 </script>
 
 <style scoped>
-.mobile-header-bg {
+.mobile-image-wrapper {
   position: relative;
-  overflow: hidden;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
 }
 
-.mobile-header-overlay {
+.mobile-header-img {
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.info-toggle-btn {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.9);
 }
 
-/* force white title text inside PageHeader on mobile */
-.mobile-header-title :deep(*) {
-  color: #fff !important;
-}
-/* slight text shadow helps on busy images */
-.mobile-header-title :deep(h1),
-.mobile-header-title :deep(h2),
-.mobile-header-title :deep(.text-h4) {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+.info-toggle-inline {
+  margin-left: auto;
 }
 
 .messages-sticky-header {
