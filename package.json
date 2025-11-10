@@ -37,6 +37,7 @@
     "latest": "^0.2.0",
     "markdown-it": "^14.1.0",
     "marked": "^15.0.8",
+    "mustache": "^4.2.0",
     "nuxt-gtag": "^4.0.0",
     "nuxt-og-image": "^5.1.2",
     "nuxt-schema-org": "^5.0.5",
