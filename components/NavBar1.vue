@@ -1,6 +1,7 @@
 <template>
   <nav>
-    <v-app-bar app
+    <v-app-bar
+      app
       image="/images/bkg/tiediebkg2.webp"
       alt="navbar background image"
     >
@@ -48,7 +49,6 @@
                 </NuxtLink></v-col
               >
 
-
               <v-col>
                 <NuxtLink
                   :to="localPath('/chat')"
@@ -60,7 +60,6 @@
                 </NuxtLink></v-col
               >
 
-
               <v-col>
                 <NuxtLink
                   :to="localPath('/profiles')"
@@ -71,7 +70,6 @@
                   {{ $t("components.navbar.free-chat") }}
                 </NuxtLink></v-col
               >
-
 
               <v-col v-if="isAuthenticated">
                 <NuxtLink
@@ -125,21 +123,27 @@
                   }}</v-list-item-title>
                 </v-list-item>
 
-                <v-list-item :to="localPath('/about')" link>
+                <!-- <v-list-item :to="localPath('/about')" link>
                   <v-list-item-title>{{
                     $t("components.navbar.aboutus")
                   }}</v-list-item-title>
-                </v-list-item>
+                </v-list-item> -->
 
-                <v-list-item :to="localPath('/profiles')" link>
+                <v-list-item :to="localPath('/chat/articles')" link>
                   <v-list-item-title>{{
-                    $t("components.navbar.free-chat")
+                    $t("components.navbar.discussions")
                   }}</v-list-item-title>
                 </v-list-item>
 
                 <v-list-item :to="localPath('/chat')" link>
                   <v-list-item-title>{{
                     $t("components.navbar.chat")
+                  }}</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item :to="localPath('/profiles')" link>
+                  <v-list-item-title>{{
+                    $t("components.navbar.free-chat")
                   }}</v-list-item-title>
                 </v-list-item>
 
@@ -224,7 +228,7 @@
             color="primary"
             variant="text"
             @click="confirmLogout"
-            >
+          >
             {{ $t("common.try_again") || "Try again" }}
           </v-btn>
           <v-spacer />
