@@ -182,7 +182,11 @@
   </nav>
 
   <v-dialog v-model="logoutDialog" width="auto" :scrim="!isLoggingOut">
-    <v-card max-width="420" prepend-icon="mdi-account-remove">
+    <v-card
+      max-width="420"
+      class="logout-dialog-card"
+      prepend-icon="mdi-account-remove"
+    >
       <template #title>
         {{
           isLoggingOut ? $t("components.navbar.logout") : "Logout Of My Account"
@@ -344,5 +348,10 @@ const confirmLogout = async () => {
 .language-switcher-row {
   display: flex;
   justify-content: flex-end;
+}
+
+.logout-dialog-card {
+  width: 360px;
+  max-width: 90vw;
 }
 </style>
