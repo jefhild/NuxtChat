@@ -42,6 +42,7 @@ import AdminArticles from "~/components/Admin2/Articles1.vue";
 import AdminCategories from "~/components/Admin2/Categories.vue";
 import AdminTags from "~/components/Admin2/Tags.vue";
 import AdminReports from "~/components/Admin2/Reports.vue";
+import AdminAiBots from "~/components/Admin2/AiBots.vue";
 import { useAuthStore } from "@/stores/authStore1";
 
 const { t } = useI18n();
@@ -73,6 +74,11 @@ const items = computed(() => [
     icon: "mdi-alert-octagon",
     value: "reports",
   },
+  {
+    text: t("pages.admin.sections.aiBots"),
+    icon: "mdi-robot-happy-outline",
+    value: "aiBots",
+  },
 ]);
 
 onMounted(async () => {
@@ -93,6 +99,8 @@ const getSectionComponent = (section) => {
       return AdminTags;
     case "reports":
       return AdminReports;
+    case "aiBots":
+      return AdminAiBots;
     default:
       return AdminDashboard;
   }

@@ -253,7 +253,8 @@
         "articles": "Articles",
         "categories": "Categories",
         "tags": "Tags",
-        "reports": "Reports"
+        "reports": "Reports",
+        "aiBots": "AI Bots"
       }
     },
     "articles": {

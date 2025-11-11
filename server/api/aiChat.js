@@ -1,7 +1,7 @@
 // server/api/aiChat.post.js
 import OpenAI from "openai";
 import mustache from "mustache";
-import { serverSupabaseClient } from "#supabase/server";
+import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
@@ -39,30 +39,46 @@ export default defineEventHandler(async (event) => {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
 
-    const personaKey = slugify(aiUser);
+    const personaCandidates = (() => {
+      const raw = String(aiUser || "").trim();
+      const lowered = raw.toLowerCase();
+      const slug = slugify(raw);
+      const deduped = new Set(
+        [slug, lowered, raw].filter((value) => !!value && value.length > 1)
+      );
+      return Array.from(deduped);
+    })();
+
+    if (!personaCandidates.length) {
+      return { success: false, error: "Invalid persona identifier" };
+    }
 
     const supabase = await serverSupabaseClient(event);
-    const { data: persona, error: personaErr } = await supabase
+    const caller = await serverSupabaseUser(event).catch(() => null);
+    const { data: personas, error: personaErr } = await supabase
       .from("ai_personas")
       .select(
         "id, persona_key, profile_user_id, model, temperature, top_p, presence_penalty, frequency_penalty, max_response_tokens, max_history_messages, system_prompt_template, response_style_template, parameters"
       )
-      .eq("persona_key", personaKey)
+      .in("persona_key", personaCandidates)
       .eq("is_active", true)
-      .single();
+      .limit(1);
+
+    const persona = Array.isArray(personas) ? personas[0] : personas;
 
     // console.log("[aiChat] persona:", persona);
+    console.log("[aiChat] auth user:", caller?.id || null);
+
     
     if (personaErr) {
-      console.error("[aiChat] Persona fetch error:", personaErr);
-      // Common cause: RLS denies anon users
-      throw createError({
-        statusCode: 403,
-        statusMessage: "Persona read denied",
+      console.error("[aiChat] personaErr:", {
+        code: personaErr.code, details: personaErr.details, hint: personaErr.hint, message: personaErr.message
       });
+      console.log("[aiChat] caller:", caller ? { id: caller.id, role: "authenticated" } : { role: "anon" });
     }
-    if (!persona ) {
-      console.warn("[aiChat] Persona missing/inactive:", personaKey);
+
+    if (!persona) {
+      console.warn("[aiChat] Persona missing/inactive:", personaCandidates);
       throw createError({
         statusCode: 404,
         statusMessage: `Persona not found: ${aiUser}`,
@@ -98,15 +114,6 @@ export default defineEventHandler(async (event) => {
       )}"\n`;
     }
 
-    // if (debug) {
-    //   const preview =
-    //     fullPrompt.length > 2000
-    //       ? fullPrompt.slice(0, 2000) + "…(truncated)"
-    //       : fullPrompt;
-    //   console.log("[aiChat] Persona:", persona.persona_key);
-    //   console.log("[aiChat] Prompt preview:\n", preview);
-    //   console.log("[aiChat] User message:", userMessage);
-    // }
 
     const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
