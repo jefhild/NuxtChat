@@ -19,6 +19,7 @@
     "@nuxtjs/i18n": "^9.5.5",
     "@nuxtjs/seo": "^3.0.3",
     "@nuxtjs/supabase": "^1.5.1",
+    "@types/mustache": "^4.2.6",
     "nuxt": "^3.16.2",
     "vite-plugin-vuetify": "^2.0.1",
     "vue": "^3.5.16",

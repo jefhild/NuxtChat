@@ -251,6 +251,7 @@
       "sections": {
         "dashboard": "Dashboard",
         "articles": "Articles",
+        "newsmesh": "Newsmesh",
         "categories": "Categories",
         "tags": "Tags",
         "reports": "Reports",

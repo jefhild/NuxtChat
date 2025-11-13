@@ -1,0 +1,683 @@
+<template>
+  <div class="newsmesh-admin d-flex flex-column ga-6">
+    <v-card class="pa-4" elevation="3">
+      <v-card-title class="d-flex align-center ga-3">
+        <div class="text-h6">Newsmesh Streams</div>
+        <v-chip size="small" color="primary" variant="tonal">
+          {{ meta.total }} records
+        </v-chip>
+        <v-spacer />
+        <v-btn
+          icon="mdi-refresh"
+          variant="text"
+          :disabled="loadingArticles"
+          @click="loadArticles"
+        />
+      </v-card-title>
+      <v-card-subtitle>
+        Review the aggregated feeds, filter by stream, and queue articles for
+        perspective rewrites.
+      </v-card-subtitle>
+
+      <v-card-text>
+        <v-row class="mb-4" dense>
+          <v-col cols="12" md="4">
+            <v-text-field
+              v-model="filters.search"
+              label="Search title, summary or source"
+              prepend-inner-icon="mdi-magnify"
+              clearable
+              hide-details="auto"
+            />
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="filters.stream"
+              :items="streamOptions"
+              label="Stream"
+              hide-details="auto"
+            />
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="filters.status"
+              :items="statusOptions"
+              label="Status"
+              hide-details="auto"
+            />
+          </v-col>
+        </v-row>
+
+        <v-alert
+          v-if="articlesError"
+          type="error"
+          variant="tonal"
+          border="start"
+          border-color="red"
+          class="mb-4"
+        >
+          {{ articlesError }}
+        </v-alert>
+
+        <v-data-table
+          v-model:page="pagination.page"
+          v-model:items-per-page="pagination.pageSize"
+          v-model="selectedIds"
+          :headers="tableHeaders"
+          :items="articles"
+          :items-length="meta.total"
+          :loading="loadingArticles"
+          item-value="id"
+          show-select
+          class="newsmesh-table"
+          hover
+        >
+          <template #item.title="{ item }">
+            <div class="d-flex flex-column">
+              <div class="font-weight-medium text-body-1 mb-1">
+                {{ item.title || "Untitled article" }}
+              </div>
+              <div class="text-body-2 text-medium-emphasis">
+                {{ item.description || "No summary available" }}
+              </div>
+              <div class="d-flex flex-wrap ga-1 mt-2">
+                <v-chip
+                  v-for="topic in toDisplayList(item.topics)"
+                  :key="topic"
+                  size="x-small"
+                  color="indigo"
+                  variant="tonal"
+                >
+                  {{ topic }}
+                </v-chip>
+              </div>
+            </div>
+          </template>
+
+          <template #item.stream="{ item }">
+            <v-chip
+              size="small"
+              :color="item.stream === 'trending' ? 'deep-purple' : 'primary'"
+              variant="tonal"
+            >
+              {{ item.stream }}
+            </v-chip>
+          </template>
+
+          <template #item.source="{ item }">
+            <div class="d-flex flex-column">
+              <span class="font-weight-medium">
+                {{ item.source || "Unknown" }}
+              </span>
+              <span class="text-caption text-medium-emphasis">
+                {{ item.category || "Uncategorized" }}
+              </span>
+              <div class="d-flex flex-wrap ga-1 mt-1">
+                <v-chip
+                  v-for="person in toDisplayList(item.people)"
+                  :key="person"
+                  size="x-small"
+                  color="teal"
+                  variant="tonal"
+                >
+                  {{ person }}
+                </v-chip>
+              </div>
+            </div>
+          </template>
+
+          <template #item.published_date="{ item }">
+            <div class="d-flex flex-column text-caption">
+              <span>
+                {{ formatDate(item.published_date) }}
+              </span>
+              <span class="text-medium-emphasis">
+                Seen {{ formatDate(item.last_seen_at) }}
+              </span>
+              <a
+                v-if="item.link"
+                :href="item.link"
+                class="text-primary mt-1"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open link
+              </a>
+            </div>
+          </template>
+
+          <template #bottom>
+            <div class="d-flex justify-space-between align-center pa-4">
+              <div class="text-body-2">
+                Page {{ pagination.page }} /
+                {{ Math.max(1, Math.ceil(meta.total / pagination.pageSize)) }}
+              </div>
+              <v-pagination
+                v-model="pagination.page"
+                :length="Math.max(1, Math.ceil(meta.total / pagination.pageSize))"
+                :disabled="loadingArticles"
+                density="comfortable"
+              />
+            </div>
+          </template>
+        </v-data-table>
+
+        <v-alert
+          v-if="!loadingArticles && !articles.length"
+          type="info"
+          variant="tonal"
+          class="mt-4"
+        >
+          No articles match your filters.
+        </v-alert>
+      </v-card-text>
+    </v-card>
+
+    <v-card class="pa-4" elevation="3">
+      <v-card-title class="d-flex align-center ga-3">
+        <div class="text-h6">Rewrite With AI</div>
+        <v-chip variant="tonal" size="small">
+          {{ selectedIds.length }} selected
+        </v-chip>
+        <v-spacer />
+        <v-btn
+          icon="mdi-robot-happy-outline"
+          variant="text"
+          @click="loadBots"
+          :disabled="loadingBots"
+        />
+      </v-card-title>
+      <v-card-text>
+        <v-row dense>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="selectedPersona"
+              :items="botOptions"
+              :loading="loadingBots"
+              label="Persona / bias"
+              item-title="label"
+              item-value="value"
+              hide-details="auto"
+              clearable
+            />
+          </v-col>
+          <v-col cols="12" md="8">
+            <v-textarea
+              v-model="instructions"
+              label="Extra guidance (optional)"
+              rows="3"
+              auto-grow
+              hide-details="auto"
+            />
+          </v-col>
+        </v-row>
+
+        <v-alert
+          v-if="rewriteError"
+          type="error"
+          variant="tonal"
+          class="mt-4"
+          closable
+          @click:close="rewriteError = ''"
+        >
+          {{ rewriteError }}
+        </v-alert>
+
+        <div class="d-flex align-center ga-3 mt-3">
+          <v-btn
+            color="primary"
+            :disabled="!canRewrite"
+            :loading="rewriting"
+            @click="runRewrite"
+          >
+            Rewrite Selected
+          </v-btn>
+          <span class="text-caption text-medium-emphasis">
+            Rewrites run in small batches (max {{ maxBatch }}).
+          </span>
+        </div>
+      </v-card-text>
+    </v-card>
+
+    <v-card
+      v-if="rewriteResults.length"
+      class="pa-4"
+      elevation="3"
+      data-testid="newsmesh-rewrites"
+    >
+      <v-card-title class="text-h6">
+        Draft Rewrites (latest {{ rewriteResults.length }})
+      </v-card-title>
+      <v-card-text>
+        <v-alert
+          v-if="draftError"
+          type="error"
+          variant="tonal"
+          class="mb-4"
+          closable
+          @click:close="draftError = ''"
+        >
+          {{ draftError }}
+        </v-alert>
+        <v-expansion-panels multiple>
+          <v-expansion-panel
+            v-for="result in rewriteResults"
+            :key="result.articleId"
+          >
+            <v-expansion-panel-title>
+              <div class="d-flex flex-column text-left">
+                <div class="font-weight-medium">
+                  {{ result.rewrite.headline }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ result.original.source || "Source unknown" }} ·
+                  {{ result.stream }}
+                </div>
+              </div>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <div class="mb-4">
+                <div class="text-subtitle-2">Summary</div>
+                <p class="text-body-2">
+                  {{ result.rewrite.summary }}
+                </p>
+              </div>
+
+              <div class="mb-4">
+                <div class="text-subtitle-2">Persona Output</div>
+                <div
+                  class="markdown-body"
+                  v-html="renderMarkdown(result.rewrite.body)"
+                ></div>
+              </div>
+
+              <div class="mb-4" v-if="result.rewrite.references.length">
+                <div class="text-subtitle-2">References</div>
+                <ul class="pl-4">
+                  <li
+                    v-for="ref in result.rewrite.references"
+                    :key="ref.label + (ref.url || '')"
+                  >
+                    <template v-if="ref.url">
+                      <a
+                        :href="ref.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {{ ref.label }}
+                      </a>
+                    </template>
+                    <template v-else>
+                      {{ ref.label }}
+                    </template>
+                  </li>
+                </ul>
+              </div>
+
+              <v-divider class="my-4" />
+
+              <div class="text-caption text-medium-emphasis">
+                <strong>Original:</strong> {{ result.original.title }} —
+                {{ result.original.description }}
+                <a
+                  v-if="result.original.link"
+                  :href="result.original.link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="ml-2"
+                >
+                  View source
+                </a>
+              </div>
+
+              <div class="d-flex align-center ga-3 mt-4">
+                <v-btn
+                  color="secondary"
+                  size="small"
+                  :loading="draftSaving[result.articleId]"
+                  :disabled="!!result.draft || !!draftSaving[result.articleId]"
+                  @click="saveDraft(result)"
+                >
+                  {{ result.draft ? "Draft Saved" : "Save Draft" }}
+                </v-btn>
+                <div
+                  v-if="result.draft"
+                  class="text-caption text-success"
+                >
+                  Saved as
+                  <a
+                    :href="`/articles/${result.draft.slug}`"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ result.draft.slug }}
+                  </a>
+                </div>
+              </div>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-card-text>
+    </v-card>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, reactive, watch, onMounted } from "vue";
+import { useAdminAiBots } from "@/composables/useAdminAiBots";
+import {
+  useAdminNewsmesh,
+  type NewsmeshQueryParams,
+  type NewsmeshRewriteReference,
+} from "@/composables/useAdminNewsmesh";
+import { useMarkdown } from "@/composables/useMarkdown";
+
+type NewsmeshArticleRow = {
+  id: string;
+  stream: string;
+  title: string | null;
+  description: string | null;
+  link: string | null;
+  source: string | null;
+  category: string | null;
+  topics: unknown;
+  people: unknown;
+  published_date: string | null;
+  last_seen_at: string | null;
+};
+
+type RewriteReference = NewsmeshRewriteReference;
+
+type DraftArticle = {
+  id: string;
+  slug: string;
+  title: string;
+  is_published: boolean;
+  persona_key: string | null;
+  persona_id: string | null;
+};
+
+type NewsmeshRewriteResult = {
+  articleId: string;
+  stream: string;
+  personaKey: string;
+  original: {
+    title: string | null;
+    description: string | null;
+    link: string | null;
+    source: string | null;
+  };
+  rewrite: {
+    headline: string;
+    summary: string;
+    body: string;
+    references: RewriteReference[];
+    raw: string;
+  };
+  draft?: DraftArticle;
+};
+
+type AdminBot = {
+  persona_key: string;
+  model: string;
+  is_active?: boolean;
+  profile?: { displayname?: string | null };
+};
+
+const MAX_BATCH = 5;
+
+const { listBots } = useAdminAiBots();
+const { fetchArticles, rewriteArticles, saveRewriteDraft } = useAdminNewsmesh();
+const { init: initMarkdown, render: mdRender } = useMarkdown();
+
+const tableHeaders = [
+  { title: "Title", key: "title", sortable: false },
+  { title: "Stream", key: "stream", width: 120, sortable: false },
+  { title: "Source & people", key: "source", width: 220, sortable: false },
+  { title: "Timestamps", key: "published_date", width: 180, sortable: false },
+];
+
+const streamOptions = [
+  { title: "All streams", value: "all" },
+  { title: "Trending", value: "trending" },
+  { title: "Latest", value: "latest" },
+];
+
+const statusOptions = [
+  { title: "All statuses", value: "all" },
+  { title: "Raw", value: "raw" },
+  { title: "Enriched", value: "enriched" },
+  { title: "Published", value: "published" },
+];
+
+const filters = reactive({
+  stream: "all",
+  status: "all",
+  search: "",
+});
+
+const pagination = reactive({
+  page: 1,
+  pageSize: 10,
+});
+
+const articles = ref<NewsmeshArticleRow[]>([]);
+const meta = reactive({
+  total: 0,
+});
+const selectedIds = ref<string[]>([]);
+const loadingArticles = ref(false);
+const articlesError = ref("");
+
+const bots = ref<AdminBot[]>([]);
+const loadingBots = ref(false);
+const activeBots = computed(() =>
+  bots.value.filter((bot) => bot.is_active !== false)
+);
+const botOptions = computed(() =>
+  activeBots.value.map((bot) => ({
+    label: `${bot.profile?.displayname || bot.persona_key} (${bot.model})`,
+    value: bot.persona_key,
+  }))
+);
+const selectedPersona = ref("");
+const instructions = ref("");
+const rewriteError = ref("");
+const draftError = ref("");
+const rewriting = ref(false);
+const rewriteResults = ref<NewsmeshRewriteResult[]>([]);
+const draftSaving = reactive<Record<string, boolean>>({});
+
+const canRewrite = computed(
+  () => !!selectedPersona.value && selectedIds.value.length > 0 && !rewriting.value
+);
+
+const formatDate = (value?: string | null) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleString();
+};
+
+const toDisplayList = (value: unknown): string[] => {
+  if (!value) return [];
+  if (Array.isArray(value))
+    return value.map(String).filter((item) => item && item !== "null");
+  if (typeof value === "object") {
+    return Object.values(value)
+      .map(String)
+      .filter((item) => item && item !== "null");
+  }
+  if (typeof value === "string" && value.trim()) return [value.trim()];
+  return [];
+};
+
+const renderMarkdown = (content?: string | null) => mdRender(content || "");
+
+const loadArticles = async () => {
+  loadingArticles.value = true;
+  articlesError.value = "";
+  try {
+    const params: NewsmeshQueryParams = {
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      stream: filters.stream !== "all" ? filters.stream : undefined,
+      status: filters.status !== "all" ? filters.status : undefined,
+      search: filters.search || undefined,
+    };
+
+    const response = await fetchArticles(params);
+    if (!response?.success) {
+      throw new Error(response?.error || "Failed to load articles");
+    }
+
+    articles.value = response.data || [];
+    meta.total = response.meta?.total || 0;
+    selectedIds.value = selectedIds.value.filter((id) =>
+      articles.value.some((article) => article.id === id)
+    );
+  } catch (error: any) {
+    console.error("[NewsmeshAdmin] loadArticles error", error);
+    articlesError.value =
+      error?.message || "Unable to load Newsmesh data right now.";
+  } finally {
+    loadingArticles.value = false;
+  }
+};
+
+const loadBots = async () => {
+  loadingBots.value = true;
+  try {
+    const response = await listBots();
+    if (!response?.success) {
+      throw new Error(response?.error || "Unable to load bots");
+    }
+    bots.value = response.data || [];
+    if (!selectedPersona.value && activeBots.value.length) {
+      selectedPersona.value = activeBots.value[0].persona_key;
+    }
+  } catch (error: any) {
+    console.error("[NewsmeshAdmin] loadBots error", error);
+    rewriteError.value = error?.message || "Failed to load AI bots.";
+  } finally {
+    loadingBots.value = false;
+  }
+};
+
+const setDraftSaving = (articleId: string, value: boolean) => {
+  if (!articleId) return;
+  if (value) {
+    draftSaving[articleId] = true;
+  } else {
+    delete draftSaving[articleId];
+  }
+};
+
+const saveDraft = async (result: NewsmeshRewriteResult) => {
+  if (!result || !result.articleId || result.draft) return;
+  draftError.value = "";
+  setDraftSaving(result.articleId, true);
+  try {
+    const response = await saveRewriteDraft({
+      articleId: result.articleId,
+      personaKey: result.personaKey || selectedPersona.value,
+      rewrite: {
+        headline: result.rewrite.headline,
+        summary: result.rewrite.summary,
+        body: result.rewrite.body,
+        references: result.rewrite.references || [],
+      },
+    });
+
+    if (!response?.success || !response?.data) {
+      throw new Error(response?.error || "Failed to save draft.");
+    }
+
+    result.draft = response.data;
+  } catch (error: any) {
+    console.error("[NewsmeshAdmin] save draft error", error);
+    draftError.value =
+      error?.message || "Unable to save the draft article right now.";
+  } finally {
+    setDraftSaving(result.articleId, false);
+  }
+};
+
+const runRewrite = async () => {
+  if (!canRewrite.value) return;
+  rewriteError.value = "";
+  draftError.value = "";
+  Object.keys(draftSaving).forEach((key) => delete draftSaving[key]);
+  rewriting.value = true;
+  try {
+    const response = await rewriteArticles({
+      articleIds: selectedIds.value,
+      personaKey: selectedPersona.value,
+      instructions: instructions.value || undefined,
+    });
+
+    if (!response?.success) {
+      throw new Error(response?.error || "Rewrite failed");
+    }
+
+    rewriteResults.value = response.data || [];
+  } catch (error: any) {
+    console.error("[NewsmeshAdmin] rewrite error", error);
+    rewriteError.value =
+      error?.message ||
+      "Unable to rewrite articles at the moment. Please try again.";
+  } finally {
+    rewriting.value = false;
+  }
+};
+
+watch(
+  () => ({ ...filters }),
+  () => {
+    if (pagination.page !== 1) {
+      pagination.page = 1;
+      return;
+    }
+    loadArticles();
+  }
+);
+
+watch(
+  () => pagination.pageSize,
+  () => {
+    if (pagination.page !== 1) {
+      pagination.page = 1;
+      return;
+    }
+    loadArticles();
+  }
+);
+
+watch(
+  () => pagination.page,
+  () => {
+    loadArticles();
+  }
+);
+
+onMounted(async () => {
+  await initMarkdown().catch(() => null);
+  await Promise.all([loadArticles(), loadBots()]);
+});
+
+const maxBatch = MAX_BATCH;
+</script>
+
+<style scoped>
+.newsmesh-admin {
+  width: 100%;
+}
+
+.newsmesh-table :deep(tbody tr td) {
+  vertical-align: top;
+}
+
+.markdown-body :deep(p) {
+  margin-bottom: 0.75rem;
+}
+</style>

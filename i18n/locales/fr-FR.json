@@ -250,9 +250,11 @@
       "sections": {
         "dashboard": "Tableau de Bord",
         "articles": "Articles",
+        "newsmesh": "Newsmesh",
         "categories": "Catégories",
         "tags": "Étiquettes",
-        "reports": "Rapports"
+        "reports": "Rapports",
+        "aiBots": "Bots IA"
       }
     },
     "articles": {

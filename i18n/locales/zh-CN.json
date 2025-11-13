@@ -250,9 +250,11 @@
       "sections": {
         "dashboard": "仪表板",
         "articles": "文章",
+        "newsmesh": "Newsmesh",
         "categories": "分类",
         "tags": "标签",
-        "reports": "报告"
+        "reports": "报告",
+        "aiBots": "AI 机器人"
       }
     },
     "articles": {

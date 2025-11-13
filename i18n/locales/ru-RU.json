@@ -250,9 +250,11 @@
       "sections": {
         "dashboard": "Панель управления",
         "articles": "Статьи",
+        "newsmesh": "Newsmesh",
         "categories": "Категории",
         "tags": "Теги",
-        "reports": "Отчеты"
+        "reports": "Отчеты",
+        "aiBots": "ИИ-боты"
       }
     },
     "articles": {
