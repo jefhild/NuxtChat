@@ -13,19 +13,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2   
 
-      # - name: Test SSH connection
-      #   env:
-      #     SSH_KEY: ${{ secrets.SSH_KEY }}   
-      #   run: |
-      #       echo "${SSH_KEY}" > ssh_key
-      #       chmod 600 ssh_key
-      #       ssh -o StrictHostKeyChecking=no -i ssh_key root@37.27.95.239 'echo SSH connection successful'
-        
-      - name: Run deployment script on server
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
+      - name: Set up SSH key
         run: |
-          echo "${SSH_KEY}" > ssh_key
+          echo "${{ secrets.SSH_KEY }}" | sed 's/\\n/\n/g' > ssh_key
           chmod 600 ssh_key
-          ssh -o StrictHostKeyChecking=no -i ssh_key root@37.27.95.239 'cd /var/www/imchatty/imchatty && git pull origin main && bash deploy.sh'
-    
+          eval "$(ssh-agent -s)"
+          ssh-add ssh_key
+
+      - name: Test SSH connection
+        run: |
+          ssh -o StrictHostKeyChecking=no root@37.27.95.239 'echo SSH connection successful'
+
+      - name: Run deployment script on server
+        run: |
+          ssh -o StrictHostKeyChecking=no root@37.27.95.239 '
+            cd /var/www/imchatty/imchatty &&
+            git pull origin main &&
+            bash deploy.sh
+          '
