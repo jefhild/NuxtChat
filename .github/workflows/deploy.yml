@@ -8,8 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Only run from the private repo, skip when pushed to the public mirror
-    if: github.repository == 'jefhild/NuxtChat-Private'
 
     steps:
       - name: Checkout code
