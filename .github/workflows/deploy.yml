@@ -8,6 +8,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Only run from the private repo, skip when pushed to the public mirror
+    if: github.repository == 'jefhild/NuxtChat-Private'
 
     steps:
       - name: Checkout code
@@ -17,7 +19,8 @@ jobs:
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
         run: |
-          echo "${SSH_KEY}" > ssh_key
+          # Write SSH key with correct newlines for libcrypto
+          echo "${SSH_KEY}" | sed 's/\\n/\n/g' > ssh_key
           chmod 600 ssh_key
           ssh -o StrictHostKeyChecking=no -i ssh_key root@37.27.95.239 '
             set -euo pipefail
