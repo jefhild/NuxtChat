@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col>
-        <h4>{{ $t("pages.about.page.welcome-title") }}</h4>
+        <h4>A {{ $t("pages.about.page.welcome-title") }}</h4>
         <p class="text-body-2">
           {{ $t("pages.about.page.welcome-text") }}
         </p>
