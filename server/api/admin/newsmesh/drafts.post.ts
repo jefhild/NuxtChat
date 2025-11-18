@@ -12,23 +12,28 @@ const ARTICLE_SANITIZE_OPTIONS: Parameters<
 >[1] = {
   ALLOWED_TAGS: [
     "article",
+    "figure",
+    "figcaption",
     "header",
     "section",
     "h1",
     "h2",
     "h3",
     "h4",
+    "div",
+    "span",
     "p",
     "ul",
     "ol",
     "li",
+    "img",
     "em",
     "strong",
     "a",
     "blockquote",
     "hr",
   ],
-  ALLOWED_ATTR: ["href", "rel", "target", "title", "class"],
+  ALLOWED_ATTR: ["href", "rel", "target", "title", "class", "src", "alt"],
 };
 
 const escapeHtml = (value = "") =>
@@ -87,46 +92,79 @@ const normalizeReferences = (value: unknown): RewriteReference[] => {
     .filter((entry): entry is RewriteReference => Boolean(entry));
 };
 
-const buildArticleHtml = (rewrite: RewritePayload) => {
+const toList = (value: unknown): string[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) =>
+        typeof entry === "string" ? entry : JSON.stringify(entry)
+      )
+      .filter(Boolean);
+  }
+
+  if (typeof value === "object") {
+    return Object.values(value || {})
+      .map((entry) =>
+        typeof entry === "string" ? entry : JSON.stringify(entry)
+      )
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") return [value];
+  return [];
+};
+
+const buildArticleHtml = (
+  newsmesh: any,
+  rewrite: RewritePayload,
+  personaMeta: { name?: string; avatarUrl?: string }
+) => {
   const bodyHtml = marked.parse(rewrite.body || "");
 
-  const summaryHtml = rewrite.summary
-    ? `<p class="article-summary">${escapeHtml(rewrite.summary)}</p>`
-    : "";
+  const summaryHtml =
+    newsmesh?.description || rewrite.summary
+      ? `<p class="article-summary">${escapeHtml(
+          newsmesh?.description || rewrite.summary || ""
+        )}</p>`
+      : "";
 
-  const references = normalizeReferences(rewrite.references);
-  const referencesHtml = references.length
-    ? `<section class="article-references">
-  <h4>References</h4>
-  <ul>
-    ${references
-      .map((ref) => {
-        const safeUrl = toSafeUrl(ref.url || undefined);
-        const label = escapeHtml(ref.label || safeUrl || "Reference");
-        if (safeUrl) {
-          return `<li><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${label}</a></li>`;
-        }
-        return `<li>${label}</li>`;
-      })
-      .join("\n    ")}
-  </ul>
-</section>`
-    : "";
+  const source = escapeHtml(newsmesh?.source || "Source unknown");
+  const link = toSafeUrl(newsmesh?.link);
+  const personaLabel = personaMeta?.name
+    ? escapeHtml(personaMeta.name)
+    : null;
 
-  const articleHtml = `<article>
-  <header>
-    <h1>${escapeHtml(rewrite.headline)}</h1>
+  const sourceBlock = link
+    ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${source}</a>`
+    : source;
+
+  const articleHtml = `<article class="newsmesh-article">
+  <header class="article-header">
+    <p class="source-line">${sourceBlock}</p>
+    <h1>${escapeHtml(newsmesh?.title || rewrite.headline)}</h1>
+    ${
+      personaLabel
+        ? `<p class="persona-line">Perspective: ${personaLabel}</p>`
+        : ""
+    }
     ${summaryHtml}
   </header>
-  ${bodyHtml}
-  ${referencesHtml}
+  <section class="rewrite-body">
+    ${bodyHtml}
+  </section>
 </article>`;
 
   return DOMPurify.sanitize(articleHtml, ARTICLE_SANITIZE_OPTIONS);
 };
 
-const ensureUniqueSlug = async (client: any, headline: string) => {
-  const baseSlug = slugify(headline || "newsmesh-draft") || "newsmesh-draft";
+const ensureUniqueSlug = async (
+  client: any,
+  preferredTitle: string,
+  fallback: string
+) => {
+  const baseSlug =
+    slugify(preferredTitle || fallback || "newsmesh-draft") ||
+    "newsmesh-draft";
   let slug = baseSlug;
   let attempt = 1;
 
@@ -202,11 +240,17 @@ export default defineEventHandler(async (event) => {
       .select(
         `
         id,
+        stream,
         title,
         description,
         link,
         media_url,
-        category
+        category,
+        topics,
+        people,
+        published_date,
+        last_seen_at,
+        source
       `
       )
       .eq("id", articleId)
@@ -219,11 +263,48 @@ export default defineEventHandler(async (event) => {
       return { success: false, error: "Newsmesh article not found." };
     }
 
-    const content = buildArticleHtml(rewrite);
-    const slug = await ensureUniqueSlug(supabase, rewrite.headline);
+    const personaMeta = {
+      name: persona.profile?.displayname || persona.persona_key,
+      avatarUrl: persona.profile?.avatar_url || null,
+    };
+
+    const newsmeshMeta = {
+      id: article.id,
+      stream: article.stream,
+      title: article.title,
+      summary: article.description,
+      description: article.description,
+      link: article.link,
+      source: article.source,
+      category: article.category,
+      topics: toList(article.topics),
+      people: toList(article.people),
+      published_date: article.published_date,
+      last_seen_at: article.last_seen_at,
+      media_url: article.media_url,
+    };
+
+    const rewriteMeta = {
+      persona_key: personaKey,
+      persona_id: persona.id,
+      persona_display_name: personaMeta.name,
+      persona_avatar_url: personaMeta.avatarUrl,
+      headline: rewrite.headline,
+      summary: rewrite.summary,
+      body: rewrite.body,
+      references: normalizeReferences(rewrite.references),
+      raw: rewrite,
+    };
+
+    const content = buildArticleHtml(newsmeshMeta, rewrite, personaMeta);
+    const slug = await ensureUniqueSlug(
+      supabase,
+      newsmeshMeta.title,
+      rewrite.headline
+    );
 
     const insertPayload = {
-      title: rewrite.headline,
+      title: newsmeshMeta.title || rewrite.headline,
       slug,
       content,
       type: "blog",
@@ -233,6 +314,11 @@ export default defineEventHandler(async (event) => {
       photo_credits_url: article.link || null,
       persona_key: personaKey,
       persona_id: persona.id,
+      persona_display_name: personaMeta.name,
+      persona_avatar_url: personaMeta.avatarUrl,
+      newsmesh_id: article.id,
+      newsmesh_meta: newsmeshMeta,
+      rewrite_meta: rewriteMeta,
     };
 
     const { data: draft, error: insertError } = await supabase

@@ -1049,6 +1049,13 @@ export const useDb = () => {
       title,
       slug,
       content,
+      newsmesh_id,
+      newsmesh_meta,
+      rewrite_meta,
+      persona_key,
+      persona_id,
+      persona_display_name,
+      persona_avatar_url,
       image_path,
       photo_credits_url,
       created_at,
@@ -1542,15 +1549,18 @@ export const useDb = () => {
   const updateArticle = async (id, payload) => {
     const supabase = getClient();
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("articles")
-
       .update(payload)
-      .eq("id", id);
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
 
     if (error) {
       console.error("Error updating article:", error);
     }
+
+    return { data, error };
   };
 
   const updateArticleTags = async (articleId, tagIds) => {

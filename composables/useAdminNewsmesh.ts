@@ -49,9 +49,16 @@ export const useAdminNewsmesh = () => {
     });
   };
 
+  const triggerIngest = () => {
+    return $fetch(`${basePath}/ingest`, {
+      method: "POST",
+    });
+  };
+
   return {
     fetchArticles,
     rewriteArticles,
     saveRewriteDraft,
+    triggerIngest,
   };
 };

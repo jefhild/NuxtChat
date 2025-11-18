@@ -619,27 +619,43 @@ const handleArticleUpdate = async () => {
     return;
   }
 
-  const payload = {
-    title: formatName(selectedArticle.value.title),
-    content: selectedArticle.value.content,
-    image_path: selectedArticle.value.image_path,
-    photo_credits_url: selectedArticle.value.photo_credits_url,
-    slug: slugify(selectedArticle.value.title),
-    category_id: selectedArticle.value.category_id,
-    type: selectedArticle.value.type,
-    is_published: selectedArticle.value.is_published,
-  };
+  try {
+    if (!selectedArticle.value.category_id) {
+      throw new Error("Category is required.");
+    }
 
-  await updateArticle(selectedArticle.value.id, payload);
+    const payload = {
+      title: formatName(selectedArticle.value.title),
+      content: selectedArticle.value.content,
+      image_path: selectedArticle.value.image_path,
+      photo_credits_url: selectedArticle.value.photo_credits_url,
+      slug: slugify(selectedArticle.value.title),
+      category_id: selectedArticle.value.category_id || null,
+      type: selectedArticle.value.type || null,
+      is_published: selectedArticle.value.is_published,
+    };
 
-  await updateArticleTags(
-    selectedArticle.value.id,
-    selectedArticle.value.tag_ids
-  );
+    const { error } = await updateArticle(selectedArticle.value.id, payload);
+    if (error) {
+      throw error;
+    }
 
-  articles.value = await getAllArticlesWithTags(false);
-  toggleEditDialog(null);
-  loadingUpdate.value = false;
+    await updateArticleTags(
+      selectedArticle.value.id,
+      selectedArticle.value.tag_ids
+    );
+
+    articles.value = await getAllArticlesWithTags(false);
+    toggleEditDialog(null);
+  } catch (err) {
+    console.error("Error updating article:", err?.message || err);
+    snackbar.value = {
+      show: true,
+      message: err?.message || "Failed to update article.",
+    };
+  } finally {
+    loadingUpdate.value = false;
+  }
 };
 
 const isValidUrl = (value) => {

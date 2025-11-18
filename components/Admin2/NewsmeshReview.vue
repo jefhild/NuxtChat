@@ -8,6 +8,15 @@
         </v-chip>
         <v-spacer />
         <v-btn
+          color="primary"
+          prepend-icon="mdi-flash"
+          :loading="ingesting"
+          :disabled="loadingArticles || ingesting"
+          @click="runIngest"
+        >
+          Run ingest
+        </v-btn>
+        <v-btn
           icon="mdi-refresh"
           variant="text"
           :disabled="loadingArticles"
@@ -20,6 +29,27 @@
       </v-card-subtitle>
 
       <v-card-text>
+        <v-alert
+          v-if="ingestSuccess"
+          type="success"
+          variant="tonal"
+          class="mb-4"
+          closable
+          @click:close="ingestSuccess = ''"
+        >
+          {{ ingestSuccess }}
+        </v-alert>
+        <v-alert
+          v-if="ingestError"
+          type="error"
+          variant="tonal"
+          class="mb-4"
+          closable
+          @click:close="ingestError = ''"
+        >
+          {{ ingestError }}
+        </v-alert>
+
         <v-row class="mb-4" dense>
           <v-col cols="12" md="4">
             <v-text-field
@@ -427,7 +457,8 @@ type AdminBot = {
 const MAX_BATCH = 5;
 
 const { listBots } = useAdminAiBots();
-const { fetchArticles, rewriteArticles, saveRewriteDraft } = useAdminNewsmesh();
+const { fetchArticles, rewriteArticles, saveRewriteDraft, triggerIngest } =
+  useAdminNewsmesh();
 const { init: initMarkdown, render: mdRender } = useMarkdown();
 
 const tableHeaders = [
@@ -468,6 +499,9 @@ const meta = reactive({
 const selectedIds = ref<string[]>([]);
 const loadingArticles = ref(false);
 const articlesError = ref("");
+const ingesting = ref(false);
+const ingestError = ref("");
+const ingestSuccess = ref("");
 
 const bots = ref<AdminBot[]>([]);
 const loadingBots = ref(false);
@@ -513,6 +547,35 @@ const toDisplayList = (value: unknown): string[] => {
 };
 
 const renderMarkdown = (content?: string | null) => mdRender(content || "");
+
+const runIngest = async () => {
+  ingestError.value = "";
+  ingestSuccess.value = "";
+  ingesting.value = true;
+
+  try {
+    const response = await triggerIngest();
+    if (!response?.success) {
+      throw new Error(response?.error || "Failed to trigger ingest");
+    }
+
+    const message =
+      typeof response?.data === "string"
+        ? response.data
+        : response?.data?.message ||
+          response?.data?.status ||
+          "Newsmesh ingest started. Refresh again in a moment.";
+
+    ingestSuccess.value = message;
+    await loadArticles();
+  } catch (error: any) {
+    console.error("[NewsmeshAdmin] ingest error", error);
+    ingestError.value =
+      error?.message || "Unable to trigger Newsmesh ingest right now.";
+  } finally {
+    ingesting.value = false;
+  }
+};
 
 const loadArticles = async () => {
   loadingArticles.value = true;

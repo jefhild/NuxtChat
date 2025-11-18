@@ -1,6 +1,6 @@
 <template>
   <v-container class="py-8" v-if="article" fluid>
-    <PageHeader :text="article.title" />
+    <PageHeader :text="displayTitle" />
 
     <v-row>
       <v-col>
@@ -33,11 +33,11 @@
       </v-col>
     </v-row>
 
-    <v-row>
+    <v-row v-if="heroImage">
       <v-img
         class="text-white"
         height="350"
-        :src="`${config.public.SUPABASE_BUCKET}/articles/${article.image_path}`"
+        :src="heroImage"
         cover
       >
         <div
@@ -47,7 +47,7 @@
           <v-btn
             color="primary"
             :to="localPath('/chat/articles/' + encodeURIComponent(chatThreadKey || ''))"
-             :disabled="!chatThreadKey"
+            :disabled="!chatThreadKey"
             large
           >
             {{
@@ -61,6 +61,85 @@
           <span class="text-body-2">{{ formatDate(article.created_at) }}</span>
         </div>
       </v-img>
+    </v-row>
+
+    <v-row v-if="displaySummary">
+      <v-col cols="12">
+        <v-alert type="info" variant="tonal" border="start" class="mb-2">
+          {{ displaySummary }}
+        </v-alert>
+      </v-col>
+    </v-row>
+
+    <v-row v-if="personaName || personaAvatar">
+      <v-col cols="12">
+        <v-card class="pa-4" elevation="2">
+          <div class="d-flex align-center ga-4">
+            <v-avatar v-if="personaAvatar" size="52">
+              <v-img :src="personaAvatar" :alt="personaName" />
+            </v-avatar>
+            <div class="d-flex flex-column">
+              <span class="text-caption text-medium-emphasis">Perspective</span>
+              <span class="text-subtitle-1 font-weight-medium">
+                {{ personaName }}
+              </span>
+              <span v-if="rewriteHeadline" class="text-body-2 text-medium-emphasis">
+                {{ rewriteHeadline }}
+              </span>
+            </div>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row v-if="newsmeshMeta">
+      <v-col cols="12">
+        <v-card class="pa-4 mb-4" elevation="1">
+          <div class="d-flex flex-wrap ga-2">
+            <v-chip v-if="newsmeshMeta.stream" size="small" color="primary" variant="tonal">
+              Stream: {{ newsmeshMeta.stream }}
+            </v-chip>
+            <v-chip v-if="newsmeshMeta.category" size="small" color="indigo" variant="tonal">
+              Category: {{ newsmeshMeta.category }}
+            </v-chip>
+            <v-chip v-if="newsmeshMeta.published_date" size="small" variant="tonal">
+              Published: {{ formatDate(newsmeshMeta.published_date) }}
+            </v-chip>
+            <v-chip v-if="newsmeshMeta.source" size="small" variant="outlined">
+              Source: {{ newsmeshMeta.source }}
+            </v-chip>
+            <v-chip
+              v-for="topic in newsmeshTopics"
+              :key="`topic-${topic}`"
+              size="small"
+              color="deep-purple"
+              variant="tonal"
+            >
+              {{ topic }}
+            </v-chip>
+            <v-chip
+              v-for="person in newsmeshPeople"
+              :key="`person-${person}`"
+              size="small"
+              color="teal"
+              variant="tonal"
+            >
+              {{ person }}
+            </v-chip>
+          </div>
+          <div class="mt-3" v-if="newsmeshMeta.link">
+            <v-btn
+              :href="newsmeshMeta.link"
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="text"
+              prepend-icon="mdi-link"
+            >
+              Original source
+            </v-btn>
+          </div>
+        </v-card>
+      </v-col>
     </v-row>
 
     <v-row>
@@ -80,6 +159,23 @@
 
         <!-- Render Markdown content -->
         <div class="prose" v-html="renderedMarkdown"></div>
+
+        <div v-if="rewriteReferences.length" class="mt-6">
+          <h3 class="text-subtitle-1 mb-2">References</h3>
+          <ul>
+            <li v-for="ref in rewriteReferences" :key="ref.label + (ref.url || '')">
+              <a
+                v-if="ref.url"
+                :href="ref.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{ ref.label }}
+              </a>
+              <template v-else>{{ ref.label }}</template>
+            </li>
+          </ul>
+        </div>
       </v-col>
     </v-row>
 
@@ -147,7 +243,7 @@
     </v-row> -->
   </v-container>
 
-  <LoadingContainer v-else />
+<LoadingContainer v-else />
 </template>
 
 <script setup>
@@ -158,16 +254,13 @@ const config = useRuntimeConfig();
 const route = useRoute();
 const slug = route.params.slug;
 const currentLocale = locale.value || "en";
-const shareUrl = `https://imchatty.com/${currentLocale}/articles/${slug}`;
 
-const chatThreadId = ref(null);
 const chatThreadKey = ref(null);
 
 const {
   getArticleBySlug,
   getAllCategories,
   getAllTags,
-  getThreadIdByArticleId,
   getThreadKeyByArticleId,
 } = useDb();
 
@@ -200,24 +293,72 @@ const tagSlugs = computed(() => {
   return [...new Set(list.map((t) => t?.slug).filter(Boolean))];
 });
 
+const newsmeshMeta = computed(() => article.value?.newsmesh_meta || null);
+const rewriteMeta = computed(() => article.value?.rewrite_meta || null);
+const rewriteHeadline = computed(() => rewriteMeta.value?.headline || null);
+const personaName = computed(
+  () =>
+    article.value?.persona_display_name ||
+    rewriteMeta.value?.persona_display_name ||
+    article.value?.persona_key ||
+    ""
+);
+const personaAvatar = computed(
+  () =>
+    article.value?.persona_avatar_url ||
+    rewriteMeta.value?.persona_avatar_url ||
+    null
+);
+
+const newsmeshTopics = computed(() => newsmeshMeta.value?.topics || []);
+const newsmeshPeople = computed(() => newsmeshMeta.value?.people || []);
+const displayTitle = computed(
+  () => newsmeshMeta.value?.title || article.value?.title || ""
+);
+const displaySummary = computed(
+  () =>
+    newsmeshMeta.value?.summary ||
+    rewriteMeta.value?.summary ||
+    article.value?.summary ||
+    ""
+);
+
+const heroImage = computed(() => {
+  if (article.value?.image_path) {
+    return `${config.public.SUPABASE_BUCKET}/articles/${article.value.image_path}`;
+  }
+  if (newsmeshMeta.value?.media_url) {
+    return newsmeshMeta.value.media_url;
+  }
+  return null;
+});
+
+const rewriteReferences = computed(() => rewriteMeta.value?.references || []);
+
 const renderedMarkdown = ref("");
 
+let htmlContent = "";
 if (article.value?.content) {
-  const markdown = article.value.content.replace(/\\n/g, "\n");
-  renderedMarkdown.value = await marked(markdown);
+  htmlContent = article.value.content;
+} else if (rewriteMeta.value?.body) {
+  htmlContent = await marked(rewriteMeta.value.body);
+}
 
-  const htmlContent = renderedMarkdown.value;
+if (htmlContent) {
+  renderedMarkdown.value = htmlContent;
+
   const plainText = htmlContent.replace(/<[^>]+>/g, " ");
   const condensed = plainText.replace(/\s+/g, " ").trim();
-  const safeDescription = condensed.slice(0, 160) + "…";
+  const safeDescription = condensed
+    ? condensed.slice(0, 160) + "…"
+    : displayTitle.value;
   const localizedShareUrl = `https://imchatty.com${
     currentLocale === "en" ? "" : `/${currentLocale}`
   }/articles/${slug}`;
-  const imageUrl = `${config.public.SUPABASE_BUCKET}/articles/${article.value.image_path}`;
+  const imageUrl = heroImage.value;
 
   onMounted(async () => {
     if (article.value?.id) {
-      // chatThreadId.value = await getThreadIdByArticleId(article.value.id);
       chatThreadKey.value = await getThreadKeyByArticleId(article.value.id);
     }
     const [categoryData, tagData] = await Promise.all([
@@ -239,9 +380,9 @@ if (article.value?.content) {
   });
 
   useSeoMeta({
-    title: `${article.value.title} – ImChatty`,
+    title: `${displayTitle.value} – ImChatty`,
     description: safeDescription,
-    ogTitle: `${article.value.title} – ImChatty`,
+    ogTitle: `${displayTitle.value} – ImChatty`,
     ogDescription: safeDescription,
     ogUrl: localizedShareUrl,
     ogImage: imageUrl,
@@ -252,7 +393,7 @@ if (article.value?.content) {
         : `${currentLocale}_${currentLocale.toUpperCase()}`,
     ogSiteName: "ImChatty",
     twitterCard: "summary_large_image",
-    twitterTitle: `${article.value.title} – ImChatty`,
+    twitterTitle: `${displayTitle.value} – ImChatty`,
     twitterDescription: safeDescription,
     twitterImage: imageUrl,
     articleSection: article.value.category?.name || "Article",
