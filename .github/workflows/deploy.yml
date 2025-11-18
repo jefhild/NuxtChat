@@ -17,12 +17,16 @@ jobs:
       - name: Run sync and deployment on server
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
-        run: |
-          # Write SSH key with correct newlines for libcrypto
-          echo "${SSH_KEY}" | sed 's/\\n/\n/g' > ssh_key
-          chmod 600 ssh_key
-          ssh -o StrictHostKeyChecking=no -i ssh_key root@37.27.95.239 '
-            set -euo pipefail
-            cd /var/www/imchatty/imchatty
-          '
+        # run: |
+        #   # Write SSH key with correct newlines for libcrypto
+        #   echo "${SSH_KEY}" | sed 's/\\n/\n/g' > ssh_key
+        #   chmod 600 ssh_key
+        #   ssh -o StrictHostKeyChecking=no -i ssh_key root@37.27.95.239 '
+        #     set -euo pipefail
+        #     cd /var/www/imchatty/imchatty
+        #   '
     
+        run: |
+          echo "${SSH_KEY}" > ssh_key
+          chmod 600 ssh_key
+          ssh -o StrictHostKeyChecking=no -i ssh_key root@37.27.95.239 'cd /var/www/imchatty/imchatty && git pull origin main && bash deploy.sh'
