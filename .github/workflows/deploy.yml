@@ -24,7 +24,5 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ssh_key root@37.27.95.239 '
             set -euo pipefail
             cd /var/www/imchatty/imchatty
-            bash sync-public.sh
-            bash deploy.sh
           '
     
