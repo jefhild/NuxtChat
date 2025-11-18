@@ -24,7 +24,7 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@nuxtjs/google-fonts",
     "@nuxtjs/seo",
-
+    // "nuxt-site-config",
     // "@nuxtjs/robots",
     "nuxt-gtag",
     "@nuxtjs/i18n",
@@ -211,6 +211,12 @@ export default defineNuxtConfig({
       failOnError: false,
     },
     debug: false,
+    // rollupConfig: {
+    //   output: {
+    //     // Keep Nitro in a single bundle so asset paths (../public/...) resolve correctly at runtime.
+    //     inlineDynamicImports: true,
+    //   },
+    // },
   },
 
   hooks: {
