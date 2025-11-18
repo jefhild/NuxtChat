@@ -26,3 +26,4 @@ logs
 !.env.example
 
 ecosystem.config.cjs
+sync-public.sh
