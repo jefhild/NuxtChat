@@ -77,7 +77,7 @@
 
       <v-row>
         <v-col
-          v-for="article in paginatedArticles"
+          v-for="article in visibleArticles"
           :key="article.id"
           cols="12"
           sm="6"
@@ -98,14 +98,21 @@
         </v-col>
       </v-row>
 
-      <!-- Pagination Controls -->
-      <v-row justify="center" class="mt-8">
-        <v-pagination
-          v-model="currentPage"
-          :length="pageCount"
-          color="primary"
-        />
+      <v-row
+        v-if="isFetchingMore && hasMoreArticles"
+        justify="center"
+        class="my-6"
+      >
+        <v-col cols="auto">
+          <v-progress-circular indeterminate color="primary" />
+        </v-col>
       </v-row>
+
+      <div
+        ref="infiniteScrollTrigger"
+        class="infinite-scroll-trigger"
+        aria-hidden="true"
+      ></div>
     </v-container>
   </v-container>
 </template>
@@ -119,7 +126,6 @@ const { getArticlesByTagSlug, getTagsByArticle, getAllCategories, getAllTags } =
 
 const { t, te } = useI18n();
 const route = useRoute();
-const router = useRouter();
 const config = useRuntimeConfig();
 const supabaseBucket = config.public.SUPABASE_BUCKET;
 
@@ -129,8 +135,11 @@ const tags = ref([]);
 const searchQuery = ref("");
 const isLoading = ref(true);
 
-const currentPage = ref(1);
-const perPage = 10;
+const perPage = 12;
+const visibleCount = ref(perPage);
+const isFetchingMore = ref(false);
+const infiniteScrollTrigger = ref(null);
+let intersectionObserver = null;
 
 const tagSlug = computed(() => route.params.slug);
 
@@ -147,14 +156,26 @@ const filteredArticles = computed(() => {
   );
 });
 
-const paginatedArticles = computed(() => {
-  const start = (currentPage.value - 1) * perPage;
-  return filteredArticles.value.slice(start, start + perPage);
-});
-
-const pageCount = computed(() =>
-  Math.ceil(filteredArticles.value.length / perPage)
+const visibleArticles = computed(() =>
+  filteredArticles.value.slice(0, visibleCount.value)
 );
+const hasMoreArticles = computed(
+  () => visibleCount.value < filteredArticles.value.length
+);
+
+const loadMoreArticles = () => {
+  if (!hasMoreArticles.value || isFetchingMore.value || isLoading.value) {
+    return;
+  }
+  isFetchingMore.value = true;
+  setTimeout(() => {
+    visibleCount.value = Math.min(
+      visibleCount.value + perPage,
+      filteredArticles.value.length
+    );
+    isFetchingMore.value = false;
+  }, 150);
+};
 
 // Image + SEO setup
 const getLimitedDescription = (text) =>
@@ -230,6 +251,40 @@ onMounted(async () => {
   }
 
   isLoading.value = false;
+
+  if (!intersectionObserver) {
+    intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry?.isIntersecting) {
+          loadMoreArticles();
+        }
+      },
+      { rootMargin: "0px 0px 200px 0px", threshold: 0 }
+    );
+  }
+
+  if (infiniteScrollTrigger.value) {
+    intersectionObserver.observe(infiniteScrollTrigger.value);
+  }
+});
+
+watch(filteredArticles, () => {
+  visibleCount.value = perPage;
+  isFetchingMore.value = false;
+});
+
+watch(
+  () => infiniteScrollTrigger.value,
+  (el) => {
+    if (!intersectionObserver || !el) return;
+    intersectionObserver.disconnect();
+    intersectionObserver.observe(el);
+  }
+);
+
+onBeforeUnmount(() => {
+  intersectionObserver?.disconnect();
 });
 </script>
 
@@ -242,5 +297,10 @@ onMounted(async () => {
   margin-top: 2rem;
   margin-bottom: 2.5rem;
   color: #1f1f1f;
+}
+
+.infinite-scroll-trigger {
+  width: 100%;
+  height: 2px;
 }
 </style>

@@ -54,7 +54,7 @@
       <!-- Articles List -->
       <v-row dense>
         <v-col
-          v-for="article in paginatedArticles"
+          v-for="article in visibleArticles"
           :key="article.id"
           cols="12"
           sm="6"
@@ -65,7 +65,7 @@
       </v-row>
 
       <!-- No Articles Found -->
-      <v-row v-if="!paginatedArticles.length" justify="center">
+      <v-row v-if="!filteredArticles.length" justify="center">
         <v-col cols="12" class="text-center">
           <v-alert
             type="info"
@@ -78,22 +78,28 @@
         </v-col>
       </v-row>
 
-      <!-- Pagination -->
-      <v-row justify="center" class="mt-8">
-        <v-pagination
-          v-model="currentPage"
-          :length="pageCount"
-          color="primary"
-        />
+      <v-row
+        v-if="isFetchingMore && hasMoreArticles"
+        justify="center"
+        class="my-6"
+      >
+        <v-col cols="auto">
+          <v-progress-circular indeterminate color="primary" />
+        </v-col>
       </v-row>
+
+      <div
+        ref="infiniteScrollTrigger"
+        class="infinite-scroll-trigger"
+        aria-hidden="true"
+      ></div>
     </v-container>
   </v-container>
 </template>
 
 <script setup>
-const localPath = useLocalePath();
-const route = useRoute();
 import { useI18n } from "vue-i18n";
+const route = useRoute();
 const {
   getAllCategories,
   getCountArticleByCategory,
@@ -107,8 +113,11 @@ const articles = ref([]);
 const tags = ref([]);
 const categories = ref([]);
 const { t } = useI18n();
-const currentPage = ref(1);
-const perPage = 10;
+const perPage = 12;
+const visibleCount = ref(perPage);
+const isFetchingMore = ref(false);
+const infiniteScrollTrigger = ref(null);
+let intersectionObserver = null;
 
 const searchLabel = computed(() => t("pages.articles.index.search"));
 
@@ -122,14 +131,26 @@ const filteredArticles = computed(() => {
   );
 });
 
-const paginatedArticles = computed(() => {
-  const start = (currentPage.value - 1) * perPage;
-  return filteredArticles.value.slice(start, start + perPage);
-});
-
-const pageCount = computed(() =>
-  Math.ceil(filteredArticles.value.length / perPage)
+const visibleArticles = computed(() =>
+  filteredArticles.value.slice(0, visibleCount.value)
 );
+const hasMoreArticles = computed(
+  () => visibleCount.value < filteredArticles.value.length
+);
+
+const loadMoreArticles = () => {
+  if (!hasMoreArticles.value || isFetchingMore.value || isLoading.value) {
+    return;
+  }
+  isFetchingMore.value = true;
+  setTimeout(() => {
+    visibleCount.value = Math.min(
+      visibleCount.value + perPage,
+      filteredArticles.value.length
+    );
+    isFetchingMore.value = false;
+  }, 150);
+};
 
 onMounted(async () => {
   await authStore.checkAuth();
@@ -142,6 +163,40 @@ onMounted(async () => {
   if (tagData) tags.value = tagData;
   if (categoryData) categories.value = categoryData;
   isLoading.value = false;
+
+  if (!intersectionObserver) {
+    intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry?.isIntersecting) {
+          loadMoreArticles();
+        }
+      },
+      { rootMargin: "0px 0px 200px 0px", threshold: 0 }
+    );
+  }
+
+  if (infiniteScrollTrigger.value) {
+    intersectionObserver.observe(infiniteScrollTrigger.value);
+  }
+});
+
+watch(filteredArticles, () => {
+  visibleCount.value = perPage;
+  isFetchingMore.value = false;
+});
+
+watch(
+  () => infiniteScrollTrigger.value,
+  (el) => {
+    if (!intersectionObserver || !el) return;
+    intersectionObserver.disconnect();
+    intersectionObserver.observe(el);
+  }
+);
+
+onBeforeUnmount(() => {
+  intersectionObserver?.disconnect();
 });
 </script>
 
@@ -186,5 +241,10 @@ h1 {
   background-color: #bbdefb;
   /* Darker on hover */
   color: #0d47a1;
+}
+
+.infinite-scroll-trigger {
+  width: 100%;
+  height: 2px;
 }
 </style>

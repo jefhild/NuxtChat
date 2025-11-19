@@ -71,6 +71,17 @@
                 </NuxtLink></v-col
               >
 
+              <v-col v-if="userProfile?.is_admin">
+                <NuxtLink
+                  :to="localPath('/admin')"
+                  class="v-btn text-button navItem mr-3"
+                  exact
+                >
+                  <!-- <v-icon start>mdi-shield-account</v-icon> -->
+                  {{ $t("components.navbar.admin") }}
+                </NuxtLink>
+              </v-col>
+
               <v-col v-if="isAuthenticated">
                 <NuxtLink
                   :to="localPath('/settings')"
@@ -144,6 +155,16 @@
                 <v-list-item :to="localPath('/profiles')" link>
                   <v-list-item-title>{{
                     $t("components.navbar.free-chat")
+                  }}</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item
+                  v-if="userProfile?.is_admin"
+                  :to="localPath('/admin')"
+                  link
+                >
+                  <v-list-item-title>{{
+                    $t("components.navbar.admin")
                   }}</v-list-item-title>
                 </v-list-item>
 
@@ -260,6 +281,7 @@ const logoutDialog = ref(false);
 const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
 );
+const userProfile = computed(() => authStore.userProfile);
 
 const isLoggingOut = ref(false);
 const logoutError = ref("");
