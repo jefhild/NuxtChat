@@ -5,29 +5,6 @@
       elevation="2"
       :style="{ minHeight: props.admin ? '360px' : '280px' }"
     >
-      <!-- SEO-friendly real link over image + title -->
-      <!-- <NuxtLink
-        :to="localPath(`/articles/${article.slug}`)"
-        class="card-link"
-        :aria-label="article.title"
-      >
-        <v-img
-          class="align-end text-white"
-          height="200"
-          :src="`${config.public.SUPABASE_BUCKET}/articles/${article.image_path}`"
-          cover
-        >
-          <div class="w-100 text-center px-4">
-            <h2 class="font-weight-bold text-subtitle-1 text-md-h5 title-text">
-              {{ article.title }}
-            </h2>
-          </div>
-          <div class="d-flex justify-end pr-4 pb-2">
-            <span class="ml-1">{{ formatDate(article.created_at) }}</span>
-          </div>
-        </v-img>
-      </NuxtLink> -->
-
       <NuxtLink
         :to="localPath(`/articles/${article.slug}`)"
         class="card-link position-relative"
@@ -144,11 +121,17 @@ const articleImageUrl = computed(() => {
 
 const truncatedSummary = computed(() => {
   const maxLength = 300;
-
   const content = props.article?.content || "";
+  if (!content) return "";
+
+  const headerMatch = content.match(/<header[\s\S]*?<\/header>/i);
+  if (headerMatch) {
+    return headerMatch[0];
+  }
+
   return content.length > maxLength
-    ? props.article.content.slice(0, maxLength) + "..."
-    : props.article.content;
+    ? content.slice(0, maxLength) + "..."
+    : content;
 });
 
 const formatDate = (isoDate) =>
@@ -221,6 +204,28 @@ const formatTagSlug = (tag) => {
   color: inherit;
 }
 
+.article-card :deep(.article-header) {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+}
+
+.article-card :deep(.article-header h2) {
+  font-size: 1.05rem;
+  margin: 0.25rem 0;
+}
+
+.article-card :deep(.persona-line) {
+  font-weight: 600;
+  color: #0d9488;
+  margin-bottom: 0.35rem;
+}
+
+.article-card :deep(.article-summary) {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
 /* Overlay container — default fade-in behavior */
 .discuss-btn-container {
   position: absolute;
@@ -250,4 +255,5 @@ const formatTagSlug = (tag) => {
 .discuss-link {
   text-decoration: none;
 }
+
 </style>

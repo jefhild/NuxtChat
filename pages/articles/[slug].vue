@@ -34,19 +34,34 @@
     </v-row>
 
     <v-row v-if="heroImage">
-      <v-img
-        class="text-white"
-        height="350"
-        :src="heroImage"
-        cover
-      >
+      <v-img class="text-white hero-image" height="350" :src="heroImage" cover>
         <div
-          class="d-flex justify-space-between align-center px-4 pb-3"
-          style="position: absolute; bottom: 0; left: 0; right: 0"
+          v-if="personaName || personaAvatar"
+          class="hero-persona-card d-flex align-center ga-4"
+        >
+          <v-avatar v-if="personaAvatar" size="52">
+            <v-img :src="personaAvatar" :alt="personaName" />
+          </v-avatar>
+          <div class="d-flex flex-column">
+            <span class="text-caption text-medium-emphasis">Perspective</span>
+            <span class="text-subtitle-1 font-weight-medium">
+              {{ personaName }}
+            </span>
+            <span v-if="rewriteHeadline" class="text-body-2 text-medium-emphasis">
+              {{ rewriteHeadline }}
+            </span>
+          </div>
+        </div>
+        <div
+          class="hero-image-footer d-flex justify-space-between align-center px-4 pb-3"
         >
           <v-btn
             color="primary"
-            :to="localPath('/chat/articles/' + encodeURIComponent(chatThreadKey || ''))"
+            :to="
+              localPath(
+                '/chat/articles/' + encodeURIComponent(chatThreadKey || '')
+              )
+            "
             :disabled="!chatThreadKey"
             large
           >
@@ -71,38 +86,31 @@
       </v-col>
     </v-row>
 
-    <v-row v-if="personaName || personaAvatar">
-      <v-col cols="12">
-        <v-card class="pa-4" elevation="2">
-          <div class="d-flex align-center ga-4">
-            <v-avatar v-if="personaAvatar" size="52">
-              <v-img :src="personaAvatar" :alt="personaName" />
-            </v-avatar>
-            <div class="d-flex flex-column">
-              <span class="text-caption text-medium-emphasis">Perspective</span>
-              <span class="text-subtitle-1 font-weight-medium">
-                {{ personaName }}
-              </span>
-              <span v-if="rewriteHeadline" class="text-body-2 text-medium-emphasis">
-                {{ rewriteHeadline }}
-              </span>
-            </div>
-          </div>
-        </v-card>
-      </v-col>
-    </v-row>
-
     <v-row v-if="newsmeshMeta">
       <v-col cols="12">
         <v-card class="pa-4 mb-4" elevation="1">
           <div class="d-flex flex-wrap ga-2">
-            <v-chip v-if="newsmeshMeta.stream" size="small" color="primary" variant="tonal">
+            <v-chip
+              v-if="newsmeshMeta.stream"
+              size="small"
+              color="primary"
+              variant="tonal"
+            >
               Stream: {{ newsmeshMeta.stream }}
             </v-chip>
-            <v-chip v-if="newsmeshMeta.category" size="small" color="indigo" variant="tonal">
+            <v-chip
+              v-if="newsmeshMeta.category"
+              size="small"
+              color="indigo"
+              variant="tonal"
+            >
               Category: {{ newsmeshMeta.category }}
             </v-chip>
-            <v-chip v-if="newsmeshMeta.published_date" size="small" variant="tonal">
+            <v-chip
+              v-if="newsmeshMeta.published_date"
+              size="small"
+              variant="tonal"
+            >
               Published: {{ formatDate(newsmeshMeta.published_date) }}
             </v-chip>
             <v-chip v-if="newsmeshMeta.source" size="small" variant="outlined">
@@ -163,7 +171,10 @@
         <div v-if="rewriteReferences.length" class="mt-6">
           <h3 class="text-subtitle-1 mb-2">References</h3>
           <ul>
-            <li v-for="ref in rewriteReferences" :key="ref.label + (ref.url || '')">
+            <li
+              v-for="ref in rewriteReferences"
+              :key="ref.label + (ref.url || '')"
+            >
               <a
                 v-if="ref.url"
                 :href="ref.url"
@@ -180,10 +191,7 @@
     </v-row>
 
     <v-row justify="center" class="mb-4">
-      <v-col cols="12" class="text-center">
-
-
-      </v-col>
+      <v-col cols="12" class="text-center"> </v-col>
     </v-row>
 
     <v-row justify="center">
@@ -243,7 +251,7 @@
     </v-row> -->
   </v-container>
 
-<LoadingContainer v-else />
+  <LoadingContainer v-else />
 </template>
 
 <script setup>
@@ -447,5 +455,88 @@ const formatDate = (date) =>
 
 .share-btn:hover {
   background-color: #333;
+}
+
+.hero-image {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.hero-persona-card {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  background: rgba(15, 23, 42, 0.82);
+  border-radius: 999px;
+  padding: 0.65rem 1.6rem 0.65rem 0.65rem;
+  color: #fff;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(6px);
+}
+
+.hero-persona-card .text-caption,
+.hero-persona-card .text-subtitle-1,
+.hero-persona-card .text-body-2 {
+  color: inherit !important;
+}
+
+.hero-image-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0) 0%,
+    rgba(15, 23, 42, 0.85) 100%
+  );
+}
+
+.prose :deep(.newsmesh-article) {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  padding: 2.25rem;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+}
+
+.prose :deep(.newsmesh-article .article-header) {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+}
+
+.prose :deep(.newsmesh-article .source-line) {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-bottom: 0.2rem;
+}
+
+.prose :deep(.newsmesh-article .persona-line) {
+  font-weight: 600;
+  color: #0d9488;
+  margin: 0.4rem 0 0.8rem;
+}
+
+.prose :deep(.newsmesh-article .article-summary) {
+  font-size: 1rem;
+  color: #475569;
+  background: #f1f5f9;
+  border-left: 4px solid #6366f1;
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+}
+
+.prose :deep(.newsmesh-article .rewrite-body p) {
+  line-height: 1.8;
+  margin-bottom: 1.1rem;
+  font-size: 1.03rem;
+}
+
+.prose :deep(.newsmesh-article .rewrite-body p:last-child) {
+  margin-bottom: 0;
 }
 </style>
