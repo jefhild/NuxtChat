@@ -11,6 +11,7 @@
           :active-slugs="categorySlugs"
           panels-class="compact-panel"
           variant="inset"
+          :scrolling-list="true"
         >
           <template #title="{ selectedName, title }">
             <span>Categories: {{ selectedName || title }}</span>
@@ -25,9 +26,25 @@
           :active-slugs="tagSlugs"
           panels-class="compact-panel"
           variant="inset"
+          :scrolling-list="true"
         >
           <template #title="{ selectedName, title }">
             <span>Tags: {{ selectedName || title }}</span>
+          </template>
+        </FilterExpansion>
+      </v-col>
+      <v-col>
+        <FilterExpansion
+          :title="$t('pages.people.index.title')"
+          :items="people"
+          base-path="/people"
+          :active-slugs="peopleSlugs"
+          panels-class="compact-panel"
+          variant="inset"
+          :scrolling-list="true"
+        >
+          <template #title="{ selectedName, title }">
+            <span>People: {{ selectedName || title }}</span>
           </template>
         </FilterExpansion>
       </v-col>
@@ -91,60 +108,58 @@
         <v-card class="pa-4 mb-4" elevation="1">
           <div class="d-flex flex-wrap ga-2">
             <v-chip
-              v-if="newsmeshMeta.stream"
-              size="small"
-              color="primary"
-              variant="tonal"
-            >
-              Stream: {{ newsmeshMeta.stream }}
-            </v-chip>
-            <v-chip
-              v-if="newsmeshMeta.category"
-              size="small"
-              color="indigo"
-              variant="tonal"
-            >
-              Category: {{ newsmeshMeta.category }}
-            </v-chip>
-            <v-chip
               v-if="newsmeshMeta.published_date"
               size="small"
               variant="tonal"
             >
               Published: {{ formatDate(newsmeshMeta.published_date) }}
             </v-chip>
-            <v-chip v-if="newsmeshMeta.source" size="small" variant="outlined">
+            <v-chip
+              v-if="newsmeshMeta.source"
+              size="small"
+              variant="outlined"
+              :href="newsmeshMeta.link || undefined"
+              :target="newsmeshMeta.link ? '_blank' : undefined"
+              :rel="newsmeshMeta.link ? 'noopener noreferrer' : undefined"
+            >
               Source: {{ newsmeshMeta.source }}
             </v-chip>
             <v-chip
-              v-for="topic in newsmeshTopics"
-              :key="`topic-${topic}`"
+              v-if="displayCategory"
+              size="small"
+              color="indigo"
+              variant="tonal"
+              :to="
+                displayCategory.slug
+                  ? localPath(`/categories/${displayCategory.slug}`)
+                  : undefined
+              "
+              :class="{ 'chip-link': displayCategory.slug }"
+            >
+              Category: {{ displayCategory.name }}
+            </v-chip>
+            <v-chip
+              v-for="tag in displayTags"
+              :key="`topic-${tag.slug || tag.name}`"
               size="small"
               color="deep-purple"
               variant="tonal"
+              :to="tag.slug ? localPath(`/tags/${tag.slug}`) : undefined"
+              :class="{ 'chip-link': tag.slug }"
             >
-              {{ topic }}
+              #{{ tag.name }}
             </v-chip>
             <v-chip
-              v-for="person in newsmeshPeople"
-              :key="`person-${person}`"
+              v-for="person in displayPeople"
+              :key="`person-${person.slug || person.name}`"
               size="small"
               color="teal"
               variant="tonal"
+              :to="person.slug ? localPath(`/people/${person.slug}`) : undefined"
+              :class="{ 'chip-link': person.slug }"
             >
-              {{ person }}
+              {{ person.name }}
             </v-chip>
-          </div>
-          <div class="mt-3" v-if="newsmeshMeta.link">
-            <v-btn
-              :href="newsmeshMeta.link"
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="text"
-              prepend-icon="mdi-link"
-            >
-              Original source
-            </v-btn>
           </div>
         </v-card>
       </v-col>
@@ -269,6 +284,7 @@ const {
   getArticleBySlug,
   getAllCategories,
   getAllTags,
+  getAllPeople,
   getThreadKeyByArticleId,
 } = useDb();
 
@@ -278,6 +294,7 @@ const { data: article, error } = await useAsyncData(`article-${slug}`, () =>
 
 const categories = ref([]);
 const tags = ref([]);
+const people = ref([]);
 
 const categorySlugs = computed(() => {
   const a = article.value;
@@ -300,6 +317,12 @@ const tagSlugs = computed(() => {
     : [];
   return [...new Set(list.map((t) => t?.slug).filter(Boolean))];
 });
+const peopleSlugs = computed(() => {
+  const a = article.value;
+  if (!a) return [];
+  const list = Array.isArray(a.people) ? a.people : [];
+  return [...new Set(list.map((p) => p?.slug).filter(Boolean))];
+});
 
 const newsmeshMeta = computed(() => article.value?.newsmesh_meta || null);
 const rewriteMeta = computed(() => article.value?.rewrite_meta || null);
@@ -320,6 +343,32 @@ const personaAvatar = computed(
 
 const newsmeshTopics = computed(() => newsmeshMeta.value?.topics || []);
 const newsmeshPeople = computed(() => newsmeshMeta.value?.people || []);
+const displayCategory = computed(() => {
+  const category = article.value?.category;
+  if (category?.name) return category;
+  const fallback = newsmeshMeta.value?.category;
+  return fallback ? { name: fallback, slug: null } : null;
+});
+const articleTags = computed(() =>
+  Array.isArray(article.value?.tags) ? article.value.tags : []
+);
+const articlePeople = computed(() =>
+  Array.isArray(article.value?.people) ? article.value.people : []
+);
+const displayTags = computed(() => {
+  if (articleTags.value.length) return articleTags.value;
+  return newsmeshTopics.value.map((topic) => ({
+    name: topic,
+    slug: null,
+  }));
+});
+const displayPeople = computed(() => {
+  if (articlePeople.value.length) return articlePeople.value;
+  return newsmeshPeople.value.map((person) => ({
+    name: person,
+    slug: null,
+  }));
+});
 const displayTitle = computed(
   () => newsmeshMeta.value?.title || article.value?.title || ""
 );
@@ -369,13 +418,15 @@ if (htmlContent) {
     if (article.value?.id) {
       chatThreadKey.value = await getThreadKeyByArticleId(article.value.id);
     }
-    const [categoryData, tagData] = await Promise.all([
+    const [categoryData, tagData, peopleData] = await Promise.all([
       getAllCategories(),
       getAllTags(),
+      getAllPeople(),
     ]);
 
     categories.value = categoryData || [];
     tags.value = tagData || [];
+    people.value = peopleData || [];
   });
 
   useHead({
@@ -538,5 +589,9 @@ const formatDate = (date) =>
 
 .prose :deep(.newsmesh-article .rewrite-body p:last-child) {
   margin-bottom: 0;
+}
+
+.chip-link {
+  cursor: pointer;
 }
 </style>

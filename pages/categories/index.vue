@@ -28,6 +28,7 @@
             :selected-slug="route.params?.slug || null"
             panels-class="compact-panel"
             variant="inset"
+            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>Categories: {{ selectedName || title }}</span>
@@ -43,9 +44,26 @@
             :selected-slug="route.params?.slug || null"
             panels-class="compact-panel"
             variant="inset"
+            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>Tags: {{ selectedName || title }}</span>
+            </template>
+          </FilterExpansion>
+        </v-col>
+
+        <v-col>
+          <FilterExpansion
+            :title="$t('pages.people.index.title')"
+            :items="people"
+            base-path="/people"
+            :selected-slug="route.params?.slug || null"
+            panels-class="compact-panel"
+            variant="inset"
+            :scrolling-list="true"
+          >
+            <template #title="{ selectedName, title }">
+              <span>People: {{ selectedName || title }}</span>
             </template>
           </FilterExpansion>
         </v-col>
@@ -105,6 +123,7 @@ const {
   getCountArticleByCategory,
   getAllPublishedArticlesWithTags,
   getAllTags,
+  getAllPeople,
 } = useDb();
 const isLoading = ref(true);
 const authStore = useAuthStore();
@@ -112,6 +131,7 @@ const searchQuery = ref("");
 const articles = ref([]);
 const tags = ref([]);
 const categories = ref([]);
+const people = ref([]);
 const { t } = useI18n();
 const perPage = 12;
 const visibleCount = ref(perPage);
@@ -154,14 +174,17 @@ const loadMoreArticles = () => {
 
 onMounted(async () => {
   await authStore.checkAuth();
-  // userProfile.value = authStore.userProfile;
-  const articleData = await getAllPublishedArticlesWithTags();
-  const tagData = await getAllTags();
-  const categoryData = await getAllCategories();
+  const [articleData, tagData, categoryData, peopleData] = await Promise.all([
+    getAllPublishedArticlesWithTags(),
+    getAllTags(),
+    getAllCategories(),
+    getAllPeople(),
+  ]);
 
   if (articleData) articles.value = articleData;
   if (tagData) tags.value = tagData;
   if (categoryData) categories.value = categoryData;
+  if (peopleData) people.value = peopleData;
   isLoading.value = false;
 
   if (!intersectionObserver) {

@@ -6,7 +6,24 @@
       </v-expansion-panel-title>
 
       <v-expansion-panel-text>
-        <v-row no-gutters>
+        <div v-if="scrollingList" class="scrolling-list">
+          <v-list density="compact">
+            <v-list-item
+              v-for="item in items"
+              :key="item.slug"
+              :value="item.slug"
+              @click="navigate(item.slug)"
+            >
+              <div
+                class="d-block text-decoration-none font-weight-medium"
+                :class="{ 'text-primary': isActive(item.slug) }"
+              >
+                {{ item.name }}
+              </div>
+            </v-list-item>
+          </v-list>
+        </div>
+        <v-row v-else no-gutters>
           <v-col
             v-for="item in items"
             :key="item.slug"
@@ -40,8 +57,10 @@ const props = defineProps({
   allSlug: { type: String, default: 'all' },
   variant: { type: String, default: 'inset' },
   panelsClass: { type: String, default: '' },
+  scrollingList: { type: Boolean, default: false },
 })
 
+const router = useRouter()
 const route = useRoute()
 const localPath = useLocalePath()
 
@@ -52,6 +71,11 @@ const isActive = (slug) =>
   props.activeSlugs.includes(slug) ||
   props.selectedSlug === slug ||
   (!props.selectedSlug && slug === props.allSlug)
+
+const navigate = (slug) => {
+  const target = linkFor(slug)
+  router.push(target)
+}
 </script>
 
 <style scoped>
@@ -63,5 +87,10 @@ const isActive = (slug) =>
 .compact-panel .v-expansion-panel-text__wrapper {
   padding-top: 4px !important;
   padding-bottom: 4px !important;
+}
+
+.scrolling-list {
+  max-height: 240px;
+  overflow-y: auto;
 }
 </style>

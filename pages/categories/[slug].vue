@@ -49,6 +49,7 @@
             :selected-slug="route.params?.slug || null"
             panels-class="compact-panel"
             variant="inset"
+            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>Categories: {{ selectedName || title }}</span>
@@ -64,9 +65,26 @@
             :selected-slug="null"
             panels-class="compact-panel"
             variant="inset"
+            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>Tags: {{ selectedName || title }}</span>
+            </template>
+          </FilterExpansion>
+        </v-col>
+
+        <v-col>
+          <FilterExpansion
+            :title="$t('pages.people.index.title')"
+            :items="people"
+            base-path="/people"
+            :selected-slug="null"
+            panels-class="compact-panel"
+            variant="inset"
+            :scrolling-list="true"
+          >
+            <template #title="{ selectedName, title }">
+              <span>People: {{ selectedName || title }}</span>
             </template>
           </FilterExpansion>
         </v-col>
@@ -124,6 +142,7 @@ const {
   getTagsByArticle,
   getAllCategories,
   getAllTags,
+  getAllPeople,
 } = useDb();
 
 const { t } = useI18n();
@@ -133,6 +152,7 @@ const isLoading = ref(true);
 const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
+const people = ref([]);
 const searchQuery = ref("");
 const perPage = 12;
 const visibleCount = ref(perPage);
@@ -233,14 +253,16 @@ useSeoI18nMeta("categories.index", {
 onMounted(async () => {
   isLoading.value = true;
 
-  const [categoryData, tagData, articleData] = await Promise.all([
+  const [categoryData, tagData, peopleData, articleData] = await Promise.all([
     getAllCategories(),
     getAllTags(),
+    getAllPeople(),
     getArticlesbyCategorySlug(route.params.slug),
   ]);
 
   categories.value = categoryData || [];
   tags.value = tagData || [];
+  people.value = peopleData || [];
 
   if (articleData) {
     const articlesWithTags = await Promise.all(

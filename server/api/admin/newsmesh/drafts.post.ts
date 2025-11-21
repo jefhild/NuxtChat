@@ -114,6 +114,122 @@ const toList = (value: unknown): string[] => {
   return [];
 };
 
+const normalizeName = (value?: string | null) => {
+  if (!value) return null;
+  const trimmed = String(value).trim();
+  return trimmed || null;
+};
+
+const prepareSlugEntries = (values: string[]) => {
+  const deduped = new Map<string, string>();
+  values.forEach((name) => {
+    const normalized = normalizeName(name);
+    if (!normalized) return;
+    const slug = slugify(normalized);
+    if (!slug) return;
+    if (!deduped.has(slug)) {
+      deduped.set(slug, normalized);
+    }
+  });
+  return Array.from(deduped.entries()).map(([slug, name]) => ({
+    slug,
+    name,
+  }));
+};
+
+const ensureCategoryRecord = async (
+  supabase: Awaited<ReturnType<typeof getServiceRoleClient>>,
+  input?: string | null
+) => {
+  const name = normalizeName(input);
+  if (!name) return null;
+  const slug = slugify(name);
+  if (!slug) return null;
+
+  const { data: existing, error: existingError } = await supabase
+    .from("categories")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (existingError) throw existingError;
+  if (existing) return existing.id;
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("categories")
+    .insert({ name, slug })
+    .select("id")
+    .single();
+  if (insertError) throw insertError;
+  return inserted.id;
+};
+
+const ensureSlugRecords = async (
+  supabase: Awaited<ReturnType<typeof getServiceRoleClient>>,
+  table: "tags" | "people",
+  values: string[]
+) => {
+  const entries = prepareSlugEntries(values);
+  if (!entries.length) return [];
+
+  const { data: existing, error: fetchError } = await supabase
+    .from(table)
+    .select("id, slug")
+    .in(
+      "slug",
+      entries.map((entry) => entry.slug)
+    );
+  if (fetchError) throw fetchError;
+
+  const missing = entries.filter(
+    (entry) => !existing?.some((record) => record.slug === entry.slug)
+  );
+
+  let inserted: { id: number; slug: string }[] = [];
+  if (missing.length) {
+    const { data, error } = await supabase
+      .from(table)
+      .insert(
+        missing.map((entry) => ({
+          name: entry.name,
+          slug: entry.slug,
+        }))
+      )
+      .select("id, slug");
+    if (error) throw error;
+    inserted = data || [];
+  }
+
+  const lookup = new Map<string, number>();
+  [...(existing || []), ...inserted].forEach((record) => {
+    lookup.set(record.slug, record.id);
+  });
+
+  return entries
+    .map((entry) => lookup.get(entry.slug))
+    .filter((id): id is number => typeof id === "number");
+};
+
+const linkArticleRecords = async (
+  supabase: Awaited<ReturnType<typeof getServiceRoleClient>>,
+  table: "article_tags" | "article_people",
+  articleId: number,
+  foreignKey: "tag_id" | "person_id",
+  ids: number[]
+) => {
+  if (!ids.length) return;
+  const conflictTarget =
+    table === "article_tags" ? "article_id,tag_id" : "article_id,person_id";
+  await supabase
+    .from(table)
+    .upsert(
+      ids.map((id) => ({
+        article_id: articleId,
+        [foreignKey]: id,
+      })),
+      { onConflict: conflictTarget }
+    );
+};
+
 const buildArticleHtml = (
   newsmesh: any,
   rewrite: RewritePayload,
@@ -303,13 +419,19 @@ export default defineEventHandler(async (event) => {
       rewrite.headline
     );
 
+    const [categoryId, tagIds, personIds] = await Promise.all([
+      ensureCategoryRecord(supabase, newsmeshMeta.category),
+      ensureSlugRecords(supabase, "tags", newsmeshMeta.topics),
+      ensureSlugRecords(supabase, "people", newsmeshMeta.people),
+    ]);
+
     const insertPayload = {
       title: newsmeshMeta.title || rewrite.headline,
       slug,
       content,
       type: "blog",
       is_published: false,
-      category_id: null,
+      category_id: categoryId,
       image_path: null,
       photo_credits_url: article.link || null,
       persona_key: personaKey,
@@ -328,6 +450,17 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (insertError) throw insertError;
+
+    await Promise.all([
+      linkArticleRecords(supabase, "article_tags", draft.id, "tag_id", tagIds),
+      linkArticleRecords(
+        supabase,
+        "article_people",
+        draft.id,
+        "person_id",
+        personIds
+      ),
+    ]);
 
     return { success: true, data: draft };
   } catch (error) {

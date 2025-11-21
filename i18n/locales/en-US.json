@@ -330,7 +330,7 @@
     "categories": {
       "index": {
         "loading": "Loading categories...",
-        "title": "All Categories",
+        "title": "Categories",
         "meta": {
           "title": "Popular Article Categories",
           "description": "Check out our most popular categories! Browse top-rated articles with real information, personalized details, and genuine interests.",
@@ -392,7 +392,7 @@
     },
     "tags": {
       "index": {
-        "title": "All Tags",
+        "title": "Tags",
         "meta": {
           "title": "Browse Tags | ImChatty",
           "description": "Explore popular tags on ImChatty and discover content matched to real interests, personalized topics, and authentic conversations.",
@@ -441,6 +441,20 @@
       },
       "slug": {
         "no-articles": "No articles found for this tag"
+      }
+    },
+    "people": {
+      "index": {
+        "title": "People",
+        "heading": "Browse by People",
+        "subtitle": "Explore notable voices featured across recent coverage.",
+        "metaDescription": "Browse Newsmesh articles grouped by the people mentioned inside."
+      },
+      "slug": {
+        "heading": "Articles mentioning {name}",
+        "subtitle": "{name} shows up in these curated rewrites and summaries.",
+        "no-articles": "No articles mention {name} yet.",
+        "metaDescription": "See the latest ImChatty coverage that references {name}."
       }
     },
     "guides": {

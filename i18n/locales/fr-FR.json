@@ -428,6 +428,20 @@
         "no-articles": "Aucun article trouvé pour cette étiquette"
       }
     },
+    "people": {
+      "index": {
+        "title": "People",
+        "heading": "Browse by People",
+        "subtitle": "Explore notable voices featured across recent coverage.",
+        "metaDescription": "Browse Newsmesh articles grouped by the people mentioned inside."
+      },
+      "slug": {
+        "heading": "Articles mentioning {name}",
+        "subtitle": "{name} shows up in these curated rewrites and summaries.",
+        "no-articles": "No articles mention {name} yet.",
+        "metaDescription": "See the latest ImChatty coverage that references {name}."
+      }
+    },
     "guides": {
       "title": "Tous nos Guides",
       "no-articles": "Aucun article trouvé pour ce type",

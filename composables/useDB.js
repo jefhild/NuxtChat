@@ -881,6 +881,22 @@ export const useDb = () => {
     return data;
   };
 
+  const getAllPeople = async () => {
+    const supabase = getClient();
+
+    const { data, error } = await supabase
+      .from("people")
+      .select("id, name, slug")
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching people:", error.message);
+      return [];
+    }
+
+    return data;
+  };
+
   const getAllArticlesWithTags = async () => {
     const supabase = getClient();
 
@@ -1063,6 +1079,9 @@ export const useDb = () => {
       category:category_id ( id, name, slug ),
       tags:article_tags (
         tag:tag_id ( id, name, slug )
+      ),
+      people:article_people (
+        person:person_id ( id, name, slug )
       )
     `
       )
@@ -1078,6 +1097,10 @@ export const useDb = () => {
     // Flatten tag data
     if (data.tags) {
       data.tags = data.tags.map((tag) => tag.tag);
+    }
+
+    if (data.people) {
+      data.people = data.people.map((entry) => entry.person);
     }
 
     return data;
@@ -1153,6 +1176,102 @@ export const useDb = () => {
     }
 
     return data;
+  };
+
+  const getArticlesByPersonSlug = async (slug) => {
+    const supabase = getClient();
+
+    const { data: person, error: personError } = await supabase
+      .from("people")
+      .select("id, name, slug")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (personError) {
+      console.error("Error fetching person:", personError);
+      return { person: null, articles: [] };
+    }
+
+    if (!person) {
+      return { person: null, articles: [] };
+    }
+
+    const selectColumns = `
+        id,
+        title,
+        slug,
+        content,
+        image_path,
+        photo_credits_url,
+        created_at,
+        is_published,
+        category:category_id ( id, name, slug ),
+        threads(slug),
+        article_people!inner(person_id)
+      `;
+
+    const { data, error } = await supabase
+      .from("articles")
+      .select(selectColumns)
+      .eq("article_people.person_id", person.id)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
+
+    let baseArticles =
+      data?.map((article) => ({
+        ...article,
+        category_name: article.category?.name ?? "Uncategorized",
+        thread_slug:
+          Array.isArray(article.threads) && article.threads.length > 0
+            ? article.threads[0].slug
+            : null,
+      })) || [];
+
+    if (error) {
+      console.error("Error fetching articles by person slug:", error);
+      baseArticles = [];
+    }
+
+    if (!baseArticles.length) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("articles")
+        .select(
+          `
+            id,
+            title,
+            slug,
+            content,
+            image_path,
+            photo_credits_url,
+            created_at,
+            is_published,
+            category:category_id ( id, name, slug ),
+            threads(slug)
+          `
+        )
+        .contains("newsmesh_meta", { people: [person.name] })
+        .eq("is_published", true)
+        .order("created_at", { ascending: false });
+
+      if (!fallbackError) {
+        baseArticles =
+          fallbackData?.map((article) => ({
+            ...article,
+            category_name: article.category?.name ?? "Uncategorized",
+            thread_slug:
+              Array.isArray(article.threads) && article.threads.length > 0
+                ? article.threads[0].slug
+                : null,
+          })) || [];
+      } else {
+        console.error(
+          "Fallback fetch error for articles by person slug:",
+          fallbackError
+        );
+      }
+    }
+
+    return { person, articles: baseArticles };
   };
 
   const getTagsByArticle = async (articleSlug) => {
@@ -2845,6 +2964,7 @@ const signInWithOtp = async (
     getUserFavoritedMeProfiles,
     getAllTags,
     getAllCategories,
+    getAllPeople,
     getAllArticlesWithTags,
     getAllPublishedArticlesWithTags,
     getArticleBySlug,
@@ -2853,6 +2973,7 @@ const signInWithOtp = async (
     getCountArticleByTag,
     getCountArticleByCategory,
     getArticlesByTagSlug,
+    getArticlesByPersonSlug,
     getTagsByArticle,
     getArticlesbyCategorySlug,
     getArticlesByType,

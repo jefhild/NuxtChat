@@ -1,41 +1,18 @@
 <template>
-  <LoadingContainer
-    v-if="isLoading"
-    :text="$t('pages.articles.index.loading')"
-  />
-
-  <v-container fluid v-else>
-    <!-- <HomeRow1 /> -->
-
-    <PageHeader
-      :text="$t('pages.articles.tags.heading')"
-      :subtitle="$t('pages.articles.tags.subtitle')"
+  <v-container fluid>
+    <LoadingContainer
+      v-if="isLoading"
+      :text="$t('pages.articles.index.loading')"
     />
 
-    <v-row>
-      <!-- <v-col>
-        <h1>{{ $t("pages.tags.index.title") }}</h1>
-      </v-col> -->
-      <!-- <v-col>
-        <v-text-field
-          v-model="searchQuery"
-          :label="searchLabel"
-          prepend-inner-icon="mdi-magnify"
-          clearable
-          density="compact"
-          outlined
-          hide-details
-          class="search-bar"
-        />
-      </v-col> -->
-    </v-row>
+    <v-container fluid v-else>
+      <PageHeader
+        :text="$t('pages.people.index.heading')"
+        :subtitle="$t('pages.people.index.subtitle')"
+      />
 
-    <LoadingContainer v-if="isLoading" />
-
-    <v-container v-else>
       <v-row>
         <v-col>
-          <!-- Categories: neutral (no highlight on tags index) -->
           <FilterExpansion
             :title="$t('pages.categories.index.title')"
             :items="categories"
@@ -43,7 +20,6 @@
             :selected-slug="null"
             panels-class="compact-panel"
             variant="inset"
-            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>Categories: {{ selectedName || title }}</span>
@@ -52,15 +28,13 @@
         </v-col>
 
         <v-col>
-          <!-- Tags: highlight current route param -->
           <FilterExpansion
             :title="$t('pages.tags.index.title')"
             :items="tags"
             base-path="/tags"
-            :selected-slug="route.params?.slug || null"
+            :selected-slug="null"
             panels-class="compact-panel"
             variant="inset"
-            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>Tags: {{ selectedName || title }}</span>
@@ -73,10 +47,9 @@
             :title="$t('pages.people.index.title')"
             :items="people"
             base-path="/people"
-            :selected-slug="route.params?.slug || null"
+            :selected-slug="null"
             panels-class="compact-panel"
             variant="inset"
-            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>People: {{ selectedName || title }}</span>
@@ -85,7 +58,6 @@
         </v-col>
       </v-row>
 
-      <!-- Articles List -->
       <v-row dense>
         <v-col
           v-for="article in visibleArticles"
@@ -94,11 +66,13 @@
           sm="6"
           md="4"
         >
-          <ArticleCard :article="article" />
+          <ArticleCard
+            :article="article"
+            :chatThreadId="article.threadSlug ?? undefined"
+          />
         </v-col>
       </v-row>
 
-      <!-- No Articles Found -->
       <v-row v-if="!filteredArticles.length" justify="center">
         <v-col cols="12" class="text-center">
           <v-alert
@@ -132,22 +106,22 @@
 </template>
 
 <script setup>
-const route = useRoute();
 const { t } = useI18n();
+const authStore = useAuthStore();
 const {
-  getAllTags,
-  getAllCategories,
-  getCountArticleByTag,
   getAllPublishedArticlesWithTags,
+  getAllCategories,
+  getAllTags,
   getAllPeople,
 } = useDb();
+
 const isLoading = ref(true);
-const authStore = useAuthStore();
-const tags = ref([]);
-const categories = ref([]);
-const people = ref([]);
 const articles = ref([]);
+const categories = ref([]);
+const tags = ref([]);
+const people = ref([]);
 const searchQuery = ref("");
+
 const perPage = 12;
 const visibleCount = ref(perPage);
 const isFetchingMore = ref(false);
@@ -155,8 +129,6 @@ const infiniteScrollTrigger = ref(null);
 let intersectionObserver = null;
 
 const searchLabel = computed(() => t("pages.articles.index.search"));
-
-useSeoI18nMeta("tags.index");
 
 const filteredArticles = computed(() => {
   if (!searchQuery.value) return articles.value;
@@ -186,27 +158,25 @@ const loadMoreArticles = () => {
   }, 150);
 };
 
+useSeoMeta({
+  title: computed(() => `${t("pages.people.index.heading")} – ImChatty`),
+  description: computed(() => t("pages.people.index.metaDescription")),
+});
+
 onMounted(async () => {
   await authStore.checkAuth();
 
-  const [rawTags, rawCategories, articleData, peopleData] = await Promise.all([
-    getAllTags(),
-    getAllCategories(),
+  const [articleData, categoryData, tagData, peopleData] = await Promise.all([
     getAllPublishedArticlesWithTags(),
+    getAllCategories(),
+    getAllTags(),
     getAllPeople(),
   ]);
 
-  const tagsWithCounts = await Promise.all(
-    rawTags.map(async (tag) => {
-      const count = await getCountArticleByTag(tag.id);
-      return { ...tag, articleCount: count };
-    })
-  );
-
-  tags.value = tagsWithCounts;
-  categories.value = rawCategories;
+  articles.value = articleData || [];
+  categories.value = categoryData || [];
+  tags.value = tagData || [];
   people.value = peopleData || [];
-  if (articleData) articles.value = articleData;
 
   isLoading.value = false;
 
@@ -247,16 +217,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-h1 {
-  font-size: 1.6rem;
-}
-.text-decoration-none {
-  text-decoration: none;
-}
-.font-weight-medium {
-  font-weight: 500;
-}
-
 .infinite-scroll-trigger {
   width: 100%;
   height: 2px;

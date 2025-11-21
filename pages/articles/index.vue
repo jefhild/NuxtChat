@@ -26,6 +26,7 @@
           base-path="/categories"
           :selected-slug="route.params?.slug || null"
           panels-class="compact-panel"
+          :scrolling-list="true"
         />
       </v-col>
 
@@ -37,6 +38,19 @@
           base-path="/tags"
           :selected-slug="route.params?.slug || null"
           panels-class="compact-panel"
+          :scrolling-list="true"
+        />
+      </v-col>
+
+      <v-col>
+        <FilterExpansion
+          :title="$t('pages.people.index.title')"
+          :selected-name="selectedPeopleName"
+          :items="people"
+          base-path="/people"
+          :selected-slug="route.params?.slug || null"
+          panels-class="compact-panel"
+          :scrolling-list="true"
         />
       </v-col>
 
@@ -110,8 +124,12 @@
 import { useI18n } from "vue-i18n";
 
 const route = useRoute();
-const { getAllPublishedArticlesWithTags, getAllTags, getAllCategories } =
-  useDb();
+const {
+  getAllPublishedArticlesWithTags,
+  getAllTags,
+  getAllCategories,
+  getAllPeople,
+} = useDb();
 const authStore = useAuthStore();
 const { t } = useI18n();
 const userProfile = ref(null);
@@ -121,6 +139,7 @@ const searchLabel = computed(() => t("pages.articles.index.search"));
 const articles = ref([]);
 const tags = ref([]);
 const categories = ref([]);
+const people = ref([]);
 const perPage = 12;
 const visibleCount = ref(perPage);
 const isFetchingMore = ref(false);
@@ -167,6 +186,11 @@ const selectedCategoriesName = computed(() => {
   return categories.value.find((c) => c.slug === slug)?.name || null;
 });
 
+const selectedPeopleName = computed(() => {
+  const slug = route.params?.slug;
+  return people.value.find((p) => p.slug === slug)?.name || null;
+});
+
 const { data: chatMap } = await useAsyncData("chat-map", () =>
   $fetch("/api/articles/chat-map")
 );
@@ -178,15 +202,17 @@ onMounted(async () => {
   await authStore.checkAuth();
   userProfile.value = authStore.userProfile;
 
-  const [articleData, tagData, categoryData] = await Promise.all([
+  const [articleData, tagData, categoryData, peopleData] = await Promise.all([
     getAllPublishedArticlesWithTags(),
     getAllTags(),
     getAllCategories(),
+    getAllPeople(),
   ]);
 
   articles.value = articleData || [];
   tags.value = tagData || [];
   categories.value = categoryData || [];
+  people.value = peopleData || [];
   isLoading.value = false;
 
   if (!intersectionObserver) {

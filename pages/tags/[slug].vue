@@ -51,6 +51,7 @@
             :selected-slug="null"
             panels-class="compact-panel"
             variant="inset"
+            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>Categories: {{ selectedName || title }}</span>
@@ -67,9 +68,26 @@
             :selected-slug="route.params?.slug || null"
             panels-class="compact-panel"
             variant="inset"
+            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>Tags: {{ selectedName || title }}</span>
+            </template>
+          </FilterExpansion>
+        </v-col>
+
+        <v-col>
+          <FilterExpansion
+            :title="$t('pages.people.index.title')"
+            :items="people"
+            base-path="/people"
+            :selected-slug="null"
+            panels-class="compact-panel"
+            variant="inset"
+            :scrolling-list="true"
+          >
+            <template #title="{ selectedName, title }">
+              <span>People: {{ selectedName || title }}</span>
             </template>
           </FilterExpansion>
         </v-col>
@@ -121,8 +139,13 @@
 import { useI18n } from "vue-i18n";
 import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta"; // adjust path as needed
 
-const { getArticlesByTagSlug, getTagsByArticle, getAllCategories, getAllTags } =
-  useDb();
+const {
+  getArticlesByTagSlug,
+  getTagsByArticle,
+  getAllCategories,
+  getAllTags,
+  getAllPeople,
+} = useDb();
 
 const { t, te } = useI18n();
 const route = useRoute();
@@ -132,6 +155,7 @@ const supabaseBucket = config.public.SUPABASE_BUCKET;
 const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
+const people = ref([]);
 const searchQuery = ref("");
 const isLoading = ref(true);
 
@@ -224,14 +248,16 @@ useSeoI18nMeta("tags.index", {
 onMounted(async () => {
   isLoading.value = true;
 
-  const [categoryData, tagData, data] = await Promise.all([
+  const [categoryData, tagData, peopleData, data] = await Promise.all([
     getAllCategories(),
     getAllTags(),
+    getAllPeople(),
     getArticlesByTagSlug(tagSlug.value),
   ]);
 
   categories.value = categoryData || [];
   tags.value = tagData || [];
+  people.value = peopleData || [];
 
   if (data) {
     const articlesWithTags = await Promise.all(
