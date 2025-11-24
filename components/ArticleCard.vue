@@ -100,6 +100,7 @@
 <script setup>
 const localPath = useLocalePath();
 const { public: pub } = useRuntimeConfig();
+const supabase = useSupabaseClient?.();
 
 const props = defineProps({
   article: { type: Object, required: true },
@@ -110,13 +111,17 @@ const props = defineProps({
 
 // Build the public image URL from env + prop
 const articleImageUrl = computed(() => {
-  const base = (pub.SUPABASE_BUCKET || "").replace(/\/$/, "");
-  const file = (
-    props.article?.imagePath ||
-    props.article?.image_path ||
-    ""
-  ).replace(/^\//, "");
-  return base && file ? `${base}/articles/${file}` : "";
+  const rawPath =
+    props.article?.imagePath || props.article?.image_path || "";
+  const cleanPath = String(rawPath).replace(/^\/+/, "");
+
+  if (cleanPath && supabase?.storage) {
+    const { data } = supabase.storage.from("articles").getPublicUrl(cleanPath);
+    if (data?.publicUrl) return data.publicUrl;
+  }
+
+  const base = (pub.SUPABASE_BUCKET || "").replace(/\/+$/, "");
+  return base && cleanPath ? `${base}/articles/${cleanPath}` : "";
 });
 
 const truncatedSummary = computed(() => {

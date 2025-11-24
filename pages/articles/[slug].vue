@@ -49,7 +49,6 @@
         </FilterExpansion>
       </v-col>
     </v-row>
-
     <v-row v-if="heroImage">
       <v-img class="text-white hero-image" height="350" :src="heroImage" cover>
         <div
@@ -64,7 +63,10 @@
             <span class="text-subtitle-1 font-weight-medium">
               {{ personaName }}
             </span>
-            <span v-if="rewriteHeadline" class="text-body-2 text-medium-emphasis">
+            <span
+              v-if="rewriteHeadline"
+              class="text-body-2 text-medium-emphasis"
+            >
               {{ rewriteHeadline }}
             </span>
           </div>
@@ -149,7 +151,10 @@
             >
               #{{ tag.name }}
             </v-chip>
-            <template v-for="person in resolvedDisplayPeople" :key="`person-${person.slug || person.name}`">
+            <template
+              v-for="person in resolvedDisplayPeople"
+              :key="`person-${person.slug || person.name}`"
+            >
               <NuxtLink
                 v-if="person.slug"
                 :to="localPath(`/people/${person.slug}`)"
@@ -164,12 +169,7 @@
                   {{ person.name }}
                 </v-chip>
               </NuxtLink>
-              <v-chip
-                v-else
-                size="small"
-                color="teal"
-                variant="tonal"
-              >
+              <v-chip v-else size="small" color="teal" variant="tonal">
                 {{ person.name }}
               </v-chip>
             </template>
@@ -287,6 +287,7 @@ import { marked } from "marked";
 const { locale } = useI18n();
 const localPath = useLocalePath();
 const config = useRuntimeConfig();
+const supabase = useSupabaseClient?.();
 const route = useRoute();
 const slug = route.params.slug;
 const currentLocale = locale.value || "en";
@@ -413,9 +414,21 @@ const displaySummary = computed(
 );
 
 const heroImage = computed(() => {
-  if (article.value?.image_path) {
-    return `${config.public.SUPABASE_BUCKET}/articles/${article.value.image_path}`;
+  // Prefer generated public URL from Supabase to avoid double slashes or encoding issues
+  if (article.value?.image_path && supabase?.storage) {
+    const { data } = supabase.storage
+      .from("articles")
+      .getPublicUrl(article.value.image_path.replace(/^\/+/, ""));
+    if (data?.publicUrl) return data.publicUrl;
   }
+
+  // Fallback to manual concat if Supabase client not available
+  if (article.value?.image_path) {
+    const base = (config.public.SUPABASE_BUCKET || "").replace(/\/+$/, "");
+    const path = String(article.value.image_path).replace(/^\/+/, "");
+    return `${base}/articles/${path}`;
+  }
+
   if (newsmeshMeta.value?.media_url) {
     return newsmeshMeta.value.media_url;
   }
