@@ -180,7 +180,7 @@
 
     <v-row>
       <v-col cols="12">
-        <div class="text-body-2 text-grey-darken-1 mb-4">
+        <!-- <div class="text-body-2 text-grey-darken-1 mb-4">
           <v-icon>mdi-account</v-icon>
           <span class="ml-1">{{ $t("components.navbar.imchatty") }}</span>
           •
@@ -191,7 +191,7 @@
           >
             {{ article.category.name }}
           </NuxtLink>
-        </div>
+        </div> -->
 
         <!-- Render Markdown content -->
         <div class="prose" v-html="renderedMarkdown"></div>
@@ -222,7 +222,7 @@
       <v-col cols="12" class="text-center"> </v-col>
     </v-row>
 
-    <v-row justify="center">
+    <!-- <v-row justify="center">
       <v-col cols="12" md="8" class="text-center">
         <div class="d-flex justify-center align-center flex-wrap">
           <span class="font-weight-medium mr-2">
@@ -240,6 +240,75 @@
             #{{ tag.name }}
           </v-chip>
         </div>
+      </v-col>
+    </v-row> -->
+
+    <v-row class="mt-2">
+      <v-col cols="12" md="8" class="mx-auto">
+        <v-card class="pa-4" elevation="1">
+          <div class="d-flex flex-wrap ga-2 align-center justify-center">
+            <v-btn
+              v-if="supportsWebShare"
+              color="primary"
+              variant="tonal"
+              size="small"
+              @click="webShare"
+            >
+              Share
+              <v-icon end>mdi-share-variant</v-icon>
+            </v-btn>
+
+            <v-btn
+              color="primary"
+              variant="text"
+              size="small"
+              :href="shareLinks.twitter"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              X / Twitter
+            </v-btn>
+            <v-btn
+              color="primary"
+              variant="text"
+              size="small"
+              :href="shareLinks.facebook"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Facebook
+            </v-btn>
+            <v-btn
+              color="primary"
+              variant="text"
+              size="small"
+              :href="shareLinks.linkedin"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              LinkedIn
+            </v-btn>
+            <v-btn
+              color="primary"
+              variant="text"
+              size="small"
+              :href="shareLinks.reddit"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Reddit
+            </v-btn>
+            <v-btn
+              color="primary"
+              variant="outlined"
+              size="small"
+              @click="copyLink"
+            >
+              {{ copySuccess ? "Copied!" : "Copy link" }}
+              <v-icon end>mdi-content-copy</v-icon>
+            </v-btn>
+          </div>
+        </v-card>
       </v-col>
     </v-row>
 
@@ -439,6 +508,12 @@ const rewriteReferences = computed(() => rewriteMeta.value?.references || []);
 const keywordList = computed(() =>
   displayTags.value.map((tag) => tag.name).filter(Boolean)
 );
+const shareUrl = ref("");
+const shareTitle = ref("");
+const copySuccess = ref(false);
+const supportsWebShare = computed(
+  () => typeof navigator !== "undefined" && !!navigator.share
+);
 
 const renderedMarkdown = ref("");
 
@@ -509,6 +584,9 @@ if (htmlContent) {
     canonical: localizedShareUrl,
   });
 
+  shareUrl.value = localizedShareUrl;
+  shareTitle.value = displayTitle.value;
+
   const newsArticleSchema = computed(() => {
     if (!article.value) return null;
 
@@ -554,6 +632,55 @@ if (htmlContent) {
     });
   }
 }
+
+const shareLinks = computed(() => {
+  const url = encodeURIComponent(shareUrl.value || "");
+  const title = encodeURIComponent(shareTitle.value || "");
+  return {
+    twitter: `https://twitter.com/intent/tweet?url=${url}&text=${title}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+    reddit: `https://www.reddit.com/submit?url=${url}&title=${title}`,
+  };
+});
+
+const copyLink = async () => {
+  if (!shareUrl.value || typeof navigator === "undefined") return;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareUrl.value);
+    } else {
+      const textarea = document.createElement("textarea");
+      textarea.value = shareUrl.value;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+    copySuccess.value = true;
+    setTimeout(() => (copySuccess.value = false), 2000);
+  } catch (e) {
+    console.warn("Copy failed", e);
+  }
+};
+
+const webShare = async () => {
+  if (!supportsWebShare.value || !shareUrl.value) return;
+  try {
+    await navigator.share({
+      title: shareTitle.value,
+      text: displaySummary.value || shareTitle.value,
+      url: shareUrl.value,
+    });
+  } catch (e) {
+    if (e && e.name !== "AbortError") {
+      console.warn("Web Share failed", e);
+    }
+  }
+};
 
 // Format date utility
 const formatDate = (date) =>
