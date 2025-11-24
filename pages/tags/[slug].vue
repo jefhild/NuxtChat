@@ -157,15 +157,13 @@ const categories = ref([]);
 const tags = ref([]);
 const people = ref([]);
 const searchQuery = ref("");
-const isLoading = ref(true);
+const tagSlug = computed(() => route.params.slug);
 
 const perPage = 12;
 const visibleCount = ref(perPage);
 const isFetchingMore = ref(false);
 const infiniteScrollTrigger = ref(null);
 let intersectionObserver = null;
-
-const tagSlug = computed(() => route.params.slug);
 
 const tagName = computed(() =>
   tagSlug.value.replaceAll("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())
@@ -244,40 +242,53 @@ useSeoI18nMeta("tags.index", {
   },
 });
 
-// Data fetch
-onMounted(async () => {
-  isLoading.value = true;
+const { data: initialData, pending } = await useAsyncData(
+  () => `tag-page-${tagSlug.value}`,
+  async () => {
+    const [categoryData, tagData, peopleData, data] = await Promise.all([
+      getAllCategories(),
+      getAllTags(),
+      getAllPeople(),
+      getArticlesByTagSlug(tagSlug.value),
+    ]);
 
-  const [categoryData, tagData, peopleData, data] = await Promise.all([
-    getAllCategories(),
-    getAllTags(),
-    getAllPeople(),
-    getArticlesByTagSlug(tagSlug.value),
-  ]);
-
-  categories.value = categoryData || [];
-  tags.value = tagData || [];
-  people.value = peopleData || [];
-
-  if (data) {
-    const articlesWithTags = await Promise.all(
-      data.map(async (article) => ({
-        ...article,
-        tags: await getTagsByArticle(article.slug),
-      }))
-    );
-
-    articles.value = articlesWithTags;
+    let articlesWithTags = [];
+    if (data) {
+      articlesWithTags = await Promise.all(
+        data.map(async (article) => ({
+          ...article,
+          tags: await getTagsByArticle(article.slug),
+        }))
+      );
+    }
 
     const tagMap = new Map();
     for (const article of articlesWithTags) {
-      article.tags.forEach((tag) => tagMap.set(tag.slug, tag));
+      (article.tags || []).forEach((tag) => tagMap.set(tag.slug, tag));
     }
-    tags.value = Array.from(tagMap.values());
-  }
+    const flattenedTags = Array.from(tagMap.values());
 
-  isLoading.value = false;
+    return {
+      categories: categoryData || [],
+      tags: flattenedTags.length ? flattenedTags : tagData || [],
+      people: peopleData || [],
+      articles: articlesWithTags,
+    };
+  },
+  { watch: [tagSlug] }
+);
 
+watchEffect(() => {
+  if (!initialData.value) return;
+  categories.value = initialData.value.categories || [];
+  tags.value = initialData.value.tags || [];
+  people.value = initialData.value.people || [];
+  articles.value = initialData.value.articles || [];
+});
+
+const isLoading = computed(() => pending.value);
+
+onMounted(() => {
   if (!intersectionObserver) {
     intersectionObserver = new IntersectionObserver(
       (entries) => {

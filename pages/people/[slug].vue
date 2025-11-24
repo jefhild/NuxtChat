@@ -121,7 +121,7 @@ const categories = ref([]);
 const tags = ref([]);
 const people = ref([]);
 const articles = ref([]);
-const isLoading = ref(true);
+const slug = computed(() => route.params.slug);
 const searchQuery = ref("");
 const perPage = 12;
 const visibleCount = ref(perPage);
@@ -201,34 +201,6 @@ const loadMoreArticles = () => {
 };
 
 onMounted(async () => {
-  isLoading.value = true;
-
-  const [categoryData, tagData, peopleData, personResult] = await Promise.all([
-    getAllCategories(),
-    getAllTags(),
-    getAllPeople(),
-    getArticlesByPersonSlug(route.params.slug),
-  ]);
-
-  categories.value = categoryData || [];
-  tags.value = tagData || [];
-  people.value = peopleData || [];
-  person.value = personResult.person;
-
-  if (personResult.articles?.length) {
-    const articlesWithTags = await Promise.all(
-      personResult.articles.map(async (article) => ({
-        ...article,
-        tags: await getTagsByArticle(article.slug),
-      }))
-    );
-    articles.value = articlesWithTags;
-  } else {
-    articles.value = [];
-  }
-
-  isLoading.value = false;
-
   if (!intersectionObserver) {
     intersectionObserver = new IntersectionObserver(
       (entries) => {
@@ -263,6 +235,50 @@ watch(
 onBeforeUnmount(() => {
   intersectionObserver?.disconnect();
 });
+
+const { data: initialData, pending } = await useAsyncData(
+  () => `person-page-${slug.value}`,
+  async () => {
+    const [categoryData, tagData, peopleData, personResult] = await Promise.all(
+      [
+        getAllCategories(),
+        getAllTags(),
+        getAllPeople(),
+        getArticlesByPersonSlug(slug.value),
+      ]
+    );
+
+    let articlesWithTags = [];
+    if (personResult?.articles?.length) {
+      articlesWithTags = await Promise.all(
+        personResult.articles.map(async (article) => ({
+          ...article,
+          tags: await getTagsByArticle(article.slug),
+        }))
+      );
+    }
+
+    return {
+      categories: categoryData || [],
+      tags: tagData || [],
+      people: peopleData || [],
+      person: personResult?.person || null,
+      articles: articlesWithTags,
+    };
+  },
+  { watch: [slug] }
+);
+
+watchEffect(() => {
+  if (!initialData.value) return;
+  categories.value = initialData.value.categories || [];
+  tags.value = initialData.value.tags || [];
+  people.value = initialData.value.people || [];
+  person.value = initialData.value.person || null;
+  articles.value = initialData.value.articles || [];
+});
+
+const isLoading = computed(() => pending.value);
 </script>
 
 <style scoped>

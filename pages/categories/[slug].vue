@@ -148,7 +148,7 @@ const {
 const { t } = useI18n();
 const route = useRoute();
 const config = useRuntimeConfig();
-const isLoading = ref(true);
+const slug = computed(() => route.params.slug);
 const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
@@ -250,40 +250,53 @@ useSeoI18nMeta("categories.index", {
   },
 });
 
-onMounted(async () => {
-  isLoading.value = true;
+const { data: initialData, pending } = await useAsyncData(
+  () => `category-page-${slug.value}`,
+  async () => {
+    const [categoryData, tagData, peopleData, articleData] = await Promise.all([
+      getAllCategories(),
+      getAllTags(),
+      getAllPeople(),
+      getArticlesbyCategorySlug(slug.value),
+    ]);
 
-  const [categoryData, tagData, peopleData, articleData] = await Promise.all([
-    getAllCategories(),
-    getAllTags(),
-    getAllPeople(),
-    getArticlesbyCategorySlug(route.params.slug),
-  ]);
+    let articlesWithTags = [];
+    if (articleData) {
+      articlesWithTags = await Promise.all(
+        articleData.map(async (article) => ({
+          ...article,
+          tags: await getTagsByArticle(article.slug),
+        }))
+      );
+    }
 
-  categories.value = categoryData || [];
-  tags.value = tagData || [];
-  people.value = peopleData || [];
-
-  if (articleData) {
-    const articlesWithTags = await Promise.all(
-      articleData.map(async (article) => ({
-        ...article,
-        tags: await getTagsByArticle(article.slug),
-      }))
-    );
-
-    articles.value = articlesWithTags;
-
-    // Flatten tags into a unique set from the article content
     const tagMap = new Map();
     for (const article of articlesWithTags) {
-      article.tags.forEach((tag) => tagMap.set(tag.slug, tag));
+      (article.tags || []).forEach((tag) => tagMap.set(tag.slug, tag));
     }
-    tags.value = Array.from(tagMap.values());
-  }
+    const flattenedTags = Array.from(tagMap.values());
 
-  isLoading.value = false;
+    return {
+      categories: categoryData || [],
+      tags: flattenedTags.length ? flattenedTags : tagData || [],
+      people: peopleData || [],
+      articles: articlesWithTags,
+    };
+  },
+  { watch: [slug] }
+);
 
+watchEffect(() => {
+  if (!initialData.value) return;
+  categories.value = initialData.value.categories || [];
+  tags.value = initialData.value.tags || [];
+  people.value = initialData.value.people || [];
+  articles.value = initialData.value.articles || [];
+});
+
+const isLoading = computed(() => pending.value);
+
+onMounted(() => {
   if (!intersectionObserver) {
     intersectionObserver = new IntersectionObserver(
       (entries) => {
