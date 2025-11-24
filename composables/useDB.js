@@ -932,87 +932,8 @@ export const useDb = () => {
     }));
   };
 
-  // const getAllPublishedArticlesWithTags = async (limit) => {
-  //   const supabase = getClient();
-
-  //   const { data, error } = await supabase
-  //     .from("articles")
-  //     .select(
-  //       `
-  //     id,
-  //     title,
-  //     type,
-  //     slug,
-  //     content,
-  //     image_path,
-  //     photo_credits_url,
-  //     is_published,
-  //     created_at,
-  //     category:category_id(name),
-  //     article_tags(tag:tag_id(name))
-  //   `
-  //     )
-  //     .eq("is_published", true)
-  //     .limit(limit)
-  //     .order("created_at", { ascending: false });
-
-  //   if (error) {
-  //     console.error("Error fetching articles:", error.message);
-  //     return [];
-  //   }
-
-  //   // Flatten tags and category
-  //   return data.map((article) => ({
-  //     ...article,
-  //     category_name: article.category?.name ?? "Uncategorized",
-  //     tags: article.article_tags?.map((t) => t.tag.name) ?? [],
-  //   }));
-  // };
-
-  // db/articles.ts (or your composable)
-  // const getAllPublishedArticlesWithTags = async (limit) => {
-  //   const supabase = getClient();
-
-  //   const { data, error } = await supabase
-  //     .from("articles")
-  //     .select(
-  //       `
-  //     id,
-  //     title,
-  //     type,
-  //     slug,
-  //     content,
-  //     image_path,
-  //     photo_credits_url,
-  //     is_published,
-  //     created_at,
-  //     category:category_id(name),
-  //     article_tags(tag:tag_id(name)),
-  //     threads(id)        -- <- embed related threads via FK threads.article_id -> articles.id
-  //   `
-  //     )
-  //     .eq("is_published", true)
-  //     .limit(limit)
-  //     .order("created_at", { ascending: false });
-
-  //   if (error) {
-  //     console.error("Error fetching articles:", error.message);
-  //     return [];
-  //   }
-
-  //   return data.map((article) => ({
-  //     ...article,
-  //     category_name: article.category?.name ?? "Uncategorized",
-  //     tags: article.article_tags?.map((t) => t.tag.name) ?? [],
-  //     threadId:
-  //       Array.isArray(article.threads) && article.threads.length > 0
-  //         ? article.threads[0].id // if multiple, pick the first; adjust if needed
-  //         : null,
-  //   }));
-  // };
-
  
-  const getAllPublishedArticlesWithTags = async (limit) => {
+  const getAllPublishedArticlesWithTags = async (limit = 50) => {
     const supabase = getClient();
 
     const { data, error } = await supabase
@@ -1030,7 +951,7 @@ export const useDb = () => {
       created_at,
       category:category_id(name),
       article_tags(tag:tag_id(name)),
-      threads(slug)        -- <- get thread slug instead of id
+      threads(slug)
     `
       )
       .eq("is_published", true)

@@ -315,7 +315,7 @@
     "categories": {
       "index": {
         "loading": "Chargement des catégories...",
-        "title": "Toutes les Différentes Catégories",
+        "title": "Catégories",
         "meta": {
           "title": "Catégories d'Articles Populaires",
           "description": "Découvrez nos catégories les plus populaires ! Parcourez les articles les mieux notés avec de vraies informations, des détails personnalisés et des intérêts authentiques.",
@@ -377,7 +377,7 @@
     },
     "tags": {
       "index": {
-        "title": "Toutes les Différentes Étiquettes",
+        "title": "Étiquettes",
         "meta": {
           "title": "Parcourir les tags | ImChatty",
           "description": "Découvrez les tags populaires sur ImChatty et explorez des contenus adaptés à vos centres d’intérêt réels et conversations authentiques.",

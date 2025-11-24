@@ -149,17 +149,30 @@
             >
               #{{ tag.name }}
             </v-chip>
-            <v-chip
-              v-for="person in displayPeople"
-              :key="`person-${person.slug || person.name}`"
-              size="small"
-              color="teal"
-              variant="tonal"
-              :to="person.slug ? localPath(`/people/${person.slug}`) : undefined"
-              :class="{ 'chip-link': person.slug }"
-            >
-              {{ person.name }}
-            </v-chip>
+            <template v-for="person in resolvedDisplayPeople" :key="`person-${person.slug || person.name}`">
+              <NuxtLink
+                v-if="person.slug"
+                :to="localPath(`/people/${person.slug}`)"
+                class="unstyled-link"
+              >
+                <v-chip
+                  size="small"
+                  color="teal"
+                  variant="tonal"
+                  class="chip-link"
+                >
+                  {{ person.name }}
+                </v-chip>
+              </NuxtLink>
+              <v-chip
+                v-else
+                size="small"
+                color="teal"
+                variant="tonal"
+              >
+                {{ person.name }}
+              </v-chip>
+            </template>
           </div>
         </v-card>
       </v-col>
@@ -280,6 +293,7 @@ const currentLocale = locale.value || "en";
 
 const chatThreadKey = ref(null);
 
+const articleLanguage = computed(() => currentLocale || "en");
 const {
   getArticleBySlug,
   getAllCategories,
@@ -369,6 +383,24 @@ const displayPeople = computed(() => {
     slug: null,
   }));
 });
+const peopleSlugByName = computed(() => {
+  const map = new Map();
+  (people.value || []).forEach((p) => {
+    if (p?.name && p?.slug) {
+      map.set(p.name.toLowerCase(), p.slug);
+    }
+  });
+  return map;
+});
+const resolvedDisplayPeople = computed(() =>
+  displayPeople.value.map((person) => {
+    if (person.slug) return person;
+    const normalizedName = person.name?.toLowerCase();
+    if (!normalizedName) return person;
+    const matchedSlug = peopleSlugByName.value.get(normalizedName);
+    return matchedSlug ? { ...person, slug: matchedSlug } : person;
+  })
+);
 const displayTitle = computed(
   () => newsmeshMeta.value?.title || article.value?.title || ""
 );
@@ -391,6 +423,9 @@ const heroImage = computed(() => {
 });
 
 const rewriteReferences = computed(() => rewriteMeta.value?.references || []);
+const keywordList = computed(() =>
+  displayTags.value.map((tag) => tag.name).filter(Boolean)
+);
 
 const renderedMarkdown = ref("");
 
@@ -457,8 +492,54 @@ if (htmlContent) {
     twitterImage: imageUrl,
     articleSection: article.value.category?.name || "Article",
     articlePublishedTime: article.value.created_at,
+    articleModifiedTime: article.value.created_at,
     canonical: localizedShareUrl,
   });
+
+  const newsArticleSchema = computed(() => {
+    if (!article.value) return null;
+
+    const author = personaName.value
+      ? {
+          "@type": "Person",
+          name: personaName.value,
+          image: personaAvatar.value || undefined,
+        }
+      : undefined;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      headline: displayTitle.value,
+      description: safeDescription,
+      inLanguage: articleLanguage.value,
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": localizedShareUrl,
+      },
+      image: imageUrl ? [imageUrl] : undefined,
+      datePublished: article.value.created_at,
+      dateModified: article.value.created_at,
+      author,
+      publisher: {
+        "@type": "Organization",
+        name: "ImChatty",
+      },
+      keywords: keywordList.value.length ? keywordList.value : undefined,
+      articleSection: article.value.category?.name || undefined,
+    };
+  });
+
+  if (newsArticleSchema.value) {
+    useHead({
+      script: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(newsArticleSchema.value),
+        },
+      ],
+    });
+  }
 }
 
 // Format date utility
