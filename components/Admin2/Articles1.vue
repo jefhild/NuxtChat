@@ -103,6 +103,15 @@
           label="Photo Credit URL"
           :rules="[isValidUrl]"
         />
+        <v-textarea
+          v-if="uploadedImagePath"
+          v-model="form.photo_credits_html"
+          label="Photo Credit HTML (shown on article page)"
+          rows="3"
+          auto-grow
+          hint="Example: &lt;a href='...'>Photographer&lt;/a>, Public domain, via ..."
+          persistent-hint
+        />
         <v-text-field
           v-model="form.title"
           label="Title"
@@ -212,6 +221,15 @@
             v-model="selectedArticle.photo_credits_url"
             label="Photo Credit URL"
             :rules="[isValidUrl]"
+          />
+          <v-textarea
+            v-if="selectedArticle.image_path"
+            v-model="selectedArticle.photo_credits_html"
+            label="Photo Credit HTML (shown on article page)"
+            rows="3"
+            auto-grow
+            hint="Example: &lt;a href='...'>Photographer&lt;/a>, Public domain, via ..."
+            persistent-hint
           />
           <v-text-field
             v-model="selectedArticle.title"
@@ -336,6 +354,7 @@ const form = useState("articleForm", () => ({
   type: "",
   image_path: "",
   photo_credits_url: "",
+  photo_credits_html: "",
 }));
 
 const snackbar = ref({
@@ -590,6 +609,7 @@ const toggleEditDialog = (article) => {
     content: article.content,
     image_path: article.image_path,
     photo_credits_url: article.photo_credits_url,
+    photo_credits_html: article.photo_credits_html,
     slug: article.slug,
     type: article.type || "",
 
@@ -629,6 +649,7 @@ const handleArticleUpdate = async () => {
       content: selectedArticle.value.content,
       image_path: selectedArticle.value.image_path,
       photo_credits_url: selectedArticle.value.photo_credits_url,
+      photo_credits_html: selectedArticle.value.photo_credits_html,
       slug: slugify(selectedArticle.value.title),
       category_id: selectedArticle.value.category_id || null,
       type: selectedArticle.value.type || null,

@@ -92,7 +92,14 @@
             <v-icon end>mdi-chat</v-icon>
           </v-btn>
 
-          <span class="text-body-2">{{ formatDate(article.created_at) }}</span>
+          <span
+            v-if="displayPhotoCredits"
+            class="text-body-2 text-white text-right hero-photo-credit"
+            v-html="displayPhotoCredits"
+          />
+          <span v-else class="text-body-2 hero-photo-credit">
+            {{ formatDate(article.created_at) }}
+          </span>
         </div>
       </v-img>
     </v-row>
@@ -508,6 +515,9 @@ const rewriteReferences = computed(() => rewriteMeta.value?.references || []);
 const keywordList = computed(() =>
   displayTags.value.map((tag) => tag.name).filter(Boolean)
 );
+const displayPhotoCredits = computed(
+  () => article.value?.photo_credits_html || ""
+);
 const shareUrl = ref("");
 const shareTitle = ref("");
 const copySuccess = ref(false);
@@ -763,6 +773,20 @@ const formatDate = (date) =>
     rgba(15, 23, 42, 0) 0%,
     rgba(15, 23, 42, 0.85) 100%
   );
+}
+.hero-photo-credit {
+  max-width: 60%;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: 14px;
+}
+
+@media (max-width: 960px) {
+  .hero-photo-credit {
+    max-width: 70%;
+  }
 }
 
 .prose :deep(.newsmesh-article) {
