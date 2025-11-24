@@ -9,18 +9,8 @@
       <!-- <HomeRow1 /> -->
 
       <PageHeader
-        :text="
-          t(
-            `pages.tags.${route.params.slug}.heading`,
-            t('pages.articles.tags.heading')
-          )
-        "
-        :subtitle="
-          t(
-            `pages.tags.${route.params.slug}.subtitle`,
-            t('pages.articles.tags.subtitle')
-          )
-        "
+        :text="tagHeading"
+        :subtitle="tagSubtitle"
       />
 
       <!--     <v-row>
@@ -216,10 +206,10 @@ const formattedSlug = computed(() => {
     : "";
 });
 
-const tagHeading = computed(() => {
-  const key = `pages.tags.${route.params.slug}.heading`;
-  return te(key) ? t(key) : t("pages.articles.tags.heading");
-});
+const tagHeading = computed(
+  () => tagName.value || t("pages.articles.tags.heading")
+);
+const tagSubtitle = computed(() => t("pages.articles.tags.subtitle"));
 
 useSeoI18nMeta("tags.index", {
   dynamic: {

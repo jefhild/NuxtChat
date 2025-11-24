@@ -143,12 +143,10 @@ const displayName = computed(
   () => person.value?.name || formattedSlug.value || t("pages.people.index.title")
 );
 
-const pageHeading = computed(() =>
-  t("pages.people.slug.heading", { name: displayName.value })
+const pageHeading = computed(
+  () => displayName.value || t("pages.people.index.title")
 );
-const pageSubtitle = computed(() =>
-  t("pages.people.slug.subtitle", { name: displayName.value })
-);
+const pageSubtitle = computed(() => t("pages.people.index.subtitle"));
 
 const searchLabel = computed(() => t("pages.articles.index.search"));
 

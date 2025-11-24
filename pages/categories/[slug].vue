@@ -7,20 +7,7 @@
 
     <v-container fluid v-else>
       <!-- <HomeRow1 /> -->
-      <PageHeader
-        :text="
-          t(
-            `pages.categories.${route.params.slug}.heading`,
-            t('pages.articles.categories.heading')
-          )
-        "
-        :subtitle="
-          t(
-            `pages.categories.${route.params.slug}.subtitle`,
-            t('pages.articles.categories.subtitle')
-          )
-        "
-      />
+      <PageHeader :text="categoryHeading" :subtitle="categorySubtitle" />
 
       <v-row>
         <!-- <v-col>
@@ -166,6 +153,11 @@ const formattedSlug = computed(() => {
     ? raw.replaceAll("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())
     : "";
 });
+
+const categoryHeading = computed(
+  () => formattedSlug.value || t("pages.articles.categories.heading")
+);
+const categorySubtitle = computed(() => t("pages.articles.categories.subtitle"));
 
 const searchLabel = computed(() => t("pages.articles.index.search"));
 
