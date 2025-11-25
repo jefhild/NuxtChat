@@ -1,29 +1,9 @@
-<!-- <template>
-  <v-layout class="d-flex flex-column" style="min-height: 100vh">
-    <ClientOnly>
-      <NavBar1 />
-    </ClientOnly>
-
-    <v-main class="d-flex flex-column flex-grow-1">
-      <v-container
-        fluid
-        class="d-flex flex-column flex-grow-1 pa-0 px-sm-6 px-0"
-      >
-        <div class="d-flex flex-column flex-grow-1">
-          <NuxtPage />
-        </div>
-        <Footer />
-      </v-container>
-    </v-main>
-  </v-layout>
-</template> -->
 
 <template>
   <!-- <v-app> -->
     <!-- Header should render a v-app-bar with the "app" prop -->
-    <ClientOnly>
-      <NavBar1 />
-    </ClientOnly>
+    <!-- <NavBar1 /> -->
+    <NavBar2 />
 
     <!-- Main content; let children shrink to create scroll areas -->
     <v-main class="d-flex flex-column min-h-0">
