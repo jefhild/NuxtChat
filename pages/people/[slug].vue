@@ -17,6 +17,7 @@
             :selected-slug="null"
             panels-class="compact-panel"
             variant="inset"
+            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>Categories: {{ selectedName || title }}</span>
@@ -32,6 +33,7 @@
             :selected-slug="null"
             panels-class="compact-panel"
             variant="inset"
+            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>Tags: {{ selectedName || title }}</span>
@@ -47,6 +49,7 @@
             :selected-slug="route.params?.slug || null"
             panels-class="compact-panel"
             variant="inset"
+            :scrolling-list="true"
           >
             <template #title="{ selectedName, title }">
               <span>People: {{ selectedName || title }}</span>

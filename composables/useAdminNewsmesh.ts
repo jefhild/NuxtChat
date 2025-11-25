@@ -55,10 +55,18 @@ export const useAdminNewsmesh = () => {
     });
   };
 
+  const deleteArticles = (articleIds: string[]) => {
+    return $fetch(`${basePath}/delete`, {
+      method: "POST",
+      body: { articleIds },
+    });
+  };
+
   return {
     fetchArticles,
     rewriteArticles,
     saveRewriteDraft,
     triggerIngest,
+    deleteArticles,
   };
 };

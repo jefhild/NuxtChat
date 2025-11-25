@@ -88,19 +88,32 @@
         >
           {{ articlesError }}
         </v-alert>
+        <v-alert
+          v-if="deleteError"
+          type="error"
+          variant="tonal"
+          border="start"
+          border-color="red"
+          class="mb-4"
+          closable
+          @click:close="deleteError = ''"
+        >
+          {{ deleteError }}
+        </v-alert>
 
         <v-data-table
-          v-model:page="pagination.page"
-          v-model:items-per-page="pagination.pageSize"
           v-model="selectedIds"
           :headers="tableHeaders"
           :items="articles"
-          :items-length="meta.total"
           :loading="loadingArticles"
+          :items-per-page="-1"
           item-value="id"
           show-select
           class="newsmesh-table"
           hover
+          fixed-header
+          height="640"
+          hide-default-footer
         >
           <template #item.title="{ item }">
             <div class="d-flex flex-column">
@@ -175,21 +188,6 @@
               </a>
             </div>
           </template>
-
-          <template #bottom>
-            <div class="d-flex justify-space-between align-center pa-4">
-              <div class="text-body-2">
-                Page {{ pagination.page }} /
-                {{ Math.max(1, Math.ceil(meta.total / pagination.pageSize)) }}
-              </div>
-              <v-pagination
-                v-model="pagination.page"
-                :length="Math.max(1, Math.ceil(meta.total / pagination.pageSize))"
-                :disabled="loadingArticles"
-                density="comfortable"
-              />
-            </div>
-          </template>
         </v-data-table>
 
         <v-alert
@@ -253,7 +251,7 @@
           {{ rewriteError }}
         </v-alert>
 
-        <div class="d-flex align-center ga-3 mt-3">
+        <div class="d-flex align-center ga-3 mt-3 flex-wrap">
           <v-btn
             color="primary"
             :disabled="!canRewrite"
@@ -261,6 +259,15 @@
             @click="runRewrite"
           >
             Rewrite Selected
+          </v-btn>
+          <v-btn
+            color="error"
+            variant="outlined"
+            :disabled="!hasSelection || deleting || loadingArticles"
+            :loading="deleting"
+            @click="deleteSelected"
+          >
+            Delete Selected
           </v-btn>
           <span class="text-caption text-medium-emphasis">
             Rewrites run in small batches (max {{ maxBatch }}).
@@ -455,10 +462,16 @@ type AdminBot = {
 };
 
 const MAX_BATCH = 5;
+const PAGE_SIZE = 100;
 
 const { listBots } = useAdminAiBots();
-const { fetchArticles, rewriteArticles, saveRewriteDraft, triggerIngest } =
-  useAdminNewsmesh();
+const {
+  fetchArticles,
+  rewriteArticles,
+  saveRewriteDraft,
+  triggerIngest,
+  deleteArticles,
+} = useAdminNewsmesh();
 const { init: initMarkdown, render: mdRender } = useMarkdown();
 
 const tableHeaders = [
@@ -485,11 +498,6 @@ const filters = reactive({
   stream: "all",
   status: "all",
   search: "",
-});
-
-const pagination = reactive({
-  page: 1,
-  pageSize: 10,
 });
 
 const articles = ref<NewsmeshArticleRow[]>([]);
@@ -519,12 +527,15 @@ const instructions = ref("");
 const rewriteError = ref("");
 const draftError = ref("");
 const rewriting = ref(false);
+const deleting = ref(false);
 const rewriteResults = ref<NewsmeshRewriteResult[]>([]);
 const draftSaving = reactive<Record<string, boolean>>({});
+const deleteError = ref("");
 
 const canRewrite = computed(
   () => !!selectedPersona.value && selectedIds.value.length > 0 && !rewriting.value
 );
+const hasSelection = computed(() => selectedIds.value.length > 0);
 
 const formatDate = (value?: string | null) => {
   if (!value) return "—";
@@ -582,20 +593,48 @@ const loadArticles = async () => {
   articlesError.value = "";
   try {
     const params: NewsmeshQueryParams = {
-      page: pagination.page,
-      pageSize: pagination.pageSize,
       stream: filters.stream !== "all" ? filters.stream : undefined,
       status: filters.status !== "all" ? filters.status : undefined,
       search: filters.search || undefined,
     };
 
-    const response = await fetchArticles(params);
-    if (!response?.success) {
-      throw new Error(response?.error || "Failed to load articles");
+    let page = 1;
+    let total = 0;
+    const allArticles: NewsmeshArticleRow[] = [];
+
+    // Fetch all pages so the table can scroll through the full dataset
+    while (true) {
+      const response = await fetchArticles({
+        ...params,
+        page,
+        pageSize: PAGE_SIZE,
+      });
+
+      if (!response?.success) {
+        throw new Error(response?.error || "Failed to load articles");
+      }
+
+      const pageItems = response.data || [];
+      total = response.meta?.total ?? total;
+      allArticles.push(...pageItems);
+
+      const fetched = allArticles.length;
+      const pageSize = response.meta?.pageSize || PAGE_SIZE;
+      const expectedTotal = total || fetched;
+
+      if (
+        !pageItems.length ||
+        fetched >= expectedTotal ||
+        pageItems.length < pageSize
+      ) {
+        break;
+      }
+
+      page += 1;
     }
 
-    articles.value = response.data || [];
-    meta.total = response.meta?.total || 0;
+    articles.value = allArticles;
+    meta.total = total || allArticles.length;
     selectedIds.value = selectedIds.value.filter((id) =>
       articles.value.some((article) => article.id === id)
     );
@@ -694,30 +733,36 @@ const runRewrite = async () => {
   }
 };
 
+const deleteSelected = async () => {
+  if (!hasSelection.value || deleting.value) return;
+  deleteError.value = "";
+  const confirmed =
+    typeof window === "undefined" ||
+    window.confirm(
+      `Delete ${selectedIds.value.length} selected article(s)? This cannot be undone.`
+    );
+  if (!confirmed) return;
+
+  deleting.value = true;
+  try {
+    const response = await deleteArticles(selectedIds.value);
+    if (!response?.success) {
+      throw new Error(response?.error || "Failed to delete articles.");
+    }
+
+    selectedIds.value = [];
+    await loadArticles();
+  } catch (error: any) {
+    console.error("[NewsmeshAdmin] delete error", error);
+    deleteError.value =
+      error?.message || "Unable to delete the selected articles right now.";
+  } finally {
+    deleting.value = false;
+  }
+};
+
 watch(
   () => ({ ...filters }),
-  () => {
-    if (pagination.page !== 1) {
-      pagination.page = 1;
-      return;
-    }
-    loadArticles();
-  }
-);
-
-watch(
-  () => pagination.pageSize,
-  () => {
-    if (pagination.page !== 1) {
-      pagination.page = 1;
-      return;
-    }
-    loadArticles();
-  }
-);
-
-watch(
-  () => pagination.page,
   () => {
     loadArticles();
   }

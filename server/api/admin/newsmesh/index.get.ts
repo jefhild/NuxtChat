@@ -21,6 +21,20 @@ export default defineEventHandler(async (event) => {
 
   try {
     const supabase = await getServiceRoleClient(event);
+    let deletedIds: string[] = [];
+
+    try {
+      const { data: deletedRows } = await supabase
+        .from("newsmesh_deleted")
+        .select("id");
+      deletedIds = (deletedRows || []).map((row) => row.id).filter(Boolean);
+    } catch (deletedErr: any) {
+      const code = String(deletedErr?.code || "");
+      if (code !== "42P01") {
+        console.warn("[admin/newsmesh] delete lookup failed", deletedErr);
+      }
+    }
+
     let builder = supabase
       .from("newsmesh_union_view")
       .select(
@@ -48,6 +62,10 @@ export default defineEventHandler(async (event) => {
       `,
         { count: "exact" }
       );
+
+    if (deletedIds.length) {
+      builder = builder.not("id", "in", `(${deletedIds.join(",")})`);
+    }
 
     if (stream && stream !== "all") {
       builder = builder.eq("stream", stream);
