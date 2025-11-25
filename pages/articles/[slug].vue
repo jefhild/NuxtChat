@@ -479,7 +479,7 @@ const resolvedDisplayPeople = computed(() =>
   })
 );
 const displayTitle = computed(
-  () => newsmeshMeta.value?.title || article.value?.title || ""
+  () => article.value?.title || newsmeshMeta.value?.title  || ""
 );
 const displaySummary = computed(
   () =>
