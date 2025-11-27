@@ -33,6 +33,19 @@
       rounded="lg"
       elevation="4"
     >
+      <!-- AI toggle -->
+      <div class="d-flex align-center mb-2">
+        <v-checkbox
+          v-model="includeAiModel"
+          density="compact"
+          hide-details
+          color="indigo"
+          :disabled="!isAllowed"
+          aria-label="Include AI chatbots"
+          label="Include AI chatbots"
+        />
+      </div>
+
       <!-- User Info -->
       <v-row class="mb-1 mt-2" align="center" no-gutters>
         <div class="d-flex flex-column justify-center">
@@ -241,9 +254,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showAi: {
+    type: Boolean,
+    default: true,
+  },
 });
 
-const emit = defineEmits(["filter-changed"]);
+const emit = defineEmits(["filter-changed", "update:showAi"]);
 const genders = [
   { text: t("components.filter-menu.male"), value: 1, icon: "mdi-gender-male" },
   {
@@ -277,6 +294,10 @@ const selectedCountry = ref(null);
 
 const interests = ref([]);
 const selectedInterests = ref([]);
+const includeAiModel = computed({
+  get: () => props.showAi,
+  set: (val) => emit("update:showAi", Boolean(val)),
+});
 
 const applyFilters = () => {
   if (selectedInterests.value?.length === 0) {

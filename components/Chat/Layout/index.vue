@@ -51,8 +51,10 @@
                 :user-profile="userProfile"
                 :auth-status="auth.authStatus"
                 :disable-filter-toggle="shouldDisableToggle"
+                :show-ai="showAIUsers"
                 @user-selected="selectUser"
                 @filter-changed="updateFilters"
+                @update:showAi="showAIUsers = $event"
               />
             </div>
           </v-card>
@@ -306,8 +308,10 @@
                 :auth-status="auth.authStatus"
                 :disable-filter-toggle="shouldDisableToggle"
                 :show-filters="false"
+                :show-ai="showAIUsers"
                 @user-selected="selectUser"
                 @filter-changed="updateFilters"
+                @update:showAi="showAIUsers = $event"
               />
             </div>
           </v-card>
@@ -536,8 +540,10 @@
               :user-profile="userProfile"
               :auth-status="auth.authStatus"
               :disable-filter-toggle="shouldDisableToggle"
+              :show-ai="showAIUsers"
               @user-selected="selectUser"
               @filter-changed="updateFilters"
+              @update:showAi="showAIUsers = $event"
             />
           </div>
         </v-card>
@@ -574,8 +580,10 @@
               :auth-status="auth.authStatus"
               :disable-filter-toggle="shouldDisableToggle"
               :show-filters="false"
+              :show-ai="showAIUsers"
               @user-selected="selectUser"
               @filter-changed="updateFilters"
+              @update:showAi="showAIUsers = $event"
             />
           </div>
         </v-card>

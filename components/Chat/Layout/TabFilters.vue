@@ -43,8 +43,8 @@ const toggle = (key) => {
   });
 };
 
-const toggleAi = () => {
-  emit("update:showAi", !showAi.value);
+const updateShowAi = (val) => {
+  emit("update:showAi", val);
 };
 
 const menuOpen = ref(false);
@@ -62,22 +62,11 @@ const forwardFilterChanged = (payload) => {
       :userProfile="userProfile || null"
       :disableToggle="disableToggle"
       :authStatus="authStatus"
+      :showAi="showAi"
       @filter-changed="forwardFilterChanged"
+      @update:showAi="updateShowAi"
       class="ml-2"
     />
-
-    <!-- AI checkbox -->
-    <label class="d-flex align-center gap-1 ml-2 text-indigo-darken-3">
-      <input
-        type="checkbox"
-        :checked="showAi"
-        :disabled="disableToggle"
-        @change="toggleAi"
-        class="accent-indigo-600"
-        aria-label="Show AI users"
-      />
-      <span class="text-medium-emphasis ml-2">Show AI</span>
-    </label>
 
     <!-- Online -->
     <label class="d-flex align-center gap-1 ml-2 text-blue-darken-3">

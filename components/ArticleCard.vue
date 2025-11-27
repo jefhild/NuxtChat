@@ -259,7 +259,7 @@ const formatTagSlug = (tag) => {
 .overlay-bottom-right {
   position: absolute;
   bottom: 4px;
-  right: 12px;
+  right: 9px;
   z-index: 3;
 }
 

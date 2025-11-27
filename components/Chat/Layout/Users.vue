@@ -11,7 +11,9 @@
           :user-profile="userProfile"
           :auth-status="authStatus"
           :disable-toggle="disableFilterToggle"
+          :show-ai="showAi"
           @filter-changed="$emit('filter-changed', $event)"
+          @update:showAi="$emit('update:showAi', $event)"
         />
       </div>
       <v-chip
@@ -77,8 +79,9 @@ const props = defineProps({
   authStatus: { type: String, default: "" },
   disableFilterToggle: { type: Boolean, default: false },
   showFilters: { type: Boolean, default: true },
+  showAi: { type: Boolean, default: true },
 });
-defineEmits(["user-selected", "filter-changed"]);
+defineEmits(["user-selected", "filter-changed", "update:showAi"]);
 
 const msgs = useMessagesStore();
 const presence = usePresenceStore2();
