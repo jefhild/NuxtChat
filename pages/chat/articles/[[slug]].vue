@@ -446,7 +446,8 @@ const menu = reactive({
 
 const slug = computed(() => String(route.params.slug || ""));
 
-// If no slug: 302 on server (best for SEO/first paint), replace on client as fallback
+// If no slug: fetch the first thread but do not SSR-redirect (avoids link inspection warnings)
+const fallbackSlug = ref(null);
 if (!slug.value) {
   const ORDER = ["latest", "oldest", "pinned"].includes(
     String(route.query.order || "").toLowerCase()
@@ -454,31 +455,27 @@ if (!slug.value) {
     ? String(route.query.order).toLowerCase()
     : "latest";
 
-  // SSR redirect (executes during the initial server render of /chat/articles)
-  if (import.meta.server) {
-    const list = await $fetch("/api/articles/threads", {
-      params: { order: ORDER, limit: 1 },
-    });
-    const first = Array.isArray(list) ? list[0] : list?.[0]; // adjust to your API shape
-    const firstSlug = first?.slug || null;
-    if (firstSlug) {
-      await navigateTo(`/chat/articles/${firstSlug}`, {
-        replace: true,
-        redirectCode: 302,
-      });
-    }
-  }
-
-  // Client fallback (e.g., user clicks a client-side link to /chat/articles)
-  if (import.meta.client) {
-    try {
-      const list = await $fetch("/api/articles/threads", {
+  const { data: firstThread } = await useAsyncData(
+    "articles:first-thread",
+    () =>
+      $fetch("/api/articles/threads", {
         params: { order: ORDER, limit: 1 },
-      });
-      const firstSlug = (Array.isArray(list) ? list[0] : list?.[0])?.slug;
-      if (firstSlug)
-        navigateTo(`/chat/articles/${firstSlug}`, { replace: true });
-    } catch {}
+      }),
+    { server: true, lazy: true }
+  );
+
+  fallbackSlug.value = (
+    Array.isArray(firstThread.value) ? firstThread.value[0] : firstThread.value?.[0]
+  )?.slug;
+
+  if (import.meta.client) {
+    watch(
+      () => fallbackSlug.value,
+      (s) => {
+        if (s) navigateTo(`/chat/articles/${s}`, { replace: true });
+      },
+      { immediate: true }
+    );
   }
 }
 

@@ -206,7 +206,8 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       routes: ["/"],
-      crawlLinks: true,
+      crawlLinks: false, // avoid crawling dynamic lists (profiles, etc.) to keep prerender set bounded
+      concurrency: 4,
       ignore: [
         "/settings",
         "/fr/settings",
@@ -217,12 +218,6 @@ export default defineNuxtConfig({
       failOnError: false,
     },
     debug: false,
-    // rollupConfig: {
-    //   output: {
-    //     // Keep Nitro in a single bundle so asset paths (../public/...) resolve correctly at runtime.
-    //     inlineDynamicImports: true,
-    //   },
-    // },
   },
 
   hooks: {
@@ -235,6 +230,31 @@ export default defineNuxtConfig({
       if (nitroConfig?.prerender?.routes) {
         nitroConfig.prerender.routes.push(...dynamicRoutes);
       }
+
+      // TEMP: log prerender route counts to diagnose OOM
+      const profileCount = dynamicRoutes.filter((r) =>
+        r.includes("/profiles/")
+      ).length;
+      const articleCount = dynamicRoutes.filter((r) =>
+        r.includes("/articles/")
+      ).length;
+      const peopleCount = dynamicRoutes.filter((r) =>
+        r.includes("/people/")
+      ).length;
+      const tagCount = dynamicRoutes.filter((r) =>
+        r.includes("/tags/")
+      ).length;
+      const categoryCount = dynamicRoutes.filter((r) =>
+        r.includes("/categories/")
+      ).length;
+      console.info("prerender totals", {
+        total: dynamicRoutes.length,
+        profiles: profileCount,
+        articles: articleCount,
+        people: peopleCount,
+        tags: tagCount,
+        categories: categoryCount,
+      });
     },
   },
 

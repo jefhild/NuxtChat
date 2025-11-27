@@ -11,9 +11,13 @@
             <NuxtLink :to="localPath('/privacy')">{{ $t("components.footer.privacy") }}</NuxtLink> |
             <NuxtLink :to="localPath('/cookies')">{{ $t("components.footer.cookies") }}</NuxtLink> |
             <NuxtLink :to="localPath('/profiles')">{{ $t("components.footer.public-profiles") }}</NuxtLink> |
-            <a href="#" class="termly-display-preferences">
+            <button
+              type="button"
+              class="termly-display-preferences consent-link"
+              aria-label="Update consent preferences"
+            >
               {{ $t("components.footer.consent-preferences") }}
-            </a>
+            </button>
             |
             <!-- GitHub Icon -->
             <a
@@ -59,6 +63,16 @@ const localPath = useLocalePath();
 
 .compact-footer__content {
   padding: 8px 0;
+}
+
+.consent-link {
+  background: none;
+  border: none;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
 }
 
 @media (max-width: 600px) {

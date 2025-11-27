@@ -3,6 +3,7 @@ import {
   getAllPublishedArticlesWithTags,
   getAllCategories,
   getAllTags,
+  getAllPeopleSlugs,
   getUserSlugFromDisplayName,
 } from "../lib/supabaseHelpers";
 import { getGenderFromId } from "../lib/dbUtils";
@@ -20,32 +21,56 @@ function localizePath(path: string, locale: string) {
 
 export async function getAllDynamicRoutes(): Promise<string[]> {
   try {
-    const [{ data: profiles, error }, articleData, categoryData, tagData] =
+    const [
+      { data: profiles, error },
+      articleData,
+      categoryData,
+      tagData,
+      peopleData,
+    ] =
       await Promise.all([
-        getRegisteredUsersDisplaynames(),
+        getRegisteredUsersDisplaynames({ onlyAI: true }),
         getAllPublishedArticlesWithTags(),
         getAllCategories(),
         getAllTags(),
+        getAllPeopleSlugs(),
       ]);
 
-    if (!profiles || !articleData || !categoryData || !tagData || error) {
+    if (
+      !profiles ||
+      !articleData ||
+      !categoryData ||
+      !tagData ||
+      !peopleData ||
+      error
+    ) {
       console.error("One or more data fetches failed.", { error });
       return [];
     }
 
-    const profileRoutes = await Promise.all(
-      profiles.map(async (profile) => {
-        const slug = await getUserSlugFromDisplayName(profile.displayname);
-        const gender = getGenderFromId(profile.gender_id) || "unknown";
-        return `/profiles/${gender}/${slug}`;
-      })
-    );
+    const profileRoutes = (
+      await Promise.all(
+        profiles
+          .filter((profile) => profile.is_ai)
+          .map(async (profile) => {
+            const slug =
+              profile.slug ||
+              (await getUserSlugFromDisplayName(profile.displayname));
+
+            if (!slug) return null;
+
+            const gender = getGenderFromId(profile.gender_id) || "unknown";
+            return `/profiles/${gender}/${slug}`;
+          })
+      )
+    ).filter((route): route is string => Boolean(route));
 
     const articleRoutes = articleData.map((a) => `/articles/${a.slug}`);
     const categoryRoutes = categoryData.map((c) => `/categories/${c.slug}`);
     const tagRoutes = tagData.map((t) => `/tags/${t.slug}`);
+    const peopleRoutes = peopleData.map((p) => `/people/${p.slug}`);
 
-    const staticPages = ["/about", "/cookies", "/settings"];
+    const staticPages = ["/about", "/cookies", "/settings", "/people"];
     const homeRoutes = ["/"];
 
     const allRoutes = [
@@ -55,6 +80,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       ...articleRoutes,
       ...categoryRoutes,
       ...tagRoutes,
+      ...peopleRoutes,
     ];
 
     const localizedRoutes = allRoutes.flatMap((route) =>

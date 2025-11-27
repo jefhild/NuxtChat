@@ -15,7 +15,10 @@
       <template v-slot:append>
         <nav role="navigation" aria-label="Main Navigation">
           <!-- <v-row class="d-none d-md-flex" align="center"> -->
-          <div class="d-none d-md-flex flex-column align-end">
+          <div
+            v-if="navReady"
+            class="d-none d-md-flex flex-column align-end"
+          >
             <v-row align="center" no-gutters>
               <v-col>
                 <v-menu
@@ -72,7 +75,7 @@
                             {{ cat.name }}
                           </NuxtLink>
                           <div
-                            v-if="!categories.length && isNavFiltersLoading"
+                            v-if="!categories.length && navPending"
                             class="text-caption text-medium-emphasis"
                           >
                             Loading categories…
@@ -101,7 +104,7 @@
                             #{{ tag.name }}
                           </NuxtLink>
                           <div
-                            v-if="!tags.length && isNavFiltersLoading"
+                            v-if="!tags.length && navPending"
                             class="text-caption text-medium-emphasis"
                           >
                             Loading tags…
@@ -130,7 +133,7 @@
                             {{ person.name }}
                           </NuxtLink>
                           <div
-                            v-if="!people.length && isNavFiltersLoading"
+                            v-if="!people.length && navPending"
                             class="text-caption text-medium-emphasis"
                           >
                             Loading people…
@@ -230,12 +233,19 @@
 
             <v-row no-gutters><LanguageSwitcher /></v-row>
           </div>
+
+          <div
+            v-else
+            class="d-none d-md-flex flex-column align-end text-caption text-medium-emphasis pr-4"
+          >
+            Loading menu…
+          </div>
         </nav>
 
         <!-- Mobile menu -->
 
         <v-row no-gutters>
-          <div class="d-flex d-md-none">
+          <div v-if="navReady" class="d-flex d-md-none">
             <v-menu>
               <template #activator="{ props }">
                 <v-app-bar-nav-icon v-bind="props" />
@@ -397,6 +407,13 @@
               </v-list>
             </v-menu>
           </div>
+
+          <div
+            v-else
+            class="d-flex d-md-none px-4 py-2 text-caption text-medium-emphasis"
+          >
+            Loading menu…
+          </div>
         </v-row>
       </template>
     </v-app-bar>
@@ -484,10 +501,23 @@ const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
 );
 const userProfile = computed(() => authStore.userProfile);
-const categories = ref([]);
-const tags = ref([]);
-const people = ref([]);
-const isNavFiltersLoading = ref(false);
+
+const {
+  data: navFilters,
+  pending: navPending,
+  refresh: refreshNavFilters,
+} = await useAsyncData("nav-filters", async () => {
+  const [categoryData, tagData, peopleData] = await Promise.all([
+    getAllCategories(),
+    getAllTags(),
+    getAllPeople(),
+  ]);
+  return {
+    categories: categoryData || [],
+    tags: tagData || [],
+    people: peopleData || [],
+  };
+});
 
 const isLoggingOut = ref(false);
 const logoutError = ref("");
@@ -526,11 +556,15 @@ const cleanList = (items, skipNames = []) => {
   });
 };
 
+const categories = computed(() => navFilters.value?.categories || []);
+const tags = computed(() => navFilters.value?.tags || []);
+const people = computed(() => navFilters.value?.people || []);
 const cleanedCategories = computed(() =>
   cleanList(categories.value, ["all categories"])
 );
 const cleanedTags = computed(() => cleanList(tags.value, ["all tags"]));
 const cleanedPeople = computed(() => cleanList(people.value));
+const navReady = computed(() => !navPending.value && !!navFilters.value);
 
 const mobileCategories = computed(() =>
   cleanedCategories.value.slice(0, maxMobileItems)
@@ -581,33 +615,11 @@ const confirmLogout = async () => {
   }
 };
 
-const loadNavFilters = async () => {
-  if (isNavFiltersLoading.value) return;
-  try {
-    isNavFiltersLoading.value = true;
-    const [categoryData, tagData, peopleData] = await Promise.all([
-      getAllCategories(),
-      getAllTags(),
-      getAllPeople(),
-    ]);
-    categories.value = categoryData || [];
-    tags.value = tagData || [];
-    people.value = peopleData || [];
-  } catch (e) {
-    console.warn("Failed to load nav filters", e);
-  } finally {
-    isNavFiltersLoading.value = false;
+onMounted(async () => {
+  // If SSR skipped or payload missing, fetch once on client.
+  if (!navFilters.value && !navPending.value) {
+    await refreshNavFilters();
   }
-};
-
-// Preload for SSR so links appear in HTML for SEO; hydrated client will reuse.
-if (!categories.value.length && !tags.value.length && !people.value.length) {
-  await loadNavFilters();
-}
-
-onMounted(() => {
-  // Re-run client-side in case SSR skipped or to refresh data.
-  loadNavFilters();
 });
 </script>
 

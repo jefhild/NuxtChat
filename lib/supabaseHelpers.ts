@@ -5,40 +5,34 @@ const supabase = createClient(
   process.env.SUPABASE_KEY!
 );
 
-export async function getRegisteredUsersDisplaynames() {
-  return await supabase.from("profiles").select("displayname, gender_id");
+export async function getRegisteredUsersDisplaynames(options?: {
+  onlyAI?: boolean;
+}) {
+  const query = supabase
+    .from("profiles")
+    .select("displayname, gender_id, slug, is_ai");
+
+  if (options?.onlyAI) {
+    query.eq("is_ai", true);
+  }
+
+  return await query;
 }
 
-export async function getAllPublishedArticlesWithTags()
-{
+export async function getAllPublishedArticlesWithTags() {
+  // Keep this query minimal; dynamic route building only needs slugs.
   const { data, error } = await supabase
-      .from("articles")
-      .select(`
-      id,
-      title,
-      type,
-      slug,
-      content,
-      is_published,
-      created_at,
-      category:category_id(name),
-      article_tags(tag:tag_id(name))
-    `)
-      .eq("is_published", true)
-      .order("created_at", { ascending: false });
+    .from("articles")
+    .select("slug")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
 
-    if (error)
-    {
-      console.error("Error fetching articles:", error.message);
-      return [];
-    }
+  if (error) {
+    console.error("Error fetching article slugs:", error.message);
+    return [];
+  }
 
-    // Flatten tags and category
-    return data.map((article :any) => ({
-      ...article,
-      category_name: article.category?.name ?? "Uncategorized",
-      tags: (article.article_tags as { tag: { name: string } }[]).map(t => t.tag.name)
-    }));
+  return data;
 }
 
 export async function getAllCategories()
@@ -61,6 +55,20 @@ export async function getAllTags()
   return data;
 }
 
+export async function getAllPeopleSlugs() {
+  const { data, error } = await supabase
+    .from("people")
+    .select("slug")
+    .order("name", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching people slugs:", error.message);
+    return [];
+  }
+
+  return data;
+}
+
 export async function getUserSlugFromDisplayName(displayName: string){
   const { data, error } = await supabase
     .from("profiles")
@@ -75,5 +83,3 @@ export async function getUserSlugFromDisplayName(displayName: string){
   
   return data?.slug;
 }
-
-

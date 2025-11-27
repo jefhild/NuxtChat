@@ -267,15 +267,15 @@
         "search": "Rechercher des Articles...",
         "no-articles": "Aucun article trouvé pour",
         "meta": {
-          "title": "Blog ImChatty – Conseils, Mises à Jour et Histoires Communautaires",
+          "title": "ImChatty – Conseils, Mises à Jour et Histoires Communautaires",
           "description": "Découvrez les derniers conseils, mises à jour de plateforme et vraies histoires communautaires sur le Blog ImChatty. Restez connecté et informé.",
-          "ogTitle": "Blog ImChatty – Conseils, Mises à Jour et Histoires Communautaires",
+          "ogTitle": "ImChatty – Conseils, Mises à Jour et Histoires Communautaires",
           "ogType": "Website",
           "ogUrl": "https://imchatty.com/articles",
           "ogDescription": "Explorez des articles utiles, des nouvelles de plateforme et des histoires inspirantes de la communauté ImChatty. Mis à jour régulièrement avec de nouveaux aperçus.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterDescription": "Restez informé avec les derniers articles de blog d'ImChatty. Des mises à jour de plateforme aux conseils de rencontres et de chat, nous avons tout ce qu'il vous faut.",
-          "twitterTitle": "Blog ImChatty – Votre Source de Conseils et Mises à Jour",
+          "twitterDescription": "Restez informé avec les derniers articles d'ImChatty. Des mises à jour de plateforme aux conseils de rencontres et de chat, nous avons tout ce qu'il vous faut.",
+          "twitterTitle": "ImChatty – Votre Source de Conseils et Mises à Jour",
           "twitterCard": "summary_large_image",
           "twitterImage": "https://imchatty.com/images/robot.png"
         }
@@ -668,6 +668,7 @@
         "google": "Avec Google",
         "facebook": "Avec Facebook",
         "github": "Avec GitHub",
+        "discord": "Avec Discord",
         "email": "Avec E-mail"
       },
       "male": {

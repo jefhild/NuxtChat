@@ -21,17 +21,17 @@ const { selectedModel } = toRefs(props);
 const selectedModelComponent = computed(() => {
   switch (selectedModel.value) {
     case "LoginGoogle":
-      console.log("[LoginContainer1] selectedModel is LoginGoogle");
+      // console.log("[LoginContainer1] selectedModel is LoginGoogle");
       return LoginGoogle1;
     case "LoginFacebook":
       return LoginFacebook1;
     case "LoginEmail":
       return LoginEmail;
     case "LoginGitHub":
-      console.log("[LoginContainer1] selectedModel is LoginGithub");
+      // console.log("[LoginContainer1] selectedModel is LoginGithub");
       return LoginGitHub;
     case "LoginDiscord":
-      console.log("[LoginContainer1] selectedModel is LoginDiscord");
+      // console.log("[LoginContainer1] selectedModel is LoginDiscord");
       return LoginDiscord;
     default:
       return null;
