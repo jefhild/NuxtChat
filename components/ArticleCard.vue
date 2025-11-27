@@ -12,7 +12,7 @@
       >
         <v-img
           v-if="articleImageUrl"
-          class="align-end text-white article-img"
+          class="text-white article-img"
           height="200"
           :src="articleImageUrl"
           cover
@@ -31,15 +31,26 @@
           </div>
 
           <!-- Title -->
-          <div class="w-100 text-center px-3">
+          <div class="title-overlay w-100 text-center px-3">
             <h2 class="font-weight-bold text-subtitle-1 text-md-h5 title-text">
               {{ article.title }}
             </h2>
           </div>
 
-          <!-- Date -->
-          <div class="d-flex justify-end pr-4 pb-2">
-            <span class="ml-1">{{ formatDate(article.created_at) }}</span>
+          <!-- Photo credits (bottom-right overlay) -->
+          <div
+            v-if="article.photo_credits_url"
+            class="overlay-bottom-right pr-4"
+          >
+            <a
+              :href="article.photo_credits_url"
+              class="text-caption text-decoration-underline"
+              target="_blank"
+              rel="noopener noreferrer"
+              @click.stop
+            >
+              Photo Credits
+            </a>
           </div>
         </v-img>
       </NuxtLink>
@@ -50,15 +61,7 @@
             <v-icon>mdi-folder</v-icon>
             <span class="ml-1">{{ article.category_name }}</span>
           </div>
-          <a
-            v-if="article.photo_credits_url"
-            :href="article.photo_credits_url"
-            class="text-caption text-decoration-underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Photo credits
-          </a>
+          <span class="date-text">{{ formatDate(article.created_at) }}</span>
         </div>
       </v-card-subtitle>
 
@@ -165,6 +168,10 @@ const formatTagSlug = (tag) => {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
+.article-img {
+  position: relative;
+}
+
 /* Make the top link block-level and remove default link styles */
 .card-link {
   display: block;
@@ -249,6 +256,19 @@ const formatTagSlug = (tag) => {
   left: 12px;
 }
 
+.overlay-bottom-right {
+  position: absolute;
+  bottom: 4px;
+  right: 12px;
+  z-index: 3;
+}
+
+/* Date styling to match category tone */
+.date-text {
+  color: #6b7280; /* neutral grey similar to category text */
+  font-size: 0.9rem;
+}
+
 /* Fade in on hover */
 .article-img:hover .discuss-btn-container {
   opacity: 1;
@@ -259,6 +279,15 @@ const formatTagSlug = (tag) => {
 /* Keep link clean */
 .discuss-link {
   text-decoration: none;
+}
+
+.title-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  padding: 0 12px;
 }
 
 </style>
