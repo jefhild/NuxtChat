@@ -177,16 +177,16 @@
                 </NuxtLink></v-col
               >
 
-              <v-col>
+              <!-- <v-col>
                 <NuxtLink
                   :to="localPath('/profiles')"
                   class="v-btn text-button navItem mr-4"
                   exact
                 >
-                  <!-- <v-icon start>mdi-monitor-account</v-icon> -->
+              
                   {{ $t("components.navbar.free-chat") }}
                 </NuxtLink></v-col
-              >
+              > -->
 
               <v-col v-if="userProfile?.is_admin">
                 <NuxtLink
@@ -362,11 +362,11 @@
                   }}</v-list-item-title>
                 </v-list-item>
 
-                <v-list-item :to="localPath('/profiles')" link>
+                <!-- <v-list-item :to="localPath('/profiles')" link>
                   <v-list-item-title>{{
                     $t("components.navbar.free-chat")
                   }}</v-list-item-title>
-                </v-list-item>
+                </v-list-item> -->
 
                 <v-list-item
                   v-if="userProfile?.is_admin"

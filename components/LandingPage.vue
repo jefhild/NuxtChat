@@ -95,12 +95,12 @@
       </div>
     </v-container>
 
-    <v-container class="py-12 mt-8">
+    <!-- <v-container class="py-12 mt-8">
       <HomeRecent :limit="4" />
       <HomeAi :limit="4" />
       <HomeMale :limit="4" />
       <HomeFemale :limit="4" />
-    </v-container>
+    </v-container> -->
 
     <!-- Final CTA Banner -->
     <v-container class="text-center py-16 mt-10 cta">
@@ -110,7 +110,7 @@
       <p class="text-body-1 mb-5">
         {{ $t("pages.home.landing_page.final_cta_description") }}
       </p>
-      <v-btn color="primary" class="mr-4" size="large" :to="localPath('/chat')">
+      <v-btn color="primary" class="mr-4" size="large" :to="localPath('/chat/articles')">
         {{ $t("pages.home.landing_page.get_chatting_now") }}
       </v-btn>
     </v-container>
@@ -184,7 +184,7 @@ async function confirmLogout() {
 
 onMounted(async () => {
   try {
-    articles.value = await getAllPublishedArticlesWithTags(6);
+    articles.value = await getAllPublishedArticlesWithTags(9);
     mostPopularAiProfiles.value = await getMostPopularAiProfiles(4);
   } catch (err) {
     console.error("[LandingPage] Error:", err);
