@@ -1,5 +1,10 @@
 <template>
-  <v-expansion-panels :variant="variant" :class="['my-2', 'compact-panel', panelsClass]">
+  <v-expansion-panels
+    v-model="panelBinding"
+    :variant="variant"
+    :class="['my-2', 'compact-panel', panelsClass]"
+    :multiple="false"
+  >
     <v-expansion-panel>
       <v-expansion-panel-title>
         <span>{{ selectedName || title }}</span>
@@ -58,11 +63,36 @@ const props = defineProps({
   variant: { type: String, default: 'inset' },
   panelsClass: { type: String, default: '' },
   scrollingList: { type: Boolean, default: false },
+  modelValue: { type: String, default: null },        // shared open panel key
+  panelKey: { type: String, default: '' },            // unique key per panel
 })
+
+const emit = defineEmits(['update:modelValue'])
 
 const router = useRouter()
 const route = useRoute()
 const localPath = useLocalePath()
+const internalPanel = ref(null)
+
+// Bind panel open state so only one panel (shared via modelValue) stays open
+const panelBinding = computed({
+  get() {
+    if (props.panelKey) return props.modelValue === props.panelKey ? 0 : null
+    return internalPanel.value
+  },
+  set(val) {
+    if (props.panelKey) {
+      const isClosed =
+        val === null ||
+        (Array.isArray(val) && val.length === 0) ||
+        val === undefined
+      const next = isClosed ? null : props.panelKey
+      emit('update:modelValue', next)
+    } else {
+      internalPanel.value = val
+    }
+  },
+})
 
 const linkFor = (slug) =>
   slug === props.allSlug ? localPath(props.basePath) : localPath(`${props.basePath}/${slug}`)

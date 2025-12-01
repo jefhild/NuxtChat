@@ -1,9 +1,98 @@
 <template>
   <v-container fluid>
-    <PageHeader
-      :text="$t('pages.articles.tags.heading')"
-      :subtitle="$t('pages.articles.tags.subtitle')"
-    />
+    <v-row class="align-center mb-2 ga-2">
+      <v-col cols="auto" class="d-flex align-center">
+        <v-btn
+          icon
+          variant="text"
+          color="primary"
+          aria-label="Open filters"
+          @click="filtersOpen = true"
+        >
+          <v-icon>mdi-menu</v-icon>
+        </v-btn>
+      </v-col>
+      <v-col>
+        <PageHeader
+          :text="$t('pages.articles.tags.heading')"
+          :subtitle="$t('pages.articles.tags.subtitle')"
+        />
+      </v-col>
+    </v-row>
+
+    <v-navigation-drawer
+      v-model="filtersOpen"
+      location="left"
+      temporary
+      width="360"
+      class="filters-drawer"
+      aria-label="Tag filters"
+    >
+      <div class="d-flex align-center justify-space-between px-3 py-3">
+        <span class="text-subtitle-1 font-weight-medium">
+          {{ $t("pages.tags.index.title") }}
+        </span>
+        <v-btn
+          icon
+          variant="text"
+          color="primary"
+          aria-label="Close filters"
+          @click="filtersOpen = false"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </div>
+      <v-divider />
+      <div class="px-3 py-2 d-flex flex-column ga-3">
+        <FilterExpansion
+          v-model="openFilterPanel"
+          panel-key="categories"
+          :title="$t('pages.categories.index.title')"
+          :items="categories"
+          base-path="/categories"
+          :selected-slug="null"
+          panels-class="compact-panel"
+          variant="inset"
+          :scrolling-list="true"
+        >
+          <template #title="{ selectedName, title }">
+            <span>Categories: {{ selectedName || title }}</span>
+          </template>
+        </FilterExpansion>
+
+        <FilterExpansion
+          v-model="openFilterPanel"
+          panel-key="tags"
+          :title="$t('pages.tags.index.title')"
+          :items="tags"
+          base-path="/tags"
+          :selected-slug="route.params?.slug || null"
+          panels-class="compact-panel"
+          variant="inset"
+          :scrolling-list="true"
+        >
+          <template #title="{ selectedName, title }">
+            <span>Tags: {{ selectedName || title }}</span>
+          </template>
+        </FilterExpansion>
+
+        <FilterExpansion
+          v-model="openFilterPanel"
+          panel-key="people"
+          :title="$t('pages.people.index.title')"
+          :items="people"
+          base-path="/people"
+          :selected-slug="route.params?.slug || null"
+          panels-class="compact-panel"
+          variant="inset"
+          :scrolling-list="true"
+        >
+          <template #title="{ selectedName, title }">
+            <span>People: {{ selectedName || title }}</span>
+          </template>
+        </FilterExpansion>
+      </div>
+    </v-navigation-drawer>
 
     <LoadingContainer
       v-if="isLoading"
@@ -11,78 +100,6 @@
     />
 
     <template v-else>
-      <!-- <HomeRow1 /> -->
-
-      <v-row>
-        <!-- <v-col>
-          <h1>{{ $t("pages.tags.index.title") }}</h1>
-        </v-col> -->
-        <!-- <v-col>
-          <v-text-field
-            v-model="searchQuery"
-            :label="searchLabel"
-            prepend-inner-icon="mdi-magnify"
-            clearable
-            density="compact"
-            outlined
-            hide-details
-            class="search-bar"
-          />
-        </v-col> -->
-      </v-row>
-
-      <v-row>
-        <v-col>
-          <!-- Categories: neutral (no highlight on tags index) -->
-          <FilterExpansion
-            :title="$t('pages.categories.index.title')"
-            :items="categories"
-            base-path="/categories"
-            :selected-slug="null"
-            panels-class="compact-panel"
-            variant="inset"
-            :scrolling-list="true"
-          >
-            <template #title="{ selectedName, title }">
-              <span>Categories: {{ selectedName || title }}</span>
-            </template>
-          </FilterExpansion>
-        </v-col>
-
-        <v-col>
-          <!-- Tags: highlight current route param -->
-          <FilterExpansion
-            :title="$t('pages.tags.index.title')"
-            :items="tags"
-            base-path="/tags"
-            :selected-slug="route.params?.slug || null"
-            panels-class="compact-panel"
-            variant="inset"
-            :scrolling-list="true"
-          >
-            <template #title="{ selectedName, title }">
-              <span>Tags: {{ selectedName || title }}</span>
-            </template>
-          </FilterExpansion>
-        </v-col>
-
-        <v-col>
-          <FilterExpansion
-            :title="$t('pages.people.index.title')"
-            :items="people"
-            base-path="/people"
-            :selected-slug="route.params?.slug || null"
-            panels-class="compact-panel"
-            variant="inset"
-            :scrolling-list="true"
-          >
-            <template #title="{ selectedName, title }">
-              <span>People: {{ selectedName || title }}</span>
-            </template>
-          </FilterExpansion>
-        </v-col>
-      </v-row>
-
       <!-- Articles List -->
       <v-row dense>
         <v-col
@@ -146,6 +163,8 @@ const categories = ref([]);
 const people = ref([]);
 const articles = ref([]);
 const searchQuery = ref("");
+const openFilterPanel = ref(null);
+const filtersOpen = ref(false);
 const perPage = 12;
 const visibleCount = ref(perPage);
 const isFetchingMore = ref(false);

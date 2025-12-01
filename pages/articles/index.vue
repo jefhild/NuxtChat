@@ -1,9 +1,86 @@
 <template>
   <v-container fluid>
-    <PageHeader
-      :text="$t('pages.articles.index.heading')"
-      :subtitle="$t('pages.articles.index.subtitle')"
-    />
+    <v-row class="align-center mb-2 ga-2">
+      <v-col cols="auto" class="d-flex align-center">
+        <v-btn
+          icon
+          variant="text"
+          color="primary"
+          aria-label="Open filters"
+          @click="filtersOpen = true"
+        >
+          <v-icon>mdi-menu</v-icon>
+        </v-btn>
+      </v-col>
+      <v-col>
+        <PageHeader
+          :text="$t('pages.articles.index.heading')"
+          :subtitle="$t('pages.articles.index.subtitle')"
+        />
+      </v-col>
+    </v-row>
+
+    <v-navigation-drawer
+      v-model="filtersOpen"
+      location="left"
+      temporary
+      width="360"
+      class="filters-drawer"
+      aria-label="Article filters"
+    >
+      <div class="d-flex align-center justify-space-between px-3 py-3">
+        <span class="text-subtitle-1 font-weight-medium">
+          {{ $t("pages.articles.index.heading") }}
+        </span>
+        <v-btn
+          icon
+          variant="text"
+          color="primary"
+          aria-label="Close filters"
+          @click="filtersOpen = false"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </div>
+      <v-divider />
+      <div class="px-3 py-2 d-flex flex-column ga-3">
+        <FilterExpansion
+          v-model="openFilterPanel"
+          panel-key="categories"
+          :title="$t('pages.categories.index.title')"
+          :selected-name="selectedCategoriesName"
+          :items="categories"
+          base-path="/categories"
+          :selected-slug="route.params?.slug || null"
+          panels-class="compact-panel"
+          :scrolling-list="true"
+        />
+
+        <FilterExpansion
+          v-model="openFilterPanel"
+          panel-key="tags"
+          :title="$t('pages.tags.index.title')"
+          :selected-name="selectedTagName"
+          :items="tags"
+          base-path="/tags"
+          :selected-slug="route.params?.slug || null"
+          panels-class="compact-panel"
+          :scrolling-list="true"
+        />
+
+        <FilterExpansion
+          v-model="openFilterPanel"
+          panel-key="people"
+          :title="$t('pages.people.index.title')"
+          :selected-name="selectedPeopleName"
+          :items="people"
+          base-path="/people"
+          :selected-slug="route.params?.slug || null"
+          panels-class="compact-panel"
+          :scrolling-list="true"
+        />
+      </div>
+    </v-navigation-drawer>
 
     <LoadingContainer
       v-if="isLoading"
@@ -12,62 +89,6 @@
 
     <template v-else>
       <!-- <HomeRow1 /> -->
-
-      <v-row>
-        <!-- <v-col>
-          <h1>{{ $t("pages.articles.index.explore") }}</h1>
-        </v-col>
-         -->
-
-        <v-col>
-          <FilterExpansion
-            :title="$t('pages.categories.index.title')"
-            :selected-name="selectedCategoriesName"
-            :items="categories"
-            base-path="/categories"
-            :selected-slug="route.params?.slug || null"
-            panels-class="compact-panel"
-            :scrolling-list="true"
-          />
-        </v-col>
-
-        <v-col>
-          <FilterExpansion
-            :title="$t('pages.tags.index.title')"
-            :selected-name="selectedTagName"
-            :items="tags"
-            base-path="/tags"
-            :selected-slug="route.params?.slug || null"
-            panels-class="compact-panel"
-            :scrolling-list="true"
-          />
-        </v-col>
-
-        <v-col>
-          <FilterExpansion
-            :title="$t('pages.people.index.title')"
-            :selected-name="selectedPeopleName"
-            :items="people"
-            base-path="/people"
-            :selected-slug="route.params?.slug || null"
-            panels-class="compact-panel"
-            :scrolling-list="true"
-          />
-        </v-col>
-
-        <!-- <v-col>
-        <v-text-field
-          v-model="searchQuery"
-          :label="searchLabel"
-          prepend-inner-icon="mdi-magnify"
-          clearable
-          density="compact"
-          outlined
-          hide-details
-          class="search-bar"
-        />
-      </v-col> -->
-      </v-row>
       <!-- Articles List -->
       <v-row dense>
         <v-col
@@ -138,6 +159,8 @@ const isLoading = ref(true);
 const searchQuery = ref("");
 const searchLabel = computed(() => t("pages.articles.index.search"));
 const articles = ref([]);
+const filtersOpen = ref(false);
+const openFilterPanel = ref(null);
 const tags = ref([]);
 const categories = ref([]);
 const people = ref([]);
