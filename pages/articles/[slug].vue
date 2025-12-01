@@ -572,9 +572,9 @@ if (htmlContent) {
   });
 
   useSeoMeta({
-    title: `${displayTitle.value} – ImChatty`,
+    title: `${displayTitle.value}`,
     description: safeDescription,
-    ogTitle: `${displayTitle.value} – ImChatty`,
+    ogTitle: `${displayTitle.value}`,
     ogDescription: safeDescription,
     ogUrl: localizedShareUrl,
     ogImage: imageUrl,
@@ -585,7 +585,7 @@ if (htmlContent) {
         : `${currentLocale}_${currentLocale.toUpperCase()}`,
     ogSiteName: "ImChatty",
     twitterCard: "summary_large_image",
-    twitterTitle: `${displayTitle.value} – ImChatty`,
+    twitterTitle: `${displayTitle.value}`,
     twitterDescription: safeDescription,
     twitterImage: imageUrl,
     articleSection: article.value.category?.name || "Article",

@@ -1,23 +1,22 @@
 <template>
   <v-container fluid>
+    <PageHeader
+      :text="$t('pages.articles.categories.heading')"
+      :subtitle="$t('pages.articles.categories.subtitle')"
+    />
+
     <LoadingContainer
       v-if="isLoading"
       :text="$t('pages.categories.index.loading')"
     />
 
-    <v-container fluid v-else>
+    <template v-else>
       <!-- <HomeRow1 /> -->
       <!-- <v-row>
         <v-col>
           <h1>{{ $t("pages.categories.index.title") }}</h1>
         </v-col>
       </v-row> -->
-
-    <PageHeader
-      :text="$t('pages.articles.categories.heading')"
-      :subtitle="$t('pages.articles.categories.subtitle')"
-    />
-
 
       <v-row>
         <v-col>
@@ -111,7 +110,7 @@
         class="infinite-scroll-trigger"
         aria-hidden="true"
       ></div>
-    </v-container>
+    </template>
   </v-container>
 </template>
 

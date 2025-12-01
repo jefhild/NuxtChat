@@ -4,7 +4,7 @@
     <v-row no-gutters class="min-h-0" style="flex: 0 0 auto">
       <v-col>
         <PageHeader
-          :text="topicThread?.article?.title || topicThread?.title || ''"
+          :text="pageHeading"
           :subtitle="$t('pages.chat.articles.subtitle')"
         />
       </v-col>
@@ -427,6 +427,13 @@ const articleImageUrl = computed(() => {
   const file = (topicThread.value?.article?.imagePath || "").replace(/^\//, "");
   return base && file ? `${base}/articles/${file}` : null;
 });
+
+const pageHeading = computed(
+  () =>
+    topicThread.value?.article?.title ||
+    topicThread.value?.title ||
+    $t("pages.chat.articles.heading")
+);
 
 // compute reactively, no snapshot const
 const sanitizedArticleHtml = computed(() =>

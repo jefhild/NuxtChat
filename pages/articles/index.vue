@@ -1,60 +1,61 @@
 <template>
-  <LoadingContainer
-    v-if="isLoading"
-    :text="$t('pages.articles.index.loading')"
-  />
-
-  <v-container fluid v-else>
-    <!-- <HomeRow1 /> -->
-
+  <v-container fluid>
     <PageHeader
       :text="$t('pages.articles.index.heading')"
       :subtitle="$t('pages.articles.index.subtitle')"
     />
 
-    <v-row>
-      <!-- <v-col>
-        <h1>{{ $t("pages.articles.index.explore") }}</h1>
-      </v-col>
-       -->
+    <LoadingContainer
+      v-if="isLoading"
+      :text="$t('pages.articles.index.loading')"
+    />
 
-      <v-col>
-        <FilterExpansion
-          :title="$t('pages.categories.index.title')"
-          :selected-name="selectedCategoriesName"
-          :items="categories"
-          base-path="/categories"
-          :selected-slug="route.params?.slug || null"
-          panels-class="compact-panel"
-          :scrolling-list="true"
-        />
-      </v-col>
+    <template v-else>
+      <!-- <HomeRow1 /> -->
 
-      <v-col>
-        <FilterExpansion
-          :title="$t('pages.tags.index.title')"
-          :selected-name="selectedTagName"
-          :items="tags"
-          base-path="/tags"
-          :selected-slug="route.params?.slug || null"
-          panels-class="compact-panel"
-          :scrolling-list="true"
-        />
-      </v-col>
+      <v-row>
+        <!-- <v-col>
+          <h1>{{ $t("pages.articles.index.explore") }}</h1>
+        </v-col>
+         -->
 
-      <v-col>
-        <FilterExpansion
-          :title="$t('pages.people.index.title')"
-          :selected-name="selectedPeopleName"
-          :items="people"
-          base-path="/people"
-          :selected-slug="route.params?.slug || null"
-          panels-class="compact-panel"
-          :scrolling-list="true"
-        />
-      </v-col>
+        <v-col>
+          <FilterExpansion
+            :title="$t('pages.categories.index.title')"
+            :selected-name="selectedCategoriesName"
+            :items="categories"
+            base-path="/categories"
+            :selected-slug="route.params?.slug || null"
+            panels-class="compact-panel"
+            :scrolling-list="true"
+          />
+        </v-col>
 
-      <!-- <v-col>
+        <v-col>
+          <FilterExpansion
+            :title="$t('pages.tags.index.title')"
+            :selected-name="selectedTagName"
+            :items="tags"
+            base-path="/tags"
+            :selected-slug="route.params?.slug || null"
+            panels-class="compact-panel"
+            :scrolling-list="true"
+          />
+        </v-col>
+
+        <v-col>
+          <FilterExpansion
+            :title="$t('pages.people.index.title')"
+            :selected-name="selectedPeopleName"
+            :items="people"
+            base-path="/people"
+            :selected-slug="route.params?.slug || null"
+            panels-class="compact-panel"
+            :scrolling-list="true"
+          />
+        </v-col>
+
+        <!-- <v-col>
         <v-text-field
           v-model="searchQuery"
           :label="searchLabel"
@@ -66,57 +67,57 @@
           class="search-bar"
         />
       </v-col> -->
-    </v-row>
-    <!-- Articles List -->
-    <v-row dense>
-      <v-col
-        v-for="article in visibleArticles"
-        :key="article.id"
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <ArticleCard
-          :article="article"
-          :chat-thread-id="
-            threadByArticleId[article.id] || article.thread_id || null
-          "
-        />
-      </v-col>
-    </v-row>
-
-    <!-- No Articles Found -->
-    <v-row v-if="!filteredArticles.length" justify="center">
-      <v-col cols="12" class="text-center">
-        <v-alert
-          type="info"
-          variant="tonal"
-          border="top"
-          border-color="primary"
+      </v-row>
+      <!-- Articles List -->
+      <v-row dense>
+        <v-col
+          v-for="article in visibleArticles"
+          :key="article.id"
+          cols="12"
+          sm="6"
+          md="4"
         >
-          {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
-        </v-alert>
-      </v-col>
-    </v-row>
+          <ArticleCard
+            :article="article"
+            :chat-thread-id="
+              threadByArticleId[article.id] || article.thread_id || null
+            "
+          />
+        </v-col>
+      </v-row>
 
-    <v-row
-      v-if="isFetchingMore && hasMoreArticles"
-      justify="center"
-      class="my-6"
-    >
-      <v-col cols="auto">
-        <v-progress-circular indeterminate color="primary" />
-      </v-col>
-    </v-row>
+      <!-- No Articles Found -->
+      <v-row v-if="!filteredArticles.length" justify="center">
+        <v-col cols="12" class="text-center">
+          <v-alert
+            type="info"
+            variant="tonal"
+            border="top"
+            border-color="primary"
+          >
+            {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
+          </v-alert>
+        </v-col>
+      </v-row>
 
-    <div
-      ref="infiniteScrollTrigger"
-      class="infinite-scroll-trigger"
-      aria-hidden="true"
-    ></div>
+      <v-row
+        v-if="isFetchingMore && hasMoreArticles"
+        justify="center"
+        class="my-6"
+      >
+        <v-col cols="auto">
+          <v-progress-circular indeterminate color="primary" />
+        </v-col>
+      </v-row>
 
-    <!-- Admin Button -->
+      <div
+        ref="infiniteScrollTrigger"
+        class="infinite-scroll-trigger"
+        aria-hidden="true"
+      ></div>
 
+      <!-- Admin Button -->
+    </template>
   </v-container>
 </template>
 

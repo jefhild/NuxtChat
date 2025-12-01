@@ -1,13 +1,14 @@
 <template>
   <v-container fluid>
+    <PageHeader :text="categoryHeading" :subtitle="categorySubtitle" />
+
     <LoadingContainer
       v-if="isLoading"
       :text="$t('pages.articles.index.loading')"
     />
 
-    <v-container fluid v-else>
+    <template v-else>
       <!-- <HomeRow1 /> -->
-      <PageHeader :text="categoryHeading" :subtitle="categorySubtitle" />
 
       <v-row>
         <!-- <v-col>
@@ -116,7 +117,7 @@
         class="infinite-scroll-trigger"
         aria-hidden="true"
       ></div>
-    </v-container>
+    </template>
   </v-container>
 </template>
 

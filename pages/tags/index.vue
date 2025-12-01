@@ -1,38 +1,36 @@
 <template>
-  <LoadingContainer
-    v-if="isLoading"
-    :text="$t('pages.articles.index.loading')"
-  />
-
-  <v-container fluid v-else>
-    <!-- <HomeRow1 /> -->
-
+  <v-container fluid>
     <PageHeader
       :text="$t('pages.articles.tags.heading')"
       :subtitle="$t('pages.articles.tags.subtitle')"
     />
 
-    <v-row>
-      <!-- <v-col>
-        <h1>{{ $t("pages.tags.index.title") }}</h1>
-      </v-col> -->
-      <!-- <v-col>
-        <v-text-field
-          v-model="searchQuery"
-          :label="searchLabel"
-          prepend-inner-icon="mdi-magnify"
-          clearable
-          density="compact"
-          outlined
-          hide-details
-          class="search-bar"
-        />
-      </v-col> -->
-    </v-row>
+    <LoadingContainer
+      v-if="isLoading"
+      :text="$t('pages.articles.index.loading')"
+    />
 
-    <LoadingContainer v-if="isLoading" />
+    <template v-else>
+      <!-- <HomeRow1 /> -->
 
-    <v-container v-else>
+      <v-row>
+        <!-- <v-col>
+          <h1>{{ $t("pages.tags.index.title") }}</h1>
+        </v-col> -->
+        <!-- <v-col>
+          <v-text-field
+            v-model="searchQuery"
+            :label="searchLabel"
+            prepend-inner-icon="mdi-magnify"
+            clearable
+            density="compact"
+            outlined
+            hide-details
+            class="search-bar"
+          />
+        </v-col> -->
+      </v-row>
+
       <v-row>
         <v-col>
           <!-- Categories: neutral (no highlight on tags index) -->
@@ -127,7 +125,7 @@
         class="infinite-scroll-trigger"
         aria-hidden="true"
       ></div>
-    </v-container>
+    </template>
   </v-container>
 </template>
 
