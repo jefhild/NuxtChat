@@ -914,7 +914,7 @@ export const useDb = () => {
       photo_credits_html,
       is_published,
       created_at,
-      category:category_id(name),
+      category:category_id ( id, name, slug ),
       article_tags(tag:tag_id(name))
     `
       )
@@ -951,7 +951,7 @@ export const useDb = () => {
       photo_credits_html,
       is_published,
       created_at,
-      category:category_id(name),
+      category:category_id ( id, name, slug ),
       article_tags(tag:tag_id(name)),
       threads(slug)
     `
@@ -1608,6 +1608,23 @@ export const useDb = () => {
     return { data, error };
   };
 
+  const updateArticleCategory = async (articleId, categoryId) => {
+    const supabase = getClient();
+
+    const { data, error } = await supabase
+      .from("articles")
+      .update({ category_id: categoryId })
+      .eq("id", articleId)
+      .select("id")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error updating article category:", error);
+    }
+
+    return { data, error };
+  };
+
   const updateArticleTags = async (articleId, tagIds) => {
     const supabase = getClient();
 
@@ -1963,6 +1980,39 @@ export const useDb = () => {
     console.log("good");
 
     return null; // no error
+  };
+
+  const deleteCategoryAndReassign = async (categoryId, fallbackCategoryId) => {
+    const supabase = getClient();
+
+    if (!categoryId || !fallbackCategoryId) {
+      return { error: new Error("Category and fallback are required") };
+    }
+    if (categoryId === fallbackCategoryId) {
+      return { error: new Error("Fallback category must be different") };
+    }
+
+    const { error: updateError } = await supabase
+      .from("articles")
+      .update({ category_id: fallbackCategoryId })
+      .eq("category_id", categoryId);
+
+    if (updateError) {
+      console.error("Error reassigning articles before delete:", updateError);
+      return { error: updateError };
+    }
+
+    const { error: deleteError } = await supabase
+      .from("categories")
+      .delete()
+      .eq("id", categoryId);
+
+    if (deleteError) {
+      console.error("Error deleting category:", deleteError);
+      return { error: deleteError };
+    }
+
+    return { error: null };
   };
 
   const insertCategory = async (category) => {
@@ -2928,6 +2978,7 @@ const signInWithOtp = async (
     updateCategory,
     updateTag,
     updateArticle,
+    updateArticleCategory,
     updateArticleTags,
     updateLastActive,
     updateSoundSetting,
@@ -2945,6 +2996,7 @@ const signInWithOtp = async (
     insertArticle,
     insertCategory,
     insertTag,
+    deleteCategoryAndReassign,
     insertReport,
 
     deleteChatWithUser,
