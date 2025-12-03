@@ -20,13 +20,24 @@ export function useSeoI18nMeta(
   const baseUrl = config.public.SITE_URL;
   const currentLocale = locale.value || "en";
 
-  // Strip any leading locale prefix
-  const pathWithoutLocale = route.fullPath.replace(/^\/[a-z]{2}(?=\/|$)/, "");
+  // Strip any leading locale prefix and normalize trailing slashes
+  const normalizePath = (path: string) => {
+    if (!path || path === "/") return "/";
+    const trimmed = path.endsWith("/") ? path.slice(0, -1) : path;
+    return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  };
+  const pathWithoutLocale = (route.path || "/").replace(
+    /^\/[a-z]{2}(?=\/|$)/,
+    ""
+  );
+  const normalizedPath = normalizePath(pathWithoutLocale);
+  const normalizedPathSegment = normalizedPath === "/" ? "" : normalizedPath;
 
   // Canonical URL (current locale)
   const localePrefix = currentLocale === "en" ? "" : `/${currentLocale}`;
   const canonicalHref =
-    options?.overrideUrl || `${baseUrl}${localePrefix}${pathWithoutLocale}`;
+    options?.overrideUrl ||
+    `${baseUrl}${localePrefix}${normalizedPathSegment}`;
 
   // Build hreflang links for all locales
 
@@ -41,8 +52,8 @@ export function useSeoI18nMeta(
     const hreflang = hreflangMap[code] || code;
     const href =
       code === "en"
-        ? `${baseUrl}${pathWithoutLocale}`
-        : `${baseUrl}/${code}${pathWithoutLocale}`;
+        ? `${baseUrl}${normalizedPathSegment}`
+        : `${baseUrl}/${code}${normalizedPathSegment}`;
     return {
       rel: "alternate",
       hreflang,
@@ -54,7 +65,7 @@ export function useSeoI18nMeta(
   hreflangLinks.push({
     rel: "alternate",
     hreflang: "x-default",
-    href: `${baseUrl}${pathWithoutLocale}`,
+    href: `${baseUrl}${normalizedPathSegment}`,
   });
 
   const key = (suffix: string) => `pages.${section}.meta.${suffix}`;

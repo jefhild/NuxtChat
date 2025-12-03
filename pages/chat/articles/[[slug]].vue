@@ -76,7 +76,7 @@
           >
             <ArticlesTopicsPane
               :topics="topics"
-              :slug="slug"
+              :slug="resolvedSlug"
               :loading="loadingTopics"
               :format-date-time="formatDateTime"
               :locale-path="localePath"
@@ -308,7 +308,7 @@
           <!-- SAME content as desktop Topics column -->
           <ArticlesTopicsPane
             :topics="topics"
-            :slug="slug"
+            :slug="resolvedSlug"
             :loading="loadingTopics"
             :format-date-time="formatDateTime"
             :locale-path="localePath"
@@ -412,7 +412,7 @@ import { sanitizeHtml } from "~/utils/sanitizeHtml.js";
 const leftOpen = ref(false);
 const rightOpen = ref(false);
 
-const { t: $t, locale } = useI18n(); // avoid name collision with "thread"
+const { t: $t, locale, availableLocales } = useI18n(); // avoid name collision with "thread"
 const { public: pub } = useRuntimeConfig();
 const route = useRoute();
 const router = useRouter();
@@ -452,8 +452,12 @@ const menu = reactive({
 });
 
 const slug = computed(() => String(route.params.slug || ""));
+const localeFromPath = computed(() => {
+  const seg = route.path.split("/")[1] || "";
+  return availableLocales.includes(seg) ? seg : locale.value;
+});
 
-// If no slug: fetch the first thread but do not SSR-redirect (avoids link inspection warnings)
+// If no slug: fetch the first thread so we can render it as a default
 const fallbackSlug = ref(null);
 if (!slug.value) {
   const ORDER = ["latest", "oldest", "pinned"].includes(
@@ -468,22 +472,12 @@ if (!slug.value) {
       $fetch("/api/articles/threads", {
         params: { order: ORDER, limit: 1 },
       }),
-    { server: true, lazy: true }
+    { server: true }
   );
 
   fallbackSlug.value = (
     Array.isArray(firstThread.value) ? firstThread.value[0] : firstThread.value?.[0]
   )?.slug;
-
-  if (import.meta.client) {
-    watch(
-      () => fallbackSlug.value,
-      (s) => {
-        if (s) navigateTo(`/chat/articles/${s}`, { replace: true });
-      },
-      { immediate: true }
-    );
-  }
 }
 
 /* ---------- SSR-safe time formatters (unchanged) ---------- */
@@ -525,10 +519,16 @@ const { data: topicsData, pending: loadingTopics } = await useAsyncData(
   () => $fetch("/api/articles/threads")
 );
 const topics = computed(() => topicsData.value || []);
+const firstTopicSlug = computed(() => topics.value?.[0]?.slug || null);
+
+// Use a resolved slug so /chat/articles can render without redirecting
+const resolvedSlug = computed(
+  () => slug.value || fallbackSlug.value || firstTopicSlug.value || ""
+);
 
 // the thread (with article) coming from /api/articles/threads
 const topicThread = computed(() => {
-  const s = slug.value;
+  const s = resolvedSlug.value;
   return (topics.value || []).find((t) => t.slug === s) || null;
 });
 
@@ -538,14 +538,14 @@ const {
   pending: loadingInit,
   error: initErr,
 } = await useAsyncData(
-  () => `articles:thread:messages:${slug.value}`,
+  () => `articles:thread:messages:${resolvedSlug.value || "none"}`,
   async () => {
-    if (!slug.value) return { thread: null, items: [] };
+    if (!resolvedSlug.value) return { thread: null, items: [] };
     return await $fetch(
-      `/api/articles/threads/${slug.value}/messages?limit=50`
+      `/api/articles/threads/${resolvedSlug.value}/messages?limit=50`
     );
   },
-  { watch: [() => slug.value] }
+  { watch: [resolvedSlug] }
 );
 const thread = computed(() => initial.value?.thread || null);
 const threadId = computed(() => thread.value?.id || "");
@@ -745,7 +745,7 @@ const onSend = async (text) => {
 defineExpose({ formatClock, formatDateTime, messagesForUI });
 
 async function loadMessages() {
-  const s = slug.value;
+  const s = resolvedSlug.value;
   if (!s) return; // <-- guard: no slug, no call
   loadingMsgs.value = true;
   try {
@@ -761,7 +761,7 @@ async function loadMessages() {
 onMounted(async () => {
   if (import.meta.client) {
     watch(
-      slug,
+      resolvedSlug,
       (s) => {
         if (s) loadMessages();
       },
@@ -778,7 +778,9 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 // Absolute canonical (locale-aware)
 const canonicalUrl = computed(() => {
   // localePath gives you the localized route (e.g. /en/chat/articles/slug)
-  const localizedPath = localePath(`/chat/articles/${slug.value}`);
+  const localizedPath = resolvedSlug.value
+    ? localePath(`/chat/articles/${resolvedSlug.value}`)
+    : localePath("/chat/articles");
   // ensure absolute URL
   const base = (pub.SITE_URL || "http://localhost:3000").replace(/\/$/, "");
   return `${base}${localizedPath}`;

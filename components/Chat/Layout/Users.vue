@@ -98,6 +98,23 @@ const normalizedListType = computed(() =>
 const idStr = (u) => String(u?.id ?? u?.user_id ?? "").trim();
 const isPinned = (u) => props.pinnedId && idStr(u) === props.pinnedId;
 
+const isInactiveAi = (u) => {
+  if (!u?.is_ai) return false;
+  // Accept multiple field names coming from different RPCs; any explicit false disables the bot.
+  const flags = [
+    u.is_active,
+    u.ai_is_active,
+    u.persona_is_active,
+    u.persona?.is_active,
+    u.profile?.is_active,
+  ];
+  return flags.some((flag) => flag === false);
+};
+
+const filteredUsers = computed(() =>
+  (props.users || []).filter((u) => !isInactiveAi(u))
+);
+
 const sortWithPin = (arr = []) =>
   [...arr].sort((a, b) => {
     const aPinned = isPinned(a);
@@ -108,10 +125,10 @@ const sortWithPin = (arr = []) =>
   });
 
 const onlineUsers = computed(() =>
-  sortWithPin(props.users.filter((u) => !!u.online && !u.hidden))
+  sortWithPin(filteredUsers.value.filter((u) => !!u.online && !u.hidden))
 );
 const offlineUsers = computed(() =>
-  sortWithPin(props.users.filter((u) => !u.online && !u.hidden))
+  sortWithPin(filteredUsers.value.filter((u) => !u.online && !u.hidden))
 );
 
 const activeSet = computed(
@@ -119,7 +136,7 @@ const activeSet = computed(
 );
 const activeUsers = computed(() =>
   sortWithPin(
-    props.users.filter(
+    filteredUsers.value.filter(
       (u) => activeSet.value.has(idStr(u)) && !u.hidden
     )
   )

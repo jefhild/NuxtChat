@@ -25,6 +25,15 @@ export const useChatStore = defineStore("chatStore", () => {
   const isClient = () => typeof window !== "undefined";
   const getStableId = (u) =>
     u?.user_id || u?.id ? String(u.user_id || u.id) : null;
+  const isInactiveAiUser = (u) => {
+    if (!u?.is_ai) return false;
+    // Treat any explicit false flag as inactive; missing flags default to active.
+    return [u.is_active, u.ai_is_active, u.persona_is_active, u.persona?.is_active].some(
+      (flag) => flag === false
+    );
+  };
+  const filterActiveAiUsers = (list = []) =>
+    (Array.isArray(list) ? list : []).filter((u) => !isInactiveAiUser(u));
 
   function ensureImchattyPresent() {
     const exists = users.value.some((u) => getStableId(u) === IMCHATTY_ID);
@@ -103,7 +112,7 @@ function isAiId(id) {
       const { data, error: dbError } = await db.getAllProfiles();
       // console.log('[chatStore] fetchChatUsers: fetched data len =', Array.isArray(data) ? data.length : 'n/a');
       if (dbError) throw dbError;
-      users.value = Array.isArray(data) ? data : [];
+      users.value = filterActiveAiUsers(data);
       ensureImchattyPresent();
 
       if (!selectedUser.value) {
@@ -114,7 +123,11 @@ function isAiId(id) {
       } else {
         const id = getStableId(selectedUser.value);
         const rebound = id ? getUserById(id) : null;
-        if (rebound) selectedUser.value = rebound;
+        if (rebound) {
+          selectedUser.value = rebound;
+        } else if (isInactiveAiUser(selectedUser.value)) {
+          clearSelectedUser();
+        }
       }
     } catch (err) {
       console.error("[chatStore] fetchChatUsers error:", err);

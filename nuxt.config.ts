@@ -217,6 +217,18 @@ export default defineNuxtConfig({
       ],
       failOnError: false,
     },
+    externals: {
+      inline: [
+        "@supabase/supabase-js",
+        "@supabase/auth-js",
+        "@supabase/functions-js",
+        "@supabase/realtime-js",
+        "@supabase/storage-js",
+        "@supabase/postgrest-js",
+        "@supabase/ssr",
+        "tslib",
+      ],
+    },
     debug: false,
   },
 
@@ -241,9 +253,7 @@ export default defineNuxtConfig({
       const peopleCount = dynamicRoutes.filter((r) =>
         r.includes("/people/")
       ).length;
-      const tagCount = dynamicRoutes.filter((r) =>
-        r.includes("/tags/")
-      ).length;
+      const tagCount = dynamicRoutes.filter((r) => r.includes("/tags/")).length;
       const categoryCount = dynamicRoutes.filter((r) =>
         r.includes("/categories/")
       ).length;
