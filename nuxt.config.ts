@@ -203,6 +203,14 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: "2025-03-13",
+
+  routeRules: {
+    "/people/**": { prerender: false, swr: 3600 },
+    "/profiles/**": { prerender: false, swr: 3600 },
+    "/articles/**": { prerender: false, swr: 3600 },
+    "/tags/**": { prerender: false, swr: 3600 },
+  },
+
   nitro: {
     prerender: {
       routes: ["/"],
@@ -233,15 +241,22 @@ export default defineNuxtConfig({
   },
 
   hooks: {
+    // async "nitro:config"(nitroConfig) {
+    //   if (process.env.NODE_ENV === "development") return;
+    //   let dynamicRoutes: string[] = await getAllDynamicRoutes().catch(() => []);
+    //   // guard: never push settings routes into prerender
+    //   dynamicRoutes = dynamicRoutes.filter((r) => !/\/settings$/.test(r));
+
+    //   if (nitroConfig?.prerender?.routes) {
+    //     nitroConfig.prerender.routes.push(...dynamicRoutes);
+    //   }
+
     async "nitro:config"(nitroConfig) {
       if (process.env.NODE_ENV === "development") return;
-      let dynamicRoutes: string[] = await getAllDynamicRoutes().catch(() => []);
-      // guard: never push settings routes into prerender
+      if (process.env.PRERENDER_DYNAMIC !== "true") return; // keep builds light by default
+      let dynamicRoutes = await getAllDynamicRoutes().catch(() => []);
       dynamicRoutes = dynamicRoutes.filter((r) => !/\/settings$/.test(r));
-
-      if (nitroConfig?.prerender?.routes) {
-        nitroConfig.prerender.routes.push(...dynamicRoutes);
-      }
+      nitroConfig.prerender.routes?.push(...dynamicRoutes);
 
       // TEMP: log prerender route counts to diagnose OOM
       const profileCount = dynamicRoutes.filter((r) =>
