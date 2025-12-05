@@ -11,7 +11,7 @@
             profile.marked_for_deletion_at ? 'marked-for-deletion' : '',
           ]" elevation="2" :style="{
             backgroundImage: `url(${
-              profile.avatar_url || '/default-avatar.png'
+              profile.avatar_url || '/images/avatars/male_placeholder.png'
             })`,
           }">
             <div class="overlay mb-2">
