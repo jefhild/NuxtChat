@@ -306,16 +306,17 @@
                 :isLoading="isLoading"
                 :user-profile="userProfile"
                 :auth-status="auth.authStatus"
-                :disable-filter-toggle="shouldDisableToggle"
-                :show-filters="false"
-                :show-ai="showAIUsers"
-                @user-selected="selectUser"
-                @filter-changed="updateFilters"
-                @update:showAi="showAIUsers = $event"
-              />
-            </div>
-          </v-card>
-        </v-col>
+              :disable-filter-toggle="shouldDisableToggle"
+              :show-filters="false"
+              :show-ai="showAIUsers"
+              @user-selected="selectUser"
+              @filter-changed="updateFilters"
+              @delete-chat="openDeleteDialog"
+              @update:showAi="showAIUsers = $event"
+            />
+          </div>
+        </v-card>
+      </v-col>
       </v-row>
 
       <!-- Mobile (< md): only the Thread pane -->
@@ -583,17 +584,66 @@
               :show-ai="showAIUsers"
               @user-selected="selectUser"
               @filter-changed="updateFilters"
+              @delete-chat="openDeleteDialog"
               @update:showAi="showAIUsers = $event"
             />
           </div>
         </v-card>
       </div>
     </v-navigation-drawer>
+
+    <v-dialog v-model="deleteDialog" max-width="420">
+      <v-card>
+        <v-card-title class="text-h6">
+          {{ $t("components.activeChats.delete-title") }}
+        </v-card-title>
+        <v-card-text>
+          <div class="text-body-2 mb-3">
+            {{ deletePrompt }}
+          </div>
+          <v-alert
+            v-if="deleteError"
+            type="error"
+            variant="tonal"
+            density="comfortable"
+            class="mb-2"
+          >
+            {{ deleteError }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            :disabled="deletingChat"
+            @click="closeDeleteDialog"
+          >
+            {{ $t("components.activeChats.cancel") }}
+          </v-btn>
+          <v-btn
+            color="red"
+            variant="flat"
+            :loading="deletingChat"
+            @click="confirmDeleteChat"
+          >
+            {{ $t("components.activeChats.confirm") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, unref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import {
+  ref,
+  unref,
+  reactive,
+  computed,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+} from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useChatStore } from "@/stores/chatStore";
@@ -618,7 +668,7 @@ const route = useRoute();
 const { t } = useI18n();
 
 const { smAndDown } = useDisplay();
-const { getClient, getActiveChats, insertMessage } = useDb();
+const { getClient, getActiveChats, insertMessage, deleteChatWithUser } = useDb();
 const supabase = getClient();
 
 const onbRef = ref(null);
@@ -670,6 +720,10 @@ const modalUser = ref(null);
 const showAIUsers = ref(true);
 const activeChats = ref([]);
 const replyingToMessage = ref(null); // { id, content } | null
+const deleteDialog = ref(false);
+const deleteTarget = ref(null);
+const deleteError = ref("");
+const deletingChat = ref(false);
 const clearReply = () => {
   replyingToMessage.value = null;
 };
@@ -726,6 +780,14 @@ const selectedUserInitial = computed(() => {
   if (trimmed.length) return trimmed[0].toUpperCase();
   return "?";
 });
+
+const deleteTargetName = computed(() =>
+  deleteTarget.value?.displayname ||
+  t("components.activeChats.unknown-user")
+);
+const deletePrompt = computed(() =>
+  t("components.activeChats.delete-with-user", { name: deleteTargetName.value })
+);
 
 const selectedUserTitle = computed(() => {
   const user = selectedUser.value;
@@ -1006,6 +1068,64 @@ function selectImChatty() {
   } else {
     // users not loaded yet → try again when they appear
     pendingSelectImChatty.value = true;
+  }
+}
+
+function openDeleteDialog(user) {
+  deleteTarget.value = user || null;
+  deleteError.value = "";
+  deleteDialog.value = !!user;
+}
+
+function closeDeleteDialog() {
+  deleteDialog.value = false;
+  deleteTarget.value = null;
+  deleteError.value = "";
+}
+
+async function confirmDeleteChat() {
+  if (!deleteTarget.value || !meId) return;
+  const peerId = deleteTarget.value.user_id || deleteTarget.value.id;
+  if (!peerId) return;
+
+  deletingChat.value = true;
+  deleteError.value = "";
+  try {
+    const err = await deleteChatWithUser(meId, peerId);
+    if (err) throw err;
+
+    // update active list + unread counts locally
+    const peerIdStr = String(peerId);
+    chat.activeChats = (chat.activeChats || []).filter(
+      (id) => String(id) !== peerIdStr
+    );
+    activeChats.value = (activeChats.value || []).filter(
+      (id) => String(id) !== peerIdStr
+    );
+    if (msgs?.unreadByPeer) {
+      msgs.unreadByPeer = { ...msgs.unreadByPeer, [peerIdStr]: 0 };
+    }
+
+    // if deleted chat was selected, fall back to first available user
+    if (String(selectedUserId.value || "") === peerIdStr) {
+      const fallback = usersWithPresence.value.find((u) => {
+        const uid = u.user_id ?? u.id;
+        return String(uid) !== peerIdStr;
+      });
+      chat.setSelectedUser(fallback || null);
+    }
+
+    // refresh active list from server in background
+    refreshActiveChats();
+
+    closeDeleteDialog();
+  } catch (err) {
+    console.error("[ChatLayout] delete chat error", err);
+    deleteError.value =
+      err?.message ||
+      t("components.activeChats.delete-confirm");
+  } finally {
+    deletingChat.value = false;
   }
 }
 

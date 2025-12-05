@@ -41,7 +41,32 @@
     </span> -->
 
           <!-- <span class="state">{{ u.online ? 'online' : 'offline' }}</span> -->
-           <span class="flag">{{ u.country_emoji}}</span>
+          <div class="flag-wrap">
+            <span class="flag">{{ u.country_emoji }}</span>
+            <div v-if="showActions" class="actions">
+              <v-menu location="end" offset="6">
+                <template #activator="{ props: menuProps }">
+                  <v-btn
+                    v-bind="menuProps"
+                    icon="mdi-dots-horizontal"
+                    size="x-small"
+                    density="comfortable"
+                    variant="text"
+                    color="#1d3b58"
+                    @click.stop
+                  />
+                </template>
+                <v-list density="compact">
+                  <v-list-item
+                    value="delete-chat"
+                    :title="$t('components.activeChats.delete-title')"
+                    prepend-icon="mdi-trash-can-outline"
+                    @click.stop="$emit('delete-chat', u)"
+                  />
+                </v-list>
+              </v-menu>
+            </div>
+          </div>
         </div>
       </template>
     </v-virtual-scroll>
@@ -59,8 +84,10 @@ const props = defineProps({
   height: { type: Number, default: null },
   unreadByPeer: { type: Object, default: () => ({}) },
   hideTagline: { type: Boolean, default: false },
+  showActions: { type: Boolean, default: false },
 });
-defineEmits(["user-selected"]);
+defineEmits(["user-selected", "delete-chat"]);
+const showActions = computed(() => props.showActions === true);
 
 const idStr = (u) => String(u?.user_id ?? u?.id ?? "");
 const isSelected = (u) =>
@@ -247,5 +274,18 @@ const listHeight = computed(() => props.height ?? innerHeight.value);
 }
 .flag {
   font-size: 18px;
+}
+.flag-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  min-width: 26px;
+}
+.actions {
+  position: absolute;
+  top: -16px;
+  right: -10px;
 }
 </style>

@@ -689,7 +689,9 @@
       "cancel": "Annuler",
       "delete-title": "Supprimer Ce Chat",
       "delete-confirm": "Êtes-vous sûr de vouloir supprimer ce chat ? Cette action ne peut pas être annulée.",
-      "block": "Bloquer cet utilisateur ?"
+      "delete-with-user": "Voulez-vous vraiment supprimer ce chat entre vous et {name} ?",
+      "block": "Bloquer cet utilisateur ?",
+      "unknown-user": "cet utilisateur"
     },
     "blockedUsers": {
       "no-blocked-users": "Vous n'avez aucun utilisateur bloqué"

@@ -46,7 +46,9 @@
             :selectedUserId="selectedUserId"
             :unread-by-peer="msgs.unreadByPeer"
             :hide-tagline="normalizedListType === 'active'"
+            :show-actions="normalizedListType === 'active'"
             @user-selected="$emit('user-selected', $event)"
+            @delete-chat="$emit('delete-chat', $event)"
           />
         </div>
       </template>
@@ -81,7 +83,12 @@ const props = defineProps({
   showFilters: { type: Boolean, default: true },
   showAi: { type: Boolean, default: true },
 });
-defineEmits(["user-selected", "filter-changed", "update:showAi"]);
+defineEmits([
+  "user-selected",
+  "filter-changed",
+  "update:showAi",
+  "delete-chat",
+]);
 
 const msgs = useMessagesStore();
 const presence = usePresenceStore2();

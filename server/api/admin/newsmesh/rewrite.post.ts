@@ -114,15 +114,6 @@ The rewrite must:
 - Highlight why this story matters for the audience represented by your persona.
 - Produce a body made of 3-5 short paragraphs formatted in Markdown.
 - Include a short summary (2 sentences) and a fresh headline.
-Return a JSON object with the following shape:
-{
-  "headline": string,
-  "summary": string,
-  "body": string, // markdown allowed
-  "references": [
-    { "label": string, "url": string }
-  ]
-}
 `;
 
 const buildSystemPrompt = (persona: any) => {
