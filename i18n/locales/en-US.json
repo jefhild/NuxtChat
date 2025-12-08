@@ -1000,7 +1000,9 @@
       "no-anonymous": "No anonymous users found",
       "requires-profile": "Requires a minimum profile",
       "none-active": "No active discussions found",
-      "none-offline": "No offline users found"
+      "none-offline": "No offline users found",
+      "aiAgents": "AI Agents & Biases",
+      "realHumans": "Real Humans"
     },
     "users-ai": {
       "ai-users": "AI Users",

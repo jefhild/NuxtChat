@@ -979,7 +979,9 @@
       "no-anonymous": "Aucun utilisateur anonyme trouvé",
       "requires-profile": "Profil minimal requis",
       "none-active": "Aucun utilisateur actif trouvé",
-      "none-offline": "Aucun utilisateur hors ligne trouvé"
+      "none-offline": "Aucun utilisateur hors ligne trouvé",
+      "aiAgents": "Agents IA et biais",
+      "realHumans": "Humains réels"
     },
     "users-ai": {
       "ai-users": "Utilisateurs IA",

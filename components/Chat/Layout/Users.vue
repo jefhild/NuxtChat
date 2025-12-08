@@ -112,32 +112,34 @@
 
             <template #append="{ item }">
               <template v-if="item.type !== 'group'">
-                <span class="flag" v-if="item.user.country_emoji">
-                  {{ item.user.country_emoji }}
+                <span class="flag-wrap">
+                  <span class="flag" v-if="item.user.country_emoji">
+                    {{ item.user.country_emoji }}
+                  </span>
+                  <div v-if="showActions" class="actions">
+                    <v-menu location="end" offset="6">
+                      <template #activator="{ props: menuProps }">
+                        <v-btn
+                          v-bind="menuProps"
+                          icon="mdi-dots-horizontal"
+                          size="x-small"
+                          density="comfortable"
+                          variant="text"
+                          color="#1d3b58"
+                          @click.stop
+                        />
+                      </template>
+                      <v-list density="compact">
+                        <v-list-item
+                          value="delete-chat"
+                          :title="$t('components.activeChats.delete-title')"
+                          prepend-icon="mdi-trash-can-outline"
+                          @click.stop="$emit('delete-chat', item.user)"
+                        />
+                      </v-list>
+                    </v-menu>
+                  </div>
                 </span>
-                <div v-if="showActions" class="actions">
-                  <v-menu location="end" offset="6">
-                    <template #activator="{ props: menuProps }">
-                      <v-btn
-                        v-bind="menuProps"
-                        icon="mdi-dots-horizontal"
-                        size="x-small"
-                        density="comfortable"
-                        variant="text"
-                        color="#1d3b58"
-                        @click.stop
-                      />
-                    </template>
-                    <v-list density="compact">
-                      <v-list-item
-                        value="delete-chat"
-                        :title="$t('components.activeChats.delete-title')"
-                        prepend-icon="mdi-trash-can-outline"
-                        @click.stop="$emit('delete-chat', item.user)"
-                      />
-                    </v-list>
-                  </v-menu>
-                </div>
               </template>
             </template>
           </v-treeview>
@@ -149,6 +151,7 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useMessagesStore } from "@/stores/messagesStore";
 import ChatLayoutFilterMenu from "./FilterMenu.vue";
 
@@ -181,6 +184,7 @@ const emit = defineEmits([
 ]);
 
 const msgs = useMessagesStore();
+const { t } = useI18n();
 
 const normalizedListType = computed(() =>
   ["online", "offline", "active"].includes(props.listType)
@@ -294,6 +298,10 @@ const openedGroups = ref([]);
 const activatedNodes = ref([]);
 const initializedOpen = ref(false);
 const manualOpened = ref(false);
+const translateOrFallback = (key, fallback) => {
+  const val = t(key);
+  return val && val !== key ? val : fallback;
+};
 
 const treeItems = computed(() => {
   const makeUserNode = (u) => ({
@@ -304,8 +312,19 @@ const treeItems = computed(() => {
   });
 
   const groups = [
-    { id: "ai-group", title: "AI Agents & Biases", users: aiUsers.value },
-    { id: "human-group", title: "Real Humans", users: humanUsers.value },
+    {
+      id: "ai-group",
+      title: translateOrFallback(
+        "components.users.aiAgents",
+        "AI Agents & Biases"
+      ),
+      users: aiUsers.value,
+    },
+    {
+      id: "human-group",
+      title: translateOrFallback("components.users.realHumans", "Real Humans"),
+      users: humanUsers.value,
+    },
   ];
 
   return groups.map((g) => ({
@@ -555,11 +574,21 @@ function handleOpened(val) {
 
 .flag {
   font-size: 18px;
-  margin-left: 10px;
 }
 
 .actions {
+  position: absolute;
+  top: -20px;
+  right: 1px;
+  z-index: 2;
+}
+
+.flag-wrap {
   position: relative;
-  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  margin-left: 6px;
 }
 </style>

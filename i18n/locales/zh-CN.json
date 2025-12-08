@@ -978,7 +978,9 @@
       "no-anonymous": "未找到匿名用户",
       "requires-profile": "需要最低限度的个人资料",
       "none-active": "未找到活跃用户",
-      "none-offline": "未找到离线用户"
+      "none-offline": "未找到离线用户",
+      "aiAgents": "AI 代理与偏见",
+      "realHumans": "真实用户"
     },
     "users-ai": {
       "ai-users": "AI用户",
