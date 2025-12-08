@@ -14,7 +14,10 @@
           <ChatLayoutChatBubble
             :from-me="item.sender_id === meId"
             :html="render(item.content)"
-            :time="new Date(item.created_at || Date.now()).toLocaleTimeString()"
+            :time="formatDisplayTime(item.created_at)"
+            :name="item._name"
+            :avatar="item._avatar"
+            :show-meta="Boolean(item._name || item._avatar || item.created_at)"
           />
         </template>
       </template>
@@ -54,8 +57,38 @@ const messages = ref([]);
 const loading = ref(false);
 const typing = ref(false); // 🔹 NEW: show typing chip
 
+const peerName = computed(() => props.peer?.displayname || "");
+const peerAvatar = computed(
+  () => props.peer?.avatar_url || props.peer?.avatar || ""
+);
+const meName = "me";
+
+function formatDisplayTime(timestamp) {
+  if (!timestamp) return "";
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const now = Date.now();
+  const diffMs = Math.max(0, now - date.getTime());
+  const diffHours = diffMs / 36e5;
+
+  if (diffHours < 24) {
+    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  }
+
+  const diffDays = Math.floor(diffMs / 864e5);
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+
+  return date.toLocaleDateString();
+}
+
 const items = computed(() => {
-  const base = messages.value || [];
+  const base = (messages.value || []).map((m) => ({
+    ...m,
+    _name: m.sender_id === props.meId ? meName : peerName.value,
+    _avatar: m.sender_id === props.meId ? "" : peerAvatar.value,
+  }));
   return showTyping.value
     ? [...base, { _typing: true, id: `typing-${peerId.value}` }]
     : base;
