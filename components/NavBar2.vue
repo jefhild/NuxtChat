@@ -13,70 +13,63 @@
       <v-spacer></v-spacer>
 
       <template v-slot:append>
-        <nav role="navigation" aria-label="Main Navigation">
-          <!-- <v-row class="d-none d-md-flex" align="center"> -->
-          <div class="d-none d-md-flex flex-column align-end">
+        <nav aria-label="Main Navigation" class="main-nav-wrapper">
+          <ul class="main-nav-list d-none d-md-flex">
+            <li>
+              <NuxtLink
+                :to="localPath('/articles')"
+                class="v-btn text-button navItem mr-4 d-flex align-center"
+                exact
+              >
+                {{ $t("components.navbar.blog") }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                :to="localPath('/chat/articles')"
+                class="v-btn text-button navItem mr-4"
+                exact
+              >
+                {{ $t("components.navbar.discussions") }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                :to="localPath('/chat')"
+                class="v-btn text-button navItem mr-4"
+                exact
+              >
+                {{ $t("components.navbar.chat") }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                :to="localPath('/signin')"
+                class="v-btn text-button navItem mr-4"
+                exact
+              >
+                <v-icon start>mdi-login</v-icon>
+                {{ $t("components.navbar.signin") }}
+              </NuxtLink>
+            </li>
+          </ul>
+
+          <!-- Invisible-but-present copy to satisfy mobile-first indexing; keeps primary nav links in the DOM on small viewports -->
+          <ul class="main-nav-crawler">
+            <li><NuxtLink :to="localPath('/articles')">{{ $t("components.navbar.blog") }}</NuxtLink></li>
+            <li><NuxtLink :to="localPath('/chat/articles')">{{ $t("components.navbar.discussions") }}</NuxtLink></li>
+            <li><NuxtLink :to="localPath('/chat')">{{ $t("components.navbar.chat") }}</NuxtLink></li>
+            <li><NuxtLink :to="localPath('/signin')">{{ $t("components.navbar.signin") }}</NuxtLink></li>
+          </ul>
+
+          <div class="d-none d-md-flex align-center">
             <v-row align="center" no-gutters>
-              <v-col>
-                <NuxtLink
-                  :to="localPath('/articles')"
-                  class="v-btn text-button navItem mr-4 d-flex align-center"
-                  exact
-                >
-                  {{ $t("components.navbar.blog") }}
-                </NuxtLink>
-              </v-col>
-              <!-- <v-col>
-                <NuxtLink
-                  :to="localPath('/about')"
-                  class="v-btn text-button navItem mr-4"
-                  exact
-                >
-
-                  {{ $t("components.navbar.aboutus") }}
-                </NuxtLink></v-col
-              > -->
-
-              <v-col>
-                <NuxtLink
-                  :to="localPath('/chat/articles')"
-                  class="v-btn text-button navItem mr-4"
-                  exact
-                >
-                  <!-- <v-icon start>mdi-account-group</v-icon> -->
-                  {{ $t("components.navbar.discussions") }}
-                </NuxtLink></v-col
-              >
-
-              <v-col>
-                <NuxtLink
-                  :to="localPath('/chat')"
-                  class="v-btn text-button navItem mr-4"
-                  exact
-                >
-                  <!-- <v-icon start>mdi-monitor-account</v-icon> -->
-                  {{ $t("components.navbar.chat") }}
-                </NuxtLink></v-col
-              >
-
-              <!-- <v-col>
-                <NuxtLink
-                  :to="localPath('/profiles')"
-                  class="v-btn text-button navItem mr-4"
-                  exact
-                >
-              
-                  {{ $t("components.navbar.free-chat") }}
-                </NuxtLink></v-col
-              > -->
-
               <v-col v-if="userProfile?.is_admin">
                 <NuxtLink
                   :to="localPath('/admin')"
                   class="v-btn text-button navItem mr-3"
                   exact
                 >
-                  <!-- <v-icon start>mdi-shield-account</v-icon> -->
                   {{ $t("components.navbar.admin") }}
                 </NuxtLink>
               </v-col>
@@ -92,23 +85,10 @@
                 </NuxtLink>
               </v-col>
 
-              <v-col>
-                <v-btn
-                  v-if="isAuthenticated"
-                  @click="showLogoutDialog"
-                  variant="text"
-                >
+              <v-col v-if="isAuthenticated">
+                <v-btn @click="showLogoutDialog" variant="text">
                   <v-icon start>mdi-logout</v-icon>
                   {{ $t("components.navbar.logout") }}
-                </v-btn>
-                <v-btn
-                  v-else
-                  :to="localPath('/signin')"
-                  variant="text"
-                  class="navItem mr-4"
-                >
-                  <v-icon start>mdi-login</v-icon>
-                  {{ $t("components.navbar.signin") }}
                 </v-btn>
               </v-col>
             </v-row>
@@ -365,6 +345,38 @@ const confirmLogout = async () => {
 .flag-dropdown .v-field {
   border: none !important;
   box-shadow: none !important;
+}
+
+.main-nav-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-nav-list {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+
+.main-nav-list li {
+  margin: 0;
+}
+
+.main-nav-crawler {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: 0;
 }
 
 .language-switcher-row {
