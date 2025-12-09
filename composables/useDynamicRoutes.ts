@@ -14,9 +14,18 @@ import { getGenderFromId } from "../lib/dbUtils";
  */
 const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
 const defaultLocale = "en";
+const supabaseArticlesBase = (
+  process.env.NUXT_PUBLIC_SUPABASE_BUCKET || ""
+).replace(/\/+$/, "");
 
 function localizePath(path: string, locale: string) {
   return locale === defaultLocale ? path : `/${locale}${path}`;
+}
+
+function buildArticleImageUrl(imagePath?: string | null) {
+  if (!imagePath || !supabaseArticlesBase) return null;
+  const cleanPath = String(imagePath).replace(/^\/+/, "");
+  return cleanPath ? `${supabaseArticlesBase}/articles/${cleanPath}` : null;
 }
 
 export async function getAllDynamicRoutes(): Promise<string[]> {
@@ -99,12 +108,101 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
  * Used for sitemap endpoint (loc + lastmod).
  */
 export async function getAllDynamicRoutesWithMetadata(): Promise<
-  { loc: string; lastmod: string }[]
+  { loc: string; lastmod: string; images?: { loc: string }[] }[]
 > {
-  const routes = await getAllDynamicRoutes();
+  try {
+    const [
+      { data: profiles, error },
+      articleData,
+      categoryData,
+      tagData,
+      peopleData,
+    ] = await Promise.all([
+      getRegisteredUsersDisplaynames({ onlyAI: true }),
+      getAllPublishedArticlesWithTags(),
+      getAllCategories(),
+      getAllTags(),
+      getAllPeopleSlugs(),
+    ]);
 
-  return routes.map((route) => ({
-    loc: route,
-    lastmod: new Date().toISOString(),
-  }));
+    if (
+      !profiles ||
+      !articleData ||
+      !categoryData ||
+      !tagData ||
+      !peopleData ||
+      error
+    ) {
+      console.error("One or more data fetches failed.", { error });
+      return [];
+    }
+
+    const staticPages = ["/about", "/cookies", "/settings", "/people"];
+    const homeRoutes = ["/"];
+    const fallbackLastmod = new Date().toISOString();
+
+    const localizedRoutes: {
+      loc: string;
+      lastmod: string;
+      images?: { loc: string }[];
+    }[] = [];
+
+    const addLocalizedRoutes = (
+      route: string,
+      lastmod?: string,
+      images?: { loc: string }[]
+    ) => {
+      SUPPORTED_LOCALES.forEach((locale) => {
+        localizedRoutes.push({
+          loc: localizePath(route, locale),
+          lastmod: lastmod || fallbackLastmod,
+          images,
+        });
+      });
+    };
+
+    homeRoutes.forEach((route) => addLocalizedRoutes(route));
+    staticPages.forEach((route) => addLocalizedRoutes(route));
+
+    const profileRoutes = (
+      await Promise.all(
+        profiles
+          .filter((profile) => profile.is_ai)
+          .map(async (profile) => {
+            const slug =
+              profile.slug ||
+              (await getUserSlugFromDisplayName(profile.displayname));
+
+            if (!slug) return null;
+
+            const gender = getGenderFromId(profile.gender_id) || "unknown";
+            return `/profiles/${gender}/${slug}`;
+          })
+      )
+    ).filter((route): route is string => Boolean(route));
+
+    profileRoutes.forEach((route) => addLocalizedRoutes(route));
+
+    articleData.forEach((article) => {
+      const imageUrl = buildArticleImageUrl(article?.image_path);
+      addLocalizedRoutes(
+        `/articles/${article.slug}`,
+        article?.created_at,
+        imageUrl ? [{ loc: imageUrl }] : undefined
+      );
+    });
+
+    categoryData.forEach((category) =>
+      addLocalizedRoutes(`/categories/${category.slug}`)
+    );
+    tagData.forEach((tag) => addLocalizedRoutes(`/tags/${tag.slug}`));
+    peopleData.forEach((person) =>
+      addLocalizedRoutes(`/people/${person.slug}`)
+    );
+
+    return localizedRoutes;
+  } catch (error) {
+    console.error("Error fetching dynamic routes:", error);
+    return [];
+  }
 }

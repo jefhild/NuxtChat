@@ -23,7 +23,7 @@ export async function getAllPublishedArticlesWithTags() {
   // Keep this query minimal; dynamic route building only needs slugs.
   const { data, error } = await supabase
     .from("articles")
-    .select("slug")
+    .select("slug, created_at, image_path")
     .eq("is_published", true)
     .order("created_at", { ascending: false });
 
