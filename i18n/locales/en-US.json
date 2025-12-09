@@ -744,6 +744,14 @@
       "settings-disabled": "Settings (Disabled in Anonymous Mode)",
       "settings-aria-label": "Open settings modal to update your account preferences and personal information"
     },
+    "onboardingSteps": {
+      "consent": "Step 1 of 5: Accept terms to get started.",
+      "displayName": "Step 2 of 5: Choose your display name.",
+      "age": "Step 3 of 5: Share your age.",
+      "gender": "Step 4 of 5: Share your gender.",
+      "bio": "Step 5 of 5: Add a short bio.",
+      "done": "Profile complete."
+    },
     "loginAi": {
       "titleText": "Create Your Anonymous Profile"
     },

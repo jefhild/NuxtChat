@@ -94,10 +94,15 @@ export const useAuthStore = defineStore("authStore1", {
       if (sessErr) {
         console.warn("[authStore1] getSession error:", sessErr);
         this.clear();
+        this.onboardingLocal = false;
         if (import.meta.client) {
           try {
             const presence = usePresenceStore2();
             await presence.leave();
+          } catch {}
+          try {
+            const draft = useOnboardingDraftStore();
+            draft.clearAll?.();
           } catch {}
         }
         return;
@@ -349,8 +354,8 @@ export const useAuthStore = defineStore("authStore1", {
           // 4) Reset onboarding/drafts
           try {
             const draft = useOnboardingDraftStore();
-            draft.setConsent(false);
-            draft.setStage?.("consent");
+            draft.clearAll?.();
+            this.onboardingLocal = false;
           } catch {}
 
           // 5) Reset auth store

@@ -729,6 +729,14 @@
       "settings-disabled": "设置（匿名模式下不可用）",
       "settings-aria-label": "打开设置窗口以更新您的账户偏好和个人信息"
     },
+    "onboardingSteps": {
+      "consent": "第 1/5 步：接受条款以开始。",
+      "displayName": "第 2/5 步：选择你的显示名称。",
+      "age": "第 3/5 步：填写你的年龄。",
+      "gender": "第 4/5 步：填写你的性别。",
+      "bio": "第 5/5 步：添加一句简介。",
+      "done": "档案已完成。"
+    },
     "loginAi": {
       "titleText": "创建您的匿名档案"
     },

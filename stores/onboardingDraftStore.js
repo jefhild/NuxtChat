@@ -14,6 +14,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
     ip: null,
     stage: "idle", // 'idle' | 'consent' | 'collecting' | 'confirm' | 'done'
     updatedAt: null,
+    thread: [], // ephemeral onboarding conversation
   }),
 
   getters: {
@@ -48,37 +49,42 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
   },
 
   actions: {
-setField(key, val) {
-  // Only these are numeric; ip is NOT
-  const numericKeys = new Set(["age", "genderId", "countryId", "stateId", "cityId"]);
+    setField(key, val) {
+      // Only these are numeric; ip is NOT
+      const numericKeys = new Set([
+        "age",
+        "genderId",
+        "countryId",
+        "stateId",
+        "cityId",
+      ]);
 
-  // If a numeric key comes as a string, only coerce if it's purely digits
-  if (typeof val === "string" && numericKeys.has(key) && /^\d+$/.test(val)) {
-    const n = Number(val);
-    if (Number.isFinite(n)) val = n;
-  }
+      // If a numeric key comes as a string, only coerce if it's purely digits
+      if (typeof val === "string" && numericKeys.has(key) && /^\d+$/.test(val)) {
+        const n = Number(val);
+        if (Number.isFinite(n)) val = n;
+      }
 
-  console.log("keyval", { key, val });
+      const allowed = new Set([
+        "displayName",
+        "age",
+        "genderId",
+        "bio",
+        "countryId",
+        "stateId",
+        "cityId",
+        "ip", // keep ip as string (IPv4 or IPv6)
+        "consented",
+        "stage",
+        "thread",
+      ]);
 
-  const allowed = new Set([
-    "displayName",
-    "age",
-    "genderId",
-    "bio",
-    "countryId",
-    "stateId",
-    "cityId",
-    "ip",        // keep ip as string (IPv4 or IPv6)
-    "consented",
-    "stage",
-  ]);
+      if (!allowed.has(key)) return;
 
-  if (!allowed.has(key)) return;
-
-  this[key] = val;
-  this.updatedAt = new Date().toISOString();
-  this.saveLocal();
-},
+      this[key] = val;
+      this.updatedAt = new Date().toISOString();
+      this.saveLocal();
+    },
 
     setConsent(val) {
       this.consented = !!val;
@@ -100,6 +106,8 @@ setField(key, val) {
       this.countryId = null;
       this.stateId = null;
       this.cityId = null;
+      this.ip = null;
+      this.thread = [];
       this.stage = "idle";
       this.updatedAt = null;
       try {
@@ -124,6 +132,7 @@ setField(key, val) {
           "cityId",
           "stage",
           "updatedAt",
+          "thread",
         ]) {
           if (k in data) this[k] = data[k];
         }
@@ -144,29 +153,45 @@ setField(key, val) {
           stateId,
           cityId,
           ip,
+        stage,
+        updatedAt,
+        thread,
+      } = this;
+        localStorage.setItem("onboardingDraft", JSON.stringify({
+          displayName,
+          age,
+          genderId,
+          bio,
+          consented,
+          countryId,
+          stateId,
+          cityId,
+          ip,
           stage,
           updatedAt,
-        } = this;
-        localStorage.setItem(
-          "onboardingDraft",
-          JSON.stringify({
-            displayName,
-            age,
-            genderId,
-            bio,
-            consented,
-            countryId,
-            stateId,
-            cityId,
-            ip,
-            stage,
-            updatedAt,
-          })
-        );
+          thread,
+        }));
       } catch {
         /* ignore */
       }
     },
+
+  appendThreadMessage(msg) {
+    if (!msg || typeof msg !== "object") return;
+    const payload = {
+      id: msg.id || crypto.randomUUID?.() || String(Date.now()),
+      from: msg.from || "imchatty",
+      text: msg.text || "",
+      ts: msg.ts || Date.now(),
+    };
+    this.thread = [...this.thread, payload];
+    this.saveLocal();
+  },
+
+  clearThread() {
+    this.thread = [];
+    this.saveLocal();
+  },
   },
 });
 

@@ -60,11 +60,13 @@
           </v-card>
 
           <ClientOnly>
-            <div class="d-none d-md-block mt-2">
+            <div v-if="consentPanelVisible" class="d-none d-md-block mt-2">
               <ChatLayoutConsentPanel
                 :auth-status="auth.authStatus"
                 :user-profile="userProfile"
-                @action="selectImChatty"
+                :show-close="auth.authStatus === 'authenticated'"
+                @action="onConsentAction"
+                @close="onConsentClose"
               />
             </div>
           </ClientOnly>
@@ -678,6 +680,8 @@ const leftOpen = ref(false);
 const rightOpen = ref(false);
 const panelOpen = ref(false);
 const autoCloseOnScroll = false;
+const showConsentPanelAuth = ref(true);
+const CONSENT_PANEL_HIDE_PREFIX = "consentPanelHidden:";
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
@@ -708,6 +712,48 @@ const tabVisibility = computed(() => ({
   offline: canShow("offline"),
   active: canShow("active"),
 }));
+const consentPanelVisible = computed(() =>
+  auth.authStatus === "authenticated" ? showConsentPanelAuth.value : true
+);
+
+function loadConsentPanelPref(userId) {
+  if (!import.meta.client || !userId) return;
+  try {
+    const raw = localStorage.getItem(`${CONSENT_PANEL_HIDE_PREFIX}${userId}`);
+    showConsentPanelAuth.value = raw === "hidden" ? false : true;
+  } catch {
+    showConsentPanelAuth.value = true;
+  }
+}
+
+function saveConsentPanelPref(userId, hidden) {
+  if (!import.meta.client || !userId) return;
+  try {
+    const key = `${CONSENT_PANEL_HIDE_PREFIX}${userId}`;
+    if (hidden) localStorage.setItem(key, "hidden");
+    else localStorage.removeItem(key);
+  } catch {}
+}
+
+watch(
+  () => auth.authStatus,
+  (s) => {
+    if (s !== "authenticated") {
+      showConsentPanelAuth.value = true; // always show for non-auth flows
+      return;
+    }
+    loadConsentPanelPref(auth.user?.id || null);
+  }
+);
+
+watch(
+  () => auth.user?.id,
+  (uid) => {
+    if (auth.authStatus === "authenticated") {
+      loadConsentPanelPref(uid || null);
+    }
+  }
+);
 
 // ---- Basic UI state
 const messageDraft = ref("");
@@ -1068,6 +1114,30 @@ function selectImChatty() {
   } else {
     // users not loaded yet → try again when they appear
     pendingSelectImChatty.value = true;
+  }
+}
+
+async function onConsentAction() {
+  selectImChatty();
+
+  // If we're in the pre-auth onboarding flow, treat this as a "Yes" to consent
+  if (!isPreAuth.value) return;
+
+  try {
+    if (onbRef.value?.acceptConsent) {
+      await onbRef.value.acceptConsent();
+      return;
+    }
+    await sendUserMessage("yes");
+  } catch (e) {
+    console.warn("[consent] failed to trigger accept:", e);
+  }
+}
+
+function onConsentClose() {
+  if (auth.authStatus === "authenticated") {
+    showConsentPanelAuth.value = false;
+    saveConsentPanelPref(auth.user?.id || null, true);
   }
 }
 

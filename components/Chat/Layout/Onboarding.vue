@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useOnboardingDraftStore } from "~/stores/onboardingDraftStore";
 import { useGeoLocationDefaults } from "~/composables/useGeoLocationDefaults";
@@ -104,7 +104,7 @@ const props = defineProps({
 });
 const emit = defineEmits(["send"]);
 
-const ephemeralThread = ref([]); // [{id, from:'me'|'imchatty', text, ts}]
+const ephemeralThread = computed(() => draft.thread || []); // persisted thread
 const scrollEl = ref(null);
 const consentBusy = ref(false);
 const booted = ref(false);
@@ -114,6 +114,9 @@ const botTyping = ref(false);
 defineExpose({
   setTyping(val) {
     botTyping.value = !!val;
+  },
+  acceptConsent() {
+    return onConsentYes();
   },
 });
 
@@ -130,7 +133,7 @@ function scrollToBottom() {
 }
 
 function captureBotMessage(payload) {
-  if (!(props.isPreAuth && props.isBotSelected)) return;
+  if (!props.isPreAuth) return;
 
   const text = typeof payload === "string" ? payload : payload?.text ?? "";
   if (!text) return;
@@ -142,10 +145,7 @@ function captureBotMessage(payload) {
   const last = ephemeralThread.value[ephemeralThread.value.length - 1];
   if (last && last.text === text) return;
 
-  // console.log("[onb] bot ->", text);
-
-  ephemeralThread.value.push({
-    id: crypto.randomUUID(),
+  draft.appendThreadMessage({
     from: "imchatty",
     text,
     ts: Date.now(),
@@ -174,6 +174,7 @@ if (import.meta.client) {
       }
     }
 
+    draft.loadLocal?.();
     await initMd();
   });
 
@@ -186,8 +187,15 @@ watch(ephemeralThread, scrollToBottom, { deep: true });
 watch(
   () => props.authStatus,
   (s) => {
-    if (s === "anon_authenticated" || s === "authenticated") {
-      ephemeralThread.value = [];
+    if (
+      s === "anon_authenticated" ||
+      s === "authenticated" ||
+      s === "unauthenticated"
+    ) {
+      draft.clearThread?.();
+      if (s === "unauthenticated") {
+        draft.clearAll?.();
+      }
       botTyping.value = false;
     }
   }

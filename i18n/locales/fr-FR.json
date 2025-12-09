@@ -729,6 +729,14 @@
       "settings-disabled": "Paramètres (désactivés en mode anonyme)",
       "settings-aria-label": "Ouvrir la fenêtre des paramètres pour mettre à jour vos préférences de compte et vos informations personnelles"
     },
+    "onboardingSteps": {
+      "consent": "Étape 1 sur 5 : Acceptez les conditions pour commencer.",
+      "displayName": "Étape 2 sur 5 : Choisissez votre nom d'affichage.",
+      "age": "Étape 3 sur 5 : Indiquez votre âge.",
+      "gender": "Étape 4 sur 5 : Indiquez votre genre.",
+      "bio": "Étape 5 sur 5 : Ajoutez une courte bio.",
+      "done": "Profil complété."
+    },
     "loginAi": {
       "titleText": "Créez Votre Profil Anonyme"
     },
