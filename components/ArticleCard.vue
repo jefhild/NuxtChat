@@ -15,6 +15,7 @@
           class="text-white article-img"
           height="200"
           :src="articleImageUrl"
+          :alt="articleImageAlt"
           cover
         >
           <!-- Overlay button -->
@@ -125,6 +126,11 @@ const articleImageUrl = computed(() => {
 
   const base = (pub.SUPABASE_BUCKET || "").replace(/\/+$/, "");
   return base && cleanPath ? `${base}/articles/${cleanPath}` : "";
+});
+
+const articleImageAlt = computed(() => {
+  const title = props.article?.title || props.article?.slug;
+  return title ? `${title} cover image` : "Article cover image";
 });
 
 const truncatedSummary = computed(() => {

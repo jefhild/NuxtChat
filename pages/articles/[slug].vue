@@ -91,7 +91,13 @@
       </div>
     </v-navigation-drawer>
     <v-row v-if="heroImage">
-      <v-img class="text-white hero-image" height="350" :src="heroImage" cover>
+      <v-img
+        class="text-white hero-image"
+        height="350"
+        :src="heroImage"
+        :alt="heroImageAlt"
+        cover
+      >
         <div
           v-if="personaName || personaAvatar"
           class="hero-persona-card d-flex align-center ga-4"
@@ -228,18 +234,6 @@
 
     <v-row>
       <v-col cols="12">
-        <!-- <div class="text-body-2 text-grey-darken-1 mb-4">
-          <v-icon>mdi-account</v-icon>
-          <span class="ml-1">{{ $t("components.navbar.imchatty") }}</span>
-          •
-          <v-icon>mdi-folder</v-icon>
-          <NuxtLink
-            :to="localPath(`/categories/${article.category.slug}`)"
-            class="ml-1 unstyled-link"
-          >
-            {{ article.category.name }}
-          </NuxtLink>
-        </div> -->
 
         <!-- Render Markdown content -->
         <div class="prose" v-html="renderedMarkdown"></div>
@@ -270,26 +264,6 @@
       <v-col cols="12" class="text-center"> </v-col>
     </v-row>
 
-    <!-- <v-row justify="center">
-      <v-col cols="12" md="8" class="text-center">
-        <div class="d-flex justify-center align-center flex-wrap">
-          <span class="font-weight-medium mr-2">
-            {{ $t("pages.admin.sections.tags") }}:
-          </span>
-          <v-chip
-            v-for="tag in article.tags"
-            :key="tag.id"
-            class="ma-1"
-            color="deep-purple-lighten-2"
-            size="small"
-            variant="outlined"
-            :to="localPath(`/tags/${tag.slug}`)"
-          >
-            #{{ tag.name }}
-          </v-chip>
-        </div>
-      </v-col>
-    </v-row> -->
 
     <v-row class="mt-2">
       <v-col cols="12" md="8" class="mx-auto">
@@ -360,40 +334,6 @@
       </v-col>
     </v-row>
 
-    <!-- <v-row>
-      <v-col cols="12" class="text-center">
-        <h3 class="">Share</h3>
-
-        <div class="d-inline-flex align-center justify-center">
-          <v-btn
-            class="ma-2 share-btn"
-            color="primary"
-            :href="`https://twitter.com/intent/tweet?url=${shareUrl}`"
-            target="_blank"
-            icon
-          >
-            <v-icon>mdi-twitter</v-icon>
-          </v-btn>
-          <v-btn
-            class="ma-2 share-btn"
-            color="primary"
-            :href="`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`"
-            target="_blank"
-            icon
-          >
-            <v-icon>mdi-facebook</v-icon>
-          </v-btn>
-          <v-btn
-            class="ma-2 share-btn"
-            color="primary"
-            :href="`mailto:?subject=${article.title}&body=${shareUrl}`"
-            icon
-          >
-            <v-icon>mdi-email</v-icon>
-          </v-btn>
-        </div>
-      </v-col>
-    </v-row> -->
   </v-container>
 
   <LoadingContainer v-else />
@@ -553,6 +493,12 @@ const heroImage = computed(() => {
   }
   return null;
 });
+
+const heroImageAlt = computed(() =>
+  displayTitle.value
+    ? `${displayTitle.value} cover image`
+    : "Article cover image"
+);
 
 const rewriteReferences = computed(() => rewriteMeta.value?.references || []);
 const keywordList = computed(() =>
