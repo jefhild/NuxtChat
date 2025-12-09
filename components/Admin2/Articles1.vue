@@ -511,6 +511,25 @@ const slugify = (text) =>
     .replace(/\s+/g, "-")
     .replace(/[^\w-]+/g, "");
 
+const findTagIdFromArticleTag = (tag) => {
+  if (!tag) return null;
+
+  if (typeof tag === "object") {
+    return (
+      tag.id ||
+      tags.value.find((t) => t.slug === tag.slug)?.id ||
+      tags.value.find((t) => t.name === tag.name)?.id ||
+      null
+    );
+  }
+
+  if (typeof tag === "string") {
+    return tags.value.find((t) => t.name === tag)?.id || null;
+  }
+
+  return null;
+};
+
 // const handleImageChange = async (file) => {
 //   if (!file) return;
 
@@ -619,11 +638,8 @@ const toggleEditDialog = (article) => {
       "",
 
     // Map tag names to their corresponding IDs
-    tag_ids: article.tags
-      .map((tagName) => {
-        const match = tags.value.find((t) => t.name === tagName);
-        return match?.id || null;
-      })
+    tag_ids: (article.tags || [])
+      .map((tagEntry) => findTagIdFromArticleTag(tagEntry))
       .filter(Boolean), // remove any nulls
     is_published: article.is_published ?? true,
   };

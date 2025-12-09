@@ -897,6 +897,19 @@ export const useDb = () => {
     return data;
   };
 
+  const normalizeArticleTags = (articleTags) =>
+    (articleTags || [])
+      .map(({ tag }) =>
+        tag
+          ? {
+              id: tag.id,
+              name: tag.name,
+              slug: tag.slug,
+            }
+          : null
+      )
+      .filter(Boolean);
+
   const getAllArticlesWithTags = async () => {
     const supabase = getClient();
 
@@ -915,7 +928,7 @@ export const useDb = () => {
       is_published,
       created_at,
       category:category_id ( id, name, slug ),
-      article_tags(tag:tag_id(name))
+      article_tags(tag:tag_id(id, name, slug))
     `
       )
       .order("created_at", { ascending: false });
@@ -929,7 +942,7 @@ export const useDb = () => {
     return data.map((article) => ({
       ...article,
       category_name: article.category?.name ?? "Uncategorized",
-      tags: article.article_tags?.map((t) => t.tag.name) ?? [],
+      tags: normalizeArticleTags(article.article_tags),
     }));
   };
 
@@ -952,7 +965,7 @@ export const useDb = () => {
       is_published,
       created_at,
       category:category_id ( id, name, slug ),
-      article_tags(tag:tag_id(name)),
+      article_tags(tag:tag_id(id, name, slug)),
       threads(slug)
     `
       )
@@ -968,7 +981,7 @@ export const useDb = () => {
     return data.map((article) => ({
       ...article,
       category_name: article.category?.name ?? "Uncategorized",
-      tags: article.article_tags?.map((t) => t.tag.name) ?? [],
+      tags: normalizeArticleTags(article.article_tags),
       threadSlug:
         Array.isArray(article.threads) && article.threads.length > 0
           ? article.threads[0].slug // use first slug if multiple threads

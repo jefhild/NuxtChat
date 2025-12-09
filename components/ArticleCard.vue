@@ -157,7 +157,13 @@ const formatDate = (isoDate) =>
 
 const formatTagSlug = (tag) => {
   const value = tag?.slug || tag;
-  return typeof value === "string" ? value.toLowerCase() : "";
+  if (typeof value !== "string") return "";
+
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-_]/g, "");
 };
 </script>
 
