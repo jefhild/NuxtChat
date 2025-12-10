@@ -1,29 +1,28 @@
-
 <template>
-  <!-- <v-app> -->
-    <!-- Header should render a v-app-bar with the "app" prop -->
-    <!-- <NavBar1 /> -->
-    <NavBar2 />
+  <!-- <NavBar /> -->
+  <NavBar_Test />
+  <!-- Main content; let children shrink to create scroll areas -->
+  <v-main class="d-flex flex-column min-h-0">
+    <!-- Optional container; keep min-h-0 so inner flex can shrink -->
+    <v-container
+      fluid
+      class="d-flex flex-column flex-grow-1 min-h-0 pa-0 px-sm-6"
+    >
+      <!-- NuxtPage should be allowed to grow/shrink -->
+      <div class="d-flex flex-column flex-grow-1 min-h-0">
+        <NuxtPage />
+      </div>
+    </v-container>
+  </v-main>
 
-    <!-- Main content; let children shrink to create scroll areas -->
-    <v-main class="d-flex flex-column min-h-0">
-      <!-- Optional container; keep min-h-0 so inner flex can shrink -->
-      <v-container fluid class="d-flex flex-column flex-grow-1 min-h-0 pa-0 px-sm-6">
-        <!-- NuxtPage should be allowed to grow/shrink -->
-        <div class="d-flex flex-column flex-grow-1 min-h-0">
-          <NuxtPage />
-        </div>
-      </v-container>
-    </v-main>
-
-    <!-- FOOTER must be an app footer to reserve space -->
-    <v-footer app elevation="0">
-      <Footer />
-    </v-footer>
-  <!-- </v-app> -->
+  <!-- FOOTER must be an app footer to reserve space -->
+  <v-footer app elevation="0">
+    <Footer />
+  </v-footer>
 </template>
 
 <script setup>
+import NavBar_Test from "@/components/NavBar_Test.vue";
 import { onMounted, onBeforeUnmount, watch } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { usePresenceStore2 } from "@/stores/presenceStore2";

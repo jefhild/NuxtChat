@@ -42,7 +42,7 @@
                 {{ $t("components.navbar.chat") }}
               </NuxtLink>
             </li>
-            <li>
+            <li v-if="!isAuthenticated">
               <NuxtLink
                 :to="localPath('/signin')"
                 class="v-btn text-button navItem mr-4"
@@ -59,41 +59,37 @@
             <li><NuxtLink :to="localPath('/articles')">{{ $t("components.navbar.blog") }}</NuxtLink></li>
             <li><NuxtLink :to="localPath('/chat/articles')">{{ $t("components.navbar.discussions") }}</NuxtLink></li>
             <li><NuxtLink :to="localPath('/chat')">{{ $t("components.navbar.chat") }}</NuxtLink></li>
-            <li><NuxtLink :to="localPath('/signin')">{{ $t("components.navbar.signin") }}</NuxtLink></li>
+            <li v-if="!isAuthenticated"><NuxtLink :to="localPath('/signin')">{{ $t("components.navbar.signin") }}</NuxtLink></li>
           </ul>
 
-          <div class="d-none d-md-flex align-center">
-            <v-row align="center" no-gutters>
-              <v-col v-if="userProfile?.is_admin">
-                <NuxtLink
-                  :to="localPath('/admin')"
-                  class="v-btn text-button navItem mr-3"
-                  exact
-                >
-                  {{ $t("components.navbar.admin") }}
-                </NuxtLink>
-              </v-col>
+          <div class="action-nav">
+            <div class="d-flex align-center action-row">
+              <NuxtLink
+                v-if="userProfile?.is_admin"
+                :to="localPath('/admin')"
+                class="v-btn text-button navItem mr-3"
+                exact
+              >
+                {{ $t("components.navbar.admin") }}
+              </NuxtLink>
 
-              <v-col v-if="isAuthenticated">
-                <NuxtLink
-                  :to="localPath('/settings')"
-                  class="v-btn text-button navItem mr-3"
-                  exact
-                >
-                  <v-icon start>mdi-cog</v-icon>
-                  {{ $t("components.navbar.settings") }}
-                </NuxtLink>
-              </v-col>
+              <NuxtLink
+                v-if="isAuthenticated"
+                :to="localPath('/settings')"
+                class="v-btn text-button navItem mr-3"
+                exact
+              >
+                <v-icon start>mdi-cog</v-icon>
+                {{ $t("components.navbar.settings") }}
+              </NuxtLink>
 
-              <v-col v-if="isAuthenticated">
-                <v-btn @click="showLogoutDialog" variant="text">
-                  <v-icon start>mdi-logout</v-icon>
-                  {{ $t("components.navbar.logout") }}
-                </v-btn>
-              </v-col>
-            </v-row>
+              <v-btn v-if="isAuthenticated" @click="showLogoutDialog" variant="text">
+                <v-icon start>mdi-logout</v-icon>
+                {{ $t("components.navbar.logout") }}
+              </v-btn>
+            </div>
 
-            <v-row no-gutters><LanguageSwitcher /></v-row>
+            <div class="language-switcher-row"><LanguageSwitcher /></div>
           </div>
         </nav>
 
@@ -348,9 +344,10 @@ const confirmLogout = async () => {
 }
 
 .main-nav-wrapper {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 12px;
+  column-gap: 16px;
 }
 
 .main-nav-list {
@@ -379,9 +376,32 @@ const confirmLogout = async () => {
   margin: 0;
 }
 
-.language-switcher-row {
-  display: flex;
-  justify-content: flex-end;
+.action-nav {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .action-nav {
+    display: grid;
+    grid-template-rows: auto auto;
+    grid-auto-flow: row;
+    row-gap: 6px;
+    justify-items: end;
+    align-content: start;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    min-height: 40px; /* reserve space so the language picker stays on its own line */
+  }
+
+  .language-switcher-row {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+  }
 }
 
 .logout-dialog-card {

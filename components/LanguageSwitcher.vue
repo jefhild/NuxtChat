@@ -1,7 +1,11 @@
 <template>
   <div class="language-switcher">
     <!-- <select v-model="currentLocale" @change="switchLanguage" :style="{ backgroundImage: `url('${selectedFlag}')` }"> -->
-          <select v-model="currentLocale" :style="{ backgroundImage: `url('${selectedFlag}')` }">
+          <select
+            v-model="currentLocale"
+            :style="{ backgroundImage: `url('${selectedFlag}')` }"
+            aria-label="Language selector"
+          >
       <option v-for="locale in localesWithFlags" :key="locale.code" :value="locale.code">
         {{ locale.label }}
       </option>
@@ -65,12 +69,22 @@ watch(currentLocale, async (val, old) => {
 
 select {
   appearance: none;
-  padding: 6px 12px 6px 36px;
+  padding: 6px 8px 6px 32px;
   font-size: 11px;
   border-radius: 6px;
   background-repeat: no-repeat;
-  background-position: 8px center;
+  background-position: 8px calc(50% - 2px);
   background-size: 20px 15px;
+  width: 44px;
+  color: transparent;
+  text-shadow: none;
+  height: 28px;
+  line-height: 1.1;
+  vertical-align: middle;
+}
+
+option {
+  color: #111;
 }
 
 select:focus {
