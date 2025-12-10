@@ -1,263 +1,182 @@
 <template>
-  <nav>
+  <nav aria-label="Main Navigation">
     <v-app-bar
       app
+      flat
+      density="compact"
+      class="nav-bar"
       image="/images/bkg/tiediebkg2.webp"
       alt="navbar background image"
     >
       <v-app-bar-title class="siteTitle">
-        <NuxtLink :to="localPath('/')">{{
-          $t("components.navbar.imchatty")
-        }}</NuxtLink>
+        <NuxtLink class="title-link" :to="localPath('/')">
+          {{ $t("components.navbar.imchatty") }}
+        </NuxtLink>
+        <img
+          class="robot-float"
+          src="/images/avatars/robot.png"
+          alt="ImChatty robot"
+          width="28"
+          height="28"
+          loading="lazy"
+        />
       </v-app-bar-title>
-      <v-spacer></v-spacer>
 
-      <template v-slot:append>
-        <nav aria-label="Main Navigation" class="main-nav-wrapper">
-          <ul class="main-nav-list d-none d-md-flex">
+      <v-spacer />
+
+      <template #append>
+        <div class="d-none d-md-flex nav-row">
+          <ul class="nav-links">
             <li>
-              <NuxtLink
-                :to="localPath('/articles')"
-                class="v-btn text-button navItem mr-4 d-flex align-center"
-                exact
-              >
+              <NuxtLink :to="localPath('/articles')" class="nav-link" exact>
                 {{ $t("components.navbar.blog") }}
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink
-                :to="localPath('/chat/articles')"
-                class="v-btn text-button navItem mr-4"
-                exact
-              >
+              <NuxtLink :to="localPath('/chat/articles')" class="nav-link" exact>
                 {{ $t("components.navbar.discussions") }}
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink
-                :to="localPath('/chat')"
-                class="v-btn text-button navItem mr-4"
-                exact
-              >
+              <NuxtLink :to="localPath('/chat')" class="nav-link" exact>
                 {{ $t("components.navbar.chat") }}
               </NuxtLink>
             </li>
-            <li v-if="!isAuthenticated">
-              <NuxtLink
-                :to="localPath('/signin')"
-                class="v-btn text-button navItem mr-4"
-                exact
-              >
-                <v-icon start>mdi-login</v-icon>
+            <li v-if="userProfile?.is_admin">
+              <NuxtLink :to="localPath('/admin')" class="nav-link" exact>
+                {{ $t("components.navbar.admin") }}
+              </NuxtLink>
+            </li>
+            <li v-if="isAuthenticated">
+              <NuxtLink :to="localPath('/settings')" class="nav-link" exact>
+                {{ $t("components.navbar.settings") }}
+              </NuxtLink>
+            </li>
+            <li v-if="isAuthenticated">
+              <button class="nav-link btn-like" type="button" @click="showLogoutDialog">
+                {{ $t("components.navbar.logout") }}
+              </button>
+            </li>
+            <li v-else>
+              <NuxtLink :to="localPath('/signin')" class="nav-link" exact>
                 {{ $t("components.navbar.signin") }}
               </NuxtLink>
             </li>
           </ul>
 
-          <!-- Invisible-but-present copy to satisfy mobile-first indexing; keeps primary nav links in the DOM on small viewports -->
-          <ul class="main-nav-crawler">
-            <li><NuxtLink :to="localPath('/articles')">{{ $t("components.navbar.blog") }}</NuxtLink></li>
-            <li><NuxtLink :to="localPath('/chat/articles')">{{ $t("components.navbar.discussions") }}</NuxtLink></li>
-            <li><NuxtLink :to="localPath('/chat')">{{ $t("components.navbar.chat") }}</NuxtLink></li>
-            <li v-if="!isAuthenticated"><NuxtLink :to="localPath('/signin')">{{ $t("components.navbar.signin") }}</NuxtLink></li>
-          </ul>
-
-          <div class="action-nav">
-            <div class="d-flex align-center action-row">
-              <NuxtLink
-                v-if="userProfile?.is_admin"
-                :to="localPath('/admin')"
-                class="v-btn text-button navItem mr-3"
-                exact
-              >
-                {{ $t("components.navbar.admin") }}
-              </NuxtLink>
-
-              <NuxtLink
-                v-if="isAuthenticated"
-                :to="localPath('/settings')"
-                class="v-btn text-button navItem mr-3"
-                exact
-              >
-                <v-icon start>mdi-cog</v-icon>
-                {{ $t("components.navbar.settings") }}
-              </NuxtLink>
-
-              <v-btn v-if="isAuthenticated" @click="showLogoutDialog" variant="text">
-                <v-icon start>mdi-logout</v-icon>
-                {{ $t("components.navbar.logout") }}
-              </v-btn>
-            </div>
-
-            <div class="language-switcher-row"><LanguageSwitcher /></div>
+          <div class="language-switcher d-none d-md-flex" aria-label="Language selector">
+            <LanguageSwitcher />
           </div>
-        </nav>
+        </div>
 
-        <!-- Mobile menu -->
+        <!-- Mobile -->
+        <div class="d-flex d-md-none">
+          <v-menu :close-on-content-click="false">
+            <template #activator="{ props }">
+              <v-app-bar-nav-icon v-bind="props" />
+            </template>
 
-        <v-row no-gutters>
-          <div class="d-flex d-md-none">
-            <v-menu>
-              <template #activator="{ props }">
-                <v-app-bar-nav-icon v-bind="props" />
-              </template>
+            <v-list aria-label="Mobile Navigation">
+              <v-list-item :to="localPath('/articles')" link>
+                <v-list-item-title>{{ $t("components.navbar.blog") }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item :to="localPath('/chat/articles')" link>
+                <v-list-item-title>{{ $t("components.navbar.discussions") }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item :to="localPath('/chat')" link>
+                <v-list-item-title>{{ $t("components.navbar.chat") }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item v-if="userProfile?.is_admin" :to="localPath('/admin')" link>
+                <v-list-item-title>{{ $t("components.navbar.admin") }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item v-if="isAuthenticated" :to="localPath('/settings')" link>
+                <v-list-item-title>{{ $t("components.navbar.settings") }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item v-if="isAuthenticated" @click="showLogoutDialog">
+                <v-list-item-title>{{ $t("components.navbar.logout") }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item v-else :to="localPath('/signin')" link>
+                <v-list-item-title>{{ $t("components.navbar.signin") }}</v-list-item-title>
+              </v-list-item>
 
-              <v-list aria-label="Mobile Navigation" class="mobile-nav-list">
-                <v-list-item :to="localPath('/articles')" link>
-                  <v-list-item-title>{{
-                    $t("components.navbar.blog")
-                  }}</v-list-item-title>
-                </v-list-item>
-
-                <!-- <v-list-item :to="localPath('/about')" link>
-                  <v-list-item-title>{{
-                    $t("components.navbar.aboutus")
-                  }}</v-list-item-title>
-                </v-list-item> -->
-
-                <v-list-item :to="localPath('/chat/articles')" link>
-                  <v-list-item-title>{{
-                    $t("components.navbar.discussions")
-                  }}</v-list-item-title>
-                </v-list-item>
-
-                <v-list-item :to="localPath('/chat')" link>
-                  <v-list-item-title>{{
-                    $t("components.navbar.chat")
-                  }}</v-list-item-title>
-                </v-list-item>
-
-                <!-- <v-list-item :to="localPath('/profiles')" link>
-                  <v-list-item-title>{{
-                    $t("components.navbar.free-chat")
-                  }}</v-list-item-title>
-                </v-list-item> -->
-
-                <v-list-item
-                  v-if="userProfile?.is_admin"
-                  :to="localPath('/admin')"
-                  link
-                >
-                  <v-list-item-title>{{
-                    $t("components.navbar.admin")
-                  }}</v-list-item-title>
-                </v-list-item>
-
-                <v-list-item
-                  v-if="isAuthenticated"
-                  :to="localPath('/settings')"
-                  link
-                >
-                  <v-list-item-title>{{
-                    $t("components.navbar.settings")
-                  }}</v-list-item-title>
-                </v-list-item>
-
-                <v-list-item v-if="isAuthenticated" @click="showLogoutDialog">
-                  <v-list-item-title>{{
-                    $t("components.navbar.logout")
-                  }}</v-list-item-title>
-                </v-list-item>
-
-                <v-list-item
-                  v-else
-                  :to="localPath('/signin')"
-                  append-icon="mdi-login"
-                  link
-                >
-                  <v-list-item-title>{{
-                    $t("components.navbar.signin")
-                  }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </div>
-        </v-row>
+              <v-divider class="my-1" />
+              <v-list-item aria-label="Language selector">
+                <LanguageSwitcher />
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
       </template>
     </v-app-bar>
+
+    <v-dialog v-model="logoutDialog" width="auto" :scrim="!isLoggingOut">
+      <v-card max-width="420" class="logout-dialog-card" prepend-icon="mdi-account-remove">
+        <template #title>
+          {{ isLoggingOut ? $t("components.navbar.logout") : "Logout Of My Account" }}
+        </template>
+
+        <v-card-text>
+          <v-row justify="center">
+            <v-col class="text-center">
+              <template v-if="!isLoggingOut">
+                {{ $t("pages.home.landing_page.logout_confirm") }}
+              </template>
+
+              <template v-else>
+                <div class="d-flex flex-column align-center py-3">
+                  <v-progress-circular indeterminate size="36" class="mb-3" />
+                  <div class="text-medium-emphasis">
+                    {{ currentLogoutLine }}
+                  </div>
+                  <div v-if="logoutError" class="text-error mt-3">
+                    {{ logoutError }}
+                  </div>
+                </div>
+              </template>
+            </v-col>
+          </v-row>
+        </v-card-text>
+
+        <template #actions>
+          <template v-if="!isLoggingOut">
+            <v-btn color="primary" text @click="confirmLogout">
+              {{ $t("pages.home.landing_page.logout_confirm_button") }}
+            </v-btn>
+            <v-spacer />
+            <v-btn class="ms-auto" @click="logoutDialog = false">
+              {{ $t("pages.home.landing_page.cancel") }}
+            </v-btn>
+          </template>
+
+          <template v-else>
+            <v-btn v-if="logoutError" color="primary" variant="text" @click="confirmLogout">
+              {{ $t("common.try_again") || "Try again" }}
+            </v-btn>
+            <v-spacer />
+            <v-btn :disabled="!logoutError" class="ms-auto" @click="logoutDialog = false">
+              {{ $t("pages.home.landing_page.cancel") }}
+            </v-btn>
+          </template>
+        </template>
+      </v-card>
+    </v-dialog>
   </nav>
-
-  <v-dialog v-model="logoutDialog" width="auto" :scrim="!isLoggingOut">
-    <v-card
-      max-width="420"
-      class="logout-dialog-card"
-      prepend-icon="mdi-account-remove"
-    >
-      <template #title>
-        {{
-          isLoggingOut ? $t("components.navbar.logout") : "Logout Of My Account"
-        }}
-      </template>
-
-      <v-card-text>
-        <v-row justify="center">
-          <v-col class="text-center">
-            <template v-if="!isLoggingOut">
-              {{ $t("pages.home.landing_page.logout_confirm") }}
-            </template>
-
-            <template v-else>
-              <div class="d-flex flex-column align-center py-3">
-                <v-progress-circular indeterminate size="36" class="mb-3" />
-                <div class="text-medium-emphasis">
-                  {{ currentLogoutLine }}
-                </div>
-                <div v-if="logoutError" class="text-error mt-3">
-                  {{ logoutError }}
-                </div>
-              </div>
-            </template>
-          </v-col>
-        </v-row>
-      </v-card-text>
-
-      <template #actions>
-        <template v-if="!isLoggingOut">
-          <v-btn color="primary" text @click="confirmLogout">
-            {{ $t("pages.home.landing_page.logout_confirm_button") }}
-          </v-btn>
-          <v-spacer />
-          <v-btn class="ms-auto" @click="logoutDialog = false">
-            {{ $t("pages.home.landing_page.cancel") }}
-          </v-btn>
-        </template>
-
-        <template v-else>
-          <v-btn
-            v-if="logoutError"
-            color="primary"
-            variant="text"
-            @click="confirmLogout"
-          >
-            {{ $t("common.try_again") || "Try again" }}
-          </v-btn>
-          <v-spacer />
-          <v-btn
-            :disabled="!logoutError"
-            class="ms-auto"
-            @click="logoutDialog = false"
-          >
-            {{ $t("pages.home.landing_page.cancel") }}
-          </v-btn>
-        </template>
-      </template>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore1";
-// import { useI18n } from "vue-i18n";
+import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
 
-const localPath = useLocalePath();
-const router = useRouter();
 const authStore = useAuthStore();
-const logoutDialog = ref(false);
+const router = useRouter();
+const localPath = useLocalePath();
+
 const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
 );
 const userProfile = computed(() => authStore.userProfile);
 
+const logoutDialog = ref(false);
 const isLoggingOut = ref(false);
 const logoutError = ref("");
 const logoutLines = [
@@ -270,9 +189,7 @@ const logoutLines = [
   "Waving goodbye 👋…",
 ];
 const lineIdx = ref(0);
-const currentLogoutLine = computed(
-  () => logoutLines[lineIdx.value % logoutLines.length]
-);
+const currentLogoutLine = computed(() => logoutLines[lineIdx.value % logoutLines.length]);
 let rotateTimer = null;
 
 function startLogoutAnimation() {
@@ -303,114 +220,115 @@ const confirmLogout = async () => {
   startLogoutAnimation();
 
   try {
-    // do the real logout work
-    await authStore.logout(); // your existing action
-
-    // success → close + redirect (replace to avoid “Back” reviving old page)
+    await authStore.logout();
     stopLogoutAnimation();
     logoutDialog.value = false;
     await router.replace(localPath("/"));
-  } catch (e) {
-    // show a friendly error and leave dialog open with a retry button
-    logoutError.value = e?.message || "Something went wrong while logging out.";
+  } catch (err) {
+    logoutError.value = err?.message || "Something went wrong while logging out.";
     stopLogoutAnimation();
-    isLoggingOut.value = true; // keep processing view; user can retry
+    isLoggingOut.value = true;
   }
 };
 </script>
 
 <style scoped>
+.nav-bar {
+  background: transparent;
+  backdrop-filter: none;
+  padding-inline: 12px;
+}
+
 .siteTitle {
   font-family: "Amatic SC", sans-serif;
-  font-size: 2.5rem;
+  font-size: 2.4rem;
   font-weight: 700;
-}
-
-.navItem {
-  color: black;
-}
-
-.flag-dropdown .v-field__input {
-  padding: 0 4px;
-  min-height: 32px;
-  width: 40px;
-  justify-content: center;
-}
-
-.flag-dropdown .v-input__control,
-.flag-dropdown .v-field {
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.main-nav-wrapper {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  line-height: 1.1;
+  color: #7b6ddc;
+  display: inline-flex;
   align-items: center;
-  column-gap: 16px;
+  gap: 10px;
 }
 
-.main-nav-list {
+.siteTitle a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.robot-float {
+  display: inline-block;
+  animation: space-bob 4.5s ease-in-out infinite;
+  transform-origin: center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+@keyframes space-bob {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(4px) rotate(2deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+.nav-row {
+  align-items: flex-start;
+  justify-content: flex-end;
+  width: 100%;
+  padding-top: 4px;
+  gap: 12px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
   list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  padding: 4px 4px;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+.btn-like {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.language-switcher :deep(.v-field__input) {
+  min-height: 34px;
+}
+
+.language-switcher {
   display: flex;
   align-items: center;
-  padding: 0;
-  margin: 0;
-}
-
-.main-nav-list li {
-  margin: 0;
-}
-
-.main-nav-crawler {
-  position: absolute;
-  left: -9999px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-  padding: 0;
-  margin: 0;
-}
-
-.action-nav {
-  display: none;
-}
-
-@media (min-width: 960px) {
-  .action-nav {
-    display: grid;
-    grid-template-rows: auto auto;
-    grid-auto-flow: row;
-    row-gap: 6px;
-    justify-items: end;
-    align-content: start;
-  }
-
-  .action-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    min-height: 40px; /* reserve space so the language picker stays on its own line */
-  }
-
-  .language-switcher-row {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-  }
 }
 
 .logout-dialog-card {
   width: 360px;
   max-width: 90vw;
-}
-
-.mobile-nav-list {
-  max-height: 70vh;
-  overflow-y: auto;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <!-- <NavBar /> -->
-  <NavBar_Test />
+  <NavBar />
   <!-- Main content; let children shrink to create scroll areas -->
   <v-main class="d-flex flex-column min-h-0">
     <!-- Optional container; keep min-h-0 so inner flex can shrink -->
@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import NavBar_Test from "@/components/NavBar_Test.vue";
+import NavBar_Test from "~/components/NavBar.vue";
 import { onMounted, onBeforeUnmount, watch } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { usePresenceStore2 } from "@/stores/presenceStore2";
