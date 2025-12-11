@@ -44,6 +44,7 @@ import AdminTags from "~/components/Admin2/Tags.vue";
 import AdminReports from "~/components/Admin2/Reports.vue";
 import AdminAiBots from "~/components/Admin2/AiBots.vue";
 import AdminNewsmesh from "~/components/Admin2/NewsmeshReview.vue";
+import AdminNewsSource from "~/components/Admin2/NewsSource.vue";
 import { useAuthStore } from "@/stores/authStore1";
 
 const { t } = useI18n();
@@ -68,6 +69,11 @@ const items = computed(() => [
     text: t("pages.admin.sections.newsmesh"),
     icon: "mdi-newspaper-variant",
     value: "newsmesh",
+  },
+  {
+    text: t("pages.admin.sections.newsSource"),
+    icon: "mdi-link-plus",
+    value: "newsSource",
   },
   {
     text: t("pages.admin.sections.categories"),
@@ -109,6 +115,8 @@ const getSectionComponent = (section) => {
       return AdminAiBots;
     case "newsmesh":
       return AdminNewsmesh;
+    case "newsSource":
+      return AdminNewsSource;
     default:
       return AdminDashboard;
   }
