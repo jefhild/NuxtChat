@@ -27,6 +27,7 @@
                 class="d-flex flex-column flex-sm-row ga-2 justify-center align-center"
               >
                 <v-btn
+                  v-if="showPrimaryHeroCta"
                   color="primary"
                   :to="localPath('/chat/articles')"
                   class="hero-btn"
@@ -34,12 +35,22 @@
                   {{ $t("pages.home.landing_page.cta_button") }}
                 </v-btn>
                 <v-btn
+                  v-if="showLearnMoreCta"
                   color="white"
                   variant="outlined"
                   @click="$router.push(localPath('/about'))"
                   class="hero-btn"
                 >
                   {{ $t("pages.home.landing_page.learn_more") }}
+                </v-btn>
+                <v-btn
+                  v-if="showLinkEmailCta"
+                  color="amber-darken-2"
+                  variant="flat"
+                  class="hero-btn"
+                  @click="openLinkEmailDialog"
+                >
+                  {{ $t("components.profile-email-link.cta") || "Link email" }}
                 </v-btn>
               </div>
             </div>
@@ -135,11 +146,64 @@
         </template>
       </v-card>
     </v-dialog>
+
+    <!-- Link Email Dialog -->
+    <v-dialog
+      v-model="linkEmailDialogVisible"
+      max-width="480"
+      :retain-focus="false"
+    >
+      <v-card>
+        <v-card-title class="text-h6">
+          {{ t("components.profile-email-link.dialog-title") }}
+        </v-card-title>
+        <v-card-text>
+          <p class="text-body-2 mb-4">
+            {{ t("components.profile-email-link.dialog-description") }}
+          </p>
+
+          <v-text-field
+            v-model="linkEmailForm.email"
+            type="email"
+            :label="t('components.profile-email-link.email-label')"
+            autocomplete="email"
+            variant="outlined"
+          />
+          <v-text-field
+            v-model="linkEmailForm.confirmEmail"
+            type="email"
+            :label="t('components.profile-email-link.confirm-label')"
+            autocomplete="email"
+            variant="outlined"
+          />
+
+          <v-alert v-if="linkEmailError" type="error" variant="tonal" class="mt-2">
+            {{ linkEmailError }}
+          </v-alert>
+          <v-alert
+            v-else-if="linkEmailSuccess"
+            type="success"
+            variant="tonal"
+            class="mt-2"
+          >
+            {{ linkEmailSuccess }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn variant="text" @click="closeLinkEmailDialog">
+            {{ t("components.profile-email-link.cancel") }}
+          </v-btn>
+          <v-btn color="primary" :loading="linkEmailSubmitting" @click="submitLinkEmail">
+            {{ t("components.profile-email-link.submit") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useLocalePath } from "#imports";
@@ -150,7 +214,12 @@ const { t } = useI18n();
 const router = useRouter();
 const localPath = useLocalePath();
 const authStore = useAuthStore();
-const { getMostPopularAiProfiles, getAllPublishedArticlesWithTags } = useDb();
+const {
+  getMostPopularAiProfiles,
+  getAllPublishedArticlesWithTags,
+  hasEmail,
+  updateUserEmail,
+} = useDb();
 
 const isLoading = ref(true);
 const logoutDialog = ref(false);
@@ -159,6 +228,24 @@ const mostPopularAiProfiles = ref([]);
 
 const authStatus = computed(() => authStore.authStatus);
 const userProfile = computed(() => authStore.userProfile);
+const isAnonAuthed = computed(() => authStatus.value === "anon_authenticated");
+
+const linkEmailDialogVisible = ref(false);
+const linkEmailSubmitting = ref(false);
+const linkEmailError = ref("");
+const linkEmailSuccess = ref("");
+const hasLinkedEmail = ref(true);
+const linkEmailForm = reactive({
+  email: "",
+  confirmEmail: "",
+});
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const showLinkEmailCta = computed(
+  () => authStatus.value === "anon_authenticated" && !hasLinkedEmail.value
+);
+const showPrimaryHeroCta = computed(() => !isAnonAuthed.value);
+const showLearnMoreCta = computed(() => !isAnonAuthed.value);
 
 const getAuthHeading = computed(() => {
   switch (authStatus.value) {
@@ -181,6 +268,83 @@ async function confirmLogout() {
   logoutDialog.value = false;
   router.push(localPath("/logout"));
 }
+
+const resetLinkEmailForm = () => {
+  const existingEmail = authStore.user?.email ?? "";
+  linkEmailForm.email = existingEmail;
+  linkEmailForm.confirmEmail = existingEmail;
+  linkEmailError.value = "";
+  linkEmailSuccess.value = "";
+};
+
+const openLinkEmailDialog = () => {
+  resetLinkEmailForm();
+  linkEmailDialogVisible.value = true;
+};
+
+const closeLinkEmailDialog = () => {
+  linkEmailDialogVisible.value = false;
+};
+
+const refreshLinkedEmailState = async () => {
+  if (authStatus.value !== "anon_authenticated") {
+    hasLinkedEmail.value = true;
+    return;
+  }
+  try {
+    hasLinkedEmail.value = await hasEmail(authStore.user?.id);
+  } catch (err) {
+    console.warn("[LandingPage] hasEmail failed:", err);
+    hasLinkedEmail.value = false;
+  }
+};
+
+const submitLinkEmail = async () => {
+  linkEmailError.value = "";
+  linkEmailSuccess.value = "";
+
+  const email = linkEmailForm.email.trim().toLowerCase();
+  const confirm = linkEmailForm.confirmEmail.trim().toLowerCase();
+
+  if (!emailPattern.test(email)) {
+    linkEmailError.value = t("components.profile-email-link.invalid");
+    return;
+  }
+
+  if (email !== confirm) {
+    linkEmailError.value = t("components.profile-email-link.mismatch");
+    return;
+  }
+
+  linkEmailSubmitting.value = true;
+  try {
+    const { error } = await updateUserEmail(email);
+    if (error) throw error;
+    linkEmailSuccess.value = t("components.profile-email-link.success");
+    await refreshLinkedEmailState();
+    if (hasLinkedEmail.value) linkEmailDialogVisible.value = false;
+  } catch (err) {
+    console.error("[LandingPage] link email failed:", err);
+    linkEmailError.value =
+      err?.message || t("components.profile-email-link.generic-error");
+  } finally {
+    linkEmailSubmitting.value = false;
+  }
+};
+
+watch(
+  () => authStatus.value,
+  (status) => {
+    if (!import.meta.client) return;
+    if (status === "anon_authenticated") {
+      refreshLinkedEmailState();
+    } else {
+      hasLinkedEmail.value = true;
+      linkEmailDialogVisible.value = false;
+    }
+  },
+  { immediate: true }
+);
 
 onMounted(async () => {
   try {

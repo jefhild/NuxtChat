@@ -1339,6 +1339,7 @@ async function onSend(text) {
 
   // pre-auth onboarding
   if (isPreAuth.value && sendingToBot) {
+    if (draft.stage === "finalizing") return; // avoid double-sends while saving profile
     try {
       onbRef.value?.setTyping(true); // show dots immediately
       await sendUserMessage(text); // <-- your existing call

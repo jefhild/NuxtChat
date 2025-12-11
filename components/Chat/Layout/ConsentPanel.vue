@@ -154,6 +154,7 @@ const stageLabel = computed(() => {
     consent: "Consent",
     collecting: "Basics",
     confirm: "Confirm",
+    finalizing: "Saving",
     done: "Done",
   };
   return map[draft.stage] || "Get started";

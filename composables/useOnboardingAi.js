@@ -133,6 +133,8 @@ export function useOnboardingAi() {
         const {
           public: { IMCHATTY_ID },
         } = useRuntimeConfig();
+        if (typeof draft.setStage === "function") draft.setStage("finalizing");
+        else draft.stage = "finalizing";
         try {
           // 1) Persist the profile
           await auth.finalizeOnboarding({
@@ -211,6 +213,8 @@ export function useOnboardingAi() {
           }
         } catch (err) {
           console.warn("[onboarding][finalize] failed:", err?.message || err);
+          if (typeof draft.setStage === "function") draft.setStage("collecting");
+          else draft.stage = "collecting";
           if (typeof pushBotMessage === "function") {
             pushBotMessage(
               "Hmm, I couldn’t finish saving your profile. Please try again from Settings."
@@ -313,6 +317,17 @@ export function useOnboardingAi() {
 
     const text = typeof userText === "string" ? userText.trim() : "";
     if (!text) return; // avoid sending empty messages that cause re-prompts
+
+    // Mirror normal chat UX: show my bubble immediately in the ephemeral thread.
+    try {
+      draft.appendThreadMessage?.({
+        from: "me",
+        text,
+        ts: Date.now(),
+      });
+    } catch {
+      /* non-blocking */
+    }
 
     // console.info(
     //   "[onboarding] consented:",

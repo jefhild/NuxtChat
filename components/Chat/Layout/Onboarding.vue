@@ -6,60 +6,74 @@
       <!-- {{ consented }} -->
       <div v-if="isPreAuth && isBotSelected" class="pa-2">
         <div
-          v-for="m in ephemeralThread"
-          :key="m.id"
-          class="my-1"
-          :class="m.from === 'me' ? 'text-right' : 'text-left'"
+          v-if="isFinalizing"
+          class="d-flex align-center justify-center pa-6 flex-column text-center"
         >
-          <div
-            class="px-3 py-2 rounded-xl d-inline-block mb-1"
-            :class="
-              m.from === 'me' ? 'bg-primary text-white' : 'bg-grey-lighten-3'
-            "
-            v-html="(render && render(m.text)) || m.text"
-          />
-        </div>
-        <!-- {{ botTyping }} -->
-        <!-- 🔹 Single trailing typing bubble (never duplicates) -->
-        <div v-if="botTyping" class="my-1 text-left">
-          <div
-            class="px-3 py-2 rounded-xl d-inline-block mb-1 bg-grey-lighten-3 typing-chip"
-          >
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="typing-label">Typing…</span>
+          <v-progress-circular indeterminate color="primary" class="mb-3" />
+          <div class="text-body-1 font-weight-medium">
+            Creating your profile…
+          </div>
+          <div class="text-body-2 text-medium-emphasis mt-1">
+            Hang tight while we save your details.
           </div>
         </div>
-
-        <!-- Consent action chips (show ONLY until consent) -->
-        <div
-          v-if="!consented"
-          class="mt-3 d-flex justify-center flex-wrap gap-2"
-        >
-          <v-chip
-            color="primary"
-            variant="elevated"
-            class="mr-3"
-            :disabled="consentBusy"
-            @click="onConsentYes"
+        <template v-else>
+          <div
+            v-for="m in ephemeralThread"
+            :key="m.id"
+            class="my-1"
+            :class="m.from === 'me' ? 'text-right' : 'text-left'"
           >
-            Yes
-          </v-chip>
+            <div
+              class="px-3 py-2 rounded-xl d-inline-block mb-1"
+              :class="
+                m.from === 'me' ? 'bg-primary text-white' : 'bg-grey-lighten-3'
+              "
+              v-html="(render && render(m.text)) || m.text"
+            />
+          </div>
+          <!-- {{ botTyping }} -->
+          <!-- 🔹 Single trailing typing bubble (never duplicates) -->
+          <div v-if="botTyping" class="my-1 text-left">
+            <div
+              class="px-3 py-2 rounded-xl d-inline-block mb-1 bg-grey-lighten-3 typing-chip"
+            >
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="typing-label">Typing…</span>
+            </div>
+          </div>
 
-          <v-chip
-            variant="outlined"
-            class="mr-3"
-            :disabled="consentBusy"
-            @click="onConsentNo"
+          <!-- Consent action chips (show ONLY until consent) -->
+          <div
+            v-if="!consented"
+            class="mt-3 d-flex justify-center flex-wrap gap-2"
           >
-            No
-          </v-chip>
+            <v-chip
+              color="primary"
+              variant="elevated"
+              class="mr-3"
+              :disabled="consentBusy"
+              @click="onConsentYes"
+            >
+              Yes
+            </v-chip>
 
-          <v-chip variant="outlined" :disabled="consentBusy" @click="onLogin">
-            I already have an account
-          </v-chip>
-        </div>
+            <v-chip
+              variant="outlined"
+              class="mr-3"
+              :disabled="consentBusy"
+              @click="onConsentNo"
+            >
+              No
+            </v-chip>
+
+            <v-chip variant="outlined" :disabled="consentBusy" @click="onLogin">
+              I already have an account
+            </v-chip>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -105,6 +119,7 @@ const props = defineProps({
 const emit = defineEmits(["send"]);
 
 const ephemeralThread = computed(() => draft.thread || []); // persisted thread
+const isFinalizing = computed(() => draft.stage === "finalizing");
 const scrollEl = ref(null);
 const consentBusy = ref(false);
 const booted = ref(false);

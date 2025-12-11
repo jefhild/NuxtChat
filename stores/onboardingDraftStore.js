@@ -12,7 +12,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
     stateId: null,
     cityId: null,
     ip: null,
-    stage: "idle", // 'idle' | 'consent' | 'collecting' | 'confirm' | 'done'
+    stage: "idle", // 'idle' | 'consent' | 'collecting' | 'confirm' | 'finalizing' | 'done'
     updatedAt: null,
     thread: [], // ephemeral onboarding conversation
   }),
