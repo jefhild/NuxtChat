@@ -164,21 +164,21 @@
         <v-card class="pa-4 mb-4" elevation="1">
           <div class="d-flex flex-wrap ga-2">
             <v-chip
-              v-if="newsmeshMeta.published_date"
+              v-if="displayPublishedDate"
               size="small"
               variant="tonal"
             >
-              Published: {{ formatDate(newsmeshMeta.published_date) }}
+              Published: {{ formatDate(displayPublishedDate) }}
             </v-chip>
             <v-chip
-              v-if="newsmeshMeta.source"
+              v-if="displaySourceLabel"
               size="small"
               variant="outlined"
-              :href="newsmeshMeta.link || undefined"
-              :target="newsmeshMeta.link ? '_blank' : undefined"
-              :rel="newsmeshMeta.link ? 'noopener noreferrer' : undefined"
+              :href="displaySourceLink || undefined"
+              :target="displaySourceLink ? '_blank' : undefined"
+              :rel="displaySourceLink ? 'noopener noreferrer' : undefined"
             >
-              Source: {{ newsmeshMeta.source }}
+              Source: {{ displaySourceLabel }}
             </v-chip>
             <v-chip
               v-if="displayCategory"
@@ -490,6 +490,38 @@ const heroImage = computed(() => {
 
   if (newsmeshMeta.value?.media_url) {
     return newsmeshMeta.value.media_url;
+  }
+  return null;
+});
+
+const displayPublishedDate = computed(
+  () =>
+    newsmeshMeta.value?.published_date ||
+    article.value?.created_at ||
+    null
+);
+
+const displaySourceLink = computed(() => {
+  return (
+    newsmeshMeta.value?.link ||
+    newsmeshMeta.value?.source_url ||
+    article.value?.photo_credits_url ||
+    null
+  );
+});
+
+const displaySourceLabel = computed(() => {
+  const meta = newsmeshMeta.value;
+  if (meta?.source) return meta.source;
+  if (meta?.source_domain) return meta.source_domain;
+  if (meta?.source_title) return meta.source_title;
+  const link = displaySourceLink.value;
+  if (link) {
+    try {
+      return new URL(link).hostname.replace(/^www\\./, "");
+    } catch {
+      return link;
+    }
   }
   return null;
 });

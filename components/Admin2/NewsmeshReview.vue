@@ -353,6 +353,31 @@
 
               <v-divider class="my-4" />
 
+              <div class="d-flex flex-wrap ga-2 mb-3">
+                <v-chip
+                  v-if="result.original.published_date"
+                  size="small"
+                  variant="tonal"
+                >
+                  Published:
+                  {{ formatDate(result.original.published_date) }}
+                </v-chip>
+                <v-chip
+                  v-if="result.original.source"
+                  size="small"
+                  variant="outlined"
+                  :href="result.original.link || undefined"
+                  :target="result.original.link ? '_blank' : undefined"
+                  :rel="
+                    result.original.link
+                      ? 'noopener noreferrer'
+                      : undefined
+                  "
+                >
+                  Source: {{ result.original.source }}
+                </v-chip>
+              </div>
+
               <div class="text-caption text-medium-emphasis">
                 <strong>Original:</strong> {{ result.original.title }} —
                 {{ result.original.description }}
@@ -443,6 +468,7 @@ type NewsmeshRewriteResult = {
     description: string | null;
     link: string | null;
     source: string | null;
+    published_date?: string | null;
   };
   rewrite: {
     headline: string;

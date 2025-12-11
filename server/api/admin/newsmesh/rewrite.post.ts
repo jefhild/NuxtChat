@@ -288,6 +288,7 @@ export default defineEventHandler(async (event) => {
           description: article.description,
           link: article.link,
           source: article.source,
+          published_date: article.published_date,
         },
         rewrite,
       });
