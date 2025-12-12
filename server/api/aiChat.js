@@ -134,10 +134,11 @@ export default defineEventHandler(async (event) => {
     });
 
     const aiResponse = response?.choices?.[0]?.message?.content ?? "";
-    if (debug)
+    if (debug) {
       // console.log("[aiChat] AI response preview:", aiResponse.slice(0, 300));
+    }
 
-      return { success: true, aiResponse };
+    return { success: true, aiResponse };
   } catch (err) {
     console.error("[aiChat] error:", err);
     throw err; // Let Nuxt return proper status code/message

@@ -2,6 +2,7 @@
   <!-- Regular3.vue template -->
   <div ref="wrapRef" class="d-flex flex-column h-100 overflow-hidden">
     <v-virtual-scroll
+      ref="vsRef"
       :items="items"
       :item-height="itemHeight"
       :height="listHeight"
