@@ -109,6 +109,18 @@
                     <div class="text-caption text-medium-emphasis">
                       {{ bot.persona_key }}
                     </div>
+                    <div
+                      v-if="bot.category?.name || bot.category_id"
+                      class="d-flex align-center ga-2 mt-1"
+                    >
+                      <v-chip
+                        size="x-small"
+                        color="primary"
+                        variant="tonal"
+                      >
+                        {{ bot.category?.name || "Unassigned category" }}
+                      </v-chip>
+                    </div>
                   </div>
                 </div>
               </td>
@@ -264,6 +276,18 @@
                 />
               </v-col>
               <v-col cols="12" md="6">
+                <v-select
+                  v-model="form.persona.category_id"
+                  :items="categoryOptions"
+                  item-title="name"
+                  item-value="id"
+                  label="Category (expertise)"
+                  clearable
+                  hint="Assign this persona to an article category"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12" md="6">
                 <v-text-field
                   v-model="form.persona.model"
                   label="OpenAI model"
@@ -409,7 +433,7 @@
 import { useAdminAiBots } from "@/composables/useAdminAiBots";
 
 const { listBots, createBot, updateBot, deleteBot } = useAdminAiBots();
-const { getGenders, getStatuses } = useDb();
+const { getGenders, getStatuses, getAllCategories } = useDb();
 
 const loading = ref(true);
 const loadingList = ref(false);
@@ -418,6 +442,7 @@ const bots = ref([]);
 const search = ref("");
 const genders = ref([]);
 const statuses = ref([]);
+const categories = ref([]);
 const dialog = ref(false);
 const deleteDialog = ref(false);
 const deleteTarget = ref(null);
@@ -474,6 +499,7 @@ const form = reactive({
     frequency_penalty: 0,
     max_response_tokens: 600,
     max_history_messages: 10,
+    category_id: null,
     system_prompt_template: "",
     response_style_template: "",
   },
@@ -503,6 +529,7 @@ const personaRoles = ["assistant", "system", "tool"];
 
 const genderOptions = computed(() => genders.value || []);
 const statusOptions = computed(() => statuses.value || []);
+const categoryOptions = computed(() => categories.value || []);
 
 const filteredBots = computed(() => {
   if (!search.value.trim()) return bots.value;
@@ -611,6 +638,7 @@ const resetForm = () => {
     frequency_penalty: 0,
     max_response_tokens: 600,
     max_history_messages: 10,
+    category_id: null,
     system_prompt_template: "",
     response_style_template: "",
   });
@@ -664,6 +692,7 @@ const populateForm = (bot) => {
     frequency_penalty: bot.frequency_penalty ?? 0,
     max_response_tokens: bot.max_response_tokens ?? 600,
     max_history_messages: bot.max_history_messages ?? 10,
+    category_id: bot.category_id ?? bot.category?.id ?? null,
     system_prompt_template: bot.system_prompt_template || "",
     response_style_template: bot.response_style_template || "",
   });
@@ -718,12 +747,14 @@ const loadBots = async () => {
 
 const loadLookups = async () => {
   try {
-    const [genderData, statusData] = await Promise.all([
+    const [genderData, statusData, categoryData] = await Promise.all([
       getGenders(),
       getStatuses(),
+      getAllCategories(),
     ]);
     genders.value = genderData || [];
     statuses.value = statusData || [];
+    categories.value = categoryData || [];
   } catch (error) {
     console.error("[admin][ai-bots] lookup error", error);
   }
@@ -781,6 +812,7 @@ const handleSubmit = async () => {
       frequency_penalty: Number(form.persona.frequency_penalty),
       max_response_tokens: Number(form.persona.max_response_tokens),
       max_history_messages: Number(form.persona.max_history_messages),
+      category_id: form.persona.category_id || null,
       ...jsonPayload,
     },
   };

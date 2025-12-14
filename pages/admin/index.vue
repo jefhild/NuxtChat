@@ -45,6 +45,7 @@ import AdminReports from "~/components/Admin2/Reports.vue";
 import AdminAiBots from "~/components/Admin2/AiBots.vue";
 import AdminNewsmesh from "~/components/Admin2/NewsmeshReview.vue";
 import AdminNewsSource from "~/components/Admin2/NewsSource.vue";
+import AdminEngagementRules from "~/components/Admin2/EngagementRules.vue";
 import { useAuthStore } from "@/stores/authStore1";
 
 const { t } = useI18n();
@@ -87,6 +88,11 @@ const items = computed(() => [
     value: "reports",
   },
   {
+    text: "Engagement Rules",
+    icon: "mdi-shield-account",
+    value: "engagementRules",
+  },
+  {
     text: t("pages.admin.sections.aiBots"),
     icon: "mdi-robot-happy-outline",
     value: "aiBots",
@@ -117,6 +123,8 @@ const getSectionComponent = (section) => {
       return AdminNewsmesh;
     case "newsSource":
       return AdminNewsSource;
+    case "engagementRules":
+      return AdminEngagementRules;
     default:
       return AdminDashboard;
   }

@@ -208,6 +208,7 @@
             style="flex: 1 1 0"
           >
             <ArticlesParticipantsPane
+              :participants="participantsForUI"
               :now="now"
               :get-avatar="getAvatar"
               :get-gender-color="getGenderColor"
@@ -338,6 +339,7 @@
           style="flex: 1 1 0"
         >
           <ArticlesParticipantsPane
+            :participants="participantsForUI"
             :now="now"
             :get-avatar="getAvatar"
             :get-gender-color="getGenderColor"
@@ -643,8 +645,44 @@ watch(
   { immediate: true }
 );
 
-/* ---------- Presence for participants (right panel) ---------- */
+/* ---------- Presence + enrolled participants (right panel) ---------- */
 const { now } = useArticlePresence(threadId); // now: [{ userId, displayname, avatarUrl }, ... ]
+const participants = ref([]);
+const participantsLoading = ref(false);
+const participantsError = ref("");
+
+const loadParticipants = async () => {
+  const s = resolvedSlug.value;
+  if (!s) {
+    participants.value = [];
+    return;
+  }
+  participantsLoading.value = true;
+  participantsError.value = "";
+  try {
+    const res = await $fetch(
+      `/api/articles/threads/${encodeURIComponent(s)}/participants`
+    );
+    if (res?.success === false) throw new Error(res.error);
+    participants.value = Array.isArray(res?.participants)
+      ? res.participants
+      : [];
+  } catch (error) {
+    console.error("[participants] load error", error);
+    participantsError.value = error?.message || "Failed to load participants.";
+    participants.value = [];
+  } finally {
+    participantsLoading.value = false;
+  }
+};
+
+watch(
+  resolvedSlug,
+  () => {
+    loadParticipants();
+  },
+  { immediate: true }
+);
 
 /* ---------- Profiles map to enrich realtime inserts ---------- */
 const profilesById = ref(new Map());
@@ -715,17 +753,74 @@ const messagesForUI = computed(() => {
 
     // console.log("authorProfile:", authorProfile);
 
+    // Persona/bot identity from meta if no author profile
+    const displaynameFromMeta =
+      raw?.meta?.persona_displayname || raw?.meta?.persona_key || null;
+    const avatarFromMeta = raw?.meta?.persona_avatar_url || null;
+
     return {
       ...raw,
       authorId,
       // authorProfile,
       author: raw.author ?? authorProfile ?? null, //
-      displayname: raw.displayname ?? authorProfile?.displayname ?? "User",
-      avatarUrl: raw.avatarUrl ?? authorProfile?.avatarUrl ?? null,
+      displayname:
+        raw.displayname ??
+        authorProfile?.displayname ??
+        (raw.senderKind !== "user" ? displaynameFromMeta : null) ??
+        "User",
+      avatarUrl:
+        raw.avatarUrl ??
+        authorProfile?.avatarUrl ??
+        (raw.senderKind !== "user" ? avatarFromMeta : null) ??
+        null,
       // convenience fields for links/tooltip
       slug: raw.slug ?? authorProfile?.slug ?? null,
     };
   });
+});
+
+// Merge enrolled participants with live presence for the side panel
+const participantsForUI = computed(() => {
+  const onlineIds = new Set((now.value || []).map((u) => u.userId));
+  const list =
+    (participants.value || []).map((p) => {
+      const isPersona = p.kind === "persona" || !!p.persona;
+      const profile = isPersona ? p.persona?.profile : p.user;
+      const userId = isPersona
+        ? p.persona?.profile?.user_id || null
+        : p.user?.id || null;
+      return {
+        id: p.id,
+        userId,
+        displayname:
+          profile?.displayname ||
+          p.persona?.persona_key ||
+          p.user?.displayname ||
+          "User",
+        avatarUrl: profile?.avatar_url || null,
+        slug: profile?.slug || null,
+        gender_id: isPersona ? null : profile?.gender_id || null,
+        isPersona,
+        isOnline: userId ? onlineIds.has(userId) : false,
+      };
+    }) || [];
+
+  const known = new Set(list.map((p) => p.userId).filter(Boolean));
+  for (const u of now.value || []) {
+    if (!u.userId || known.has(u.userId)) continue;
+    list.push({
+      id: `presence:${u.userId}`,
+      userId: u.userId,
+      displayname: u.displayname || "User",
+      avatarUrl: u.avatarUrl || null,
+      slug: u.slug || null,
+      gender_id: u.gender_id || null,
+      isPersona: false,
+      isOnline: true,
+    });
+  }
+
+  return list;
 });
 
 /* ---------- Compose/send ---------- */

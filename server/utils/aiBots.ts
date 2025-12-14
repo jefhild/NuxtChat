@@ -28,6 +28,7 @@ export const AI_PERSONA_SELECT = `
   frequency_penalty,
   max_response_tokens,
   max_history_messages,
+  category_id,
   system_prompt_template,
   response_style_template,
   dynamic_fields,
@@ -36,6 +37,11 @@ export const AI_PERSONA_SELECT = `
   moderation_config,
   created_at,
   updated_at,
+  category:categories!ai_personas_category_id_fkey (
+    id,
+    name,
+    slug
+  ),
   profile:profiles!ai_personas_profile_user_id_fkey (
     user_id,
     displayname,
@@ -146,6 +152,7 @@ export const buildPersonaPayload = (
   return {
     persona_key: personaKey,
     profile_user_id: profileUserId,
+    category_id: input?.category_id || null,
     role: input?.role || "assistant",
     is_active: typeof input?.is_active === "boolean" ? input.is_active : true,
     model: String(input?.model || "gpt-4o-mini"),

@@ -27,6 +27,7 @@ export default defineEventHandler(async (event) => {
       userAge, // number | null
       history, // [{ sender, content }]
       replyTo, // string | null
+      extra_system, // string | null
     } = body || {};
 
     if (!userMessage) return { success: false, error: "Missing userMessage" };
@@ -96,10 +97,10 @@ export default defineEventHandler(async (event) => {
     };
 
     // Render the base system prompt template
-    const promptBase = mustache.render(
-      persona.system_prompt_template || "",
-      vars
-    );
+    let promptBase = mustache.render(persona.system_prompt_template || "", vars);
+    if (extra_system && typeof extra_system === "string") {
+      promptBase = `${promptBase}\n${extra_system.trim()}`;
+    }
 
     // Keep your original “append history to system” approach
     let fullPrompt = `${promptBase}\nHere are the previous messages:\n`;
@@ -121,7 +122,7 @@ export default defineEventHandler(async (event) => {
       model: persona.model || "gpt-4o-mini",
       messages: [
         { role: "system", content: fullPrompt },
-        { role: "user", content: userMessage },
+      { role: "user", content: userMessage },
       ],
       temperature: persona.temperature ?? 0.7,
       top_p: persona.top_p ?? 1,

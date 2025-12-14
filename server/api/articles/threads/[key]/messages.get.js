@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
   const { data: msgs, error: mErr } = await supa
     .from("messages_v2")
     .select(
-      "id, thread_id, reply_to_message_id, sender_kind, content, created_at, sender_user_id, masked, deleted"
+      "id, thread_id, reply_to_message_id, sender_kind, content, created_at, sender_user_id, masked, deleted, meta, message_type"
     )
     .eq("thread_id", threadId)
     .order("created_at", { ascending: true });
@@ -162,7 +162,30 @@ const toCamelProfile = (p) =>
 
   const items = (msgs || []).map((m) => {
     const prof = profMap.get(m.sender_user_id) || null;
-    const author = toCamelProfile(prof);
+    let author = toCamelProfile(prof);
+
+    // Persona/bot fallback using meta
+    if (!author && m.sender_kind !== "user" && m.meta) {
+      const meta = m.meta || {};
+      const displayname =
+        meta.persona_displayname || meta.persona_key || "AI participant";
+      author = {
+        id: meta.persona_id || null,
+        displayname,
+        avatarUrl: meta.persona_avatar_url || null,
+        slug: meta.persona_slug || null,
+      };
+    }
+
+    const displayname =
+      author?.displayname ||
+      (m.sender_kind !== "user"
+        ? m.meta?.persona_displayname || m.meta?.persona_key || "AI participant"
+        : "User");
+    const avatarUrl =
+      author?.avatarUrl ||
+      (m.sender_kind !== "user" ? m.meta?.persona_avatar_url || null : null);
+
     const agg = scoreMap.get(m.id) || {};
     return {
       id: m.id,
@@ -172,8 +195,8 @@ const toCamelProfile = (p) =>
       createdAt: m.created_at,
       authorId: m.sender_user_id,
       // legacy view fields
-      displayname: author?.displayname ?? null,
-      avatarUrl: author?.avatarUrl ?? null,
+      displayname,
+      avatarUrl,
       // full profile object + convenience slug
       author,
       authorSlug: author?.slug ?? null,

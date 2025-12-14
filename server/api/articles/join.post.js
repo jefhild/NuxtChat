@@ -26,6 +26,19 @@ export default defineEventHandler(async (event) => {
   if (upErr)
     throw createError({ statusCode: 500, statusMessage: upErr.message });
 
+  // Enroll human participant for this thread
+  const { error: partErr } = await supa.from("thread_participants").upsert(
+    {
+      thread_id: threadId,
+      user_id: user.id,
+      kind: "human",
+      last_seen_at: new Date().toISOString(),
+    },
+    { onConflict: "thread_id,user_id" }
+  );
+  if (partErr && partErr.code !== "23505")
+    throw createError({ statusCode: 500, statusMessage: partErr.message });
+
   // Ensure welcome message exists
   const { data: exists, error: existsErr } = await supa
     .from("messages_v2")
@@ -52,10 +65,257 @@ export default defineEventHandler(async (event) => {
     if (insErr && insErr.code !== "23505") {
       throw createError({ statusCode: 500, statusMessage: insErr.message });
     }
+
+    // Kick off two persona reactions to the welcome question (if available)
+    await triggerPersonaReactions({
+      supa,
+      threadId,
+      welcomeText,
+    }).catch((err) =>
+      console.error("[join.post] persona reactions failed:", err?.message || err)
+    );
   }
 
   return { ok: true };
 });
+
+async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
+  try {
+    const safeWelcome = welcomeText || "Let's start the discussion.";
+    // Avoid duplicates: if any persona reactions already exist, skip
+    const { data: existing } = await supa
+      .from("messages_v2")
+      .select("id")
+      .eq("thread_id", threadId)
+      .eq("message_type", "persona_reaction")
+      .limit(1);
+    if (existing && existing.length) return;
+
+    // Fetch up to 2 active personas already enrolled on this thread (with profile)
+    const { data: personaRows, error: personaErr } = await supa
+      .from("thread_participants")
+      .select(
+        `
+          persona:persona_id (
+            id,
+            persona_key,
+            profile_user_id,
+            is_active,
+            profile:profiles!ai_personas_profile_user_id_fkey (
+              id,
+              user_id,
+              displayname,
+              avatar_url,
+              slug
+            )
+          )
+        `
+      )
+      .eq("thread_id", threadId)
+      .eq("kind", "persona")
+      .not("persona_id", "is", null)
+      .limit(2);
+    if (personaErr) {
+      console.error("[join.post] fetch personas error:", personaErr.message);
+      return;
+    }
+    const personas =
+      (personaRows || [])
+        .map((p) => p.persona)
+        .filter((p) => p && p.is_active)
+        .slice(0, 2);
+
+    if (!personas.length) return;
+
+  // Helper to call local aiChat endpoint
+  const callAiChat = async ({
+    personaKey,
+    userMessage,
+    history,
+    replyTo,
+    personaDisplayname,
+    extraSystem,
+  }) => {
+    try {
+      const res = await $fetch("/api/aiChat", {
+        method: "POST",
+        body: {
+          userMessage,
+          aiUser: personaKey,
+          history,
+          replyTo: replyTo || null,
+          extra_system: extraSystem || null,
+        },
+      });
+      if (!res || res.success === false) {
+        throw new Error(res?.error || "aiChat failed");
+      }
+      // Prefer aiResponse; fall back to other fields
+      return (
+        res?.aiResponse ||
+        res?.data?.aiResponse ||
+        res?.data?.message ||
+        res?.message ||
+        res?.reply ||
+        (typeof res === "string" ? res : "")
+      );
+    } catch (err) {
+      console.error("[join.post] aiChat failed, falling back:", err?.message || err);
+      // Deterministic fallback so the thread still gets seeded
+      return fallbackPersonaReply({ personaKey, userMessage, history, replyTo });
+    }
+  };
+
+    // First persona reacts to welcome question
+    const first = personas[0];
+    const historyBase = [{ sender: "host", content: safeWelcome }];
+    const firstTextRaw = await callAiChat({
+      personaKey: first.persona_key,
+      personaDisplayname:
+        first.profile?.displayname || first.persona_key || "AI participant",
+      userMessage: safeWelcome,
+      history: historyBase,
+      extraSystem: [
+        `You are ${first.profile?.displayname || first.persona_key}, an expert commentator.`,
+        "Give a concise 1-2 sentence take.",
+        "Do NOT restate or quote the question verbatim.",
+        "Avoid repeating the user's wording; add a new angle or opinion.",
+      ].join(" "),
+    });
+    const firstText =
+      typeof firstTextRaw === "string" && firstTextRaw.trim()
+        ? deParrot(firstTextRaw.trim(), safeWelcome, first.persona_key)
+        : fallbackPersonaReply({
+            personaKey: first.persona_key,
+            userMessage: safeWelcome,
+            history: historyBase,
+          });
+
+    const firstMessage = {
+      thread_id: threadId,
+      sender_kind: "bot",
+      sender_user_id: null,
+      message_type: "persona_reaction",
+      content: firstText,
+      visible: true,
+      meta: {
+        persona_id: first.id,
+        persona_key: first.persona_key,
+        persona_displayname: first.profile?.displayname || first.persona_key,
+        persona_avatar_url: first.profile?.avatar_url || null,
+        persona_slug: first.profile?.slug || null,
+      },
+    };
+
+    // Second persona replies to the first persona (if present)
+    if (personas.length > 1) {
+      const second = personas[1];
+      const historySecond = [
+        ...historyBase,
+        { sender: first.persona_key, content: firstText },
+      ];
+      const secondTextRaw = await callAiChat({
+        personaKey: second.persona_key,
+        personaDisplayname:
+          second.profile?.displayname || second.persona_key || "AI participant",
+        userMessage: `Prior comment from ${
+          first.profile?.displayname || first.persona_key
+        }: "${firstText}". Main question: ${safeWelcome}`,
+        history: historySecond,
+        replyTo: firstText,
+        extraSystem: [
+          `You are ${second.profile?.displayname || second.persona_key}, an expert commentator.`,
+          "React with your own concise 1-2 sentence take.",
+          "Do NOT restate or quote the question or prior comment verbatim.",
+          "Add a new angle or opinion tied back to the main question.",
+        ].join(" "),
+      });
+      const secondText =
+        typeof secondTextRaw === "string" && secondTextRaw.trim()
+          ? deParrot(
+              secondTextRaw.trim(),
+              firstText || safeWelcome,
+              second.persona_key
+            )
+          : fallbackPersonaReply({
+              personaKey: second.persona_key,
+              userMessage: firstText || safeWelcome,
+              history: historySecond,
+              replyTo: firstText,
+            });
+      const secondMessage = {
+        thread_id: threadId,
+        sender_kind: "bot",
+        sender_user_id: null,
+        message_type: "persona_reaction",
+        content: secondText,
+        visible: true,
+        meta: {
+          persona_id: second.id,
+          persona_key: second.persona_key,
+          persona_displayname: second.profile?.displayname || second.persona_key,
+          persona_avatar_url: second.profile?.avatar_url || null,
+          persona_slug: second.profile?.slug || null,
+        },
+      };
+
+      // Insert first, delay, then second
+      const { error: firstErr } = await supa
+        .from("messages_v2")
+        .insert(firstMessage);
+      if (firstErr && firstErr.code !== "23505") {
+        console.error("[join.post] insert first persona reply error:", firstErr);
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const { error: secondErr } = await supa
+        .from("messages_v2")
+        .insert(secondMessage);
+      if (secondErr && secondErr.code !== "23505") {
+        console.error("[join.post] insert second persona reply error:", secondErr);
+      }
+    } else {
+      // Only first persona available
+      const { error: firstErr } = await supa
+        .from("messages_v2")
+        .insert(firstMessage);
+      if (firstErr && firstErr.code !== "23505") {
+        console.error("[join.post] insert first persona reply error:", firstErr);
+      }
+    }
+  } catch (error) {
+    console.error("[join.post] persona reactions error:", error?.message || error);
+  }
+}
+
+const fallbackPersonaReply = ({
+  personaKey,
+  userMessage,
+  history = [],
+  replyTo = null,
+}) => {
+  const base = (replyTo || userMessage || "Noted.").toString();
+  return `${personaKey} adds a quick take: ${base}`;
+};
+
+const deParrot = (response, question, personaKey) => {
+  if (!response) return fallbackPersonaReply({ personaKey, userMessage: question });
+  const r = String(response).trim();
+  const q = String(question || "").trim();
+  if (!q) return r;
+  const rLower = r.toLowerCase();
+  const qLower = q.toLowerCase();
+  const repeatsQuestion =
+    rLower === qLower ||
+    rLower.includes(qLower) ||
+    (r.length <= q.length * 1.2 && rLower.startsWith(qLower.slice(0, 20)));
+  if (repeatsQuestion) {
+    return `${personaKey} adds a quick take: ${q}`;
+  }
+  return r;
+};
 
 function stripMarkdown(input = "") {
   // Tiny sanitizer: strip MD/HTML and collapse whitespace (safe subset)
