@@ -11,10 +11,18 @@
     </v-row>
 
     <!-- Mobile controls: left drawer (Topics) + right drawer (Participants) -->
-    <div class="d-md-none d-flex align-center justify-space-between px-2 py-2">
-      <v-btn icon @click="leftOpen = true" aria-label="Open topics"
-        ><v-icon>mdi-menu</v-icon></v-btn
+    <div
+      class="d-md-none d-flex align-center justify-space-between px-2 py-2 chat-mobile-controls"
+    >
+      <v-btn
+        class="flat-icon-button"
+        variant="text"
+        density="comfortable"
+        @click="leftOpen = true"
+        aria-label="Open articles"
       >
+        <v-icon color="primary">mdi-text-box-outline</v-icon>
+      </v-btn>
       <v-spacer />
       <v-btn
         icon
@@ -29,7 +37,7 @@
     <div v-if="articleImageUrl" class="mobile-image-wrapper d-md-none">
       <v-img
         :src="articleImageUrl"
-        height="148"
+        height="64"
         cover
         class="mobile-header-img"
         eager
@@ -152,11 +160,11 @@
         <!-- Scrollable messages list -->
         <div
           ref="centerScrollRef"
-          class="flex-grow-1 overflow-auto users-scroll min-h-0 px-2 py-2"
-          style="flex: 1 1 0"
-          @scroll.passive="
-            panelOpen && autoCloseOnScroll && (panelOpen = false)
-          "
+            class="flex-grow-1 overflow-auto users-scroll min-h-0 px-2 py-2"
+            style="flex: 1 1 0"
+            @scroll.passive="
+              panelOpen && autoCloseOnScroll && (panelOpen = false)
+            "
         >
           <v-skeleton-loader
             v-if="loadingMsgs"
@@ -289,11 +297,13 @@
 
   <!-- Mobile-only Drawers -->
   <v-navigation-drawer
+    v-if="hasMounted"
     v-model="leftOpen"
     location="left"
     temporary
     class="d-md-none"
     width="320"
+    :mobile="isMobileDrawer"
     aria-label="Topics drawer"
   >
     <div
@@ -321,11 +331,13 @@
   </v-navigation-drawer>
 
   <v-navigation-drawer
+    v-if="hasMounted"
     v-model="rightOpen"
     location="right"
     temporary
     class="d-md-none"
     width="300"
+    :mobile="isMobileDrawer"
     aria-label="Participants drawer"
   >
     <div
@@ -398,7 +410,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, watchEffect } from "vue";
+import { computed, ref, watch, watchEffect, reactive, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { useArticleThread } from "@/composables/articles/useArticleThread";
 import { useArticlePresence } from "@/composables/articles/useArticlePresence";
@@ -410,9 +422,13 @@ import {
 } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
 import { sanitizeHtml } from "~/utils/sanitizeHtml.js";
+import { useDisplay } from "vuetify";
 
 const leftOpen = ref(false);
 const rightOpen = ref(false);
+const hasMounted = ref(false);
+const { smAndDown } = useDisplay();
+const isMobileDrawer = computed(() => hasMounted.value && smAndDown.value);
 
 const { t: $t, locale, availableLocales } = useI18n(); // avoid name collision with "thread"
 const { public: pub } = useRuntimeConfig();
@@ -497,6 +513,14 @@ const formatClock = (iso) => {
     return "";
   }
 };
+
+onMounted(() => {
+  hasMounted.value = true;
+  if (!smAndDown.value) {
+    leftOpen.value = false;
+    rightOpen.value = false;
+  }
+});
 
 const dateTimeFmt = new Intl.DateTimeFormat("en-GB", {
   year: "numeric",
@@ -1027,5 +1051,15 @@ useSeoMeta({
 .profile-link:hover {
   color: var(--v-theme-primary);
   text-decoration: underline;
+}
+.chat-mobile-controls {
+  margin-top: -20px;
+  margin-bottom: 2px;
+}
+
+.flat-icon-button {
+  min-width: 0;
+  padding: 4px;
+  border-radius: 6px;
 }
 </style>

@@ -3,7 +3,7 @@
     <v-container fluid class="d-flex flex-column h-100 min-h-0">
       <!-- Mobile controls: left drawer (Topics) + right drawer (Participants) -->
       <div
-        class="d-md-none d-flex align-center justify-space-between px-2 py-2"
+        class="d-md-none d-flex align-center justify-space-between px-2 py-2 chat-mobile-controls"
       >
         <v-btn
           icon
@@ -128,6 +128,7 @@
                 </v-chip>
                 <v-btn
                   icon
+                  size="x-small"
                   variant="text"
                   :disabled="!selectedUser"
                   :aria-expanded="String(panelOpen)"
@@ -240,9 +241,9 @@
             ref="centerScrollRef"
             class="flex-grow-1 overflow-auto users-scroll min-h-0 px-2 py-2"
             style="flex: 1 1 0"
-            @scroll.passive="
-              panelOpen && autoCloseOnScroll && (panelOpen = false)
-            "
+            @scroll.passive="onMobileScroll"
+            @touchstart.passive="onMobileTouchStart"
+            @touchmove.passive="onMobileTouchMove"
           >
             <v-skeleton-loader
               v-if="loadingMsgs"
@@ -347,11 +348,11 @@
                   {{ selectedUserInitial }}
                 </span>
               </v-avatar>
-              <div class="min-w-0 ml-2">
+              <div class="min-w-0 ml-2 mobile-profile-info">
                 <div class="text-subtitle-2 font-weight-medium text-truncate">
                   {{ selectedUserTitle }}
                 </div>
-                <div class="text-body-2 text-medium-emphasis text-truncate">
+                <div class="text-body-2 text-medium-emphasis mobile-profile-subtitle">
                   {{ selectedUserSubtitle }}
                 </div>
               </div>
@@ -519,6 +520,7 @@
       temporary
       class="d-md-none"
       width="320"
+      :mobile="isMobileDrawer"
       aria-label="Topics drawer"
     >
       <div
@@ -559,6 +561,7 @@
       temporary
       class="d-md-none"
       width="300"
+      :mobile="isMobileDrawer"
       aria-label="Participants drawer"
     >
       <div
@@ -658,6 +661,7 @@ import { useLocalePath } from "#imports";
 import { useAiQuota } from "~/composables/useAiQuota";
 import { useTabFilters } from "@/composables/useTabFilters";
 import { useI18n } from "vue-i18n";
+import { useFooterVisibility } from "~/composables/useFooterVisibility";
 
 const auth = useAuthStore();
 const chat = useChatStore();
@@ -670,6 +674,13 @@ const route = useRoute();
 const { t } = useI18n();
 
 const { smAndDown } = useDisplay();
+const hasMounted = ref(false);
+const {
+  createScrollHandler: createFooterScrollHandler,
+  setTouchStart: setFooterTouchStart,
+  handleTouchMove: handleFooterTouchMove,
+  showFooter: showAppFooter,
+} = useFooterVisibility();
 const { getClient, getActiveChats, insertMessage, deleteChatWithUser } = useDb();
 const supabase = getClient();
 
@@ -682,6 +693,7 @@ const panelOpen = ref(false);
 const autoCloseOnScroll = false;
 const showConsentPanelAuth = ref(true);
 const CONSENT_PANEL_HIDE_PREFIX = "consentPanelHidden:";
+const footerScroll = createFooterScrollHandler("chat-mobile");
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
@@ -715,6 +727,7 @@ const tabVisibility = computed(() => ({
 const consentPanelVisible = computed(() =>
   auth.authStatus === "authenticated" ? showConsentPanelAuth.value : true
 );
+const isMobileDrawer = computed(() => hasMounted.value && smAndDown.value);
 
 function loadConsentPanelPref(userId) {
   if (!import.meta.client || !userId) return;
@@ -734,6 +747,40 @@ function saveConsentPanelPref(userId, hidden) {
     else localStorage.removeItem(key);
   } catch {}
 }
+
+const onMobileScroll = (event) => {
+  if (!smAndDown.value) return;
+  if (panelOpen.value && autoCloseOnScroll) {
+    panelOpen.value = false;
+  }
+  const target = event?.target;
+  const nextY =
+    target && typeof target.scrollTop === "number" ? target.scrollTop : 0;
+  footerScroll(nextY);
+};
+
+const onMobileTouchStart = (event) => {
+  if (!smAndDown.value) return;
+  const t = event.touches?.[0];
+  if (!t) return;
+  setFooterTouchStart("chat-mobile", t.clientY);
+};
+
+const onMobileTouchMove = (event) => {
+  if (!smAndDown.value) return;
+  const t = event.touches?.[0];
+  if (!t) return;
+  handleFooterTouchMove("chat-mobile", t.clientY);
+};
+
+onMounted(() => {
+  hasMounted.value = true;
+  // ensure drawers don't render mobile server-side then stay off on desktop
+  if (!smAndDown.value) {
+    leftOpen.value = false;
+    rightOpen.value = false;
+  }
+});
 
 watch(
   () => auth.authStatus,
@@ -1556,5 +1603,19 @@ function toggleFilters() {
 }
 .profile-bio {
   white-space: pre-line;
+}
+.chat-mobile-controls {
+  margin-top: -20px;
+  margin-bottom: 2px;
+}
+.mobile-profile-info {
+  min-width: 0;
+}
+.mobile-profile-subtitle {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>
