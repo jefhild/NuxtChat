@@ -6,7 +6,7 @@
     <div class="full-bleed">
       <v-sheet class="hero w-100" height="100vh">
         <v-img
-          src="/images/background.png"
+          src="/images/background2.webp"
           cover
           class="hero-img w-100"
           :height="'80%'"

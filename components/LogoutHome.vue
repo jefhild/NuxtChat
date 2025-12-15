@@ -9,7 +9,7 @@
         >
           <!-- Background Image -->
           <v-img
-            src="/public/images/background.png"
+            src="/public/images/background2.webp"
             cover
             height="80%"
             width="80%"
