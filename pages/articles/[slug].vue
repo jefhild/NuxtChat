@@ -22,6 +22,7 @@
       location="left"
       temporary
       width="360"
+      :style="filtersDrawerStyle"
       class="filters-drawer"
       aria-label="Article filters"
     >
@@ -369,6 +370,7 @@ const tags = ref([]);
 const people = ref([]);
 const openFilterPanel = ref(null);
 const filtersOpen = ref(false);
+const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
 
 const categorySlugs = computed(() => {
   const a = article.value;

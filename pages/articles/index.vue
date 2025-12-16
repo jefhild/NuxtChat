@@ -25,6 +25,7 @@
       location="left"
       temporary
       width="360"
+      :style="filtersDrawerStyle"
       class="filters-drawer"
       aria-label="Article filters"
     >
@@ -161,6 +162,7 @@ const searchLabel = computed(() => t("pages.articles.index.search"));
 const articles = ref([]);
 const filtersOpen = ref(false);
 const openFilterPanel = ref(null);
+const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
 const tags = ref([]);
 const categories = ref([]);
 const people = ref([]);

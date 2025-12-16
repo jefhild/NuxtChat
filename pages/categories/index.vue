@@ -25,6 +25,7 @@
       location="left"
       temporary
       width="360"
+      :style="filtersDrawerStyle"
       class="filters-drawer"
       aria-label="Category filters"
     >
@@ -151,6 +152,7 @@ import { useI18n } from "vue-i18n";
 const route = useRoute();
 const openFilterPanel = ref(null);
 const filtersOpen = ref(false);
+const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
 const {
   getAllCategories,
   getCountArticleByCategory,

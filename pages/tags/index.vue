@@ -25,6 +25,7 @@
       location="left"
       temporary
       width="360"
+      :style="filtersDrawerStyle"
       class="filters-drawer"
       aria-label="Tag filters"
     >
@@ -162,6 +163,7 @@ const tags = ref([]);
 const categories = ref([]);
 const people = ref([]);
 const articles = ref([]);
+const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
 const searchQuery = ref("");
 const openFilterPanel = ref(null);
 const filtersOpen = ref(false);

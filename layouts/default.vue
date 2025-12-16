@@ -1,5 +1,4 @@
 <template>
-  <!-- <NavBar /> -->
   <NavBar />
   <!-- Main content; let children shrink to create scroll areas -->
   <v-main class="d-flex flex-column min-h-0" :style="mainStyle">
@@ -16,12 +15,7 @@
   </v-main>
 
   <!-- FOOTER must be an app footer to reserve space -->
-  <v-footer
-    v-if="!isMobile"
-    app
-    elevation="0"
-    class="app-footer"
-  >
+  <v-footer v-if="!isMobile" app elevation="0" class="app-footer">
     <Footer />
   </v-footer>
 
@@ -55,7 +49,7 @@
 </template>
 
 <script setup>
-import NavBar_Test from "~/components/NavBar.vue";
+import NavBar from "~/components/NavBar.vue";
 import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { usePresenceStore2 } from "@/stores/presenceStore2";
@@ -82,9 +76,13 @@ const isClient = typeof window !== "undefined";
 const isMobile = computed(() => hasMounted.value && smAndDown.value === true);
 const isChatRoute = computed(() => (route.path || "").includes("/chat"));
 const mainStyle = computed(() => {
-  if (!isMobile.value) return {};
+  const base = {
+    paddingTop: "var(--nav2-offset, 0px)",
+  };
+  if (!isMobile.value) return base;
   const padding = footerVisible.value ? 64 : peekOffset + 12;
   return {
+    ...base,
     paddingBottom: `calc(${padding}px + env(safe-area-inset-bottom, 0px))`,
     transition: "padding-bottom 160ms ease",
   };

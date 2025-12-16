@@ -22,6 +22,7 @@
       location="left"
       temporary
       width="360"
+      :style="filtersDrawerStyle"
       class="filters-drawer"
       aria-label="People filters"
     >
@@ -166,6 +167,7 @@ const people = ref([]);
 const articles = ref([]);
 const openFilterPanel = ref(null);
 const filtersOpen = ref(false);
+const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
 const slug = computed(() => route.params.slug);
 const searchQuery = ref("");
 const perPage = 12;

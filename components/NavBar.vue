@@ -1,113 +1,111 @@
 <template>
-  <nav aria-label="Main Navigation">
-    <v-app-bar
-      app
-      flat
-      density="compact"
-      class="nav-bar"
-      image="/images/bkg/tiediebkg2.webp"
-      alt="navbar background image"
-    >
-      <v-app-bar-title class="siteTitle">
-        <NuxtLink class="title-link" :to="localPath('/')">
-          {{ $t("components.navbar.imchatty") }}
-        </NuxtLink>
-        <img
-          class="robot-float"
-          src="/images/avatars/robot.png"
-          alt="ImChatty robot"
-          width="28"
-          height="28"
-          loading="lazy"
-        />
-      </v-app-bar-title>
+  <div class="nav2-shell">
+    <header ref="navRef" class="nav2" :class="navClasses">
+      <div class="nav2__inner">
+        <div class="nav2__brand-wrap">
+          <NuxtLink class="nav2__brand" :to="localPath('/')">
+            {{ $t("components.navbar.imchatty") }}
+          </NuxtLink>
+          <img
+            class="nav2__robot"
+            src="/images/avatars/robot.png"
+            alt="ImChatty robot"
+            width="28"
+            height="28"
+            loading="lazy"
+          />
+        </div>
 
-      <v-spacer />
-
-      <template #append>
-        <div class="d-none d-md-flex nav-row">
-          <ul class="nav-links">
+        <nav class="nav2__links d-none d-md-flex" aria-label="Primary navigation">
+          <ul class="nav2__list">
             <li>
-              <NuxtLink :to="localPath('/articles')" class="nav-link" exact>
+              <NuxtLink :to="localPath('/articles')" class="nav2__link" exact>
                 {{ $t("components.navbar.blog") }}
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink :to="localPath('/chat/articles')" class="nav-link" exact>
+              <NuxtLink :to="localPath('/chat/articles')" class="nav2__link" exact>
                 {{ $t("components.navbar.discussions") }}
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink :to="localPath('/chat')" class="nav-link" exact>
+              <NuxtLink :to="localPath('/chat')" class="nav2__link" exact>
                 {{ $t("components.navbar.chat") }}
               </NuxtLink>
             </li>
             <li v-if="userProfile?.is_admin">
-              <NuxtLink :to="localPath('/admin')" class="nav-link" exact>
+              <NuxtLink :to="localPath('/admin')" class="nav2__link" exact>
                 {{ $t("components.navbar.admin") }}
               </NuxtLink>
             </li>
             <li v-if="isAuthenticated">
-              <NuxtLink :to="localPath('/settings')" class="nav-link" exact>
+              <NuxtLink :to="localPath('/settings')" class="nav2__link" exact>
                 {{ $t("components.navbar.settings") }}
               </NuxtLink>
             </li>
             <li v-if="isAuthenticated">
-              <button class="nav-link btn-like" type="button" @click="showLogoutDialog">
+              <button class="nav2__link nav2__btn-like" type="button" @click="showLogoutDialog">
                 {{ $t("components.navbar.logout") }}
               </button>
             </li>
             <li v-else>
-              <NuxtLink :to="localPath('/signin')" class="nav-link" exact>
+              <NuxtLink :to="localPath('/signin')" class="nav2__link" exact>
                 {{ $t("components.navbar.signin") }}
               </NuxtLink>
             </li>
           </ul>
 
-          <div class="language-switcher d-none d-md-flex" aria-label="Language selector">
+          <div class="nav2__lang d-none d-md-flex" aria-label="Language selector">
             <LanguageSwitcher />
           </div>
-        </div>
+        </nav>
 
-        <!-- Mobile -->
-        <div class="d-flex d-md-none">
-          <v-menu :close-on-content-click="false">
+        <div class="d-flex d-md-none align-center nav2__mobile-actions">
+          <div class="nav2__lang nav2__lang--mobile" aria-label="Language selector">
+            <LanguageSwitcher />
+          </div>
+          <v-menu v-model="mobileMenuOpen" :close-on-content-click="false">
             <template #activator="{ props }">
-              <v-app-bar-nav-icon v-bind="props" />
+              <button
+                class="nav2__menu"
+                type="button"
+                aria-label="Menu"
+                v-bind="props"
+                :style="{ color: menuIconColor }"
+              >
+                <span class="nav2__menu-bar" />
+                <span class="nav2__menu-bar" />
+                <span class="nav2__menu-bar" />
+              </button>
             </template>
 
             <v-list aria-label="Mobile Navigation">
-              <v-list-item :to="localPath('/articles')" link>
+              <v-list-item :to="localPath('/articles')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.blog") }}</v-list-item-title>
               </v-list-item>
-              <v-list-item :to="localPath('/chat/articles')" link>
+              <v-list-item :to="localPath('/chat/articles')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.discussions") }}</v-list-item-title>
               </v-list-item>
-              <v-list-item :to="localPath('/chat')" link>
+              <v-list-item :to="localPath('/chat')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.chat") }}</v-list-item-title>
               </v-list-item>
-              <v-list-item v-if="userProfile?.is_admin" :to="localPath('/admin')" link>
+              <v-list-item v-if="userProfile?.is_admin" :to="localPath('/admin')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.admin") }}</v-list-item-title>
               </v-list-item>
-              <v-list-item v-if="isAuthenticated" :to="localPath('/settings')" link>
+              <v-list-item v-if="isAuthenticated" :to="localPath('/settings')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.settings") }}</v-list-item-title>
               </v-list-item>
-              <v-list-item v-if="isAuthenticated" @click="showLogoutDialog">
+              <v-list-item v-if="isAuthenticated" @click="handleMobileLogout">
                 <v-list-item-title>{{ $t("components.navbar.logout") }}</v-list-item-title>
               </v-list-item>
-              <v-list-item v-else :to="localPath('/signin')" link>
+              <v-list-item v-else :to="localPath('/signin')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.signin") }}</v-list-item-title>
-              </v-list-item>
-
-              <v-divider class="my-1" />
-              <v-list-item aria-label="Language selector">
-                <LanguageSwitcher />
               </v-list-item>
             </v-list>
           </v-menu>
         </div>
-      </template>
-    </v-app-bar>
+      </div>
+    </header>
 
     <v-dialog v-model="logoutDialog" width="auto" :scrim="!isLoggingOut">
       <v-card max-width="420" class="logout-dialog-card" prepend-icon="mdi-account-remove">
@@ -160,16 +158,21 @@
         </template>
       </v-card>
     </v-dialog>
-  </nav>
+  </div>
 </template>
 
 <script setup>
+import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore1";
 import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 const localPath = useLocalePath();
+const isClient = typeof window !== "undefined";
+const navRef = ref(null);
 
 const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
@@ -191,6 +194,49 @@ const logoutLines = [
 const lineIdx = ref(0);
 const currentLogoutLine = computed(() => logoutLines[lineIdx.value % logoutLines.length]);
 let rotateTimer = null;
+
+const normalizePath = (p = "") => {
+  const trimmed = p.replace(/\/+$/, "");
+  return trimmed === "" ? "/" : trimmed;
+};
+
+const isHome = ref(false);
+const isScrolled = ref(false);
+const mobileMenuOpen = ref(false);
+const NAV_OFFSET_VAR = "--nav2-offset";
+
+const computeIsHome = () => {
+  const browserPath = isClient ? normalizePath(window.location?.pathname || "") : "";
+  const currentPath = normalizePath(route.path || route.fullPath || browserPath || "");
+  const home = normalizePath(localPath("/") || "/");
+
+  isHome.value = browserPath === "/" || currentPath === "/" || currentPath === home;
+};
+
+const updateScrollState = () => {
+  if (!isClient) return;
+  if (!isHome.value) {
+    isScrolled.value = true;
+    return;
+  }
+  isScrolled.value = window.scrollY > 40;
+};
+
+const navClasses = computed(() => ({
+  "nav2--transparent": isHome.value && !isScrolled.value,
+  "nav2--solid": !isHome.value || isScrolled.value,
+}));
+
+const menuIconColor = computed(() =>
+  isHome.value && !isScrolled.value ? "#ffffff" : "#0f172a"
+);
+
+const applyNavOffsetVar = () => {
+  if (!isClient) return;
+  const height = navRef.value?.offsetHeight || 72;
+  const value = isHome.value ? "0px" : `${height}px`;
+  document.documentElement.style.setProperty(NAV_OFFSET_VAR, value);
+};
 
 function startLogoutAnimation() {
   stopLogoutAnimation();
@@ -214,6 +260,15 @@ const showLogoutDialog = () => {
   logoutDialog.value = true;
 };
 
+const handleMobileLogout = () => {
+  closeMobileMenu();
+  showLogoutDialog();
+};
+
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false;
+};
+
 const confirmLogout = async () => {
   logoutError.value = "";
   isLoggingOut.value = true;
@@ -230,32 +285,71 @@ const confirmLogout = async () => {
     isLoggingOut.value = true;
   }
 };
+
+onMounted(() => {
+  computeIsHome();
+  updateScrollState();
+  applyNavOffsetVar();
+  if (isClient) {
+    window.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", applyNavOffsetVar, { passive: true });
+  }
+});
+
+watch(
+  () => [route.path, route.name],
+  () => {
+    computeIsHome();
+    isScrolled.value = false;
+    updateScrollState();
+    applyNavOffsetVar();
+  }
+);
+
+onBeforeUnmount(() => {
+  if (!isClient) return;
+  window.removeEventListener("scroll", updateScrollState);
+  window.removeEventListener("resize", applyNavOffsetVar);
+  document.documentElement.style.setProperty(NAV_OFFSET_VAR, "0px");
+});
 </script>
 
 <style scoped>
-.nav-bar {
-  background: transparent;
-  backdrop-filter: none;
-  padding-inline: 12px;
+.nav2 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1500;
+  padding: 8px 14px;
+  color: #ffffff;
+  transition: background-color 180ms ease, backdrop-filter 180ms ease, box-shadow 180ms ease,
+    color 180ms ease;
 }
 
-.siteTitle {
-  font-family: "Amatic SC", sans-serif;
-  font-size: 2.4rem;
-  font-weight: 700;
-  line-height: 1.1;
-  color: #7b6ddc;
+.nav2__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.nav2__brand-wrap {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.siteTitle a {
+.nav2__brand {
+  font-family: "Amatic SC", sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
   color: inherit;
   text-decoration: none;
 }
 
-.robot-float {
+.nav2__robot {
   display: inline-block;
   animation: space-bob 4.5s ease-in-out infinite;
   transform-origin: center;
@@ -280,55 +374,96 @@ const confirmLogout = async () => {
   }
 }
 
-.nav-row {
-  align-items: flex-start;
-  justify-content: flex-end;
-  width: 100%;
-  padding-top: 4px;
+.nav2__links {
+  align-items: center;
+  display: flex;
   gap: 12px;
 }
 
-.nav-links {
+.nav2__list {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  align-items: center;
+  gap: 12px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.nav-link {
+.nav2__link {
   color: inherit;
   text-decoration: none;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 0.95rem;
-  padding: 4px 4px;
+  font-size: 0.92rem;
+  padding: 2px 2px;
 }
 
-.nav-link:hover {
+.nav2__link:hover,
+.nav2__link:focus-visible {
   text-decoration: underline;
 }
 
-.btn-like {
+.nav2__btn-like {
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
 }
 
-.language-switcher :deep(.v-field__input) {
+.nav2__lang :deep(.v-field__input) {
   min-height: 34px;
 }
 
-.language-switcher {
-  display: flex;
-  align-items: center;
+.nav2__mobile-actions {
+  gap: 10px;
+}
+
+.nav2__lang--mobile :deep(.v-field__input) {
+  min-height: 32px;
 }
 
 .logout-dialog-card {
   width: 360px;
   max-width: 90vw;
+}
+
+.nav2__menu {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav2__menu-bar {
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 99px;
+}
+
+.nav2--transparent {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.15), transparent);
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.nav2--solid {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 960px) {
+  .nav2 {
+    padding: 8px 10px;
+  }
+  .nav2__brand {
+    font-size: 1.6rem;
+  }
 }
 </style>

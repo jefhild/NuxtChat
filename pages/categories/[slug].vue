@@ -22,6 +22,7 @@
       location="left"
       temporary
       width="360"
+      :style="filtersDrawerStyle"
       class="filters-drawer"
       aria-label="Category filters"
     >
@@ -163,6 +164,7 @@ const people = ref([]);
 const searchQuery = ref("");
 const openFilterPanel = ref(null);
 const filtersOpen = ref(false);
+const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
 const perPage = 12;
 const visibleCount = ref(perPage);
 const isFetchingMore = ref(false);

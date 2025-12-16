@@ -13,3 +13,5 @@ body,
 .h-100 {
   height: 100% !important;
 }
+
+/* Optional helper; drawer inline styles are set in components for SSR parity */

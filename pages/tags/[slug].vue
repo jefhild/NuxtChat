@@ -25,6 +25,7 @@
       location="left"
       temporary
       width="360"
+      :style="filtersDrawerStyle"
       class="filters-drawer"
       aria-label="Tag filters"
     >
@@ -167,6 +168,7 @@ const searchQuery = ref("");
 const tagSlug = computed(() => route.params.slug);
 const openFilterPanel = ref(null);
 const filtersOpen = ref(false);
+const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
 
 const perPage = 12;
 const visibleCount = ref(perPage);
