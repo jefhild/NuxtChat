@@ -83,7 +83,57 @@
         "looking_ahead-title": "Regarder Vers l'Avenir",
         "looking_ahead-text": "Alors que nous continuons à grandir, notre focus reste sur le maintien d'une plateforme gratuite et sécurisée tout en explorant de nouvelles fonctionnalités et améliorations. Nous sommes excités par l'avenir d'Imchatty et nous nous engageons à en faire une ressource précieuse pour nos utilisateurs.",
         "join_us-title": "Rejoignez-nous",
-        "join_us-text": "Nous vous invitons à rejoindre Imchatty et à faire partie de notre voyage. Que vous cherchiez un endroit pour chatter, partager des idées, ou simplement rencontrer de nouvelles personnes, Imchatty est là pour vous. Ensemble, nous pouvons créer une communauté dynamique et amusante."
+        "join_us-text": "Nous vous invitons à rejoindre Imchatty et à faire partie de notre voyage. Que vous cherchiez un endroit pour chatter, partager des idées, ou simplement rencontrer de nouvelles personnes, Imchatty est là pour vous. Ensemble, nous pouvons créer une communauté dynamique et amusante.",
+        "aiProfiles": {
+          "default": {
+            "section": "Voix IA",
+            "description": "Des personas rédactionnels actifs, regroupés par catégorie pour voir qui façonne chaque article."
+          },
+          "categories": {
+            "world-politics": {
+              "section": "Gouvernance mondiale",
+              "description": "Des voix qui lisent la diplomatie, les conflits et les politiques publiques pour situer la couverture.",
+              "order": 1
+            },
+            "business-economy-finance": {
+              "section": "Marchés & Économie",
+              "description": "Des regards sur la croissance, l'équité, et la circulation de l'argent dans les communautés et conseils d'administration.",
+              "order": 2
+            },
+            "science-technology": {
+              "section": "Innovation",
+              "description": "Équilibrer optimisme et prudence sur les technologies qui façonnent le futur proche.",
+              "order": 3
+            },
+            "society-identity": {
+              "section": "Culture",
+              "description": "Des interprètes culturels qui abordent les sujets depuis des vécus différents.",
+              "order": 4
+            },
+            "entertainment-pop-culture": {
+              "section": "Culture pop",
+              "description": "Des personas qui captent le pouls du divertissement, des tendances et des célébrités.",
+              "order": 5
+            },
+            "lifestyle-health": {
+              "section": "Santé & Lifestyle",
+              "description": "Des personas centrés sur le bien-être, les tendances de vie et le développement personnel.",
+              "order": 6
+            },
+            "society-culture-identity": {
+              "section": "Identité, culture & société",
+              "description": "Des personas qui explorent les dynamiques culturelles, identitaires et sociétales.",
+              "order": 7
+            },
+            "sports-athletics": {
+              "section": "Sport & Athlétisme",
+              "description": "Des personas qui couvrent le monde du sport, des athlètes et des compétitions.",
+              "order": 8
+            }
+          },
+          "title": "Découvrez la rédaction IA",
+          "subtitle": "Chaque catégorie s’appuie sur plusieurs voix distinctes pour montrer qui façonne la couverture et sous quel prisme."
+        }
       }
     },
     "terms": {
@@ -1019,7 +1069,11 @@
     "askName": "Quel nom d'affichage souhaitez-vous utiliser ?",
     "askAge": "Quel âge avez-vous ? (18–100)",
     "askGender": "Quel est votre genre ?",
-    "gender": { "male": "Homme", "female": "Femme", "other": "Autre" },
+    "gender": {
+      "male": "Homme",
+      "female": "Femme",
+      "other": "Autre"
+    },
     "summary": "Récapitulons :",
     "name": "Nom",
     "age": "Âge",

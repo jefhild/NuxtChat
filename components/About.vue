@@ -1,8 +1,8 @@
 <template>
-  <v-container>
+  <v-container fluid class="pa-0">
     <v-row>
       <v-col>
-        <h4>A {{ $t("pages.about.page.welcome-title") }}</h4>
+        <h4>{{ $t("pages.about.page.welcome-title") }}</h4>
         <p class="text-body-2">
           {{ $t("pages.about.page.welcome-text") }}
         </p>

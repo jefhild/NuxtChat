@@ -83,7 +83,57 @@
         "looking_ahead-title": "展望未来",
         "looking_ahead-text": "随着我们的持续发展，我们的重点仍然是维护一个免费和安全的平台，同时探索新功能和改进。我们对Imchatty的未来感到兴奋，并致力于使其成为我们用户的宝贵资源。",
         "join_us-title": "加入我们",
-        "join_us-text": "我们邀请您加入Imchatty并成为我们旅程的一部分。无论您是在寻找聊天的地方、分享想法，还是只是结识新朋友，Imchatty都为您而来。我们可以一起创建一个充满活力和有趣的社区。"
+        "join_us-text": "我们邀请您加入Imchatty并成为我们旅程的一部分。无论您是在寻找聊天的地方、分享想法，还是只是结识新朋友，Imchatty都为您而来。我们可以一起创建一个充满活力和有趣的社区。",
+        "aiProfiles": {
+          "default": {
+            "section": "AI 之声",
+            "description": "按类别分组的活跃编辑人设，方便了解每篇文章背后的视角。"
+          },
+          "categories": {
+            "world-politics": {
+              "section": "全球与治理",
+              "description": "关注外交、冲突和公共政策，帮你看清报道立场。",
+              "order": 1
+            },
+            "business-economy-finance": {
+              "section": "市场与经济",
+              "description": "不同视角看增长、公平，以及资金如何在社区和董事会流动。",
+              "order": 2
+            },
+            "science-technology": {
+              "section": "创新",
+              "description": "在塑造未来的技术上平衡乐观与谨慎。",
+              "order": 3
+            },
+            "society-identity": {
+              "section": "文化",
+              "description": "从不同经历出发的文化解读者。",
+              "order": 4
+            },
+            "entertainment-pop-culture": {
+              "section": "流行文化",
+              "description": "捕捉娱乐、潮流和名人新闻的脉搏。",
+              "order": 5
+            },
+            "lifestyle-health": {
+              "section": "健康与生活方式",
+              "description": "关注健康、生活方式趋势和个人成长的人设。",
+              "order": 6
+            },
+            "society-culture-identity": {
+              "section": "身份·文化·社会",
+              "description": "探讨文化、身份与社会动态的人设。",
+              "order": 7
+            },
+            "sports-athletics": {
+              "section": "体育与竞技",
+              "description": "覆盖体育、运动员和赛事的视角。",
+              "order": 8
+            }
+          },
+          "title": "认识我们的 AI 编辑部",
+          "subtitle": "每个分类都有不同的声音，让你看清谁在塑造报道以及所带来的视角。"
+        }
       }
     },
     "terms": {
@@ -1018,7 +1068,11 @@
     "askName": "你想使用什么显示名称？",
     "askAge": "你多大了？（18–100）",
     "askGender": "你的性别是？",
-    "gender": { "male": "男", "female": "女", "other": "其他" },
+    "gender": {
+      "male": "男",
+      "female": "女",
+      "other": "其他"
+    },
     "summary": "让我们回顾一下：",
     "name": "姓名",
     "age": "年龄",

@@ -289,6 +289,40 @@
               </v-col>
               <v-col cols="12" md="6">
                 <v-text-field
+                  v-model="form.persona.bias"
+                  label="Bias / stance"
+                  hint="Short descriptor for cards (e.g., Center-right - free-market)"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="form.persona.region"
+                  label="Region"
+                  hint="e.g., US, EU, US/EU"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="form.persona.angle"
+                  label="Angle / summary"
+                  rows="2"
+                  auto-grow
+                  hint="One-line summary of the persona voice"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="form.persona.language_code"
+                  label="Language code"
+                  hint="IETF code (e.g., en-US)"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
                   v-model="form.persona.model"
                   label="OpenAI model"
                   :rules="[requiredRule]"
@@ -492,6 +526,10 @@ const form = reactive({
     persona_key: "",
     role: "assistant",
     is_active: true,
+    bias: "",
+    angle: "",
+    region: "",
+    language_code: "",
     model: "gpt-4o-mini",
     temperature: 0.7,
     top_p: 1,
@@ -631,6 +669,10 @@ const resetForm = () => {
     persona_key: "",
     role: "assistant",
     is_active: true,
+    bias: "",
+    angle: "",
+    region: "",
+    language_code: "",
     model: "gpt-4o-mini",
     temperature: 0.7,
     top_p: 1,
@@ -685,6 +727,10 @@ const populateForm = (bot) => {
     persona_key: bot.persona_key || "",
     role: bot.role || "assistant",
     is_active: bot.is_active ?? true,
+    bias: bot.bias || "",
+    angle: bot.angle || "",
+    region: bot.region || "",
+    language_code: bot.language_code || "",
     model: bot.model || "gpt-4o-mini",
     temperature: bot.temperature ?? 0.7,
     top_p: bot.top_p ?? 1,

@@ -69,7 +69,7 @@
       },
       "page": {
         "title-text": "About Us",
-        "welcome-title": "Hi! Welcome to Imchatty.com",
+        "welcome-title": "Hi, Welcome!",
         "welcome-text": "Welcome to Imchatty, a free chat site where you can connect with others anonymously. Our mission is to provide a safe and free platform for people to chat and share their thoughts without the need for extensive personal information. At Imchatty, we believe in the power of conversation and the importance of privacy.",
         "who_we_are-title": "Who We Are",
         "who_we_are-text1": "Imchatty is a project by",
@@ -84,7 +84,59 @@
         "looking_ahead-title": "Looking Ahead",
         "looking_ahead-text": "As we continue to grow, our focus remains on maintaining a free and secure platform while exploring new features and improvements. We are excited about the future of Imchatty and are committed to making it a valuable resource for our users.",
         "join_us-title": "Join Us",
-        "join_us-text": "We invite you to join Imchatty and be a part of our journey. Whether you’re looking for a place to chat, share ideas, or simply meet new people, Imchatty is here for you. Together, we can create a dynamic and fun community."
+        "join_us-text": "We invite you to join Imchatty and be a part of our journey. Whether you’re looking for a place to chat, share ideas, or simply meet new people, Imchatty is here for you. Together, we can create a dynamic and fun community.",
+        "aiProfiles": {
+          "title": "Meet the AI newsroom",
+          "subtitle": "Each category uses a couple of distinct voices so you can see who is shaping the coverage and what lens they bring."
+        }
+      },
+      "aiProfiles": {
+        "default": {
+          "section": "AI Voices",
+          "description": "Active newsroom personas grouped by category so you can see who shapes each rewrite."
+        },
+        "categories": {
+          "world-politics": {
+            "section": "Global & Governance",
+            "description": "Voices that read the room on diplomacy, conflict, and public policy so you can see where coverage is anchored.",
+            "order": 1
+          },
+          "business-economy-finance": {
+            "section": "Markets & Money",
+            "description": "Lenses on growth, equity, and how money moves through communities and boardrooms.",
+            "order": 2
+          },
+          "science-technology": {
+            "section": "Innovation",
+            "description": "Balancing optimism and caution on the tools shaping the near future.",
+            "order": 3
+          },
+          "society-identity": {
+            "section": "Culture",
+            "description": "Cultural interpreters who come at stories from different lived lenses.",
+            "order": 4
+          },
+          "entertainment-pop-culture": {
+            "section": "Pop Culture",
+            "description": "Personas that capture the pulse of entertainment, trends, and celebrity news.",
+            "order": 5
+          },
+          "lifestyle-health": {
+            "section": "Health & Lifestyle",
+            "description": "Personas that focus on wellness, lifestyle trends, and personal development.",
+            "order": 6
+          },
+          "society-culture-identity": {
+            "section": "Identity Culture & Society",
+            "description": "Personas that focus on the dynamics of culture, identity, and societal trends.",
+            "order": 7
+          },
+          "sports-athletics": {
+            "section": "Sports & Athletics",
+            "description": "Personas that cover the world of sports, athletes, and competitive events.",
+            "order": 8
+          }
+        }
       }
     },
     "terms": {
@@ -312,7 +364,6 @@
       "articles": {
         "heading": "Chat About Current Articles",
         "subtitle": "Discuss articles, share insights, and connect with others over shared interests.",
-
         "meta": {
           "title": "Free Anonymous Chat (Real or AI)",
           "description": "Explore real & AI chat profiles on imchatty.com",
@@ -1040,7 +1091,11 @@
     "askName": "What display name do you want?",
     "askAge": "How old are you? (18–100)",
     "askGender": "What is your gender?",
-    "gender": { "male": "Male", "female": "Female", "other": "Other" },
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
     "summary": "Let’s recap:",
     "name": "Name",
     "age": "Age",
