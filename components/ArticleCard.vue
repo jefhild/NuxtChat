@@ -1,107 +1,121 @@
 <template>
-  <v-col>
-    <v-card
-      class="article-card d-flex flex-column justify-between"
-      elevation="2"
-      :style="{ minHeight: props.admin ? '360px' : '280px' }"
+  <v-card
+    class="article-card d-flex flex-column justify-between"
+    elevation="2"
+    :style="{ minHeight: props.admin ? '360px' : '280px' }"
+  >
+    <NuxtLink
+      :to="localPath(`/articles/${article.slug}`)"
+      class="card-link position-relative"
+      :aria-label="article.title"
     >
-      <NuxtLink
-        :to="localPath(`/articles/${article.slug}`)"
-        class="card-link position-relative"
-        :aria-label="article.title"
+      <v-img
+        v-if="articleImageUrl"
+        class="text-white article-img"
+        height="200"
+        :src="articleImageUrl"
+        :alt="articleImageAlt"
+        cover
       >
-        <v-img
-          v-if="articleImageUrl"
-          class="text-white article-img"
-          height="200"
-          :src="articleImageUrl"
-          :alt="articleImageAlt"
-          cover
-        >
-          <!-- Overlay button -->
-          <div class="discuss-btn-container top-left">
-            <!-- {{ chatThreadId }} -->
-            <NuxtLink
-              v-if="chatThreadId"
-              :to="localPath(`/chat/articles/${chatThreadId}`)"
-              class="discuss-link"
-              @click.stop
-            >
-              <v-btn color="primary" size="small">Discuss…</v-btn>
-            </NuxtLink>
-          </div>
-
-          <!-- Title -->
-          <div class="title-overlay w-100 text-center px-3">
-            <h2 class="font-weight-bold text-subtitle-1 text-md-h5 title-text">
-              {{ article.title }}
-            </h2>
-          </div>
-
-          <!-- Photo credits (bottom-right overlay) -->
-          <div
-            v-if="article.photo_credits_url"
-            class="overlay-bottom-right pr-4"
-          >
-            <a
-              :href="article.photo_credits_url"
-              class="text-caption text-decoration-underline"
-              target="_blank"
-              rel="noopener noreferrer"
-              @click.stop
-            >
-              Photo Credits
-            </a>
-          </div>
-        </v-img>
-      </NuxtLink>
-
-      <v-card-subtitle class="mb-2 text-medium-emphasis">
-        <div class="d-flex align-center justify-space-between mt-2 w-100">
-          <div class="d-flex align-center">
-            <v-icon>mdi-folder</v-icon>
-            <span class="ml-1">{{ article.category_name }}</span>
-          </div>
-          <span class="date-text">{{ formatDate(article.created_at) }}</span>
-        </div>
-      </v-card-subtitle>
-
-      <v-card-text v-html="truncatedSummary" />
-      <v-card-text>
-        <div class="tags-links">
+        <!-- Overlay button -->
+        <div class="discuss-btn-container top-left">
+          <!-- {{ chatThreadId }} -->
           <NuxtLink
-            v-for="tag in article.tags"
-            :key="tag?.slug || tag"
-            :to="localPath(`/tags/${formatTagSlug(tag)}`)"
-            class="tag-link"
+            v-if="chatThreadId"
+            :to="localPath(`/chat/articles/${chatThreadId}`)"
+            class="discuss-link"
+            @click.stop
           >
-            #{{ tag?.name || tag }}
+            <v-btn color="primary" size="small">Discuss…</v-btn>
           </NuxtLink>
         </div>
-      </v-card-text>
 
-      <v-spacer />
+        <!-- Title -->
+        <div class="title-overlay w-100 text-center px-3">
+          <h2 class="font-weight-bold text-subtitle-1 text-md-h5 title-text">
+            {{ article.title }}
+          </h2>
+        </div>
 
-      <!-- Admin badges -->
-      <v-card-actions v-if="props.admin" class="pt-0">
-        <v-chip
-          v-if="article.is_published"
-          color="success"
-          size="x-small"
-          class="ml-2"
-          label
-        >
-          Published
-        </v-chip>
-        <v-chip v-else color="grey" size="x-small" class="ml-2" label>
-          Draft
-        </v-chip>
-      </v-card-actions>
-    </v-card>
-  </v-col>
+        <!-- Photo credits (bottom-right overlay) -->
+        <div v-if="article.photo_credits_url" class="overlay-bottom-right pr-4">
+          <a
+            :href="article.photo_credits_url"
+            class="text-caption text-decoration-underline"
+            target="_blank"
+            rel="noopener noreferrer"
+            @click.stop
+          >
+            Photo Credits
+          </a>
+        </div>
+      </v-img>
+    </NuxtLink>
+
+    <v-card-subtitle class="mb-2 text-medium-emphasis">
+      <div class="d-flex align-center justify-space-between mt-2 w-100">
+        <div class="d-flex align-center">
+          <v-icon>mdi-folder</v-icon>
+          <span class="ml-1">{{ article.category_name }}</span>
+        </div>
+        <span class="date-text">{{ formatDate(article.created_at) }}</span>
+      </div>
+    </v-card-subtitle>
+
+    <v-card-text v-html="truncatedSummary" />
+
+    <template v-if="hasTags">
+      <div class="tags-toggle d-flex justify-center">
+        <v-btn
+          :icon="tagsExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+          variant="text"
+          density="compact"
+          size="small"
+          color="grey-darken-2"
+          :aria-label="tagsExpanded ? 'Hide tags' : 'Show tags'"
+          @click.stop="tagsExpanded = !tagsExpanded"
+        />
+      </div>
+
+      <v-expand-transition>
+        <v-card-text v-if="tagsExpanded" class="pt-0">
+          <div class="tags-links">
+            <NuxtLink
+              v-for="tag in article.tags"
+              :key="tag?.slug || tag"
+              :to="localPath(`/tags/${formatTagSlug(tag)}`)"
+              class="tag-link"
+            >
+              #{{ tag?.name || tag }}
+            </NuxtLink>
+          </div>
+        </v-card-text>
+      </v-expand-transition>
+    </template>
+
+    <v-spacer />
+
+    <!-- Admin badges -->
+    <v-card-actions v-if="props.admin" class="pt-0">
+      <v-chip
+        v-if="article.is_published"
+        color="success"
+        size="x-small"
+        class="ml-2"
+        label
+      >
+        Published
+      </v-chip>
+      <v-chip v-else color="grey" size="x-small" class="ml-2" label>
+        Draft
+      </v-chip>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script setup>
+import { computed, ref } from "vue";
+
 const localPath = useLocalePath();
 const { public: pub } = useRuntimeConfig();
 const supabase = useSupabaseClient?.();
@@ -112,6 +126,11 @@ const props = defineProps({
   admin: { type: Boolean, default: false },
   chatThreadId: { type: String, default: null },
 });
+
+const hasTags = computed(
+  () => Array.isArray(props.article?.tags) && props.article.tags.length > 0
+);
+const tagsExpanded = ref(false);
 
 // Build the public image URL from env + prop
 const articleImageUrl = computed(() => {
@@ -172,7 +191,7 @@ const formatTagSlug = (tag) => {
 .article-card {
   border: 1px solid #e0e0e0;
   border-radius: 10px;
-  margin: 0 10px;
+  margin: 0;
   background-color: #fff;
   transition: box-shadow 0.2s ease; /* only subtle shadow change */
 }
@@ -219,6 +238,11 @@ const formatTagSlug = (tag) => {
 .tag-link:hover {
   background-color: #d1c4e9;
   color: #311b92;
+}
+
+.tags-toggle {
+  margin-top: -6px;
+  padding: 0 0 6px;
 }
 
 .card-link {

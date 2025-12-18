@@ -17,7 +17,9 @@ export function useSeoI18nMeta(
   const { t, locale, locales, localeCodes } = useI18n();
   const route = useRoute();
   const config = useRuntimeConfig();
-  const baseUrl = config.public.SITE_URL;
+  const siteConfig = useSiteConfig();
+  const baseUrl = siteConfig?.url || config.public.SITE_URL;
+  const siteName = siteConfig?.name || "ImChatty";
   const currentLocale = locale.value || "en";
 
   // Strip any leading locale prefix and normalize trailing slashes
@@ -48,6 +50,13 @@ export function useSeoI18nMeta(
     ru: "ru-RU",
     zh: "zh-CN",
   };
+
+  const localeIso =
+    locales?.value?.find?.((l: any) => l?.code === currentLocale)?.iso ||
+    hreflangMap[currentLocale] ||
+    "en-US";
+  const ogLocale = String(localeIso).replace("-", "_");
+
   const hreflangLinks = (localeCodes?.value || []).map((code) => {
     const hreflang = hreflangMap[code] || code;
     const href =
@@ -91,6 +100,8 @@ export function useSeoI18nMeta(
         name: "description",
         content: dynamic.description || tf("description"),
       },
+      { property: "og:site_name", content: siteName },
+      { property: "og:locale", content: ogLocale },
       { property: "og:title", content: dynamic.ogTitle || tf("ogTitle") },
       {
         property: "og:description",

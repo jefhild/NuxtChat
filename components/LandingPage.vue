@@ -4,12 +4,12 @@
   <v-container v-else fluid class="pa-0">
     <!-- Hero Section -->
     <div class="full-bleed">
-      <v-sheet class="hero w-100" height="100vh">
+      <v-sheet class="hero w-100" height="85vh">
         <v-img
           src="/images/background2.webp"
           cover
           class="hero-img w-100"
-          :height="'80%'"
+          height="100%"
           gradient="to bottom, rgba(0,0,0,.35), rgba(0,0,0,.65)"
         >
           <!-- Make *this* the flex container that fills the image area -->
@@ -82,15 +82,16 @@
     </v-container>
 
     <!-- Article Sections -->
-    <v-container class="mt-10">
+    <v-container fluid class="mt-10">
       <h2 class="text-h4 text-center font-weight-bold mb-8">
         {{ $t("pages.home.landing_page.check_articles") }}
       </h2>
 
-      <v-row dense>
+      <v-row>
         <v-col
           v-for="article in articles"
           :key="article.id"
+          class="pa-3"
           cols="12"
           sm="6"
           md="4"
@@ -106,25 +107,36 @@
       </div>
     </v-container>
 
-    <!-- <v-container class="py-12 mt-8">
-      <HomeRecent :limit="4" />
-      <HomeAi :limit="4" />
-      <HomeMale :limit="4" />
-      <HomeFemale :limit="4" />
-    </v-container> -->
-
     <!-- Final CTA Banner -->
-    <v-container class="text-center py-16 mt-10 cta">
-      <h2 class="text-h4 font-weight-bold mb-2">
-        {{ $t("pages.home.landing_page.final_cta_title") }}
-      </h2>
-      <p class="text-body-1 mb-5">
-        {{ $t("pages.home.landing_page.final_cta_description") }}
-      </p>
-      <v-btn color="primary" class="mr-4" size="large" :to="localPath('/chat/articles')">
-        {{ $t("pages.home.landing_page.get_chatting_now") }}
-      </v-btn>
-    </v-container>
+    <div class="full-bleed mt-10">
+      <v-sheet class="final-cta w-100" elevation="0">
+        <v-img
+          src="/images/heromale.webp"
+          cover
+          class="final-cta-img w-100"
+          gradient="to bottom, rgba(0,0,0,.35), rgba(0,0,0,.75)"
+        >
+          <div class="fill-height w-100 d-flex align-center justify-center">
+            <div class="hero-content text-center mx-auto py-16">
+              <h2 class="text-h4 font-weight-bold mb-2 text-white">
+                {{ $t("pages.home.landing_page.final_cta_title") }}
+              </h2>
+              <p class="text-body-1 mb-5 text-white">
+                {{ $t("pages.home.landing_page.final_cta_description") }}
+              </p>
+              <v-btn
+                color="primary"
+                class="hero-btn"
+                size="large"
+                :to="localPath('/chat/articles')"
+              >
+                {{ $t("pages.home.landing_page.get_chatting_now") }}
+              </v-btn>
+            </div>
+          </div>
+        </v-img>
+      </v-sheet>
+    </div>
 
     <!-- Logout Dialog -->
     <v-dialog v-model="logoutDialog" width="auto">
@@ -395,6 +407,14 @@ onMounted(async () => {
 .cta {
   background: linear-gradient(135deg, #e3f2fd, #f1f8e9);
   border-radius: 24px; /* more reasonable than 100px on small screens */
+}
+
+.final-cta {
+  border-radius: 0;
+}
+
+.final-cta-img {
+  height: clamp(420px, 60vh, 680px);
 }
 
 /* Utilities kept from your original styles (trimmed) */

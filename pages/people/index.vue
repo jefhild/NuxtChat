@@ -202,10 +202,7 @@ const loadMoreArticles = () => {
   }, 150);
 };
 
-useSeoMeta({
-  title: computed(() => `${t("pages.people.index.heading")} – ImChatty`),
-  description: computed(() => t("pages.people.index.metaDescription")),
-});
+useSeoI18nMeta("people.index");
 
 onMounted(async () => {
   await authStore.checkAuth();

@@ -484,7 +484,19 @@
         "title": "People",
         "heading": "Browse by People",
         "subtitle": "Explore notable voices featured across recent coverage.",
-        "metaDescription": "Browse Newsmesh articles grouped by the people mentioned inside."
+        "metaDescription": "Browse Newsmesh articles grouped by the people mentioned inside.",
+        "meta": {
+          "title": "Browse People | ImChatty",
+          "description": "Browse Newsmesh articles grouped by the people mentioned inside.",
+          "ogTitle": "Browse by People | ImChatty",
+          "ogDescription": "Explore notable voices featured across recent coverage.",
+          "ogType": "website",
+          "ogImage": "https://imchatty.com/images/article-image.webp",
+          "twitterTitle": "Browse People | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Browse Newsmesh articles grouped by the people mentioned inside.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
       },
       "slug": {
         "heading": "Articles mentioning {name}",
