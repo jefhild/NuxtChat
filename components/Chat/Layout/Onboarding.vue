@@ -11,10 +11,10 @@
         >
           <v-progress-circular indeterminate color="primary" class="mb-3" />
           <div class="text-body-1 font-weight-medium">
-            Creating your profile…
+            {{ $t("onboarding.finalizingTitle") }}
           </div>
           <div class="text-body-2 text-medium-emphasis mt-1">
-            Hang tight while we save your details.
+            {{ $t("onboarding.finalizingBody") }}
           </div>
         </div>
         <template v-else>
@@ -41,7 +41,7 @@
               <span class="dot"></span>
               <span class="dot"></span>
               <span class="dot"></span>
-              <span class="typing-label">Typing…</span>
+              <span class="typing-label">{{ $t("onboarding.typing") }}</span>
             </div>
           </div>
 
@@ -57,7 +57,7 @@
               :disabled="consentBusy"
               @click="onConsentYes"
             >
-              Yes
+              {{ $t("onboarding.yes") }}
             </v-chip>
 
             <v-chip
@@ -66,11 +66,11 @@
               :disabled="consentBusy"
               @click="onConsentNo"
             >
-              No
+              {{ $t("onboarding.no") }}
             </v-chip>
 
             <v-chip variant="outlined" :disabled="consentBusy" @click="onLogin">
-              I already have an account
+              {{ $t("onboarding.alreadyAccount") }}
             </v-chip>
           </div>
         </template>
@@ -81,10 +81,10 @@
       <div v-if="!canSend" class="text-caption mt-1">
         {{
           authStatus === "guest" || authStatus === "onboarding"
-            ? "Finish your profile to message people."
+            ? $t("onboarding.finishProfileNotice")
             : authStatus === "unauthenticated"
-            ? "Please consent to our terms, and start chatting."
-            : "Messaging is disabled."
+            ? $t("onboarding.consentNotice")
+            : $t("onboarding.messagingDisabled")
         }}
       </div>
     </div>
@@ -94,6 +94,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useOnboardingDraftStore } from "~/stores/onboardingDraftStore";
 import { useGeoLocationDefaults } from "~/composables/useGeoLocationDefaults";
 import {
@@ -103,6 +104,7 @@ import {
 import { useMarkdown } from "~/composables/useMarkdown";
 
 const { init: initMd, render } = useMarkdown();
+const { t } = useI18n();
 
 const draft = useOnboardingDraftStore();
 const { getDefaults } = useGeoLocationDefaults();
@@ -137,7 +139,14 @@ defineExpose({
 
 // Simple detector for the consent prompt text
 function isConsentPrompt(text = "") {
-  return /confirm.*18\+.*accept/i.test(String(text));
+  const normalized = String(text || "").trim().toLowerCase();
+  const prompts = [
+    t("onboarding.consentPrompt"),
+    "do you confirm you are 18+ and accept the terms to continue?",
+  ]
+    .map((s) => String(s || "").trim().toLowerCase())
+    .filter(Boolean);
+  return prompts.some((p) => normalized.includes(p));
 }
 
 function scrollToBottom() {

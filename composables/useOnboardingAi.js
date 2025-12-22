@@ -3,6 +3,7 @@ import { useAuthStore } from "~/stores/authStore1";
 import { useChatStore } from "~/stores/chatStore";
 import { useDb } from "@/composables/useDB";
 import { useAiQuota } from "@/composables/useAiQuota";
+import { useI18n } from "vue-i18n";
 
 // const localePath = useLocalePath() // if run on client/setup
 // const settingsUrl = localePath('/settings') // e.g. /fr/settings
@@ -14,6 +15,7 @@ export function setOnboardingBotMessageHandler(fn) {
 }
 
 export function useOnboardingAi() {
+  const { locale, t } = useI18n();
   const draft = useOnboardingDraftStore(); 
   const auth = useAuthStore();
   const chat = useChatStore();
@@ -179,11 +181,12 @@ export function useOnboardingAi() {
                 .slice(0, 40) || // keep it reasonable
               "there"; // friendly fallback
 
+            const settingsUrl = "/settings";
             const welcome =
-              `🎉 Welcome, **${display}**! Happy chatting. ` +
-              `This is what we came up with for your Bio.  \n` +
+              `${t("onboarding.welcomeHeadline", { name: display })} ` +
+              `${t("onboarding.welcomeBioIntro")}  \n` +
               `_${rawBio}_  \n` +
-              `If you want to add a photo or update this bio, head to the [Settings page](/settings) anytime.`;
+              `${t("onboarding.welcomeSettings", { settingsUrl })}`;
 
             await insertMessage(receiverId, IMCHATTY_ID, welcome);
             console.log("[onboarding][finalize] welcome message inserted", {
@@ -250,7 +253,10 @@ export function useOnboardingAi() {
     try {
       const { actions = [] } = await $fetch("/api/aiOnboarding", {
         method: "POST",
-        body,
+        body: {
+          locale: locale?.value || "en",
+          ...body,
+        },
       });
       // console.log("[onboarding][api->actions]", actions);
       return actions;

@@ -1100,10 +1100,25 @@
     "editGender": "修改性别",
     "startCta": "开始创建资料",
     "loginCta": "登录",
+    "alreadyAccount": "我已有账号",
     "consentDeclined": "没问题。准备好时再开始创建资料；如果你已有账号，也可以先登录。",
     "loginHelp": "好的——请点击顶部的“登录”按钮进行登录。我会在这里等你。",
-    "generateBio": "Generate Bio",
-    "bioSaved": "Bio saved successfully!",
-    "skip": "Skip"
+    "generateBio": "生成个人简介",
+    "bioSaved": "简介已保存！",
+    "askBioKeywords": "你想在简介中加入哪些关键词？（如爱好、兴趣、性格特征）",
+    "skip": "跳过",
+    "resumeDraftIntro": "你已经开始填写资料了。这是目前的信息：",
+    "startOver": "重新开始",
+    "continue": "继续",
+    "finalizingTitle": "正在创建你的个人资料…",
+    "finalizingBody": "请稍候，我们正在保存你的信息。",
+    "typing": "正在输入…",
+    "finishProfileNotice": "完成资料后即可发送消息。",
+    "consentNotice": "请同意条款，然后开始聊天。",
+    "messagingDisabled": "消息功能已禁用。",
+    "consentPrompt": "你确认已年满18岁并接受条款后继续吗？",
+    "welcomeHeadline": "🎉 欢迎，**{name}**！先看看这版简介：",
+    "welcomeBioIntro": "这是初稿——你可以微调或直接使用。",
+    "welcomeSettings": "✨ 想要更多聊天？去[设置页面]({settingsUrl})添加照片并完善资料。"
   }
 }

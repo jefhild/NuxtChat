@@ -1101,10 +1101,25 @@
     "editGender": "Modifier le genre",
     "startCta": "Commencer l’inscription",
     "loginCta": "Se connecter",
+    "alreadyAccount": "J’ai déjà un compte",
     "consentDeclined": "Pas de souci. Quand vous serez prêt, vous pourrez commencer l’inscription, ou vous connecter si vous avez déjà un compte.",
     "loginHelp": "Parfait — utilisez le bouton Se connecter dans l’en-tête. Je vous attends ici.",
-    "generateBio": "Generate Bio",
-    "bioSaved": "Bio saved successfully!",
-    "skip": "Skip"
+    "generateBio": "Générer une bio",
+    "bioSaved": "Bio enregistrée avec succès !",
+    "askBioKeywords": "Quels mots-clés veux-tu inclure dans ta bio ? (ex. loisirs, centres d’intérêt, traits de personnalité)",
+    "skip": "Ignorer",
+    "resumeDraftIntro": "Tu as déjà commencé un profil. Voici ce que j’ai :",
+    "startOver": "Recommencer",
+    "continue": "Continuer",
+    "finalizingTitle": "Création de votre profil…",
+    "finalizingBody": "Patientez pendant que nous enregistrons vos informations.",
+    "typing": "Saisie en cours…",
+    "finishProfileNotice": "Terminez votre profil pour pouvoir envoyer des messages.",
+    "consentNotice": "Veuillez accepter nos conditions pour commencer à discuter.",
+    "messagingDisabled": "La messagerie est désactivée.",
+    "consentPrompt": "Confirmez-vous avoir 18 ans ou plus et accepter les conditions pour continuer ?",
+    "welcomeHeadline": "🎉 Bienvenue, **{name}** ! Voici ta bio de départ :",
+    "welcomeBioIntro": "C’est un premier jet — améliore-le ou garde-le tel quel.",
+    "welcomeSettings": "✨ Ajoute une photo et peaufine ton profil dans les [Réglages]({settingsUrl}) pour plus d’échanges."
   }
 }

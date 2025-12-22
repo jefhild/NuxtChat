@@ -1123,6 +1123,7 @@
     "editGender": "Edit gender",
     "startCta": "Start onboarding",
     "loginCta": "Log in",
+    "alreadyAccount": "I already have an account",
     "consentDeclined": "No problem. Whenever you’re ready, you can start onboarding, or log in if you already have an account.",
     "loginHelp": "Great — use the Log in button in the header to sign in. I’ll be here when you’re ready.",
     "generateBio": "Generate Bio",
@@ -1131,6 +1132,16 @@
     "skip": "Skip",
     "resumeDraftIntro": "You already started a profile. Here’s what I have:",
     "startOver": "Start over",
-    "continue": "Continue"
+    "continue": "Continue",
+    "finalizingTitle": "Creating your profile…",
+    "finalizingBody": "Hang tight while we save your details.",
+    "typing": "Typing…",
+    "finishProfileNotice": "Finish your profile to message people.",
+    "consentNotice": "Please consent to our terms, and start chatting.",
+    "messagingDisabled": "Messaging is disabled.",
+    "consentPrompt": "Do you confirm you are 18+ and accept the terms to continue?",
+    "welcomeHeadline": "🎉 Welcome, **{name}**! Here’s your starter bio:",
+    "welcomeBioIntro": "Below is a first draft—polish it or keep it as-is.",
+    "welcomeSettings": "✨ Add a photo and refine your profile in [Settings]({settingsUrl}) to get more chats."
   }
 }

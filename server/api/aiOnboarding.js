@@ -8,6 +8,107 @@ const model = config.OPENAI_MODEL || process.env.OPENAI_MODEL || "gpt-4.1-mini";
 const preferAI = !!(config.OPENAI_API_KEY || process.env.OPENAI_API_KEY);
 const canUseAI = !!apiKey; // true if a private key is available on the server
 
+const STRINGS = {
+  en: {
+    consentPrompt: "Do you confirm you are 18+ and accept the terms to continue?",
+    consentThanks: "Thanks! Let’s set up your profile.",
+    consentAskName: "What display name should we show?",
+    consentNudge: "No problem. Say “yes” when you’re ready to continue, and we’ll proceed.",
+    askAge: "Great! What's your age? (18+ only)",
+    askAgeSimple: "Age must be a number, 18–120. What's your age?",
+    askGenderShort: "Pick a gender: 1=male, 2=female, 3=other",
+    askGenderOpen: "How do you identify? You can say “male”, “female”, or “other”.",
+    askBioShort:
+      "Almost done! Please share a short bio (1–280 chars, one paragraph).",
+    askBio: "Write a short bio (1–2 sentences).",
+    askBioAlt: "Please keep your bio between 1 and 280 characters, one paragraph.",
+    askBioShorter: "Please keep your bio under 300 characters.",
+    askNameValidation: "Please provide a display name between 1 and 40 characters.",
+    finalizePrompt: "Shall I finalize your profile now?",
+  },
+  fr: {
+    consentPrompt:
+      "Confirmez-vous avoir 18 ans ou plus et accepter les conditions pour continuer ?",
+    consentThanks: "Merci ! Configurons votre profil.",
+    consentAskName: "Quel nom d'affichage souhaitons-nous utiliser ?",
+    consentNudge:
+      "Pas de souci. Dites « oui » quand vous serez prêt, et nous continuerons.",
+    askAge: "Super ! Quel est votre âge ? (18 ans et +)",
+    askAgeSimple: "L’âge doit être un nombre entre 18 et 120. Quel est votre âge ?",
+    askGenderShort: "Choisissez un genre : 1=homme, 2=femme, 3=autre",
+    askGenderOpen:
+      "Comment vous identifiez-vous ? Vous pouvez dire « homme », « femme » ou « autre ». ",
+    askBioShort:
+      "Presque terminé ! Partagez une courte bio (1–280 caractères, un seul paragraphe).",
+    askBio: "Écrivez une courte bio (1–2 phrases).",
+    askBioAlt:
+      "Veuillez garder votre bio entre 1 et 280 caractères, un seul paragraphe.",
+    askBioShorter: "Veuillez garder votre bio sous 300 caractères.",
+    askNameValidation:
+      "Indiquez un nom d’affichage entre 1 et 40 caractères.",
+    finalizePrompt: "Dois-je finaliser votre profil maintenant ?",
+  },
+  ru: {
+    consentPrompt:
+      "Подтверждаете, что вам 18+ и вы принимаете условия, чтобы продолжить?",
+    consentThanks: "Спасибо! Давайте настроим профиль.",
+    consentAskName: "Какое отображаемое имя мы покажем?",
+    consentNudge:
+      "Хорошо. Скажите «да», когда будете готовы продолжить.",
+    askAge: "Отлично! Сколько вам лет? (18+)",
+    askAgeSimple: "Возраст должен быть числом от 18 до 120. Сколько вам лет?",
+    askGenderShort: "Выберите пол: 1=мужской, 2=женский, 3=другое",
+    askGenderOpen:
+      "Как вы себя идентифицируете? Можно ответить «мужской», «женский» или «другое».",
+    askBioShort:
+      "Почти готово! Напишите короткое био (1–280 символов, один абзац).",
+    askBio: "Напишите короткое био (1–2 предложения).",
+    askBioAlt:
+      "Сохраните био в пределах 1–280 символов, один абзац.",
+    askBioShorter: "Пожалуйста, держите био короче 300 символов.",
+    askNameValidation: "Укажите имя от 1 до 40 символов.",
+    finalizePrompt: "Завершить профиль сейчас?",
+  },
+  zh: {
+    consentPrompt: "你确认已年满18岁并接受条款后继续吗？",
+    consentThanks: "谢谢！让我们开始设置你的资料。",
+    consentAskName: "我们该显示什么昵称？",
+    consentNudge: "没关系。准备好时说“是”，我们就继续。",
+    askAge: "很好！你多大了？（需年满18岁）",
+    askAgeSimple: "年龄需为18–120之间的数字。你的年龄是？",
+    askGenderShort: "选择性别：1=男，2=女，3=其他",
+    askGenderOpen: "你的性别是？可以说“男”“女”或“其他”。",
+    askBioShort: "快好了！写一段简介（1–280字符，单段）。",
+    askBio: "写一段简短的简介（1–2句话）。",
+    askBioAlt: "简介需控制在1–280字符，单段。",
+    askBioShorter: "简介请控制在300字符以内。",
+    askNameValidation: "请输入1-40个字符的显示名称。",
+    finalizePrompt: "现在要完成你的资料吗？",
+  },
+};
+
+const YES_REGEX = {
+  en: /^(y|yes|i agree|ok|okay|sure)$/i,
+  fr: /^(o|oui|d'accord|daccord|ok|yes)$/i,
+  ru: /^(да|ok|хорошо|ладно|согласен|согласна)$/i,
+  zh: /^(是|好的|好|行|ok|yes)$/i,
+};
+
+const pickLang = (locale = "en") => String(locale || "en").split("-")[0];
+const pickStrings = (locale = "en") => STRINGS[pickLang(locale)] || STRINGS.en;
+const pickYesRegex = (locale = "en") =>
+  YES_REGEX[pickLang(locale)] || YES_REGEX.en;
+
+const pickVariant = (locale = "en", variants = {}) => {
+  const lang = pickLang(locale);
+  return (
+    variants[lang] ||
+    variants[lang.split("-")[0]] ||
+    variants[lang.slice(0, 2)] ||
+    variants.en
+  );
+};
+
 /**
  * Returns { actions: [...] } where actions can be:
  *  - { type: 'bot_message', text }
@@ -29,11 +130,31 @@ async function generateBioFromKeywords({
   maxChars = 220,
   tone = "humorous",
 }) {
+  const keywordList = (arr = []) =>
+    arr
+      .map((s) => String(s || "").trim())
+      .filter(Boolean)
+      .slice(0, 6)
+      .join(", ");
+
+  const pickBio = (variants) => pickVariant(locale, variants);
   // No key? Return a graceful fallback.
   if (!canUseAI) {
-    return locale.startsWith("fr")
-      ? "Accro aux cafés, amateur de jeux de mots et randonneur du dimanche. Si tu ris facilement, on s’entendra bien."
-      : "Coffee-fueled pun appreciator and weekend hiker. If you laugh easily, we’ll get along great.";
+    const kw = keywordList(keywords);
+    return pickBio({
+      en: kw
+        ? `Into ${kw}. Friendly, looking for good chats.`
+        : "Coffee-fueled pun appreciator and weekend hiker. If you laugh easily, we’ll get along great.",
+      fr: kw
+        ? `Fan de ${kw}. Sympa et partant pour discuter.`
+        : "Accro aux cafés, amateur de jeux de mots et randonneur du dimanche. Si tu ris facilement, on s’entendra bien.",
+      ru: kw
+        ? `Увлекаюсь: ${kw}. Открыт(а) к интересным разговорам.`
+        : "Люблю кофе, игры слов и походы по выходным. Если ты легко смеёшься — нам по пути.",
+      zh: kw
+        ? `喜欢：${kw}。性格随和，想找人好好聊聊。`
+        : "爱喝咖啡、喜欢冷笑话的周末徒步爱好者。如果你笑点低，我们会很合拍。",
+    });
   }
 
   const openai = new OpenAI({ apiKey });
@@ -60,21 +181,30 @@ Return ONLY the bio text, no quotes.
 
     let bio = resp.choices?.[0]?.message?.content?.trim() || "";
     if (!bio) {
-      bio = locale.startsWith("fr")
-        ? "Fan de café et de jeux de mots, toujours partant pour de petites aventures."
-        : "Coffee fan and pun enthusiast, always up for small adventures.";
+      bio = pickBio({
+        en: "Coffee fan and pun enthusiast, always up for small adventures.",
+        fr: "Fan de café et de jeux de mots, toujours partant pour de petites aventures.",
+        ru: "Люблю кофе и каламбуры, всегда за небольшие приключения.",
+        zh: "热爱咖啡和冷笑话，总是准备好去探索小冒险。",
+      });
     } else if (bio.toLowerCase() === "inappropriate") {
-      bio = locale.startsWith("fr")
-        ? "Je préfère garder mon profil sympathique—on peut essayer avec d’autres mots-clés ?"
-        : "Let’s keep it friendly—try a different set of keywords?";
+      bio = pickBio({
+        en: "Let’s keep it friendly—try a different set of keywords?",
+        fr: "Je préfère garder mon profil sympathique—on peut essayer avec d’autres mots-clés ?",
+        ru: "Давайте оставим профиль дружелюбным — попробуйте другие ключевые слова.",
+        zh: "保持友好一点吧，再换些关键词试试？",
+      });
     }
     if (bio.length > maxChars) bio = bio.slice(0, maxChars).trim();
     return bio;
   } catch (error) {
     console.error("[aiOnboarding.generateBio] error:", error);
-    return locale.startsWith("fr")
-      ? "Optimiste à l’espresso, cherche copilote pour petites aventures."
-      : "Espresso-fueled optimist seeking a co-pilot for small adventures.";
+    return pickBio({
+      en: "Espresso-fueled optimist seeking a co-pilot for small adventures.",
+      fr: "Optimiste à l’espresso, cherche copilote pour petites aventures.",
+      ru: "Оптимист на эспрессо в поиске напарника для маленьких приключений.",
+      zh: "浓缩咖啡驱动的乐观派，想找个伙伴一起去小冒险。",
+    });
   }
 }
 
@@ -86,7 +216,13 @@ export default defineEventHandler(async (event) => {
     consented,
     isComplete,
     resume,
+    locale: localeFromBody,
   } = await readBody(event);
+
+  const localeCode = localeFromBody || "en";
+  const strings = pickStrings(localeCode);
+  const L = (key) => strings[key] || STRINGS.en[key] || "";
+  const yesRegex = pickYesRegex(localeCode);
 
   // console.log("[OnboardingAI] incoming body:", {
   //   messages: messages?.map((m) => m.role + ":" + m.content).slice(-3), // last 3 for context
@@ -111,18 +247,18 @@ export default defineEventHandler(async (event) => {
         actions: [
           {
             type: "bot_message",
-            text: "Do you confirm you are 18+ and accept the terms to continue?",
+            text: L("consentPrompt"),
           },
         ],
       };
     }
     // Simple yes/no parsing
-    if (/^(y|yes|i agree|ok|okay|sure)$/i.test(said)) {
+    if (yesRegex.test(said.trim())) {
       return {
         actions: [
           { type: "set_consent", value: true },
-          { type: "bot_message", text: "Thanks! Let’s set up your profile." },
-          { type: "bot_message", text: "What display name should we show?" },
+          { type: "bot_message", text: L("consentThanks") },
+          { type: "bot_message", text: L("consentAskName") },
         ],
       };
     }
@@ -130,7 +266,7 @@ export default defineEventHandler(async (event) => {
       actions: [
         {
           type: "bot_message",
-          text: "No problem. Say “yes” when you’re ready to continue, and we’ll proceed.",
+          text: L("consentNudge"),
         },
       ],
     };
@@ -159,10 +295,25 @@ export default defineEventHandler(async (event) => {
       : REQUIRED.filter(
           (k) =>
             !state.draftSummary[k] ||
-            (typeof state.draftSummary[k] === "string" &&
-              !state.draftSummary[k].trim())
-        )
-  ).find((f) => REQUIRED.includes(f));
+      (typeof state.draftSummary[k] === "string" &&
+        !state.draftSummary[k].trim())
+    )
+).find((f) => REQUIRED.includes(f));
+
+  const questionForField = (field) => {
+    switch (field) {
+      case "displayName":
+        return L("consentAskName");
+      case "age":
+        return L("askAge");
+      case "genderId":
+        return L("askGenderOpen");
+      case "bio":
+        return L("askBio");
+      default:
+        return L("finalizePrompt");
+    }
+  };
 
   function parseKeywords(input) {
     if (!input || typeof input !== "string") return [];
@@ -285,7 +436,7 @@ export default defineEventHandler(async (event) => {
         return {
           actions: [
             { type: "set_field", key: "displayName", value: v },
-            { type: "bot_message", text: "Great! What's your age? (18+ only)" },
+            { type: "bot_message", text: L("askAge") },
           ],
         };
       }
@@ -293,7 +444,7 @@ export default defineEventHandler(async (event) => {
         actions: [
           {
             type: "bot_message",
-            text: "Please provide a display name between 1 and 40 characters.",
+            text: L("askNameValidation"),
           },
         ],
       };
@@ -308,7 +459,7 @@ export default defineEventHandler(async (event) => {
             { type: "set_field", key: "age", value: n },
             {
               type: "bot_message",
-              text: "Pick a gender: 1=male, 2=female, 3=other",
+              text: L("askGenderShort"),
             },
           ],
         };
@@ -317,7 +468,7 @@ export default defineEventHandler(async (event) => {
         actions: [
           {
             type: "bot_message",
-            text: "Age must be a number, 18–120. What's your age?",
+            text: L("askAgeSimple"),
           },
         ],
       };
@@ -332,7 +483,7 @@ export default defineEventHandler(async (event) => {
             { type: "set_field", key: "genderId", value: g },
             {
               type: "bot_message",
-              text: "Almost done! Please share a short bio (1–280 chars, one paragraph).",
+              text: L("askBioShort"),
             },
           ],
         };
@@ -341,7 +492,7 @@ export default defineEventHandler(async (event) => {
         actions: [
           {
             type: "bot_message",
-            text: "How do you identify? You can say “male”, “female”, or “other”.",
+            text: L("askGenderOpen"),
           },
         ],
       };
@@ -349,6 +500,25 @@ export default defineEventHandler(async (event) => {
 
     // bio
     if (nextField === "bio") {
+      const keywords = parseKeywords(latestUtter);
+      if (keywords.length) {
+        const bioText = await generateBioFromKeywords({
+          apiKey,
+          displayname: state.draftSummary.displayName ?? "",
+          age: state.draftSummary.age ?? "",
+          gender: state.draftSummary.genderId ?? "",
+          keywords,
+          locale: localeCode,
+          maxChars: 220,
+        });
+        return {
+          actions: [
+            { type: "set_field", key: "bio", value: bioText },
+            { type: "finalize" },
+          ],
+        };
+      }
+
       const b = latestUtter;
       if (b.length >= 1 && b.length <= 280) {
         return {
@@ -362,7 +532,7 @@ export default defineEventHandler(async (event) => {
         actions: [
           {
             type: "bot_message",
-            text: "Please keep your bio between 1 and 280 characters, one paragraph.",
+            text: L("askBioAlt"),
           },
         ],
       };
@@ -382,7 +552,7 @@ export default defineEventHandler(async (event) => {
         return {
           actions: [
             { type: "set_field", key: "displayName", value: utter },
-            { type: "bot_message", text: "Great! What's your age? (18+ only)" },
+            { type: "bot_message", text: L("askAge") },
           ],
         };
       } else {
@@ -390,7 +560,7 @@ export default defineEventHandler(async (event) => {
           actions: [
             {
               type: "bot_message",
-              text: "Please provide a display name between 1 and 40 characters.",
+              text: L("askNameValidation"),
             },
           ],
         };
@@ -406,7 +576,7 @@ export default defineEventHandler(async (event) => {
             { type: "set_field", key: "age", value: n },
             {
               type: "bot_message",
-              text: "Great! Now pick a gender: 1=male, 2=female, 3=other.",
+              text: L("askGenderShort"),
             },
           ],
         };
@@ -415,7 +585,7 @@ export default defineEventHandler(async (event) => {
           actions: [
             {
               type: "bot_message",
-              text: "Age must be a number, 18 or older. What's your age?",
+              text: L("askAgeSimple"),
             },
           ],
         };
@@ -431,7 +601,7 @@ export default defineEventHandler(async (event) => {
             { type: "set_field", key: "genderId", value: g },
             {
               type: "bot_message",
-              text: "Nice! Write a short bio (≤ 300 chars, 1–2 sentences).",
+              text: L("askBioShort"),
             },
           ],
         };
@@ -440,7 +610,7 @@ export default defineEventHandler(async (event) => {
         actions: [
           {
             type: "bot_message",
-            text: "How do you identify? You can say “male”, “female”, or “other”.",
+            text: L("askGenderOpen"),
           },
         ],
       };
@@ -460,7 +630,7 @@ export default defineEventHandler(async (event) => {
           actions: [
             {
               type: "bot_message",
-              text: "Please keep your bio under 300 characters.",
+              text: L("askBioShorter"),
             },
           ],
         };
@@ -483,16 +653,30 @@ export default defineEventHandler(async (event) => {
       state.missingFields[0]
     );
     const next = state.missingFields[0];
-    const question =
-      next === "displayName"
-        ? "What display name should we show?"
-        : next === "age"
-        ? "How old are you? (18+ only)"
-        : next === "genderId"
-        ? "How do you identify? You can say “male”, “female”, or “other”."
-        : next === "bio"
-        ? "Write a short bio (1–2 sentences)."
-        : "Shall I finalize your profile now?";
+
+    // If we're offline but the latest user message looks like keywords for a bio, generate a localized fallback bio.
+    if (next === "bio" && latestUtter) {
+      const keywords = parseKeywords(latestUtter);
+      if (keywords.length) {
+        const bioText = await generateBioFromKeywords({
+          apiKey,
+          displayname: state.draftSummary.displayName ?? "",
+          age: state.draftSummary.age ?? "",
+          gender: state.draftSummary.genderId ?? "",
+          keywords,
+          locale: localeCode,
+          maxChars: 220,
+        });
+        return {
+          actions: [
+            { type: "set_field", key: "bio", value: bioText },
+            { type: "finalize" },
+          ],
+        };
+      }
+    }
+
+    const question = questionForField(next);
     const actions = state.isComplete
       ? [{ type: "finalize" }]
       : [{ type: "bot_message", text: question }];
@@ -505,7 +689,7 @@ export default defineEventHandler(async (event) => {
   const client = new OpenAI({ apiKey });
   const MODEL = model;
 
-  const system = `You are the Onboarding Orchestrator for a chat app.
+  const system = `You are the Onboarding Orchestrator for a chat app. Language for all bot_message outputs: ${localeCode}.
 
 CRITICAL RULES — FOLLOW ALL OF THEM:
 1) Use the provided tools for ALL outputs. Do NOT place JSON or text in assistant message content. 
@@ -640,14 +824,14 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
       );
       const question =
         next === "displayName"
-          ? "What display name should we show?"
+          ? L("consentAskName")
           : next === "age"
-          ? "How old are you? (18+ only)"
+          ? L("askAge")
           : next === "genderId"
-          ? "Pick a gender: 1=male, 2=female, 3=other"
+          ? L("askGenderShort")
           : next === "bio"
-          ? "Write a short bio (1–2 sentences)."
-          : "Shall I finalize your profile now?";
+          ? L("askBio")
+          : L("finalizePrompt");
       return { actions: [{ type: "bot_message", text: question }] };
     }
 
@@ -683,7 +867,7 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
 
     // ---- Handle generate_bio (execute now) ----
     if (genBioArgs?.keywords?.length) {
-      const locale = genBioArgs.locale || "en";
+      const bioLocale = genBioArgs.locale || localeCode;
       const tone = genBioArgs.tone || "humorous";
       const maxChars = genBioArgs.maxChars || 220;
 
@@ -714,7 +898,7 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
         age,
         gender,
         keywords,
-        locale,
+        locale: bioLocale,
         maxChars,
         tone,
       });
@@ -736,7 +920,7 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
             i--;
             actions.push({
               type: "bot_message",
-              text: "Got it—how do you identify? You can say “male”, “female”, or “other”.",
+              text: L("askGenderOpen"),
             });
           }
         }
@@ -825,32 +1009,36 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
   } catch (e) {
     // Graceful fallback question on error
     const next = (state.missingFields || []).find((f) => REQUIRED.includes(f));
-    const question =
-      next === "displayName"
-        ? "What display name should we show?"
-        : next === "age"
-        ? "How old are you? (18+ only)"
-        : next === "genderId"
-        ? "Pick a gender: 1=male, 2=female, 3=other"
-        : next === "bio"
-        ? "Write a short bio (1–2 sentences)."
-        : "Let’s confirm your details. Ready to finalize?";
+
+    // If we have a bio next and keywords, try to generate a localized fallback bio even when OpenAI fails.
+    if (next === "bio" && latestUtter) {
+      const keywords = parseKeywords(latestUtter);
+      if (keywords.length) {
+        const bioText = await generateBioFromKeywords({
+          apiKey,
+          displayname: state.draftSummary.displayName ?? "",
+          age: state.draftSummary.age ?? "",
+          gender: state.draftSummary.genderId ?? "",
+          keywords,
+          locale: localeCode,
+          maxChars: 220,
+        });
+        actions = [
+          { type: "set_field", key: "bio", value: bioText },
+          { type: "finalize" },
+        ];
+        return { actions };
+      }
+    }
+
+    const question = questionForField(next);
     actions = [{ type: "bot_message", text: question }];
   }
 
   // Last safeguard for resume with no output
   if (!actions.length && state.resume) {
     const next = (state.missingFields || []).find((f) => REQUIRED.includes(f));
-    const question =
-      next === "displayName"
-        ? "What display name should we show?"
-        : next === "age"
-        ? "How old are you? (18+ only)"
-        : next === "genderId"
-        ? "How do you identify? You can say “male”, “female”, or “other”."
-        : next === "bio"
-        ? "Write a short bio (1–2 sentences)."
-        : "Shall I finalize your profile now?";
+    const question = questionForField(next);
     actions.push({ type: "bot_message", text: question });
   }
 
