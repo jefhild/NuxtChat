@@ -49,11 +49,15 @@ export function useMarkdown() {
     const raw = String(text ?? "");
     // before init (SSR/early mount): escape + keep line breaks readable
     if (!_md || !_sanitize) return escapeHtml(raw).replace(/\n/g, "<br>");
-    const html = _md.render(raw);
+    let html = _md.render(raw);
+    html = html
+      .replace(/\[\[br\]\]/g, "<br><br>")
+      .replace(/\[\[divider\]\]/g, "<hr>");
     return _sanitize(html, {
       ALLOWED_TAGS: [
         "p",
         "br",
+        "hr",
         "em",
         "strong",
         "a",

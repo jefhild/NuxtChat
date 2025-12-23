@@ -112,6 +112,11 @@ const nameToShow = computed(() =>
   text-decoration: underline;
   text-decoration-color: rgba(0, 0, 0, 0.35);
 }
+.bubble :deep(hr) {
+  border: 0;
+  border-top: 1px dashed rgba(15, 31, 58, 0.25);
+  margin: 8px 0;
+}
 
 .bubble-status {
   margin-top: 2px;

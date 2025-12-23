@@ -53,13 +53,15 @@ import NavBar from "~/components/NavBar.vue";
 import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { usePresenceStore2 } from "@/stores/presenceStore2";
+import { useMessagesStore } from "@/stores/messagesStore";
 import { useDb } from "@/composables/useDB";
 import { useDisplay } from "vuetify";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
-import { useRoute } from "#imports";
+import { useHead, useRoute } from "#imports";
 
 const auth = useAuthStore();
 const presence = usePresenceStore2();
+const messages = useMessagesStore();
 const { smAndDown } = useDisplay();
 const hasMounted = ref(false);
 const route = useRoute();
@@ -109,9 +111,111 @@ const toggleFooter = () => {
 };
 
 const showFooterFab = computed(() => isMobile.value && isChatRoute.value);
+const unreadCount = computed(() => messages.totalUnread || 0);
+const unreadLabel = computed(() =>
+  unreadCount.value > 99 ? "99+" : `${unreadCount.value}`
+);
 
 onMounted(() => {
   hasMounted.value = true;
+});
+
+onMounted(() => {
+  watch(
+    () => auth.user?.id,
+    async (id) => {
+      if (!id) {
+        await messages.dispose?.();
+        return;
+      }
+      await messages.init(id);
+    },
+    { immediate: true }
+  );
+});
+
+useHead(() => ({
+  titleTemplate: (titleChunk) => {
+    const base = titleChunk || "ImChatty";
+    const prefix = unreadCount.value > 0 ? `(${unreadLabel.value}) ` : "";
+    return `${prefix}${base}`;
+  },
+}));
+
+onMounted(() => {
+  if (!isClient) return;
+  let baseHref = "";
+  let baseImage = null;
+  let loadPromise = null;
+
+  const getLink = () => {
+    let link = document.querySelector('link[rel~="icon"]');
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    if (!baseHref) {
+      baseHref = link.href || "/favicon.ico";
+    }
+    return link;
+  };
+
+  const loadBase = () => {
+    if (baseImage) return Promise.resolve(baseImage);
+    if (loadPromise) return loadPromise;
+    loadPromise = new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        baseImage = img;
+        resolve(img);
+      };
+      img.onerror = () => resolve(null);
+      img.src = baseHref;
+    });
+    return loadPromise;
+  };
+
+  const drawBadge = async (count) => {
+    const link = getLink();
+    if (!count || count <= 0) {
+      link.href = baseHref;
+      return;
+    }
+    const img = await loadBase();
+    const size = 64;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    if (img) ctx.drawImage(img, 0, 0, size, size);
+
+    const badge = unreadLabel.value;
+    const radius = 18;
+    const x = size - radius;
+    const y = radius;
+    ctx.fillStyle = "#ff3b30";
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 20px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(badge, x, y + 1);
+
+    link.href = canvas.toDataURL("image/png");
+  };
+
+  watch(
+    () => unreadCount.value,
+    (count) => {
+      drawBadge(count);
+    },
+    { immediate: true }
+  );
 });
 
 watch(

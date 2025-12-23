@@ -188,8 +188,11 @@ export function useOnboardingAi() {
             const settingsUrl = "/settings";
             const welcome =
               `${t("onboarding.welcomeHeadline", { name: display })} ` +
-              `${t("onboarding.welcomeBioIntro")}  \n` +
-              `_${rawBio}_  \n` +
+              `[[br]] ` +
+              `${t("onboarding.welcomeBioIntro")} ` +
+              `[[divider]] ` +
+              `_${rawBio}_ ` +
+              `[[divider]] ` +
               `${t("onboarding.welcomeSettings", { settingsUrl })}`;
 
             await insertMessage(receiverId, IMCHATTY_ID, welcome);

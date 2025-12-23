@@ -29,8 +29,15 @@
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink :to="localPath('/chat')" class="nav2__link" exact>
+              <NuxtLink
+                :to="localPath('/chat')"
+                class="nav2__link nav2__link--chat"
+                exact
+              >
                 {{ $t("components.navbar.chat") }}
+                <span v-if="hasUnread" class="nav2__badge" aria-hidden="true">
+                  {{ unreadLabel }}
+                </span>
               </NuxtLink>
             </li>
             <li v-if="userProfile?.is_admin">
@@ -87,7 +94,16 @@
                 <v-list-item-title>{{ $t("components.navbar.discussions") }}</v-list-item-title>
               </v-list-item>
               <v-list-item :to="localPath('/chat')" link @click="closeMobileMenu">
-                <v-list-item-title>{{ $t("components.navbar.chat") }}</v-list-item-title>
+                <v-list-item-title class="nav2__mobile-title">
+                  {{ $t("components.navbar.chat") }}
+                  <span
+                    v-if="hasUnread"
+                    class="nav2__badge nav2__badge--inline"
+                    aria-hidden="true"
+                  >
+                    {{ unreadLabel }}
+                  </span>
+                </v-list-item-title>
               </v-list-item>
               <v-list-item v-if="userProfile?.is_admin" :to="localPath('/admin')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.admin") }}</v-list-item-title>
@@ -165,9 +181,11 @@
 import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore1";
+import { useMessagesStore } from "@/stores/messagesStore";
 import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
 
 const authStore = useAuthStore();
+const messages = useMessagesStore();
 const router = useRouter();
 const route = useRoute();
 const localPath = useLocalePath();
@@ -178,6 +196,11 @@ const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
 );
 const userProfile = computed(() => authStore.userProfile);
+const unreadCount = computed(() => messages.totalUnread || 0);
+const hasUnread = computed(() => unreadCount.value > 0);
+const unreadLabel = computed(() =>
+  unreadCount.value > 99 ? "99+" : `${unreadCount.value}`
+);
 
 const logoutDialog = ref(false);
 const isLoggingOut = ref(false);
@@ -397,6 +420,35 @@ onBeforeUnmount(() => {
   text-transform: uppercase;
   font-size: 0.92rem;
   padding: 2px 2px;
+}
+
+.nav2__link--chat {
+  position: relative;
+  padding-right: 18px;
+}
+
+.nav2__badge {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background: #ff3b30;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.nav2__badge--inline {
+  position: relative;
+  top: -1px;
+  right: -2px;
+  margin-left: 6px;
 }
 
 .nav2__link:hover,
