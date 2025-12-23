@@ -313,17 +313,17 @@ const treeItems = computed(() => {
 
   const groups = [
     {
+      id: "human-group",
+      title: translateOrFallback("components.users.realHumans", "Real Humans"),
+      users: humanUsers.value,
+    },
+    {
       id: "ai-group",
       title: translateOrFallback(
         "components.users.aiAgents",
         "AI Agents & Biases"
       ),
       users: aiUsers.value,
-    },
-    {
-      id: "human-group",
-      title: translateOrFallback("components.users.realHumans", "Real Humans"),
-      users: humanUsers.value,
     },
   ];
 

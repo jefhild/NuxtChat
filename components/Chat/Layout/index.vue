@@ -518,7 +518,7 @@
       v-model="leftOpen"
       location="left"
       temporary
-      class="d-md-none"
+      class="d-md-none chat-mobile-drawer"
       width="320"
       :mobile="isMobileDrawer"
       aria-label="Topics drawer"
@@ -559,7 +559,7 @@
       v-model="rightOpen"
       location="right"
       temporary
-      class="d-md-none"
+      class="d-md-none chat-mobile-drawer"
       width="300"
       :mobile="isMobileDrawer"
       aria-label="Participants drawer"
@@ -1617,5 +1617,13 @@ function toggleFilters() {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.chat-mobile-drawer {
+  z-index: 1700 !important;
+}
+.chat-mobile-drawer :deep(.v-overlay__content),
+.chat-mobile-drawer :deep(.v-navigation-drawer) {
+  top: var(--nav2-offset, 0px) !important;
+  height: calc(100vh - var(--nav2-offset, 0px)) !important;
 }
 </style>
