@@ -17,7 +17,14 @@
 import { useI18n } from "vue-i18n";
 const { locale, availableLocales: rawLocales, setLocale } = useI18n();
 
-const currentLocale = ref(locale.value);
+const normalizeLocale = (code = "") => code.toLowerCase().split("-")[0];
+const resolveLocale = (code = "") => {
+  if (rawLocales.includes(code)) return code;
+  const normalized = normalizeLocale(code);
+  return rawLocales.includes(normalized) ? normalized : "en";
+};
+
+const currentLocale = ref(resolveLocale(locale.value));
 
 const flagPaths = {
   en: "/images/flags/icon_us.png",
@@ -26,8 +33,7 @@ const flagPaths = {
   ru: "/images/flags/icon_ru.png",
 };
 
-const selectedFlag = computed(() =>
-{
+const selectedFlag = computed(() => {
   const match = localesWithFlags.find((l) => l.code === currentLocale.value);
   return match?.flag || "/images/flags/default.png";
 });
@@ -49,15 +55,28 @@ const switchLanguage = () => {
   setLocale(currentLocale.value);
 };
 
-// Watch the model and call setLocale with the STRING code (not the Event)
-watch(currentLocale, async (val, old) => {
-  if (!val || val === old) return
-  try {
-    await setLocale(val) // This navigates to the localized route
-  } catch (e) {
-    console.warn('[i18n] setLocale failed:', e)
+// Keep the select in sync with the resolved locale.
+watch(locale, (val) => {
+  const resolved = resolveLocale(val);
+  if (currentLocale.value !== resolved) {
+    currentLocale.value = resolved;
   }
-})
+});
+
+// Watch the model and call setLocale with the STRING code (not the Event).
+watch(currentLocale, async (val, old) => {
+  const resolved = resolveLocale(val);
+  if (resolved !== val) {
+    currentLocale.value = resolved;
+    return;
+  }
+  if (!val || val === old) return;
+  try {
+    await setLocale(val); // This navigates to the localized route
+  } catch (e) {
+    console.warn("[i18n] setLocale failed:", e);
+  }
+});
 
 </script>
 

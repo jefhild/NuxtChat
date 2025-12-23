@@ -321,7 +321,7 @@ const treeItems = computed(() => {
       id: "ai-group",
       title: translateOrFallback(
         "components.users.aiAgents",
-        "AI Agents & Biases"
+        "AI Personas"
       ),
       users: aiUsers.value,
     },

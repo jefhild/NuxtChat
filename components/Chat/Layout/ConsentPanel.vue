@@ -43,7 +43,7 @@
 
       <v-btn
         v-if="showCta"
-        class="mt-3"
+        class="mt-3 consent-cta"
         block
         :color="ctaColor"
         :variant="ctaVariant"
@@ -109,7 +109,7 @@ const stateMeta = computed(() => {
         icon: "mdi-lock",
         iconColor: "primary",
         cardColor: "primary-lighten-5",
-        ctaText: "Accept terms & start",
+        ctaText: t("components.chatheader.consent-cta"),
         ctaColor: "primary",
       };
     case "onboarding":
@@ -306,5 +306,15 @@ function onPrimary() {
   align-self: flex-start;
   margin-top: -6px;
   margin-right: -6px;
+}
+.consent-cta {
+  font-size: clamp(12px, 2.8vw, 14px);
+  line-height: 1.2;
+  min-height: 36px;
+}
+.consent-cta :deep(.v-btn__content) {
+  white-space: normal;
+  line-height: 1.2;
+  text-align: center;
 }
 </style>

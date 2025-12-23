@@ -20,7 +20,7 @@
           @click="rightOpen = true"
           aria-label="Show active chat participants"
         >
-          <v-icon>mdi-account-multiple-outline</v-icon>
+          <v-icon>mdi-chat-processing-outline</v-icon>
         </v-btn>
       </div>
       <!-- Desktop / tablet (>= md): 3 columns -->

@@ -9,7 +9,10 @@ import { useI18n } from "vue-i18n";
 // const settingsUrl = localePath('/settings') // e.g. /fr/settings
 
 // Global handler the UI registers (ChatLayoutOnboarding sets this)
-let __onBotMessage = (text) => console.debug("[OnboardingAI] bot:", text);
+let __onBotMessage = (payload) => {
+  const text = typeof payload === "string" ? payload : payload?.text;
+  console.debug("[OnboardingAI] bot:", text);
+};
 export function setOnboardingBotMessageHandler(fn) {
   if (typeof fn === "function") __onBotMessage = fn;
 }
@@ -27,10 +30,11 @@ export function useOnboardingAi() {
   function ensureBotSelected() {
     chat.initializeDefaultUser(auth.authStatus);
   }
-  function pushBotMessage(text) {
+  function pushBotMessage(payload) {
     try {
-      __onBotMessage(text);
+      __onBotMessage(payload);
     } catch {
+      const text = typeof payload === "string" ? payload : payload?.text;
       console.debug("[OnboardingAI] bot:", text);
     }
   }
@@ -80,7 +84,7 @@ export function useOnboardingAi() {
 
       // ---- bot_message ----
       if (a.type === "bot_message" && a.text) {
-        pushBotMessage(a.text);
+        pushBotMessage({ text: a.text, quickReplies: a.quickReplies });
         sawBot = true;
         continue;
       }

@@ -804,6 +804,7 @@
       "anon_authenticated-line1": "Register an email, now.",
       "anon_authenticated-line2": "Enjoy. Happy chatting.",
       "action-label": "Open consent information or start chat",
+      "consent-cta": "Accept terms & start",
       "settings": "Settings",
       "settings-disabled": "Settings (Disabled in Anonymous Mode)",
       "settings-aria-label": "Open settings modal to update your account preferences and personal information"
@@ -1073,7 +1074,7 @@
       "requires-profile": "Requires a minimum profile",
       "none-active": "No active discussions found",
       "none-offline": "No offline users found",
-      "aiAgents": "AI Agents & Biases",
+      "aiAgents": "AI Personas",
       "realHumans": "Real Humans"
     },
     "users-ai": {

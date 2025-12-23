@@ -31,6 +31,25 @@
               "
               v-html="(render && render(m.text)) || m.text"
             />
+            <div
+              v-if="
+                m.from !== 'me' &&
+                m.id === lastBotMessageId &&
+                Array.isArray(m.quickReplies) &&
+                m.quickReplies.length
+              "
+              class="mt-2 d-flex flex-wrap gap-2"
+            >
+              <v-chip
+                v-for="q in m.quickReplies"
+                :key="q"
+                color="primary"
+                variant="outlined"
+                @click="onQuickReply(q)"
+              >
+                {{ q }}
+              </v-chip>
+            </div>
           </div>
           <!-- {{ botTyping }} -->
           <!-- 🔹 Single trailing typing bubble (never duplicates) -->
@@ -104,7 +123,7 @@ import {
 import { useMarkdown } from "~/composables/useMarkdown";
 
 const { init: initMd, render } = useMarkdown();
-const { t } = useI18n();
+const { t, locale, availableLocales } = useI18n();
 
 const draft = useOnboardingDraftStore();
 const { getDefaults } = useGeoLocationDefaults();
@@ -126,6 +145,14 @@ const scrollEl = ref(null);
 const consentBusy = ref(false);
 const booted = ref(false);
 const botTyping = ref(false);
+const localeRefreshBusy = ref(false);
+const lastBotMessageId = computed(() => {
+  const list = ephemeralThread.value || [];
+  for (let i = list.length - 1; i >= 0; i -= 1) {
+    if (list[i]?.from !== "me") return list[i]?.id || null;
+  }
+  return null;
+});
 
 // let parent toggle it while awaiting the bot
 defineExpose({
@@ -140,9 +167,20 @@ defineExpose({
 // Simple detector for the consent prompt text
 function isConsentPrompt(text = "") {
   const normalized = String(text || "").trim().toLowerCase();
+  const allLocales = Array.isArray(availableLocales) ? availableLocales : [];
+  const localized = allLocales
+    .map((code) => {
+      try {
+        return t("onboarding.consentPrompt", {}, { locale: code });
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
   const prompts = [
     t("onboarding.consentPrompt"),
     "do you confirm you are 18+ and accept the terms to continue?",
+    ...localized,
   ]
     .map((s) => String(s || "").trim().toLowerCase())
     .filter(Boolean);
@@ -159,7 +197,8 @@ function scrollToBottom() {
 function captureBotMessage(payload) {
   if (!props.isPreAuth) return;
 
-  const text = typeof payload === "string" ? payload : payload?.text ?? "";
+  const data = typeof payload === "string" ? { text: payload } : payload || {};
+  const text = data?.text ?? "";
   if (!text) return;
   if (props.consented && isConsentPrompt(text)) return;
 
@@ -167,11 +206,26 @@ function captureBotMessage(payload) {
 
   // de-dupe last message
   const last = ephemeralThread.value[ephemeralThread.value.length - 1];
-  if (last && last.text === text) return;
+  if (last && last.text === text) {
+    const incomingReplies = Array.isArray(data?.quickReplies)
+      ? data.quickReplies
+      : [];
+    const lastReplies = Array.isArray(last.quickReplies)
+      ? last.quickReplies
+      : [];
+    if (incomingReplies.length && !lastReplies.length) {
+      draft.setField?.("thread", [
+        ...ephemeralThread.value.slice(0, -1),
+        { ...last, quickReplies: incomingReplies },
+      ]);
+    }
+    return;
+  }
 
   draft.appendThreadMessage({
     from: "imchatty",
     text,
+    quickReplies: Array.isArray(data?.quickReplies) ? data.quickReplies : [],
     ts: Date.now(),
   });
 
@@ -206,6 +260,32 @@ if (import.meta.client) {
 }
 
 watch(ephemeralThread, scrollToBottom, { deep: true });
+
+watch(
+  locale,
+  async (val, old) => {
+    if (!val || val === old) return;
+    if (!props.isPreAuth || !props.isBotSelected || props.consented) return;
+    if (localeRefreshBusy.value) return;
+    localeRefreshBusy.value = true;
+    try {
+      if (typeof draft.clearThread === "function") {
+        draft.clearThread();
+      } else if (typeof draft.setField === "function") {
+        draft.setField("thread", []);
+      } else {
+        draft.thread = [];
+      }
+      botTyping.value = true;
+      await resume();
+    } catch (err) {
+      botTyping.value = false;
+      console.warn("[onboarding] locale refresh failed:", err?.message || err);
+    } finally {
+      localeRefreshBusy.value = false;
+    }
+  }
+);
 
 // Clear ephemerals when unlocking
 watch(
@@ -331,6 +411,12 @@ function onConsentNo() {
 
 function onLogin() {
   router.push("/signin");
+}
+
+async function onQuickReply(label) {
+  if (!label) return;
+  botTyping.value = true;
+  await sendUserMessage(label);
 }
 </script>
 

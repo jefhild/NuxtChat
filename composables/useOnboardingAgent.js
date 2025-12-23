@@ -29,6 +29,14 @@ function ackFor(field, value) {
   return "";
 }
 
+function genderQuickReplies(t) {
+  return [
+    t("onboarding.gender.male", "Male"),
+    t("onboarding.gender.female", "Female"),
+    t("onboarding.gender.other", "Other"),
+  ];
+}
+
 function hasAnyDraft(d) {
   return !!(d.displayname || d.age || d.gender_id || d.bio);
 }
@@ -252,7 +260,7 @@ export function useOnboardingAgent(selectedUserRef) {
           return {
             type: "bot",
             text: t("onboarding.askGender", "What is your gender?"),
-            quickReplies: [],
+            quickReplies: genderQuickReplies(t),
           };
         }
         // fall through for other fields (future)
@@ -270,7 +278,7 @@ export function useOnboardingAgent(selectedUserRef) {
               "onboarding.confirmGender",
               `Just to confirm, is your gender ${glabel}?`
             ),
-            quickReplies: [],
+            quickReplies: genderQuickReplies(t),
           };
         }
       }
@@ -394,7 +402,7 @@ export function useOnboardingAgent(selectedUserRef) {
     // Recompute (bio isn't required; REQUIRED is displayname/age/gender_id)
     missing = missingFields(d);
 
-    // ====== STILL MISSING → ask LLM for next question (no chips mid-flow) ======
+    // ====== STILL MISSING → ask LLM for next question (chips only for gender) ======
     if (missing.length) {
       let res;
       try {
@@ -443,9 +451,11 @@ export function useOnboardingAgent(selectedUserRef) {
         if (next === "gender_id") {
           draftStore.setLastAsked("gender_id");
           draftStore.clearLastCaptured();
-          return say(
-            `${ack} ${t("onboarding.askGender", "What is your gender?")}`.trim()
-          );
+          return {
+            type: "bot",
+            text: `${ack} ${t("onboarding.askGender", "What is your gender?")}`.trim(),
+            quickReplies: genderQuickReplies(t),
+          };
         }
         return say(t("onboarding.moreInfo", "Please share a bit more info."));
       }
@@ -493,12 +503,14 @@ export function useOnboardingAgent(selectedUserRef) {
       missing = missingFields(d);
 
       if (missing.length) {
+        const showGenderReplies =
+          missing.length === 1 && missing[0] === "gender_id";
         return {
           type: "bot",
           text:
             res?.utterance ||
             t("onboarding.moreInfo", "Please share a bit more info."),
-          quickReplies: [], // strictly no chips mid-flow
+          quickReplies: showGenderReplies ? genderQuickReplies(t) : [],
         };
       }
     }

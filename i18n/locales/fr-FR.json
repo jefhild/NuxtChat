@@ -788,6 +788,7 @@
       "anon_authenticated-line1": "Bienvenue ! N'oubliez pas d'enregistrer un e-mail.",
       "anon_authenticated-line2": "Profitez-en. Bonne discussion.",
       "action-label": "Ouvrir les informations de consentement ou démarrer le chat",
+      "consent-cta": "Accepter les conditions",
       "settings": "Paramètres",
       "settings-disabled": "Paramètres (désactivés en mode anonyme)",
       "settings-aria-label": "Ouvrir la fenêtre des paramètres pour mettre à jour vos préférences de compte et vos informations personnelles"

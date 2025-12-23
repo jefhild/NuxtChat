@@ -182,6 +182,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
       id: msg.id || crypto.randomUUID?.() || String(Date.now()),
       from: msg.from || "imchatty",
       text: msg.text || "",
+      quickReplies: Array.isArray(msg.quickReplies) ? msg.quickReplies : [],
       ts: msg.ts || Date.now(),
     };
     this.thread = [...this.thread, payload];

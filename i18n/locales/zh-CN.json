@@ -788,6 +788,7 @@
       "anon_authenticated-line1": "欢迎！别忘了注册你的邮箱。",
       "anon_authenticated-line2": "请尽情享受，祝你聊天愉快。",
       "action-label": "打开同意信息或开始聊天",
+      "consent-cta": "接受条款并开始",
       "settings": "设置",
       "settings-disabled": "设置（匿名模式下不可用）",
       "settings-aria-label": "打开设置窗口以更新您的账户偏好和个人信息"

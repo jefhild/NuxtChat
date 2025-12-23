@@ -15,9 +15,12 @@ const STRINGS = {
     consentAskName: "What display name should we show?",
     consentNudge: "No problem. Say “yes” when you’re ready to continue, and we’ll proceed.",
     askAge: "Great! What's your age? (18+ only)",
-    askAgeSimple: "Age must be a number, 18–120. What's your age?",
-    askGenderShort: "Pick a gender: 1=male, 2=female, 3=other",
-    askGenderOpen: "How do you identify? You can say “male”, “female”, or “other”.",
+    askAgeSimple: "Age must be a number greater than 17 and less than 100. What's your age?",
+    askGenderShort: "Which gender fits you best?",
+    askGenderOpen: "How do you identify your gender?",
+    genderMale: "Male",
+    genderFemale: "Female",
+    genderOther: "Other",
     askBioShort:
       "Almost done! Please share a short bio (1–280 chars, one paragraph).",
     askBio: "Write a short bio (1–2 sentences).",
@@ -35,9 +38,11 @@ const STRINGS = {
       "Pas de souci. Dites « oui » quand vous serez prêt, et nous continuerons.",
     askAge: "Super ! Quel est votre âge ? (18 ans et +)",
     askAgeSimple: "L’âge doit être un nombre entre 18 et 120. Quel est votre âge ?",
-    askGenderShort: "Choisissez un genre : 1=homme, 2=femme, 3=autre",
-    askGenderOpen:
-      "Comment vous identifiez-vous ? Vous pouvez dire « homme », « femme » ou « autre ». ",
+    askGenderShort: "Quel genre vous correspond le mieux ?",
+    askGenderOpen: "Comment vous identifiez-vous ?",
+    genderMale: "Homme",
+    genderFemale: "Femme",
+    genderOther: "Autre",
     askBioShort:
       "Presque terminé ! Partagez une courte bio (1–280 caractères, un seul paragraphe).",
     askBio: "Écrivez une courte bio (1–2 phrases).",
@@ -57,9 +62,11 @@ const STRINGS = {
       "Хорошо. Скажите «да», когда будете готовы продолжить.",
     askAge: "Отлично! Сколько вам лет? (18+)",
     askAgeSimple: "Возраст должен быть числом от 18 до 120. Сколько вам лет?",
-    askGenderShort: "Выберите пол: 1=мужской, 2=женский, 3=другое",
-    askGenderOpen:
-      "Как вы себя идентифицируете? Можно ответить «мужской», «женский» или «другое».",
+    askGenderShort: "Какой пол вам подходит больше всего?",
+    askGenderOpen: "Как вы себя идентифицируете?",
+    genderMale: "Мужской",
+    genderFemale: "Женский",
+    genderOther: "Другое",
     askBioShort:
       "Почти готово! Напишите короткое био (1–280 символов, один абзац).",
     askBio: "Напишите короткое био (1–2 предложения).",
@@ -76,8 +83,11 @@ const STRINGS = {
     consentNudge: "没关系。准备好时说“是”，我们就继续。",
     askAge: "很好！你多大了？（需年满18岁）",
     askAgeSimple: "年龄需为18–120之间的数字。你的年龄是？",
-    askGenderShort: "选择性别：1=男，2=女，3=其他",
-    askGenderOpen: "你的性别是？可以说“男”“女”或“其他”。",
+    askGenderShort: "哪个性别最符合你？",
+    askGenderOpen: "你的性别是？",
+    genderMale: "男",
+    genderFemale: "女",
+    genderOther: "其他",
     askBioShort: "快好了！写一段简介（1–280字符，单段）。",
     askBio: "写一段简短的简介（1–2句话）。",
     askBioAlt: "简介需控制在1–280字符，单段。",
@@ -98,6 +108,14 @@ const pickLang = (locale = "en") => String(locale || "en").split("-")[0];
 const pickStrings = (locale = "en") => STRINGS[pickLang(locale)] || STRINGS.en;
 const pickYesRegex = (locale = "en") =>
   YES_REGEX[pickLang(locale)] || YES_REGEX.en;
+const genderQuickReplies = (locale = "en") => {
+  const strings = pickStrings(locale);
+  return [
+    strings.genderMale,
+    strings.genderFemale,
+    strings.genderOther,
+  ].filter(Boolean);
+};
 
 const pickVariant = (locale = "en", variants = {}) => {
   const lang = pickLang(locale);
@@ -223,6 +241,12 @@ export default defineEventHandler(async (event) => {
   const strings = pickStrings(localeCode);
   const L = (key) => strings[key] || STRINGS.en[key] || "";
   const yesRegex = pickYesRegex(localeCode);
+  const genderReplies = genderQuickReplies(localeCode);
+  const genderPromptAction = (text) => ({
+    type: "bot_message",
+    text,
+    quickReplies: genderReplies,
+  });
 
   // console.log("[OnboardingAI] incoming body:", {
   //   messages: messages?.map((m) => m.role + ":" + m.content).slice(-3), // last 3 for context
@@ -240,7 +264,7 @@ export default defineEventHandler(async (event) => {
     const said = messages?.[0]?.content?.trim() || "";
     // If no user utterance yet, always ask for consent explicitly
 
-    console.log("[OnboardingAI] consent branch, said:", said);
+    // console.log("[OnboardingAI] consent branch, said:", said);
 
     if (!said) {
       return {
@@ -458,8 +482,7 @@ export default defineEventHandler(async (event) => {
           actions: [
             { type: "set_field", key: "age", value: n },
             {
-              type: "bot_message",
-              text: L("askGenderShort"),
+              ...genderPromptAction(L("askGenderShort")),
             },
           ],
         };
@@ -490,10 +513,7 @@ export default defineEventHandler(async (event) => {
       }
       return {
         actions: [
-          {
-            type: "bot_message",
-            text: L("askGenderOpen"),
-          },
+          genderPromptAction(L("askGenderOpen")),
         ],
       };
     }
@@ -575,8 +595,7 @@ export default defineEventHandler(async (event) => {
           actions: [
             { type: "set_field", key: "age", value: n },
             {
-              type: "bot_message",
-              text: L("askGenderShort"),
+              ...genderPromptAction(L("askGenderShort")),
             },
           ],
         };
@@ -608,10 +627,7 @@ export default defineEventHandler(async (event) => {
       }
       return {
         actions: [
-          {
-            type: "bot_message",
-            text: L("askGenderOpen"),
-          },
+          genderPromptAction(L("askGenderOpen")),
         ],
       };
     }
@@ -679,7 +695,11 @@ export default defineEventHandler(async (event) => {
     const question = questionForField(next);
     const actions = state.isComplete
       ? [{ type: "finalize" }]
-      : [{ type: "bot_message", text: question }];
+      : [
+          next === "genderId"
+            ? genderPromptAction(question)
+            : { type: "bot_message", text: question },
+        ];
     return { actions };
   }
 
@@ -832,6 +852,9 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
           : next === "bio"
           ? L("askBio")
           : L("finalizePrompt");
+      if (next === "genderId") {
+        return { actions: [genderPromptAction(question)] };
+      }
       return { actions: [{ type: "bot_message", text: question }] };
     }
 
@@ -918,10 +941,7 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
             // Invalid gender; remove this set_field and ask in natural language
             actions.splice(i, 1);
             i--;
-            actions.push({
-              type: "bot_message",
-              text: L("askGenderOpen"),
-            });
+            actions.push(genderPromptAction(L("askGenderOpen")));
           }
         }
       }
@@ -1032,14 +1052,48 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
     }
 
     const question = questionForField(next);
-    actions = [{ type: "bot_message", text: question }];
+    actions = [
+      next === "genderId"
+        ? genderPromptAction(question)
+        : { type: "bot_message", text: question },
+    ];
   }
 
   // Last safeguard for resume with no output
   if (!actions.length && state.resume) {
     const next = (state.missingFields || []).find((f) => REQUIRED.includes(f));
     const question = questionForField(next);
-    actions.push({ type: "bot_message", text: question });
+    actions.push(
+      next === "genderId"
+        ? genderPromptAction(question)
+        : { type: "bot_message", text: question }
+    );
+  }
+
+  if (
+    nextRequired === "genderId" &&
+    !actions.some((a) => a.type === "set_field" && a.key === "genderId")
+  ) {
+    const hasGenderOptions = (text = "") =>
+      /\b(male|female|other|nonbinary|nb|man|woman|homme|femme|autre|муж|жен|другое|男|女|其他)\b/i.test(
+        text
+      );
+    for (let i = actions.length - 1; i >= 0; i -= 1) {
+      const a = actions[i];
+      if (a.type === "bot_message") {
+        const nextText = hasGenderOptions(a.text)
+          ? L("askGenderOpen")
+          : a.text;
+        if (
+          nextText !== a.text ||
+          !Array.isArray(a.quickReplies) ||
+          !a.quickReplies.length
+        ) {
+          actions[i] = { ...a, text: nextText, quickReplies: genderReplies };
+        }
+        break;
+      }
+    }
   }
 
   return { actions };
