@@ -750,6 +750,7 @@
     "activeChats": {
       "confirm": "Confirmer",
       "cancel": "Annuler",
+      "profile-title": "Voir le profil",
       "delete-title": "Supprimer Ce Chat",
       "delete-confirm": "Êtes-vous sûr de vouloir supprimer ce chat ? Cette action ne peut pas être annulée.",
       "delete-with-user": "Voulez-vous vraiment supprimer ce chat entre vous et {name} ?",

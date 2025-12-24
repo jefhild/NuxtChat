@@ -309,14 +309,15 @@
                 :isLoading="isLoading"
                 :user-profile="userProfile"
                 :auth-status="auth.authStatus"
-              :disable-filter-toggle="shouldDisableToggle"
-              :show-filters="false"
-              :show-ai="showAIUsers"
-              @user-selected="selectUser"
-              @filter-changed="updateFilters"
-              @delete-chat="openDeleteDialog"
-              @update:showAi="showAIUsers = $event"
-            />
+                :disable-filter-toggle="shouldDisableToggle"
+                :show-filters="false"
+                :show-ai="showAIUsers"
+                @user-selected="selectUser"
+                @filter-changed="updateFilters"
+                @delete-chat="openDeleteDialog"
+                @view-profile="openProfileDialog"
+                @update:showAi="showAIUsers = $event"
+              />
           </div>
         </v-card>
       </v-col>
@@ -590,6 +591,7 @@
               @user-selected="selectUser"
               @filter-changed="updateFilters"
               @delete-chat="openDeleteDialog"
+              @view-profile="openProfileDialog"
               @update:showAi="showAIUsers = $event"
             />
           </div>
@@ -636,6 +638,12 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <ProfileDialog
+      v-model="isProfileDialogOpen"
+      :slug="profileDialogSlug"
+      :user-id="profileDialogUserId"
+    />
   </div>
 </template>
 
@@ -662,6 +670,7 @@ import { useAiQuota } from "~/composables/useAiQuota";
 import { useTabFilters } from "@/composables/useTabFilters";
 import { useI18n } from "vue-i18n";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
+import ProfileDialog from "@/components/ProfileDialog.vue";
 
 const auth = useAuthStore();
 const chat = useChatStore();
@@ -691,12 +700,21 @@ const leftOpen = ref(false);
 const rightOpen = ref(false);
 const panelOpen = ref(false);
 const autoCloseOnScroll = false;
+const isProfileDialogOpen = ref(false);
+const profileDialogUserId = ref(null);
+const profileDialogSlug = ref(null);
 const showConsentPanelAuth = ref(true);
 const CONSENT_PANEL_HIDE_PREFIX = "consentPanelHidden:";
 const footerScroll = createFooterScrollHandler("chat-mobile");
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
+
+const openProfileDialog = (user) => {
+  profileDialogUserId.value = user?.user_id || user?.id || null;
+  profileDialogSlug.value = user?.slug || null;
+  isProfileDialogOpen.value = true;
+};
 
 const IMCHATTY_ID = "a3962087-516b-48df-a3ff-3b070406d832";
 const filters = reactive({
@@ -806,10 +824,8 @@ watch(
 const messageDraft = ref("");
 // const replyingToMessage = ref(null)
 const regRef = ref(null);
-const isProfileDialogOpen = ref(false);
 const isLoading = ref(false);
 const isTabVisible = ref(true);
-const modalUser = ref(null);
 const showAIUsers = ref(true);
 const activeChats = ref([]);
 const replyingToMessage = ref(null); // { id, content } | null
@@ -1449,11 +1465,6 @@ async function onSend(text) {
       regRef.value?.setTyping?.(false);
     }
   }
-}
-
-function openProfileDialog(user) {
-  modalUser.value = user;
-  isProfileDialogOpen.value = true;
 }
 
 function genderSegmentFromUser(u) {

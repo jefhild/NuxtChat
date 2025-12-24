@@ -114,6 +114,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  adminMode: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const {
@@ -266,6 +270,7 @@ const authStateUI = computed(() => {
 
 const shouldOfferEmailLinkPrompt = computed(() => {
   return (
+    !props.adminMode &&
     authStore.authStatus === "anon_authenticated" &&
     authStateUI.value.showForm &&
     !hasLinkedEmail.value
@@ -381,7 +386,7 @@ const updateAvatarUrl = (newUrl) => {
     editableProfile.value.avatar_url = newUrl;
   }
 
-  if (authStore.userProfile) {
+  if (!props.adminMode && authStore.userProfile) {
     authStore.userProfile.avatar_url = newUrl;
   }
 };

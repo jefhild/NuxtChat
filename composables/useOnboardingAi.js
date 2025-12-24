@@ -135,6 +135,10 @@ export function useOnboardingAi() {
 
       // ---- finalize ----
       if (a.type === "finalize") {
+        if (draft.stage === "finalizing" || draft.stage === "done") {
+          sawFinalize = true;
+          continue;
+        }
         // console.log("[onboarding][finalize] received action");
         const {
           public: { IMCHATTY_ID },

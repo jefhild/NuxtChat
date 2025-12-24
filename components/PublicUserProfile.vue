@@ -3,109 +3,7 @@
     <!-- {{ profile }} -->
     <v-row justify="center">
       <v-col cols="12" md="8">
-        <v-card class="mx-auto" max-width="400" v-if="profile">
-          <div class="avatar-wrapper">
-            <NuxtImg
-              :src="profile.avatar_url"
-              height="200"
-              width="200"
-              class="rounded-circle cover-image mx-auto d-block ma-9"
-              :alt="`${profile.displayname} image`"
-            />
-
-            <NuxtImg
-              :src="avatarDecoration"
-              v-if="avatarDecoration"
-              class="avatar-decoration"
-              :alt="`${profile.displayname} image decoration`"
-            />
-          </div>
-
-          <v-card-title>
-            <v-row
-              ><v-col>
-                <h1 class="text-h5">
-                  {{ profile?.displayname }}, {{ profile?.age }}
-                </h1>
-              </v-col></v-row
-            >
-          </v-card-title>
-
-          <v-card-subtitle>
-            <v-row
-              ><v-col>{{ profile?.tagline }}</v-col
-              ><v-col class="justify-end d-flex align-center"
-                >{{ profile?.status }}, {{ profile?.country }}
-                {{ profile.country_emoji }}</v-col
-              ></v-row
-            >
-          </v-card-subtitle>
-
-          <v-card-text>
-            <!-- {{ profile }} -->
-            <v-row v-if="profile?.looking_for?.length">
-              <v-col class="text-h6">{{
-                $t("components.public-user-profile.looking-for")
-              }}</v-col>
-            </v-row>
-            <v-row v-if="profile?.looking_for?.length" no-gutters>
-              <v-col class="ml-2">{{ profile?.looking_for.join(", ") }}</v-col>
-            </v-row>
-            <v-row v-if="profile?.bio"
-              ><v-col class="text-h6">{{
-                $t("components.public-user-profile.about-me")
-              }}</v-col></v-row
-            >
-            <v-row v-if="profile?.bio">
-              <v-col class="bio-paragraph">{{ profile?.bio }}</v-col></v-row
-            >
-          </v-card-text>
-          <v-card-actions
-            style="
-              position: relative;
-              bottom: 0;
-              width: 100%;
-              background-color: rgba(0, 0, 0, 0.1);
-            "
-          >
-            <v-btn
-              v-if="profileSiteUrl"
-              :href="profileSiteUrl"
-              color="medium-emphasis"
-              icon="mdi-link-variant"
-              size="small"
-              target="_blank"
-              rel="noopener noreferrer"
-              :aria-label="
-                t('components.public-user-profile.visit1') +
-                `${profile?.displayname}` +
-                t('components.public-user-profile.visit2')
-              "
-            ></v-btn>
-            <v-btn
-              v-else
-              color="medium-emphasis"
-              icon="mdi-link-variant-off"
-              size="small"
-              disabled
-            ></v-btn>
-            <v-spacer></v-spacer>
-
-            <ButtonFavorite :profile="profile" />
-
-            <v-btn
-              color="blue medium-emphasis"
-              icon="mdi-cancel"
-              size="small"
-            ></v-btn>
-
-            <v-btn
-              color="black medium-emphasis"
-              icon="mdi-share-variant"
-              size="small"
-            ></v-btn>
-          </v-card-actions>
-        </v-card>
+        <ProfileCard :profile="profile" :avatar-decoration="avatarDecoration" />
 
         <v-container v-if="isPublic">
           <v-row class="mt-2" justify="center" v-if="isAuthenticated"
@@ -150,11 +48,11 @@
 const localPath = useLocalePath();
 import { useAuthStore } from "@/stores/authStore1";
 import { useUserProfile } from "@/composables/useUserProfile";
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
+import ProfileCard from "@/components/ProfileCard.vue";
 
 const props = defineProps({
   selectedUserSlug: String,
+  selectedUserId: String,
   isPublic: {
     type: Boolean,
     default: true,
@@ -163,24 +61,23 @@ const props = defineProps({
 
 const authStore = useAuthStore();
 
-const { profile, fetchUserProfileFromSlug } = useUserProfile();
-await fetchUserProfileFromSlug(props.selectedUserSlug);
+const { profile, fetchUserProfileFromSlug, fetchUserProfile } =
+  useUserProfile();
 
 const { getAvatarDecorationFromId } = useDb();
 const avatarDecoration = ref("");
 
-// Computed property for the formatted href
-const profileSiteUrl = computed(() => {
-  const siteUrl = profile.value?.site_url;
+const loadProfile = async () => {
+  if (props.selectedUserSlug) {
+    await fetchUserProfileFromSlug(props.selectedUserSlug);
+    return;
+  }
+  if (props.selectedUserId) {
+    await fetchUserProfile(props.selectedUserId);
+  }
+};
 
-  // Ensure siteUrl is defined and is a string
-  if (!siteUrl || typeof siteUrl !== "string") return null;
-
-  // Ensure it's a valid URL starting with http or https
-  return siteUrl.trim().startsWith("http")
-    ? siteUrl
-    : `https://${siteUrl.trim()}`;
-});
+await loadProfile();
 
 const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
@@ -193,53 +90,22 @@ onMounted(async () => {
   //   authStore.authStatus
   // );
   isLoading.value = false;
-
-  avatarDecoration.value = await getAvatarDecorationFromId(
-    profile.value?.user_id
-  );
-  // console.log("profile", profile.value);
 });
+
+watch(
+  () => [props.selectedUserSlug, props.selectedUserId],
+  () => {
+    loadProfile();
+  }
+);
+
+watch(
+  () => profile.value?.user_id,
+  async (userId) => {
+    avatarDecoration.value = userId
+      ? await getAvatarDecorationFromId(userId)
+      : "";
+  },
+  { immediate: true }
+);
 </script>
-
-<style scoped>
-.cover-image {
-  object-fit: cover;
-}
-
-.avatar-wrapper {
-  position: relative;
-}
-
-.avatar-decoration {
-  position: absolute;
-  top: -22px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 245px;
-  pointer-events: none;
-  z-index: 1;
-  object-fit: contain;
-}
-
-.subtitle-1 {
-  font-size: 1.2rem;
-  color: #757575;
-}
-
-.subtitle-2 {
-  font-size: 1rem;
-  color: #9e9e9e;
-}
-
-.bio-paragraph {
-  font-size: 1rem;
-  line-height: 1.25;
-  color: #374151;
-  /* Tailwind's gray-700 */
-  font-style: italic;
-  border-left: 4px solid #d1d5db;
-  /* Tailwind's gray-300 */
-  padding-left: 1rem;
-  text-align: justify;
-}
-</style>

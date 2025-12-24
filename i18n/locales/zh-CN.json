@@ -750,6 +750,7 @@
     "activeChats": {
       "confirm": "确认",
       "cancel": "取消",
+      "profile-title": "查看资料",
       "delete-title": "删除此聊天",
       "delete-confirm": "您确定要删除此聊天吗？此操作无法撤销。",
       "delete-with-user": "确定要删除你和 {name} 之间的聊天吗？",

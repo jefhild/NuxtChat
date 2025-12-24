@@ -290,6 +290,20 @@ watch(
     // once the real AI message arrives, stop typing chip
     typing.value = false;
 
+    // If we already have this message (e.g., from initial load), update/skip
+    if (m.id != null) {
+      const existingIdx = messages.value.findIndex(
+        (x) => x.id != null && String(x.id) === String(m.id)
+      );
+      if (existingIdx !== -1) {
+        const copy = messages.value.slice();
+        copy[existingIdx] = m;
+        messages.value = copy;
+        await msgs.markThreadAsRead(peerId.value);
+        return;
+      }
+    }
+
     // Try to reconcile a peer temp message (avoid duplicates)
     const idx = messages.value.findIndex(
       x =>

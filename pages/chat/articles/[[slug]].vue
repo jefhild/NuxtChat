@@ -222,6 +222,7 @@
               :get-gender-color="getGenderColor"
               :get-avatar-icon="getAvatarIcon"
               :get-gender-path="getGenderPath"
+              @select="openProfileDialog"
             />
           </div>
         </v-card>
@@ -357,7 +358,10 @@
             :get-gender-color="getGenderColor"
             :get-avatar-icon="getAvatarIcon"
             :get-gender-path="getGenderPath"
-            @select="() => (rightOpen = false)"
+            @select="(participant) => {
+              openProfileDialog(participant);
+              rightOpen = false;
+            }"
           />
         </div>
       </v-card>
@@ -407,6 +411,12 @@
       </v-list-item>
     </v-list>
   </v-menu>
+
+  <ProfileDialog
+    v-model="isProfileDialogOpen"
+    :slug="profileDialogSlug"
+    :user-id="profileDialogUserId"
+  />
 </template>
 
 <script setup>
@@ -423,6 +433,7 @@ import {
 import { useI18n } from "vue-i18n";
 import { sanitizeHtml } from "~/utils/sanitizeHtml.js";
 import { useDisplay } from "vuetify";
+import ProfileDialog from "@/components/ProfileDialog.vue";
 
 const leftOpen = ref(false);
 const rightOpen = ref(false);
@@ -439,6 +450,9 @@ const localePath = useLocalePath();
 
 const panelOpen = ref(false);
 const autoCloseOnScroll = true;
+const isProfileDialogOpen = ref(false);
+const profileDialogUserId = ref(null);
+const profileDialogSlug = ref(null);
 
 const articleImageUrl = computed(() => {
   const base = (pub.SUPABASE_BUCKET || "").replace(/\/$/, "");
@@ -462,6 +476,12 @@ const sanitizedArticleHtml = computed(() =>
 function onKeydown(e) {
   if (e.key === "Escape" && panelOpen.value) panelOpen.value = false;
 }
+
+const openProfileDialog = (participant) => {
+  profileDialogUserId.value = participant?.userId || null;
+  profileDialogSlug.value = participant?.slug || null;
+  isProfileDialogOpen.value = true;
+};
 
 const menu = reactive({
   open: false,
@@ -1042,15 +1062,6 @@ useSeoMeta({
   background: var(--v-theme-surface);
   border-radius: 50%;
   padding: 1px;
-}
-.profile-link {
-  color: inherit;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.profile-link:hover {
-  color: var(--v-theme-primary);
-  text-decoration: underline;
 }
 .chat-mobile-controls {
   margin-top: -20px;

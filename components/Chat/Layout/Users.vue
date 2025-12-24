@@ -131,6 +131,12 @@
                       </template>
                       <v-list density="compact">
                         <v-list-item
+                          value="view-profile"
+                          :title="$t('components.activeChats.profile-title')"
+                          prepend-icon="mdi-card-account-details-outline"
+                          @click.stop="$emit('view-profile', item.user)"
+                        />
+                        <v-list-item
                           value="delete-chat"
                           :title="$t('components.activeChats.delete-title')"
                           prepend-icon="mdi-trash-can-outline"
@@ -181,6 +187,7 @@ const emit = defineEmits([
   "filter-changed",
   "update:showAi",
   "delete-chat",
+  "view-profile",
 ]);
 
 const msgs = useMessagesStore();

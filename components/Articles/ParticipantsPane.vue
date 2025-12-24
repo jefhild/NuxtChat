@@ -22,6 +22,7 @@ const emit = defineEmits(["select"]);
       <v-list-item
         v-for="u in participants"
         :key="u.id || u.userId || u.displayname"
+        class="cursor-pointer"
         @click="emit('select', u)"
       >
         <template #prepend>
@@ -46,16 +47,7 @@ const emit = defineEmits(["select"]);
         </template>
 
         <v-list-item-title class="text-body-2">
-          <NuxtLink
-            v-if="u.slug"
-            :to="`/profiles/${getGenderPath(u.gender_id)}/${u.slug}`"
-            class="profile-link"
-          >
-            {{ u.displayname || u.userId }}
-          </NuxtLink>
-          <template v-else>
-            {{ u.displayname || u.userId }}
-          </template>
+          {{ u.displayname || u.userId }}
           <v-chip
             v-if="u.isPersona"
             size="x-small"
@@ -93,14 +85,5 @@ const emit = defineEmits(["select"]);
   border-radius: 50%;
   background-color: var(--v-theme-success);
   box-shadow: 0 0 0 2px var(--v-theme-surface);
-}
-.profile-link {
-  color: inherit;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.profile-link:hover {
-  color: var(--v-theme-primary);
-  text-decoration: underline;
 }
 </style>

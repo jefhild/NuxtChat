@@ -149,6 +149,14 @@
               </td>
               <td class="text-right">
                 <v-btn
+                  icon="mdi-account-edit"
+                  variant="text"
+                  color="secondary"
+                  size="small"
+                  :to="profileEditLink(bot) || undefined"
+                  :disabled="!bot.profile_user_id"
+                ></v-btn>
+                <v-btn
                   icon="mdi-pencil"
                   variant="text"
                   color="primary"
@@ -468,6 +476,7 @@ import { useAdminAiBots } from "@/composables/useAdminAiBots";
 
 const { listBots, createBot, updateBot, deleteBot } = useAdminAiBots();
 const { getGenders, getStatuses, getAllCategories } = useDb();
+const localPath = useLocalePath();
 
 const loading = ref(true);
 const loadingList = ref(false);
@@ -700,6 +709,11 @@ const avatarInitial = (bot) => {
   const source =
     bot?.profile?.displayname || bot?.persona_key || bot?.profile?.slug || "?";
   return source.charAt(0).toUpperCase();
+};
+
+const profileEditLink = (bot) => {
+  if (!bot?.profile_user_id) return null;
+  return localPath(`/admin/profiles/${bot.profile_user_id}`);
 };
 
 const formatJson = (value, fallback) => {
