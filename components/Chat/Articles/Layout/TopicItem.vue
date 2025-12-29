@@ -2,7 +2,7 @@
 /**
  * Single topic row.
  * Props:
- *  - topic: { id, title, botAvatarUrl?, lastActivityAt, todayCount, score }
+ *  - topic: { id, title, botAvatarUrl?, lastActivityAt, todayCount, messageCount, score }
  *  - formatDateTime: (iso: string) => string
  * Emits:
  *  - select(id)
@@ -35,6 +35,7 @@ const emit = defineEmits(['select'])
 
     <v-list-item-subtitle class="text-caption">
       {{ props.formatDateTime(props.topic.lastActivityAt) }}
+      · {{ props.topic.messageCount || 0 }} messages
       · Today {{ props.topic.todayCount }}
       · Score {{ props.topic.score }}
     </v-list-item-subtitle>

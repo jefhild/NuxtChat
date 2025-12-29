@@ -25,9 +25,10 @@ export default defineEventHandler(async (event) => {
 
   // 1) Read existing vote
   const { data: existing, error: selErr } = await supa
-    .from("votes_threads")
+    .from("votes_unified")
     .select("value")
-    .eq("thread_id", threadId)
+    .eq("target_type", "thread")
+    .eq("target_id", threadId)
     .eq("user_id", user.id)
     .maybeSingle();
   if (selErr)
@@ -37,43 +38,43 @@ export default defineEventHandler(async (event) => {
   let mutErr = null;
   if (existing?.value === value) {
     const { error } = await supa
-      .from("votes_threads")
+      .from("votes_unified")
       .delete()
-      .eq("thread_id", threadId)
+      .eq("target_type", "thread")
+      .eq("target_id", threadId)
       .eq("user_id", user.id);
     mutErr = error;
   } else if (existing) {
     const { error } = await supa
-      .from("votes_threads")
+      .from("votes_unified")
       .update({ value })
-      .eq("thread_id", threadId)
+      .eq("target_type", "thread")
+      .eq("target_id", threadId)
       .eq("user_id", user.id);
     mutErr = error;
   } else {
     const { error } = await supa
-      .from("votes_threads")
-      .insert([{ thread_id: threadId, user_id: user.id, value }]);
+      .from("votes_unified")
+      .insert([
+        { target_type: "thread", target_id: threadId, user_id: user.id, value },
+      ]);
     mutErr = error;
   }
   if (mutErr)
     throw createError({ statusCode: 500, statusMessage: mutErr.message });
 
   // 3) Return fresh aggregates + current user vote
-  const [{ data: s1 }, { data: s2 }, { data: my }] = await Promise.all([
+  const [{ data: s1 }, { data: my }] = await Promise.all([
     supa
       .from("thread_scores")
       .select("score,upvotes,downvotes")
       .eq("thread_id", threadId)
       .maybeSingle(),
     supa
-      .from("thread_scores_today")
-      .select("today")
-      .eq("thread_id", threadId)
-      .maybeSingle(),
-    supa
-      .from("votes_threads")
+      .from("votes_unified")
       .select("value")
-      .eq("thread_id", threadId)
+      .eq("target_type", "thread")
+      .eq("target_id", threadId)
       .eq("user_id", user.id)
       .maybeSingle(),
   ]);
@@ -83,7 +84,6 @@ export default defineEventHandler(async (event) => {
     score: s1?.score ?? 0,
     upvotes: s1?.upvotes ?? 0,
     downvotes: s1?.downvotes ?? 0,
-    today: s2?.today ?? 0,
     userVote: my?.value ?? 0, // 1 | -1 | 0
   };
 });

@@ -6,9 +6,9 @@ export default defineEventHandler(async (event) => {
   if (!user?.id)
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
-  const { messageId, value } = (await readBody(event)) || {};
-  if (!messageId)
-    throw createError({ statusCode: 400, statusMessage: "messageId required" });
+  const { articleId, value } = (await readBody(event)) || {};
+  if (!articleId)
+    throw createError({ statusCode: 400, statusMessage: "articleId required" });
   if (value !== 1 && value !== -1)
     throw createError({
       statusCode: 400,
@@ -25,8 +25,8 @@ export default defineEventHandler(async (event) => {
   const { data: existing, error: selErr } = await supa
     .from("votes_unified")
     .select("value")
-    .eq("target_type", "message")
-    .eq("target_id", messageId)
+    .eq("target_type", "article")
+    .eq("target_id", articleId)
     .eq("user_id", user.id)
     .maybeSingle();
   if (selErr)
@@ -37,23 +37,23 @@ export default defineEventHandler(async (event) => {
     const { error } = await supa
       .from("votes_unified")
       .delete()
-      .eq("target_type", "message")
-      .eq("target_id", messageId)
+      .eq("target_type", "article")
+      .eq("target_id", articleId)
       .eq("user_id", user.id);
     mutErr = error;
   } else if (existing) {
     const { error } = await supa
       .from("votes_unified")
       .update({ value })
-      .eq("target_type", "message")
-      .eq("target_id", messageId)
+      .eq("target_type", "article")
+      .eq("target_id", articleId)
       .eq("user_id", user.id);
     mutErr = error;
   } else {
     const { error } = await supa
       .from("votes_unified")
       .insert([
-        { target_type: "message", target_id: messageId, user_id: user.id, value },
+        { target_type: "article", target_id: articleId, user_id: user.id, value },
       ]);
     mutErr = error;
   }
@@ -62,21 +62,21 @@ export default defineEventHandler(async (event) => {
 
   const [{ data: s1 }, { data: my }] = await Promise.all([
     supa
-      .from("message_scores")
+      .from("article_scores")
       .select("score,upvotes,downvotes")
-      .eq("message_id", messageId)
+      .eq("article_id", articleId)
       .maybeSingle(),
     supa
       .from("votes_unified")
       .select("value")
-      .eq("target_type", "message")
-      .eq("target_id", messageId)
+      .eq("target_type", "article")
+      .eq("target_id", articleId)
       .eq("user_id", user.id)
       .maybeSingle(),
   ]);
 
   return {
-    messageId,
+    articleId,
     score: s1?.score ?? 0,
     upvotes: s1?.upvotes ?? 0,
     downvotes: s1?.downvotes ?? 0,

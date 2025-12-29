@@ -89,11 +89,55 @@ export default defineEventHandler(async (event) => {
     todayCounts = {};
   }
 
+  // 3) Total message counts + upvote totals
+  let messageCounts = {};
+  let upvoteCounts = {};
+  const messageIds = [];
+  const threadByMessageId = new Map();
+  try {
+    const { data: countRows, error: countErr } = await supa
+      .from("messages_v2")
+      .select("id, thread_id")
+      .in("thread_id", threadIds)
+      .eq("visible", true);
 
-  // 3) Scores per thread — not implemented yet; stub zeros
+    if (countErr) throw countErr;
+    for (const r of countRows || []) {
+      messageCounts[r.thread_id] = (messageCounts[r.thread_id] || 0) + 1;
+      if (r?.id) {
+        messageIds.push(r.id);
+        threadByMessageId.set(r.id, r.thread_id);
+      }
+    }
+  } catch (e) {
+    console.error("[threads.get] messageCounts error:", e);
+    messageCounts = {};
+  }
+
+  if (messageIds.length) {
+    try {
+      const { data: voteRows, error: voteErr } = await supa
+        .from("message_scores")
+        .select("message_id, upvotes")
+        .in("message_id", messageIds);
+      if (voteErr) throw voteErr;
+      for (const r of voteRows || []) {
+        const threadId = threadByMessageId.get(r.message_id);
+        if (!threadId) continue;
+        upvoteCounts[threadId] =
+          (upvoteCounts[threadId] || 0) + Number(r.upvotes || 0);
+      }
+    } catch (e) {
+      console.error("[threads.get] upvoteCounts error:", e);
+      upvoteCounts = {};
+    }
+  }
+
+
+  // 4) Scores per thread — not implemented yet; stub zeros
  const scores = {}; // TODO: implement when thread votes go live
 
-  // 4) Shape response
+  // 5) Shape response
   return list.map((t) => ({
     id: t.id,
     title: t.title,
@@ -101,6 +145,8 @@ export default defineEventHandler(async (event) => {
     lastActivityAt: t.last_activity_at,
     slug: t.slug,
     todayCount: todayCounts[t.id] || 0,
+    messageCount: messageCounts[t.id] || 0,
+    upvoteCount: upvoteCounts[t.id] || 0,
     score: scores[t.id] || 0,
         article: t.article
       ? {

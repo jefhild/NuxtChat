@@ -55,20 +55,13 @@ export default defineEventHandler(async (event) => {
   // console.log("getting msgs:", msgs);
 
   // 2) Aggregates
-  const [{ data: scores, error: sErr }, { data: todays, error: tErr2 }] =
-    await Promise.all([
-      supa
-        .from("message_scores")
-        .select("message_id, score, upvotes, downvotes")
-        .in("message_id", msgIds),
-      supa
-        .from("message_scores_today")
-        .select("message_id, today")
-        .in("message_id", msgIds),
-    ]);
+  const [{ data: scores, error: sErr }] = await Promise.all([
+    supa
+      .from("message_scores")
+      .select("message_id, score, upvotes, downvotes")
+      .in("message_id", msgIds),
+  ]);
   if (sErr) throw createError({ statusCode: 500, statusMessage: sErr.message });
-  if (tErr2)
-    throw createError({ statusCode: 500, statusMessage: tErr2.message });
 
   // console.log("getting scores:", scores);
 
@@ -103,10 +96,11 @@ export default defineEventHandler(async (event) => {
   let myVotes = [];
   if (user?.id) {
     const { data, error } = await supa
-      .from("votes_messages")
-      .select("message_id, value")
+      .from("votes_unified")
+      .select("target_id, value")
+      .eq("target_type", "message")
       .eq("user_id", user.id)
-      .in("message_id", msgIds);
+      .in("target_id", msgIds);
     if (error)
       throw createError({ statusCode: 500, statusMessage: error.message });
     myVotes = data || [];
@@ -157,8 +151,7 @@ const toCamelProfile = (p) =>
 
   // 5) Merge
   const scoreMap = new Map((scores || []).map((r) => [r.message_id, r]));
-  const todayMap = new Map((todays || []).map((r) => [r.message_id, r.today]));
-  const myMap = new Map((myVotes || []).map((r) => [r.message_id, r.value]));
+  const myMap = new Map((myVotes || []).map((r) => [r.target_id, r.value]));
 
   const items = (msgs || []).map((m) => {
     const prof = profMap.get(m.sender_user_id) || null;
@@ -205,7 +198,6 @@ const toCamelProfile = (p) =>
       score: agg.score ?? 0,
       upvotes: agg.upvotes ?? 0,
       downvotes: agg.downvotes ?? 0,
-      today: todayMap.get(m.id) ?? 0,
       myVote: user?.id ? myMap.get(m.id) ?? 0 : 0,
     };
   });

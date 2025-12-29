@@ -28,7 +28,7 @@ import TopicItem from './TopicItem.vue'
 
 /**
  * Props:
- *  - topics: Array<{ id, title, botAvatarUrl?, lastActivityAt, todayCount, score }>
+ *  - topics: Array<{ id, title, botAvatarUrl?, lastActivityAt, todayCount, messageCount, score }>
  *  - pending: boolean
  *  - formatDateTime: (iso: string) => string   // inject from page for SSR-safe formatting
  *

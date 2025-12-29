@@ -20,5 +20,13 @@ export function useVoting() {
     });
   }
 
-  return { canVote, voteThread, voteMessage };
+  async function voteArticle(articleId, value) {
+    if (!canVote.value) throw new Error("Sign in to vote");
+    return await $fetch("/api/votes/article", {
+      method: "POST",
+      body: { articleId, value },
+    });
+  }
+
+  return { canVote, voteThread, voteMessage, voteArticle };
 }

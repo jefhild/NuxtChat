@@ -262,6 +262,38 @@ create table public.votes (
   constraint fk_user foreign KEY (user_id) references auth.users (id) on delete CASCADE
 ) TABLESPACE pg_default;
 
+-- Optional catalog of vote target types (not enforced).
+create table public.vote_target_types (
+  type text primary key,
+  description text null,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+) TABLESPACE pg_default;
+
+-- Unified votes table for polymorphic targets.
+create table public.votes_unified (
+  id bigserial not null,
+  user_id uuid not null,
+  target_type text not null,
+  target_id uuid not null,
+  value smallint not null default 1,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint votes_unified_pkey primary key (id),
+  constraint votes_unified_user_fkey foreign key (user_id)
+    references auth.users (id) on delete CASCADE,
+  constraint votes_unified_value_chk check (value in (-1, 1))
+) TABLESPACE pg_default;
+
+create unique index votes_unified_unique_per_target
+  on public.votes_unified (user_id, target_type, target_id) TABLESPACE pg_default;
+
+create index votes_unified_by_target
+  on public.votes_unified (target_type, target_id) TABLESPACE pg_default;
+
+create index votes_unified_by_user
+  on public.votes_unified (user_id) TABLESPACE pg_default;
+
 --Table to get feedback from users
 create table public.feedback (
   user_id uuid not null,

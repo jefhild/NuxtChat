@@ -49,6 +49,10 @@
             Photo Credits
           </a>
         </div>
+
+        <div class="overlay-bottom-left">
+          <span class="date-text">{{ formatDate(article.created_at) }}</span>
+        </div>
       </v-img>
     </NuxtLink>
 
@@ -58,7 +62,33 @@
           <v-icon>mdi-folder</v-icon>
           <span class="ml-1">{{ article.category_name }}</span>
         </div>
-        <span class="date-text">{{ formatDate(article.created_at) }}</span>
+        <div class="d-flex align-center vote-controls">
+          <v-btn
+            icon
+            variant="text"
+            density="compact"
+            size="x-small"
+            :color="myVote === 1 ? 'primary' : 'grey-darken-1'"
+            @click.stop="handleVote(1)"
+            :disabled="!canVote"
+            aria-label="Upvote"
+          >
+            <v-icon>mdi-arrow-up-bold-outline</v-icon>
+          </v-btn>
+          <span class="vote-count">{{ formatCount(currentScore) }}</span>
+          <v-btn
+            icon
+            variant="text"
+            density="compact"
+            size="x-small"
+            :color="myVote === -1 ? 'primary' : 'grey-darken-1'"
+            @click.stop="handleVote(-1)"
+            :disabled="!canVote"
+            aria-label="Downvote"
+          >
+            <v-icon>mdi-arrow-down-bold-outline</v-icon>
+          </v-btn>
+        </div>
       </div>
     </v-card-subtitle>
 
@@ -114,11 +144,12 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 const localPath = useLocalePath();
 const { public: pub } = useRuntimeConfig();
 const supabase = useSupabaseClient?.();
+const { voteArticle, canVote } = useVoting();
 
 const props = defineProps({
   article: { type: Object, required: true },
@@ -131,6 +162,8 @@ const hasTags = computed(
   () => Array.isArray(props.article?.tags) && props.article.tags.length > 0
 );
 const tagsExpanded = ref(false);
+const currentScore = ref(props.article?.score ?? 0);
+const myVote = ref(props.article?.myVote ?? 0);
 
 // Build the public image URL from env + prop
 const articleImageUrl = computed(() => {
@@ -184,6 +217,39 @@ const formatTagSlug = (tag) => {
     .replace(/\s+/g, "-")
     .replace(/[^a-z0-9-_]/g, "");
 };
+
+const formatCount = (value) => {
+  const num = Number(value || 0);
+  if (num < 1000) return String(num);
+  if (num < 1000000) return `${(num / 1000).toFixed(1).replace(/\\.0$/, "")}k`;
+  return `${(num / 1000000).toFixed(1).replace(/\\.0$/, "")}m`;
+};
+
+const loadVotes = async () => {
+  if (!props.article?.id) return;
+  try {
+    const res = await $fetch("/api/votes/article", {
+      query: { articleId: props.article.id },
+    });
+    currentScore.value = res?.score ?? 0;
+    myVote.value = res?.userVote ?? 0;
+  } catch (err) {
+    console.error("article votes load error:", err);
+  }
+};
+
+const handleVote = async (value) => {
+  if (!canVote.value) return;
+  try {
+    const res = await voteArticle(props.article.id, value);
+    currentScore.value = res?.score ?? 0;
+    myVote.value = res?.userVote ?? 0;
+  } catch (err) {
+    console.error("article vote error:", err);
+  }
+};
+
+onMounted(loadVotes);
 </script>
 
 <style scoped>
@@ -298,11 +364,20 @@ const formatTagSlug = (tag) => {
   right: 9px;
   z-index: 3;
 }
+.overlay-bottom-left {
+  position: absolute;
+  bottom: 6px;
+  left: 10px;
+  z-index: 3;
+  background: rgba(15, 23, 42, 0.55);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
 
 /* Date styling to match category tone */
 .date-text {
-  color: #6b7280; /* neutral grey similar to category text */
-  font-size: 0.9rem;
+  color: #e2e8f0;
+  font-size: 0.8rem;
 }
 
 /* Fade in on hover */
@@ -324,6 +399,16 @@ const formatTagSlug = (tag) => {
   transform: translate(-50%, -50%);
   z-index: 2;
   padding: 0 12px;
+}
+
+.vote-controls {
+  gap: 2px;
+}
+.vote-count {
+  min-width: 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #475569;
 }
 
 </style>

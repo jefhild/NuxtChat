@@ -33,7 +33,7 @@ const props = defineProps({
       <v-icon size="18">mdi-arrow-up-bold</v-icon>
     </v-btn>
 
-    <span class="text-caption">{{ currentScore }}</span>
+    <span class="text-caption">{{ formatCount(currentScore) }}</span>
 
     <v-btn
       icon
@@ -66,6 +66,13 @@ const { canVote, voteThread, voteMessage } = useVoting()
 const currentVote = ref(props.myVote)
 const currentScore = ref(props.score)
 
+const formatCount = (value) => {
+  const num = Number(value || 0)
+  if (num < 1000) return String(num)
+  if (num < 1000000) return `${(num / 1000).toFixed(1).replace(/\\.0$/, "")}k`
+  return `${(num / 1000000).toFixed(1).replace(/\\.0$/, "")}m`
+}
+
 watch(
   () => props.myVote,
   (val) => { currentVote.value = val }
@@ -96,7 +103,6 @@ async function handleVote(value) {
       value,                 // what user clicked
       myVote: res.userVote,  // server result after toggle/flip
       score: res.score,
-      today: res.today,
     })
   } catch (err) {
     console.error('vote error:', err)

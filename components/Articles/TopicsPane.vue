@@ -7,6 +7,12 @@ const props = defineProps({
   localePath: { type: Function, required: true },
 })
 const emit = defineEmits(['select']) // fire to let parent close drawer
+
+const formatDateOnly = (iso) => {
+  const text = props.formatDateTime(iso)
+  const idx = text.indexOf(',')
+  return idx === -1 ? text : text.slice(0, idx)
+}
 </script>
 
 <template>
@@ -33,9 +39,66 @@ const emit = defineEmits(['select']) // fire to let parent close drawer
         </v-list-item-title>
 
         <v-list-item-subtitle class="text-caption">
-          {{ formatDateTime(t.lastActivityAt) }}
+          <span class="subtitle-row">
+            <span>{{ formatDateOnly(t.lastActivityAt) }}</span>
+            <span class="counts-right">
+              <span class="message-count-wrap">
+                <v-icon size="16" class="message-count-icon">
+                  mdi-message-text-outline
+                </v-icon>
+                <span class="message-count">{{ t.messageCount || 0 }}</span>
+              </span>
+              <span class="message-count-wrap ml-3">
+                <v-icon size="16" class="upvote-count-icon">
+                  mdi-arrow-up-bold-outline
+                </v-icon>
+                <span class="upvote-count">{{ t.upvoteCount || 0 }}</span>
+              </span>
+            </span>
+          </span>
         </v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-list>
 </template>
+
+<style scoped>
+.message-count-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.subtitle-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.counts-right {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  padding-right: 6px;
+}
+.message-count {
+  position: absolute;
+  top: -2px;
+  right: -8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #230168;
+}
+.message-count-icon {
+  color: #230168;
+}
+.upvote-count {
+  position: absolute;
+  top: -2px;
+  right: -7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1b5e20;
+}
+.upvote-count-icon {
+  color: #1b5e20;
+}
+</style>
