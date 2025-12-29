@@ -1136,6 +1136,49 @@ export const useDb = () => {
           : null,
     }));
   };
+
+  const getPublishedArticlesPage = async ({ limit = 12, offset = 0 } = {}) => {
+    const supabase = getClient();
+
+    const { data, error } = await supabase
+      .from("articles")
+      .select(
+        `
+      id,
+      title,
+      type,
+      slug,
+      content,
+      image_path,
+      photo_credits_url,
+      photo_credits_html,
+      is_published,
+      created_at,
+      category:category_id ( id, name, slug ),
+      article_tags(tag:tag_id(id, name, slug)),
+      threads(slug)
+    `
+      )
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error("Error fetching articles:", error.message);
+      return [];
+    }
+
+    return data.map((article) => ({
+      ...article,
+      category_name: article.category?.name ?? "Uncategorized",
+      tags: normalizeArticleTags(article.article_tags),
+      threadSlug:
+        Array.isArray(article.threads) && article.threads.length > 0
+          ? article.threads[0].slug
+          : null,
+    }));
+  };
  
  
   const getArticleBySlug = async (slug) => {
@@ -3107,6 +3150,7 @@ const signInWithOtp = async (
     getAllPeople,
     getAllArticlesWithTags,
     getAllPublishedArticlesWithTags,
+    getPublishedArticlesPage,
     getArticleBySlug,
     getThreadIdByArticleId,
     getThreadKeyByArticleId,

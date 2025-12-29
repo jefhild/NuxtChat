@@ -92,13 +92,7 @@
       <!-- <HomeRow1 /> -->
       <!-- Articles List -->
       <v-row dense>
-        <v-col
-          v-for="article in visibleArticles"
-          :key="article.id"
-          cols="12"
-          sm="6"
-          md="4"
-        >
+        <v-col v-for="article in filteredArticles" :key="article.id" cols="12" sm="6" md="4">
           <ArticleCard
             :article="article"
             :chat-thread-id="
@@ -122,11 +116,7 @@
         </v-col>
       </v-row>
 
-      <v-row
-        v-if="isFetchingMore && hasMoreArticles"
-        justify="center"
-        class="my-6"
-      >
+      <v-row v-if="isFetchingMore && hasMoreArticles" justify="center" class="my-6">
         <v-col cols="auto">
           <v-progress-circular indeterminate color="primary" />
         </v-col>
@@ -148,7 +138,7 @@ import { useI18n } from "vue-i18n";
 
 const route = useRoute();
 const {
-  getAllPublishedArticlesWithTags,
+  getPublishedArticlesPage,
   getAllTags,
   getAllCategories,
   getAllPeople,
@@ -167,7 +157,8 @@ const tags = ref([]);
 const categories = ref([]);
 const people = ref([]);
 const perPage = 12;
-const visibleCount = ref(perPage);
+const currentOffset = ref(0);
+const hasMoreArticles = ref(true);
 const isFetchingMore = ref(false);
 const infiniteScrollTrigger = ref(null);
 let intersectionObserver = null;
@@ -180,25 +171,32 @@ const filteredArticles = computed(() => {
   );
 });
 
-const visibleArticles = computed(() =>
-  filteredArticles.value.slice(0, visibleCount.value)
-);
-const hasMoreArticles = computed(
-  () => visibleCount.value < filteredArticles.value.length
-);
+const fetchNextPage = async () => {
+  if (!hasMoreArticles.value || isFetchingMore.value) return;
+  isFetchingMore.value = true;
+
+  const nextPage = await getPublishedArticlesPage({
+    limit: perPage,
+    offset: currentOffset.value,
+  });
+
+  if (nextPage.length < perPage) {
+    hasMoreArticles.value = false;
+  }
+
+  if (nextPage.length) {
+    const existingIds = new Set(articles.value.map((article) => article.id));
+    const uniqueNext = nextPage.filter((article) => !existingIds.has(article.id));
+    articles.value = [...articles.value, ...uniqueNext];
+    currentOffset.value += nextPage.length;
+  }
+
+  isFetchingMore.value = false;
+};
 
 const loadMoreArticles = () => {
-  if (!hasMoreArticles.value || isFetchingMore.value || isLoading.value) {
-    return;
-  }
-  isFetchingMore.value = true;
-  setTimeout(() => {
-    visibleCount.value = Math.min(
-      visibleCount.value + perPage,
-      filteredArticles.value.length
-    );
-    isFetchingMore.value = false;
-  }, 150);
+  if (isLoading.value) return;
+  fetchNextPage();
 };
 
 // Selected display names for UI
@@ -229,13 +227,15 @@ onMounted(async () => {
   userProfile.value = authStore.userProfile;
 
   const [articleData, tagData, categoryData, peopleData] = await Promise.all([
-    getAllPublishedArticlesWithTags(),
+    getPublishedArticlesPage({ limit: perPage, offset: 0 }),
     getAllTags(),
     getAllCategories(),
     getAllPeople(),
   ]);
 
   articles.value = articleData || [];
+  currentOffset.value = articles.value.length;
+  hasMoreArticles.value = articles.value.length === perPage;
   tags.value = tagData || [];
   categories.value = categoryData || [];
   people.value = peopleData || [];
@@ -256,11 +256,6 @@ onMounted(async () => {
   if (infiniteScrollTrigger.value) {
     intersectionObserver.observe(infiniteScrollTrigger.value);
   }
-});
-
-watch(filteredArticles, () => {
-  visibleCount.value = perPage;
-  isFetchingMore.value = false;
 });
 
 watch(
