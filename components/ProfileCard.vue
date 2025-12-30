@@ -7,7 +7,7 @@
     <slot name="overlay" />
     <div class="avatar-wrapper">
       <NuxtImg
-        :src="profile.avatar_url"
+        :src="getAvatar(profile.avatar_url, profile.gender_id)"
         height="200"
         width="200"
         class="rounded-circle cover-image mx-auto d-block ma-9"
@@ -107,6 +107,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { getAvatar } from "@/composables/useUserUtils";
 
 const props = defineProps({
   profile: { type: Object, default: null },

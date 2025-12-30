@@ -479,8 +479,12 @@ CREATE OR REPLACE FUNCTION get_most_popular_profiles(
   provider TEXT,
   gender TEXT,
   country TEXT,
+  country_emoji TEXT,
+  status TEXT,
+  status_id INTEGER,
+  is_ai BOOLEAN,
   upvote_count INTEGER,
-  created TIMESTAMP
+  created TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -490,10 +494,22 @@ BEGIN
 	p.displayname,
 	p.tagline,
 	p.age,
-	p.avatar_url,
+	CASE
+	  WHEN p.avatar_url IS NULL OR p.avatar_url = '' THEN
+		CASE
+		  WHEN p.gender_id = 1 THEN '/images/avatars/anonymous-blue.png'
+		  WHEN p.gender_id = 2 THEN '/images/avatars/anonymous-pink.png'
+		  ELSE '/images/avatars/anonymous.png'
+		END
+	  ELSE p.avatar_url
+	END AS avatar_url,
 	p.provider,
 	g.name AS gender,
 	c.name AS country,
+	c.emoji::text,
+	status.name::text,
+	p.status_id,
+	p.is_ai,
 	COUNT(v.vote_type)::int AS upvote_count,
 	p.created
   FROM 
@@ -504,13 +520,15 @@ BEGIN
 	genders g ON p.gender_id = g.id
   LEFT JOIN 
 	countries c ON p.country_id = c.id
+  LEFT JOIN
+	status ON p.status_id = status.id
   WHERE 
 	v.vote_type = 'upvote' 
 	AND p.avatar_url IS NOT NULL 
 	AND p.avatar_url != '' 
 	AND p.provider != 'anonymous'
   GROUP BY 
-	p.id, g.name, c.name
+	p.id, g.name, c.name, c.emoji, status.name, p.status_id, p.is_ai
   ORDER BY 
 	upvote_count DESC
   LIMIT profile_limit;  -- Use the parameter for the limit value
@@ -556,9 +574,15 @@ BEGIN
   LEFT JOIN 
 	countries c ON p.country_id = c.id
   WHERE 
-	p.avatar_url IS NOT NULL 
-	AND p.avatar_url != '' 
-	AND p.provider != 'anonymous'
+	p.is_ai IS NOT TRUE
+	AND (
+	  p.provider != 'anonymous'
+	  OR (
+	    p.displayname IS NOT NULL
+	    AND p.age IS NOT NULL
+	    AND p.gender_id IS NOT NULL
+	  )
+	)
 	AND p.gender_id = 2                        -- Filter by gender_id = 2 (females)
   GROUP BY 
 	p.id, g.name, c.name

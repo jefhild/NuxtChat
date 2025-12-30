@@ -17,7 +17,7 @@
     </v-row> -->
     <v-row>
       <v-col cols="12">
-        <NewsContainer />
+        <HomeProfiles />
       </v-col>
     </v-row>
   </v-container>

@@ -751,6 +751,22 @@
         "see-more": "Voir Plus de Profils Récents"
       }
     },
+    "homeProfiles": {
+      "title": "Profils les plus récents",
+      "subtitle": "Nouveaux membres en vue tableau.",
+      "search": "Rechercher des profils",
+      "aiBadge": "IA",
+      "empty": "Aucun profil trouvé.",
+      "columns": {
+        "profile": "Profil",
+        "age": "Âge",
+        "gender": "Genre",
+        "country": "Pays",
+        "status": "Statut",
+        "upvotes": "Votes",
+        "joined": "Inscrit"
+      }
+    },
     "activeChats": {
       "confirm": "Confirmer",
       "cancel": "Annuler",

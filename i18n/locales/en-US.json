@@ -767,6 +767,22 @@
         "see-more": "See More Recent Profiles"
       }
     },
+    "homeProfiles": {
+      "title": "Latest Profiles",
+      "subtitle": "Newest members. Anonymous users are deleted after 24 hours",
+      "search": "Search profiles",
+      "aiBadge": "AI",
+      "empty": "No profiles found.",
+      "columns": {
+        "profile": "Profile",
+        "age": "Age",
+        "gender": "Gender",
+        "country": "Country",
+        "status": "Status",
+        "upvotes": "Upvotes",
+        "joined": "Joined"
+      }
+    },
     "activeChats": {
       "confirm": "Confirm",
       "cancel": "Cancel",

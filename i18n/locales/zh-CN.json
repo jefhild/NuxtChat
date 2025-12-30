@@ -751,6 +751,22 @@
         "see-more": "查看更多最近档案"
       }
     },
+    "homeProfiles": {
+      "title": "最新资料",
+      "subtitle": "最新成员的表格视图。",
+      "search": "搜索资料",
+      "aiBadge": "AI",
+      "empty": "未找到资料。",
+      "columns": {
+        "profile": "资料",
+        "age": "年龄",
+        "gender": "性别",
+        "country": "国家",
+        "status": "状态",
+        "upvotes": "赞",
+        "joined": "加入时间"
+      }
+    },
     "activeChats": {
       "confirm": "确认",
       "cancel": "取消",
