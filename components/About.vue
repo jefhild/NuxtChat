@@ -1,8 +1,10 @@
 <template>
-  <v-container fluid class="pa-0">
+  <v-container fluid class="pa-0 mt-3">
     <v-row>
       <v-col>
-        <h4>{{ $t("pages.about.page.welcome-title") }}</h4>
+        <h4 class="about-section-title text-overline text-medium-emphasis">
+          {{ $t("pages.about.page.welcome-title") }}
+        </h4>
         <p class="text-body-2">
           {{ $t("pages.about.page.welcome-text") }}
         </p>
@@ -11,7 +13,9 @@
 
     <v-row>
       <v-col>
-        <h4>{{ $t("pages.about.page.who_we_are-title") }}</h4>
+        <h4 class="about-section-title text-overline text-medium-emphasis">
+          {{ $t("pages.about.page.who_we_are-title") }}
+        </h4>
         <p class="text-body-2">
           {{ $t("pages.about.page.who_we_are-text1") }}
           <a href="https://oliverwjones.com" target="_blank" rel="noopener">Oliver W. Jones</a>,
@@ -25,7 +29,9 @@
 
     <v-row>
       <v-col>
-        <h4>{{ $t("pages.about.page.our_mission-title") }}</h4>
+        <h4 class="about-section-title text-overline text-medium-emphasis">
+          {{ $t("pages.about.page.our_mission-title") }}
+        </h4>
         <p class="text-body-2">
           {{ $t("pages.about.page.our_mission-text") }}
         </p>
@@ -34,7 +40,9 @@
 
     <v-row>
       <v-col>
-        <h4>{{ $t("pages.about.page.unique_approach-title") }}</h4>
+        <h4 class="about-section-title text-overline text-medium-emphasis">
+          {{ $t("pages.about.page.unique_approach-title") }}
+        </h4>
         <p class="text-body-2">
           {{ $t("pages.about.page.unique_approach-text") }}
         </p>
@@ -43,7 +51,9 @@
 
     <v-row>
       <v-col>
-        <h4>{{ $t("pages.about.page.building_community-title") }}</h4>
+        <h4 class="about-section-title text-overline text-medium-emphasis">
+          {{ $t("pages.about.page.building_community-title") }}
+        </h4>
         <p class="text-body-2">
           {{ $t("pages.about.page.building_community-text") }}
         </p>
@@ -52,7 +62,9 @@
 
     <v-row>
       <v-col>
-        <h4>{{ $t("pages.about.page.looking_ahead-title") }}</h4>
+        <h4 class="about-section-title text-overline text-medium-emphasis">
+          {{ $t("pages.about.page.looking_ahead-title") }}
+        </h4>
         <p class="text-body-2">
           {{ $t("pages.about.page.looking_ahead-text") }}
         </p>
@@ -61,7 +73,9 @@
 
     <v-row>
       <v-col>
-        <h4>{{ $t("pages.about.page.join_us-title") }}</h4>
+        <h4 class="about-section-title text-overline text-medium-emphasis">
+          {{ $t("pages.about.page.join_us-title") }}
+        </h4>
         <p class="text-body-2">
           {{ $t("pages.about.page.join_us-text") }}
         </p>
@@ -69,3 +83,9 @@
     </v-row>
   </v-container>
 </template>
+
+<style scoped>
+.about-section-title {
+  margin-bottom: 6px;
+}
+</style>

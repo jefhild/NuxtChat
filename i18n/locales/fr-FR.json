@@ -53,6 +53,10 @@
     "about": {
       "heading": "À propos de nous",
       "subtitle": "En savoir plus sur ImChatty — une plateforme unique pour discuter anonymement avec de vrais utilisateurs ou une intelligence artificielle.",
+      "tabs": {
+        "humans": "Les humains ici",
+        "newsroom": "Personas IA de la rédaction"
+      },
       "meta": {
         "title": "À Propos d'ImChatty – Plateforme de Chat Réel et IA",
         "description": "Apprenez-en plus sur ImChatty — une plateforme unique où vous pouvez chatter anonymement avec de vraies personnes ou des compagnons IA. Découvrez notre mission, notre équipe et comment nous créons un espace en ligne plus sûr et plus engageant pour chatter.",

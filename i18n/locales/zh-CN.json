@@ -53,6 +53,10 @@
     "about": {
       "heading": "关于我们",
       "subtitle": "了解更多关于 ImChatty —— 一个独特的平台，让您可以与真人或人工智能匿名聊天。",
+      "tabs": {
+        "humans": "这里的人们",
+        "newsroom": "新闻编辑室AI角色"
+      },
       "meta": {
         "title": "关于ImChatty – 真实和AI聊天平台",
         "description": "了解更多关于ImChatty的信息——一个独特的平台，您可以与真实的人或AI伙伴匿名聊天。发现我们的使命、我们的团队，以及我们如何创建一个更安全、更有吸引力的在线聊天空间。",

@@ -16,33 +16,25 @@ export function useSeoI18nMeta(
 ) {
   const { t, locale, locales, localeCodes } = useI18n();
   const route = useRoute();
+  const switchLocalePath = useSwitchLocalePath();
   const config = useRuntimeConfig();
   const siteConfig = useSiteConfig();
-  const baseUrl = siteConfig?.url || config.public.SITE_URL;
+  const baseUrl = siteConfig?.url || config.public.SITE_URL || "";
   const siteName = siteConfig?.name || "ImChatty";
   const currentLocale = locale.value || "en";
 
-  // Strip any leading locale prefix and normalize trailing slashes
-  const normalizePath = (path: string) => {
-    if (!path || path === "/") return "/";
-    const trimmed = path.endsWith("/") ? path.slice(0, -1) : path;
-    return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  const toAbsoluteUrl = (path?: string | null) => {
+    if (!path) return null;
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return `${baseUrl}${normalized === "/" ? "" : normalized}`;
   };
-  const pathWithoutLocale = (route.path || "/").replace(
-    /^\/[a-z]{2}(?=\/|$)/,
-    ""
-  );
-  const normalizedPath = normalizePath(pathWithoutLocale);
-  const normalizedPathSegment = normalizedPath === "/" ? "" : normalizedPath;
 
   // Canonical URL (current locale)
-  const localePrefix = currentLocale === "en" ? "" : `/${currentLocale}`;
+  const canonicalPath = switchLocalePath(currentLocale) || route.path || "/";
   const canonicalHref =
-    options?.overrideUrl ||
-    `${baseUrl}${localePrefix}${normalizedPathSegment}`;
+    options?.overrideUrl || toAbsoluteUrl(canonicalPath) || canonicalPath;
 
   // Build hreflang links for all locales
-
 
   const hreflangMap: Record<string, string> = {
     en: "en-US",
@@ -57,25 +49,31 @@ export function useSeoI18nMeta(
     "en-US";
   const ogLocale = String(localeIso).replace("-", "_");
 
-  const hreflangLinks = (localeCodes?.value || []).map((code) => {
-    const hreflang = hreflangMap[code] || code;
-    const href =
-      code === "en"
-        ? `${baseUrl}${normalizedPathSegment}`
-        : `${baseUrl}/${code}${normalizedPathSegment}`;
-    return {
-      rel: "alternate",
-      hreflang,
-      href,
-    };
-  });
+  const hreflangLinks = (localeCodes?.value || [])
+    .map((code) => {
+      const path = switchLocalePath(code);
+      const href = toAbsoluteUrl(path);
+      if (!href) return null;
+      const hreflang = hreflangMap[code] || code;
+      return {
+        rel: "alternate",
+        hreflang,
+        href,
+      };
+    })
+    .filter(Boolean) as Array<{ rel: string; hreflang: string; href: string }>;
 
   // Add x-default fallback (point to English)
-  hreflangLinks.push({
-    rel: "alternate",
-    hreflang: "x-default",
-    href: `${baseUrl}${normalizedPathSegment}`,
-  });
+  const defaultLocale = "en";
+  const defaultPath = switchLocalePath(defaultLocale);
+  const defaultHref = toAbsoluteUrl(defaultPath);
+  if (defaultHref) {
+    hreflangLinks.push({
+      rel: "alternate",
+      hreflang: "x-default",
+      href: defaultHref,
+    });
+  }
 
   const key = (suffix: string) => `pages.${section}.meta.${suffix}`;
   const tf = (suffix: string): string => {

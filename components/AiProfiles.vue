@@ -324,6 +324,8 @@ const categoryBlocks = computed(() => {
   });
 
   return Array.from(grouped.values()).sort((a, b) => {
+    if (a.slug === "ai-voices" && b.slug !== "ai-voices") return 1;
+    if (b.slug === "ai-voices" && a.slug !== "ai-voices") return -1;
     if (a.order === b.order) return a.title.localeCompare(b.title);
     return a.order - b.order;
   });

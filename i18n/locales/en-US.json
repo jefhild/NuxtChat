@@ -54,6 +54,10 @@
     "about": {
       "heading": "About Us",
       "subtitle": "Learn more about ImChatty — a unique platform for anonymous chatting with real users or AI.",
+      "tabs": {
+        "humans": "The Humans Here",
+        "newsroom": "Newsroom AI personas"
+      },
       "meta": {
         "title": "About ImChatty – Real & AI Chat Platform",
         "description": "Learn more about ImChatty — a unique platform where you can chat anonymously with real people or AI companions. Discover our mission, our team, and how we’re creating a safer, more engaging online space for chatting.",
