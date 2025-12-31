@@ -8,11 +8,12 @@
     <div class="avatar-wrapper">
       <NuxtImg
         :src="getAvatar(profile.avatar_url, profile.gender_id)"
-        height="200"
-        width="200"
+        height="150"
+        width="150"
         class="rounded-circle cover-image mx-auto d-block ma-9"
         :alt="`${profile.displayname} image`"
       />
+
 
       <NuxtImg
         v-if="avatarDecoration"
@@ -22,44 +23,160 @@
       />
     </div>
 
+    <NuxtLink :to="chatLink" class="profile-chat-cta">
+      {{ $t("components.profile-details.chat-cta", { name: profile?.displayname }) }}
+    </NuxtLink>
+
     <v-card-title>
       <v-row>
         <v-col>
-          <h1 class="text-h5">
-            {{ profile?.displayname }}, {{ profile?.age }}
-          </h1>
+          <div class="profile-title-row">
+            <h1 class="text-h5">
+              {{ profile?.displayname }}
+            </h1>
+            <div class="profile-age-flag">
+              <v-icon
+                v-if="profile?.gender_id"
+                class="gender-inline"
+                :color="getGenderColor(profile.gender_id)"
+                :icon="getAvatarIcon(profile.gender_id)"
+                size="18"
+              />
+              <span v-if="profile?.age">
+                {{ profile.age }}{{ $t("components.profile-details.age-suffix") }}
+              </span>
+              <v-tooltip v-if="profile?.country_emoji && profile?.country" :text="profile.country">
+                <template #activator="{ props: tooltipProps }">
+                  <span class="profile-flag" v-bind="tooltipProps">
+                    {{ profile.country_emoji }}
+                  </span>
+                </template>
+              </v-tooltip>
+              <span v-else-if="profile?.country_emoji" class="profile-flag">
+                {{ profile.country_emoji }}
+              </span>
+            </div>
+          </div>
         </v-col>
       </v-row>
     </v-card-title>
 
     <v-card-subtitle>
       <v-row>
-        <v-col>{{ profile?.tagline }}</v-col>
         <v-col class="justify-end d-flex align-center">
-          {{ profile?.status }}, {{ profile?.country }}
-          {{ profile.country_emoji }}
+          {{ profile?.status }}
         </v-col>
       </v-row>
     </v-card-subtitle>
 
-    <v-card-text>
-      <v-row v-if="profile?.looking_for?.length">
-        <v-col class="text-h6">
-          {{ $t("components.public-user-profile.looking-for") }}
-        </v-col>
-      </v-row>
-      <v-row v-if="profile?.looking_for?.length" no-gutters>
-        <v-col class="ml-2">{{ profile?.looking_for.join(", ") }}</v-col>
-      </v-row>
-      <v-row v-if="profile?.bio">
-        <v-col class="text-h6">
-          {{ $t("components.public-user-profile.about-me") }}
-        </v-col>
-      </v-row>
-      <v-row v-if="profile?.bio">
-        <v-col class="bio-paragraph">{{ profile?.bio }}</v-col>
-      </v-row>
-    </v-card-text>
+    <v-expansion-panels v-model="expandedSections" multiple class="profile-panels">
+      <v-expansion-panel value="profile">
+        <v-expansion-panel-title class="profile-panel-title">
+          {{ $t("components.profile-details.title") }}
+        </v-expansion-panel-title>
+        <v-expansion-panel-text class="profile-details">
+          <v-list class="profile-details-tree" density="compact" nav>
+            <v-list-item
+              v-if="profile?.tagline"
+              prepend-icon="mdi-tag-outline"
+            >
+              <template #title>
+                <div class="profile-details-row">
+                  <span class="profile-details-label">
+                    {{ $t("components.profile-details.tagline-label") }}:
+                  </span>
+                  <span class="profile-details-value">{{ profile.tagline }}</span>
+                </div>
+              </template>
+            </v-list-item>
+            <v-list-item
+              v-if="profile?.looking_for?.length"
+              prepend-icon="mdi-account-search-outline"
+            >
+              <template #title>
+                <div class="profile-details-row">
+                  <span class="profile-details-label">
+                    {{ $t("components.public-user-profile.looking-for") }}
+                  </span>
+                  <span class="profile-details-value profile-details-value--green">
+                    {{ profile.looking_for.join(", ") }}
+                  </span>
+                </div>
+              </template>
+            </v-list-item>
+            <v-list-item
+              v-if="profile?.bio"
+              class="profile-details-about"
+              prepend-icon="mdi-account-details-outline"
+            >
+              <template #title>
+                <div class="profile-details-row profile-details-row--stack">
+                  <span class="profile-details-label">
+                    {{ $t("components.public-user-profile.about-me") }}
+                  </span>
+                  <span class="profile-details-body">
+                    {{ profile.bio }}
+                  </span>
+                </div>
+              </template>
+            </v-list-item>
+          </v-list>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+
+      <v-expansion-panel value="stats">
+        <v-expansion-panel-title class="profile-panel-title">
+          {{ $t("components.profile-stats.title") }}
+        </v-expansion-panel-title>
+        <v-expansion-panel-text class="profile-stats">
+          <v-list class="profile-stats-tree" density="compact" nav>
+        <v-list-item
+          prepend-icon="mdi-clock-outline"
+          :title="$t('components.profile-stats.last-connection')"
+          :subtitle="lastConnectionLabel"
+        />
+            <v-list-group value="comments">
+              <template #activator="{ props: activatorProps }">
+                <v-list-item
+                  v-bind="activatorProps"
+                  prepend-icon="mdi-comment-multiple-outline"
+                  :title="$t('components.profile-stats.comments-count', { count: statsData.comments.count })"
+                />
+              </template>
+              <v-list-item
+                v-for="item in statsData.comments.items"
+                :key="item.id"
+                class="profile-stats-child"
+                prepend-icon="mdi-chat-outline"
+                :title="item.title"
+                :subtitle="formatStatSubtitle(item, discussionLabel)"
+                :to="statLink(item.slug)"
+                :link="Boolean(item.slug)"
+              />
+            </v-list-group>
+            <v-list-group value="upvotes">
+              <template #activator="{ props: activatorProps }">
+                <v-list-item
+                  v-bind="activatorProps"
+                  prepend-icon="mdi-thumb-up-outline"
+                  :title="$t('components.profile-stats.upvotes-count', { count: statsData.upvotes.count })"
+                />
+              </template>
+              <v-list-item
+                v-for="item in statsData.upvotes.items"
+                :key="item.id"
+                class="profile-stats-child"
+                prepend-icon="mdi-newspaper-variant-outline"
+                :title="item.title"
+                :subtitle="formatStatSubtitle(item, item.type === 'thread' ? discussionLabel : articleLabel)"
+                :to="statLink(item.slug)"
+                :link="Boolean(item.slug)"
+              />
+            </v-list-group>
+          </v-list>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
 
     <v-card-actions
       style="
@@ -92,6 +209,13 @@
       ></v-btn>
       <v-spacer></v-spacer>
 
+      <v-btn
+        :to="chatLink"
+        color="blue medium-emphasis"
+        icon="mdi-chat-outline"
+        size="small"
+      ></v-btn>
+
       <ButtonFavorite :profile="profile" />
 
       <v-btn color="blue medium-emphasis" icon="mdi-cancel" size="small"></v-btn>
@@ -106,14 +230,21 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { getAvatar } from "@/composables/useUserUtils";
+import { computed, ref } from "vue";
+import { getAvatar, getAvatarIcon, getGenderColor } from "@/composables/useUserUtils";
 
 const props = defineProps({
   profile: { type: Object, default: null },
   avatarDecoration: { type: String, default: "" },
-  maxWidth: { type: [Number, String], default: 400 },
+  maxWidth: { type: [Number, String], default: "100%" },
+  stats: { type: Object, default: null },
 });
+
+const emptyStats = {
+  lastActive: null,
+  comments: { count: 0, items: [] },
+  upvotes: { count: 0, items: [] },
+};
 
 const profileSiteUrl = computed(() => {
   const siteUrl = props.profile?.site_url;
@@ -122,11 +253,101 @@ const profileSiteUrl = computed(() => {
     ? siteUrl
     : `https://${siteUrl.trim()}`;
 });
+
+const { t } = useI18n();
+const localPath = useLocalePath();
+const chatLink = computed(() => {
+  const slug = props.profile?.slug;
+  if (slug) return localPath(`/chat?userslug=${slug}`);
+  const userId = props.profile?.user_id || props.profile?.id;
+  if (userId) return localPath(`/chat?userId=${userId}`);
+  return localPath("/chat");
+});
+
+const expandedSections = ref(["profile"]);
+
+const statsData = computed(() => props.stats || emptyStats);
+const discussionLabel = computed(() =>
+  String(t("components.profile-stats.discussion-label"))
+);
+const articleLabel = computed(() =>
+  String(t("components.profile-stats.article-label"))
+);
+
+const dateFmt = new Intl.DateTimeFormat(undefined, {
+  year: "numeric",
+  month: "short",
+  day: "2-digit",
+});
+const dateTimeFmt = new Intl.DateTimeFormat(undefined, {
+  year: "numeric",
+  month: "short",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+const lastConnectionLabel = computed(() => {
+  const value = statsData.value?.lastActive;
+  if (!value) return "—";
+  try {
+    return dateTimeFmt.format(new Date(value));
+  } catch {
+    return String(value);
+  }
+});
+
+const formatStatSubtitle = (item, label) => {
+  if (!item?.createdAt) return label;
+  try {
+    return `${label} · ${dateFmt.format(new Date(item.createdAt))}`;
+  } catch {
+    return label;
+  }
+};
+
+const statLink = (slug) =>
+  slug ? localPath(`/chat/articles/${slug}`) : undefined;
 </script>
 
 <style scoped>
 .cover-image {
   object-fit: cover;
+}
+
+.profile-card {
+  width: 100%;
+}
+
+.profile-chat-cta {
+  text-align: center;
+  font-weight: 600;
+  color: #2563eb;
+  margin-top: -12px;
+  margin-bottom: 8px;
+  text-decoration: none;
+}
+
+.profile-chat-cta:hover {
+  text-decoration: underline;
+}
+
+.profile-flag {
+  margin-left: 0.25rem;
+}
+
+.profile-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-age-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
 }
 
 .avatar-wrapper {
@@ -144,6 +365,10 @@ const profileSiteUrl = computed(() => {
   object-fit: contain;
 }
 
+.gender-inline {
+  opacity: 0.75;
+}
+
 .subtitle-1 {
   font-size: 1.2rem;
   color: #757575;
@@ -154,13 +379,90 @@ const profileSiteUrl = computed(() => {
   color: #9e9e9e;
 }
 
-.bio-paragraph {
+.profile-details {
+  background: rgba(17, 24, 39, 0.04);
+}
+
+.profile-details-tree {
+  padding: 0;
+}
+
+.profile-details-child {
+  padding-left: 28px;
+}
+
+.profile-details-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-details-row--stack {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  align-items: start;
+  column-gap: 8px;
+}
+
+.profile-details-label {
+  min-width: 96px;
+}
+
+.profile-details-value {
+  flex: 1;
+  text-align: center;
+  font-weight: 700;
+  color: #1d4ed8;
   font-size: 1rem;
-  line-height: 1.25;
+}
+
+.profile-details-value--green {
+  color: #15803d;
+}
+
+.profile-details-bio {
+  font-size: 0.95rem;
+  line-height: 1.5;
   color: #374151;
   font-style: italic;
-  border-left: 4px solid #d1d5db;
+  border-left: 3px solid #d1d5db;
   padding-left: 1rem;
-  text-align: justify;
+}
+
+.profile-details-body {
+  flex: 1;
+  line-height: 1.5;
+  color: #374151;
+  white-space: normal;
+  min-width: 0;
+}
+
+.profile-details-about :deep(.v-list-item__prepend) {
+  align-self: flex-start;
+  margin-top: -1px;
+}
+
+.profile-stats {
+  background: rgba(17, 24, 39, 0.04);
+}
+
+.profile-stats-tree {
+  padding: 0;
+}
+
+.profile-stats-child {
+  padding-left: 28px;
+}
+
+.profile-panels :deep(.v-expansion-panel-title) {
+  padding: 10px 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.profile-panels :deep(.v-expansion-panel-text__wrapper) {
+  padding: 0 16px 12px;
 }
 </style>

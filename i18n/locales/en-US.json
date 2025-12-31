@@ -1041,6 +1041,20 @@
       "back-home": "Home",
       "back-chat": "Back to Chat"
     },
+    "profile-stats": {
+      "title": "Stats",
+      "last-connection": "Most recent connection",
+      "comments-count": "{count} comments",
+      "upvotes-count": "{count} upvotes",
+      "discussion-label": "Discussion",
+      "article-label": "Article"
+    },
+    "profile-details": {
+      "title": "Profile",
+      "tagline-label": "Tag Line",
+      "age-suffix": " yrs",
+      "chat-cta": "Chat with {name}"
+    },
     "registration-dialog": {
       "register": "Register to Continue",
       "close": "Close"

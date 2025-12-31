@@ -1,10 +1,16 @@
 <template>
-  <v-dialog v-model="isOpen" max-width="460" scrollable>
+  <v-dialog
+    v-model="isOpen"
+    class="profile-dialog"
+    max-width="920"
+    width="92vw"
+    scrollable
+  >
     <ProfileCard
       v-if="profile"
       :profile="profile"
       :avatar-decoration="avatarDecoration"
-      :max-width="460"
+      :stats="stats"
     >
       <template #overlay>
         <v-btn
@@ -49,6 +55,23 @@ const { profile, fetchUserProfileFromSlug, fetchUserProfile } =
 const { getAvatarDecorationFromId } = useDb();
 const avatarDecoration = ref("");
 const isLoading = ref(false);
+const stats = ref(null);
+
+const loadStats = async () => {
+  const userId = profile.value?.user_id || null;
+  if (!userId) {
+    stats.value = null;
+    return;
+  }
+  try {
+    stats.value = await $fetch("/api/profile/stats", {
+      query: { userId },
+    });
+  } catch (error) {
+    console.error("[profile][stats] load error", error);
+    stats.value = null;
+  }
+};
 
 const loadProfile = async () => {
   if (!props.slug && !props.userId) {
@@ -66,6 +89,7 @@ const loadProfile = async () => {
     avatarDecoration.value = profile.value?.user_id
       ? await getAvatarDecorationFromId(profile.value.user_id)
       : "";
+    await loadStats();
   } finally {
     isLoading.value = false;
   }
@@ -87,5 +111,10 @@ watch(
   top: 6px;
   right: 6px;
   z-index: 2;
+}
+
+.profile-dialog :deep(.v-overlay__content) {
+  max-width: 920px;
+  width: 92vw;
 }
 </style>

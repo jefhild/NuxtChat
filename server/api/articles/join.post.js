@@ -194,7 +194,7 @@ async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
     const firstMessage = {
       thread_id: threadId,
       sender_kind: "bot",
-      sender_user_id: null,
+      sender_user_id: first.profile?.user_id || null,
       message_type: "persona_reaction",
       content: firstText,
       visible: true,
@@ -246,7 +246,7 @@ async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
       const secondMessage = {
         thread_id: threadId,
         sender_kind: "bot",
-        sender_user_id: null,
+        sender_user_id: second.profile?.user_id || null,
         message_type: "persona_reaction",
         content: secondText,
         visible: true,

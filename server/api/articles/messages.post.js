@@ -187,7 +187,7 @@ async function triggerPersonaFollowUp({
   const insertPayload = {
     thread_id: threadId,
     sender_kind: "bot",
-    sender_user_id: null,
+    sender_user_id: personaRow.profile?.user_id || null,
     message_type: "persona_followup",
     reply_to_message_id: replyToMessageId,
     content,

@@ -1019,6 +1019,20 @@
       "back-home": "Retour à l'Accueil",
       "back-chat": "Retour au chat"
     },
+    "profile-stats": {
+      "title": "Stats",
+      "last-connection": "Dernière connexion",
+      "comments-count": "{count} commentaires",
+      "upvotes-count": "{count} votes",
+      "discussion-label": "Discussion",
+      "article-label": "Article"
+    },
+    "profile-details": {
+      "title": "Profil",
+      "tagline-label": "Slogan",
+      "age-suffix": " ans",
+      "chat-cta": "Envie de discuter avec {name} ?"
+    },
     "registration-dialog": {
       "register": "S'inscrire pour Continuer",
       "close": "Fermer"

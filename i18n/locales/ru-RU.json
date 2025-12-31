@@ -1018,6 +1018,20 @@
       "back-home": "Назад домой",
       "back-chat": "Назад в чат"
     },
+    "profile-stats": {
+      "title": "Статистика",
+      "last-connection": "Последнее подключение",
+      "comments-count": "{count} комментариев",
+      "upvotes-count": "{count} апвотов",
+      "discussion-label": "Обсуждение",
+      "article-label": "Статья"
+    },
+    "profile-details": {
+      "title": "Профиль",
+      "tagline-label": "Слоган",
+      "age-suffix": " лет",
+      "chat-cta": "Хотите пообщаться с {name}?"
+    },
     "registration-dialog": {
       "register": "Зарегистрируйтесь, чтобы продолжить",
       "close": "Закрыть"
