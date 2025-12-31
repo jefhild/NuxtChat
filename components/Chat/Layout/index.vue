@@ -204,26 +204,14 @@
                   </div>
 
                   <div class="d-flex flex-wrap gap-2">
-                    <NuxtLink
-                      v-if="profileLink"
-                      :to="profileLink"
-                      class="text-decoration-none"
-                    >
-                      <v-btn
-                        size="small"
-                        variant="tonal"
-                        prepend-icon="mdi-open-in-new"
-                      >
-                        View full profile
-                      </v-btn>
-                    </NuxtLink>
                     <v-btn
+                      v-if="selectedUser"
                       size="small"
-                      variant="text"
-                      prepend-icon="mdi-close"
-                      @click="panelOpen = false"
+                      variant="tonal"
+                      prepend-icon="mdi-account-box-outline"
+                      @click="openProfileDialog(selectedUser)"
                     >
-                      Close
+                      View full profile
                     </v-btn>
                   </div>
                 </template>
@@ -432,26 +420,14 @@
                   </div>
 
                   <div class="d-flex flex-wrap gap-2">
-                    <NuxtLink
-                      v-if="profileLink"
-                      :to="profileLink"
-                      class="text-decoration-none"
-                    >
-                      <v-btn
-                        size="small"
-                        variant="tonal"
-                        prepend-icon="mdi-open-in-new"
-                      >
-                        View full profile
-                      </v-btn>
-                    </NuxtLink>
                     <v-btn
+                      v-if="selectedUser"
                       size="small"
-                      variant="text"
-                      prepend-icon="mdi-close"
-                      @click="panelOpen = false"
+                      variant="tonal"
+                      prepend-icon="mdi-account-box-outline"
+                      @click="openProfileDialog(selectedUser)"
                     >
-                      Close
+                      View full profile
                     </v-btn>
                   </div>
                 </template>

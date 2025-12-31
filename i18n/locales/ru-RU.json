@@ -1020,7 +1020,7 @@
     },
     "profile-stats": {
       "title": "Статистика",
-      "last-connection": "Последнее подключение",
+      "last-connection": "Последняя активность",
       "comments-count": "{count} комментариев",
       "upvotes-count": "{count} апвотов",
       "discussion-label": "Обсуждение",

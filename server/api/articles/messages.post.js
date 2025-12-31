@@ -43,6 +43,10 @@ export default defineEventHandler(async (event) => {
   });
   if (error)
     throw createError({ statusCode: 500, statusMessage: error.message });
+  await supa
+    .from("profiles")
+    .update({ last_active: new Date().toISOString() })
+    .eq("user_id", user.id);
 
   // Engagement rule: if replying to a bot/persona message, trigger a follow-up from that persona
   if (replyToMessageId) {
@@ -204,6 +208,13 @@ async function triggerPersonaFollowUp({
   const { error: insErr } = await supa.from("messages_v2").insert(insertPayload);
   if (insErr && insErr.code !== "23505") {
     console.error("[messages.post] insert follow-up error:", insErr);
+  }
+  const personaUserId = personaRow.profile?.user_id || null;
+  if (personaUserId) {
+    await supa
+      .from("profiles")
+      .update({ last_active: new Date().toISOString() })
+      .eq("user_id", personaUserId);
   }
 
   // Update stats

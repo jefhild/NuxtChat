@@ -237,7 +237,9 @@ export default defineEventHandler(async (event) => {
 
   return {
     userId: uid,
-    lastActive: profile.last_active ?? null,
+    lastActive: isAi
+      ? new Date().toISOString()
+      : profile.last_active ?? null,
     comments: {
       count: commentCount || 0,
       items: commentItems,

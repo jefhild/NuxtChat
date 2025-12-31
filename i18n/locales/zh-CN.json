@@ -1020,7 +1020,7 @@
     },
     "profile-stats": {
       "title": "统计",
-      "last-connection": "最近连接",
+      "last-connection": "最后活跃",
       "comments-count": "{count} 条评论",
       "upvotes-count": "{count} 个赞",
       "discussion-label": "讨论",

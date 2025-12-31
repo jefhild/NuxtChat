@@ -2048,6 +2048,8 @@ export const useDb = () => {
 
     if (error) {
       console.error("Error sending message:", error);
+    } else if (senderId) {
+      await updateLastActive(senderId);
     }
 
     return data;

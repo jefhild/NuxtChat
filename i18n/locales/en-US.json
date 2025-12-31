@@ -1043,7 +1043,7 @@
     },
     "profile-stats": {
       "title": "Stats",
-      "last-connection": "Most recent connection",
+      "last-connection": "Last active",
       "comments-count": "{count} comments",
       "upvotes-count": "{count} upvotes",
       "discussion-label": "Discussion",

@@ -267,6 +267,12 @@ async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
         console.error("[join.post] insert first persona reply error:", firstErr);
         return;
       }
+      if (first.profile?.user_id) {
+        await supa
+          .from("profiles")
+          .update({ last_active: new Date().toISOString() })
+          .eq("user_id", first.profile.user_id);
+      }
 
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -276,6 +282,12 @@ async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
       if (secondErr && secondErr.code !== "23505") {
         console.error("[join.post] insert second persona reply error:", secondErr);
       }
+      if (second.profile?.user_id) {
+        await supa
+          .from("profiles")
+          .update({ last_active: new Date().toISOString() })
+          .eq("user_id", second.profile.user_id);
+      }
     } else {
       // Only first persona available
       const { error: firstErr } = await supa
@@ -283,6 +295,12 @@ async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
         .insert(firstMessage);
       if (firstErr && firstErr.code !== "23505") {
         console.error("[join.post] insert first persona reply error:", firstErr);
+      }
+      if (first.profile?.user_id) {
+        await supa
+          .from("profiles")
+          .update({ last_active: new Date().toISOString() })
+          .eq("user_id", first.profile.user_id);
       }
     }
   } catch (error) {

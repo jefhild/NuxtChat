@@ -1021,7 +1021,7 @@
     },
     "profile-stats": {
       "title": "Stats",
-      "last-connection": "Dernière connexion",
+      "last-connection": "Dernière activité",
       "comments-count": "{count} commentaires",
       "upvotes-count": "{count} votes",
       "discussion-label": "Discussion",
