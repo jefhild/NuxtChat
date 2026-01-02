@@ -319,6 +319,7 @@ const {
 
 const editDialog = ref(false);
 const selectedArticle = ref({});
+const originalIsPublished = ref(false);
 const editForm = ref(null);
 const loadingUpdate = ref(false);
 
@@ -362,8 +363,22 @@ const snackbar = ref({
   message: "",
 });
 
-
-
+const publishToSocial = async (articleId) => {
+  try {
+    const res = await $fetch("/api/admin/articles/publish-social", {
+      method: "POST",
+      body: { articleId },
+    });
+    if (!res?.success) throw new Error(res?.error || "Social publish failed");
+    snackbar.value = { show: true, message: "Published to social ✅" };
+  } catch (e) {
+    console.error("[admin] publishToSocial", e);
+    snackbar.value = {
+      show: true,
+      message: `Social publish failed: ${e.message || e}`,
+    };
+  }
+};
 
 
 const publishToChat = async (article) => {
@@ -619,9 +634,11 @@ const toggleEditDialog = (article) => {
   if (!article) {
     editDialog.value = false;
     selectedArticle.value = {};
+    originalIsPublished.value = false;
     return;
   }
 
+  originalIsPublished.value = article.is_published ?? true;
   selectedArticle.value = {
     id: article.id,
     title: article.title,
@@ -681,6 +698,10 @@ const handleArticleUpdate = async () => {
       selectedArticle.value.id,
       selectedArticle.value.tag_ids
     );
+
+    if (selectedArticle.value.is_published && !originalIsPublished.value) {
+      await publishToSocial(selectedArticle.value.id);
+    }
 
     articles.value = await getAllArticlesWithTags(false);
     toggleEditDialog(null);

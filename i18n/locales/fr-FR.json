@@ -55,7 +55,8 @@
       "subtitle": "En savoir plus sur ImChatty — une plateforme unique pour discuter anonymement avec de vrais utilisateurs ou une intelligence artificielle.",
       "tabs": {
         "humans": "Les humains ici",
-        "newsroom": "Personas IA de la rédaction"
+        "newsroom": "Personas IA de la rédaction",
+        "faq": "FAQ"
       },
       "meta": {
         "title": "À Propos d'ImChatty – Plateforme de Chat Réel et IA",
@@ -138,6 +139,80 @@
           "title": "Découvrez la rédaction IA",
           "subtitle": "Chaque catégorie s’appuie sur plusieurs voix distinctes pour montrer qui façonne la couverture et sous quel prisme."
         }
+      },
+      "faq": {
+        "kicker": "Bibliothèque FAQ",
+        "title": "Réponses, exemples et accès rapides au bon endroit",
+        "subtitle": "Recherchez par mot-clé ou explorez par thème pour voir comment les FAQ seront regroupées une fois les données en place.",
+        "search-placeholder": "Rechercher des FAQ, fonctionnalités ou politiques...",
+        "tree-title": "Parcourir les thèmes",
+        "list-title": "Entrées FAQ",
+        "results": "résultats",
+        "empty": "Aucune FAQ correspondante pour le moment. Essayez un autre terme ou effacez les filtres.",
+        "clear": "Effacer les filtres",
+        "groups": {
+          "getting-started": "Bien démarrer",
+          "chat-tools": "Outils de chat",
+          "safety-privacy": "Sécurité & confidentialité",
+          "community": "Communauté"
+        },
+        "topics": {
+          "profiles": "Profils",
+          "onboarding": "Onboarding",
+          "ai-personas": "Personas IA",
+          "threads": "Fils de discussion",
+          "anonymity": "Accès anonyme",
+          "reporting": "Signalement",
+          "guidelines": "Règles"
+        },
+        "items": {
+          "profile-edit": {
+            "q": "Comment mettre à jour les détails de mon profil ?",
+            "a": "La modification du profil se fait dans Paramètres. Ajoutez une photo, mettez à jour votre slogan et ajustez ce que vous souhaitez partager."
+          },
+          "onboarding": {
+            "q": "Que se passe-t-il lorsque je m'inscris ?",
+            "a": "Nous vous guidons dans un court parcours d’onboarding pour définir vos préférences et vous orienter vers les bonnes conversations."
+          },
+          "ai-personas": {
+            "q": "Comment les personas IA apparaissent-ils dans les chats ?",
+            "a": "Les personas IA apparaissent aux côtés des profils réels avec des labels clairs, afin que vous puissiez explorer différents styles de conversation."
+          },
+          "chat-threads": {
+            "q": "À quoi servent les fils de discussion ?",
+            "a": "Les fils organisent les conversations par sujet pour retrouver les temps forts et reprendre facilement."
+          },
+          "anonymity": {
+            "q": "Puis-je rester anonyme sur ImChatty ?",
+            "a": "Oui. Nous gardons l’inscription légère et vous contrôlez les informations personnelles que vous partagez."
+          },
+          "reporting": {
+            "q": "Comment signaler un utilisateur ou un message ?",
+            "a": "Utilisez l’action de signalement sur un message ou un profil. Les signalements sont examinés par l’équipe admin."
+          },
+          "community-guidelines": {
+            "q": "Quel contenu est interdit ?",
+            "a": "Nous supprimons le harcèlement, les menaces ou le spam. L’objectif est un espace respectueux et sûr pour tous."
+          }
+        }
+      }
+    },
+    "faq": {
+      "heading": "FAQ",
+      "subtitle": "Parcourez les réponses et recherchez dans les thèmes ImChatty.",
+      "tooltip": "Questions fréquemment posées",
+      "meta": {
+        "title": "FAQ – Centre d’aide ImChatty",
+        "description": "Trouvez des réponses sur les profils, les outils de chat, la confidentialité et les règles de la communauté ImChatty.",
+        "ogTitle": "FAQ – Centre d’aide ImChatty",
+        "ogType": "website",
+        "ogUrl": "https://imchatty.com/faq",
+        "ogDescription": "Consultez les questions et réponses fréquentes sur ImChatty.",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "FAQ ImChatty",
+        "twitterDescription": "Obtenez des réponses rapides sur ImChatty.",
+        "twitterImage": "https://imchatty.com/images/robot.png"
       }
     },
     "terms": {
@@ -309,7 +384,29 @@
         "categories": "Catégories",
         "tags": "Étiquettes",
         "reports": "Rapports",
-        "aiBots": "Bots IA"
+        "aiBots": "Bots IA",
+        "faqs": "FAQs"
+      },
+      "faq": {
+        "kicker": "FAQ Manager",
+        "title": "Create, organize, and publish FAQ content",
+        "subtitle": "Use the tree to group topics and the list to draft, publish, or retire answers.",
+        "newFaq": "New FAQ",
+        "newTopic": "New Topic",
+        "copyLink": "Copier le lien",
+        "treeTitle": "Categories & topics",
+        "treeSearch": "Search topics...",
+        "tableTitle": "FAQ entries",
+        "items": "items",
+        "translationStatus": "Translation status",
+        "translateMissing": "Translate missing",
+        "columns": {
+          "question": "Question",
+          "topic": "Topic",
+          "status": "Status",
+          "translations": "Translations",
+          "actions": "Actions"
+        }
       }
     },
     "articles": {

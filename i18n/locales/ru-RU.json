@@ -55,7 +55,8 @@
       "subtitle": "Узнайте больше об ImChatty — уникальной платформе для анонимного общения с реальными пользователями или искусственным интеллектом.",
       "tabs": {
         "humans": "Люди здесь",
-        "newsroom": "Редакционные ИИ-персоны"
+        "newsroom": "Редакционные ИИ-персоны",
+        "faq": "FAQ"
       },
       "meta": {
         "title": "О ImChatty – Платформа для реального и ИИ чата",
@@ -138,6 +139,80 @@
           "title": "Познакомьтесь с редакцией ИИ",
           "subtitle": "В каждой категории несколько разных голосов, чтобы видеть, кто формирует материалы и через какую призму."
         }
+      },
+      "faq": {
+        "kicker": "Библиотека FAQ",
+        "title": "Ответы, примеры и быстрые пути к нужному",
+        "subtitle": "Ищите по ключевым словам или по темам, чтобы увидеть, как будут сгруппированы FAQ после наполнения данными.",
+        "search-placeholder": "Поиск по FAQ, функциям или политикам...",
+        "tree-title": "Темы",
+        "list-title": "Записи FAQ",
+        "results": "результатов",
+        "empty": "Подходящих FAQ пока нет. Попробуйте другой запрос или сбросьте фильтры.",
+        "clear": "Сбросить фильтры",
+        "groups": {
+          "getting-started": "Начало",
+          "chat-tools": "Инструменты чата",
+          "safety-privacy": "Безопасность и конфиденциальность",
+          "community": "Сообщество"
+        },
+        "topics": {
+          "profiles": "Профили",
+          "onboarding": "Онбординг",
+          "ai-personas": "ИИ‑персоны",
+          "threads": "Треды",
+          "anonymity": "Анонимный доступ",
+          "reporting": "Жалобы",
+          "guidelines": "Правила"
+        },
+        "items": {
+          "profile-edit": {
+            "q": "Как обновить данные профиля?",
+            "a": "Редактирование профиля находится в Настройках. Добавьте фото, обновите слоган и настройте, что хотите показывать."
+          },
+          "onboarding": {
+            "q": "Что происходит после регистрации?",
+            "a": "Мы проведём короткий онбординг, чтобы задать предпочтения и подобрать подходящие беседы."
+          },
+          "ai-personas": {
+            "q": "Как ИИ‑персоны отображаются в чатах?",
+            "a": "ИИ‑персоны показываются рядом с реальными профилями с понятными метками, чтобы вы могли попробовать разные стили общения."
+          },
+          "chat-threads": {
+            "q": "Для чего нужны треды?",
+            "a": "Треды организуют разговоры по теме, чтобы легче возвращаться к важным моментам."
+          },
+          "anonymity": {
+            "q": "Можно ли оставаться анонимным в ImChatty?",
+            "a": "Да. Мы делаем регистрацию лёгкой, а вы контролируете, сколько личной информации раскрывать."
+          },
+          "reporting": {
+            "q": "Как пожаловаться на пользователя или сообщение?",
+            "a": "Используйте действие «Пожаловаться» на сообщении или профиле. Жалобы рассматриваются админ‑командой."
+          },
+          "community-guidelines": {
+            "q": "Какой контент запрещён?",
+            "a": "Мы удаляем травлю, угрозы и спам. Цель — уважительное и безопасное пространство для всех."
+          }
+        }
+      }
+    },
+    "faq": {
+      "heading": "FAQ",
+      "subtitle": "Просматривайте ответы и ищите по темам ImChatty.",
+      "tooltip": "Часто задаваемые вопросы",
+      "meta": {
+        "title": "FAQ – Центр помощи ImChatty",
+        "description": "Найдите ответы о профилях, инструментах чата, конфиденциальности и правилах сообщества ImChatty.",
+        "ogTitle": "FAQ – Центр помощи ImChatty",
+        "ogType": "website",
+        "ogUrl": "https://imchatty.com/faq",
+        "ogDescription": "Просмотрите часто задаваемые вопросы и ответы о ImChatty.",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "FAQ ImChatty",
+        "twitterDescription": "Получите быстрые ответы о ImChatty.",
+        "twitterImage": "https://imchatty.com/images/robot.png"
       }
     },
     "terms": {
@@ -309,7 +384,29 @@
         "categories": "Категории",
         "tags": "Теги",
         "reports": "Отчеты",
-        "aiBots": "ИИ-боты"
+        "aiBots": "ИИ-боты",
+        "faqs": "FAQs"
+      },
+      "faq": {
+        "kicker": "FAQ Manager",
+        "title": "Create, organize, and publish FAQ content",
+        "subtitle": "Use the tree to group topics and the list to draft, publish, or retire answers.",
+        "newFaq": "New FAQ",
+        "newTopic": "New Topic",
+        "copyLink": "Копировать ссылку",
+        "treeTitle": "Categories & topics",
+        "treeSearch": "Search topics...",
+        "tableTitle": "FAQ entries",
+        "items": "items",
+        "translationStatus": "Translation status",
+        "translateMissing": "Translate missing",
+        "columns": {
+          "question": "Question",
+          "topic": "Topic",
+          "status": "Status",
+          "translations": "Translations",
+          "actions": "Actions"
+        }
       }
     },
     "articles": {

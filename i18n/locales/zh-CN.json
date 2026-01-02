@@ -55,7 +55,8 @@
       "subtitle": "了解更多关于 ImChatty —— 一个独特的平台，让您可以与真人或人工智能匿名聊天。",
       "tabs": {
         "humans": "这里的人们",
-        "newsroom": "新闻编辑室AI角色"
+        "newsroom": "新闻编辑室AI角色",
+        "faq": "FAQ"
       },
       "meta": {
         "title": "关于ImChatty – 真实和AI聊天平台",
@@ -138,6 +139,80 @@
           "title": "认识我们的 AI 编辑部",
           "subtitle": "每个分类都有不同的声音，让你看清谁在塑造报道以及所带来的视角。"
         }
+      },
+      "faq": {
+        "kicker": "FAQ 库",
+        "title": "答案、示例与快速入口",
+        "subtitle": "可按关键词搜索或按主题浏览，预览 FAQ 在数据完善后的分组方式。",
+        "search-placeholder": "搜索 FAQ、功能或政策…",
+        "tree-title": "浏览主题",
+        "list-title": "FAQ 条目",
+        "results": "条结果",
+        "empty": "暂无匹配的 FAQ。请尝试其他关键词或清除筛选。",
+        "clear": "清除筛选",
+        "groups": {
+          "getting-started": "入门",
+          "chat-tools": "聊天工具",
+          "safety-privacy": "安全与隐私",
+          "community": "社区"
+        },
+        "topics": {
+          "profiles": "个人资料",
+          "onboarding": "新手引导",
+          "ai-personas": "AI 角色",
+          "threads": "话题串",
+          "anonymity": "匿名访问",
+          "reporting": "举报",
+          "guidelines": "准则"
+        },
+        "items": {
+          "profile-edit": {
+            "q": "如何更新我的个人资料？",
+            "a": "在“设置”中编辑个人资料。你可以添加照片、更新签名，并调整想分享的信息。"
+          },
+          "onboarding": {
+            "q": "首次加入会发生什么？",
+            "a": "我们会引导你完成简短的新手流程，设置偏好并匹配合适的对话。"
+          },
+          "ai-personas": {
+            "q": "AI 角色会如何出现在聊天中？",
+            "a": "AI 角色会与真人资料并列显示，并有清晰标识，方便你体验不同的对话风格。"
+          },
+          "chat-threads": {
+            "q": "话题串有什么用？",
+            "a": "话题串按主题整理对话，方便你回顾重点并继续聊天。"
+          },
+          "anonymity": {
+            "q": "我可以在 ImChatty 保持匿名吗？",
+            "a": "可以。注册流程轻量化，你可以控制透露多少个人信息。"
+          },
+          "reporting": {
+            "q": "如何举报用户或消息？",
+            "a": "在消息或资料上使用举报操作。举报会由管理员团队审查。"
+          },
+          "community-guidelines": {
+            "q": "哪些内容不被允许？",
+            "a": "我们会移除骚扰、威胁或垃圾信息，目标是为所有人提供尊重且安全的空间。"
+          }
+        }
+      }
+    },
+    "faq": {
+      "heading": "FAQ",
+      "subtitle": "浏览答案并在 ImChatty 主题中搜索。",
+      "tooltip": "常见问题",
+      "meta": {
+        "title": "FAQ – ImChatty 帮助中心",
+        "description": "查找关于个人资料、聊天工具、隐私与社区准则的答案。",
+        "ogTitle": "FAQ – ImChatty 帮助中心",
+        "ogType": "website",
+        "ogUrl": "https://imchatty.com/faq",
+        "ogDescription": "浏览 ImChatty 的常见问题与答案。",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "ImChatty FAQ",
+        "twitterDescription": "快速获取 ImChatty 的答案。",
+        "twitterImage": "https://imchatty.com/images/robot.png"
       }
     },
     "terms": {
@@ -309,7 +384,29 @@
         "categories": "分类",
         "tags": "标签",
         "reports": "报告",
-        "aiBots": "AI 机器人"
+        "aiBots": "AI 机器人",
+        "faqs": "FAQs"
+      },
+      "faq": {
+        "kicker": "FAQ Manager",
+        "title": "Create, organize, and publish FAQ content",
+        "subtitle": "Use the tree to group topics and the list to draft, publish, or retire answers.",
+        "newFaq": "New FAQ",
+        "newTopic": "New Topic",
+        "copyLink": "复制链接",
+        "treeTitle": "Categories & topics",
+        "treeSearch": "Search topics...",
+        "tableTitle": "FAQ entries",
+        "items": "items",
+        "translationStatus": "Translation status",
+        "translateMissing": "Translate missing",
+        "columns": {
+          "question": "Question",
+          "topic": "Topic",
+          "status": "Status",
+          "translations": "Translations",
+          "actions": "Actions"
+        }
       }
     },
     "articles": {

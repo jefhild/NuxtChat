@@ -8,6 +8,16 @@ export type RewritePayload = {
   summary: string;
   body: string;
   references: RewriteReference[];
+  social?: {
+    facebook: {
+      caption: string;
+      link?: string | null;
+    };
+    instagram: {
+      caption: string;
+      image_url?: string | null;
+    };
+  };
   raw?: string;
 };
 

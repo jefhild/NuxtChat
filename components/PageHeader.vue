@@ -1,9 +1,14 @@
 <template>
   <v-row justify="center" align="center" class="mb-2">
     <v-col cols="12" class="text-center">
-      <h1 class="text-h6 text-sm-h5 text-md-h4 text-lg-h4 page-header-text">
-        {{ text }}
-      </h1>
+      <div class="page-header-title">
+        <span v-if="$slots.icon" class="page-header-icon">
+          <slot name="icon" />
+        </span>
+        <h1 class="text-h6 text-sm-h5 text-md-h4 text-lg-h4 page-header-text">
+          {{ text }}
+        </h1>
+      </div>
       <h2
         v-if="subtitle"
         class="d-none d-md-block text-subtitle-1 text-md-h6 page-header-subtitle"
@@ -28,6 +33,16 @@ defineProps({
 </script>
 
 <style scoped>
+.page-header-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-header-icon :deep(.v-icon) {
+  color: #3f51b5;
+}
+
 .page-header-text {
   font-family: "Poppins", sans-serif;
   /* font-size: 1.2rem;*/

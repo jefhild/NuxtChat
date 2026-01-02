@@ -50,6 +50,51 @@ const sanitizeJsonResponse = (input = "") => {
   }
 };
 
+const buildFallbackSocial = (input: {
+  headline: string;
+  summary: string;
+  url: string | null;
+  imageUrl: string | null;
+}): NonNullable<RewritePayload["social"]> => {
+  const cleanHeadline = input.headline?.trim() || "New article";
+  const cleanSummary = input.summary?.trim();
+  const baseSummary = cleanSummary ? ` ${cleanSummary}` : "";
+  const linkText = input.url ? `\n\n${input.url}` : "";
+  const fbCaption = `${cleanHeadline}.${baseSummary}${linkText}`.trim();
+  const igCaption = `${cleanHeadline}.${baseSummary}\n\n#news #update #story`;
+  return {
+    facebook: { caption: fbCaption, link: input.url },
+    instagram: { caption: igCaption, image_url: input.imageUrl || null },
+  };
+};
+
+const normalizeSocial = (
+  value: any,
+  fallback: NonNullable<RewritePayload["social"]>
+): NonNullable<RewritePayload["social"]> => {
+  const fbCaption =
+    typeof value?.facebook?.caption === "string"
+      ? value.facebook.caption.trim()
+      : fallback.facebook.caption;
+  const fbLink =
+    typeof value?.facebook?.link === "string"
+      ? value.facebook.link
+      : fallback.facebook.link;
+  const igCaption =
+    typeof value?.instagram?.caption === "string"
+      ? value.instagram.caption.trim()
+      : fallback.instagram.caption;
+  const igImageUrl =
+    typeof value?.instagram?.image_url === "string"
+      ? value.instagram.image_url
+      : fallback.instagram.image_url;
+
+  return {
+    facebook: { caption: fbCaption, link: fbLink },
+    instagram: { caption: igCaption, image_url: igImageUrl },
+  };
+};
+
 const normalizeReferences = (value: unknown): RewriteReference[] => {
   if (!value) return [];
   const arr = Array.isArray(value) ? value : [value];
@@ -114,6 +159,7 @@ The rewrite must:
 - Highlight why this story matters for the audience represented by your persona.
 - Produce a body made of 3-5 short paragraphs formatted in Markdown.
 - Include a short summary (2 sentences) and a fresh headline.
+- Provide social captions as JSON: social.facebook.caption (1-2 sentences + URL), social.instagram.caption (1-2 sentences, 3-6 hashtags, no link).
 `;
 
 const buildSystemPrompt = (persona: any) => {
@@ -258,6 +304,21 @@ export default defineEventHandler(async (event) => {
       const raw = response?.choices?.[0]?.message?.content ?? "";
       const parsed = sanitizeJsonResponse(raw);
 
+      const fallbackSocial = buildFallbackSocial({
+        headline:
+          typeof parsed?.headline === "string"
+            ? parsed.headline
+            : typeof parsed?.title === "string"
+            ? parsed.title
+            : article.title || "Untitled Rewrite",
+        summary:
+          typeof parsed?.summary === "string"
+            ? parsed.summary
+            : article.description || "",
+        url: article.link,
+        imageUrl: article.media_url,
+      });
+
       const rewrite: RewritePayload = {
         headline:
           typeof parsed?.headline === "string"
@@ -276,6 +337,7 @@ export default defineEventHandler(async (event) => {
             ? parsed.content
             : raw,
         references: normalizeReferences(parsed?.references),
+        social: normalizeSocial(parsed?.social, fallbackSocial),
         raw,
       };
 

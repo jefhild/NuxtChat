@@ -2235,6 +2235,296 @@ export const useDb = () => {
     return error;
   };
 
+  const getFaqGroups = async () => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("faq_groups")
+      .select("id, slug, sort_order, is_active")
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching faq groups:", error);
+      return [];
+    }
+
+    return data || [];
+  };
+
+  const getFaqGroupTranslations = async (locales = []) => {
+    const supabase = getClient();
+    let query = supabase
+      .from("faq_group_translations")
+      .select("group_id, locale, title");
+
+    if (locales.length) {
+      query = query.in("locale", locales);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching faq group translations:", error);
+      return [];
+    }
+
+    return data || [];
+  };
+
+  const getFaqTopics = async () => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("faq_topics")
+      .select("id, group_id, slug, sort_order, is_active")
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching faq topics:", error);
+      return [];
+    }
+
+    return data || [];
+  };
+
+  const getFaqTopicTranslations = async (locales = []) => {
+    const supabase = getClient();
+    let query = supabase
+      .from("faq_topic_translations")
+      .select("topic_id, locale, title");
+
+    if (locales.length) {
+      query = query.in("locale", locales);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching faq topic translations:", error);
+      return [];
+    }
+
+    return data || [];
+  };
+
+  const getFaqEntries = async () => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("faq_entries")
+      .select("id, topic_id, slug, sort_order, is_active")
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching faq entries:", error);
+      return [];
+    }
+
+    return data || [];
+  };
+
+  const getFaqTranslations = async (locales = []) => {
+    const supabase = getClient();
+    let query = supabase
+      .from("faq_translations")
+      .select("entry_id, locale, question, answer");
+
+    if (locales.length) {
+      query = query.in("locale", locales);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching faq translations:", error);
+      return [];
+    }
+
+    return data || [];
+  };
+
+  const insertFaqTopic = async (payload) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("faq_topics")
+      .insert({
+        group_id: payload.group_id,
+        slug: payload.slug,
+        sort_order: payload.sort_order ?? 0,
+        is_active: payload.is_active ?? true,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Error inserting faq topic:", error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
+  };
+
+  const insertFaqTopicTranslation = async (payload) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("faq_topic_translations")
+      .insert({
+        topic_id: payload.topic_id,
+        locale: payload.locale,
+        title: payload.title,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Error inserting faq topic translation:", error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
+  };
+
+  const updateFaqTopicTranslation = async (topicId, locale, updates) => {
+    const supabase = getClient();
+    const { error } = await supabase
+      .from("faq_topic_translations")
+      .upsert(
+        {
+          topic_id: topicId,
+          locale,
+          title: updates.title,
+        },
+        { onConflict: "topic_id,locale" }
+      );
+
+    if (error) {
+      console.error("Error updating faq topic translation:", error);
+      return error;
+    }
+
+    return null;
+  };
+
+  const updateFaqGroupTranslation = async (groupId, locale, updates) => {
+    const supabase = getClient();
+    const { error } = await supabase
+      .from("faq_group_translations")
+      .upsert(
+        {
+          group_id: groupId,
+          locale,
+          title: updates.title,
+        },
+        { onConflict: "group_id,locale" }
+      );
+
+    if (error) {
+      console.error("Error updating faq group translation:", error);
+      return error;
+    }
+
+    return null;
+  };
+
+  const insertFaqEntry = async (payload) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("faq_entries")
+      .insert({
+        topic_id: payload.topic_id,
+        sort_order: payload.sort_order ?? 0,
+        is_active: payload.is_active ?? true,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Error inserting faq entry:", error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
+  };
+
+  const insertFaqTranslation = async (payload) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("faq_translations")
+      .insert({
+        entry_id: payload.entry_id,
+        locale: payload.locale,
+        question: payload.question,
+        answer: payload.answer,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Error inserting faq translation:", error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
+  };
+
+  const updateFaqEntry = async (entryId, updates) => {
+    const supabase = getClient();
+    const payload = {};
+    if (updates.topic_id !== undefined) payload.topic_id = updates.topic_id;
+    if (updates.sort_order !== undefined) payload.sort_order = updates.sort_order;
+    if (updates.is_active !== undefined) payload.is_active = updates.is_active;
+
+    if (!Object.keys(payload).length) {
+      return null;
+    }
+
+    const { error } = await supabase
+      .from("faq_entries")
+      .update(payload)
+      .eq("id", entryId);
+
+    if (error) {
+      console.error("Error updating faq entry:", error);
+      return error;
+    }
+
+    return null;
+  };
+
+  const updateFaqTranslation = async (entryId, locale, updates) => {
+    const supabase = getClient();
+    const { error } = await supabase
+      .from("faq_translations")
+      .upsert(
+        {
+          entry_id: entryId,
+          locale,
+          question: updates.question,
+          answer: updates.answer,
+        },
+        { onConflict: "entry_id,locale" }
+      );
+
+    if (error) {
+      console.error("Error updating faq translation:", error);
+      return error;
+    }
+
+    return null;
+  };
+
+  const deleteFaqEntry = async (entryId) => {
+    const supabase = getClient();
+    const { error } = await supabase
+      .from("faq_entries")
+      .delete()
+      .eq("id", entryId);
+
+    if (error) {
+      console.error("Error deleting faq entry:", error);
+      return error;
+    }
+
+    return null;
+  };
+
   const insertTag = async (tag) => {
     const supabase = getClient();
 
@@ -3207,6 +3497,21 @@ const signInWithOtp = async (
     insertTag,
     deleteCategoryAndReassign,
     insertReport,
+    getFaqGroups,
+    getFaqGroupTranslations,
+    getFaqTopics,
+    getFaqTopicTranslations,
+    getFaqEntries,
+    getFaqTranslations,
+    insertFaqTopic,
+    insertFaqTopicTranslation,
+    updateFaqTopicTranslation,
+    updateFaqGroupTranslation,
+    insertFaqEntry,
+    insertFaqTranslation,
+    updateFaqEntry,
+    updateFaqTranslation,
+    deleteFaqEntry,
 
     deleteChatWithUser,
     deleteFavorite,

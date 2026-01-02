@@ -255,6 +255,7 @@ export default defineEventHandler(async (event) => {
       summary: rewrite.summary,
       body: rewrite.body,
       references: normalizeReferences(rewrite.references),
+      social: rewrite.social || null,
       raw: rewrite,
     };
 

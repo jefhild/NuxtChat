@@ -101,6 +101,9 @@ export default defineNuxtConfig({
         "*/about",
         "/*/about",
         "/about",
+        "*/faq",
+        "/*/faq",
+        "/faq",
         "/*/logout",
         "/logout",
         "/signin",
@@ -187,6 +190,10 @@ export default defineNuxtConfig({
     openaiApiKey: process.env.OPENAI_API_KEY,
     OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4.1-mini",
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    META_PAGE_ID: process.env.META_PAGE_ID,
+    META_PAGE_ACCESS_TOKEN: process.env.META_PAGE_ACCESS_TOKEN,
+    META_IG_USER_ID: process.env.META_IG_USER_ID,
+    META_GRAPH_VERSION: process.env.META_GRAPH_VERSION || "v20.0",
 
     public: {
       // Non-sensitive keys (accessible on both server and client)
