@@ -42,18 +42,19 @@ export default defineEventHandler(async (event) => {
   // Ensure welcome message exists
   const { data: exists, error: existsErr } = await supa
     .from("messages_v2")
-    .select("id")
+    .select("id, content")
     .eq("thread_id", threadId)
     .eq("message_type", "welcome")
     .limit(1);
   if (existsErr) console.warn("welcome exist check failed:", existsErr.message);
 
+  let welcomeText = exists?.[0]?.content || null;
   if (!exists?.length) {
     // Only now generate (AI + fallback)
     const content = await generateWelcomeText({ supa, threadId }).catch(
       () => null
     );
-    const welcomeText = content || "Welcome! What’s your take on the article?";
+    welcomeText = content || "Welcome! What’s your take on the article?";
 
     const { error: insErr } = await supa.from("messages_v2").insert({
       thread_id: threadId,
@@ -65,7 +66,10 @@ export default defineEventHandler(async (event) => {
     if (insErr && insErr.code !== "23505") {
       throw createError({ statusCode: 500, statusMessage: insErr.message });
     }
+  }
 
+  if (welcomeText) {
+    await ensureCategoryPersonasEnrolled({ supa, threadId });
     // Kick off two persona reactions to the welcome question (if available)
     await triggerPersonaReactions({
       supa,
@@ -78,6 +82,45 @@ export default defineEventHandler(async (event) => {
 
   return { ok: true };
 });
+
+async function ensureCategoryPersonasEnrolled({ supa, threadId }) {
+  const { data: thread, error: threadErr } = await supa
+    .from("threads")
+    .select("id, article_id")
+    .eq("id", threadId)
+    .maybeSingle();
+  if (threadErr || !thread?.article_id) return;
+
+  const { data: article, error: artErr } = await supa
+    .from("articles")
+    .select("id, category_id")
+    .eq("id", thread.article_id)
+    .maybeSingle();
+  if (artErr || !article?.category_id) return;
+
+  const { data: personas, error: pErr } = await supa
+    .from("ai_personas")
+    .select("id")
+    .eq("category_id", article.category_id)
+    .eq("is_active", true);
+  if (pErr || !Array.isArray(personas) || !personas.length) return;
+
+  const inserts = personas.map((p) => ({
+    thread_id: threadId,
+    persona_id: p.id,
+    kind: "persona",
+  }));
+  const { error: insErr } = await supa.from("thread_participants").upsert(
+    inserts,
+    {
+      onConflict: "thread_id,persona_id",
+      ignoreDuplicates: true,
+    }
+  );
+  if (insErr && insErr.code !== "23505") {
+    console.error("[join.post] persona enroll error:", insErr.message);
+  }
+}
 
 async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
   try {

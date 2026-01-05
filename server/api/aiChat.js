@@ -101,6 +101,15 @@ export default defineEventHandler(async (event) => {
     if (extra_system && typeof extra_system === "string") {
       promptBase = `${promptBase}\n${extra_system.trim()}`;
     }
+    if (persona.response_style_template) {
+      const style = mustache.render(
+        String(persona.response_style_template),
+        vars
+      ).trim();
+      if (style) {
+        promptBase = `${promptBase}\nResponse style: ${style}`;
+      }
+    }
 
     // Keep your original “append history to system” approach
     let fullPrompt = `${promptBase}\nHere are the previous messages:\n`;
