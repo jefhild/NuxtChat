@@ -19,6 +19,8 @@
       :statuses="statuses"
       :genders="genders"
       :locationProps="locationProps"
+      :isMarkedForDeletion="isMarkedForDeletion"
+      :deleteBusy="deleteBusy"
       :showEmailLinkPrompt="shouldOfferEmailLinkPrompt"
       @update:country="onUpdateCountry"
       @update:state="onUpdateState"
@@ -33,6 +35,7 @@
       @save="saveChanges"
       @startEdit="startEditing"
       @cancelEdit="cancelEditing"
+      @toggleDeletionMark="toggleDeletionMark"
       @linkAnonEmail="openLinkEmailDialog"
     />
     <v-dialog
@@ -130,6 +133,8 @@ const {
   updateProfile,
   hasEmail,
   updateUserEmail,
+  markUserForDeletion,
+  unmarkUserForDeletion,
 } = useDb();
 
 const {
@@ -359,6 +364,11 @@ watch(
 );
 
 const isEditable = ref(false); // default to false for safety
+const deleteBusy = ref(false);
+
+const isMarkedForDeletion = computed(() => {
+  return !!editableProfile.value?.marked_for_deletion_at;
+});
 
 const onUpdateCountry = (val) => {
   selectedCountry.value = val;
@@ -373,6 +383,37 @@ const onUpdateState = (val) => {
 const onUpdateCity = (val) => {
   selectedCity.value = val;
   editableProfile.value.city_id = val;
+};
+
+const updateDeletionState = (markedAt) => {
+  if (editableProfile.value) {
+    editableProfile.value.marked_for_deletion_at = markedAt;
+  }
+
+  if (!props.adminMode && authStore.userProfile) {
+    authStore.userProfile.marked_for_deletion_at = markedAt;
+  }
+};
+
+const toggleDeletionMark = async () => {
+  const userId = editableProfile.value?.user_id;
+  if (!userId || deleteBusy.value) return;
+
+  deleteBusy.value = true;
+  try {
+    if (isMarkedForDeletion.value) {
+      await unmarkUserForDeletion(userId);
+      updateDeletionState(null);
+    } else {
+      const markedAt = new Date().toISOString();
+      await markUserForDeletion(userId);
+      updateDeletionState(markedAt);
+    }
+  } catch (err) {
+    console.error("Error updating deletion status:", err);
+  } finally {
+    deleteBusy.value = false;
+  }
 };
 
 

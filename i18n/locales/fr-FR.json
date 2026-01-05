@@ -805,6 +805,7 @@
       "free-chat": "Chat Gratuit"
     },
     "footer": {
+      "faq": "FAQ",
       "about": "À Propos de Nous",
       "terms": "Conditions de Service",
       "privacy": "Politique de Confidentialité",
@@ -1067,6 +1068,7 @@
       "cancel": "Annuler",
       "go-to-chat": "Aller au Chat",
       "delete": "Supprimer Mon Compte",
+      "marked-for-deletion": "Marqué pour suppression",
       "delete-confirm": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action ne peut pas être annulée.",
       "restore": "Restaurer le Compte",
       "finish": "Finaliser le Profil",

@@ -805,6 +805,7 @@
       "free-chat": "免费聊天"
     },
     "footer": {
+      "faq": "常见问题",
       "about": "关于我们",
       "terms": "服务条款",
       "privacy": "隐私政策",
@@ -1066,6 +1067,7 @@
       "cancel": "取消",
       "go-to-chat": "转到聊天",
       "delete": "删除我的账户",
+      "marked-for-deletion": "已标记删除",
       "delete-confirm": "您确定要删除您的账户吗？此操作无法撤销。",
       "restore": "恢复账户",
       "finish": "完成档案",

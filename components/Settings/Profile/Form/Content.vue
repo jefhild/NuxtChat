@@ -95,22 +95,40 @@
       </v-col>
     </v-row>
 
-    <v-row justify="end" class="mt-4">
-      <template v-if="props.isEditable">
-        <v-btn color="primary" @click="emit('save')"> Save </v-btn>
+    <v-row class="mt-4" align="center">
+      <v-col cols="12" sm="6" class="d-flex justify-start">
         <v-btn
-          color="grey"
+          v-if="props.isEditable"
+          color="error"
           variant="outlined"
-          class="ml-2"
-          @click="emit('cancelEdit')"
+          :loading="props.deleteBusy"
+          :disabled="props.deleteBusy"
+          @click="emit('toggleDeletionMark')"
         >
-          Cancel
+          {{
+            props.isMarkedForDeletion
+              ? t("components.profile-container.marked-for-deletion")
+              : t("components.profile-container.delete")
+          }}
         </v-btn>
-      </template>
-      <template v-else>
-        <v-btn color="primary" @click="emit('startEdit')"> Edit </v-btn>
-        <v-btn color="primary" class="ml-2" to="/chat"> Back To Chat </v-btn>
-      </template>
+      </v-col>
+      <v-col cols="12" sm="6" class="d-flex justify-end">
+        <template v-if="props.isEditable">
+          <v-btn color="primary" @click="emit('save')"> Save </v-btn>
+          <v-btn
+            color="grey"
+            variant="outlined"
+            class="ml-2"
+            @click="emit('cancelEdit')"
+          >
+            Cancel
+          </v-btn>
+        </template>
+        <template v-else>
+          <v-btn color="primary" @click="emit('startEdit')"> Edit </v-btn>
+          <v-btn color="primary" class="ml-2" to="/chat"> Back To Chat </v-btn>
+        </template>
+      </v-col>
     </v-row>
   </v-card-text>
 </template>
@@ -124,6 +142,14 @@ const props = defineProps({
   isEditable: Boolean,
   statuses: Array,
   genders: Array,
+  isMarkedForDeletion: {
+    type: Boolean,
+    default: false,
+  },
+  deleteBusy: {
+    type: Boolean,
+    default: false,
+  },
   showEmailLinkPrompt: {
     type: Boolean,
     default: false,
@@ -145,6 +171,7 @@ const emit = defineEmits([
   "save",
   "cancelEdit",
   "startEdit",
+  "toggleDeletionMark",
   "linkAnonEmail",
 ]);
 

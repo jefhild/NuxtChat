@@ -5,12 +5,28 @@
         <v-card flat>
           <v-card-text class="compact-footer__content">
             <!-- Footer Content -->
-            <!-- <v-row>&copy; 2024 Oliver W. Jones</v-row> -->
-            <NuxtLink :to="localPath('/about')">{{ $t("components.footer.about") }}</NuxtLink> |
-            <NuxtLink :to="localPath('/terms')">{{ $t("components.footer.terms") }}</NuxtLink> |
-            <NuxtLink :to="localPath('/privacy')">{{ $t("components.footer.privacy") }}</NuxtLink> |
-            <NuxtLink :to="localPath('/cookies')">{{ $t("components.footer.cookies") }}</NuxtLink> |
-            <NuxtLink :to="localPath('/profiles')">{{ $t("components.footer.public-profiles") }}</NuxtLink> |
+            <NuxtLink :to="localPath('/about')">{{
+              $t("components.footer.about")
+            }}</NuxtLink>
+            |
+            <NuxtLink :to="localPath('/faq')">{{
+              $t("components.footer.faq")
+            }}</NuxtLink>
+            |
+
+            <NuxtLink :to="localPath('/terms')">{{
+              $t("components.footer.terms")
+            }}</NuxtLink>
+            |
+            <NuxtLink :to="localPath('/privacy')">{{
+              $t("components.footer.privacy")
+            }}</NuxtLink>
+            |
+            <NuxtLink :to="localPath('/cookies')">{{
+              $t("components.footer.cookies")
+            }}</NuxtLink>
+            |
+
             <button
               type="button"
               class="termly-display-preferences consent-link"
@@ -18,6 +34,10 @@
             >
               {{ $t("components.footer.consent-preferences") }}
             </button>
+            |
+                        <NuxtLink :to="localPath('/profiles')">{{
+              $t("components.footer.public-profiles")
+            }}</NuxtLink>
             |
             <!-- GitHub Icon -->
             <a
@@ -36,7 +56,7 @@
             >
               <v-icon>mdi-instagram</v-icon>
             </a>
-                        |
+            |
             <!-- Reddit Icon -->
             <a
               href="https://www.reddit.com/r/imchatty_news/"

@@ -821,6 +821,7 @@
       "free-chat": "Profiles"
     },
     "footer": {
+      "faq": "FAQ",
       "about": "About Us",
       "terms": "Terms Of Service",
       "privacy": "Privacy Policy",
@@ -1089,6 +1090,7 @@
       "cancel": "Cancel",
       "go-to-chat": "Go to Chat",
       "delete": "Delete My Account",
+      "marked-for-deletion": "Marked for deletion",
       "delete-confirm": "Are you sure you want to delete your account? This action cannot be undone.",
       "restore": "Restore Account",
       "finish": "Finish Profile",
