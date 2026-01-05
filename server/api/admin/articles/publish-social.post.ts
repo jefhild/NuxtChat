@@ -144,10 +144,11 @@ export default defineEventHandler(async (event) => {
     const version = cfg.META_GRAPH_VERSION || "v20.0";
 
     if (!pageId || !pageToken || !igUserId) {
-      setResponseStatus(event, 500);
+      setResponseStatus(event, 400);
       return {
         success: false,
-        error: "Meta credentials are not configured.",
+        error:
+          "Meta credentials are not configured. Set META_PAGE_ID, META_PAGE_ACCESS_TOKEN, and META_IG_USER_ID.",
       };
     }
 
@@ -211,7 +212,8 @@ export default defineEventHandler(async (event) => {
         setResponseStatus(event, 400);
         return {
           success: false,
-          error: "Instagram requires an image_url.",
+          error:
+            "Instagram requires an image_url. Add an article image or a fallback media_url.",
         };
       }
       const created = await createInstagramMedia({

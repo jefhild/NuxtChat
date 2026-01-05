@@ -38,13 +38,21 @@
     />
 
     <v-divider />
-    <v-card-actions>
+    <v-card-actions class="flex-column">
       <v-btn
         block
         :color="article.isPublishedToChat ? 'red' : 'primary'"
         @click="togglePublish(article)"
       >
         {{ article.isPublishedToChat ? 'Unpublish from Chat' : 'Publish to Chat' }}
+      </v-btn>
+      <v-btn
+        block
+        class="mt-2"
+        color="secondary"
+        @click="publishToSocial(article.id)"
+      >
+        Publish to FB + IG
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -236,13 +244,24 @@
             label="Title"
             :rules="[(v) => !!v || 'Title is required']"
           />
-          <v-select
-            v-model="selectedArticle.category_id"
-            :items="categories"
-            item-title="name"
-            item-value="id"
-            label="Category"
-          />
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="selectedArticle.category_id"
+                :items="categories"
+                item-title="name"
+                item-value="id"
+                label="Category"
+              />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="selectedArticle.type"
+                :items="types"
+                label="Type"
+              />
+            </v-col>
+          </v-row>
 
           <v-select
             v-model="selectedArticle.tag_ids"
@@ -254,10 +273,21 @@
             chips
           />
 
-          <v-select
-            v-model="selectedArticle.type"
-            :items="types"
-            label="Type"
+          <v-textarea
+            v-model="selectedArticle.social_facebook_caption"
+            label="Facebook Caption"
+            rows="3"
+            auto-grow
+            hint="1-2 sentences, include the URL."
+            persistent-hint
+          />
+          <v-textarea
+            v-model="selectedArticle.social_instagram_caption"
+            label="Instagram Caption"
+            rows="3"
+            auto-grow
+            hint="1-2 sentences, no link, add hashtags."
+            persistent-hint
           />
 
           <v-textarea
@@ -319,7 +349,6 @@ const {
 
 const editDialog = ref(false);
 const selectedArticle = ref({});
-const originalIsPublished = ref(false);
 const editForm = ref(null);
 const loadingUpdate = ref(false);
 
@@ -363,11 +392,11 @@ const snackbar = ref({
   message: "",
 });
 
-const publishToSocial = async (articleId) => {
+const publishToSocial = async (articleId, force = false) => {
   try {
     const res = await $fetch("/api/admin/articles/publish-social", {
       method: "POST",
-      body: { articleId },
+      body: { articleId, force },
     });
     if (!res?.success) throw new Error(res?.error || "Social publish failed");
     snackbar.value = { show: true, message: "Published to social ✅" };
@@ -634,11 +663,10 @@ const toggleEditDialog = (article) => {
   if (!article) {
     editDialog.value = false;
     selectedArticle.value = {};
-    originalIsPublished.value = false;
     return;
   }
 
-  originalIsPublished.value = article.is_published ?? true;
+  const existingSocial = article.rewrite_meta?.social || {};
   selectedArticle.value = {
     id: article.id,
     title: article.title,
@@ -648,6 +676,9 @@ const toggleEditDialog = (article) => {
     photo_credits_html: article.photo_credits_html,
     slug: article.slug,
     type: article.type || "",
+    rewrite_meta: article.rewrite_meta || {},
+    social_facebook_caption: existingSocial?.facebook?.caption || "",
+    social_instagram_caption: existingSocial?.instagram?.caption || "",
 
     // Get the category ID based on the name
     category_id:
@@ -677,6 +708,18 @@ const handleArticleUpdate = async () => {
       throw new Error("Category is required.");
     }
 
+    const nextSocial = {
+      ...(selectedArticle.value.rewrite_meta?.social || {}),
+      facebook: {
+        ...(selectedArticle.value.rewrite_meta?.social?.facebook || {}),
+        caption: selectedArticle.value.social_facebook_caption || "",
+      },
+      instagram: {
+        ...(selectedArticle.value.rewrite_meta?.social?.instagram || {}),
+        caption: selectedArticle.value.social_instagram_caption || "",
+      },
+    };
+
     const payload = {
       title: formatName(selectedArticle.value.title),
       content: selectedArticle.value.content,
@@ -687,6 +730,10 @@ const handleArticleUpdate = async () => {
       category_id: selectedArticle.value.category_id || null,
       type: selectedArticle.value.type || null,
       is_published: selectedArticle.value.is_published,
+      rewrite_meta: {
+        ...(selectedArticle.value.rewrite_meta || {}),
+        social: nextSocial,
+      },
     };
 
     const { error } = await updateArticle(selectedArticle.value.id, payload);
@@ -698,10 +745,6 @@ const handleArticleUpdate = async () => {
       selectedArticle.value.id,
       selectedArticle.value.tag_ids
     );
-
-    if (selectedArticle.value.is_published && !originalIsPublished.value) {
-      await publishToSocial(selectedArticle.value.id);
-    }
 
     articles.value = await getAllArticlesWithTags(false);
     toggleEditDialog(null);

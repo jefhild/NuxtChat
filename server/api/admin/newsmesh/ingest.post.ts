@@ -12,19 +12,39 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const result = await $fetch(`${supabaseUrl}/functions/v1/newsmesh-ingest`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${serviceRoleKey}`,
-        apikey: serviceRoleKey,
-      },
-      body: { trigger: "admin-manual" },
-    });
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/newsmesh-ingest`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${serviceRoleKey}`,
+          apikey: serviceRoleKey,
+        },
+        body: JSON.stringify({ trigger: "admin-manual" }),
+      }
+    );
+
+    const text = await response.text();
+    let payload: any = null;
+    try {
+      payload = text ? JSON.parse(text) : null;
+    } catch {
+      payload = text || null;
+    }
+
+    if (!response.ok) {
+      setResponseStatus(event, response.status);
+      return {
+        success: false,
+        error: payload?.message || payload || "Failed to trigger Newsmesh ingest.",
+        status: response.status,
+      };
+    }
 
     return {
       success: true,
-      data: result ?? null,
+      data: payload ?? null,
     };
   } catch (error: any) {
     console.error("[admin/newsmesh] ingest trigger error:", error);

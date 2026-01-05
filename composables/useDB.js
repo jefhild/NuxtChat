@@ -1075,6 +1075,7 @@ export const useDb = () => {
       photo_credits_html,
       is_published,
       created_at,
+      rewrite_meta,
       category:category_id ( id, name, slug ),
       article_tags(tag:tag_id(id, name, slug))
     `
