@@ -203,7 +203,7 @@
                     </v-chip>
                   </div>
 
-                  <div class="d-flex flex-wrap gap-2">
+                  <div class="d-flex align-center flex-wrap gap-2">
                     <v-btn
                       v-if="selectedUser"
                       size="small"
@@ -213,6 +213,55 @@
                     >
                       View full profile
                     </v-btn>
+                    <div class="d-flex align-center gap-2 ml-auto">
+                      <v-tooltip
+                        :text="t('components.chatheader.favorite-profile')"
+                        location="top"
+                      >
+                        <template #activator="{ props }">
+                          <span v-bind="props">
+                            <ButtonFavorite :profile="selectedUser" />
+                          </span>
+                        </template>
+                      </v-tooltip>
+                      <v-tooltip :text="blockTooltip" location="top">
+                        <template #activator="{ props }">
+                          <span v-bind="props">
+                            <v-btn
+                              :color="
+                                isSelectedUserBlocked
+                                  ? 'red darken-2'
+                                  : 'blue medium-emphasis'
+                              "
+                              icon="mdi-cancel"
+                              size="small"
+                              variant="text"
+                              :disabled="isBlockDisabled"
+                              aria-label="Block user"
+                              @click="toggleBlockSelectedUser"
+                            ></v-btn>
+                          </span>
+                        </template>
+                      </v-tooltip>
+                      <v-tooltip
+                        :text="t('components.chatheader.share-profile')"
+                        location="top"
+                      >
+                        <template #activator="{ props }">
+                          <span v-bind="props">
+                            <v-btn
+                              color="black medium-emphasis"
+                              icon="mdi-share-variant"
+                              size="small"
+                              variant="text"
+                              :disabled="!profileLink"
+                              aria-label="Share profile"
+                              @click="shareProfile"
+                            ></v-btn>
+                          </span>
+                        </template>
+                      </v-tooltip>
+                    </div>
                   </div>
                 </template>
                 <template v-else>
@@ -259,16 +308,27 @@
               :authStatus="auth.authStatus"
               :me-id="auth.user?.id"
               :peer="chat.selectedUser"
+              :blocked-user-ids="blockedUsers"
             />
           </div>
 
           <!-- Composer -->
           <div class="border-t pt-2" style="flex: 0 0 auto">
+            <v-alert
+              v-if="isSelectedUserBlocked"
+              type="warning"
+              variant="tonal"
+              density="comfortable"
+              class="mb-2"
+            >
+              {{ t("components.message.composer.blocked") }}
+            </v-alert>
             <ChatLayoutMessageComposer
               v-model:draft="messageDraft"
               :peer-id="peerId"
               :me-id="meId"
               :conversation-key="conversationKey"
+              :blocked-user-ids="blockedUsers"
               class="w-100 mx-auto"
               @send="onSend"
             />
@@ -419,7 +479,7 @@
                     </v-chip>
                   </div>
 
-                  <div class="d-flex flex-wrap gap-2">
+                  <div class="d-flex align-center flex-wrap gap-2">
                     <v-btn
                       v-if="selectedUser"
                       size="small"
@@ -429,6 +489,55 @@
                     >
                       View full profile
                     </v-btn>
+                    <div class="d-flex align-center gap-2 ml-auto">
+                      <v-tooltip
+                        :text="t('components.chatheader.favorite-profile')"
+                        location="top"
+                      >
+                        <template #activator="{ props }">
+                          <span v-bind="props">
+                            <ButtonFavorite :profile="selectedUser" />
+                          </span>
+                        </template>
+                      </v-tooltip>
+                      <v-tooltip :text="blockTooltip" location="top">
+                        <template #activator="{ props }">
+                          <span v-bind="props">
+                            <v-btn
+                              :color="
+                                isSelectedUserBlocked
+                                  ? 'red darken-2'
+                                  : 'blue medium-emphasis'
+                              "
+                              icon="mdi-cancel"
+                              size="small"
+                              variant="text"
+                              :disabled="isBlockDisabled"
+                              aria-label="Block user"
+                              @click="toggleBlockSelectedUser"
+                            ></v-btn>
+                          </span>
+                        </template>
+                      </v-tooltip>
+                      <v-tooltip
+                        :text="t('components.chatheader.share-profile')"
+                        location="top"
+                      >
+                        <template #activator="{ props }">
+                          <span v-bind="props">
+                            <v-btn
+                              color="black medium-emphasis"
+                              icon="mdi-share-variant"
+                              size="small"
+                              variant="text"
+                              :disabled="!profileLink"
+                              aria-label="Share profile"
+                              @click="shareProfile"
+                            ></v-btn>
+                          </span>
+                        </template>
+                      </v-tooltip>
+                    </div>
                   </div>
                 </template>
                 <template v-else>
@@ -473,15 +582,26 @@
               :authStatus="auth.authStatus"
               :me-id="auth.user?.id"
               :peer="chat.selectedUser"
+              :blocked-user-ids="blockedUsers"
             />
           </div>
 
           <div class="border-t pt-2" style="flex: 0 0 auto">
+            <v-alert
+              v-if="isSelectedUserBlocked"
+              type="warning"
+              variant="tonal"
+              density="comfortable"
+              class="mb-2"
+            >
+              {{ t("components.message.composer.blocked") }}
+            </v-alert>
             <ChatLayoutMessageComposer
               v-model:draft="messageDraft"
               :peer-id="peerId"
               :me-id="meId"
               :conversation-key="conversationKey"
+              :blocked-user-ids="blockedUsers"
               class="w-100 mx-auto"
               @send="onSend"
             />
@@ -615,6 +735,15 @@
       </v-card>
     </v-dialog>
 
+    <v-snackbar
+      v-model="shareToast"
+      :timeout="2500"
+      color="primary"
+      location="top"
+    >
+      {{ t("components.chatheader.profile-copied") }}
+    </v-snackbar>
+
     <ProfileDialog
       v-model="isProfileDialogOpen"
       :slug="profileDialogSlug"
@@ -639,6 +768,7 @@ import { useChatStore } from "@/stores/chatStore";
 import { useOnboardingDraftStore } from "@/stores/onboardingDraftStore";
 import { usePresenceStore2 } from "@/stores/presenceStore2"; // the minimal presence we made
 import { useOnboardingAi } from "~/composables/useOnboardingAi";
+import { useBlockedUsers } from "@/composables/useBlockedUsers";
 import { useDisplay } from "vuetify";
 import { useDb } from "@/composables/useDB";
 import { useLocalePath } from "#imports";
@@ -654,8 +784,10 @@ const msgs = useMessagesStore();
 const draft = useOnboardingDraftStore();
 const draftStore = draft; // alias for template
 const presence2 = usePresenceStore2();
+const { blockedUsers, loadBlockedUsers } = useBlockedUsers();
 
 const route = useRoute();
+const router = useRouter();
 const { t } = useI18n();
 
 const { smAndDown } = useDisplay();
@@ -666,7 +798,14 @@ const {
   handleTouchMove: handleFooterTouchMove,
   showFooter: showAppFooter,
 } = useFooterVisibility();
-const { getClient, getActiveChats, insertMessage, deleteChatWithUser } = useDb();
+const {
+  getClient,
+  getActiveChats,
+  insertMessage,
+  deleteChatWithUser,
+  insertBlockedUser,
+  unblockUser,
+} = useDb();
 const supabase = getClient();
 
 const onbRef = ref(null);
@@ -809,6 +948,8 @@ const deleteDialog = ref(false);
 const deleteTarget = ref(null);
 const deleteError = ref("");
 const deletingChat = ref(false);
+const isBlocking = ref(false);
+const shareToast = ref(false);
 const clearReply = () => {
   replyingToMessage.value = null;
 };
@@ -858,6 +999,94 @@ const selectedUser = computed(() => {
   });
   return match || raw;
 });
+
+const isSelectedUserBlocked = computed(() => {
+  const selectedId = selectedUserId.value;
+  if (!selectedId) return false;
+  return blockedUsers.value.some(
+    (blockedId) => String(blockedId) === String(selectedId)
+  );
+});
+
+const isSelfSelected = computed(() => {
+  const userId = auth.user?.id;
+  const selectedId = selectedUserId.value;
+  if (!userId || !selectedId) return false;
+  return String(userId) === String(selectedId);
+});
+
+const isBlockDisabled = computed(
+  () => isBlocking.value || !selectedUserId.value || isSelfSelected.value
+);
+
+const blockTooltip = computed(() =>
+  isSelectedUserBlocked.value
+    ? t("components.chatheader.unblock-user")
+    : t("components.chatheader.block-user")
+);
+
+const toggleBlockSelectedUser = async () => {
+  const userId = auth.user?.id;
+  const blockedUserId = selectedUserId.value;
+  if (!userId || !blockedUserId) {
+    if (!userId) {
+      router.push(localePath("/signin"));
+    }
+    return;
+  }
+  if (isBlockDisabled.value) return;
+  isBlocking.value = true;
+  try {
+    if (isSelectedUserBlocked.value) {
+      const result = await unblockUser(userId, blockedUserId);
+      if (result?.error) return;
+      blockedUsers.value = blockedUsers.value.filter(
+        (id) => String(id) !== String(blockedUserId)
+      );
+    } else {
+      const error = await insertBlockedUser(userId, blockedUserId);
+      if (error) return;
+      if (
+        !blockedUsers.value.some(
+          (id) => String(id) === String(blockedUserId)
+        )
+      ) {
+        blockedUsers.value = [...blockedUsers.value, blockedUserId];
+      }
+    }
+  } finally {
+    isBlocking.value = false;
+  }
+};
+
+const shareProfile = async () => {
+  if (!profileLink.value || typeof window === "undefined") return;
+  const url = new URL(profileLink.value, window.location.origin).toString();
+  let copied = false;
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+      copied = true;
+    } else {
+      const textarea = document.createElement("textarea");
+      textarea.value = url;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      copied = true;
+    }
+  } catch (error) {
+    console.warn("[chat][share] copy failed", error);
+  } finally {
+    if (copied) {
+      shareToast.value = true;
+    }
+  }
+};
 
 const selectedUserInitial = computed(() => {
   const name = selectedUser.value?.displayname || "";
@@ -952,6 +1181,18 @@ const selectedUserInterests = computed(() => {
 });
 
 const loadingMsgs = computed(() => chat.loading);
+
+watch(
+  () => auth.user?.id,
+  (userId) => {
+    if (userId) {
+      loadBlockedUsers(userId);
+    } else {
+      blockedUsers.value = [];
+    }
+  },
+  { immediate: true }
+);
 
 watch(selectedUserId, () => {
   panelOpen.value = false;
@@ -1375,6 +1616,7 @@ async function onSend(text) {
   const selectedPeer = chat.selectedUser; // ✅ define a local alias
   const toId = selectedPeer?.user_id || selectedPeer?.id;
   const sendingToBot = toId === IMCHATTY_ID;
+  if (isSelectedUserBlocked.value) return;
 
   // pre-auth onboarding
   if (isPreAuth.value && sendingToBot) {

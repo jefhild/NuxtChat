@@ -892,9 +892,12 @@
       "years-old": " ans, ",
       "remove-favorites": "Retirer des Favoris",
       "add-favorites": "Ajouter aux Favoris",
+      "favorite-profile": "Ajouter aux favoris",
       "block-user": "Bloquer l'Utilisateur",
       "unblock-user": "Débloquer l'Utilisateur",
+      "share-profile": "Partager le profil",
       "report-user": "Signaler l'Utilisateur",
+      "profile-copied": "Profil copié dans le presse-papiers",
       "favorited": "vous a ajouté en favori !",
       "report-success": "Merci d'avoir signalé cet utilisateur. Nous examinerons le rapport et prendrons les mesures appropriées si nécessaire.",
       "report-failure": "Il y a eu une erreur lors du signalement de cet utilisateur. Veuillez réessayer plus tard.",
@@ -1018,7 +1021,8 @@
       "composer": {
         "placeholder": "Tapez votre message ici...",
         "send": "Envoyer",
-        "sign-in": "Connectez-vous pour discuter"
+        "sign-in": "Connectez-vous pour discuter",
+        "blocked": "Vous avez bloqué cet utilisateur"
       }
     },
     "morefemale": {

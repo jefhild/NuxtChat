@@ -31,7 +31,7 @@
             <li>
               <NuxtLink
                 :to="localPath('/chat')"
-                class="nav2__link"
+                :class="['nav2__link', { 'nav2__link--chat': hasUnread }]"
                 exact
               >
                 {{ $t("components.navbar.chat") }}

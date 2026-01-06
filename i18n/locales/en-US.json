@@ -75,7 +75,7 @@
       "page": {
         "title-text": "About Us",
         "welcome-title": "Hi, Welcome!",
-        "welcome-text": "Welcome to Imchatty, a free chat site where you can connect with others anonymously. Our mission is to provide a safe and free platform for people to chat and share their thoughts without the need for extensive personal information. At Imchatty, we believe in the power of conversation and the importance of privacy.",
+        "welcome-text": "Welcome to Imchatty, a free chat site where you can connect with others anonymously. Our mission is to provide a safe and free platform for people to chat and share their thoughts without the need for extensive personal information. At Imchatty, we believe in the power of conversation and the importance of privacy. ImChatty.com is an open, modern chat and discussion platform designed to make online conversation as frictionless, safe, and engaging as possible. The goal of ImChatty is simple: enable people to connect, exchange ideas, and form communities without unnecessary barriers, aggressive monetization, or toxic design patterns that dominate much of today’s social web.",
         "who_we_are-title": "Who We Are",
         "who_we_are-text1": "Imchatty is a project by",
         "who_we_are-text2": "a seasoned player in the IT consulting industry. We created this site to delve deeper into real-time database and presence technology, AI chatbots and LLM's. We're using Imchatty as a dynamic sandbox for testing and development. We'd love to see how far we can push this technology and if we can build something useful. You'll find the Open Source code for this site ",
@@ -83,11 +83,11 @@
         "our_mission-title": "Our Mission and Vision",
         "our_mission-text": "Our mission is simple: to provide a free, secure chat platform that will eventually be supported by advertising. The broader goal is to build a space where people can share ideas and have meaningful conversations — something that feels more authentic and constructive than what we often see on traditional social media. Instead of feeds dominated by bots, noise, and extreme opinions, we want to explore how AI can help foster healthier, more thoughtful exchanges. Our vision is to continuously expand ImChatty with new features and services, evolving it into a dynamic, valuable tool for our users. We aim to create a community where people can connect effortlessly while always feeling safe, respected, and heard.",
         "unique_approach-title": "Our Unique Approach",
-        "unique_approach-text": "What sets Imchatty apart is our commitment to providing a truly free service without compromising on user safety. We understand the importance of privacy, and our anonymous registration ensures that your personal information remains confidential. Additionally, Imchatty serves as a testing ground for innovative technologies, helping us stay at the forefront of IT advancements.",
+        "unique_approach-text": "What sets Imchatty apart is our commitment to providing a truly free service without compromising on user safety. We understand the importance of privacy, and our anonymous registration ensures that your personal information remains confidential. Additionally, Imchatty serves as a testing ground for innovative technologies, helping us stay at the forefront of IT advancements. At its core, ImChatty blends real-time chat with rich user profiles and topic-driven discussions, allowing users to move seamlessly between casual conversation and deeper, more structured exchanges. Anonymous and registered users can participate side by side, lowering the entry threshold while still encouraging accountability and civility through thoughtful design and moderation tools.",
         "building_community-title": "Building a Community",
         "building_community-text": " Our goal is not just to offer a chat service but to build a community. We encourage our users to provide feedback and share their experiences to help us improve and expand the platform. By working together, we hope to create a service that meets the needs of our users and adapts to their evolving preferences.",
         "looking_ahead-title": "Looking Ahead",
-        "looking_ahead-text": "As we continue to grow, our focus remains on maintaining a free and secure platform while exploring new features and improvements. We are excited about the future of Imchatty and are committed to making it a valuable resource for our users.",
+        "looking_ahead-text": "As we continue to grow, our focus remains on maintaining a free and secure platform while exploring new features and improvements. We are excited about the future of Imchatty and are committed to making it a valuable resource for our users. ImChatty is also open-source and privacy-conscious, with a strong emphasis on transparency, user control, and long-term sustainability. Whether you want to chat freely, explore diverse viewpoints, or build your own community around shared interests, ImChatty provides a flexible and welcoming space for meaningful online interaction.",
         "join_us-title": "Join Us",
         "join_us-text": "We invite you to join Imchatty and be a part of our journey. Whether you’re looking for a place to chat, share ideas, or simply meet new people, Imchatty is here for you. Together, we can create a dynamic and fun community.",
         "aiProfiles": {
@@ -908,8 +908,11 @@
       "years-old": " years old, ",
       "remove-favorites": "Remove from Favorites",
       "add-favorites": "Add to Favorites",
+      "favorite-profile": "Favorite profile",
       "block-user": "Block User",
       "unblock-user": "Unblock User",
+      "share-profile": "Share profile",
+      "profile-copied": "Profile copied to clipboard",
       "report-user": "Report User",
       "favorited": "favorited you!",
       "report-success": "Thank you for reporting this user. We will review the report and take appropriate action if necessary.",
@@ -1040,7 +1043,8 @@
       "composer": {
         "placeholder": "Type your message here...",
         "send": "Send",
-        "sign-in": "Sign in to chat"
+        "sign-in": "Sign in to chat",
+        "blocked": "You blocked this user"
       }
     },
     "morefemale": {

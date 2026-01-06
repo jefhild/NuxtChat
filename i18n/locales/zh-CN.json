@@ -892,9 +892,12 @@
       "years-old": "岁，",
       "remove-favorites": "从收藏中移除",
       "add-favorites": "添加到收藏",
+      "favorite-profile": "收藏资料",
       "block-user": "屏蔽用户",
       "unblock-user": "取消屏蔽用户",
+      "share-profile": "分享资料",
       "report-user": "举报用户",
+      "profile-copied": "个人资料已复制到剪贴板",
       "favorited": "收藏了您！",
       "report-success": "感谢您举报此用户。我们将审查举报并在必要时采取适当行动。",
       "report-failure": "举报用户时出错。请稍后再试。",
@@ -1017,7 +1020,8 @@
       "composer": {
         "placeholder": "在此输入您的消息...",
         "send": "发送",
-        "sign-in": "登录以开始聊天"
+        "sign-in": "登录以开始聊天",
+        "blocked": "你已屏蔽该用户"
       }
     },
     "morefemale": {

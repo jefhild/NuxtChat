@@ -48,6 +48,7 @@ const { init: initMd, render } = useMarkdown();
 const props = defineProps({
   meId: { type: String, required: true },
   peer: { type: Object, default: null }, // should contain displayname/id
+  blockedUserIds: { type: Array, default: () => [] },
 });
 
 const db = useDb();
@@ -97,6 +98,9 @@ const items = computed(() => {
 
 const peerId = computed(() =>
   String(props.peer?.user_id || props.peer?.id || "")
+);
+const blockedSet = computed(
+  () => new Set((props.blockedUserIds || []).map((id) => String(id)))
 );
 const conversationKey = computed(() =>
   props.meId && peerId.value
@@ -186,7 +190,11 @@ const loadThread = async () => {
       null,
       40
     );
-    messages.value = rows || [];
+    messages.value = (rows || []).filter(
+      (msg) =>
+        !blockedSet.value.has(String(msg.sender_id)) &&
+        !blockedSet.value.has(String(msg.receiver_id))
+    );
     await scrollToBottom();
     await msgs.markThreadAsRead(peerId.value);
   } finally {
@@ -200,7 +208,7 @@ onMounted(async () => {
   await msgs.init(props.meId);
 });
 
-watch(() => peerId.value, loadThread);
+watch([() => peerId.value, () => props.blockedUserIds], loadThread);
 
 // ── Expose functions parent can call
 defineExpose({
@@ -284,6 +292,12 @@ watch(
 
     // only for this open thread
     if (String(m.sender_id) !== peerId.value || String(m.receiver_id) !== props.meId) {
+      return;
+    }
+    if (
+      blockedSet.value.has(String(m.sender_id)) ||
+      blockedSet.value.has(String(m.receiver_id))
+    ) {
       return;
     }
 

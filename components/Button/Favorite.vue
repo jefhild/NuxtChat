@@ -5,6 +5,7 @@
     :color="isFavorite ? 'red darken-2' : 'red medium-emphasis'"
     :icon="isFavorite ? 'mdi-star' : 'mdi-star-outline'"
     size="small"
+    variant="text"
     @click="handleFavoriteToggle"
   ></v-btn>
 

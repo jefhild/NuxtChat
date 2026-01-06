@@ -15,7 +15,7 @@
     />
     <button
       class="shrink-0 rounded ml-2 px-3 py-2 border"
-      :disabled="!peerId || !localDraft.trim()"
+      :disabled="isDisabled || !peerId || !localDraft.trim()"
     >
       {{ t("components.message.composer.send") }}
     </button>
@@ -33,6 +33,7 @@ const props = defineProps({
   peerId: { type: String, default: null },
   meId: { type: String, default: null },
   conversationKey: { type: String, default: null },
+  blockedUserIds: { type: Array, default: () => [] },
 });
 
 const config = useRuntimeConfig();
@@ -44,6 +45,13 @@ const localDraft = ref(props.draft);
 const auth = useAuthStore();
 const meId = computed(() => props.meId || auth.user?.id || null);
 const { t } = useI18n();
+const isBlocked = computed(() =>
+  props.peerId
+    ? (props.blockedUserIds || []).some(
+        (id) => String(id) === String(props.peerId)
+      )
+    : false
+);
 
 const derivedKey = computed(
   () =>
@@ -60,6 +68,7 @@ const { sendTypingPing } = useTypingChannel({
 });
 
 const isDisabled = computed(() => {
+  if (isBlocked.value) return true;
   switch (auth.authStatus) {
     case "anonymous":
       return true;
@@ -102,6 +111,7 @@ const sendPing = (() => {
 
 const placeholderText = computed(() => {
   if (!props.peerId) return t("components.message.composer.placeholder"); // optional
+  if (isBlocked.value) return t("components.message.composer.blocked");
   if (isDisabled.value) return t("components.message.composer.sign-in"); // unauth / blocked
   return t("components.message.composer.placeholder"); // normal
 });
