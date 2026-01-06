@@ -13,8 +13,8 @@
         "heading_anon_authenticated": "匿名聊天。即时连接。",
         "heading_authenticated": "匿名聊天。即时连接。",
         "title-text": "匿名聊天。即时连接。",
-        "title-text2": "AI朋友，真实的人，匿名登录。",
-        "cta_button": "开始聊天",
+        "title-text2": "真实的人，真实的讨论，AI 角色，登录以获得完整体验",
+        "cta_button": "开始！",
         "learn_more": "了解更多",
         "welcome_back": "欢迎回来，",
         "chat": "聊天",
@@ -55,7 +55,7 @@
       "subtitle": "了解更多关于 ImChatty —— 一个独特的平台，让您可以与真人或人工智能匿名聊天。",
       "tabs": {
         "humans": "这里的人们",
-        "newsroom": "新闻编辑室AI角色",
+        "newsroom": "AI 角色",
         "faq": "FAQ"
       },
       "meta": {

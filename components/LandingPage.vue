@@ -29,10 +29,10 @@
                 <v-btn
                   v-if="showPrimaryHeroCta"
                   color="primary"
-                  :to="localPath('/chat/articles')"
+                  :to="heroCtaTo"
                   class="hero-btn"
                 >
-                  {{ $t("pages.home.landing_page.cta_button") }}
+                  {{ heroCtaLabel }}
                 </v-btn>
                 <v-btn
                   v-if="showLearnMoreCta"
@@ -258,6 +258,16 @@ const showLinkEmailCta = computed(
 );
 const showPrimaryHeroCta = computed(() => !isAnonAuthed.value);
 const showLearnMoreCta = computed(() => !isAnonAuthed.value);
+const heroCtaTo = computed(() =>
+  authStatus.value === "authenticated" || authStatus.value === "anon_authenticated"
+    ? localPath("/chat")
+    : localPath("/chat?userslug=imchatty")
+);
+const heroCtaLabel = computed(() =>
+  authStatus.value === "authenticated" || authStatus.value === "anon_authenticated"
+    ? t("pages.home.landing_page.get_chatting")
+    : t("pages.home.landing_page.cta_button")
+);
 
 const getAuthHeading = computed(() => {
   switch (authStatus.value) {

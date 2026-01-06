@@ -57,6 +57,15 @@
               <v-icon>mdi-instagram</v-icon>
             </a>
             |
+            <!-- Facebook Icon -->
+            <a
+              href="https://www.facebook.com/61585988489093/"
+              target="_blank"
+              rel="noopener"
+            >
+              <v-icon>mdi-facebook</v-icon>
+            </a>
+            |
             <!-- Reddit Icon -->
             <a
               href="https://www.reddit.com/r/imchatty_news/"

@@ -128,6 +128,12 @@ const publishInstagramMedia = async (input: {
 
 export default defineEventHandler(async (event) => {
   try {
+    return {
+      success: true,
+      stub: true,
+      message:
+        "Social publishing is disabled until Facebook credentials are configured.",
+    };
     const body = (await readBody(event)) || {};
     const articleId = String(body.articleId || "").trim();
     const force = Boolean(body.force);
@@ -143,12 +149,12 @@ export default defineEventHandler(async (event) => {
     const igUserId = cfg.META_IG_USER_ID;
     const version = cfg.META_GRAPH_VERSION || "v20.0";
 
-    if (!pageId || !pageToken || !igUserId) {
+    if (!pageId || !pageToken) {
       setResponseStatus(event, 400);
       return {
         success: false,
         error:
-          "Meta credentials are not configured. Set META_PAGE_ID, META_PAGE_ACCESS_TOKEN, and META_IG_USER_ID.",
+          "Meta credentials are not configured. Set META_PAGE_ID and META_PAGE_ACCESS_TOKEN.",
       };
     }
 
@@ -207,7 +213,9 @@ export default defineEventHandler(async (event) => {
       results.facebook = fb;
     }
 
-    if (!social.instagram.published_at || force) {
+    const canPostInstagram = Boolean(igUserId);
+
+    if (canPostInstagram && (!social.instagram.published_at || force)) {
       if (!social.instagram.image_url) {
         setResponseStatus(event, 400);
         return {

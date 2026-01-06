@@ -46,14 +46,6 @@
       >
         {{ article.isPublishedToChat ? 'Unpublish from Chat' : 'Publish to Chat' }}
       </v-btn>
-      <v-btn
-        block
-        class="mt-2"
-        color="secondary"
-        @click="publishToSocial(article.id)"
-      >
-        Publish to FB + IG
-      </v-btn>
     </v-card-actions>
   </v-card>
 </v-col>
@@ -299,11 +291,24 @@
           />
 
           <div class="html-preview" v-html="selectedArticle.content"></div>
-          <v-switch
-            v-model="selectedArticle.is_published"
-            label="Published"
-            color="primary"
-          />
+          <v-row align="center">
+            <v-col cols="12" sm="6">
+              <v-switch
+                v-model="selectedArticle.is_published"
+                label="Published"
+                color="primary"
+              />
+            </v-col>
+            <v-col cols="12" sm="6" class="text-sm-right">
+              <v-btn
+                v-if="selectedArticle.is_published"
+                color="blue-darken-2"
+                disabled
+              >
+                Facebook setup needed
+              </v-btn>
+            </v-col>
+          </v-row>
         </v-form>
       </v-card-text>
 
@@ -391,23 +396,6 @@ const snackbar = ref({
   show: false,
   message: "",
 });
-
-const publishToSocial = async (articleId, force = false) => {
-  try {
-    const res = await $fetch("/api/admin/articles/publish-social", {
-      method: "POST",
-      body: { articleId, force },
-    });
-    if (!res?.success) throw new Error(res?.error || "Social publish failed");
-    snackbar.value = { show: true, message: "Published to social ✅" };
-  } catch (e) {
-    console.error("[admin] publishToSocial", e);
-    snackbar.value = {
-      show: true,
-      message: `Social publish failed: ${e.message || e}`,
-    };
-  }
-};
 
 
 const publishToChat = async (article) => {

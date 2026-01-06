@@ -13,8 +13,8 @@
         "heading_anon_authenticated": "Chattez Anonymement. Connectez-vous Instantanément.",
         "heading_authenticated": "Bon retour ! Profitez-en !",
         "title-text": "Chattez Anonymement. Connectez-vous Instantanément.",
-        "title-text2": "Amis IA, vraies personnes, connectez-vous anonymement.",
-        "cta_button": "Commencer à Chatter",
+        "title-text2": "De vraies personnes, de vraies discussions, des personas IA, connectez-vous pour l’expérience complète",
+        "cta_button": "Commencer !",
         "learn_more": "En Savoir Plus",
         "welcome_back": "Bon retour,",
         "chat": "Chat",
@@ -55,7 +55,7 @@
       "subtitle": "En savoir plus sur ImChatty — une plateforme unique pour discuter anonymement avec de vrais utilisateurs ou une intelligence artificielle.",
       "tabs": {
         "humans": "Les humains ici",
-        "newsroom": "Personas IA de la rédaction",
+        "newsroom": "Personas IA",
         "faq": "FAQ"
       },
       "meta": {

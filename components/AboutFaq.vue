@@ -33,33 +33,12 @@
             clearable
             class="faq-search mt-2"
           />
-          <div class="faq-quick-tags">
-            <v-chip
-              v-for="chip in quickFilters"
-              :key="chip.id"
-              size="small"
-              variant="outlined"
-              :color="activeFilter === chip.id ? 'primary' : 'default'"
-              class="faq-chip-filter"
-              @click="setActiveFilter(chip.id)"
-            >
-              {{ chip.label }}
-            </v-chip>
-            <v-btn
-              variant="text"
-              size="small"
-              class="text-caption"
-              @click="clearFilters"
-            >
-              {{ $t("pages.about.faq.clear") }}
-            </v-btn>
-          </div>
         </v-card>
       </v-col>
     </v-row>
 
     <v-row>
-      <v-col cols="12" md="4">
+      <v-col cols="12" md="4" class="faq-tree-col">
         <v-card class="faq-tree-card pa-3" elevation="0">
           <div class="text-subtitle-2 font-weight-medium mb-3">
             {{ $t("pages.about.faq.tree-title") }}
@@ -180,13 +159,6 @@ const { data: faqResponse, pending } = await useFetch("/api/faqs", {
 const faqGroups = computed(() => faqResponse.value?.data?.groups || []);
 const faqEntries = computed(() => faqResponse.value?.data?.entries || []);
 
-const quickFilters = computed(() =>
-  faqGroups.value.map((group) => ({
-    id: group.id,
-    label: group.title,
-  }))
-);
-
 const treeItems = computed(() =>
   faqGroups.value.map((group) => ({
     id: group.id,
@@ -220,11 +192,6 @@ const filteredFaqs = computed(() => {
 
 const handleActivated = (value) => {
   activeFilter.value = value?.[0] || null;
-};
-
-const setActiveFilter = (id) => {
-  activeFilter.value = id;
-  activated.value = [id];
 };
 
 const clearFilters = () => {
@@ -284,14 +251,6 @@ watch(
   border-radius: 14px;
 }
 
-.faq-quick-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-  align-items: center;
-}
-
 .faq-tree-card,
 .faq-list-card {
   border-radius: 16px;
@@ -319,6 +278,10 @@ watch(
 }
 
 @media (max-width: 960px) {
+  .faq-tree-col {
+    display: none;
+  }
+
   .faq-hero-content {
     flex-direction: column;
     align-items: flex-start;
