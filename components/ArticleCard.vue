@@ -92,7 +92,11 @@
       </div>
     </v-card-subtitle>
 
-    <v-card-text v-html="truncatedSummary" />
+    <v-card-text
+      v-html="truncatedSummary"
+      @click="handlePersonaLinkClick"
+      @keydown="handlePersonaLinkKeydown"
+    />
 
     <template v-if="hasTags">
       <div class="tags-toggle d-flex justify-center">
@@ -140,11 +144,18 @@
         Draft
       </v-chip>
     </v-card-actions>
+
+    <ProfileDialog
+      v-model="isProfileDialogOpen"
+      :slug="profileDialogSlug"
+      :user-id="profileDialogUserId"
+    />
   </v-card>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
+import ProfileDialog from "@/components/ProfileDialog.vue";
 
 const localPath = useLocalePath();
 const { public: pub } = useRuntimeConfig();
@@ -164,6 +175,9 @@ const hasTags = computed(
 const tagsExpanded = ref(false);
 const currentScore = ref(props.article?.score ?? 0);
 const myVote = ref(props.article?.myVote ?? 0);
+const isProfileDialogOpen = ref(false);
+const profileDialogSlug = ref(null);
+const profileDialogUserId = ref(null);
 
 // Build the public image URL from env + prop
 const articleImageUrl = computed(() => {
@@ -247,6 +261,34 @@ const handleVote = async (value) => {
   } catch (err) {
     console.error("article vote error:", err);
   }
+};
+
+const openPersonaProfile = (slugValue) => {
+  if (!slugValue) return;
+  profileDialogSlug.value = slugValue;
+  profileDialogUserId.value = null;
+  isProfileDialogOpen.value = true;
+};
+
+const handlePersonaLinkClick = (event) => {
+  const target = event.target;
+  if (!target?.closest) return;
+  const link = target.closest("[data-persona-slug]");
+  if (!link) return;
+  const slugValue = link.getAttribute("data-persona-slug");
+  event.preventDefault?.();
+  openPersonaProfile(slugValue);
+};
+
+const handlePersonaLinkKeydown = (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const target = event.target;
+  if (!target?.closest) return;
+  const link = target.closest("[data-persona-slug]");
+  if (!link) return;
+  const slugValue = link.getAttribute("data-persona-slug");
+  event.preventDefault?.();
+  openPersonaProfile(slugValue);
 };
 
 onMounted(loadVotes);

@@ -24,3 +24,48 @@ body,
 .filters-drawer + .v-navigation-drawer__scrim {
   z-index: 2040 !important;
 }
+
+/* Article inline media blocks */
+.article-media {
+  margin: 1.25rem 0;
+  text-align: center;
+}
+
+.article-media img {
+  border-radius: 12px;
+  display: block;
+  margin: 0 auto;
+}
+
+.article-media figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.persona-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #0d9488;
+}
+
+.persona-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18);
+}
+
+.persona-link {
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.persona-link:hover {
+  color: #1e40af;
+}

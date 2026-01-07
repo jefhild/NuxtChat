@@ -43,7 +43,19 @@ const ARTICLE_SANITIZE_OPTIONS: Parameters<typeof DOMPurify.sanitize>[1] = {
     "blockquote",
     "hr",
   ],
-  ALLOWED_ATTR: ["href", "rel", "target", "title", "class", "src", "alt"],
+  ALLOWED_ATTR: [
+    "href",
+    "rel",
+    "target",
+    "title",
+    "class",
+    "src",
+    "alt",
+    "data-persona-slug",
+    "role",
+    "tabindex",
+    "aria-label",
+  ],
 };
 
 const escapeHtml = (value = "") =>
@@ -148,7 +160,11 @@ const buildArticleHtml = (
     domain: string | null;
   },
   rewrite: RewritePayload,
-  personaMeta: { name?: string | null; avatarUrl?: string | null }
+  personaMeta: {
+    name?: string | null;
+    avatarUrl?: string | null;
+    slug?: string | null;
+  }
 ) => {
   const bodyHtml = marked.parse(rewrite.body || "");
 
@@ -168,6 +184,27 @@ const buildArticleHtml = (
   const personaLabel = personaMeta?.name
     ? escapeHtml(personaMeta.name)
     : null;
+  const personaSlug = personaMeta?.slug
+    ? escapeHtml(personaMeta.slug)
+    : null;
+  const personaAvatar = personaMeta?.avatarUrl
+    ? escapeHtml(personaMeta.avatarUrl)
+    : null;
+  const personaLine = personaLabel
+    ? `<div class="persona-line">
+        ${
+          personaAvatar
+            ? `<img class="persona-avatar" src="${personaAvatar}" alt="${personaLabel} avatar" loading="lazy" />`
+            : ""
+        }
+        <span class="persona-label">Perspective:</span>
+        ${
+          personaSlug
+            ? `<span class="persona-link" role="button" tabindex="0" data-persona-slug="${personaSlug}" aria-label="Open ${personaLabel} profile">${personaLabel}</span>`
+            : `<span class="persona-name">${personaLabel}</span>`
+        }
+      </div>`
+    : "";
 
   const sourceBlock = link
     ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${sourceLabel}</a>`
@@ -177,11 +214,7 @@ const buildArticleHtml = (
   <header class="article-header">
     <p class="source-line">${sourceBlock}</p>
     <h1>${escapeHtml(sourceMeta.title || rewrite.headline)}</h1>
-    ${
-      personaLabel
-        ? `<p class="persona-line">Perspective: ${personaLabel}</p>`
-        : ""
-    }
+    ${personaLine}
     ${summaryHtml}
   </header>
   <section class="rewrite-body">
@@ -244,6 +277,7 @@ export default defineEventHandler(async (event) => {
     const personaMeta = {
       name: persona.profile?.displayname || persona.persona_key,
       avatarUrl: persona.profile?.avatar_url || null,
+      slug: persona.profile?.slug || null,
     };
 
     const rewriteMeta = {

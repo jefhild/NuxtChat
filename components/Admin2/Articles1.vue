@@ -38,14 +38,20 @@
     />
 
     <v-divider />
-    <v-card-actions class="flex-column">
+    <v-card-actions class="align-center">
       <v-btn
-        block
         :color="article.isPublishedToChat ? 'red' : 'primary'"
+        class="flex-grow-1"
         @click="togglePublish(article)"
       >
         {{ article.isPublishedToChat ? 'Unpublish from Chat' : 'Publish to Chat' }}
       </v-btn>
+      <v-btn
+        icon="mdi-delete"
+        variant="text"
+        color="red"
+        @click="confirmDeleteArticle(article)"
+      />
     </v-card-actions>
   </v-card>
 </v-col>
@@ -159,6 +165,47 @@
           placeholder="<h2>Hello</h2><p>This is an article</p>"
           :rules="[(v) => !!v || 'Content is required']"
         />
+
+        <v-divider class="my-4" />
+        <div class="text-subtitle-1 mb-2">Insert Inline Image</div>
+        <v-row dense>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="inlineImageAlt"
+              label="Image alt text"
+              placeholder="Describe the image"
+            />
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="inlineImageCaption"
+              label="Caption (optional)"
+              placeholder="Photo credit or caption"
+            />
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="inlineImageWidth"
+              label="Width (optional)"
+              placeholder="e.g. 320px or 60%"
+            />
+          </v-col>
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="inlineImageHeight"
+              label="Height (optional)"
+              placeholder="e.g. 180px"
+            />
+          </v-col>
+          <v-col cols="12">
+            <v-file-input
+              accept="image/*"
+              label="Upload inline image"
+              show-size
+              @update:modelValue="handleInlineImageInsert"
+            />
+          </v-col>
+        </v-row>
 
         <!-- Live Preview -->
         <div class="html-preview" v-html="form.content"></div>
@@ -290,6 +337,47 @@
             :rules="[(v) => !!v || 'Content is required']"
           />
 
+          <v-divider class="my-4" />
+          <div class="text-subtitle-2 mb-2">Insert Inline Image</div>
+          <v-row dense>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="inlineEditImageAlt"
+                label="Image alt text"
+                placeholder="Describe the image"
+              />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="inlineEditImageCaption"
+                label="Caption (optional)"
+                placeholder="Photo credit or caption"
+              />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="inlineEditImageWidth"
+                label="Width (optional)"
+                placeholder="e.g. 320px or 60%"
+              />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="inlineEditImageHeight"
+                label="Height (optional)"
+                placeholder="e.g. 180px"
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-file-input
+                accept="image/*"
+                label="Upload inline image"
+                show-size
+                @update:modelValue="handleInlineEditImageInsert"
+              />
+            </v-col>
+          </v-row>
+
           <div class="html-preview" v-html="selectedArticle.content"></div>
           <v-row align="center">
             <v-col cols="12" sm="6">
@@ -370,6 +458,14 @@ const currentPage = ref(1);
 const config = useRuntimeConfig();
 const { md, smAndDown, xs } = useDisplay();
 const uploadedImagePath = ref(""); // used to preview image and show URL field before final submit
+const inlineImageAlt = ref("");
+const inlineImageCaption = ref("");
+const inlineImageWidth = ref("");
+const inlineImageHeight = ref("");
+const inlineEditImageAlt = ref("");
+const inlineEditImageCaption = ref("");
+const inlineEditImageWidth = ref("");
+const inlineEditImageHeight = ref("");
 
 const perPage = computed(() => {
   if (xs.value) return 1; // Extra small: 1 card per page
@@ -486,10 +582,31 @@ const unpublishFromChat = async (article) => {
   }
 }
 
+const confirmDeleteArticle = async (article) => {
+  if (!article?.id) return;
+  const confirmed =
+    typeof window === "undefined" ||
+    window.confirm(
+      `Delete "${article.title}"? This will remove the article and any chat thread/messages.`
+    );
+  if (!confirmed) return;
 
-
-
-
+  try {
+    const res = await $fetch("/api/admin/articles/delete", {
+      method: "POST",
+      body: { articleId: article.id, force: true },
+    });
+    if (!res?.success) throw new Error(res?.error || "Delete failed");
+    articles.value = articles.value.filter((a) => a.id !== article.id);
+    snackbar.value = { show: true, message: "Article deleted ✅" };
+  } catch (e) {
+    console.error("[admin] deleteArticle", e);
+    snackbar.value = {
+      show: true,
+      message: `Delete failed: ${e.message || e}`,
+    };
+  }
+};
 
 onMounted(async () => {
   articles.value = await getAllArticlesWithTags(false);
@@ -589,6 +706,87 @@ const handleImageChange = async (file) => {
   } else {
     console.warn("Upload failed or returned null.");
   }
+};
+
+const escapeInlineText = (value = "") =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const buildInlineImageStyle = (width, height) => {
+  const safeWidth = escapeInlineText(width || "");
+  const safeHeight = escapeInlineText(height || "");
+  const styles = [];
+  if (safeWidth) styles.push(`width:${safeWidth}`);
+  if (safeHeight) styles.push(`height:${safeHeight}`);
+  styles.push("max-width:100%");
+  styles.push("height:auto");
+  return styles.length ? ` style="${styles.join(";")}"` : "";
+};
+
+const buildInlineImageHtml = (
+  imagePath,
+  altText,
+  captionText,
+  width,
+  height
+) => {
+  const base = (config.public.SUPABASE_BUCKET || "").replace(/\/+$/, "");
+  const path = String(imagePath || "").replace(/^\/+/, "");
+  const src = `${base}/articles/${path}`;
+  const alt = escapeInlineText(altText || "");
+  const caption = captionText
+    ? `<figcaption>${escapeInlineText(captionText)}</figcaption>`
+    : "";
+  const styleAttr = buildInlineImageStyle(width, height);
+  return `<figure class="article-media"><img src="${src}" alt="${alt}" loading="lazy"${styleAttr} />${caption}</figure>`;
+};
+
+const appendHtml = (currentValue, htmlToAdd) => {
+  const safeCurrent = currentValue || "";
+  return safeCurrent ? `${safeCurrent}\n${htmlToAdd}` : htmlToAdd;
+};
+
+const handleInlineImageInsert = async (file) => {
+  if (!file || !file.name) return;
+  const imagePath = await uploadArticleImage(file);
+  if (!imagePath) return;
+  const html = buildInlineImageHtml(
+    imagePath,
+    inlineImageAlt.value,
+    inlineImageCaption.value,
+    inlineImageWidth.value,
+    inlineImageHeight.value
+  );
+  form.value.content = appendHtml(form.value.content, html);
+  inlineImageAlt.value = "";
+  inlineImageCaption.value = "";
+  inlineImageWidth.value = "";
+  inlineImageHeight.value = "";
+};
+
+const handleInlineEditImageInsert = async (file) => {
+  if (!file || !file.name) return;
+  const imagePath = await uploadArticleImage(file, selectedArticle.value.id);
+  if (!imagePath) return;
+  const html = buildInlineImageHtml(
+    imagePath,
+    inlineEditImageAlt.value,
+    inlineEditImageCaption.value,
+    inlineEditImageWidth.value,
+    inlineEditImageHeight.value
+  );
+  selectedArticle.value.content = appendHtml(
+    selectedArticle.value.content,
+    html
+  );
+  inlineEditImageAlt.value = "";
+  inlineEditImageCaption.value = "";
+  inlineEditImageWidth.value = "";
+  inlineEditImageHeight.value = "";
 };
 
 const handleEditImageChange = async (event) => {

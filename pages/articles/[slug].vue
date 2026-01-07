@@ -237,7 +237,13 @@
       <v-col cols="12">
 
         <!-- Render Markdown content -->
-        <div class="prose" v-html="renderedMarkdown"></div>
+        <div
+          class="prose"
+          ref="articleBodyRef"
+          v-html="renderedMarkdown"
+          @click="handlePersonaLinkClick"
+          @keydown="handlePersonaLinkKeydown"
+        ></div>
 
         <div v-if="rewriteReferences.length" class="mt-6">
           <h3 class="text-subtitle-1 mb-2">References</h3>
@@ -335,6 +341,12 @@
       </v-col>
     </v-row>
 
+    <ProfileDialog
+      v-model="isProfileDialogOpen"
+      :slug="profileDialogSlug"
+      :user-id="profileDialogUserId"
+    />
+
   </v-container>
 
   <LoadingContainer v-else />
@@ -342,6 +354,7 @@
 
 <script setup>
 import { marked } from "marked";
+import ProfileDialog from "@/components/ProfileDialog.vue";
 const { locale } = useI18n();
 const localPath = useLocalePath();
 const config = useRuntimeConfig();
@@ -547,6 +560,10 @@ const copySuccess = ref(false);
 const supportsWebShare = computed(
   () => typeof navigator !== "undefined" && !!navigator.share
 );
+const isProfileDialogOpen = ref(false);
+const profileDialogSlug = ref(null);
+const profileDialogUserId = ref(null);
+const articleBodyRef = ref(null);
 
 const renderedMarkdown = ref("");
 
@@ -666,6 +683,34 @@ if (htmlContent) {
   }
 }
 
+const openPersonaProfile = (slugValue) => {
+  if (!slugValue) return;
+  profileDialogSlug.value = slugValue;
+  profileDialogUserId.value = null;
+  isProfileDialogOpen.value = true;
+};
+
+const handlePersonaLinkClick = (event) => {
+  const target = event.target;
+  if (!target?.closest) return;
+  const link = target.closest("[data-persona-slug]");
+  if (!link) return;
+  const slugValue = link.getAttribute("data-persona-slug");
+  event.preventDefault?.();
+  openPersonaProfile(slugValue);
+};
+
+const handlePersonaLinkKeydown = (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const target = event.target;
+  if (!target?.closest) return;
+  const link = target.closest("[data-persona-slug]");
+  if (!link) return;
+  const slugValue = link.getAttribute("data-persona-slug");
+  event.preventDefault?.();
+  openPersonaProfile(slugValue);
+};
+
 const shareLinks = computed(() => {
   const url = encodeURIComponent(shareUrl.value || "");
   const title = encodeURIComponent(shareTitle.value || "");
@@ -734,8 +779,8 @@ const formatDate = (date) =>
 }
 
 .prose {
-  max-width: 800px;
-  margin: auto;
+  max-width: none;
+  width: 100%;
   line-height: 1.7;
   font-size: 1rem;
 }
