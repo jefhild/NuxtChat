@@ -49,6 +49,11 @@ export default defineNuxtConfig({
     bundle: {
       optimizeTranslationDirective: false,
     },
+    detectBrowserLanguage: {
+      // Redirect users without a locale cookie when they hit a non-prefixed route.
+      redirectOn: "no prefix",
+      useCookie: true,
+    },
   },
 
   gtag: {

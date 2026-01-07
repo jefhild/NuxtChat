@@ -18,8 +18,6 @@
         </h4>
         <p class="text-body-2">
           {{ $t("pages.about.page.who_we_are-text1") }}
-          <a href="https://oliverwjones.com" target="_blank" rel="noopener">Oliver W. Jones</a>,
-          {{ $t("pages.about.page.who_we_are-text2") }}
           <a href="https://github.com/jefhild/NuxtChat" target="_blank" rel="noopener">
             {{ $t("pages.about.page.who_we_are-text3") }}
           </a>.
