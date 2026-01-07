@@ -90,6 +90,13 @@
         <SettingsProfileBio
           :bio="userProfile.bio ?? ''"
           :isEditable="props.isEditable"
+          :minLength="props.bioMinLength"
+          :errorMessage="props.bioErrorMessage"
+          :showAiButton="props.showAiBioButton"
+          :aiDisabled="props.aiBioDisabled"
+          :aiLoading="props.aiBioLoading"
+          :aiRemaining="props.aiBioRemaining"
+          @openAiBio="emit('openAiBio')"
           @updateBio="(val) => emit('update:bio', val)"
         />
       </v-col>
@@ -154,6 +161,30 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showAiBioButton: {
+    type: Boolean,
+    default: false,
+  },
+  aiBioDisabled: {
+    type: Boolean,
+    default: false,
+  },
+  aiBioLoading: {
+    type: Boolean,
+    default: false,
+  },
+  aiBioRemaining: {
+    type: Number,
+    default: 0,
+  },
+  bioMinLength: {
+    type: Number,
+    default: 0,
+  },
+  bioErrorMessage: {
+    type: String,
+    default: "",
+  },
 });
 
 const emit = defineEmits([
@@ -173,6 +204,7 @@ const emit = defineEmits([
   "startEdit",
   "toggleDeletionMark",
   "linkAnonEmail",
+  "openAiBio",
 ]);
 
 const { isEditable } = toRefs(props);

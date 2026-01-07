@@ -22,6 +22,12 @@
       :isMarkedForDeletion="isMarkedForDeletion"
       :deleteBusy="deleteBusy"
       :showEmailLinkPrompt="shouldOfferEmailLinkPrompt"
+      :showAiBioButton="showAiBioButton"
+      :aiBioDisabled="aiBioDisabled"
+      :aiBioLoading="aiBioLoading"
+      :aiBioRemaining="aiBioRemaining"
+      :bioMinLength="MIN_BIO_LENGTH"
+      :bioErrorMessage="bioErrorMessage"
       @update:country="onUpdateCountry"
       @update:state="onUpdateState"
       @update:city="onUpdateCity"
@@ -37,6 +43,7 @@
       @cancelEdit="cancelEditing"
       @toggleDeletionMark="toggleDeletionMark"
       @linkAnonEmail="openLinkEmailDialog"
+      @openAiBio="openAiBioDialog"
     />
     <v-dialog
       v-model="linkEmailDialogVisible"
@@ -98,12 +105,53 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="aiBioDialogVisible" max-width="520">
+      <v-card>
+        <v-card-title class="text-h6">Generate a bio</v-card-title>
+        <v-card-text>
+          <p class="text-body-2 mb-4">
+            Enter at least 4 words that describe you. The AI will craft a short
+            bio you can edit.
+          </p>
+          <v-textarea
+            v-model="aiBioKeywords"
+            rows="3"
+            variant="outlined"
+            label="Keywords"
+            placeholder="curious, optimistic, hiking, espresso"
+          />
+          <div class="text-caption text-medium-emphasis">
+            Remaining uses: {{ aiBioRemaining }}
+          </div>
+          <v-alert
+            v-if="aiBioError"
+            type="error"
+            variant="tonal"
+            class="mt-3"
+          >
+            {{ aiBioError }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn variant="text" @click="closeAiBioDialog">Cancel</v-btn>
+          <v-btn
+            color="primary"
+            :loading="aiBioLoading"
+            :disabled="aiBioDisabled"
+            @click="generateAiBio"
+          >
+            Generate
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore1";
 import { useI18n } from "vue-i18n";
+import { useRoute, useRouter } from "vue-router";
 import { useDb } from "@/composables/useDB";
 import { useLocationManager } from "@/composables/useLocationManager";
 import { useGeoLocationDefaults } from "@/composables/useGeoLocationDefaults";
@@ -175,7 +223,10 @@ const displayKey = ref(0);
 const refreshLookingForMenu = ref(false);
 
 const authStore = useAuthStore();
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const route = useRoute();
+const router = useRouter();
+const localPath = useLocalePath();
 const linkEmailDialogVisible = ref(false);
 const linkEmailSubmitting = ref(false);
 const linkEmailError = ref("");
@@ -187,6 +238,138 @@ const linkEmailForm = reactive({
 const hasLinkedEmail = ref(authStore.authStatus !== "anon_authenticated");
 const emailPattern =
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const MAX_AI_BIO_USES = 3;
+const MIN_BIO_LENGTH = 45;
+const bioTouched = ref(false);
+const aiBioDialogVisible = ref(false);
+const aiBioKeywords = ref("");
+const aiBioError = ref("");
+const aiBioLoading = ref(false);
+const aiBioUses = ref(0);
+
+const completionMode = computed(() => {
+  return route.query.complete === "1" || route.query.complete === "true";
+});
+
+const completionNext = computed(() => {
+  const raw = route.query.next;
+  if (typeof raw !== "string") return null;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+});
+
+const completionReady = computed(() => {
+  if (!completionMode.value) return true;
+  const profile = editableProfile.value || {};
+  const hasDisplay = !!profile.displayname;
+  const hasAge = profile.age !== null && profile.age !== undefined;
+  const hasGender = profile.gender_id !== null && profile.gender_id !== undefined;
+  const hasBio = String(profile.bio || "").trim().length >= MIN_BIO_LENGTH;
+  const hasLocation = profile.country_id !== null && profile.country_id !== undefined;
+  return hasDisplay && hasAge && hasGender && hasBio && hasLocation;
+});
+
+const aiBioStorageKey = computed(() => {
+  const id = editableProfile.value?.user_id || authStore.user?.id || "anon";
+  return `aiBioUses:${id}`;
+});
+
+const aiBioRemaining = computed(() => {
+  return Math.max(0, MAX_AI_BIO_USES - aiBioUses.value);
+});
+
+const aiBioDisabled = computed(() => {
+  return aiBioRemaining.value <= 0;
+});
+
+const showAiBioButton = computed(() => {
+  return isEditable.value;
+});
+
+const loadAiBioUses = () => {
+  if (!import.meta.client) return;
+  const key = aiBioStorageKey.value;
+  try {
+    const raw = localStorage.getItem(key);
+    aiBioUses.value = raw ? Number(raw) || 0 : 0;
+  } catch {
+    aiBioUses.value = 0;
+  }
+};
+
+const saveAiBioUses = () => {
+  if (!import.meta.client) return;
+  const key = aiBioStorageKey.value;
+  try {
+    localStorage.setItem(key, String(aiBioUses.value));
+  } catch {}
+};
+
+const openAiBioDialog = () => {
+  if (aiBioDisabled.value || !isEditable.value) return;
+  aiBioError.value = "";
+  aiBioKeywords.value = "";
+  aiBioDialogVisible.value = true;
+};
+
+const closeAiBioDialog = () => {
+  aiBioDialogVisible.value = false;
+};
+
+const parseKeywords = (input) => {
+  return String(input || "")
+    .split(/[\s,]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+const resolveGenderLabel = () => {
+  const genderId = editableProfile.value?.gender_id;
+  const match = genders.value?.find((g) => g.id === genderId)?.name;
+  if (match) return match;
+  if (genderId === 1) return "Male";
+  if (genderId === 2) return "Female";
+  return "Other";
+};
+
+const generateAiBio = async () => {
+  if (aiBioLoading.value || aiBioDisabled.value) return;
+  aiBioError.value = "";
+  const words = parseKeywords(aiBioKeywords.value);
+  if (words.length < 4) {
+    aiBioError.value = "Please enter at least 4 words that describe you.";
+    return;
+  }
+
+  aiBioLoading.value = true;
+  try {
+    const response = await $fetch("/api/aiGenerateBio", {
+      method: "POST",
+      body: {
+        displayname: editableProfile.value?.displayname ?? "",
+        age: editableProfile.value?.age ?? "",
+        gender: resolveGenderLabel(),
+        keywords: words.slice(0, 8),
+        locale: locale.value,
+      },
+    });
+    if (response?.bio) {
+      editableProfile.value.bio = response.bio;
+      bioTouched.value = true;
+      aiBioUses.value += 1;
+      saveAiBioUses();
+      aiBioDialogVisible.value = false;
+    } else {
+      aiBioError.value = "Could not generate a bio. Please try again.";
+    }
+  } catch (err) {
+    console.error("[settings] ai bio failed:", err);
+    aiBioError.value = "Could not generate a bio. Please try again.";
+  } finally {
+    aiBioLoading.value = false;
+  }
+};
 
 const cancelEditing = () => {
   editableProfile.value = { ...props.userProfile };
@@ -201,6 +384,11 @@ const saveChanges = async () => {
   if (!editableProfile.value?.user_id) return;
 
   saving.value = true;
+  bioTouched.value = true;
+  if (bioTooShort.value) {
+    saving.value = false;
+    return;
+  }
 
   try {
     await updateProfile(
@@ -218,7 +406,11 @@ const saveChanges = async () => {
       editableProfile.value.site_url
     );
     console.info("Profile updated successfully.");
+    await maybeSeedAvatar();
     isEditable.value = false;
+    if (completionMode.value && completionNext.value && completionReady.value) {
+      router.push(localPath(completionNext.value));
+    }
   } catch (err) {
     console.error("Error saving profile changes:", err);
   } finally {
@@ -363,8 +555,32 @@ watch(
   { immediate: true }
 );
 
+watch(
+  () => aiBioStorageKey.value,
+  () => {
+    loadAiBioUses();
+  },
+  { immediate: true }
+);
+
 const isEditable = ref(false); // default to false for safety
 const deleteBusy = ref(false);
+
+const bioText = computed(() => {
+  return String(editableProfile.value?.bio || "").trim();
+});
+
+const bioTooShort = computed(() => {
+  return bioText.value.length < MIN_BIO_LENGTH;
+});
+
+const bioErrorMessage = computed(() => {
+  if (!bioTouched.value) return "";
+  if (bioTooShort.value) {
+    return `Bio must be at least ${MIN_BIO_LENGTH} characters.`;
+  }
+  return "";
+});
 
 const isMarkedForDeletion = computed(() => {
   return !!editableProfile.value?.marked_for_deletion_at;
@@ -431,6 +647,41 @@ const updateAvatarUrl = (newUrl) => {
     authStore.userProfile.avatar_url = newUrl;
   }
 };
+
+async function maybeSeedAvatar() {
+  if (!completionMode.value) return;
+  if (editableProfile.value?.avatar_url) return;
+  if (!editableProfile.value?.user_id) return;
+
+  const seedParts = [
+    editableProfile.value.displayname,
+    editableProfile.value.gender_id,
+    editableProfile.value.age,
+    editableProfile.value.country_id,
+    editableProfile.value.state_id,
+    editableProfile.value.city_id,
+  ]
+    .filter((val) => val !== null && val !== undefined && String(val).trim())
+    .map((val) => String(val).trim());
+
+  const seed = seedParts.join("-");
+  if (!seed) return;
+
+  try {
+    const result = await $fetch("/api/seed-avatar", {
+      method: "POST",
+      body: {
+        userId: editableProfile.value.user_id,
+        seed,
+      },
+    });
+    if (result?.avatarUrl) {
+      updateAvatarUrl(result.avatarUrl);
+    }
+  } catch (err) {
+    console.warn("[settings] auto-avatar failed:", err);
+  }
+}
 
 const { generateAvatar, getRandomStyle, getPreviewAvatarUrl } =
   useAvatarGenerator();
