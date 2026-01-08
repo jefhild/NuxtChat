@@ -32,18 +32,14 @@
         </div>
 
         <div class="photo-actions">
-          <div
-            v-if="editable"
-            class="d-flex align-center justify-center"
-            style="gap: 8px;"
-          >
+          <div class="d-flex align-center justify-center" style="gap: 8px;">
             <v-btn
               size="small"
               variant="outlined"
               color="primary"
               :loading="aiLoading"
-              :disabled="aiDisabled || aiLoading"
-              @click="$emit('generateAvatar')"
+              :disabled="!editable || aiDisabled || aiLoading"
+              @click="editable && $emit('generateAvatar')"
             >
               Generate AI
             </v-btn>
@@ -52,8 +48,8 @@
               variant="outlined"
               color="primary"
               :loading="uploadLoading"
-              :disabled="uploadLoading"
-              @click="triggerFilePicker"
+              :disabled="!editable || uploadLoading"
+              @click="editable && triggerFilePicker()"
             >
               Upload
             </v-btn>
@@ -65,7 +61,7 @@
               @change="onFileChange"
             />
           </div>
-          <div v-if="editable" class="text-caption text-medium-emphasis mt-2">
+          <div class="text-caption text-medium-emphasis mt-2">
             Remaining AI uses: {{ aiRemaining }}
           </div>
           <v-alert
@@ -78,14 +74,12 @@
             {{ errorMessage }}
           </v-alert>
         </div>
-        <div
-          v-if="editable && userProfile?.user_id"
-          class="photo-lookingfor"
-        >
+        <div v-if="userProfile?.user_id" class="photo-lookingfor">
           <SettingsProfileLookingForMenu
             :userProfile="userProfile"
             :refreshLookingForMenu="refreshLookingForMenu"
-            @lookingForUpdated="$emit('lookingForUpdated')"
+            :class="{ 'menu-disabled': !editable }"
+            @lookingForUpdated="editable && $emit('lookingForUpdated')"
           />
           <div class="lookingfor-icons">
             <SettingsProfileLookingForDisplay
@@ -214,6 +208,7 @@ const onFileChange = async (e: Event) => {
 .photo-actions {
   padding: 12px;
   text-align: center;
+  min-height: 92px;
 }
 
 .photo-lookingfor {
@@ -224,6 +219,11 @@ const onFileChange = async (e: Event) => {
   gap: 10px;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   min-height: 44px;
+}
+
+.menu-disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .lookingfor-icons {
