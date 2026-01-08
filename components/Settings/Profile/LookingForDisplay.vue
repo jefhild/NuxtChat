@@ -1,16 +1,11 @@
 <template>
-  <v-row justify="end">
-    <v-col
-      v-for="icon in lookingForIcons"
-      :key="icon.id"
-      cols="auto"
-      class="pa-1 mt-3"
-    >
-      <v-icon size="large" :color="icon.color" v-tooltip="icon.tooltip">
+  <div class="d-flex align-center">
+    <div v-for="icon in lookingForIcons" :key="icon.id" class="pa-1">
+      <v-icon size="20" :color="icon.color" v-tooltip="icon.tooltip">
         {{ icon.icon }}
       </v-icon>
-    </v-col>
-  </v-row>
+    </div>
+  </div>
 </template>
 
 <script setup>

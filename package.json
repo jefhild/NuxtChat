@@ -44,6 +44,7 @@
     "nuxt-schema-org": "^5.0.5",
     "openai": "^5.1.0",
     "papaparse": "^5.4.1",
+    "sharp": "^0.34.5",
     "uuid": "^11.1.0",
     "vue3-emoji-picker": "^1.1.8"
   }

@@ -23,12 +23,6 @@
         class="icon-overlay"
       />
 
-      <NuxtImg
-        :src="avatarDecoration"
-        :alt="`${profile.displayname} image decoration`"
-        v-if="avatarDecoration"
-        class="avatar-decoration"
-      />
     </div>
 
     <!-- Info -->
@@ -64,9 +58,7 @@
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const router = useRouter();
-const { getGenderFromId, getAvatarDecorationFromId, getUserSlugFromId } =
-  useDb();
-const avatarDecoration = ref("");
+const { getGenderFromId, getUserSlugFromId } = useDb();
 const localPath = useLocalePath();
 
 const tooltipText = computed(() => {
@@ -104,14 +96,6 @@ const goToProfile = async (genderid: string, user_id: string) => {
   router.push(localPath(`/profiles/${gender}/${slug}`));
 };
 
-onMounted(async () => {
-  if (props.profile?.user_id) {
-    avatarDecoration.value = await getAvatarDecorationFromId(
-      props.profile.user_id
-    );
-  }
-});
-
 const handleClick = () => {
   if (props.type === "favorite") {
     emit("unfavorite", props.profile.user_id);
@@ -130,17 +114,6 @@ const handleClick = () => {
   position: relative;
   width: 50px;
   height: 50px;
-}
-
-.avatar-decoration {
-  position: absolute;
-  top: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 62px;
-  pointer-events: none;
-  z-index: 1;
-  object-fit: contain;
 }
 
 .icon-overlay {

@@ -4,13 +4,18 @@
       v-if="editableProfile?.user_id"
       :userProfile="editableProfile"
       :avatar="localAvatar"
-       :isEditable="isEditable"
+      :isEditable="isEditable"
+      :aiRemaining="aiAvatarRemaining"
+      :aiDisabled="aiAvatarDisabled"
+      :aiLoading="aiAvatarLoading"
+      :uploadLoading="avatarUploadLoading"
+      :errorMessage="avatarError"
       :displayKey="displayKey"
       :refreshLookingForMenu="refreshLookingForMenu"
       @refreshLookingForDisplay="displayKey++"
       @updateAvatarUrl="updateAvatarUrl"
-      @previewAvatar="previewAvatar"
-      @confirmAvatar="confirmAvatar"
+      @generateAvatar="generateAiAvatar"
+      @uploadAvatar="uploadAvatar"
     />
 
     <SettingsProfileFormContent
@@ -174,7 +179,6 @@ const props = defineProps({
 const {
   getStatuses,
   getGenders,
-  saveAvatar,
   getCountries,
   getStatesByCountry,
   getCitiesByState,
@@ -216,6 +220,8 @@ watch(
   () => props.userProfile,
   (newProfile) => {
     editableProfile.value = { ...newProfile };
+    localAvatar.value = buildAvatarDisplayUrl(newProfile?.avatar_url);
+    avatarError.value = "";
   }
 );
 
@@ -240,6 +246,7 @@ const emailPattern =
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const MAX_AI_BIO_USES = 3;
+const MAX_AI_AVATAR_USES = 3;
 const MIN_BIO_LENGTH = 45;
 const bioTouched = ref(false);
 const aiBioDialogVisible = ref(false);
@@ -247,6 +254,10 @@ const aiBioKeywords = ref("");
 const aiBioError = ref("");
 const aiBioLoading = ref(false);
 const aiBioUses = ref(0);
+const aiAvatarUses = ref(0);
+const aiAvatarLoading = ref(false);
+const avatarUploadLoading = ref(false);
+const avatarError = ref("");
 
 const completionMode = computed(() => {
   return route.query.complete === "1" || route.query.complete === "true";
@@ -267,7 +278,8 @@ const completionReady = computed(() => {
   const hasGender = profile.gender_id !== null && profile.gender_id !== undefined;
   const hasBio = String(profile.bio || "").trim().length >= MIN_BIO_LENGTH;
   const hasLocation = profile.country_id !== null && profile.country_id !== undefined;
-  return hasDisplay && hasAge && hasGender && hasBio && hasLocation;
+  const hasAvatar = !!profile.avatar_url;
+  return hasDisplay && hasAge && hasGender && hasBio && hasLocation && hasAvatar;
 });
 
 const aiBioStorageKey = computed(() => {
@@ -275,12 +287,25 @@ const aiBioStorageKey = computed(() => {
   return `aiBioUses:${id}`;
 });
 
+const aiAvatarStorageKey = computed(() => {
+  const id = editableProfile.value?.user_id || authStore.user?.id || "anon";
+  return `aiAvatarUses:${id}`;
+});
+
 const aiBioRemaining = computed(() => {
   return Math.max(0, MAX_AI_BIO_USES - aiBioUses.value);
 });
 
+const aiAvatarRemaining = computed(() => {
+  return Math.max(0, MAX_AI_AVATAR_USES - aiAvatarUses.value);
+});
+
 const aiBioDisabled = computed(() => {
   return aiBioRemaining.value <= 0;
+});
+
+const aiAvatarDisabled = computed(() => {
+  return aiAvatarRemaining.value <= 0;
 });
 
 const showAiBioButton = computed(() => {
@@ -298,11 +323,30 @@ const loadAiBioUses = () => {
   }
 };
 
+const loadAiAvatarUses = () => {
+  if (!import.meta.client) return;
+  const key = aiAvatarStorageKey.value;
+  try {
+    const raw = localStorage.getItem(key);
+    aiAvatarUses.value = raw ? Number(raw) || 0 : 0;
+  } catch {
+    aiAvatarUses.value = 0;
+  }
+};
+
 const saveAiBioUses = () => {
   if (!import.meta.client) return;
   const key = aiBioStorageKey.value;
   try {
     localStorage.setItem(key, String(aiBioUses.value));
+  } catch {}
+};
+
+const saveAiAvatarUses = () => {
+  if (!import.meta.client) return;
+  const key = aiAvatarStorageKey.value;
+  try {
+    localStorage.setItem(key, String(aiAvatarUses.value));
   } catch {}
 };
 
@@ -374,6 +418,7 @@ const generateAiBio = async () => {
 const cancelEditing = () => {
   editableProfile.value = { ...props.userProfile };
   isEditable.value = false;
+  avatarError.value = "";
 };
 
 const startEditing = () => {
@@ -386,6 +431,11 @@ const saveChanges = async () => {
   saving.value = true;
   bioTouched.value = true;
   if (bioTooShort.value) {
+    saving.value = false;
+    return;
+  }
+  if (!editableProfile.value?.avatar_url) {
+    avatarError.value = "Please add a profile photo before saving.";
     saving.value = false;
     return;
   }
@@ -406,7 +456,6 @@ const saveChanges = async () => {
       editableProfile.value.site_url
     );
     console.info("Profile updated successfully.");
-    await maybeSeedAvatar();
     isEditable.value = false;
     if (completionMode.value && completionNext.value && completionReady.value) {
       router.push(localPath(completionNext.value));
@@ -563,6 +612,14 @@ watch(
   { immediate: true }
 );
 
+watch(
+  () => aiAvatarStorageKey.value,
+  () => {
+    loadAiAvatarUses();
+  },
+  { immediate: true }
+);
+
 const isEditable = ref(false); // default to false for safety
 const deleteBusy = ref(false);
 
@@ -633,101 +690,143 @@ const toggleDeletionMark = async () => {
 };
 
 
-const avatar = ref(props.userProfile.avatar_url);
-const localAvatar = avatar;
+const stripAvatarQuery = (url) => {
+  if (!url) return "";
+  return String(url).split("?")[0];
+};
+
+const buildAvatarDisplayUrl = (url) => {
+  const clean = stripAvatarQuery(url);
+  if (!clean) return "";
+  return `${clean}?v=${Date.now()}`;
+};
+
+const localAvatar = ref(buildAvatarDisplayUrl(props.userProfile.avatar_url));
 
 const updateAvatarUrl = (newUrl) => {
-  localAvatar.value = newUrl;
+  const cleanUrl = stripAvatarQuery(newUrl);
+  localAvatar.value = buildAvatarDisplayUrl(cleanUrl);
+  avatarError.value = "";
 
   if (editableProfile.value) {
-    editableProfile.value.avatar_url = newUrl;
+    editableProfile.value.avatar_url = cleanUrl;
   }
 
   if (!props.adminMode && authStore.userProfile) {
-    authStore.userProfile.avatar_url = newUrl;
+    authStore.userProfile.avatar_url = cleanUrl;
   }
 };
 
-async function maybeSeedAvatar() {
-  if (!completionMode.value) return;
-  if (editableProfile.value?.avatar_url) return;
+const buildAvatarPayload = () => ({
+  userId: editableProfile.value?.user_id,
+  displayname: editableProfile.value?.displayname ?? "",
+  gender: resolveGenderLabel(),
+  age: editableProfile.value?.age ?? "",
+  bio: editableProfile.value?.bio ?? "",
+});
+
+const generateAiAvatar = async ({ countUsage = true, ignoreLimit = false } = {}) => {
   if (!editableProfile.value?.user_id) return;
+  if (aiAvatarLoading.value) return;
+  if (!ignoreLimit && aiAvatarDisabled.value) return;
 
-  const seedParts = [
-    editableProfile.value.displayname,
-    editableProfile.value.gender_id,
-    editableProfile.value.age,
-    editableProfile.value.country_id,
-    editableProfile.value.state_id,
-    editableProfile.value.city_id,
-  ]
-    .filter((val) => val !== null && val !== undefined && String(val).trim())
-    .map((val) => String(val).trim());
-
-  const seed = seedParts.join("-");
-  if (!seed) return;
+  aiAvatarLoading.value = true;
+  avatarError.value = "";
+  let success = false;
 
   try {
-    const result = await $fetch("/api/seed-avatar", {
+    const result = await $fetch("/api/profile/avatar-generate", {
+      method: "POST",
+      body: buildAvatarPayload(),
+    });
+    if (result?.avatarUrl) {
+      updateAvatarUrl(result.avatarUrl);
+      success = true;
+      if (countUsage) {
+        aiAvatarUses.value += 1;
+        saveAiAvatarUses();
+      }
+    } else {
+      avatarError.value = "Could not generate an avatar. Please try again.";
+    }
+  } catch (err) {
+    console.error("[settings] ai avatar failed:", err);
+    avatarError.value = "Could not generate an avatar. Please try again.";
+  } finally {
+    aiAvatarLoading.value = false;
+  }
+
+  return success;
+};
+
+const readFileAsDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Failed to read file."));
+    reader.readAsDataURL(file);
+  });
+
+const uploadAvatar = async (file) => {
+  if (!editableProfile.value?.user_id || !file) return;
+  if (avatarUploadLoading.value) return;
+
+  const maxBytes = 2 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    avatarError.value = "Please upload an image under 2MB.";
+    return;
+  }
+
+  avatarUploadLoading.value = true;
+  avatarError.value = "";
+
+  try {
+    const dataUrl = await readFileAsDataUrl(file);
+    const result = await $fetch("/api/profile/avatar-upload", {
       method: "POST",
       body: {
         userId: editableProfile.value.user_id,
-        seed,
+        dataUrl,
       },
     });
     if (result?.avatarUrl) {
       updateAvatarUrl(result.avatarUrl);
+    } else {
+      avatarError.value = "Could not upload that image. Please try again.";
     }
   } catch (err) {
-    console.warn("[settings] auto-avatar failed:", err);
+    console.error("[settings] avatar upload failed:", err);
+    avatarError.value = "Could not upload that image. Please try again.";
+  } finally {
+    avatarUploadLoading.value = false;
   }
-}
+};
 
-const { generateAvatar, getRandomStyle, getPreviewAvatarUrl } =
-  useAvatarGenerator();
+const autoAvatarStorageKey = computed(() => {
+  const id = editableProfile.value?.user_id || authStore.user?.id || "anon";
+  return `autoAvatarGenerated:${id}`;
+});
 
-const currentSeed = ref(null);
-const currentStyle = ref(null);
+const maybeAutoGenerateAvatar = async () => {
+  if (!completionMode.value) return;
+  if (!import.meta.client) return;
+  if (editableProfile.value?.avatar_url) return;
+  if (!editableProfile.value?.user_id) return;
+  const key = autoAvatarStorageKey.value;
+  if (localStorage.getItem(key)) return;
 
-const previewAvatar = () => {
-  if (!props.userProfile?.displayname || !props.userProfile?.gender_id) {
-    console.warn("Missing displayname or gender_id for avatar preview");
-    return;
+  const success = await generateAiAvatar({
+    countUsage: false,
+    ignoreLimit: true,
+  });
+  if (success) {
+    try {
+      localStorage.setItem(key, "1");
+    } catch {}
   }
-
-  const seed = `${props.userProfile.displayname}-${Math.random()
-    .toString(36)
-    .substring(2, 8)}`;
-  const style = getRandomStyle(props.userProfile.gender_id);
-  const url = getPreviewAvatarUrl(seed, style);
-
-  avatar.value = url;
-
-  // watch(avatar, (newVal) => {
-  //   console.log("avatar.value updated to:", newVal);
-  // });
-
-  currentSeed.value = seed;
-  currentStyle.value = style;
-
-  // console.log("Preview avatar:", { seed, style, url });
 };
 
 const saving = ref(false);
-
-const confirmAvatar = async () => {
-  if (!props.userProfile?.user_id || !avatar.value || saving.value) return;
-
-  saving.value = true;
-
-  const success = await saveAvatar(props.userProfile.user_id, avatar.value);
-
-  saving.value = false;
-
-  if (success) {
-    updateAvatarUrl(avatar.value);
-  }
-};
 
 
 onMounted(async () => {
@@ -767,11 +866,7 @@ onMounted(async () => {
         console.warn("[geo-defaults] failed to prefill location", e);
       }
     }
-
-
-
-
-
+    await maybeAutoGenerateAvatar();
   } catch (err) {
     console.error("Error loading profile reference data:", err);
   }

@@ -1,36 +1,24 @@
 <template>
-  <v-row no-gutters>
-    <v-col cols="3">
+  <v-row no-gutters justify="center">
+    <v-col cols="12" md="6" class="d-flex flex-column align-center">
       <!-- {{ isEditable ? "Edit Mode" : "View Mode" }} -->
       <SettingsProfilePhoto
         :editable="isEditable"
         :userId="userProfile.user_id"
         :avatarUrl="avatar"
+        :aiRemaining="aiRemaining"
+        :aiDisabled="aiDisabled"
+        :aiLoading="aiLoading"
+        :uploadLoading="uploadLoading"
+        :errorMessage="errorMessage"
+        :userProfile="userProfile"
+        :refreshLookingForMenu="refreshLookingForMenu"
+        :displayKey="displayKey"
         @updateAvatarUrl="$emit('updateAvatarUrl', $event)"
-        @previewAvatar="$emit('previewAvatar')"
-        @confirmAvatar="$emit('confirmAvatar')"
+        @generateAvatar="$emit('generateAvatar')"
+        @uploadAvatar="$emit('uploadAvatar', $event)"
+        @lookingForUpdated="$emit('refreshLookingForDisplay')"
       />
-    </v-col>
-
-    <v-col cols="9" class="d-flex flex-column align-center">
-      <h3 class="font-weight-medium">{{ userProfile.displayname }}</h3>
-      <h5 class="font-weight-thin">{{ userProfile.tagline }}</h5>
-      <h5 class="font-weight-thin">{{ userProfile.site_url }}</h5>
-
-      <p class="mt-3" v-if="userProfile?.user_id">
-        <SettingsProfileLookingForDisplay
-          :userId="userProfile.user_id"
-          :key="displayKey"
-        />
-      </p>
-
-      <p class="mt-2" v-if="userProfile?.user_id">
-        <SettingsProfileLookingForMenu
-          :userProfile="userProfile"
-          :refreshLookingForMenu="refreshLookingForMenu"
-          @lookingForUpdated="$emit('refreshLookingForDisplay')"
-        />
-      </p>
     </v-col>
   </v-row>
 </template>
@@ -42,12 +30,17 @@ defineProps({
   isEditable: Boolean,
   refreshLookingForMenu: Boolean,
   displayKey: Number,
+  aiRemaining: Number,
+  aiDisabled: Boolean,
+  aiLoading: Boolean,
+  uploadLoading: Boolean,
+  errorMessage: String,
 });
 
 defineEmits([
   "updateAvatarUrl",
   "refreshLookingForDisplay",
-  "previewAvatar",
-  "confirmAvatar",
+  "generateAvatar",
+  "uploadAvatar",
 ]);
 </script>
