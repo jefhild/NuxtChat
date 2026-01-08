@@ -355,6 +355,8 @@
 <script setup>
 import { marked } from "marked";
 import ProfileDialog from "@/components/ProfileDialog.vue";
+import { nextTick } from "vue";
+import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 const { locale } = useI18n();
 const localPath = useLocalePath();
 const config = useRuntimeConfig();
@@ -600,6 +602,14 @@ if (htmlContent) {
     categories.value = categoryData || [];
     tags.value = tagData || [];
     people.value = peopleData || [];
+    // Ensure any embedded twitter blockquotes are parsed by the widgets script
+    nextTick(() => {
+      try {
+        if (articleBodyRef?.value) loadTwitterWidgets(articleBodyRef.value);
+      } catch (e) {
+        // ignore
+      }
+    });
   });
 
   useHead({

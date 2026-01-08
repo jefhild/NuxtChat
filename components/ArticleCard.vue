@@ -93,10 +93,11 @@
     </v-card-subtitle>
 
     <v-card-text
+      ref="summaryRef"
       v-html="truncatedSummary"
       @click="handlePersonaLinkClick"
       @keydown="handlePersonaLinkKeydown"
-    />
+    ></v-card-text>
 
     <template v-if="hasTags">
       <div class="tags-toggle d-flex justify-center">
@@ -154,8 +155,9 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, nextTick } from "vue";
 import ProfileDialog from "@/components/ProfileDialog.vue";
+import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 
 const localPath = useLocalePath();
 const { public: pub } = useRuntimeConfig();
@@ -178,6 +180,7 @@ const myVote = ref(props.article?.myVote ?? 0);
 const isProfileDialogOpen = ref(false);
 const profileDialogSlug = ref(null);
 const profileDialogUserId = ref(null);
+const summaryRef = ref(null);
 
 // Build the public image URL from env + prop
 const articleImageUrl = computed(() => {
@@ -291,7 +294,16 @@ const handlePersonaLinkKeydown = (event) => {
   openPersonaProfile(slugValue);
 };
 
-onMounted(loadVotes);
+onMounted(() => {
+  loadVotes();
+  nextTick(() => {
+    try {
+      if (summaryRef?.value) loadTwitterWidgets(summaryRef.value);
+    } catch (e) {
+      // ignore
+    }
+  });
+});
 </script>
 
 <style scoped>

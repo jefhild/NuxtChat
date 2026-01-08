@@ -208,7 +208,7 @@
         </v-row>
 
         <!-- Live Preview -->
-        <div class="html-preview" v-html="form.content"></div>
+        <div class="html-preview" v-html="form.content" ref="createPreviewRef"></div>
 
         <v-switch
           v-model="form.is_published"
@@ -378,7 +378,7 @@
             </v-col>
           </v-row>
 
-          <div class="html-preview" v-html="selectedArticle.content"></div>
+          <div class="html-preview" v-html="selectedArticle.content" ref="editPreviewRef"></div>
           <v-row align="center">
             <v-col cols="12" sm="6">
               <v-switch
@@ -430,6 +430,8 @@
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 import { useDisplay } from "vuetify";
+import { nextTick, watch } from "vue";
+import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 const {
   getAllArticlesWithTags,
   getAllCategories,
@@ -462,6 +464,8 @@ const inlineImageAlt = ref("");
 const inlineImageCaption = ref("");
 const inlineImageWidth = ref("");
 const inlineImageHeight = ref("");
+const createPreviewRef = ref(null);
+const editPreviewRef = ref(null);
 const inlineEditImageAlt = ref("");
 const inlineEditImageCaption = ref("");
 const inlineEditImageWidth = ref("");
@@ -768,6 +772,20 @@ const handleInlineImageInsert = async (file) => {
   inlineImageHeight.value = "";
 };
 
+// Watch create form content and trigger twitter widget load on updates
+watch(
+  () => form.value.content,
+  () => {
+    nextTick(() => {
+      try {
+        if (createPreviewRef?.value) loadTwitterWidgets(createPreviewRef.value);
+      } catch (e) {
+        // ignore
+      }
+    });
+  }
+);
+
 const handleInlineEditImageInsert = async (file) => {
   if (!file || !file.name) return;
   const imagePath = await uploadArticleImage(file, selectedArticle.value.id);
@@ -788,6 +806,20 @@ const handleInlineEditImageInsert = async (file) => {
   inlineEditImageWidth.value = "";
   inlineEditImageHeight.value = "";
 };
+
+// After editing selectedArticle content, ensure twitter widgets parse
+watch(
+  () => selectedArticle.value.content,
+  () => {
+    nextTick(() => {
+      try {
+        if (editPreviewRef?.value) loadTwitterWidgets(editPreviewRef.value);
+      } catch (e) {
+        // ignore
+      }
+    });
+  }
+);
 
 const handleEditImageChange = async (event) => {
   const file = event.target.files[0];
@@ -879,6 +911,13 @@ const toggleEditDialog = (article) => {
   };
 
   editDialog.value = true;
+  nextTick(() => {
+    try {
+      if (editPreviewRef?.value) loadTwitterWidgets(editPreviewRef.value);
+    } catch (e) {
+      // ignore
+    }
+  });
 };
 
 const handleArticleUpdate = async () => {
