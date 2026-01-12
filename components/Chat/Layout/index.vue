@@ -1301,7 +1301,12 @@ const usersWithPresence = computed(() => {
       const id = String(rawUid ?? "");
 
       // presence check uses the *auth id* resolver (lowercased)
-      const online = u.is_ai ? true : onlineSet.has(resolvePresenceKey(u));
+      const forcedOnline = u.force_online === true;
+      const online = forcedOnline
+        ? true
+        : u.is_ai
+        ? true
+        : onlineSet.has(resolvePresenceKey(u));
 
       const genderFromStr =
         typeof u.gender === "string"

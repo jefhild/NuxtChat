@@ -19,6 +19,8 @@ RETURNS TABLE(
   status text,
   status_id integer,
   is_ai boolean,
+  force_online boolean,
+  is_simulated boolean,
   marked_for_deletion_at timestamptz,
   slug text,
   persona_is_active boolean,
@@ -48,6 +50,8 @@ BEGIN
     status.name::text,
     p.status_id,
     p.is_ai,
+    p.force_online,
+    p.is_simulated,
     p.marked_for_deletion_at::timestamptz,
     MIN(p.slug)::text AS slug,
     bool_or(ap.is_active) AS persona_is_active,
@@ -65,6 +69,7 @@ BEGIN
   GROUP BY 
     p.id, p.user_id, s.gender, p.gender_id, c.name, c.emoji, st.name, ct.name, 
     p.displayname, p.tagline, p.bio, p.age, p.provider, p.avatar_url, p.site_url, 
-    status.name, p.status_id, p.is_ai, p.marked_for_deletion_at, p.created;
+    status.name, p.status_id, p.is_ai, p.force_online, p.is_simulated,
+    p.marked_for_deletion_at, p.created;
 END;
 $$;
