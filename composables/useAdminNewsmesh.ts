@@ -25,6 +25,16 @@ export type NewsmeshDraftPayload = {
     summary: string;
     body: string;
     references: NewsmeshRewriteReference[];
+    social?: {
+      facebook: {
+        caption: string;
+        link?: string | null;
+      };
+      instagram: {
+        caption: string;
+        image_url?: string | null;
+      };
+    } | null;
   };
 };
 

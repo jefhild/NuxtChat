@@ -229,17 +229,13 @@ const linkArticleRecords = async (
   ids: number[]
 ) => {
   if (!ids.length) return;
-  const conflictTarget =
-    table === "article_tags" ? "article_id,tag_id" : "article_id,person_id";
-  await supabase
-    .from(table)
-    .upsert(
-      ids.map((id) => ({
-        article_id: articleId,
-        [foreignKey]: id,
-      })),
-      { onConflict: conflictTarget }
-    );
+  const { error } = await supabase.from(table).insert(
+    ids.map((id) => ({
+      article_id: articleId,
+      [foreignKey]: id,
+    }))
+  );
+  if (error) throw error;
 };
 
 const buildArticleHtml = (
@@ -247,7 +243,8 @@ const buildArticleHtml = (
   rewrite: RewritePayload,
   personaMeta: { name?: string; avatarUrl?: string; slug?: string | null }
 ) => {
-  const bodyHtml = marked.parse(rewrite.body || "");
+  const cleanedBody = stripSocialCaptions(rewrite.body || "");
+  const bodyHtml = marked.parse(cleanedBody);
 
   const summaryHtml =
     newsmesh?.description || rewrite.summary
@@ -256,8 +253,6 @@ const buildArticleHtml = (
         )}</p>`
       : "";
 
-  const source = escapeHtml(newsmesh?.source || "Source unknown");
-  const link = toSafeUrl(newsmesh?.link);
   const personaLabel = personaMeta?.name
     ? escapeHtml(personaMeta.name)
     : null;
@@ -283,14 +278,9 @@ const buildArticleHtml = (
       </div>`
     : "";
 
-  const sourceBlock = link
-    ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${source}</a>`
-    : source;
-
   const articleHtml = `<article class="newsmesh-article">
   <header class="article-header">
-    <p class="source-line">${sourceBlock}</p>
-    <h1>${escapeHtml(newsmesh?.title || rewrite.headline)}</h1>
+    <h2>${escapeHtml(newsmesh?.title || rewrite.headline)}</h2>
     ${personaLine}
     ${summaryHtml}
   </header>
@@ -301,6 +291,49 @@ const buildArticleHtml = (
 
   return DOMPurify.sanitize(articleHtml, ARTICLE_SANITIZE_OPTIONS);
 };
+
+function stripSocialCaptions(body = "") {
+  if (!body) return "";
+  const markers = [
+    "social.facebook.caption",
+    "social.instagram.caption",
+    "social captions",
+    "\"social\"",
+    "\"facebook\"",
+    "\"instagram\"",
+  ];
+  if (!markers.some((marker) => body.includes(marker))) {
+    return body;
+  }
+
+  let next = body;
+  next = next.replace(/```json[\s\S]*?```/gi, (match) =>
+    markers.some((marker) => match.includes(marker)) ? "" : match
+  );
+
+  const lastOpen = next.lastIndexOf("{");
+  const lastClose = next.lastIndexOf("}");
+  if (lastOpen !== -1 && lastClose > lastOpen) {
+    const candidate = next.slice(lastOpen, lastClose + 1);
+    if (markers.some((marker) => candidate.includes(marker))) {
+      next = `${next.slice(0, lastOpen)}${next.slice(lastClose + 1)}`;
+    }
+  }
+
+  next = next
+    .split(/\r?\n/)
+    .filter((line) => !markers.some((marker) => line.includes(marker)))
+    .join("\n")
+    .trim();
+
+  next = next
+    .split(/\r?\n/)
+    .filter((line) => !/social captions/i.test(line))
+    .join("\n")
+    .trim();
+
+  return next;
+}
 
 const ensureUniqueSlug = async (
   client: any,

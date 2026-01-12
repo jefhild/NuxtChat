@@ -738,6 +738,7 @@ const saveDraft = async (result: NewsmeshRewriteResult) => {
         summary: result.rewrite.summary,
         body: result.rewrite.body,
         references: result.rewrite.references || [],
+        social: result.rewrite.social || null,
       },
     });
 

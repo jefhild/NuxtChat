@@ -1076,6 +1076,7 @@ export const useDb = () => {
       is_published,
       created_at,
       rewrite_meta,
+      newsmesh_meta,
       category:category_id ( id, name, slug ),
       article_tags(tag:tag_id(id, name, slug))
     `
@@ -1420,6 +1421,23 @@ export const useDb = () => {
     }
 
     return data?.tags || [];
+  };
+
+  const getTagsByArticleId = async (articleId) => {
+    if (!articleId) return [];
+    const supabase = getClient();
+
+    const { data, error } = await supabase
+      .from("article_tags")
+      .select("tag:tag_id(id, name, slug)")
+      .eq("article_id", articleId);
+
+    if (error) {
+      console.error("Error fetching tags for article id:", error);
+      return [];
+    }
+
+    return (data || []).map((row) => row.tag).filter(Boolean);
   };
 
   const getArticlesbyCategorySlug = async (slug) => {
@@ -1831,18 +1849,15 @@ export const useDb = () => {
   };
 
   const updateArticleTags = async (articleId, tagIds) => {
-    const supabase = getClient();
-
-    await supabase.from("article_tags").delete().eq("article_id", articleId);
-
-    // Re-insert tag associations
-    const insertData = tagIds.map((tag_id) => ({
-      article_id: articleId,
-      tag_id,
-    }));
-    const { error } = await supabase.from("article_tags").insert(insertData);
-
-    if (error) {
+    try {
+      const response = await $fetch("/api/admin/articles/tags", {
+        method: "POST",
+        body: { articleId, tagIds: tagIds || [] },
+      });
+      if (!response?.success) {
+        throw new Error(response?.error || "Unable to update article tags.");
+      }
+    } catch (error) {
       console.error("Error updating article tags:", error);
     }
   };
@@ -2167,24 +2182,8 @@ export const useDb = () => {
 
     const articleId = data.id;
 
-    // Step 2: Insert tag relations
-    const tagInserts = article.tag_ids.map((tagId) => ({
-      article_id: articleId,
-      tag_id: tagId,
-    }));
-
-    console.log("inserting tags:", tagInserts);
-
-    const { error: tagInsertError } = await supabase
-      .from("article_tags")
-      .insert(tagInserts);
-
-    if (tagInsertError) {
-      console.error("Error linking tags to article:", tagInsertError);
-      return tagInsertError;
-    }
-
-    console.log("good");
+    // Step 2: Insert tag relations via admin endpoint (service role)
+    await updateArticleTags(articleId, article.tag_ids || []);
 
     return null; // no error
   };
@@ -3452,6 +3451,7 @@ const signInWithOtp = async (
     getArticlesByTagSlug,
     getArticlesByPersonSlug,
     getTagsByArticle,
+    getTagsByArticleId,
     getArticlesbyCategorySlug,
     getArticlesByType,
     getAllReports,

@@ -436,6 +436,8 @@ const {
   getAllArticlesWithTags,
   getAllCategories,
   getAllTags,
+  getTagsByArticle,
+  getTagsByArticleId,
   insertArticle,
   updateArticle,
   updateArticleTags,
@@ -664,6 +666,49 @@ const slugify = (text) =>
     .replace(/\s+/g, "-")
     .replace(/[^\w-]+/g, "");
 
+const normalizeTopicList = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => {
+        if (typeof entry === "string") return entry;
+        if (entry && typeof entry === "object") {
+          return (
+            entry.name ||
+            entry.label ||
+            entry.value ||
+            entry.title ||
+            JSON.stringify(entry)
+          );
+        }
+        return null;
+      })
+      .filter(Boolean);
+  }
+  if (typeof value === "string") return [value];
+  if (typeof value === "object") {
+    return Object.values(value || {})
+      .map((entry) => (typeof entry === "string" ? entry : null))
+      .filter(Boolean);
+  }
+  return [];
+};
+
+const getTagIdsFromTopics = (topics) => {
+  const names = normalizeTopicList(topics);
+  if (!names.length) return [];
+  return names
+    .map((name) => {
+      const slug = slugify(name);
+      return (
+        tags.value.find((t) => t.name === name)?.id ||
+        tags.value.find((t) => t.slug === slug)?.id ||
+        null
+      );
+    })
+    .filter(Boolean);
+};
+
 const findTagIdFromArticleTag = (tag) => {
   if (!tag) return null;
 
@@ -877,13 +922,45 @@ const handleSubmit = async () => {
   }
 };
 
-const toggleEditDialog = (article) => {
+const ensureTagsForArticle = async (article) => {
+  if (!article?.tags?.length) return;
+  const missing = article.tags.some((tag) => {
+    const tagId = typeof tag === "object" ? tag?.id : null;
+    if (tagId) return !tags.value.some((t) => t.id === tagId);
+    const slug = typeof tag === "object" ? tag?.slug : null;
+    const name = typeof tag === "object" ? tag?.name : tag;
+    return !tags.value.some(
+      (t) => (slug && t.slug === slug) || (name && t.name === name)
+    );
+  });
+  if (missing) {
+    tags.value = (await getAllTags()) || [];
+  }
+};
+
+const toggleEditDialog = async (article) => {
   if (!article) {
     editDialog.value = false;
     selectedArticle.value = {};
     return;
   }
 
+  let articleTags = Array.isArray(article.tags) ? article.tags : [];
+  if (!articleTags.length && article.id) {
+    articleTags = (await getTagsByArticleId(article.id)) || [];
+  }
+  if (!articleTags.length && article.slug) {
+    articleTags = (await getTagsByArticle(article.slug)) || [];
+  }
+  await ensureTagsForArticle({ ...article, tags: articleTags });
+  const newsmeshTopics = article.newsmesh_meta?.topics;
+  let topicTagIds = !articleTags.length
+    ? getTagIdsFromTopics(newsmeshTopics)
+    : [];
+  if (!articleTags.length && newsmeshTopics && !topicTagIds.length) {
+    tags.value = (await getAllTags()) || [];
+    topicTagIds = getTagIdsFromTopics(newsmeshTopics);
+  }
   const existingSocial = article.rewrite_meta?.social || {};
   selectedArticle.value = {
     id: article.id,
@@ -904,11 +981,14 @@ const toggleEditDialog = (article) => {
       "",
 
     // Map tag names to their corresponding IDs
-    tag_ids: (article.tags || [])
+    tag_ids: (articleTags || [])
       .map((tagEntry) => findTagIdFromArticleTag(tagEntry))
       .filter(Boolean), // remove any nulls
     is_published: article.is_published ?? true,
   };
+  if (!selectedArticle.value.tag_ids.length && topicTagIds.length) {
+    selectedArticle.value.tag_ids = topicTagIds;
+  }
 
   editDialog.value = true;
   nextTick(() => {
