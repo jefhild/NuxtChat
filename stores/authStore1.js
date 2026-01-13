@@ -8,6 +8,7 @@ import { usePresenceStore2 } from "@/stores/presenceStore2";
 function resolveAuthStatus({ session, user, profile }) {
   if (!session || !user) return "unauthenticated";
   if (user.is_anonymous) {
+    if (user.email_confirmed_at) return "authenticated";
     const complete = !!(
       profile?.displayname &&
       profile?.age &&

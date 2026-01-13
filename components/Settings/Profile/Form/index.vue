@@ -222,6 +222,7 @@ watch(
     editableProfile.value = { ...newProfile };
     localAvatar.value = buildAvatarDisplayUrl(newProfile?.avatar_url);
     avatarError.value = "";
+    syncEditableState();
   }
 );
 
@@ -417,7 +418,7 @@ const generateAiBio = async () => {
 
 const cancelEditing = () => {
   editableProfile.value = { ...props.userProfile };
-  isEditable.value = false;
+  syncEditableState();
   avatarError.value = "";
 };
 
@@ -580,7 +581,9 @@ const submitLinkEmail = async () => {
       throw error;
     }
     linkEmailSuccess.value = t("components.profile-email-link.success");
+    await authStore.checkAuth();
     await refreshLinkedEmailState();
+    linkEmailDialogVisible.value = false;
   } catch (err) {
     console.error("Error linking email:", err);
     linkEmailError.value =
@@ -621,6 +624,17 @@ watch(
 );
 
 const isEditable = ref(false); // default to false for safety
+const needsProfileCompletion = computed(() => {
+  const profile = editableProfile.value || {};
+  return !profile.avatar_url;
+});
+const syncEditableState = () => {
+  if (needsProfileCompletion.value) {
+    isEditable.value = true;
+    return;
+  }
+  isEditable.value = authStateUI.value.editable;
+};
 const deleteBusy = ref(false);
 
 const bioText = computed(() => {
@@ -834,7 +848,7 @@ onMounted(async () => {
     statuses.value = await getStatuses();
     genders.value = await getGenders();
     countries.value = await getCountries();
-     isEditable.value = authStateUI.value.editable;
+    syncEditableState();
     if (authStore.authStatus === "anon_authenticated") {
       await refreshLinkedEmailState();
     }

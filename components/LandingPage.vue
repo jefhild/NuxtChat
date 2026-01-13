@@ -343,8 +343,9 @@ const submitLinkEmail = async () => {
     const { error } = await updateUserEmail(email);
     if (error) throw error;
     linkEmailSuccess.value = t("components.profile-email-link.success");
+    await authStore.checkAuth();
     await refreshLinkedEmailState();
-    if (hasLinkedEmail.value) linkEmailDialogVisible.value = false;
+    linkEmailDialogVisible.value = false;
   } catch (err) {
     console.error("[LandingPage] link email failed:", err);
     linkEmailError.value =

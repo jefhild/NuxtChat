@@ -1,6 +1,6 @@
 <template>
   <v-card flat class="chat-users-container pa-2 d-flex flex-column h-100">
-    <div class="users-header px-3 py-2 mb-2">
+    <div class="users-header px-1 py-1 mb-0">
       <div class="header-left">
         <span class="header-text">
           {{ $t(headingKey) }}
@@ -16,15 +16,9 @@
           @update:showAi="$emit('update:showAi', $event)"
         />
       </div>
-      <v-chip
-        v-if="showCount"
-        size="small"
-        :color="chipColor"
-        variant="tonal"
-        class="font-weight-medium"
-      >
+      <span v-if="showCount" class="header-count">
         {{ displayUsers.length }}
-      </v-chip>
+      </span>
     </div>
 
     <div class="users-section flex-grow-1 overflow-hidden min-h-0">
@@ -39,80 +33,83 @@
           >
             {{ $t(emptyStateKey) }}
           </div>
-          <v-treeview
+          <v-virtual-scroll
             v-else
-            v-model:opened="openedGroups"
-            v-model:activated="activatedNodes"
-            :items="treeItems"
-            item-title="title"
-            item-value="id"
-            item-children="children"
-            density="compact"
-            color="primary"
-            open-on-click
-            activatable
-            fluid
-            lines="two"
-            :indent="2"
-            :prepend-gap="0"
-            class="user-treeview"
-            @update:activated="handleActivated"
-            @update:opened="handleOpened"
+            class="users-virtual"
+            :items="flatItems"
+            :item-height="32"
+            item-key="id"
           >
-            <template #prepend="{ item }">
-              <div v-if="item.type !== 'group'" class="avatar-wrap">
-                <v-avatar size="34">
-                  <v-img
-                    v-if="item.user.avatar_url"
-                    :src="item.user.avatar_url"
-                    cover
-                  />
-                  <span v-else class="avatar-fallback">
-                    {{
-                      (item.user.displayname || "?").slice(0, 1).toUpperCase()
-                    }}
-                  </span>
-                </v-avatar>
-                <span
-                  class="presence-dot"
-                  :class="item.user.online ? 'on' : 'off'"
-                />
-                <span v-if="item.unread > 0" class="unread-badge">
-                  <span class="unread-dot"></span>
-                  <span class="unread-count">{{ item.unread }}</span>
+            <template #default="{ item }">
+              <div
+                v-if="item.type === 'group'"
+                class="group-row"
+                @click="toggleGroup(item.id)"
+              >
+                <v-icon size="16" class="group-caret">
+                  {{ isGroupOpen(item.id) ? "mdi-chevron-down" : "mdi-chevron-right" }}
+                </v-icon>
+                <span class="group-label">{{ item.title }}</span>
+                <span v-if="showCount" class="group-count">
+                  {{ item.count }}
                 </span>
               </div>
-            </template>
-
-            <template #title="{ item }">
-              <div v-if="item.type === 'group'" class="group-title">
-                <span class="group-label">{{ item.title }}</span>
-                <v-chip
-                  v-if="showCount"
-                  size="x-small"
-                  variant="tonal"
-                  color="primary"
-                  class="group-chip"
-                >
-                  {{ item.count }}
-                </v-chip>
-              </div>
-              <div v-else class="user-title">
-                <div class="displayname">
-                  {{ item.user.displayname || "(no name)" }}
-                </div>
-                <div
-                  v-if="!hideTagline && item.user.tagline"
-                  class="tagline text-medium-emphasis"
-                >
-                  • {{ item.user.tagline?.slice(0, 35) }}
-                </div>
-              </div>
-            </template>
-
-            <template #append="{ item }">
-              <template v-if="item.type !== 'group'">
+              <div
+                v-else
+                class="user-row"
+                :class="{ selected: isSelected(item.user) }"
+                @click="emit('user-selected', item.user)"
+              >
+                <span class="avatar-wrap">
+                  <v-avatar size="26">
+                    <v-img v-if="item.user.avatar_url" :src="item.user.avatar_url" cover />
+                    <span v-else class="avatar-fallback">{{
+                      (item.user.displayname || "?").slice(0, 1).toUpperCase()
+                    }}</span>
+                  </v-avatar>
+                  <span
+                    class="presence-dot"
+                    :class="item.user.online ? 'on' : 'off'"
+                  />
+                  <span v-if="item.unread > 0" class="unread-badge">
+                    <span class="unread-dot"></span>
+                    <span class="unread-count">{{ item.unread }}</span>
+                  </span>
+                </span>
+                <span class="user-title">
+                  <v-tooltip
+                    v-if="item.user.tagline"
+                    :text="item.user.tagline"
+                    location="top"
+                  >
+                    <template #activator="{ props: tooltipProps }">
+                      <span v-bind="tooltipProps" class="displayname">
+                        {{ item.user.displayname || "(no name)" }}
+                      </span>
+                    </template>
+                  </v-tooltip>
+                  <span v-else class="displayname">
+                    {{ item.user.displayname || "(no name)" }}
+                  </span>
+                </span>
                 <span class="flag-wrap">
+                  <v-icon
+                    v-if="item.user.gender_id === 1"
+                    size="14"
+                    class="gender-icon gender-male"
+                  >
+                    mdi-gender-male
+                  </v-icon>
+                  <v-icon
+                    v-else-if="item.user.gender_id === 2"
+                    size="14"
+                    class="gender-icon gender-female"
+                  >
+                    mdi-gender-female
+                  </v-icon>
+                  <v-icon v-else size="14" class="gender-icon gender-other">
+                    mdi-gender-non-binary
+                  </v-icon>
                   <span class="flag" v-if="item.user.country_emoji">
                     {{ item.user.country_emoji }}
                   </span>
@@ -123,7 +120,7 @@
                           v-bind="menuProps"
                           icon="mdi-dots-horizontal"
                           size="x-small"
-                          density="comfortable"
+                          density="compact"
                           variant="text"
                           color="#1d3b58"
                           @click.stop
@@ -146,9 +143,9 @@
                     </v-menu>
                   </div>
                 </span>
-              </template>
+              </div>
             </template>
-          </v-treeview>
+          </v-virtual-scroll>
         </div>
       </template>
     </div>
@@ -283,17 +280,6 @@ const emptyStateKey = computed(() => {
   }
 });
 
-const chipColor = computed(() => {
-  switch (normalizedListType.value) {
-    case "active":
-      return "success";
-    case "offline":
-      return "gray";
-    default:
-      return "primary";
-  }
-});
-
 const aiUsers = computed(() =>
   displayUsers.value.filter((u) => u.is_ai && !u.hidden)
 );
@@ -302,7 +288,6 @@ const humanUsers = computed(() =>
 );
 
 const openedGroups = ref([]);
-const activatedNodes = ref([]);
 const initializedOpen = ref(false);
 const manualOpened = ref(false);
 const translateOrFallback = (key, fallback) => {
@@ -343,22 +328,28 @@ const treeItems = computed(() => {
   }));
 });
 
-const itemLookup = computed(() => {
-  const map = new Map();
+const flatItems = computed(() => {
+  const items = [];
   treeItems.value.forEach((group) => {
-    map.set(group.id, group);
-    (group.children || []).forEach((child) => map.set(child.id, child));
+    items.push({
+      id: group.id,
+      type: "group",
+      title: group.title,
+      count: group.count,
+    });
+    if (openedGroups.value.includes(group.id)) {
+      (group.children || []).forEach((child) => {
+        items.push({
+          id: child.id,
+          type: "user",
+          user: child.user,
+          unread: child.unread,
+        });
+      });
+    }
   });
-  return map;
+  return items;
 });
-
-watch(
-  () => props.selectedUserId,
-  (id) => {
-    activatedNodes.value = id ? [String(id)] : [];
-  },
-  { immediate: true }
-);
 
 watch(
   () => treeItems.value.map((g) => [g.id, g.count]),
@@ -377,21 +368,16 @@ watch(
   { immediate: true, deep: true }
 );
 
-function handleActivated(values) {
-  const incoming = Array.isArray(values) ? values : [];
-  const userIds = incoming.filter(
-    (id) => itemLookup.value.get(id)?.type === "user"
-  );
-  const lastId = userIds[userIds.length - 1] || null;
-  activatedNodes.value = lastId ? [lastId] : [];
-  if (!lastId) return;
-  const node = itemLookup.value.get(lastId);
-  if (node?.type === "user") emit("user-selected", node.user);
-}
-
-function handleOpened(val) {
+const isSelected = (u) =>
+  props.selectedUserId && idStr(u) === String(props.selectedUserId);
+const isGroupOpen = (id) => openedGroups.value.includes(id);
+function toggleGroup(id) {
   manualOpened.value = true;
-  openedGroups.value = Array.isArray(val) ? val : [];
+  if (isGroupOpen(id)) {
+    openedGroups.value = openedGroups.value.filter((gid) => gid !== id);
+  } else {
+    openedGroups.value = [...openedGroups.value, id];
+  }
 }
 </script>
 
@@ -403,10 +389,9 @@ function handleOpened(val) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid rgba(13, 37, 63, 0.08);
-  border-radius: 10px;
-  background: #f4f6f8;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  min-height: 32px;
+  border-bottom: 1px solid rgba(13, 37, 63, 0.08);
+  background: transparent;
 }
 .header-left {
   display: flex;
@@ -414,11 +399,24 @@ function handleOpened(val) {
   gap: 6px;
 }
 .header-text {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: #5c677d;
+}
+.header-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(25, 118, 210, 0.12);
+  color: #1a5fb4;
+  font-size: 12px;
+  font-weight: 600;
 }
 .filter-trigger {
   display: flex;
@@ -426,7 +424,12 @@ function handleOpened(val) {
 }
 .filter-trigger :deep(.v-btn) {
   color: #5c677d;
-  font-size: 18px;
+  font-size: 16px;
+  min-height: 26px;
+  height: 26px;
+  width: 26px;
+  padding: 0;
+  margin-bottom: 0 !important;
 }
 .users-section {
   display: flex;
@@ -434,91 +437,76 @@ function handleOpened(val) {
   flex-direction: column;
   height: 100%;
   min-height: 0;
+  padding-top: 2px;
 }
 .users-content {
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.user-treeview :deep(.v-list-item__content) {
-  min-width: 0;
+.users-virtual {
+  flex: 1 1 auto;
 }
 
-.user-treeview :deep(.v-list-item) {
-  /* padding-left: 0 !important; */
-  padding-right: 6px;
-}
-
-.user-treeview :deep(.v-treeview-node--group .v-list-item) {
-  min-height: 28px;
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-.user-treeview {
-  margin-left: 0;
-}
-
-.group-title {
+.group-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 8px;
-  font-weight: 600;
+  gap: 6px;
+  height: 32px;
+  padding: 0 4px;
+  color: #1a3b7a;
   font-size: 12px;
-  line-height: 1.1;
-  color: blue;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  user-select: none;
+}
+
+.group-caret {
+  color: rgba(26, 59, 122, 0.7);
 }
 
 .group-label {
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.group-chip {
-  height: 22px;
-  font-weight: 600;
+.group-count {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(25, 118, 210, 0.12);
+  color: #1a5fb4;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.user-title {
+.user-row {
   display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 2px;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 4px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.displayname {
-  margin-left: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tagline {
-  margin-left: 6px;
-  font-size: 12px;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.user-row.selected {
+  background: rgba(25, 118, 210, 0.08);
 }
 
 .avatar-wrap {
   position: relative;
-  width: 34px;
-  height: 34px;
-  border-radius: 9999px;
-  overflow: visible;
+  width: 26px;
+  height: 26px;
   flex: 0 0 auto;
-}
-
-.avatar-wrap :is(.v-avatar, .v-avatar .v-img, img) {
-  position: relative;
-  z-index: 0;
 }
 
 .avatar-fallback {
@@ -529,15 +517,16 @@ function handleOpened(val) {
   background: #e0e0e0;
   color: #555;
   font-weight: 600;
+  font-size: 12px;
 }
 
 .presence-dot {
   position: absolute;
-  right: 2px;
-  bottom: 2px;
-  width: 9px;
-  height: 9px;
-  border-radius: 9999px;
+  right: 1px;
+  bottom: 1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
   box-shadow: 0 0 0 2px #fff;
 }
 
@@ -552,25 +541,24 @@ function handleOpened(val) {
 .unread-badge {
   position: absolute;
   top: -4px;
-  right: -10px;
+  right: -8px;
   z-index: 10;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0 6px;
-  height: 16px;
+  gap: 3px;
+  padding: 0 5px;
+  height: 14px;
   border-radius: 9999px;
   background: #ff3b30;
   color: #fff;
-  font-size: 10px;
+  font-size: 9px;
   line-height: 1;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 .unread-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
   background: #fff;
   opacity: 0.9;
 }
@@ -579,23 +567,54 @@ function handleOpened(val) {
   font-variant-numeric: tabular-nums;
 }
 
-.flag {
-  font-size: 18px;
+.user-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1f36;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.actions {
-  position: absolute;
-  top: -20px;
-  right: 1px;
-  z-index: 2;
+.displayname {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .flag-wrap {
-  position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  margin-left: 6px;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.gender-icon {
+  color: rgba(26, 31, 54, 0.6);
+}
+
+.gender-male {
+  color: #1e88e5;
+}
+
+.gender-female {
+  color: #ec407a;
+}
+
+.gender-other {
+  color: #8e24aa;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+}
+
+.flag {
+  font-size: 14px;
 }
 </style>

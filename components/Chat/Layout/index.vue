@@ -821,6 +821,7 @@ const profileDialogSlug = ref(null);
 const showConsentPanelAuth = ref(true);
 const CONSENT_PANEL_HIDE_PREFIX = "consentPanelHidden:";
 const footerScroll = createFooterScrollHandler("chat-mobile");
+const consentAutoHideTimer = ref(null);
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
@@ -881,6 +882,19 @@ function saveConsentPanelPref(userId, hidden) {
   } catch {}
 }
 
+function scheduleConsentAutoHide() {
+  if (!import.meta.client) return;
+  if (consentAutoHideTimer.value) {
+    clearTimeout(consentAutoHideTimer.value);
+    consentAutoHideTimer.value = null;
+  }
+  if (auth.authStatus !== "authenticated") return;
+  if (!showConsentPanelAuth.value) return;
+  consentAutoHideTimer.value = setTimeout(() => {
+    onConsentClose();
+  }, 3500);
+}
+
 const onMobileScroll = (event) => {
   if (!smAndDown.value) return;
   if (panelOpen.value && autoCloseOnScroll) {
@@ -913,6 +927,7 @@ onMounted(() => {
     leftOpen.value = false;
     rightOpen.value = false;
   }
+  scheduleConsentAutoHide();
 });
 
 watch(
@@ -920,10 +935,16 @@ watch(
   (s) => {
     if (s !== "authenticated") {
       showConsentPanelAuth.value = true; // always show for non-auth flows
+      if (consentAutoHideTimer.value) {
+        clearTimeout(consentAutoHideTimer.value);
+        consentAutoHideTimer.value = null;
+      }
       return;
     }
     loadConsentPanelPref(auth.user?.id || null);
-  }
+    scheduleConsentAutoHide();
+  },
+  { immediate: true }
 );
 
 watch(
@@ -931,7 +952,15 @@ watch(
   (uid) => {
     if (auth.authStatus === "authenticated") {
       loadConsentPanelPref(uid || null);
+      scheduleConsentAutoHide();
     }
+  }
+);
+
+watch(
+  () => showConsentPanelAuth.value,
+  () => {
+    scheduleConsentAutoHide();
   }
 );
 
@@ -1425,6 +1454,13 @@ function onConsentClose() {
     saveConsentPanelPref(auth.user?.id || null, true);
   }
 }
+
+onBeforeUnmount(() => {
+  if (consentAutoHideTimer.value) {
+    clearTimeout(consentAutoHideTimer.value);
+    consentAutoHideTimer.value = null;
+  }
+});
 
 function openDeleteDialog(user) {
   deleteTarget.value = user || null;
