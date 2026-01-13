@@ -5,11 +5,6 @@
     <v-row v-else>
       <v-col cols="12">
         <v-card>
-          <v-tabs v-model="tab" bg-color="primary">
-            <v-tab value="registered">Registered</v-tab>
-            <v-tab value="ai">AI</v-tab>
-          </v-tabs>
-
           <v-card-text>
             <div class="d-flex flex-column flex-md-row ga-4 mb-6">
               <v-text-field
@@ -20,12 +15,28 @@
                 class="flex-1"
               />
               <v-select
+                v-model="filterSelection"
+                :items="filterOptions"
+                label="User filter"
+                variant="outlined"
+                class="admin-filter"
+              />
+              <v-select
                 v-model="sortSelection"
                 :items="sortOptions"
                 label="Sort by"
                 variant="outlined"
                 class="admin-sort"
               />
+              <v-btn
+                v-if="markedCount"
+                color="red"
+                variant="outlined"
+                class="admin-purge"
+                @click="purgeDialogOpen = true"
+              >
+                Purge marked ({{ markedCount }})
+              </v-btn>
             </div>
 
             <v-data-table
@@ -45,7 +56,22 @@
             >
               <template #item.profile="{ item }">
                 <div class="d-flex align-center ga-3">
-                  <v-avatar size="40">
+                  <v-badge
+                    v-if="hasPendingReply(item)"
+                    color="red"
+                    dot
+                    location="top end"
+                    offset-x="2"
+                    offset-y="2"
+                  >
+                    <v-avatar size="40">
+                      <v-img
+                        :src="getAvatar(item.avatar_url, item.gender_id)"
+                        :alt="item.displayname || 'Profile avatar'"
+                      />
+                    </v-avatar>
+                  </v-badge>
+                  <v-avatar v-else size="40">
                     <v-img
                       :src="getAvatar(item.avatar_url, item.gender_id)"
                       :alt="item.displayname || 'Profile avatar'"
@@ -81,20 +107,16 @@
                 </span>
               </template>
 
-              <template #item.chatCount="{ item }">
-                <span class="text-body-2">{{ item.chatCount }}</span>
-              </template>
-
-              <template #item.discussionCount="{ item }">
-                <span class="text-body-2">{{ item.discussionCount }}</span>
-              </template>
-
               <template #item.createdAtSort="{ item }">
-                <span class="text-body-2">{{ formatDate(item.createdAt) }}</span>
+                <span class="text-body-2 admin-nowrap">
+                  {{ formatDate(item.createdAt) }}
+                </span>
               </template>
 
               <template #item.email="{ item }">
-                <span class="text-body-2">{{ item.email || "—" }}</span>
+                <span class="text-body-2 admin-ellipsis">
+                  {{ item.email || "—" }}
+                </span>
               </template>
 
               <template #item.actions="{ item }">
@@ -167,7 +189,15 @@
                               Chat (messages)
                             </div>
                             <div class="text-h6">
-                              {{ getActivity(item.user_id).chatCount || 0 }}
+                              <v-btn
+                                variant="text"
+                                color="primary"
+                                size="small"
+                                class="pa-0"
+                                @click="openChatMessages(item.user_id)"
+                              >
+                                {{ getActivity(item.user_id).chatCount || 0 }}
+                              </v-btn>
                             </div>
                             <div class="text-caption text-medium-emphasis">
                               Last message:
@@ -183,9 +213,17 @@
                               Discussions (messages_v2)
                             </div>
                             <div class="text-h6">
-                              {{
-                                getActivity(item.user_id).discussionCount || 0
-                              }}
+                              <v-btn
+                                variant="text"
+                                color="primary"
+                                size="small"
+                                class="pa-0"
+                                @click="openDiscussionMessages(item.user_id)"
+                              >
+                                {{
+                                  getActivity(item.user_id).discussionCount || 0
+                                }}
+                              </v-btn>
                             </div>
                             <div class="text-caption text-medium-emphasis">
                               Last comment:
@@ -271,6 +309,134 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="purgeDialogOpen" max-width="460px">
+      <v-card>
+        <v-card-title class="headline">Purge marked profiles</v-card-title>
+        <v-card-text>
+          This permanently deletes all profiles marked for deletion, including
+          their Supabase auth users. This cannot be undone.
+          <div v-if="purgeError" class="text-caption text-error mt-2">
+            {{ purgeError }}
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="grey"
+            variant="text"
+            @click="purgeDialogOpen = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="red"
+            variant="text"
+            :loading="purgeBusy"
+            @click="purgeMarkedProfiles"
+          >
+            Purge
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="chatDialogOpen" max-width="980px">
+      <v-card>
+        <v-card-title class="headline">Chat messages</v-card-title>
+        <v-card-text>
+          <v-data-table
+            :headers="chatMessageHeaders"
+            :items="chatMessages"
+            :loading="chatMessagesLoading"
+            item-value="id"
+            class="admin-table"
+            :items-per-page="-1"
+            hide-default-footer
+          >
+            <template #item.content="{ item }">
+              <span class="text-body-2">{{ item.content || "—" }}</span>
+            </template>
+            <template #item.receiver="{ item }">
+              <span class="text-body-2">
+                {{ item.receiver?.displayname || item.receiver_id || "—" }}
+              </span>
+            </template>
+            <template #item.created_at="{ item }">
+              <span class="text-body-2">
+                {{ formatDateTime(item.created_at) }}
+              </span>
+            </template>
+            <template #item.actions="{ item }">
+              <v-tooltip text="Delete message">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    icon="mdi-delete"
+                    size="small"
+                    variant="text"
+                    color="red"
+                    :loading="deletingMessageIds.includes(item.id)"
+                    @click="deleteChatMessage(item)"
+                  />
+                </template>
+              </v-tooltip>
+            </template>
+          </v-data-table>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="discussionDialogOpen" max-width="980px">
+      <v-card>
+        <v-card-title class="headline">Discussion messages</v-card-title>
+        <v-card-text>
+          <v-data-table
+            :headers="discussionMessageHeaders"
+            :items="discussionMessages"
+            :loading="discussionMessagesLoading"
+            item-value="id"
+            class="admin-table"
+            :items-per-page="-1"
+            hide-default-footer
+          >
+            <template #item.content="{ item }">
+              <span class="text-body-2">{{ item.content || "—" }}</span>
+            </template>
+            <template #item.thread="{ item }">
+              <span class="text-body-2">
+                {{
+                  item.thread?.title ||
+                  item.thread?.slug ||
+                  item.thread_id ||
+                  "—"
+                }}
+              </span>
+            </template>
+            <template #item.created_at="{ item }">
+              <span class="text-body-2">
+                {{ formatDateTime(item.created_at) }}
+              </span>
+            </template>
+            <template #item.actions="{ item }">
+              <v-tooltip text="Delete message">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    icon="mdi-delete"
+                    size="small"
+                    variant="text"
+                    color="red"
+                    :loading="deletingMessageIds.includes(item.id)"
+                    @click="deleteDiscussionMessage(item)"
+                  />
+                </template>
+              </v-tooltip>
+            </template>
+          </v-data-table>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -278,17 +444,29 @@
 import { getAvatar, getGenderPath } from "@/composables/useUserUtils";
 
 const isLoading = ref(true);
-const tab = ref("registered");
 const profiles = ref([]); // will always be an array after load
 const aiProfiles = ref([]);
 const search = ref("");
 const expanded = ref([]);
 const sortSelection = ref("newest");
+const filterSelection = ref("registered");
 const activityByUserId = ref({});
 const activityLoadingIds = ref([]);
 const bulkActivityLoading = ref(false);
+const pendingReplyByUserId = ref({});
 const confirmDeleteDialog = ref(false);
 const userToDelete = ref(null);
+const purgeDialogOpen = ref(false);
+const purgeBusy = ref(false);
+const purgeError = ref("");
+const chatDialogOpen = ref(false);
+const discussionDialogOpen = ref(false);
+const chatMessages = ref([]);
+const discussionMessages = ref([]);
+const chatMessagesLoading = ref(false);
+const discussionMessagesLoading = ref(false);
+const deletingMessageIds = ref([]);
+const activeMessageUserId = ref(null);
 
 const localPath = useLocalePath();
 const router = useRouter();
@@ -316,6 +494,7 @@ onMounted(async () => {
     ]);
     profiles.value = toArray(regRaw);
     aiProfiles.value = toArray(aiRaw);
+    await loadReplyStatus([...profiles.value, ...aiProfiles.value]);
   } catch (e) {
     console.error("[admin] getAllProfiles failed:", e);
     profiles.value = [];
@@ -342,16 +521,44 @@ const matchesSearch = (p) => {
   return haystack.includes(normSearch.value);
 };
 
-const filteredRegistered = computed(() =>
-  profiles.value.filter(
-    (p) =>
-      // tolerate missing fields
-      p?.provider !== "anonymous" && matchesSearch(p)
-  )
-);
+const filterOptions = [
+  { title: "All Human", value: "registered" },
+  { title: "AI", value: "ai" },
+  { title: "Anon authenticated", value: "anon_authenticated" },
+  { title: "Authenticated", value: "authenticated" },
+  { title: "Simulated user", value: "simulated" },
+  { title: "Forced online", value: "forced_online" },
+];
 
-const filteredAI = computed(() =>
-  aiProfiles.value.filter((p) => matchesSearch(p))
+const matchesFilter = (p) => {
+  const hasEmail = !!p?.email;
+  const isAnonymousProvider = p?.provider === "anonymous";
+  const isSimulated = !!p?.is_simulated;
+  const isForcedOnline = !!p?.force_online;
+  const isAi = !!p?.is_ai;
+
+  switch (filterSelection.value) {
+    case "registered":
+      return !isAi;
+    case "ai":
+      return isAi;
+    case "anon_authenticated":
+      return !hasEmail || isAnonymousProvider;
+    case "authenticated":
+      return hasEmail && !isAnonymousProvider;
+    case "simulated":
+      return isSimulated;
+    case "forced_online":
+      return isForcedOnline;
+    default:
+      return true;
+  }
+};
+
+const filteredProfiles = computed(() =>
+  [...profiles.value, ...aiProfiles.value].filter(
+    (p) => matchesSearch(p) && matchesFilter(p)
+  )
 );
 
 const sortOptions = [
@@ -375,15 +582,34 @@ const tableHeaders = [
   { title: "Profile", key: "profile", sortable: false },
   { title: "Gender", key: "gender" },
   { title: "Country", key: "country" },
-  { title: "Chat", key: "chatCount", align: "end" },
-  { title: "Discussions", key: "discussionCount", align: "end" },
   { title: "Joined", key: "createdAtSort", align: "end" },
   { title: "Email", key: "email" },
   { title: "Actions", key: "actions", sortable: false },
 ];
 
+const chatMessageHeaders = [
+  { title: "Created", key: "created_at" },
+  { title: "To", key: "receiver" },
+  { title: "Message", key: "content", sortable: false },
+  { title: "Actions", key: "actions", sortable: false, align: "end" },
+];
+
+const discussionMessageHeaders = [
+  { title: "Created", key: "created_at" },
+  { title: "Thread", key: "thread" },
+  { title: "Message", key: "content", sortable: false },
+  { title: "Actions", key: "actions", sortable: false, align: "end" },
+];
+
 const getActivity = (userId) => activityByUserId.value[userId] || {};
 const isActivityLoading = (userId) => activityLoadingIds.value.includes(userId);
+const hasPendingReply = (profile) =>
+  !!profile?.is_simulated && !!pendingReplyByUserId.value[profile.user_id];
+
+const markedCount = computed(() => {
+  const all = [...profiles.value, ...aiProfiles.value];
+  return all.filter((p) => p?.marked_for_deletion_at).length;
+});
 
 const buildProfileRow = (p) => {
   const activity = getActivity(p?.user_id);
@@ -410,13 +636,7 @@ const buildProfileRow = (p) => {
   };
 };
 
-const activeProfiles = computed(() => {
-  const base =
-    tab.value === "registered"
-      ? filteredRegistered.value
-      : filteredAI.value;
-  return base.map(buildProfileRow);
-});
+const activeProfiles = computed(() => filteredProfiles.value.map(buildProfileRow));
 
 watch(expanded, (next) => {
   (next || []).forEach((userId) => ensureActivityLoaded(userId));
@@ -431,8 +651,9 @@ watch(
   }
 );
 
+
 watch(
-  () => tab.value,
+  () => filterSelection.value,
   () => {
     if (sortSelection.value !== "newest") {
       preloadActivity(activeProfiles.value);
@@ -459,22 +680,56 @@ const preloadActivity = async (items) => {
   }
 };
 
+const loadReplyStatus = async (profilesList) => {
+  const uniqueIds = Array.from(
+    new Set(
+      (profilesList || [])
+        .filter((p) => p?.is_simulated)
+        .map((p) => p.user_id)
+        .filter(Boolean)
+    )
+  );
+  if (!uniqueIds.length) return;
+  const batchSize = 80;
+  const nextStatus = { ...pendingReplyByUserId.value };
+  for (let i = 0; i < uniqueIds.length; i += batchSize) {
+    const batch = uniqueIds.slice(i, i + batchSize);
+    try {
+      const response = await $fetch("/api/admin/reply-status", {
+        query: { user_ids: batch.join(",") },
+      });
+      const map = response?.items || {};
+      batch.forEach((id) => {
+        nextStatus[id] = !!map[id];
+      });
+    } catch (error) {
+      console.error("[admin] loadReplyStatus error:", error);
+    }
+  }
+  pendingReplyByUserId.value = nextStatus;
+};
+
 const ensureActivityLoaded = async (userId) => {
   if (!userId || activityByUserId.value[userId]) return;
   if (isActivityLoading(userId)) return;
   activityLoadingIds.value = [...activityLoadingIds.value, userId];
   try {
-    const { data } = await getUserActivitySummary(userId);
-    if (data) {
-      activityByUserId.value = {
-        ...activityByUserId.value,
-        [userId]: data,
-      };
-    }
+    await refreshActivity(userId);
   } finally {
     activityLoadingIds.value = activityLoadingIds.value.filter(
       (id) => id !== userId
     );
+  }
+};
+
+const refreshActivity = async (userId) => {
+  if (!userId) return;
+  const { data } = await getUserActivitySummary(userId);
+  if (data) {
+    activityByUserId.value = {
+      ...activityByUserId.value,
+      [userId]: data,
+    };
   }
 };
 
@@ -540,6 +795,92 @@ const goToThread = (thread) => {
   router.push(localPath(`/chat/articles/${key}`));
 };
 
+const openChatMessages = async (userId) => {
+  if (!userId) return;
+  activeMessageUserId.value = userId;
+  chatDialogOpen.value = true;
+  await loadChatMessages(userId);
+};
+
+const openDiscussionMessages = async (userId) => {
+  if (!userId) return;
+  activeMessageUserId.value = userId;
+  discussionDialogOpen.value = true;
+  await loadDiscussionMessages(userId);
+};
+
+const loadChatMessages = async (userId) => {
+  if (!userId) return;
+  chatMessagesLoading.value = true;
+  try {
+    const response = await $fetch("/api/admin/chat-messages", {
+      query: { user_id: userId, limit: 60 },
+    });
+    chatMessages.value = Array.isArray(response?.items) ? response.items : [];
+  } catch (error) {
+    console.error("[admin] loadChatMessages error:", error);
+    chatMessages.value = [];
+  } finally {
+    chatMessagesLoading.value = false;
+  }
+};
+
+const loadDiscussionMessages = async (userId) => {
+  if (!userId) return;
+  discussionMessagesLoading.value = true;
+  try {
+    const response = await $fetch("/api/admin/discussion-messages", {
+      query: { user_id: userId, limit: 60 },
+    });
+    discussionMessages.value = Array.isArray(response?.items)
+      ? response.items
+      : [];
+  } catch (error) {
+    console.error("[admin] loadDiscussionMessages error:", error);
+    discussionMessages.value = [];
+  } finally {
+    discussionMessagesLoading.value = false;
+  }
+};
+
+const deleteChatMessage = async (message) => {
+  if (!message?.id) return;
+  deletingMessageIds.value = [...deletingMessageIds.value, message.id];
+  try {
+    await $fetch(`/api/admin/chat-messages/${message.id}`, {
+      method: "DELETE",
+    });
+    chatMessages.value = chatMessages.value.filter((m) => m.id !== message.id);
+    await refreshActivity(activeMessageUserId.value);
+  } catch (error) {
+    console.error("[admin] deleteChatMessage error:", error);
+  } finally {
+    deletingMessageIds.value = deletingMessageIds.value.filter(
+      (id) => id !== message.id
+    );
+  }
+};
+
+const deleteDiscussionMessage = async (message) => {
+  if (!message?.id) return;
+  deletingMessageIds.value = [...deletingMessageIds.value, message.id];
+  try {
+    await $fetch(`/api/admin/discussion-messages/${message.id}`, {
+      method: "DELETE",
+    });
+    discussionMessages.value = discussionMessages.value.filter(
+      (m) => m.id !== message.id
+    );
+    await refreshActivity(activeMessageUserId.value);
+  } catch (error) {
+    console.error("[admin] deleteDiscussionMessage error:", error);
+  } finally {
+    deletingMessageIds.value = deletingMessageIds.value.filter(
+      (id) => id !== message.id
+    );
+  }
+};
+
 function openDeleteDialog(profile) {
   userToDelete.value = profile;
   confirmDeleteDialog.value = true;
@@ -574,6 +915,40 @@ async function handleUserDeleted(userId, undo = false) {
     p?.user_id === userId ? { ...p, marked_for_deletion_at: nextValue } : p
   );
 }
+
+const purgeMarkedProfiles = async () => {
+  purgeBusy.value = true;
+  purgeError.value = "";
+  try {
+    const res = await $fetch("/api/admin/profiles/purge", {
+      method: "POST",
+    });
+    const deletedIds = Array.isArray(res?.deletedUserIds)
+      ? res.deletedUserIds
+      : [];
+    if (deletedIds.length) {
+      profiles.value = profiles.value.filter(
+        (p) => !deletedIds.includes(p.user_id)
+      );
+      aiProfiles.value = aiProfiles.value.filter(
+        (p) => !deletedIds.includes(p.user_id)
+      );
+      const nextPending = { ...pendingReplyByUserId.value };
+      deletedIds.forEach((id) => delete nextPending[id]);
+      pendingReplyByUserId.value = nextPending;
+    }
+    if (res?.failed?.length) {
+      purgeError.value = `Failed to delete ${res.failed.length} user(s).`;
+      return;
+    }
+    purgeDialogOpen.value = false;
+  } catch (error) {
+    console.error("[admin] purgeMarkedProfiles error:", error);
+    purgeError.value = "Purge failed.";
+  } finally {
+    purgeBusy.value = false;
+  }
+};
 </script>
 
 <style scoped>
@@ -581,7 +956,28 @@ async function handleUserDeleted(userId, undo = false) {
   white-space: nowrap;
 }
 
+.admin-nowrap {
+  white-space: nowrap;
+}
+
+.admin-ellipsis {
+  max-width: 220px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
 .admin-sort {
   min-width: 220px;
+}
+
+.admin-filter {
+  min-width: 220px;
+}
+
+.admin-purge {
+  white-space: nowrap;
 }
 </style>

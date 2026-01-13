@@ -72,7 +72,45 @@ export default defineEventHandler(async (event) => {
       return { error: { stage: "query", message: error.message } };
     }
 
-    return { items: Array.isArray(data) ? data : [] };
+    const items = Array.isArray(data) ? data : [];
+
+    if (!peerId && items.length) {
+      const senderIds = Array.from(
+        new Set(items.map((item) => item.sender_id).filter(Boolean))
+      );
+
+      if (senderIds.length) {
+        const { data: replies, error: repliesError } = await supa
+          .from("messages")
+          .select("receiver_id, created_at")
+          .eq("sender_id", userId)
+          .in("receiver_id", senderIds);
+
+        if (repliesError) {
+          console.error("[admin/messages.get] replies error:", repliesError);
+        } else {
+          const latestReplyByReceiver = new Map();
+          (replies || []).forEach((row) => {
+            const existing = latestReplyByReceiver.get(row.receiver_id);
+            if (!existing || row.created_at > existing) {
+              latestReplyByReceiver.set(row.receiver_id, row.created_at);
+            }
+          });
+
+          const enriched = items.map((item) => {
+            const replyAt = latestReplyByReceiver.get(item.sender_id) || null;
+            return {
+              ...item,
+              reply_at: replyAt,
+              has_reply: replyAt ? replyAt >= item.created_at : false,
+            };
+          });
+          return { items: enriched };
+        }
+      }
+    }
+
+    return { items };
   } catch (err) {
     console.error("[admin/messages.get] error:", err);
     setResponseStatus(event, 500);

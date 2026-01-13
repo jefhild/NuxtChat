@@ -1,34 +1,49 @@
 <template>
   <v-container fluid>
-    <v-row>
-      <!-- Sidebar -->
-      <v-col cols="12" md="3" class="sidebar">
-        <v-card class="mx-auto pa-2" max-width="300">
-          <v-list>
-            <v-list-subheader>{{
-              $t("pages.admin.sections-title")
-            }}</v-list-subheader>
+    <v-navigation-drawer
+      v-model="drawer"
+      temporary
+      location="left"
+      width="280"
+      class="admin-drawer"
+    >
+      <v-list>
+        <v-list-subheader>{{ $t("pages.admin.sections-title") }}</v-list-subheader>
 
-            <v-list-item
-              v-for="(item, i) in items"
-              :key="i"
-              :value="item.value"
-              @click="selectedSection = item.value"
-              :active="selectedSection === item.value"
-              color="primary"
-              rounded="shaped"
-            >
-              <template v-slot:prepend>
-                <v-icon :icon="item.icon"></v-icon>
-              </template>
-              <v-list-item-title>{{ item.text }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-card>
+        <v-list-item
+          v-for="(item, i) in items"
+          :key="i"
+          :value="item.value"
+          @click="
+            selectedSection = item.value;
+            drawer = false;
+          "
+          :active="selectedSection === item.value"
+          color="primary"
+          rounded="shaped"
+        >
+          <template v-slot:prepend>
+            <v-icon :icon="item.icon"></v-icon>
+          </template>
+          <v-list-item-title>{{ item.text }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-row class="mb-3">
+      <v-col cols="12" class="d-flex align-center ga-3">
+        <v-btn icon variant="text" @click="drawer = true">
+          <v-icon>mdi-menu</v-icon>
+        </v-btn>
+        <div class="text-subtitle-1 font-weight-medium">
+          {{ $t("pages.admin.sections-title") }}
+        </div>
       </v-col>
+    </v-row>
 
+    <v-row>
       <!-- Main Content -->
-      <v-col cols="12" md="9">
+      <v-col cols="12">
         <component :is="getSectionComponent(selectedSection)" />
       </v-col>
     </v-row>
@@ -55,6 +70,7 @@ const router = useRouter();
 const localPath = useLocalePath();
 
 const selectedSection = ref("dashboard");
+const drawer = ref(false);
 
 const items = computed(() => [
   {
@@ -157,4 +173,8 @@ const getSectionComponent = (section) => {
   background-color: rgba(63, 81, 181, 0.5) !important;
   transition: background-color 0.2s ease;
 }
+  .admin-drawer {
+    margin-top: 64px;
+    height: calc(100% - 64px);
+  }
 </style>

@@ -96,12 +96,21 @@
                   class="px-0"
                 >
                   <v-list-item-title class="text-body-2">
+                    <span v-if="!msg.has_reply" class="inbox-dot" />
                     {{ msg.sender?.displayname || msg.sender_id }}
                   </v-list-item-title>
                   <v-list-item-subtitle class="text-caption">
                     {{ msg.content }}
                   </v-list-item-subtitle>
                   <template #append>
+                    <v-chip
+                      size="x-small"
+                      :color="msg.has_reply ? 'green' : 'grey'"
+                      variant="tonal"
+                      class="mr-2"
+                    >
+                      {{ msg.has_reply ? "Replied" : "No reply" }}
+                    </v-chip>
                     <div class="text-caption text-medium-emphasis mr-2">
                       {{ formatTimestamp(msg.created_at) }}
                     </div>
@@ -288,6 +297,11 @@ const sendMessageAsUser = async () => {
     compose.content = "";
     sendStatus.value = "Sent";
     await loadInbox();
+    if (userProfile.value?.is_simulated) {
+      await $fetch("/api/admin/reply-status", {
+        query: { user_ids: userProfile.value.user_id },
+      });
+    }
   } catch (error) {
     console.error("[admin][profile] send error", error);
     sendStatus.value = "Send failed";
@@ -318,3 +332,15 @@ onMounted(async () => {
   loading.value = false;
 });
 </script>
+
+<style scoped>
+.inbox-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #e53935;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+</style>
