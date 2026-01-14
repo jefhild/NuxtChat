@@ -10,6 +10,42 @@ const slugify = (s) =>
     .replace(/[^\w-]+/g, "")
     .replace(/_+/g, "-");
 
+const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
+const DEFAULT_LOCALE = "en";
+
+const getCookieValue = (cookieHeader, name) => {
+  if (!cookieHeader) return null;
+  const match = cookieHeader.match(
+    new RegExp(`(?:^|;\\s*)${name}=([^;]+)`)
+  );
+  return match ? decodeURIComponent(match[1]) : null;
+};
+
+const normalizeLocale = (locale) => {
+  if (!locale) return null;
+  const primary = String(locale).trim().toLowerCase().split("-")[0];
+  return primary || null;
+};
+
+const pickPreferredLocale = (cookieHeader, acceptLanguageHeader) => {
+  const cookieLocale = normalizeLocale(
+    getCookieValue(cookieHeader, "i18n_redirected")
+  );
+  if (cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale)) {
+    return cookieLocale;
+  }
+
+  if (acceptLanguageHeader) {
+    const first = acceptLanguageHeader.split(",")[0];
+    const normalized = normalizeLocale(first);
+    if (normalized && SUPPORTED_LOCALES.includes(normalized)) {
+      return normalized;
+    }
+  }
+
+  return DEFAULT_LOCALE;
+};
+
 const pickIdentity = (user) => {
   const provider = user?.app_metadata?.provider || null;
   const identity = Array.isArray(user?.identities)
@@ -66,6 +102,10 @@ export default defineEventHandler(async (event) => {
     (getRequestHeader(event, "x-forwarded-for") || "").split(",")[0].trim() ||
     null;
 
+  const cookieHeader = getRequestHeader(event, "cookie");
+  const acceptLanguage = getRequestHeader(event, "accept-language");
+  const preferred_locale = pickPreferredLocale(cookieHeader, acceptLanguage);
+
   const baseSlug = slugify(displayname);
 
   const payload = {
@@ -84,6 +124,7 @@ export default defineEventHandler(async (event) => {
     site_url: null,
     bio: null,
     ip,
+    preferred_locale,
   };
 
   // 5️⃣ Insert (idempotent, safe with unique index on user_id)

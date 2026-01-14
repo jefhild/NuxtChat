@@ -1607,7 +1607,8 @@ export const useDb = () => {
     state_id,
     city_id,
     avatar_url,
-    site_url
+    site_url,
+    preferred_locale
   ) => {
     const supabase = getClient();
 
@@ -1625,6 +1626,7 @@ export const useDb = () => {
         city_id: city_id,
         avatar_url: avatar_url,
         site_url: site_url,
+        preferred_locale: preferred_locale,
       })
       .eq("user_id", id);
     if (error) throw error;

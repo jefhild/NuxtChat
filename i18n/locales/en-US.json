@@ -1054,11 +1054,20 @@
       "none": "No notifications"
     },
     "profile-age": {
-      "age": "Agee",
+      "age": "Age",
       "required": "Age is required"
     },
     "profile-bio": {
       "bio": "Bio"
+    },
+    "profile-language": {
+      "default": "Default Language",
+      "options": {
+        "en": "English",
+        "fr": "French",
+        "ru": "Russian",
+        "zh": "Chinese"
+      }
     },
     "profile-email-link": {
       "prompt": "Link an email to secure your chats and pick up where you left off anywhere.",

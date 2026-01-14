@@ -163,6 +163,7 @@ CREATE TABLE public.profiles (
   is_ai BOOLEAN NULL DEFAULT false,
   force_online BOOLEAN NULL DEFAULT false,
   is_simulated BOOLEAN NULL DEFAULT false,
+  preferred_locale TEXT NULL DEFAULT 'en',
   avatar_decoration_url TEXT NULL,
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT unique_user_id UNIQUE (user_id),

@@ -1,7 +1,7 @@
 <template>
-  <v-card-text>
+  <v-card-text class="settings-profile-form">
     <v-row class="ma-0 pa-0" dense>
-      <v-col cols="12" sm="6" md="4" class="pa-2">
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <!-- {{ props.isEditable ? 'Editable' : 'Read Only' }} -->
         <SettingsProfileDisplayName2
           :displayName="props.userProfile.displayname"
@@ -10,14 +10,14 @@
           @validation="(val) => emit('validation', val)"
         />
       </v-col>
-      <v-col cols="12" sm="6" md="4" class="pa-2">
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <SettingsProfileTagLine
           :tagLine="props.userProfile.tagline ?? '...'"
           :isEditable="props.isEditable"
           @updateTagLine="(val) => emit('update:tagLine', val)"
         />
       </v-col>
-      <v-col cols="12" sm="6" md="4" class="pa-2">
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <SettingsProfileSite
           :siteUrl="props.userProfile.site_url ?? ''"
           :isEditable="props.isEditable"
@@ -27,7 +27,7 @@
     </v-row>
 
     <v-row class="ma-0 pa-0" dense>
-      <v-col cols="12" sm="6" md="4" class="pa-2">
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <SettingsProfileStatus
           :selectedStatus="props.userProfile?.status_id ?? 1"
           :statuses="props.statuses"
@@ -35,7 +35,7 @@
           @updateStatus="(val) => emit('update:statusId', val)"
         />
       </v-col>
-      <v-col cols="12" sm="6" md="4" class="pa-2">
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <SettingsProfileGender
           :genderId="props.userProfile.gender_id ?? 1"
           :genders="props.genders"
@@ -44,7 +44,7 @@
           @validation="(val) => emit('validation', val)"
         />
       </v-col>
-      <v-col cols="12" sm="6" md="4" class="pa-2">
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <SettingsProfileAge
           :age="props.userProfile.age ?? 18"
           :isEditable="props.isEditable"
@@ -61,6 +61,34 @@
           @updateCountry="(val) => emit('update:country', val)"
           @updateState="(val) => emit('update:state', val)"
           @updateCity="(val) => emit('update:city', val)"
+        />
+      </v-col>
+    </v-row>
+
+    <v-row class="ma-0 pa-0" dense>
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
+        <SettingsProfileLanguage
+          :selectedLocale="props.userProfile.preferred_locale ?? 'en'"
+          :locales="props.locales"
+          :isEditable="props.isEditable"
+          @updateLocale="(val) => emit('update:preferredLocale', val)"
+        />
+      </v-col>
+    </v-row>
+
+    <v-row class="ma-0 pa-0" dense>
+      <v-col cols="12">
+        <SettingsProfileBio
+          :bio="userProfile.bio ?? ''"
+          :isEditable="props.isEditable"
+          :minLength="props.bioMinLength"
+          :errorMessage="props.bioErrorMessage"
+          :showAiButton="props.showAiBioButton"
+          :aiDisabled="props.aiBioDisabled"
+          :aiLoading="props.aiBioLoading"
+          :aiRemaining="props.aiBioRemaining"
+          @openAiBio="emit('openAiBio')"
+          @updateBio="(val) => emit('update:bio', val)"
         />
       </v-col>
     </v-row>
@@ -83,22 +111,6 @@
             </v-btn>
           </div>
         </v-alert>
-      </v-col>
-    </v-row>
-    <v-row class="ma-0 pa-0" dense>
-      <v-col cols="12">
-        <SettingsProfileBio
-          :bio="userProfile.bio ?? ''"
-          :isEditable="props.isEditable"
-          :minLength="props.bioMinLength"
-          :errorMessage="props.bioErrorMessage"
-          :showAiButton="props.showAiBioButton"
-          :aiDisabled="props.aiBioDisabled"
-          :aiLoading="props.aiBioLoading"
-          :aiRemaining="props.aiBioRemaining"
-          @openAiBio="emit('openAiBio')"
-          @updateBio="(val) => emit('update:bio', val)"
-        />
       </v-col>
     </v-row>
 
@@ -149,6 +161,7 @@ const props = defineProps({
   isEditable: Boolean,
   statuses: Array,
   genders: Array,
+  locales: Array,
   isMarkedForDeletion: {
     type: Boolean,
     default: false,
@@ -197,6 +210,7 @@ const emit = defineEmits([
   "update:country",
   "update:state",
   "update:city",
+  "update:preferredLocale",
   "update:bio",
   "validation",
   "save",
@@ -227,5 +241,23 @@ const { t } = useI18n();
 
 .text-link-btn:hover {
   text-decoration: underline;
+}
+
+.settings-profile-form {
+  --v-field-label-color: #1e88e5;
+}
+
+:global(.settings-profile-form .v-field__label),
+:global(.settings-profile-form .v-field-label),
+:global(.settings-profile-form .v-label) {
+  color: #1e88e5 !important;
+  opacity: 1 !important;
+}
+
+:global(.settings-profile-form .v-field--disabled .v-field__label),
+:global(.settings-profile-form .v-field--disabled .v-field-label),
+:global(.settings-profile-form .v-field--disabled .v-label) {
+  color: #1e88e5 !important;
+  opacity: 1 !important;
 }
 </style>

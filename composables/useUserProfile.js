@@ -109,7 +109,8 @@ export function useUserProfile() {
         editableProfile.value.state_id,
         editableProfile.value.city_id,
         editableProfile.value.avatar_url,
-        editableProfile.value.site_url
+        editableProfile.value.site_url,
+        editableProfile.value.preferred_locale
       );
 
       profile.value = { ...editableProfile.value };

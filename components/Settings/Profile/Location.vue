@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row class="ma-0 pa-0" dense>
-      <v-col cols="12" sm="6" md="4" class="pa-2">
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <v-select
           v-if="countries.length"
           :disabled="!props.isEditable"
@@ -25,7 +25,7 @@
           }}</v-col>
         </v-row> -->
       </v-col>
-      <v-col cols="12" sm="6" md="4" class="pa-2">
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <v-select
           v-if="states.length"
           :disabled="!props.isEditable"
@@ -49,7 +49,7 @@
           }}</v-col>
         </v-row> -->
       </v-col>
-      <v-col cols="12" sm="6" md="4" class="pa-2">
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <v-select
           :disabled="!props.isEditable"
           v-model="selectedCity"

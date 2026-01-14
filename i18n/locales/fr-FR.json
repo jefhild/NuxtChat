@@ -1038,6 +1038,15 @@
     "profile-bio": {
       "bio": "Bio"
     },
+    "profile-language": {
+      "default": "Langue par défaut",
+      "options": {
+        "en": "Anglais",
+        "fr": "Français",
+        "ru": "Russe",
+        "zh": "Chinois"
+      }
+    },
     "profile-email-link": {
       "prompt": "Associez une adresse e-mail pour sécuriser vos discussions et les reprendre où que vous soyez.",
       "cta": "Associer mon e-mail",

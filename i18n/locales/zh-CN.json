@@ -1037,6 +1037,15 @@
     "profile-bio": {
       "bio": "个人简介"
     },
+    "profile-language": {
+      "default": "默认语言",
+      "options": {
+        "en": "英语",
+        "fr": "法语",
+        "ru": "俄语",
+        "zh": "中文"
+      }
+    },
     "profile-email-link": {
       "prompt": "绑定电子邮箱以保护您的聊天，并可随时随地继续对话。",
       "cta": "绑定邮箱",

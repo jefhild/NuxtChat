@@ -23,6 +23,7 @@
       :isEditable="isEditable"
       :statuses="statuses"
       :genders="genders"
+      :locales="supportedLocales"
       :locationProps="locationProps"
       :isMarkedForDeletion="isMarkedForDeletion"
       :deleteBusy="deleteBusy"
@@ -42,6 +43,7 @@
       @update:statusId="(val) => (editableProfile.status_id = val)"
       @update:age="(val) => (editableProfile.age = val)"
       @update:genderId="(val) => (editableProfile.gender_id = val)"
+      @update:preferredLocale="(val) => (editableProfile.preferred_locale = val)"
       @update:bio="(val) => (editableProfile.bio = val)"
       @save="saveChanges"
       @startEdit="startEditing"
@@ -214,6 +216,22 @@ const appliedGeoDefaults = ref(false);
 
 const { getDefaults } = useGeoLocationDefaults();
 
+const supportedLocales = computed(() => [
+  { code: "en", label: t("components.profile-language.options.en") },
+  { code: "fr", label: t("components.profile-language.options.fr") },
+  { code: "ru", label: t("components.profile-language.options.ru") },
+  { code: "zh", label: t("components.profile-language.options.zh") },
+]);
+
+const ensurePreferredLocale = () => {
+  if (!editableProfile.value) return;
+  if (!editableProfile.value.preferred_locale) {
+    editableProfile.value.preferred_locale = "en";
+  }
+};
+
+ensurePreferredLocale();
+
 
 // Watch for updates from parent and reset the local copy
 watch(
@@ -222,6 +240,7 @@ watch(
     editableProfile.value = { ...newProfile };
     localAvatar.value = buildAvatarDisplayUrl(newProfile?.avatar_url);
     avatarError.value = "";
+    ensurePreferredLocale();
     syncEditableState();
   }
 );
@@ -454,7 +473,8 @@ const saveChanges = async () => {
       editableProfile.value.state_id,
       editableProfile.value.city_id,
       editableProfile.value.avatar_url,
-      editableProfile.value.site_url
+      editableProfile.value.site_url,
+      editableProfile.value.preferred_locale
     );
     console.info("Profile updated successfully.");
     isEditable.value = false;
