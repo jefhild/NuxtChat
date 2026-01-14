@@ -9,15 +9,11 @@ export default defineEventHandler(async (event) => {
       return { error: "Unauthorized" };
     }
 
-    const query = getQuery(event);
-    const rawIds = String(query.user_ids || "");
-    const userIds = rawIds
-      .split(",")
-      .map((id) => id.trim())
-      .filter(Boolean);
-
-    if (!userIds.length) {
-      return { items: {} };
+    const body = (await readBody(event)) || {};
+    const messageId = String(body.message_id || "");
+    if (!messageId) {
+      setResponseStatus(event, 400);
+      return { error: { stage: "body", message: "message_id required" } };
     }
 
     const cfg = useRuntimeConfig(event);
@@ -34,7 +30,7 @@ export default defineEventHandler(async (event) => {
       .single();
 
     if (meErr) {
-      console.error("[admin/reply-status] admin check error:", meErr);
+      console.error("[admin/messages-read] admin check error:", meErr);
       setResponseStatus(event, 500);
       return { error: { stage: "admin_check", message: meErr.message } };
     }
@@ -44,29 +40,22 @@ export default defineEventHandler(async (event) => {
       return { error: "Forbidden" };
     }
 
-    const { data: unreadRows, error: unreadError } = await supa
+    const { data, error } = await supa
       .from("messages")
-      .select("receiver_id")
-      .in("receiver_id", userIds)
-      .eq("read", false);
+      .update({ read: true })
+      .eq("id", messageId)
+      .select("id, read")
+      .maybeSingle();
 
-    if (unreadError) {
-      console.error("[admin/reply-status] unread error:", unreadError);
+    if (error) {
+      console.error("[admin/messages-read] update error:", error);
       setResponseStatus(event, 500);
-      return { error: { stage: "unread", message: unreadError.message } };
+      return { error: { stage: "update", message: error.message } };
     }
 
-    const statusByUserId = Object.fromEntries(
-      userIds.map((id) => [id, false])
-    );
-
-    (unreadRows || []).forEach((row) => {
-      if (row?.receiver_id) statusByUserId[row.receiver_id] = true;
-    });
-
-    return { items: statusByUserId };
+    return { item: data };
   } catch (err) {
-    console.error("[admin/reply-status] error:", err);
+    console.error("[admin/messages-read] error:", err);
     setResponseStatus(event, 500);
     return {
       error: { stage: "unhandled", message: err?.message || "Internal error" },

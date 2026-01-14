@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid class="admin-dashboard">
     <LoadingContainer v-if="isLoading" />
 
     <v-row v-else>
@@ -952,6 +952,12 @@ const purgeMarkedProfiles = async () => {
 </script>
 
 <style scoped>
+.admin-dashboard {
+  max-width: 100%;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
 .admin-table :deep(thead th) {
   white-space: nowrap;
 }

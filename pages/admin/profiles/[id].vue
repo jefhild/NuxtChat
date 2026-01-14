@@ -96,7 +96,7 @@
                   class="px-0"
                 >
                   <v-list-item-title class="text-body-2">
-                    <span v-if="!msg.has_reply" class="inbox-dot" />
+                    <span v-if="!msg.read" class="inbox-dot" />
                     {{ msg.sender?.displayname || msg.sender_id }}
                   </v-list-item-title>
                   <v-list-item-subtitle class="text-caption">
@@ -105,15 +105,24 @@
                   <template #append>
                     <v-chip
                       size="x-small"
-                      :color="msg.has_reply ? 'green' : 'grey'"
+                      :color="msg.read ? 'green' : 'grey'"
                       variant="tonal"
                       class="mr-2"
                     >
-                      {{ msg.has_reply ? "Replied" : "No reply" }}
+                      {{ msg.read ? "Read" : "Unread" }}
                     </v-chip>
                     <div class="text-caption text-medium-emphasis mr-2">
                       {{ formatTimestamp(msg.created_at) }}
                     </div>
+                    <v-btn
+                      v-if="!msg.read"
+                      size="x-small"
+                      variant="text"
+                      color="grey"
+                      @click="markMessageRead(msg)"
+                    >
+                      Mark read
+                    </v-btn>
                     <v-btn
                       size="x-small"
                       variant="text"
@@ -310,6 +319,21 @@ const sendMessageAsUser = async () => {
     setTimeout(() => {
       sendStatus.value = "";
     }, 2000);
+  }
+};
+
+const markMessageRead = async (msg) => {
+  if (!msg?.id) return;
+  try {
+    await $fetch("/api/admin/messages-read", {
+      method: "POST",
+      body: { message_id: msg.id },
+    });
+    inboxMessages.value = inboxMessages.value.map((item) =>
+      item.id === msg.id ? { ...item, read: true } : item
+    );
+  } catch (error) {
+    console.error("[admin][profile] mark read error", error);
   }
 };
 
