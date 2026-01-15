@@ -790,7 +790,6 @@ const autoAvatarStorageKey = computed(() => {
 });
 
 const maybeAutoSelectAvatar = async () => {
-  if (!completionMode.value) return;
   if (!import.meta.client) return;
   if (editableProfile.value?.avatar_url) return;
   if (!editableProfile.value?.user_id) return;

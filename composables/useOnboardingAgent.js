@@ -76,7 +76,7 @@ function extractAge(text) {
   const m = String(text || "").match(/\b([1-9]\d?)\b/);
   if (!m) return null;
   const age = parseInt(m[1], 10);
-  return age >= 18 && age <= 100 ? age : null;
+  return age >= 18 && age <= 120 ? age : null;
 }
 
 // tolerant gender extractor (handles typos like "femal", single-letter replies, etc.)

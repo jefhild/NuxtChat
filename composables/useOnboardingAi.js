@@ -11,7 +11,6 @@ import { useI18n } from "vue-i18n";
 // Global handler the UI registers (ChatLayoutOnboarding sets this)
 let __onBotMessage = (payload) => {
   const text = typeof payload === "string" ? payload : payload?.text;
-  console.debug("[OnboardingAI] bot:", text);
 };
 export function setOnboardingBotMessageHandler(fn) {
   if (typeof fn === "function") __onBotMessage = fn;
@@ -35,7 +34,6 @@ export function useOnboardingAi() {
       __onBotMessage(payload);
     } catch {
       const text = typeof payload === "string" ? payload : payload?.text;
-      console.debug("[OnboardingAI] bot:", text);
     }
   }
 
@@ -200,19 +198,6 @@ export function useOnboardingAi() {
               `${t("onboarding.welcomeSettings", { settingsUrl })}`;
 
             await insertMessage(receiverId, IMCHATTY_ID, welcome);
-            console.log("[onboarding][finalize] welcome message inserted", {
-              receiverId,
-              senderId: IMCHATTY_ID,
-            });
-          } else {
-            console.warn(
-              "[onboarding][finalize] missing IMCHATTY_ID | receiverId | insertMessage",
-              {
-                IMCHATTY_ID,
-                receiverId,
-                hasInsert: typeof insertMessage === "function",
-              }
-            );
           }
 
           // 4) Mark onboarding complete in the draft store
@@ -226,7 +211,6 @@ export function useOnboardingAi() {
             } catch {}
           }
         } catch (err) {
-          console.warn("[onboarding][finalize] failed:", err?.message || err);
           if (typeof draft.setStage === "function") draft.setStage("collecting");
           else draft.stage = "collecting";
           if (typeof pushBotMessage === "function") {
@@ -249,13 +233,8 @@ export function useOnboardingAi() {
       try {
         if (typeof resume === "function") {
           await resume(); // should call your API with { resume: true }
-        } else {
-          console.warn(
-            "[onboarding][auto-resume] resume() not found; add a simple resume() helper."
-          );
         }
       } catch (e) {
-        console.warn("[onboarding][auto-resume] failed:", e);
       }
     }
   }
@@ -272,7 +251,6 @@ export function useOnboardingAi() {
       // console.log("[onboarding][api->actions]", actions);
       return actions;
     } catch (e) {
-      console.warn("[OnboardingAI] /api/aiOnboarding failed:", e?.message || e);
       return [{ type: "bot_message", text: "Sorry, a hiccup—try again." }];
     }
   }
@@ -321,9 +299,6 @@ export function useOnboardingAi() {
     const actions = await callApi(payload);
     if (Array.isArray(actions) && actions.length) {
       await applyActions(actions);
-    } else {
-      // Friendly no-op fallback
-      console.warn("[onboarding][resume] no actions returned");
     }
   }
 
@@ -361,20 +336,8 @@ export function useOnboardingAi() {
 
     if (hasConsent && hasUserId) {
       const limit = getDailyLimit();
-      console.info(
-        "[onboarding][quota] checking with limit:",
-        limit,
-        "uid:",
-        auth.user?.id || auth.user?.user_id
-      );
 
       const { allowed, used, remaining } = await tryConsume();
-      console.info("[onboarding][quota] result:", {
-        allowed,
-        used,
-        remaining,
-        limit,
-      });
 
       // if (!allowed) {
       //   const msg = limitReachedMessage(auth.authStatus, limit);
@@ -424,7 +387,6 @@ if (!allowed) {
     try {
       await db.insertMessage(meId, peerId, msg); // current thread
     } catch (e) {
-      console.error("[onboarding][limit] persist (current thread) failed", e);
     }
   }
 
@@ -434,7 +396,6 @@ if (!allowed) {
       await db.insertMessage(meId, IMCHATTY_ID, msg); // ImChatty
       chat.addActivePeer?.(IMCHATTY_ID);
     } catch (e) {
-      console.error("[onboarding][limit] persist (ImChatty) failed", e);
     }
   }
 
@@ -444,7 +405,6 @@ if (!allowed) {
 
     } else {
       // Before consent (or no uid yet): skip quota entirely so onboarding can proceed.
-      console.info("[onboarding][quota] skipped (no consent or no userId yet)");
     }
 
     const required = ["displayName", "age", "genderId", "bio"];

@@ -1,8 +1,70 @@
 // server/api/aiOnboardingTurn.post.js
 import OpenAI from "openai";
+import { useDb } from "@/composables/useDB";
+
+const DISPLAYNAME_MAX = 40;
+const CJK_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/;
+const countChars = (value) => Array.from(String(value || "")).length;
+const normalizeDisplayName = (value) => String(value || "").trim();
+const minDisplayNameLength = (value) =>
+  CJK_RE.test(String(value || "")) ? 2 : 4;
+const isDisplayNameLengthValid = (value) => {
+  const len = countChars(value);
+  const minLen = minDisplayNameLength(value);
+  return len >= minLen && len <= DISPLAYNAME_MAX;
+};
+
+const nameTooShortMessage = (locale) =>
+  locale.startsWith("fr")
+    ? "Veuillez choisir un nom d’affichage plus long."
+    : locale.startsWith("ru")
+    ? "Пожалуйста, выберите более длинное отображаемое имя."
+    : locale.startsWith("zh")
+    ? "请使用更长的显示名称。"
+    : "Please choose a longer display name.";
+const nameTakenMessage = (locale) =>
+  locale.startsWith("fr")
+    ? "Ce nom d’affichage est déjà utilisé. Essayez-en un autre."
+    : locale.startsWith("ru")
+    ? "Это отображаемое имя уже занято. Попробуйте другое."
+    : locale.startsWith("zh")
+    ? "这个显示名称已被占用，请换一个。"
+    : "That display name is already taken. Try another.";
+
+async function isDisplayNameTaken(supa, value) {
+  if (!supa) return false;
+  const cleaned = normalizeDisplayName(value);
+  if (!cleaned) return false;
+  const { data, error } = await supa
+    .from("profiles")
+    .select("displayname")
+    .ilike("displayname", cleaned)
+    .limit(1)
+    .maybeSingle();
+  if (error && error.code !== "PGRST116") return false;
+  return !!data;
+}
+
+async function validateDisplayName(supa, value) {
+  const cleaned = normalizeDisplayName(value);
+  if (!cleaned || !isDisplayNameLengthValid(cleaned)) {
+    return { ok: false, reason: "length" };
+  }
+  const taken = await isDisplayNameTaken(supa, cleaned);
+  if (taken) return { ok: false, reason: "taken" };
+  return { ok: true, value: cleaned };
+}
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const { getServerClientFrom } = useDb();
+  let supa = null;
+  try {
+    supa = getServerClientFrom(
+      config.public.SUPABASE_URL,
+      config.SUPABASE_SERVICE_ROLE_KEY
+    );
+  } catch {}
   const body = await readBody(event);
 
   const draft = body?.draft ?? {};
@@ -33,7 +95,6 @@ export default defineEventHandler(async (event) => {
 
   // If no API key, graceful fallback (still respects chip policy)
   if (!config.OPENAI_API_KEY) {
-    console.warn("[aiOnboardingTurn] Missing OPENAI_API_KEY, using fallback.");
     return {
       ok: true,
       utterance:
@@ -67,7 +128,7 @@ STRICT RULES:
 3) During "final", you MAY provide exactly one quick reply: ["Finish profile"] and nothing else.
 4) Never infer gender. Only set gender_id if the user's last message clearly states gender.
    Map: male→1, female→2, other/nonbinary→3.
-5) For age, ask for a single integer 18–100 (no ranges). If extracting age, ensure it is an integer 18–100.
+5) For age, ask for a single integer 18–120. Do not mention numeric ranges in the user-facing message. If extracting age, ensure it is an integer 18–120.
 6) If the user's last message seems to include multiple fields, extract them, but only if you're confident.
 
 OUTPUT FORMAT:
@@ -109,7 +170,7 @@ OUTPUT FORMAT:
                 type: "object",
                 properties: {
                   displayname: { type: "string" },
-                  age: { type: "number", description: "integer 18–100" },
+                  age: { type: "number", description: "integer 18–120" },
                   gender_id: {
                     type: "number",
                     description: "1 male, 2 female, 3 other (only if explicit)",
@@ -136,7 +197,6 @@ OUTPUT FORMAT:
 
     const call = resp.choices?.[0]?.message?.tool_calls?.[0];
     if (!call) {
-      console.warn("[aiOnboardingTurn] No tool call, returning fallback.");
       return {
         ok: true,
         utterance:
@@ -164,6 +224,25 @@ OUTPUT FORMAT:
     if (stage === "collect") qr = [];
     else if (stage === "final") qr = ["Finish profile"];
 
+    let extracted = args.extracted || {};
+    if (extracted.displayname) {
+      const nameCheck = await validateDisplayName(supa, extracted.displayname);
+      if (!nameCheck.ok) {
+        const cleaned = { ...extracted };
+        delete cleaned.displayname;
+        return {
+          ok: true,
+          utterance:
+            nameCheck.reason === "taken"
+              ? nameTakenMessage(locale)
+              : nameTooShortMessage(locale),
+          quickReplies: qr,
+          extracted: cleaned,
+        };
+      }
+      extracted = { ...extracted, displayname: nameCheck.value };
+    }
+
     return {
       ok: true,
       utterance:
@@ -172,10 +251,9 @@ OUTPUT FORMAT:
           ? "Great. If everything looks good, you can finish your profile."
           : "Thanks! Let’s fill in the remaining details."),
       quickReplies: qr,
-      extracted: args.extracted || {},
+      extracted,
     };
   } catch (err) {
-    console.error("[aiOnboardingTurn] error:", err);
     return {
       ok: true,
       utterance:

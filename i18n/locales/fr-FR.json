@@ -1227,7 +1227,7 @@
     "yes": "Oui",
     "no": "Non",
     "askName": "Quel nom d'affichage souhaitez-vous utiliser ?",
-    "askAge": "Quel âge avez-vous ? (18–100)",
+    "askAge": "Quel âge avez-vous ? (18–120)",
     "askGender": "Quel est votre genre ?",
     "gender": {
       "male": "Homme",

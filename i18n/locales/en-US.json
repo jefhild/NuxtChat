@@ -1249,7 +1249,7 @@
     "yes": "Yes",
     "no": "No",
     "askName": "What display name do you want?",
-    "askAge": "How old are you? (18–100)",
+    "askAge": "How old are you? (18–120)",
     "askGender": "What is your gender?",
     "gender": {
       "male": "Male",

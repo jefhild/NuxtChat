@@ -1,6 +1,7 @@
 // server/api/aiOnboarding.js
 import { defineEventHandler, readBody } from "h3";
 import OpenAI from "openai";
+import { useDb } from "@/composables/useDB";
 
 const config = useRuntimeConfig();
 const apiKey = config.OPENAI_API_KEY || process.env.OPENAI_API_KEY; // belt & suspenders
@@ -15,7 +16,7 @@ const STRINGS = {
     consentAskName: "What display name should we show?",
     consentNudge: "No problem. Say “yes” when you’re ready to continue, and we’ll proceed.",
     askAge: "Great! What's your age? (18+ only)",
-    askAgeSimple: "Age must be a number greater than 17 and less than 100. What's your age?",
+    askAgeSimple: "Please enter a valid age. What's your age?",
     askGenderShort: "Which gender fits you best?",
     askGenderOpen: "How do you identify your gender?",
     genderMale: "Male",
@@ -26,7 +27,8 @@ const STRINGS = {
     askBio: "Write a short bio (1–2 sentences).",
     askBioAlt: "Please keep your bio between 1 and 280 characters, one paragraph.",
     askBioShorter: "Please keep your bio under 300 characters.",
-    askNameValidation: "Please provide a display name between 1 and 40 characters.",
+    askNameValidation: "Please choose a longer display name.",
+    askNameTaken: "That display name is already taken. Try another.",
     finalizePrompt: "Shall I finalize your profile now?",
   },
   fr: {
@@ -37,7 +39,7 @@ const STRINGS = {
     consentNudge:
       "Pas de souci. Dites « oui » quand vous serez prêt, et nous continuerons.",
     askAge: "Super ! Quel est votre âge ? (18 ans et +)",
-    askAgeSimple: "L’âge doit être un nombre entre 18 et 120. Quel est votre âge ?",
+    askAgeSimple: "Veuillez saisir un âge valide. Quel est votre âge ?",
     askGenderShort: "Quel genre vous correspond le mieux ?",
     askGenderOpen: "Comment vous identifiez-vous ?",
     genderMale: "Homme",
@@ -49,8 +51,8 @@ const STRINGS = {
     askBioAlt:
       "Veuillez garder votre bio entre 1 et 280 caractères, un seul paragraphe.",
     askBioShorter: "Veuillez garder votre bio sous 300 caractères.",
-    askNameValidation:
-      "Indiquez un nom d’affichage entre 1 et 40 caractères.",
+    askNameValidation: "Veuillez choisir un nom d’affichage plus long.",
+    askNameTaken: "Ce nom d’affichage est déjà utilisé. Essayez-en un autre.",
     finalizePrompt: "Dois-je finaliser votre profil maintenant ?",
   },
   ru: {
@@ -61,7 +63,7 @@ const STRINGS = {
     consentNudge:
       "Хорошо. Скажите «да», когда будете готовы продолжить.",
     askAge: "Отлично! Сколько вам лет? (18+)",
-    askAgeSimple: "Возраст должен быть числом от 18 до 120. Сколько вам лет?",
+    askAgeSimple: "Пожалуйста, укажите корректный возраст. Сколько вам лет?",
     askGenderShort: "Какой пол вам подходит больше всего?",
     askGenderOpen: "Как вы себя идентифицируете?",
     genderMale: "Мужской",
@@ -73,7 +75,8 @@ const STRINGS = {
     askBioAlt:
       "Сохраните био в пределах 1–280 символов, один абзац.",
     askBioShorter: "Пожалуйста, держите био короче 300 символов.",
-    askNameValidation: "Укажите имя от 1 до 40 символов.",
+    askNameValidation: "Пожалуйста, выберите более длинное отображаемое имя.",
+    askNameTaken: "Это отображаемое имя уже занято. Попробуйте другое.",
     finalizePrompt: "Завершить профиль сейчас?",
   },
   zh: {
@@ -82,7 +85,7 @@ const STRINGS = {
     consentAskName: "我们该显示什么昵称？",
     consentNudge: "没关系。准备好时说“是”，我们就继续。",
     askAge: "很好！你多大了？（需年满18岁）",
-    askAgeSimple: "年龄需为18–120之间的数字。你的年龄是？",
+    askAgeSimple: "请输入有效年龄。你的年龄是？",
     askGenderShort: "哪个性别最符合你？",
     askGenderOpen: "你的性别是？",
     genderMale: "男",
@@ -92,7 +95,8 @@ const STRINGS = {
     askBio: "写一段简短的简介（1–2句话）。",
     askBioAlt: "简介需控制在1–280字符，单段。",
     askBioShorter: "简介请控制在300字符以内。",
-    askNameValidation: "请输入1-40个字符的显示名称。",
+    askNameValidation: "请使用更长的显示名称。",
+    askNameTaken: "这个显示名称已被占用，请换一个。",
     finalizePrompt: "现在要完成你的资料吗？",
   },
 };
@@ -126,6 +130,42 @@ const pickVariant = (locale = "en", variants = {}) => {
     variants.en
   );
 };
+
+const DISPLAYNAME_MAX = 40;
+const CJK_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/;
+const countChars = (value) => Array.from(String(value || "")).length;
+const normalizeDisplayName = (value) => String(value || "").trim();
+const minDisplayNameLength = (value) =>
+  CJK_RE.test(String(value || "")) ? 2 : 4;
+const isDisplayNameLengthValid = (value) => {
+  const len = countChars(value);
+  const minLen = minDisplayNameLength(value);
+  return len >= minLen && len <= DISPLAYNAME_MAX;
+};
+
+async function isDisplayNameTaken(supa, value) {
+  if (!supa) return false;
+  const cleaned = normalizeDisplayName(value);
+  if (!cleaned) return false;
+  const { data, error } = await supa
+    .from("profiles")
+    .select("displayname")
+    .ilike("displayname", cleaned)
+    .limit(1)
+    .maybeSingle();
+  if (error && error.code !== "PGRST116") return false;
+  return !!data;
+}
+
+async function validateDisplayName(supa, value) {
+  const cleaned = normalizeDisplayName(value);
+  if (!cleaned || !isDisplayNameLengthValid(cleaned)) {
+    return { ok: false, reason: "length" };
+  }
+  const taken = await isDisplayNameTaken(supa, cleaned);
+  if (taken) return { ok: false, reason: "taken" };
+  return { ok: true, value: cleaned };
+}
 
 /**
  * Returns { actions: [...] } where actions can be:
@@ -247,6 +287,15 @@ export default defineEventHandler(async (event) => {
     text,
     quickReplies: genderReplies,
   });
+  const cfg = useRuntimeConfig(event);
+  const { getServerClientFrom } = useDb();
+  let supa = null;
+  try {
+    supa = getServerClientFrom(
+      cfg.public.SUPABASE_URL,
+      cfg.SUPABASE_SERVICE_ROLE_KEY
+    );
+  } catch {}
 
   // console.log("[OnboardingAI] incoming body:", {
   //   messages: messages?.map((m) => m.role + ":" + m.content).slice(-3), // last 3 for context
@@ -443,23 +492,36 @@ export default defineEventHandler(async (event) => {
         )
   ).find((f) => REQUIRED.includes(f));
 
-  console.log("[OnboardingAI] deterministic check", { latestUtter, nextField });
+  if (nextField === "displayName" && latestUtter) {
+    const nameCheck = await validateDisplayName(supa, latestUtter);
+    if (nameCheck.ok) {
+      return {
+        actions: [
+          { type: "set_field", key: "displayName", value: nameCheck.value },
+          { type: "bot_message", text: L("askAge") },
+        ],
+      };
+    }
+    return {
+      actions: [
+        {
+          type: "bot_message",
+          text: L(nameCheck.reason === "taken" ? "askNameTaken" : "askNameValidation"),
+        },
+      ],
+    };
+  }
 
   // ---- Deterministic pre-parse (ONLY if AI is off/unavailable) ----
   if ((!preferAI || !canUseAI) && latestUtter && nextField) {
-    console.log(
-      "[OnboardingAI] fast-path gated (AI off). Handling:",
-      nextField,
-      latestUtter
-    );
-
     // displayName
     if (nextField === "displayName") {
       const v = latestUtter;
-      if (v.length >= 1 && v.length <= 40) {
+      const nameCheck = await validateDisplayName(supa, v);
+      if (nameCheck.ok) {
         return {
           actions: [
-            { type: "set_field", key: "displayName", value: v },
+            { type: "set_field", key: "displayName", value: nameCheck.value },
             { type: "bot_message", text: L("askAge") },
           ],
         };
@@ -468,7 +530,7 @@ export default defineEventHandler(async (event) => {
         actions: [
           {
             type: "bot_message",
-            text: L("askNameValidation"),
+            text: L(nameCheck.reason === "taken" ? "askNameTaken" : "askNameValidation"),
           },
         ],
       };
@@ -568,10 +630,11 @@ export default defineEventHandler(async (event) => {
   if (utter && next && (!preferAI || !canUseAI)) {
     // displayName
     if (next === "displayName") {
-      if (utter.length >= 1 && utter.length <= 40) {
+      const nameCheck = await validateDisplayName(supa, utter);
+      if (nameCheck.ok) {
         return {
           actions: [
-            { type: "set_field", key: "displayName", value: utter },
+            { type: "set_field", key: "displayName", value: nameCheck.value },
             { type: "bot_message", text: L("askAge") },
           ],
         };
@@ -580,7 +643,11 @@ export default defineEventHandler(async (event) => {
           actions: [
             {
               type: "bot_message",
-              text: L("askNameValidation"),
+              text: L(
+                nameCheck.reason === "taken"
+                  ? "askNameTaken"
+                  : "askNameValidation"
+              ),
             },
           ],
         };
@@ -590,7 +657,7 @@ export default defineEventHandler(async (event) => {
     // age
     if (next === "age") {
       const n = parseInt(utter, 10);
-      if (!Number.isNaN(n) && n >= 18) {
+      if (!Number.isNaN(n) && n >= 18 && n <= 120) {
         return {
           actions: [
             { type: "set_field", key: "age", value: n },
@@ -664,10 +731,6 @@ export default defineEventHandler(async (event) => {
   //  );
 
   if (!canUseAI) {
-    console.log(
-      "[OnboardingAI] offline fallback branch, next:",
-      state.missingFields[0]
-    );
     const next = state.missingFields[0];
 
     // If we're offline but the latest user message looks like keywords for a bio, generate a localized fallback bio.
@@ -715,8 +778,8 @@ CRITICAL RULES — FOLLOW ALL OF THEM:
 1) Use the provided tools for ALL outputs. Do NOT place JSON or text in assistant message content. 
 2) Each step should emit only the necessary tool calls (bot_message, set_field, finalize).
 3) Validate user input before set_field:
-   - displayName: string 1–40 chars, trim whitespace.
-   - age: integer 18–120.
+   - displayName: string with a reasonable length; do not mention exact character limits.
+   - age: integer 18–120 (do not mention numeric ranges in the user message).
    - genderId: interpret natural language (e.g., “male/man/he/him”→1, “female/woman/she/her”→2, “other/non-binary/nb/enby”→3) and call set_field with the numeric code [1,2,3]. Do not ask the user to reply with numbers.
    - bio: string 1–280 chars, single paragraph.
 4) If the user input is invalid, call bot_message with a short corrective prompt and ask again.
@@ -815,8 +878,6 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
   let actions = [];
 
   try {
-    console.log("[OnboardingAI] calling OpenAI", { MODEL, state });
-
     const resp = await client.chat.completions.create({
       model: MODEL,
       messages: chat,
@@ -825,20 +886,10 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
       temperature: 0.2,
     });
 
-    console.log(
-      "[OnboardingAI] OpenAI raw response:",
-      JSON.stringify(resp, null, 2)
-    );
     const msg = resp?.choices?.[0]?.message;
     const calls = msg?.tool_calls || [];
 
     if (!calls.length) {
-      console.warn("[OnboardingAI] No tool calls. content:", msg?.content);
-      console.log(
-        "[OnboardingAI] tool_calls:",
-        (msg?.tool_calls || []).map((c) => c.function?.name)
-      );
-      console.log("[OnboardingAI] content (if any):", msg?.content);
       const next = (state.missingFields || []).find((f) =>
         REQUIRED.includes(f)
       );
@@ -908,13 +959,6 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
           : "";
 
       const keywords = genBioArgs.keywords.map(String);
-      console.log("[OnboardingAI] generate_bio called with:", {
-        keywords,
-        locale,
-        tone,
-        maxChars,
-      });
-
       const bioText = await generateBioFromKeywords({
         apiKey,
         displayname,
@@ -927,6 +971,26 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
       });
 
       actions.push({ type: "set_field", key: "bio", value: bioText });
+    }
+
+    const displayNameAction = actions.find(
+      (a) => a.type === "set_field" && a.key === "displayName"
+    );
+    if (displayNameAction) {
+      const nameCheck = await validateDisplayName(supa, displayNameAction.value);
+      if (!nameCheck.ok) {
+        actions = actions.filter(
+          (a) => !(a.type === "set_field" && a.key === "displayName")
+        );
+        actions = actions.filter((a) => a.type !== "finalize");
+        actions = actions.filter((a) => a.type !== "bot_message");
+        actions.push({
+          type: "bot_message",
+          text: L(nameCheck.reason === "taken" ? "askNameTaken" : "askNameValidation"),
+        });
+      } else {
+        displayNameAction.value = nameCheck.value;
+      }
     }
 
     // (3A) Coerce any AI gender set_field value to numeric 1/2/3
@@ -999,7 +1063,6 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
       stillMissing === "bio" &&
       isValidBio(latestUtter2)
     ) {
-      console.log("[OnboardingAI] accepting valid bio via guardrail");
       actions.push({ type: "set_field", key: "bio", value: latestUtter2 });
 
       // Remove any just-added "please share a bio" prompt to avoid mixed signals
