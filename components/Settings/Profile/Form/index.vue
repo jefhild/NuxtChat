@@ -5,16 +5,14 @@
       :userProfile="editableProfile"
       :avatar="localAvatar"
       :isEditable="isEditable"
-      :aiRemaining="aiAvatarRemaining"
-      :aiDisabled="aiAvatarDisabled"
-      :aiLoading="aiAvatarLoading"
+      :randomLoading="randomAvatarLoading"
       :uploadLoading="avatarUploadLoading"
       :errorMessage="avatarError"
       :displayKey="displayKey"
       :refreshLookingForMenu="refreshLookingForMenu"
       @refreshLookingForDisplay="displayKey++"
       @updateAvatarUrl="updateAvatarUrl"
-      @generateAvatar="generateAiAvatar"
+      @randomAvatar="pickRandomAvatar"
       @uploadAvatar="uploadAvatar"
     />
 
@@ -266,7 +264,6 @@ const emailPattern =
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const MAX_AI_BIO_USES = 3;
-const MAX_AI_AVATAR_USES = 3;
 const MIN_BIO_LENGTH = 45;
 const bioTouched = ref(false);
 const aiBioDialogVisible = ref(false);
@@ -274,8 +271,7 @@ const aiBioKeywords = ref("");
 const aiBioError = ref("");
 const aiBioLoading = ref(false);
 const aiBioUses = ref(0);
-const aiAvatarUses = ref(0);
-const aiAvatarLoading = ref(false);
+const randomAvatarLoading = ref(false);
 const avatarUploadLoading = ref(false);
 const avatarError = ref("");
 
@@ -307,25 +303,12 @@ const aiBioStorageKey = computed(() => {
   return `aiBioUses:${id}`;
 });
 
-const aiAvatarStorageKey = computed(() => {
-  const id = editableProfile.value?.user_id || authStore.user?.id || "anon";
-  return `aiAvatarUses:${id}`;
-});
-
 const aiBioRemaining = computed(() => {
   return Math.max(0, MAX_AI_BIO_USES - aiBioUses.value);
 });
 
-const aiAvatarRemaining = computed(() => {
-  return Math.max(0, MAX_AI_AVATAR_USES - aiAvatarUses.value);
-});
-
 const aiBioDisabled = computed(() => {
   return aiBioRemaining.value <= 0;
-});
-
-const aiAvatarDisabled = computed(() => {
-  return aiAvatarRemaining.value <= 0;
 });
 
 const showAiBioButton = computed(() => {
@@ -343,30 +326,11 @@ const loadAiBioUses = () => {
   }
 };
 
-const loadAiAvatarUses = () => {
-  if (!import.meta.client) return;
-  const key = aiAvatarStorageKey.value;
-  try {
-    const raw = localStorage.getItem(key);
-    aiAvatarUses.value = raw ? Number(raw) || 0 : 0;
-  } catch {
-    aiAvatarUses.value = 0;
-  }
-};
-
 const saveAiBioUses = () => {
   if (!import.meta.client) return;
   const key = aiBioStorageKey.value;
   try {
     localStorage.setItem(key, String(aiBioUses.value));
-  } catch {}
-};
-
-const saveAiAvatarUses = () => {
-  if (!import.meta.client) return;
-  const key = aiAvatarStorageKey.value;
-  try {
-    localStorage.setItem(key, String(aiAvatarUses.value));
   } catch {}
 };
 
@@ -635,14 +599,6 @@ watch(
   { immediate: true }
 );
 
-watch(
-  () => aiAvatarStorageKey.value,
-  () => {
-    loadAiAvatarUses();
-  },
-  { immediate: true }
-);
-
 const isEditable = ref(false); // default to false for safety
 const needsProfileCompletion = computed(() => {
   const profile = editableProfile.value || {};
@@ -751,43 +707,35 @@ const updateAvatarUrl = (newUrl) => {
   }
 };
 
-const buildAvatarPayload = () => ({
+const buildRandomAvatarPayload = () => ({
   userId: editableProfile.value?.user_id,
-  displayname: editableProfile.value?.displayname ?? "",
-  gender: resolveGenderLabel(),
-  age: editableProfile.value?.age ?? "",
-  bio: editableProfile.value?.bio ?? "",
+  genderId: editableProfile.value?.gender_id ?? null,
 });
 
-const generateAiAvatar = async ({ countUsage = true, ignoreLimit = false } = {}) => {
-  if (!editableProfile.value?.user_id) return;
-  if (aiAvatarLoading.value) return;
-  if (!ignoreLimit && aiAvatarDisabled.value) return;
+const pickRandomAvatar = async () => {
+  if (!editableProfile.value?.user_id) return false;
+  if (randomAvatarLoading.value) return false;
 
-  aiAvatarLoading.value = true;
+  randomAvatarLoading.value = true;
   avatarError.value = "";
   let success = false;
 
   try {
-    const result = await $fetch("/api/profile/avatar-generate", {
+    const result = await $fetch("/api/profile/avatar-random", {
       method: "POST",
-      body: buildAvatarPayload(),
+      body: buildRandomAvatarPayload(),
     });
     if (result?.avatarUrl) {
       updateAvatarUrl(result.avatarUrl);
       success = true;
-      if (countUsage) {
-        aiAvatarUses.value += 1;
-        saveAiAvatarUses();
-      }
     } else {
-      avatarError.value = "Could not generate an avatar. Please try again.";
+      avatarError.value = "Could not pick a photo. Please try again.";
     }
   } catch (err) {
-    console.error("[settings] ai avatar failed:", err);
-    avatarError.value = "Could not generate an avatar. Please try again.";
+    console.error("[settings] random avatar failed:", err);
+    avatarError.value = "Could not pick a photo. Please try again.";
   } finally {
-    aiAvatarLoading.value = false;
+    randomAvatarLoading.value = false;
   }
 
   return success;
@@ -841,18 +789,14 @@ const autoAvatarStorageKey = computed(() => {
   return `autoAvatarGenerated:${id}`;
 });
 
-const maybeAutoGenerateAvatar = async () => {
+const maybeAutoSelectAvatar = async () => {
   if (!completionMode.value) return;
   if (!import.meta.client) return;
   if (editableProfile.value?.avatar_url) return;
   if (!editableProfile.value?.user_id) return;
   const key = autoAvatarStorageKey.value;
   if (localStorage.getItem(key)) return;
-
-  const success = await generateAiAvatar({
-    countUsage: false,
-    ignoreLimit: true,
-  });
+  const success = await pickRandomAvatar();
   if (success) {
     try {
       localStorage.setItem(key, "1");
@@ -900,7 +844,7 @@ onMounted(async () => {
         console.warn("[geo-defaults] failed to prefill location", e);
       }
     }
-    await maybeAutoGenerateAvatar();
+    await maybeAutoSelectAvatar();
   } catch (err) {
     console.error("Error loading profile reference data:", err);
   }

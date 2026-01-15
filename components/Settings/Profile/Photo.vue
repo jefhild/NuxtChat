@@ -37,11 +37,11 @@
               size="small"
               variant="outlined"
               color="primary"
-              :loading="aiLoading"
-              :disabled="!editable || aiDisabled || aiLoading"
-              @click="editable && $emit('generateAvatar')"
+              :loading="randomLoading"
+              :disabled="!editable || randomLoading"
+              @click="editable && $emit('randomAvatar')"
             >
-              Generate AI
+              Random photo
             </v-btn>
             <v-btn
               size="small"
@@ -60,9 +60,6 @@
               class="sr-only"
               @change="onFileChange"
             />
-          </div>
-          <div class="text-caption text-medium-emphasis mt-2">
-            Remaining AI uses: {{ aiRemaining }}
           </div>
           <v-alert
             v-if="errorMessage"
@@ -100,9 +97,7 @@ const props = defineProps({
   userId: { type: String, required: true },
   editable: { type: Boolean, default: true },
   avatarUrl: { type: String, default: "" },
-  aiRemaining: { type: Number, default: 0 },
-  aiDisabled: { type: Boolean, default: false },
-  aiLoading: { type: Boolean, default: false },
+  randomLoading: { type: Boolean, default: false },
   uploadLoading: { type: Boolean, default: false },
   errorMessage: { type: String, default: "" },
   userProfile: { type: Object, default: null },
@@ -112,7 +107,7 @@ const props = defineProps({
 
 const emit = defineEmits([
   "updateAvatarUrl",
-  "generateAvatar",
+  "randomAvatar",
   "uploadAvatar",
   "lookingForUpdated",
 ]);

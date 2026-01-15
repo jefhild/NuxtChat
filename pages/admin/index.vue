@@ -62,6 +62,7 @@ import AdminNewsmesh from "~/components/Admin2/NewsmeshReview.vue";
 import AdminNewsSource from "~/components/Admin2/NewsSource.vue";
 import AdminEngagementRules from "~/components/Admin2/EngagementRules.vue";
 import AdminFaqs from "~/components/Admin2/Faqs.vue";
+import AdminProfileAvatars from "~/components/Admin2/ProfileAvatars.vue";
 import { useAuthStore } from "@/stores/authStore1";
 
 const { t } = useI18n();
@@ -119,6 +120,11 @@ const items = computed(() => [
     icon: "mdi-robot-happy-outline",
     value: "aiBots",
   },
+  {
+    text: t("pages.admin.sections.profileAvatars"),
+    icon: "mdi-account-box",
+    value: "profileAvatars",
+  },
 ]);
 
 onMounted(async () => {
@@ -149,6 +155,8 @@ const getSectionComponent = (section) => {
       return AdminEngagementRules;
     case "faqs":
       return AdminFaqs;
+    case "profileAvatars":
+      return AdminProfileAvatars;
     default:
       return AdminDashboard;
   }

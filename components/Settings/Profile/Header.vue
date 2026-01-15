@@ -6,16 +6,14 @@
         :editable="isEditable"
         :userId="userProfile.user_id"
         :avatarUrl="avatar"
-        :aiRemaining="aiRemaining"
-        :aiDisabled="aiDisabled"
-        :aiLoading="aiLoading"
+        :randomLoading="randomLoading"
         :uploadLoading="uploadLoading"
         :errorMessage="errorMessage"
         :userProfile="userProfile"
         :refreshLookingForMenu="refreshLookingForMenu"
         :displayKey="displayKey"
         @updateAvatarUrl="$emit('updateAvatarUrl', $event)"
-        @generateAvatar="$emit('generateAvatar')"
+        @randomAvatar="$emit('randomAvatar')"
         @uploadAvatar="$emit('uploadAvatar', $event)"
         @lookingForUpdated="$emit('refreshLookingForDisplay')"
       />
@@ -30,9 +28,7 @@ defineProps({
   isEditable: Boolean,
   refreshLookingForMenu: Boolean,
   displayKey: Number,
-  aiRemaining: Number,
-  aiDisabled: Boolean,
-  aiLoading: Boolean,
+  randomLoading: Boolean,
   uploadLoading: Boolean,
   errorMessage: String,
 });
@@ -40,7 +36,7 @@ defineProps({
 defineEmits([
   "updateAvatarUrl",
   "refreshLookingForDisplay",
-  "generateAvatar",
+  "randomAvatar",
   "uploadAvatar",
 ]);
 </script>
