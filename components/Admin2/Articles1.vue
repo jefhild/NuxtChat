@@ -125,6 +125,16 @@
           :rules="[(v) => !!v || 'Title is required']"
         />
         <v-select
+          v-model="form.original_language_code"
+          :items="languageOptions"
+          item-title="label"
+          item-value="value"
+          label="Original Language"
+          clearable
+          hint="Defaults to blank if unknown."
+          persistent-hint
+        />
+        <v-select
           v-model="form.category_id"
           :items="categories"
           item-title="name"
@@ -283,6 +293,28 @@
             label="Title"
             :rules="[(v) => !!v || 'Title is required']"
           />
+          <v-select
+            v-model="selectedArticle.original_language_code"
+            :items="languageOptions"
+            item-title="label"
+            item-value="value"
+            label="Original Language"
+            clearable
+            hint="Defaults to blank if unknown."
+            persistent-hint
+          />
+          <div class="mb-4">
+            <v-btn
+              color="primary"
+              variant="outlined"
+              size="small"
+              :disabled="!selectedArticle.id"
+              :loading="translationLoading"
+              @click="openTranslationDialog"
+            >
+              Translate
+            </v-btn>
+          </div>
           <v-row>
             <v-col cols="12" md="6">
               <v-select
@@ -424,11 +456,51 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <v-dialog v-model="translationDialog" max-width="480">
+    <v-card>
+      <v-card-title>Translate Article</v-card-title>
+      <v-card-text>
+        <v-select
+          v-model="translationForm.locales"
+          :items="translationOptions"
+          item-title="label"
+          item-value="value"
+          label="Target languages"
+          multiple
+          chips
+          :disabled="translationForm.translateAll"
+        />
+        <v-checkbox
+          v-model="translationForm.translateAll"
+          label="Translate to all other languages"
+          hide-details
+        />
+        <v-checkbox
+          v-model="translationForm.overwrite"
+          label="Overwrite existing translation"
+          hide-details
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="translationDialog = false">
+          Cancel
+        </v-btn>
+        <v-btn
+          color="primary"
+          :loading="translationLoading"
+          @click="runTranslation"
+        >
+          Translate
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
 import { useI18n } from "vue-i18n";
-const { t } = useI18n();
+const { t, locale } = useI18n();
 import { useDisplay } from "vuetify";
 import { nextTick, watch } from "vue";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
@@ -455,6 +527,13 @@ const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
 const types = ref(["blog", "guide"]);
+const languageOptions = [
+  { label: "English (en)", value: "en" },
+  { label: "French (fr)", value: "fr" },
+  { label: "Spanish (es)", value: "es" },
+  { label: "Russian (ru)", value: "ru" },
+  { label: "Chinese (zh)", value: "zh" },
+];
 const loading = ref(false);
 const loadingArticles = ref(true);
 
@@ -492,11 +571,28 @@ const form = useState("articleForm", () => ({
   image_path: "",
   photo_credits_url: "",
   photo_credits_html: "",
+  original_language_code: "",
 }));
 
 const snackbar = ref({
   show: false,
   message: "",
+});
+const translationOptions = computed(() => {
+  const original = String(selectedArticle.value?.original_language_code || "")
+    .trim()
+    .toLowerCase();
+  if (!original) return languageOptions;
+  return languageOptions.filter(
+    (option) => option.value.toLowerCase() !== original
+  );
+});
+const translationDialog = ref(false);
+const translationLoading = ref(false);
+const translationForm = ref({
+  locales: [],
+  translateAll: false,
+  overwrite: false,
 });
 
 
@@ -529,6 +625,73 @@ const publishToChat = async (article) => {
     snackbar.value = { show: true, message: `Publish failed: ${e.message || e}` }
   }
 }
+
+const openTranslationDialog = () => {
+  const baseLocale = String(locale.value || "")
+    .split("-")[0]
+    .trim();
+  const defaultLocales = translationOptions.value.some(
+    (option) => option.value === baseLocale
+  )
+    ? [baseLocale]
+    : [];
+  translationForm.value = {
+    locales: defaultLocales,
+    translateAll: false,
+    overwrite: false,
+  };
+  translationDialog.value = true;
+};
+
+const runTranslation = async () => {
+  if (!selectedArticle.value?.id) return;
+  const targets = translationForm.value.translateAll
+    ? translationOptions.value.map((option) => option.value)
+    : translationForm.value.locales;
+  if (!targets.length) {
+    snackbar.value = {
+      show: true,
+      message: "Select at least one target language.",
+    };
+    return;
+  }
+  translationLoading.value = true;
+  try {
+    const response = await $fetch("/api/admin/articles/translate", {
+      method: "POST",
+      body: {
+        articleId: selectedArticle.value.id,
+        targetLocales: targets,
+        sourceLocale:
+          selectedArticle.value.original_language_code || "en",
+        overwrite: translationForm.value.overwrite,
+      },
+    });
+
+    if (!response?.success) {
+      throw new Error(response?.error || "Translation failed.");
+    }
+
+    const translated = response?.translated || [];
+    const skipped = response?.skipped || [];
+    const parts = [];
+    if (translated.length) parts.push(`Translated: ${translated.join(", ")}`);
+    if (skipped.length) parts.push(`Skipped: ${skipped.join(", ")}`);
+    snackbar.value = {
+      show: true,
+      message: parts.length ? parts.join(" · ") : "Translation complete.",
+    };
+    translationDialog.value = false;
+  } catch (err) {
+    console.error("[admin] translate article", err);
+    snackbar.value = {
+      show: true,
+      message: err?.message || "Failed to translate article.",
+    };
+  } finally {
+    translationLoading.value = false;
+  }
+};
 
 
 const togglePublish = async (article) => {
@@ -892,6 +1055,9 @@ const handleSubmit = async () => {
   try {
     form.value.title = formatName(form.value.title);
     form.value.slug = slugify(form.value.title);
+    form.value.original_language_code = form.value.original_language_code
+      ? String(form.value.original_language_code).trim()
+      : "";
 
     // Check for duplicate name or slug
     const duplicate = articles.value.find(
@@ -969,6 +1135,10 @@ const toggleEditDialog = async (article) => {
     image_path: article.image_path,
     photo_credits_url: article.photo_credits_url,
     photo_credits_html: article.photo_credits_html,
+    original_language_code:
+      article.original_language_code ||
+      article.newsmesh_meta?.language_code ||
+      "",
     slug: article.slug,
     type: article.type || "",
     rewrite_meta: article.rewrite_meta || {},
@@ -1031,6 +1201,9 @@ const handleArticleUpdate = async () => {
       image_path: selectedArticle.value.image_path,
       photo_credits_url: selectedArticle.value.photo_credits_url,
       photo_credits_html: selectedArticle.value.photo_credits_html,
+      original_language_code: selectedArticle.value.original_language_code
+        ? String(selectedArticle.value.original_language_code).trim()
+        : null,
       slug: slugify(selectedArticle.value.title),
       category_id: selectedArticle.value.category_id || null,
       type: selectedArticle.value.type || null,

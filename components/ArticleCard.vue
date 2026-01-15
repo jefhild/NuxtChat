@@ -4,10 +4,37 @@
     elevation="2"
     :style="{ minHeight: props.admin ? '360px' : '280px' }"
   >
+    <div v-if="showLanguageMenu" class="language-menu-container">
+      <v-menu>
+        <template #activator="{ props: menuProps }">
+          <v-btn
+            v-bind="menuProps"
+            size="x-small"
+            variant="flat"
+            class="language-menu-btn"
+            :title="originalLanguageTitle"
+            @click.stop
+          >
+            <v-icon size="16">mdi-translate</v-icon>
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            v-for="localeOption in availableLocales"
+            :key="localeOption"
+            @click="selectLocale(localeOption)"
+          >
+            <v-list-item-title>
+              {{ formatLocaleLabel(localeOption) }}
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </div>
     <NuxtLink
       :to="localPath(`/articles/${article.slug}`)"
       class="card-link position-relative"
-      :aria-label="article.title"
+      :aria-label="displayTitle"
     >
       <v-img
         v-if="articleImageUrl"
@@ -33,7 +60,7 @@
         <!-- Title -->
         <div class="title-overlay w-100 text-center px-3">
           <h2 class="font-weight-bold text-subtitle-1 text-md-h5 title-text">
-            {{ article.title }}
+            {{ displayTitle }}
           </h2>
         </div>
 
@@ -155,11 +182,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, nextTick } from "vue";
+import { computed, onMounted, ref, nextTick, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import ProfileDialog from "@/components/ProfileDialog.vue";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 
 const localPath = useLocalePath();
+const { locale } = useI18n();
 const { public: pub } = useRuntimeConfig();
 const supabase = useSupabaseClient?.();
 const { voteArticle, canVote } = useVoting();
@@ -181,6 +210,8 @@ const isProfileDialogOpen = ref(false);
 const profileDialogSlug = ref(null);
 const profileDialogUserId = ref(null);
 const summaryRef = ref(null);
+const selectedLocale = ref("");
+const manualLocale = ref(false);
 
 // Build the public image URL from env + prop
 const articleImageUrl = computed(() => {
@@ -197,25 +228,188 @@ const articleImageUrl = computed(() => {
   return base && cleanPath ? `${base}/articles/${cleanPath}` : "";
 });
 
+const baseLocale = computed(() =>
+  String(locale.value || "")
+    .split("-")[0]
+    .trim()
+    .toLowerCase()
+);
+
+const originalLanguageCode = computed(() => {
+  const value =
+    props.article?.original_language_code ||
+    props.article?.newsmesh_meta?.language_code ||
+    props.article?.newsmesh_meta?.language ||
+    props.article?.newsmesh_meta?.lang ||
+    "";
+  const clean = String(value || "").trim().toLowerCase();
+  return clean || "";
+});
+
+const translationRecords = computed(() =>
+  Array.isArray(props.article?.article_translations)
+    ? props.article.article_translations
+    : []
+);
+
+const availableLocales = computed(() => {
+  const locales = new Set();
+  if (originalLanguageCode.value) locales.add(originalLanguageCode.value);
+  translationRecords.value.forEach((entry) => {
+    if (entry?.locale) locales.add(String(entry.locale).toLowerCase());
+  });
+  return Array.from(locales);
+});
+
+const showLanguageMenu = computed(() => availableLocales.value.length > 1);
+
+const activeLocale = computed(() => {
+  const selected = String(selectedLocale.value || "").toLowerCase();
+  if (selected) return selected;
+  if (baseLocale.value) return baseLocale.value;
+  return originalLanguageCode.value || "en";
+});
+
+const translation = computed(() => {
+  const target = activeLocale.value;
+  return (
+    translationRecords.value.find(
+      (entry) => String(entry?.locale || "").toLowerCase() === target
+    ) || null
+  );
+});
+
+const displayTitle = computed(
+  () => translation.value?.headline || props.article?.title || ""
+);
+
 const articleImageAlt = computed(() => {
-  const title = props.article?.title || props.article?.slug;
+  const title = displayTitle.value || props.article?.slug;
   return title ? `${title} cover image` : "Article cover image";
+});
+
+const escapeHtml = (value = "") =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const stripLeadingMarkdown = (value) => {
+  const lines = String(value || "").split(/\r?\n/);
+  const cleaned = lines.filter((line) => line.trim().length > 0);
+  if (!cleaned.length) return "";
+  const first = cleaned[0].replace(/^#+\s*/, "").trim();
+  const rest = cleaned.slice(1);
+  return [first, ...rest].join(" ").trim();
+};
+
+const truncateText = (value, limit = 180) => {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (text.length <= limit) return text;
+  return `${text.slice(0, limit).trim()}…`;
+};
+
+const translationSnippet = computed(() => {
+  if (translatedHeader.value) return "";
+  const text = translation.value?.summary || "";
+  const trimmed = truncateText(stripLeadingMarkdown(text), 180);
+  return trimmed ? `<p>${escapeHtml(trimmed)}</p>` : "";
+});
+
+const translatedHeader = computed(() => {
+  if (!translation.value?.headline && !translation.value?.summary) return "";
+  const content = props.article?.content || "";
+  const headerMatch = content.match(/<header[\s\S]*?<\/header>/i);
+  if (!headerMatch) return "";
+
+  let headerHtml = headerMatch[0];
+  const headline = translation.value?.headline;
+  if (headline) {
+    headerHtml = headerHtml.replace(
+      /<(h1|h2)([^>]*)>[\s\S]*?<\/\1>/i,
+      `<$1$2>${escapeHtml(headline)}</$1>`
+    );
+  }
+
+  const summary = translation.value?.summary;
+  if (summary) {
+    if (/article-summary/i.test(headerHtml)) {
+      headerHtml = headerHtml.replace(
+        /<p[^>]*class=["'][^"']*article-summary[^"']*["'][^>]*>[\s\S]*?<\/p>/i,
+        `<p class="article-summary">${escapeHtml(summary)}</p>`
+      );
+    } else {
+      headerHtml = headerHtml.replace(
+        /<\/header>/i,
+        `<p class="article-summary">${escapeHtml(summary)}</p></header>`
+      );
+    }
+  }
+
+  return headerHtml;
 });
 
 const truncatedSummary = computed(() => {
   const maxLength = 300;
-  const content = props.article?.content || "";
+  if (translatedHeader.value) {
+    return `${translatedHeader.value}${translationSnippet.value || ""}`;
+  }
+
+  const content = translationSnippet.value || props.article?.content || "";
   if (!content) return "";
 
-  const headerMatch = content.match(/<header[\s\S]*?<\/header>/i);
-  if (headerMatch) {
-    return headerMatch[0];
+  if (!translationSnippet.value) {
+    const headerMatch = content.match(/<header[\s\S]*?<\/header>/i);
+    if (headerMatch) {
+      return headerMatch[0];
+    }
   }
 
   return content.length > maxLength
     ? content.slice(0, maxLength) + "..."
     : content;
 });
+
+const formatLocaleLabel = (value) => {
+  const code = String(value || "").toLowerCase();
+  const base = code.split("-")[0] || code;
+  const labels = {
+    en: "English",
+    fr: "French",
+    es: "Spanish",
+    ru: "Russian",
+    zh: "Chinese",
+  };
+  const label = labels[base] || base.toUpperCase();
+  return `${label} (${base})`;
+};
+
+const displayLocaleLabel = computed(() => {
+  const base = activeLocale.value.split("-")[0] || activeLocale.value;
+  return base.toUpperCase();
+});
+
+const originalLanguageTitle = computed(() => {
+  if (!originalLanguageCode.value) return "Original language unknown";
+  return `Original language: ${originalLanguageCode.value}`;
+});
+
+const selectLocale = (value) => {
+  selectedLocale.value = String(value || "").toLowerCase();
+  manualLocale.value = true;
+};
+
+watch(
+  () => locale.value,
+  () => {
+    if (!manualLocale.value) {
+      selectedLocale.value = "";
+    }
+  }
+);
 
 const formatDate = (isoDate) =>
   new Date(isoDate).toLocaleDateString(undefined, {
@@ -314,6 +508,7 @@ onMounted(() => {
   margin: 0;
   background-color: #fff;
   transition: box-shadow 0.2s ease; /* only subtle shadow change */
+  position: relative;
 }
 .article-card:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
@@ -321,6 +516,23 @@ onMounted(() => {
 
 .article-img {
   position: relative;
+}
+
+.language-menu-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+}
+
+.language-menu-btn {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  min-width: 28px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
 }
 
 /* Make the top link block-level and remove default link styles */

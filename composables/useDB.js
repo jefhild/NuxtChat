@@ -977,10 +977,12 @@ export const useDb = () => {
       image_path,
       photo_credits_url,
       photo_credits_html,
+      original_language_code,
       is_published,
       created_at,
       rewrite_meta,
       newsmesh_meta,
+      article_translations(locale, headline, summary, body, references_jsonb, social),
       category:category_id ( id, name, slug ),
       article_tags(tag:tag_id(id, name, slug))
     `
@@ -1016,10 +1018,12 @@ export const useDb = () => {
       image_path,
       photo_credits_url,
       photo_credits_html,
+      original_language_code,
       is_published,
       created_at,
       category:category_id ( id, name, slug ),
       article_tags(tag:tag_id(id, name, slug)),
+      article_translations(locale, headline, summary, body, references_jsonb, social),
       threads(slug)
     `
       )
@@ -1058,10 +1062,12 @@ export const useDb = () => {
       image_path,
       photo_credits_url,
       photo_credits_html,
+      original_language_code,
       is_published,
       created_at,
       category:category_id ( id, name, slug ),
       article_tags(tag:tag_id(id, name, slug)),
+      article_translations(locale, headline, summary, body, references_jsonb, social),
       threads(slug)
     `
       )
@@ -1101,6 +1107,8 @@ export const useDb = () => {
       newsmesh_id,
       newsmesh_meta,
       rewrite_meta,
+      original_language_code,
+      article_translations(locale, headline, summary, body, references_jsonb, social),
       persona_key,
       persona_id,
       persona_display_name,
@@ -2072,6 +2080,7 @@ export const useDb = () => {
         image_path: article.image_path,
         photo_credits_url: article.photo_credits_url,
         photo_credits_html: article.photo_credits_html,
+        original_language_code: article.original_language_code || null,
         category_id: article.category_id,
         type: article.type,
         is_published: article.is_published,

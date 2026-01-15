@@ -374,6 +374,9 @@ export default defineEventHandler(async (event) => {
     const articleId = String(body.articleId || "").trim();
     const personaKey = String(body.personaKey || "").trim();
     const rewrite = body.rewrite as RewritePayload | undefined;
+    const originalLanguageCode = String(body.original_language_code || "")
+      .trim()
+      .replace(/\s+/g, "");
 
     if (!articleId) {
       setResponseStatus(event, 400);
@@ -461,6 +464,7 @@ export default defineEventHandler(async (event) => {
       published_date: article.published_date,
       last_seen_at: article.last_seen_at,
       media_url: article.media_url,
+      language_code: originalLanguageCode || null,
     };
 
     const rewriteMeta = {
@@ -505,6 +509,7 @@ export default defineEventHandler(async (event) => {
       newsmesh_id: article.id,
       newsmesh_meta: newsmeshMeta,
       rewrite_meta: rewriteMeta,
+      original_language_code: originalLanguageCode || null,
     };
 
     const { data: draft, error: insertError } = await supabase

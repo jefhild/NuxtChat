@@ -363,11 +363,14 @@ const config = useRuntimeConfig();
 const supabase = useSupabaseClient?.();
 const route = useRoute();
 const slug = route.params.slug;
-const currentLocale = locale.value || "en";
+const currentLocale = computed(() => locale.value || "en");
+const baseLocale = computed(() =>
+  String(currentLocale.value || "en").split("-")[0].toLowerCase()
+);
 
 const chatThreadKey = ref(null);
 
-const articleLanguage = computed(() => currentLocale || "en");
+const articleLanguage = computed(() => baseLocale.value || "en");
 const {
   getArticleBySlug,
   getAllCategories,
@@ -417,7 +420,19 @@ const peopleSlugs = computed(() => {
 
 const newsmeshMeta = computed(() => article.value?.newsmesh_meta || null);
 const rewriteMeta = computed(() => article.value?.rewrite_meta || null);
-const rewriteHeadline = computed(() => rewriteMeta.value?.headline || null);
+const translations = computed(() =>
+  Array.isArray(article.value?.article_translations)
+    ? article.value.article_translations
+    : []
+);
+const activeTranslation = computed(() =>
+  translations.value.find(
+    (entry) => String(entry?.locale || "").toLowerCase() === baseLocale.value
+  )
+);
+const rewriteHeadline = computed(
+  () => activeTranslation.value?.headline || rewriteMeta.value?.headline || null
+);
 const personaName = computed(
   () =>
     article.value?.persona_display_name ||
@@ -479,15 +494,63 @@ const resolvedDisplayPeople = computed(() =>
   })
 );
 const displayTitle = computed(
-  () => article.value?.title || newsmeshMeta.value?.title  || ""
+  () =>
+    activeTranslation.value?.headline ||
+    article.value?.title ||
+    newsmeshMeta.value?.title ||
+    ""
 );
 const displaySummary = computed(
   () =>
+    activeTranslation.value?.summary ||
     newsmeshMeta.value?.summary ||
     rewriteMeta.value?.summary ||
     article.value?.summary ||
     ""
 );
+
+const escapeHtml = (value = "") =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const translatedHeader = computed(() => {
+  if (!activeTranslation.value?.headline && !activeTranslation.value?.summary) {
+    return "";
+  }
+  const content = article.value?.content || "";
+  const headerMatch = content.match(/<header[\s\S]*?<\/header>/i);
+  if (!headerMatch) return "";
+
+  let headerHtml = headerMatch[0];
+  const headline = activeTranslation.value?.headline;
+  if (headline) {
+    headerHtml = headerHtml.replace(
+      /<(h1|h2)([^>]*)>[\s\S]*?<\/\1>/i,
+      `<$1$2>${escapeHtml(headline)}</$1>`
+    );
+  }
+
+  const summary = activeTranslation.value?.summary;
+  if (summary) {
+    if (/article-summary/i.test(headerHtml)) {
+      headerHtml = headerHtml.replace(
+        /<p[^>]*class=["'][^"']*article-summary[^"']*["'][^>]*>[\s\S]*?<\/p>/i,
+        `<p class="article-summary">${escapeHtml(summary)}</p>`
+      );
+    } else {
+      headerHtml = headerHtml.replace(
+        /<\/header>/i,
+        `<p class="article-summary">${escapeHtml(summary)}</p></header>`
+      );
+    }
+  }
+
+  return headerHtml;
+});
 
 const heroImage = computed(() => {
   // Prefer generated public URL from Supabase to avoid double slashes or encoding issues
@@ -549,7 +612,12 @@ const heroImageAlt = computed(() =>
     : "Article cover image"
 );
 
-const rewriteReferences = computed(() => rewriteMeta.value?.references || []);
+const rewriteReferences = computed(
+  () =>
+    activeTranslation.value?.references_jsonb ||
+    rewriteMeta.value?.references ||
+    []
+);
 const keywordList = computed(() =>
   displayTags.value.map((tag) => tag.name).filter(Boolean)
 );
@@ -570,7 +638,14 @@ const articleBodyRef = ref(null);
 const renderedMarkdown = ref("");
 
 let htmlContent = "";
-if (article.value?.content) {
+if (activeTranslation.value?.body) {
+  const bodyHtml = await marked(activeTranslation.value.body);
+  const headerHtml = translatedHeader.value;
+  const sectionHtml = `<section class="rewrite-body">${bodyHtml}</section>`;
+  htmlContent = `<article class="newsmesh-article">${
+    headerHtml || ""
+  }${sectionHtml}</article>`;
+} else if (article.value?.content) {
   htmlContent = article.value.content;
 } else if (rewriteMeta.value?.body) {
   htmlContent = await marked(rewriteMeta.value.body);
@@ -585,7 +660,7 @@ if (htmlContent) {
     ? condensed.slice(0, 160) + "…"
     : displayTitle.value;
   const localizedShareUrl = `https://imchatty.com${
-    currentLocale === "en" ? "" : `/${currentLocale}`
+    currentLocale.value === "en" ? "" : `/${currentLocale.value}`
   }/articles/${slug}`;
   const imageUrl = heroImage.value;
 
@@ -630,9 +705,9 @@ if (htmlContent) {
     ogImage: imageUrl,
     ogType: "article",
     ogLocale:
-      currentLocale === "en"
+      currentLocale.value === "en"
         ? "en_US"
-        : `${currentLocale}_${currentLocale.toUpperCase()}`,
+        : `${currentLocale.value}_${currentLocale.value.toUpperCase()}`,
     ogSiteName: "ImChatty",
     twitterCard: "summary_large_image",
     twitterTitle: `${displayTitle.value}`,

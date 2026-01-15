@@ -160,6 +160,7 @@ The rewrite must:
 - Produce a body made of 3-5 short paragraphs formatted in Markdown.
 - Include a short summary (2 sentences) and a fresh headline.
 - Provide social captions as JSON: social.facebook.caption (1-2 sentences + URL), social.instagram.caption (1-2 sentences, 3-6 hashtags, no link).
+- Write the rewrite in the same language as the original record (title/summary). If the source is not English, keep that language for the headline, summary, body, and social captions.
 `;
 
 const buildSystemPrompt = (persona: any) => {

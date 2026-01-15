@@ -231,6 +231,9 @@ export default defineEventHandler(async (event) => {
     const sourceUrl = toSafeUrl(body.sourceUrl);
     const personaKey = String(body.personaKey || "").trim();
     const rewrite = body.rewrite as RewritePayload | undefined;
+    const originalLanguageCode = String(body.original_language_code || "")
+      .trim()
+      .replace(/\s+/g, "");
 
     const sourceTitle = normalizeName(body.sourceTitle);
     const sourceSummary = normalizeName(body.sourceSummary);
@@ -329,6 +332,7 @@ export default defineEventHandler(async (event) => {
         source_type: "manual-url",
       },
       rewrite_meta: rewriteMeta,
+      original_language_code: originalLanguageCode || null,
     };
 
     const { data: draft, error: insertError } = await supabase
