@@ -75,9 +75,32 @@
         <!-- CENTER: Thread messages -->
         <v-col
           cols="12"
-          md="7"
+          :md="activePanelOpen ? 7 : 9"
           class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
         >
+          <div class="active-panel-rail">
+            <v-tooltip text="Active chats" location="left">
+              <template #activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon
+                  variant="text"
+                  size="x-small"
+                  class="active-panel-toggle"
+                  :aria-expanded="String(activePanelOpen)"
+                  aria-controls="active-panel"
+                  aria-label="Toggle active chats panel"
+                  @click="activePanelOpen = !activePanelOpen"
+                >
+                  <v-icon
+                    :icon="
+                      activePanelOpen ? 'mdi-chevron-right' : 'mdi-chevron-left'
+                    "
+                  />
+                </v-btn>
+              </template>
+            </v-tooltip>
+          </div>
           <!-- Sticky header -->
           <div class="messages-sticky-header d-none d-md-block">
             <div
@@ -337,11 +360,16 @@
 
         <!-- RIGHT: Participants -->
         <v-col
+          v-if="activePanelOpen"
           cols="12"
           md="2"
           class="pa-2 d-flex flex-column overflow-hidden d-none d-md-flex min-h-0"
         >
-          <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+          <v-card
+            id="active-panel"
+            flat
+            class="d-flex flex-column flex-grow-1 min-h-0 active-panel-card"
+          >
             <div
               ref="rightScrollRef"
               class="flex-grow-1 overflow-auto min-h-0 users-scroll"
@@ -367,8 +395,8 @@
                 @update:showAi="showAIUsers = $event"
               />
           </div>
-        </v-card>
-      </v-col>
+          </v-card>
+        </v-col>
       </v-row>
 
       <!-- Mobile (< md): only the Thread pane -->
@@ -813,6 +841,7 @@ const filtersVisible = ref(true);
 
 const leftOpen = ref(false);
 const rightOpen = ref(false);
+const activePanelOpen = ref(false);
 const panelOpen = ref(false);
 const autoCloseOnScroll = false;
 const isProfileDialogOpen = ref(false);
@@ -1841,6 +1870,35 @@ function toggleFilters() {
 
 .chat-col {
   max-width: 800px;
+}
+
+.active-panel-rail {
+  --active-rail-width: 34px;
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  right: 6px;
+  width: var(--active-rail-width);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.active-panel-toggle {
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  width: 28px;
+  height: 28px;
+}
+
+.active-panel-toggle :deep(.v-icon) {
+  color: rgba(var(--v-theme-on-surface), 0.8);
+}
+
+.active-panel-card {
+  transition: opacity 0.2s ease, transform 0.25s ease;
 }
 
 .header-chevron {
