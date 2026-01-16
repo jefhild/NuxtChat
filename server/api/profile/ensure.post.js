@@ -1,5 +1,6 @@
 // server/api/profile/ensure.post.js
 import { defineEventHandler, getRequestHeader } from "h3";
+import { createClient } from "@supabase/supabase-js";
 import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
 
 const slugify = (s) =>
@@ -12,6 +13,17 @@ const slugify = (s) =>
 
 const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
 const DEFAULT_LOCALE = "en";
+const AVATAR_BUCKET = "profile-avatars";
+const GENDER_FOLDERS = {
+  1: "male",
+  2: "female",
+  3: "other",
+};
+
+const resolveGenderFolder = (genderId) => {
+  const id = Number(genderId);
+  return GENDER_FOLDERS[id] || "other";
+};
 
 const getCookieValue = (cookieHeader, name) => {
   if (!cookieHeader) return null;
@@ -72,6 +84,37 @@ const extractDisplayAvatar = (user, idData) => {
   return { displayname, avatar_url };
 };
 
+const pickRandomAvatarUrl = async (genderId, config) => {
+  const supabaseUrl = config.public?.SUPABASE_URL;
+  const serviceKey = config.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) return null;
+
+  const supabase = createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false },
+  });
+
+  const folder = resolveGenderFolder(genderId);
+  const { data: files, error: listError } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .list(folder, {
+      limit: 200,
+      sortBy: { column: "name", order: "asc" },
+    });
+
+  if (listError) return null;
+
+  const eligible = (files || []).filter((file) => file?.name);
+  if (!eligible.length) return null;
+
+  const selection = eligible[Math.floor(Math.random() * eligible.length)];
+  const filePath = `${folder}/${selection.name}`;
+  const { data: publicData } = supabase.storage
+    .from(AVATAR_BUCKET)
+    .getPublicUrl(filePath);
+
+  return publicData?.publicUrl || null;
+};
+
 export default defineEventHandler(async (event) => {
   // 1️⃣ Authenticate user from Supabase cookie/session
   const user = await serverSupabaseUser(event);
@@ -108,14 +151,21 @@ export default defineEventHandler(async (event) => {
 
   const baseSlug = slugify(displayname);
 
+  const config = useRuntimeConfig();
+  const genderId = null;
+  const avatarGenderId = genderId ?? 3;
+  const defaultAvatarUrl = avatar_url
+    ? null
+    : await pickRandomAvatarUrl(avatarGenderId, config);
+
   const payload = {
     user_id: user.id,
     provider,
     displayname,
     slug: baseSlug,
-    avatar_url,
+    avatar_url: avatar_url || defaultAvatarUrl,
     username: null,
-    gender_id: 3,
+    gender_id: genderId,
     status_id: null,
     age: null,
     country_id: null,
@@ -140,6 +190,7 @@ export default defineEventHandler(async (event) => {
 
   // 6️⃣ Optional defaults (non-fatal)
   const defaultFavoriteId = "7d20548d-8a9d-4190-bce5-90c8d74c4a56";
+  const defaultLookingForId = 1;
   try {
     await client
       .from("favorites")
@@ -148,6 +199,9 @@ export default defineEventHandler(async (event) => {
       subject_user_id: defaultFavoriteId,
       voter_user_id: ins.user_id,
     });
+    await client
+      .from("user_looking_for")
+      .insert({ user_id: ins.user_id, looking_for_id: defaultLookingForId });
   } catch (e) {
     console.warn("Defaults failed:", e);
   }

@@ -1,11 +1,17 @@
 <template>
-  <v-menu v-model="menu" :close-on-content-click="false" location="end">
+  <v-menu
+    v-model="menu"
+    :close-on-content-click="false"
+    location="end"
+    :disabled="disabled"
+  >
     <template #activator="{ props }">
       <v-btn
         variant="text"
         append-icon="mdi-arrow-expand-right"
         v-bind="props"
         color="blue"
+        :disabled="disabled"
       >
         {{ $t("components.lookingFor.looking-for") }}
       </v-btn>
@@ -38,6 +44,7 @@
                 :label="option.name"
                 :color="userLookingForIds.includes(option.id) ? option.color : 'black'"
                 hide-details
+                :disabled="disabled"
               />
             </v-col>
             <v-col class="d-flex align-center justify-center">
@@ -79,6 +86,7 @@ const props = defineProps({
     validator: (val) => val && val.user_id,
   },
   refreshLookingForMenu: Boolean,
+  disabled: { type: Boolean, default: false },
 });
 
 const userId = computed(() => props.userProfile?.user_id);

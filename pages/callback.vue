@@ -31,8 +31,7 @@ onMounted(async () => {
   }
 
   // Ensure a profile exists (idempotent)
-  let ensureResult = null
-  try { ensureResult = await $fetch('/api/profile/ensure', { method: 'POST' }) } catch (e) {
+  try { await $fetch('/api/profile/ensure', { method: 'POST' }) } catch (e) {
     console.warn('[callback] /api/profile/ensure failed (non-fatal)', e)
   }
 
@@ -40,18 +39,16 @@ onMounted(async () => {
   try {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('age, gender_id, bio, country_id, avatar_url')
+      .select('gender_id, country_id, avatar_url')
       .eq('user_id', data.user.id)
       .maybeSingle()
 
     if (!profileError && profile) {
-      const created = !!ensureResult?.created
-      const needsGender = profile.gender_id == null || (created && profile.gender_id === 3)
-      const needsAge = profile.age == null
-      const needsBio = !profile.bio
+      const needsGender = profile.gender_id == null
       const needsLocation = profile.country_id == null
+      const needsAvatar = !profile.avatar_url
 
-      if (needsGender || needsAge || needsBio || needsLocation) {
+      if (needsGender || needsLocation || needsAvatar) {
         const completionPath = `/settings?complete=1&next=${encodeURIComponent(nextPath)}`
         return router.replace(localPath(completionPath))
       }

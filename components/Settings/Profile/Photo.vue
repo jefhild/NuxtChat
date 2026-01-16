@@ -71,11 +71,15 @@
             {{ errorMessage }}
           </v-alert>
         </div>
-        <div v-if="userProfile?.user_id" class="photo-lookingfor">
+        <div
+          v-if="userProfile?.user_id"
+          class="photo-lookingfor"
+          :class="{ 'lookingfor-disabled': !editable }"
+        >
           <SettingsProfileLookingForMenu
             :userProfile="userProfile"
             :refreshLookingForMenu="refreshLookingForMenu"
-            :class="{ 'menu-disabled': !editable }"
+            :disabled="!editable"
             @lookingForUpdated="editable && $emit('lookingForUpdated')"
           />
           <div class="lookingfor-icons">
@@ -219,6 +223,10 @@ const onFileChange = async (e: Event) => {
 .menu-disabled {
   opacity: 0.5;
   pointer-events: none;
+}
+
+.lookingfor-disabled {
+  opacity: 0.6;
 }
 
 .lookingfor-icons {

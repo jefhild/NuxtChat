@@ -489,6 +489,24 @@ const menu = reactive({
   activator: null,
 });
 
+onMounted(async () => {
+  try {
+    await auth.checkAuth();
+    if (
+      ["authenticated", "anon_authenticated"].includes(auth.authStatus) &&
+      !auth.isProfileComplete
+    ) {
+      const nextPath = route.fullPath || "/chat/articles";
+      const completionPath = `/settings?complete=1&next=${encodeURIComponent(
+        nextPath
+      )}`;
+      router.replace(localePath(completionPath));
+    }
+  } catch (err) {
+    console.warn("[articles chat] auth check failed:", err);
+  }
+});
+
 const slug = computed(() => String(route.params.slug || ""));
 const localeFromPath = computed(() => {
   const seg = route.path.split("/")[1] || "";

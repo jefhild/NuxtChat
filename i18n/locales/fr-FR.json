@@ -1022,7 +1022,8 @@
         "placeholder": "Tapez votre message ici...",
         "send": "Envoyer",
         "sign-in": "Connectez-vous pour discuter",
-        "blocked": "Vous avez bloqué cet utilisateur"
+        "blocked": "Vous avez bloqué cet utilisateur",
+        "complete-profile": "Terminez votre profil pour discuter"
       }
     },
     "morefemale": {
