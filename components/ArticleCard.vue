@@ -5,7 +5,7 @@
     :style="{ minHeight: props.admin ? '360px' : '280px' }"
   >
     <div v-if="showLanguageMenu" class="language-menu-container">
-      <v-menu>
+      <v-menu content-class="article-language-menu">
         <template #activator="{ props: menuProps }">
           <v-btn
             v-bind="menuProps"
@@ -53,7 +53,14 @@
             class="discuss-link"
             @click.stop
           >
-            <v-btn color="primary" size="small">Discuss…</v-btn>
+            <v-btn
+              icon
+              variant="flat"
+              class="discuss-icon-btn"
+              aria-label="Discuss"
+            >
+              <v-icon size="16">mdi-chat-outline</v-icon>
+            </v-btn>
           </NuxtLink>
         </div>
 
@@ -526,8 +533,29 @@ onMounted(() => {
 }
 
 .language-menu-btn {
-  background: #ffffff;
-  color: #0f172a;
+  background: rgba(255, 255, 255, 0.65);
+  color: #2563eb;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  min-width: 28px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+:global(.article-language-menu .v-list-item-title) {
+  font-size: 0.8rem;
+  line-height: 1.1;
+}
+
+:global(.article-language-menu .v-list-item) {
+  min-height: 32px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.discuss-icon-btn {
+  background: rgba(255, 255, 255, 0.65);
+  color: #2563eb;
   border: 1px solid rgba(15, 23, 42, 0.15);
   min-width: 28px;
   width: 28px;
