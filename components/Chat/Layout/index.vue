@@ -103,8 +103,13 @@
           </div>
           <!-- Sticky header -->
           <div class="messages-sticky-header d-none d-md-block">
-            <div
-              class="profile-header px-4 py-3 d-flex align-center justify-space-between"
+            <button
+              class="profile-header profile-header-toggle px-4 py-3 d-flex align-center justify-space-between"
+              type="button"
+              :disabled="!selectedUser"
+              :aria-expanded="String(panelOpen)"
+              aria-controls="thread-info-panel"
+              @click="panelOpen = !panelOpen"
             >
               <div class="d-flex align-center profile-header-left">
                 <v-avatar size="44" color="primary" variant="tonal">
@@ -156,14 +161,14 @@
                   :disabled="!selectedUser"
                   :aria-expanded="String(panelOpen)"
                   aria-controls="thread-info-panel"
-                  @click="panelOpen = !panelOpen"
+                  @click.stop="panelOpen = !panelOpen"
                 >
                   <v-icon
                     :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
                   />
                 </v-btn>
               </div>
-            </div>
+            </button>
           </div>
 
           <!-- Overlay panel that drops over the scrollable list -->
@@ -408,8 +413,13 @@
           cols="12"
           class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
         >
-          <div
-            class="messages-sticky-header d-flex d-md-none px-3 py-2 align-center justify-space-between"
+          <button
+            class="messages-sticky-header messages-sticky-header-button d-flex d-md-none px-3 py-2 align-center justify-space-between"
+            type="button"
+            :disabled="!selectedUser"
+            :aria-expanded="String(panelOpen)"
+            aria-controls="thread-info-panel"
+            @click="panelOpen = !panelOpen"
           >
             <div class="d-flex align-center mobile-profile-left">
               <v-avatar size="40" color="primary" variant="tonal">
@@ -441,13 +451,13 @@
               :disabled="!selectedUser"
               :aria-expanded="String(panelOpen)"
               aria-controls="thread-info-panel"
-              @click="panelOpen = !panelOpen"
+              @click.stop="panelOpen = !panelOpen"
             >
               <v-icon
                 :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
               />
             </v-btn>
-          </div>
+          </button>
           <v-expand-transition>
             <v-card
               v-if="panelOpen"
@@ -1911,6 +1921,26 @@ function toggleFilters() {
 
 .profile-header {
   gap: 16px;
+}
+.profile-header-toggle {
+  background: transparent;
+  border: 0;
+  width: 100%;
+  text-align: left;
+}
+.profile-header-toggle:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.messages-sticky-header-button {
+  background: transparent;
+  border: 0;
+  width: 100%;
+  text-align: left;
+}
+.messages-sticky-header-button:disabled {
+  cursor: default;
+  opacity: 0.6;
 }
 .profile-header-left,
 .mobile-profile-left {
