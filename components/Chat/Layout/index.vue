@@ -1312,6 +1312,7 @@ const isBotSelected = computed(() => {
   return sid === IMCHATTY_ID;
 });
 const canSend = computed(() => {
+  if (!auth.isProfileComplete) return false;
   if (isBotSelected.value) return true;
   return ["anon_authenticated", "authenticated"].includes(auth.authStatus);
 });

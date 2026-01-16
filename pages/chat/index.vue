@@ -29,12 +29,25 @@ import { onMounted, ref } from "vue";
 const authStore = useAuthStore();
 const isLoading = ref(true);
 
+const route = useRoute();
+const router = useRouter();
+const localPath = useLocalePath();
 
 useSeoI18nMeta("chat.index");
 onMounted(async () => {
   try {
     // console.log("[chat2] onMounted: checking auth...");
     await authStore.checkAuth(); // safe getSession-based check
+    if (
+      ["authenticated", "anon_authenticated"].includes(authStore.authStatus) &&
+      !authStore.isProfileComplete
+    ) {
+      const nextPath = route.fullPath || "/chat";
+      const completionPath = `/settings?complete=1&next=${encodeURIComponent(
+        nextPath
+      )}`;
+      return router.replace(localPath(completionPath));
+    }
   } catch (e) {
     console.warn("[auth] checkAuth failed (ok to continue):", e);
   } finally {

@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { useOnboardingDraftStore } from "~/stores/onboardingDraftStore";
 import { useDb } from "@/composables/useDB";
 import { usePresenceStore2 } from "@/stores/presenceStore2";
+import { useGeoLocationDefaults } from "@/composables/useGeoLocationDefaults";
 // import { useSupabaseClient } from "#imports"; // adjust if your import path differs
 
 function resolveAuthStatus({ session, user, profile }) {
@@ -62,6 +63,13 @@ export const useAuthStore = defineStore("authStore1", {
   getters: {
     getAiLimit(state) {
       return AI_LIMITS[state.authStatus] ?? 0;
+    },
+    isProfileComplete(state) {
+      const profile = state.userProfile || {};
+      const hasGender = profile.gender_id !== null && profile.gender_id !== undefined;
+      const hasAvatar = !!profile.avatar_url;
+      const hasCountry = profile.country_id !== null && profile.country_id !== undefined;
+      return hasGender && hasAvatar && hasCountry;
     },
 
     // canUseOAuth(state) { return !state.authBusy; },
@@ -283,16 +291,38 @@ export const useAuthStore = defineStore("authStore1", {
         return Number.isFinite(toNum(v)) ? toNum(v) : null;
       };
 
+      const genderId = pickId(draft.genderId, draft.gender_id);
+      const avatarUrl = draft.avatar_url ?? draft.avatarUrl ?? null;
+
+      let countryId = pickId(draft.countryId, draft.country_id);
+      let stateId = pickId(draft.stateId, draft.state_id);
+      let cityId = pickId(draft.cityId, draft.city_id);
+      let ip = draft.ip ?? null;
+
+      if (import.meta.client && !countryId) {
+        try {
+          const { getDefaults } = useGeoLocationDefaults();
+          const defaults = await getDefaults();
+          if (defaults?.countryId) countryId = defaults.countryId;
+          if (defaults?.stateId) stateId = defaults.stateId;
+          if (defaults?.cityId) cityId = defaults.cityId;
+          if (!ip && defaults?.ip) ip = defaults.ip;
+        } catch (err) {
+          console.warn("[finalize] geo defaults failed:", err);
+        }
+      }
+
       const payload = {
         user_id: userId,
         displayname: draft.displayName ?? draft.displayname ?? null,
         age: Number.isFinite(toNum(draft.age)) ? toNum(draft.age) : null,
-        gender_id: pickId(draft.genderId, draft.gender_id),
+        gender_id: genderId,
         bio: draft.bio ?? null,
-        country_id: pickId(draft.countryId, draft.country_id),
-        state_id: pickId(draft.stateId, draft.state_id),
-        city_id: pickId(draft.cityId, draft.city_id),
-        ip: draft.ip ?? null,
+        country_id: countryId,
+        state_id: stateId,
+        city_id: cityId,
+        ip,
+        avatar_url: avatarUrl ?? null,
 
         provider: "anonymous",
       };
@@ -305,6 +335,17 @@ export const useAuthStore = defineStore("authStore1", {
         const isDuplicate =
           error.code === "23505" || msg.includes("duplicate key");
         if (!isDuplicate) throw error;
+      }
+
+      if (!avatarUrl) {
+        try {
+          await $fetch("/api/profile/avatar-random", {
+            method: "POST",
+            body: { userId, genderId },
+          });
+        } catch (err) {
+          console.warn("[finalize] default avatar failed:", err);
+        }
       }
 
       const arr = await getUserProfileFunctionFromId(userId);

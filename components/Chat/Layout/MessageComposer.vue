@@ -52,6 +52,10 @@ const isBlocked = computed(() =>
       )
     : false
 );
+const needsProfileCompletion = computed(() =>
+  ["anon_authenticated", "authenticated"].includes(auth.authStatus) &&
+  !auth.isProfileComplete
+);
 
 const derivedKey = computed(
   () =>
@@ -69,6 +73,7 @@ const { sendTypingPing } = useTypingChannel({
 
 const isDisabled = computed(() => {
   if (isBlocked.value) return true;
+  if (needsProfileCompletion.value) return true;
   switch (auth.authStatus) {
     case "anonymous":
       return true;
@@ -112,6 +117,8 @@ const sendPing = (() => {
 const placeholderText = computed(() => {
   if (!props.peerId) return t("components.message.composer.placeholder"); // optional
   if (isBlocked.value) return t("components.message.composer.blocked");
+  if (needsProfileCompletion.value)
+    return t("components.message.composer.complete-profile");
   if (isDisabled.value) return t("components.message.composer.sign-in"); // unauth / blocked
   return t("components.message.composer.placeholder"); // normal
 });

@@ -1044,7 +1044,8 @@
         "placeholder": "Type your message here...",
         "send": "Send",
         "sign-in": "Sign in to chat",
-        "blocked": "You blocked this user"
+        "blocked": "You blocked this user",
+        "complete-profile": "Complete your profile to chat"
       }
     },
     "morefemale": {

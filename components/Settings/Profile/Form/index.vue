@@ -289,13 +289,10 @@ const completionNext = computed(() => {
 const completionReady = computed(() => {
   if (!completionMode.value) return true;
   const profile = editableProfile.value || {};
-  const hasDisplay = !!profile.displayname;
-  const hasAge = profile.age !== null && profile.age !== undefined;
   const hasGender = profile.gender_id !== null && profile.gender_id !== undefined;
-  const hasBio = String(profile.bio || "").trim().length >= MIN_BIO_LENGTH;
   const hasLocation = profile.country_id !== null && profile.country_id !== undefined;
   const hasAvatar = !!profile.avatar_url;
-  return hasDisplay && hasAge && hasGender && hasBio && hasLocation && hasAvatar;
+  return hasGender && hasLocation && hasAvatar;
 });
 
 const aiBioStorageKey = computed(() => {

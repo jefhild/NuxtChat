@@ -1021,7 +1021,8 @@
         "placeholder": "在此输入您的消息...",
         "send": "发送",
         "sign-in": "登录以开始聊天",
-        "blocked": "你已屏蔽该用户"
+        "blocked": "你已屏蔽该用户",
+        "complete-profile": "请完善个人资料以聊天"
       }
     },
     "morefemale": {

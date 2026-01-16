@@ -1940,12 +1940,14 @@ export const useDb = () => {
 
     const profileId = data.user_id;
     const defaultFavoriteId = "7d20548d-8a9d-4190-bce5-90c8d74c4a56"; // Santa
+    const defaultLookingForId = 1; // Love
 
     try {
       await insertFavorite(profileId, defaultFavoriteId);
       await upvoteUserProfile(defaultFavoriteId, profileId);
+      await insertUserInterest(profileId, defaultLookingForId);
     } catch (e) {
-      console.error("Error inserting default favorite/upvote:", e);
+      console.error("Error inserting default favorite/upvote/looking-for:", e);
       // non-fatal
     }
 
