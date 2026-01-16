@@ -442,6 +442,9 @@
       "tags": {
         "heading": "Explore A Tag",
         "subtitle": "Pick a topic, share experiences, and discover new perspectives."
+      },
+      "detail": {
+        "go_to_discussion": "Go to discussion"
       }
     },
     "chat": {

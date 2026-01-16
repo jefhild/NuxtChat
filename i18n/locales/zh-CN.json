@@ -439,6 +439,9 @@
       "tags": {
         "heading": "探索标签",
         "subtitle": "选择一个主题，分享你的经验，发现新的视角。"
+      },
+      "detail": {
+        "go_to_discussion": "前往讨论"
       }
     },
     "chat": {

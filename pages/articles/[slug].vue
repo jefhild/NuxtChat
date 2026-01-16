@@ -122,23 +122,27 @@
         <div
           class="hero-image-footer d-flex justify-space-between align-center px-4 pb-3"
         >
-          <v-btn
-            color="primary"
-            :to="
-              localPath(
-                '/chat/articles/' + encodeURIComponent(chatThreadKey || '')
-              )
-            "
-            :disabled="!chatThreadKey"
-            large
-          >
-            {{
-              chatThreadKey
-                ? $t("pages.home.landing_page.cta_button")
-                : "No open chats"
-            }}
-            <v-icon end>mdi-chat</v-icon>
-          </v-btn>
+          <v-tooltip location="top">
+            <template #activator="{ props: tooltipProps }">
+              <v-btn
+                v-bind="tooltipProps"
+                icon
+                variant="flat"
+                class="hero-chat-btn"
+                :to="
+                  localPath(
+                    '/chat/articles/' + encodeURIComponent(chatThreadKey || '')
+                  )
+                "
+                :disabled="!chatThreadKey"
+                :aria-label="$t('pages.articles.detail.go_to_discussion')"
+                :title="$t('pages.articles.detail.go_to_discussion')"
+              >
+                <v-icon size="16">mdi-chat-outline</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ $t("pages.articles.detail.go_to_discussion") }}</span>
+          </v-tooltip>
 
           <span
             v-if="displayPhotoCredits"
@@ -636,137 +640,157 @@ const profileDialogUserId = ref(null);
 const articleBodyRef = ref(null);
 
 const renderedMarkdown = ref("");
-
-let htmlContent = "";
+const htmlContent = ref("");
 if (activeTranslation.value?.body) {
   const bodyHtml = await marked(activeTranslation.value.body);
   const headerHtml = translatedHeader.value;
   const sectionHtml = `<section class="rewrite-body">${bodyHtml}</section>`;
-  htmlContent = `<article class="newsmesh-article">${
+  htmlContent.value = `<article class="newsmesh-article">${
     headerHtml || ""
   }${sectionHtml}</article>`;
 } else if (article.value?.content) {
-  htmlContent = article.value.content;
+  htmlContent.value = article.value.content;
 } else if (rewriteMeta.value?.body) {
-  htmlContent = await marked(rewriteMeta.value.body);
+  htmlContent.value = await marked(rewriteMeta.value.body);
 }
 
-if (htmlContent) {
-  renderedMarkdown.value = htmlContent;
+if (htmlContent.value) {
+  renderedMarkdown.value = htmlContent.value;
+}
 
-  const plainText = htmlContent.replace(/<[^>]+>/g, " ");
-  const condensed = plainText.replace(/\s+/g, " ").trim();
-  const safeDescription = condensed
-    ? condensed.slice(0, 160) + "…"
-    : displayTitle.value;
-  const localizedShareUrl = `https://imchatty.com${
-    currentLocale.value === "en" ? "" : `/${currentLocale.value}`
-  }/articles/${slug}`;
-  const imageUrl = heroImage.value;
+const siteConfig = useSiteConfig();
+const baseUrl =
+  (siteConfig?.url || config.public.SITE_URL || "https://imchatty.com").replace(
+    /\/+$/,
+    ""
+  );
+const localizedPath = computed(() => {
+  const prefix = currentLocale.value === "en" ? "" : `/${currentLocale.value}`;
+  return `${prefix}/articles/${slug}`;
+});
+const localizedShareUrl = computed(() =>
+  baseUrl ? `${baseUrl}${localizedPath.value}` : localizedPath.value
+);
+const seoTitle = computed(() => displayTitle.value || "Article");
+const safeDescription = computed(() => {
+  const source =
+    htmlContent.value || displaySummary.value || displayTitle.value || "";
+  const condensed = String(source)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!condensed) return displayTitle.value || "";
+  return condensed.length > 160 ? `${condensed.slice(0, 160)}…` : condensed;
+});
 
-  onMounted(async () => {
-    if (article.value?.id) {
-      chatThreadKey.value = await getThreadKeyByArticleId(article.value.id);
+onMounted(async () => {
+  if (article.value?.id) {
+    chatThreadKey.value = await getThreadKeyByArticleId(article.value.id);
+  }
+  const [categoryData, tagData, peopleData] = await Promise.all([
+    getAllCategories(),
+    getAllTags(),
+    getAllPeople(),
+  ]);
+
+  categories.value = categoryData || [];
+  tags.value = tagData || [];
+  people.value = peopleData || [];
+  // Ensure any embedded twitter blockquotes are parsed by the widgets script
+  nextTick(() => {
+    try {
+      if (articleBodyRef?.value) loadTwitterWidgets(articleBodyRef.value);
+    } catch (e) {
+      // ignore
     }
-    const [categoryData, tagData, peopleData] = await Promise.all([
-      getAllCategories(),
-      getAllTags(),
-      getAllPeople(),
-    ]);
-
-    categories.value = categoryData || [];
-    tags.value = tagData || [];
-    people.value = peopleData || [];
-    // Ensure any embedded twitter blockquotes are parsed by the widgets script
-    nextTick(() => {
-      try {
-        if (articleBodyRef?.value) loadTwitterWidgets(articleBodyRef.value);
-      } catch (e) {
-        // ignore
-      }
-    });
   });
+});
 
-  useHead({
-    link: [
-      {
-        rel: "canonical",
-        href: localizedShareUrl,
-      },
-    ],
-  });
-
-  useSeoMeta({
-    title: `${displayTitle.value}`,
+useSeoI18nMeta("articles.index", {
+  dynamic: {
+    title: seoTitle,
     description: safeDescription,
-    ogTitle: `${displayTitle.value}`,
+    ogTitle: seoTitle,
     ogDescription: safeDescription,
-    ogUrl: localizedShareUrl,
-    ogImage: imageUrl,
+    ogImage: heroImage,
     ogType: "article",
-    ogLocale:
-      currentLocale.value === "en"
-        ? "en_US"
-        : `${currentLocale.value}_${currentLocale.value.toUpperCase()}`,
-    ogSiteName: "ImChatty",
-    twitterCard: "summary_large_image",
-    twitterTitle: `${displayTitle.value}`,
+    twitterTitle: seoTitle,
     twitterDescription: safeDescription,
-    twitterImage: imageUrl,
-    articleSection: article.value.category?.name || "Article",
-    articlePublishedTime: article.value.created_at,
-    articleModifiedTime: article.value.created_at,
-    canonical: localizedShareUrl,
+    twitterImage: heroImage,
+  },
+});
+
+const articleMetaTags = computed(() => {
+  const tags = [];
+  tags.push({
+    property: "article:section",
+    content: article.value?.category?.name || "Article",
   });
+  const published =
+    displayPublishedDate.value || article.value?.created_at || null;
+  if (published) {
+    tags.push({ property: "article:published_time", content: published });
+  }
+  const modified = article.value?.updated_at || article.value?.created_at || null;
+  if (modified) {
+    tags.push({ property: "article:modified_time", content: modified });
+  }
+  return tags;
+});
 
-  shareUrl.value = localizedShareUrl;
-  shareTitle.value = displayTitle.value;
+useHead(() => ({
+  meta: articleMetaTags.value,
+}));
 
-  const newsArticleSchema = computed(() => {
-    if (!article.value) return null;
+watchEffect(() => {
+  shareUrl.value = localizedShareUrl.value;
+  shareTitle.value = seoTitle.value;
+});
 
-    const author = personaName.value
-      ? {
-          "@type": "Person",
-          name: personaName.value,
-          image: personaAvatar.value || undefined,
-        }
-      : undefined;
+const newsArticleSchema = computed(() => {
+  if (!article.value) return null;
 
-    return {
-      "@context": "https://schema.org",
-      "@type": "NewsArticle",
-      headline: displayTitle.value,
-      description: safeDescription,
-      inLanguage: articleLanguage.value,
-      mainEntityOfPage: {
-        "@type": "WebPage",
-        "@id": localizedShareUrl,
-      },
-      image: imageUrl ? [imageUrl] : undefined,
-      datePublished: article.value.created_at,
-      dateModified: article.value.created_at,
-      author,
-      publisher: {
-        "@type": "Organization",
-        name: "ImChatty",
-      },
-      keywords: keywordList.value.length ? keywordList.value : undefined,
-      articleSection: article.value.category?.name || undefined,
-    };
-  });
+  const author = personaName.value
+    ? {
+        "@type": "Person",
+        name: personaName.value,
+        image: personaAvatar.value || undefined,
+      }
+    : undefined;
 
-  if (newsArticleSchema.value) {
-    useHead({
-      script: [
+  return {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: seoTitle.value,
+    description: safeDescription.value,
+    inLanguage: articleLanguage.value,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": localizedShareUrl.value,
+    },
+    image: heroImage.value ? [heroImage.value] : undefined,
+    datePublished: displayPublishedDate.value || article.value?.created_at,
+    dateModified: article.value?.updated_at || article.value?.created_at,
+    author,
+    publisher: {
+      "@type": "Organization",
+      name: "ImChatty",
+    },
+    keywords: keywordList.value.length ? keywordList.value : undefined,
+    articleSection: article.value?.category?.name || undefined,
+  };
+});
+
+useHead(() => ({
+  script: newsArticleSchema.value
+    ? [
         {
           type: "application/ld+json",
           children: JSON.stringify(newsArticleSchema.value),
         },
-      ],
-    });
-  }
-}
+      ]
+    : [],
+}));
 
 const openPersonaProfile = (slugValue) => {
   if (!slugValue) return;
@@ -926,6 +950,16 @@ const formatDate = (date) =>
     rgba(15, 23, 42, 0) 0%,
     rgba(15, 23, 42, 0.85) 100%
   );
+}
+
+.hero-chat-btn {
+  background: rgba(255, 255, 255, 0.65);
+  color: #2563eb;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  min-width: 28px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
 }
 .hero-photo-credit {
   max-width: 60%;

@@ -439,6 +439,9 @@
       "tags": {
         "heading": "Explorez un tag",
         "subtitle": "Choisissez un sujet, partagez vos expériences et découvrez de nouvelles perspectives."
+      },
+      "detail": {
+        "go_to_discussion": "Aller à la discussion"
       }
     },
     "chat": {
