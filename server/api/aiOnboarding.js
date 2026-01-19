@@ -1,5 +1,5 @@
 // server/api/aiOnboarding.js
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, getRequestHeader } from "h3";
 import OpenAI from "openai";
 import { useDb } from "@/composables/useDB";
 
@@ -15,6 +15,7 @@ const STRINGS = {
     consentThanks: "Thanks! Let’s set up your profile.",
     consentAskName: "What display name should we show?",
     consentNudge: "No problem. Say “yes” when you’re ready to continue, and we’ll proceed.",
+    captchaPrompt: "Please complete the CAPTCHA to continue.",
     askAge: "Great! What's your age? (18+ only)",
     askAgeSimple: "Please enter a valid age. What's your age?",
     askGenderShort: "Which gender fits you best?",
@@ -38,6 +39,7 @@ const STRINGS = {
     consentAskName: "Quel nom d'affichage souhaitons-nous utiliser ?",
     consentNudge:
       "Pas de souci. Dites « oui » quand vous serez prêt, et nous continuerons.",
+    captchaPrompt: "Veuillez compléter le CAPTCHA pour continuer.",
     askAge: "Super ! Quel est votre âge ? (18 ans et +)",
     askAgeSimple: "Veuillez saisir un âge valide. Quel est votre âge ?",
     askGenderShort: "Quel genre vous correspond le mieux ?",
@@ -62,6 +64,7 @@ const STRINGS = {
     consentAskName: "Какое отображаемое имя мы покажем?",
     consentNudge:
       "Хорошо. Скажите «да», когда будете готовы продолжить.",
+    captchaPrompt: "Пожалуйста, пройдите CAPTCHA, чтобы продолжить.",
     askAge: "Отлично! Сколько вам лет? (18+)",
     askAgeSimple: "Пожалуйста, укажите корректный возраст. Сколько вам лет?",
     askGenderShort: "Какой пол вам подходит больше всего?",
@@ -84,6 +87,7 @@ const STRINGS = {
     consentThanks: "谢谢！让我们开始设置你的资料。",
     consentAskName: "我们该显示什么昵称？",
     consentNudge: "没关系。准备好时说“是”，我们就继续。",
+    captchaPrompt: "请完成 CAPTCHA 以继续。",
     askAge: "很好！你多大了？（需年满18岁）",
     askAgeSimple: "请输入有效年龄。你的年龄是？",
     askGenderShort: "哪个性别最符合你？",
@@ -275,6 +279,7 @@ export default defineEventHandler(async (event) => {
     isComplete,
     resume,
     locale: localeFromBody,
+    captchaToken,
   } = await readBody(event);
 
   const localeCode = localeFromBody || "en";
@@ -296,6 +301,34 @@ export default defineEventHandler(async (event) => {
       cfg.SUPABASE_SERVICE_ROLE_KEY
     );
   } catch {}
+
+  const captchaSecret = cfg.HCAPTCHA_SECRET || process.env.HCAPTCHA_SECRET;
+  const captchaRequired = !!captchaSecret;
+
+  async function verifyCaptchaToken(token) {
+    if (!captchaRequired) return true;
+    if (!token) return false;
+    try {
+      const body = new URLSearchParams({
+        secret: captchaSecret,
+        response: token,
+      });
+      const ip =
+        getRequestHeader(event, "x-forwarded-for") ||
+        getRequestHeader(event, "x-real-ip");
+      if (ip) body.set("remoteip", ip.split(",")[0].trim());
+      const res = await $fetch("https://hcaptcha.com/siteverify", {
+        method: "POST",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body,
+      });
+      return !!res?.success;
+    } catch {
+      return false;
+    }
+  }
 
   // console.log("[OnboardingAI] incoming body:", {
   //   messages: messages?.map((m) => m.role + ":" + m.content).slice(-3), // last 3 for context
@@ -327,6 +360,19 @@ export default defineEventHandler(async (event) => {
     }
     // Simple yes/no parsing
     if (yesRegex.test(said.trim())) {
+      if (captchaRequired) {
+        const ok = await verifyCaptchaToken(captchaToken);
+        if (!ok) {
+          return {
+            actions: [
+              {
+                type: "bot_message",
+                text: L("captchaPrompt"),
+              },
+            ],
+          };
+        }
+      }
       return {
         actions: [
           { type: "set_consent", value: true },

@@ -302,10 +302,12 @@ export function useOnboardingAi() {
     }
   }
 
-  async function sendUserMessage(userText) {
+  async function sendUserMessage(userText, options = {}) {
     ensureBotSelected();
 
     const { tryConsume, getDailyLimit, limitReachedMessage } = useAiQuota();
+    const captchaToken =
+      options && typeof options === "object" ? options.captchaToken : undefined;
 
     const text = typeof userText === "string" ? userText.trim() : "";
     if (!text) return; // avoid sending empty messages that cause re-prompts
@@ -430,6 +432,7 @@ if (!allowed) {
       draftSummary: summary,
       missingFields: missing,
       isComplete: missing.length === 0,
+      ...(captchaToken ? { captchaToken } : {}),
       // resume: false  // <-- do NOT include resume on a send
     });
 

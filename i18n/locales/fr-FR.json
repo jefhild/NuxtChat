@@ -1272,6 +1272,9 @@
     "consentNotice": "Veuillez accepter nos conditions pour commencer à discuter.",
     "messagingDisabled": "La messagerie est désactivée.",
     "consentPrompt": "Confirmez-vous avoir 18 ans ou plus et accepter les conditions pour continuer ?",
+    "captchaPrompt": "Veuillez vérifier que vous êtes humain pour continuer.",
+    "captchaExpired": "Le CAPTCHA a expiré. Veuillez réessayer.",
+    "captchaFailed": "Échec du CAPTCHA. Veuillez réessayer.",
     "welcomeHeadline": "🎉 Bienvenue, **{name}** ! Voici ta bio de départ :",
     "welcomeBioIntro": "C’est un premier jet — améliore-le ou garde-le tel quel.",
     "welcomeSettings": "✨ Ajoute une photo et peaufine ton profil dans les [Réglages]({settingsUrl}) pour plus d’échanges."

@@ -1271,6 +1271,9 @@
     "consentNotice": "请同意条款，然后开始聊天。",
     "messagingDisabled": "消息功能已禁用。",
     "consentPrompt": "你确认已年满18岁并接受条款后继续吗？",
+    "captchaPrompt": "请完成 CAPTCHA 以继续。",
+    "captchaExpired": "CAPTCHA 已过期，请重试。",
+    "captchaFailed": "CAPTCHA 验证失败，请重试。",
     "welcomeHeadline": "🎉 欢迎，**{name}**！先看看这版简介：",
     "welcomeBioIntro": "这是初稿——你可以微调或直接使用。",
     "welcomeSettings": "✨ 想要更多聊天？去[设置页面]({settingsUrl})添加照片并完善资料。"

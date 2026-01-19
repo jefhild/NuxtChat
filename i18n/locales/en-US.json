@@ -1294,6 +1294,9 @@
     "consentNotice": "Please consent to our terms, and start chatting.",
     "messagingDisabled": "Messaging is disabled.",
     "consentPrompt": "Do you confirm you are 18+ and accept the terms to continue?",
+    "captchaPrompt": "Please verify you're human to continue.",
+    "captchaExpired": "CAPTCHA expired. Please try again.",
+    "captchaFailed": "CAPTCHA failed. Please try again.",
     "welcomeHeadline": "🎉 Welcome, **{name}**! Here’s your starter bio:",
     "welcomeBioIntro": "Below is a first draft—polish it or keep it as-is.",
     "welcomeSettings": "✨ Add a photo and refine your profile in [Settings]({settingsUrl}) to get more chats."

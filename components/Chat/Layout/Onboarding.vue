@@ -73,7 +73,7 @@
               color="primary"
               variant="elevated"
               class="mr-3"
-              :disabled="consentBusy"
+              :disabled="consentBusy || captchaVerifying"
               @click="onConsentYes"
             >
               {{ $t("onboarding.yes") }}
@@ -82,16 +82,40 @@
             <v-chip
               variant="outlined"
               class="mr-3"
-              :disabled="consentBusy"
+              :disabled="consentBusy || captchaVerifying"
               @click="onConsentNo"
             >
               {{ $t("onboarding.no") }}
             </v-chip>
 
-            <v-chip variant="outlined" :disabled="consentBusy" @click="onLogin">
+            <v-chip
+              variant="outlined"
+              :disabled="consentBusy || captchaVerifying"
+              @click="onLogin"
+            >
               {{ $t("onboarding.alreadyAccount") }}
             </v-chip>
           </div>
+
+          <ClientOnly>
+            <div
+              v-if="showCaptcha"
+              class="mt-3 d-flex flex-column align-center"
+            >
+              <HcaptchaWidget
+                :site-key="captchaSiteKey"
+                @verified="onCaptchaVerified"
+                @expired="onCaptchaExpired"
+                @error="onCaptchaError"
+              />
+              <div class="text-caption text-medium-emphasis mt-2 text-center">
+                {{ $t("onboarding.captchaPrompt") }}
+              </div>
+              <div v-if="captchaError" class="text-caption text-error mt-1">
+                {{ captchaError }}
+              </div>
+            </div>
+          </ClientOnly>
         </template>
       </div>
     </div>
@@ -124,6 +148,7 @@ import { useMarkdown } from "~/composables/useMarkdown";
 
 const { init: initMd, render } = useMarkdown();
 const { t, locale, availableLocales } = useI18n();
+const config = useRuntimeConfig();
 
 const draft = useOnboardingDraftStore();
 const { getDefaults } = useGeoLocationDefaults();
@@ -143,9 +168,20 @@ const ephemeralThread = computed(() => draft.thread || []); // persisted thread
 const isFinalizing = computed(() => draft.stage === "finalizing");
 const scrollEl = ref(null);
 const consentBusy = ref(false);
+const captchaVerifying = ref(false);
 const booted = ref(false);
 const botTyping = ref(false);
 const localeRefreshBusy = ref(false);
+const captchaToken = ref("");
+const captchaError = ref("");
+const pendingConsent = ref(false);
+const captchaSiteKey = computed(
+  () => config.public?.HCAPTCHA_SITE_KEY || ""
+);
+const captchaEnabled = computed(() => !!captchaSiteKey.value);
+const showCaptcha = computed(
+  () => captchaEnabled.value && pendingConsent.value && !props.consented
+);
 const lastBotMessageId = computed(() => {
   const list = ephemeralThread.value || [];
   for (let i = list.length - 1; i >= 0; i -= 1) {
@@ -356,6 +392,17 @@ watch(
   }
 );
 
+watch(
+  () => props.consented,
+  (v) => {
+    if (!v) return;
+    pendingConsent.value = false;
+    captchaToken.value = "";
+    captchaError.value = "";
+    captchaVerifying.value = false;
+  }
+);
+
 // If the user leaves the bot, don't nuke the flow.
 // Just stop typing dots and allow re-entry to re-run resume().
 watch(
@@ -390,19 +437,12 @@ watch(
 
 async function onConsentYes() {
   if (consentBusy.value) return;
-  consentBusy.value = true;
-  try {
-    // Optimistically remove the consent bubble(s) from the merged stream
-    ephemeralThread.value = ephemeralThread.value.filter(
-      (m) => !(m.from === "imchatty" && isConsentPrompt(m.text))
-    );
-
-    // Let the server drive: it will emit set_consent + first question
-    botTyping.value = true;
-    await sendUserMessage("yes");
-  } finally {
-    consentBusy.value = false;
+  if (captchaEnabled.value && !captchaToken.value) {
+    pendingConsent.value = true;
+    captchaError.value = "";
+    return;
   }
+  await submitConsent(captchaToken.value || undefined);
 }
 
 function onConsentNo() {
@@ -417,6 +457,46 @@ async function onQuickReply(label) {
   if (!label) return;
   botTyping.value = true;
   await sendUserMessage(label);
+}
+
+async function submitConsent(token) {
+  if (consentBusy.value || captchaVerifying.value) return;
+  consentBusy.value = true;
+  captchaVerifying.value = true;
+  try {
+    // Optimistically remove the consent bubble(s) from the merged stream
+    ephemeralThread.value = ephemeralThread.value.filter(
+      (m) => !(m.from === "imchatty" && isConsentPrompt(m.text))
+    );
+
+    // Let the server drive: it will emit set_consent + first question
+    botTyping.value = true;
+    await sendUserMessage("yes", { captchaToken: token });
+  } finally {
+    consentBusy.value = false;
+    captchaVerifying.value = false;
+    pendingConsent.value = false;
+    captchaToken.value = "";
+  }
+}
+
+async function onCaptchaVerified(token) {
+  if (!token) return;
+  captchaToken.value = token;
+  captchaError.value = "";
+  if (pendingConsent.value) {
+    await submitConsent(token);
+  }
+}
+
+function onCaptchaExpired() {
+  captchaToken.value = "";
+  captchaError.value = t("onboarding.captchaExpired");
+}
+
+function onCaptchaError() {
+  captchaToken.value = "";
+  captchaError.value = t("onboarding.captchaFailed");
 }
 </script>
 
