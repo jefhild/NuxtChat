@@ -823,6 +823,11 @@ const draft = useOnboardingDraftStore();
 const draftStore = draft; // alias for template
 const presence2 = usePresenceStore2();
 const { blockedUsers, loadBlockedUsers } = useBlockedUsers();
+const recentActiveIds = ref([]);
+const recentActiveLoading = ref(false);
+let recentActiveTimer = null;
+const RECENT_ACTIVE_MINUTES = 25;
+const RECENT_ACTIVE_POLL_MS = 5 * 60 * 1000;
 
 const route = useRoute();
 const router = useRouter();
@@ -969,6 +974,14 @@ onMounted(() => {
   scheduleConsentAutoHide();
 });
 
+onMounted(() => {
+  fetchRecentActiveIds();
+  recentActiveTimer = window.setInterval(
+    fetchRecentActiveIds,
+    RECENT_ACTIVE_POLL_MS
+  );
+});
+
 watch(
   () => auth.authStatus,
   (s) => {
@@ -1024,21 +1037,42 @@ const clearReply = () => {
 // keep primitive since your realtime is working with it
 const meId = auth.user?.id;
 
+const fetchRecentActiveIds = async () => {
+  if (recentActiveLoading.value) return;
+  recentActiveLoading.value = true;
+  try {
+    const res = await $fetch("/api/presence/recent", {
+      query: { minutes: RECENT_ACTIVE_MINUTES },
+    });
+    recentActiveIds.value = Array.isArray(res?.ids) ? res.ids : [];
+  } catch (error) {
+    console.warn("[presence][recent] fetch error", error);
+  } finally {
+    recentActiveLoading.value = false;
+  }
+};
+
 const onlineIds = computed(() => {
   // primary: the store getter
   const storeIds = Array.isArray(presence2.onlineUserIds)
     ? presence2.onlineUserIds
     : [];
 
-  if (storeIds.length) {
-    return storeIds.map((s) => String(s).trim().toLowerCase());
-  }
+  const presenceIds = storeIds.length
+    ? storeIds
+    : Object.keys(presence2?.channel?.presenceState?.() || {}).filter(
+        (k) => !String(k).startsWith("observer:")
+      );
 
-  // fallback: read the channel's raw presence map (ignore observer:*)
-  const raw = presence2?.channel?.presenceState?.() || {};
-  return Object.keys(raw)
-    .filter((k) => !String(k).startsWith("observer:"))
-    .map((k) => k.trim().toLowerCase());
+  const normalizedPresence = presenceIds.map((s) =>
+    String(s).trim().toLowerCase()
+  );
+  const normalizedRecent = (Array.isArray(recentActiveIds.value)
+    ? recentActiveIds.value
+    : []
+  ).map((s) => String(s).trim().toLowerCase());
+
+  return Array.from(new Set([...normalizedPresence, ...normalizedRecent]));
 });
 
 const openPanels = ref([0]); // start open; use [] if you want it closed initially
@@ -1499,6 +1533,10 @@ onBeforeUnmount(() => {
   if (consentAutoHideTimer.value) {
     clearTimeout(consentAutoHideTimer.value);
     consentAutoHideTimer.value = null;
+  }
+  if (recentActiveTimer) {
+    clearInterval(recentActiveTimer);
+    recentActiveTimer = null;
   }
 });
 

@@ -62,6 +62,7 @@ import { useHead, useRoute } from "#imports";
 const auth = useAuthStore();
 const presence = usePresenceStore2();
 const messages = useMessagesStore();
+const { updateLastActive } = useDb();
 const { smAndDown } = useDisplay();
 const hasMounted = ref(false);
 const route = useRoute();
@@ -115,10 +116,34 @@ const unreadCount = computed(() => messages.totalUnread || 0);
 const unreadLabel = computed(() =>
   unreadCount.value > 99 ? "99+" : `${unreadCount.value}`
 );
+const ACTIVITY_AUTH_STATUSES = ["anon_authenticated", "authenticated"];
+let lastNavPingAt = 0;
+
+const touchLastActive = async () => {
+  if (!isClient) return;
+  if (!ACTIVITY_AUTH_STATUSES.includes(auth.authStatus)) return;
+  const userId = auth.user?.id;
+  if (!userId) return;
+
+  const now = Date.now();
+  if (now - lastNavPingAt < 2 * 60 * 1000) return;
+  lastNavPingAt = now;
+  try {
+    await updateLastActive(userId);
+  } catch {}
+};
 
 onMounted(() => {
   hasMounted.value = true;
 });
+
+watch(
+  () => route.fullPath,
+  () => {
+    touchLastActive();
+  },
+  { immediate: true }
+);
 
 onMounted(() => {
   watch(
