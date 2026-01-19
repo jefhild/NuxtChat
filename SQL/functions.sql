@@ -656,8 +656,10 @@ CREATE OR REPLACE FUNCTION get_recent_profiles(
   provider TEXT,
   gender TEXT,
   country TEXT,
+  has_email BOOLEAN,
+  comment_count INTEGER,
   upvote_count INTEGER,
-  created TIMESTAMP
+  created TIMESTAMPTZ
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -671,12 +673,23 @@ BEGIN
 	p.provider,
 	g.name AS gender,
 	c.name AS country,
-	COUNT(v.vote_type)::int AS upvote_count,
+	p.is_registered AS has_email,
+	COALESCE(m.comment_count, 0) AS comment_count,
+	COALESCE(v.upvote_count, 0) AS upvote_count,
 	p.created
   FROM 
 	profiles p
-  LEFT JOIN 
-	votes v ON p.id = v.profile_id AND v.vote_type = 'upvote'
+  LEFT JOIN (
+    SELECT votes.profile_id AS profile_id, COUNT(*)::int AS upvote_count
+    FROM votes
+    WHERE vote_type = 'upvote'
+    GROUP BY votes.profile_id
+  ) v ON p.id = v.profile_id
+  LEFT JOIN (
+    SELECT messages_v2.sender_user_id AS sender_user_id, COUNT(*)::int AS comment_count
+    FROM messages_v2
+    GROUP BY messages_v2.sender_user_id
+  ) m ON p.user_id = m.sender_user_id
   LEFT JOIN 
 	genders g ON p.gender_id = g.id
   LEFT JOIN 
@@ -684,9 +697,7 @@ BEGIN
   WHERE 
 	p.avatar_url IS NOT NULL 
 	AND p.avatar_url != '' 
-	AND p.provider != 'anonymous'
-  GROUP BY 
-	p.id, g.name, c.name
+	AND COALESCE(p.is_ai, false) = false
   ORDER BY 
 	p.created DESC
   LIMIT profile_limit;  -- Use the parameter for the limit value

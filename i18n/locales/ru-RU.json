@@ -860,9 +860,11 @@
       "empty": "Профили не найдены.",
       "columns": {
         "profile": "Профиль",
+        "tagline": "Слоган",
         "age": "Возраст",
         "gender": "Пол",
         "country": "Страна",
+        "comments": "Комментарии",
         "status": "Статус",
         "upvotes": "Лайки",
         "joined": "Дата"

@@ -860,9 +860,11 @@
       "empty": "未找到资料。",
       "columns": {
         "profile": "资料",
+        "tagline": "签名",
         "age": "年龄",
         "gender": "性别",
         "country": "国家",
+        "comments": "评论",
         "status": "状态",
         "upvotes": "赞",
         "joined": "加入时间"

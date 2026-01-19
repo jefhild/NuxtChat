@@ -876,9 +876,11 @@
       "empty": "No profiles found.",
       "columns": {
         "profile": "Profile",
+        "tagline": "Tagline",
         "age": "Age",
         "gender": "Gender",
         "country": "Country",
+        "comments": "Comments",
         "status": "Status",
         "upvotes": "Upvotes",
         "joined": "Joined"

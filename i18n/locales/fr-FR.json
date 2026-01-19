@@ -860,9 +860,11 @@
       "empty": "Aucun profil trouvé.",
       "columns": {
         "profile": "Profil",
+        "tagline": "Slogan",
         "age": "Âge",
         "gender": "Genre",
         "country": "Pays",
+        "comments": "Commentaires",
         "status": "Statut",
         "upvotes": "Votes",
         "joined": "Inscrit"

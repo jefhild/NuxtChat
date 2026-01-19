@@ -44,6 +44,9 @@
                   :alt="item.displayname || 'Profile avatar'"
                 />
               </v-avatar>
+              <v-avatar v-if="item.has_email" size="18" class="registered-badge">
+                <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
+              </v-avatar>
               <v-avatar size="30" class="gender-badge">
                 <v-icon
                   size="20"
@@ -77,6 +80,10 @@
           </div>
         </template>
 
+        <template #item.tagline="{ item }">
+          <span class="text-body-2 text-medium-emphasis">{{ item.tagline || "—" }}</span>
+        </template>
+
         <template #item.age="{ item }">
           <span class="text-body-2">{{ item.age ?? "—" }}</span>
         </template>
@@ -85,8 +92,11 @@
           <span class="text-body-2">{{ item.country_emoji || "—" }}</span>
         </template>
 
-        <template #item.status="{ item }">
-          <span class="text-body-2">{{ item.status || "—" }}</span>
+        <template #item.comment_count="{ item }">
+          <div class="d-flex align-center justify-end ga-1">
+            <v-icon size="16" color="blue-grey-darken-1">mdi-chat-outline</v-icon>
+            <span class="text-body-2">{{ item.comment_count ?? 0 }}</span>
+          </div>
         </template>
 
         <template #item.upvotes="{ item }">
@@ -94,10 +104,6 @@
             <v-icon size="16" color="amber-darken-2">mdi-thumb-up</v-icon>
             <span class="text-body-2">{{ item.upvote_count ?? 0 }}</span>
           </div>
-        </template>
-
-        <template #item.created="{ item }">
-          <span class="text-body-2">{{ formatDate(item.created) }}</span>
         </template>
       </v-data-table>
 
@@ -149,19 +155,12 @@ const profileDialogSlug = ref(null);
 
 const headers = computed(() => [
   { title: t("components.homeProfiles.columns.profile"), key: "profile", sortable: false },
-  { title: t("components.homeProfiles.columns.age"), key: "age", align: "end", width: 72 },
-  { title: t("components.homeProfiles.columns.country"), key: "country", width: 140 },
-  { title: t("components.homeProfiles.columns.status"), key: "status", width: 140 },
+  { title: t("components.homeProfiles.columns.tagline"), key: "tagline", width: 220, sortable: false },
+  { title: t("components.homeProfiles.columns.age"), key: "age", align: "end", width: 72, sortable: false },
+  { title: t("components.homeProfiles.columns.country"), key: "country", width: 140, sortable: false },
+  { title: t("components.homeProfiles.columns.comments"), key: "comment_count", align: "end", width: 120 },
   { title: t("components.homeProfiles.columns.upvotes"), key: "upvotes", align: "end", width: 100 },
-  { title: t("components.homeProfiles.columns.joined"), key: "created", width: 140 },
 ]);
-
-const formatDate = (value) => {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString();
-};
 
 const isAiProfile = (profile) => {
   const value = profile?.is_ai;
@@ -275,6 +274,13 @@ onUnmounted(() => {
   position: absolute;
   right: -8px;
   bottom: -8px;
+  background: transparent;
+}
+
+.registered-badge {
+  position: absolute;
+  left: -6px;
+  top: -6px;
   background: transparent;
 }
 
