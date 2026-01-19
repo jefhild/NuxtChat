@@ -16,6 +16,10 @@ type RewritePayload = {
   summary: string;
   body: string;
   references: RewriteReference[];
+  social?: {
+    facebook?: { caption?: string | null; link?: string | null };
+    instagram?: { caption?: string | null; image_url?: string | null };
+  } | null;
   raw?: string;
 };
 
@@ -166,7 +170,8 @@ const buildArticleHtml = (
     slug?: string | null;
   }
 ) => {
-  const bodyHtml = marked.parse(rewrite.body || "");
+  const cleanedBody = stripSocialCaptions(rewrite.body || "");
+  const bodyHtml = marked.parse(cleanedBody);
 
   const summaryHtml =
     sourceMeta.summary || rewrite.summary
@@ -224,6 +229,49 @@ const buildArticleHtml = (
 
   return DOMPurify.sanitize(articleHtml, ARTICLE_SANITIZE_OPTIONS);
 };
+
+function stripSocialCaptions(body = "") {
+  if (!body) return "";
+  const markers = [
+    "social.facebook.caption",
+    "social.instagram.caption",
+    "social captions",
+    "\"social\"",
+    "\"facebook\"",
+    "\"instagram\"",
+  ];
+  if (!markers.some((marker) => body.includes(marker))) {
+    return body;
+  }
+
+  let next = body;
+  next = next.replace(/```json[\s\S]*?```/gi, (match) =>
+    markers.some((marker) => match.includes(marker)) ? "" : match
+  );
+
+  const lastOpen = next.lastIndexOf("{");
+  const lastClose = next.lastIndexOf("}");
+  if (lastOpen !== -1 && lastClose > lastOpen) {
+    const candidate = next.slice(lastOpen, lastClose + 1);
+    if (markers.some((marker) => candidate.includes(marker))) {
+      next = `${next.slice(0, lastOpen)}${next.slice(lastClose + 1)}`;
+    }
+  }
+
+  next = next
+    .split(/\r?\n/)
+    .filter((line) => !markers.some((marker) => line.includes(marker)))
+    .join("\n")
+    .trim();
+
+  next = next
+    .split(/\r?\n/)
+    .filter((line) => !/social captions/i.test(line))
+    .join("\n")
+    .trim();
+
+  return next;
+}
 
 export default defineEventHandler(async (event) => {
   try {

@@ -68,17 +68,35 @@ const extractTitle = (html: string) => {
 const sanitizeJsonResponse = (input = "") => {
   const trimmed = input.trim();
   if (!trimmed) return null;
-  const cleaned = trimmed
+  const fencedMatch = trimmed.match(/```json[\s\S]*?```/i);
+  const block = fencedMatch ? fencedMatch[0] : trimmed;
+  const cleaned = block
     .replace(/^```json/i, "")
     .replace(/^```/, "")
     .replace(/```$/, "")
     .trim();
-  try {
-    const parsed = JSON.parse(cleaned);
-    return parsed && typeof parsed === "object" ? parsed : null;
-  } catch {
-    return null;
+
+  const tryParse = (value: string) => {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const direct = tryParse(cleaned);
+  if (direct) return direct;
+
+  const firstOpen = cleaned.indexOf("{");
+  const lastClose = cleaned.lastIndexOf("}");
+  if (firstOpen !== -1 && lastClose > firstOpen) {
+    const candidate = cleaned.slice(firstOpen, lastClose + 1);
+    const extracted = tryParse(candidate);
+    if (extracted) return extracted;
   }
+
+  return null;
 };
 
 const buildFallbackSocial = (input: {
@@ -187,6 +205,17 @@ const buildSystemPrompt = (persona: any) => {
 You are preparing quick rewrites for externally supplied news URLs. Emphasize clarity, credibility, and your persona's lens.`;
 };
 
+const DEFAULT_USER_INSTRUCTIONS = `
+You are assisting the editors. Take the supplied article text and rewrite it from your persona's perspective.
+The rewrite must:
+- Introduce a new angle or deeper context that was absent from the source text.
+- Cite at least two references, including the source URL and any relevant background material.
+- Produce a body made of 3-5 short paragraphs formatted in Markdown.
+- Include a short summary (2 sentences) and a fresh headline.
+- Provide social captions as JSON: social.facebook.caption (1-2 sentences + URL), social.instagram.caption (1-2 sentences, 3-6 hashtags, no link).
+- Write the rewrite in the same language as the source text.
+`;
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   if (!config.OPENAI_API_KEY) {
@@ -261,14 +290,15 @@ export default defineEventHandler(async (event) => {
 
     const systemPrompt = buildSystemPrompt(persona);
 
+    const baseInstructions = [DEFAULT_USER_INSTRUCTIONS.trim()];
+    if (extraInstructions) {
+      baseInstructions.push(`Editor notes: ${extraInstructions}`);
+    }
+
     const userPrompt = [
-      `Rewrite the provided article text from your persona's perspective.`,
-      `Return strict JSON: {"headline": string, "summary": string, "body": string, "references": [{"label": string, "url": string}], "social": {"facebook": {"caption": string, "link": string}, "instagram": {"caption": string}}}.`,
-      `Facebook caption: 1-2 sentences + include the URL (either in caption or "link").`,
-      `Instagram caption: 1-2 sentences, no link, add 3-6 relevant hashtags.`,
-      `Body should be 3-5 short paragraphs in Markdown.`,
+      baseInstructions.join("\n\n"),
+      `Return strict JSON only (no surrounding text): {"headline": string, "summary": string, "body": string, "references": [{"label": string, "url": string}], "social": {"facebook": {"caption": string, "link": string}, "instagram": {"caption": string}}}.`,
       `If the content is not understandable, respond with {"error":"UNREADABLE_CONTENT"}.`,
-      extraInstructions ? `Editor notes: ${extraInstructions}` : null,
       `Source URL: ${url}`,
       domain ? `Source domain: ${domain}` : null,
       pageTitle ? `Source title: ${pageTitle}` : null,
@@ -281,17 +311,19 @@ export default defineEventHandler(async (event) => {
 
     const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
+    const maxTokens = Math.max(persona.max_response_tokens ?? 0, 1200);
     const aiResponse = await openai.chat.completions.create({
       model: persona.model || "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
+      response_format: { type: "json_object" },
       temperature: persona.temperature ?? 0.7,
       top_p: persona.top_p ?? 1,
       presence_penalty: persona.presence_penalty ?? 0,
       frequency_penalty: persona.frequency_penalty ?? 0,
-      max_tokens: persona.max_response_tokens ?? 800,
+      max_tokens: maxTokens,
     });
 
     const raw = aiResponse?.choices?.[0]?.message?.content ?? "";

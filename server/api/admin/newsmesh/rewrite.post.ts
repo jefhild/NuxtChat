@@ -289,17 +289,19 @@ export default defineEventHandler(async (event) => {
         "\n\n"
       )}\n\nOriginal Record:\n${buildArticleContext(article)}`;
 
+      const maxTokens = Math.max(persona.max_response_tokens ?? 0, 1200);
       const response = await openai.chat.completions.create({
         model: persona.model || "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
+        response_format: { type: "json_object" },
         temperature: persona.temperature ?? 0.7,
         top_p: persona.top_p ?? 1,
         presence_penalty: persona.presence_penalty ?? 0,
         frequency_penalty: persona.frequency_penalty ?? 0,
-        max_tokens: persona.max_response_tokens ?? 800,
+        max_tokens: maxTokens,
       });
 
       const raw = response?.choices?.[0]?.message?.content ?? "";

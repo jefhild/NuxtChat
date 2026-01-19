@@ -15,6 +15,11 @@ export type UrlDraftPayload = {
     summary: string;
     body: string;
     references: Array<{ label: string; url?: string | null }>;
+    social?: {
+      facebook?: { caption?: string | null; link?: string | null };
+      instagram?: { caption?: string | null; image_url?: string | null };
+    } | null;
+    raw?: string;
   };
 };
 

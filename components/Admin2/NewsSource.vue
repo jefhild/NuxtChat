@@ -227,6 +227,10 @@ type RewritePayload = {
   summary: string;
   body: string;
   references: RewriteReference[];
+  social?: {
+    facebook?: { caption?: string | null; link?: string | null };
+    instagram?: { caption?: string | null; image_url?: string | null };
+  } | null;
   raw?: string;
 };
 
@@ -390,6 +394,8 @@ const saveDraft = async (result: UrlRewriteResult) => {
       summary: result.rewrite.summary,
       body: result.rewrite.body,
       references: result.rewrite.references || [],
+      social: result.rewrite.social || null,
+      raw: result.rewrite.raw,
     },
   };
 
