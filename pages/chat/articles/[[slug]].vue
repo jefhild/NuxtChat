@@ -46,6 +46,7 @@
         icon
         size="x-small"
         color="white"
+        variant="text"
         class="info-toggle-btn"
         :aria-expanded="String(panelOpen)"
         aria-controls="thread-info-panel"
@@ -103,9 +104,32 @@
       <!-- CENTER: Thread messages -->
       <v-col
         cols="12"
-        md="7"
+        :md="activePanelOpen ? 7 : 9"
         class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
       >
+        <div v-if="!smAndDown" class="active-panel-rail">
+          <v-tooltip text="Participants" location="left">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                variant="text"
+                size="x-small"
+                class="active-panel-toggle"
+                :aria-expanded="String(activePanelOpen)"
+                aria-controls="active-panel"
+                aria-label="Toggle participants panel"
+                @click="activePanelOpen = !activePanelOpen"
+              >
+                <v-icon
+                  :icon="
+                    activePanelOpen ? 'mdi-chevron-right' : 'mdi-chevron-left'
+                  "
+                />
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </div>
         <!-- Sticky header -->
         <div class="messages-sticky-header d-none d-md-block">
           <v-img
@@ -113,12 +137,26 @@
             :src="articleImageUrl"
             height="80"
             cover
-            class="d-flex align-center justify-space-between px-3 py-2"
+            class="d-flex align-center justify-space-between px-3 py-2 image-header-img"
           >
-            <div class="min-w-0 text-white w-100 d-flex justify-space-between">
+            <v-btn
+              icon
+              size="x-small"
+              color="white"
+              variant="text"
+              class="image-toggle-btn"
+              :aria-expanded="String(panelOpen)"
+              aria-controls="thread-info-panel"
+              @click="panelOpen = !panelOpen"
+            >
+              <v-icon :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
+            </v-btn>
+            <div
+              class="min-w-0 text-white w-100 d-flex justify-center text-center"
+            >
               <div>
                 <p
-                  class="text-subtitle-1 font-weight-medium text-truncate cursor-pointer"
+                  class="text-subtitle-1 font-weight-medium cursor-pointer image-title"
                   @click="panelOpen = !panelOpen"
                 >
                   {{ topicThread?.article?.title || "See the full article" }}
@@ -129,6 +167,7 @@
                 icon
                 size="x-small"
                 color="white"
+                class="d-md-none"
                 :aria-expanded="String(panelOpen)"
                 aria-controls="thread-info-panel"
                 @click="panelOpen = !panelOpen"
@@ -205,11 +244,16 @@
 
       <!-- RIGHT: Participants -->
       <v-col
+        v-if="activePanelOpen"
         cols="12"
         md="2"
         class="pa-2 d-flex flex-column overflow-hidden d-none d-md-flex min-h-0"
       >
-        <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+        <v-card
+          id="active-panel"
+          flat
+          class="d-flex flex-column flex-grow-1 min-h-0 active-panel-card"
+        >
           <div
             ref="rightScrollRef"
             class="flex-grow-1 overflow-auto min-h-0 users-scroll"
@@ -453,6 +497,10 @@ const autoCloseOnScroll = true;
 const isProfileDialogOpen = ref(false);
 const profileDialogUserId = ref(null);
 const profileDialogSlug = ref(null);
+const activePanelOpen = useState(
+  "articlesParticipantsPanelOpen",
+  () => false
+);
 
 const articleImageUrl = computed(() => {
   const base = (pub.SUPABASE_BUCKET || "").replace(/\/$/, "");
@@ -1054,9 +1102,20 @@ useSeoMeta({
 
 .info-toggle-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  top: -6px;
+  left: -6px;
+  background: transparent;
+  box-shadow: none;
+}
+.image-header-img {
+  position: relative;
+}
+.image-toggle-btn {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  background: transparent;
+  box-shadow: none;
 }
 
 .info-toggle-inline {
@@ -1068,6 +1127,37 @@ useSeoMeta({
   top: 0;
   z-index: 2;
   background: rgb(var(--v-theme-surface));
+}
+.image-title {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.active-panel-rail {
+  --active-rail-width: 34px;
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  right: 8px;
+  width: var(--active-rail-width);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: none;
+}
+.active-panel-toggle {
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  width: 34px;
+  height: 34px;
+  pointer-events: auto;
+}
+.active-panel-toggle :deep(.v-icon) {
+  color: rgba(var(--v-theme-on-surface), 0.8);
+}
+.active-panel-card {
+  transition: opacity 0.2s ease, transform 0.25s ease;
 }
 .avatar-with-icon {
   position: relative;

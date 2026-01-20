@@ -92,9 +92,32 @@
       <!-- CENTER: Empty state (until a thread route is open) -->
       <v-col
         cols="12"
-        md="6"
-        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
+        :md="activePanelOpen ? 6 : 9"
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
       >
+        <div v-if="!smAndDown" class="active-panel-rail">
+          <v-tooltip text="Participants" location="left">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                variant="text"
+                size="x-small"
+                class="active-panel-toggle"
+                :aria-expanded="String(activePanelOpen)"
+                aria-controls="active-panel"
+                aria-label="Toggle participants panel"
+                @click="activePanelOpen = !activePanelOpen"
+              >
+                <v-icon
+                  :icon="
+                    activePanelOpen ? 'mdi-chevron-right' : 'mdi-chevron-left'
+                  "
+                />
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </div>
         <div
           ref="centerScrollRef"
           class="flex-grow-1 overflow-auto min-h-0 d-flex"
@@ -112,18 +135,25 @@
 
       <!-- RIGHT: Participants (hidden on small to avoid SSR mismatch) -->
       <v-col
+        v-if="activePanelOpen"
         cols="12"
         md="3"
         class="pa-2 d-none d-md-flex flex-column overflow-hidden min-h-0"
       >
-        <div ref="rightScrollRef" class="flex-grow-1 overflow-auto min-h-0">
-          <ChatArticlesLayoutParticipants
-            :participants="props.participants"
-            :pending="props.participantsPending"
-            :formatDateTime="props.formatDateTime"
-            @open-profile="() => {}"
-          />
-        </div>
+        <v-card
+          id="active-panel"
+          flat
+          class="d-flex flex-column flex-grow-1 min-h-0 active-panel-card"
+        >
+          <div ref="rightScrollRef" class="flex-grow-1 overflow-auto min-h-0">
+            <ChatArticlesLayoutParticipants
+              :participants="props.participants"
+              :pending="props.participantsPending"
+              :formatDateTime="props.formatDateTime"
+              @open-profile="() => {}"
+            />
+          </div>
+        </v-card>
       </v-col>
     </v-row>
 
@@ -236,6 +266,11 @@ const headerText = {
   line2: "Select an article to view the thread.",
 };
 
+const activePanelOpen = useState(
+  "articlesParticipantsPanelOpen",
+  () => false
+);
+
 // Modal (kept for parity with ChatLayout; can be wired later)
 const isProfileDialogOpen = ref(false);
 const modalUser = ref(null);
@@ -254,9 +289,43 @@ const getAvatar = (url) => url || "";
   top: 0;
   z-index: 2;
 }
+.relative {
+  position: relative;
+}
 .header-chevron {
   position: absolute;
   right: 6px;
   top: 2px;
+}
+.active-panel-rail {
+  --active-rail-width: 42px;
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  right: 8px;
+  width: var(--active-rail-width);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: none;
+  background: rgba(var(--v-theme-surface), 0.92);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+.active-panel-toggle {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  width: 32px;
+  height: 32px;
+  pointer-events: auto;
+}
+.active-panel-toggle :deep(.v-icon) {
+  color: rgba(var(--v-theme-on-surface), 0.8);
+}
+.active-panel-card {
+  transition: opacity 0.2s ease, transform 0.25s ease;
 }
 </style>
