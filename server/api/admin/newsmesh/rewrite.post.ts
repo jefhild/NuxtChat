@@ -161,6 +161,7 @@ The rewrite must:
 - Include a short summary (2 sentences) and a fresh headline.
 - Provide social captions as JSON: social.facebook.caption (1-2 sentences + URL), social.instagram.caption (1-2 sentences, 3-6 hashtags, no link).
 - Write the rewrite in the same language as the original record (title/summary). If the source is not English, keep that language for the headline, summary, body, and social captions.
+Return strict JSON only (no surrounding text): {"headline": string, "summary": string, "body": string, "references": [{"label": string, "url": string}], "social": {"facebook": {"caption": string, "link": string}, "instagram": {"caption": string, "image_url": string}}}.
 `;
 
 const buildSystemPrompt = (persona: any) => {
