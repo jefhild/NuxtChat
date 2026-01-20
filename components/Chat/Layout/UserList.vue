@@ -16,7 +16,7 @@
             <v-avatar size="36">
               <v-img v-if="u.avatar_url" :src="u.avatar_url" cover />
               <span v-else class="avatar-fallback">{{
-                (u.displayname || "?").slice(0, 1).toUpperCase()
+                displayNameFor(u).slice(0, 1).toUpperCase()
               }}</span>
             </v-avatar>
 
@@ -29,9 +29,9 @@
           </span>
 
           <span class="name">
-            <div class="displayname">{{ u.displayname || "(no name)" }}</div>
-            <div v-if="!hideTagline && u.tagline" class="tagline muted">
-              • {{ u.tagline?.slice(0, 35) }}
+            <div class="displayname">{{ displayNameFor(u) }}</div>
+            <div v-if="!hideTagline && taglineFor(u)" class="tagline muted">
+              • {{ taglineFor(u)?.slice(0, 35) }}
             </div>
           </span>
 
@@ -76,6 +76,8 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useI18n } from "vue-i18n";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const props = defineProps({
   users: { type: Array, default: () => [] },
@@ -94,6 +96,17 @@ const isSelected = (u) =>
   props.selectedUserId && idStr(u) === String(props.selectedUserId);
 
 const unreadFor = (u) => props.unreadByPeer[idStr(u)] || 0;
+const { locale } = useI18n();
+const displayNameFor = (u) =>
+  resolveProfileLocalization({
+    profile: u,
+    readerLocale: locale?.value,
+  }).displayname || "(no name)";
+const taglineFor = (u) =>
+  resolveProfileLocalization({
+    profile: u,
+    readerLocale: locale?.value,
+  }).tagline;
 
 // Virtual scroll sizing
 const itemHeight = 48; // tweak to match your row CSS (padding + line-height)

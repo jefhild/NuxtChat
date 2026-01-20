@@ -64,7 +64,7 @@
                   <v-avatar size="26">
                     <v-img v-if="item.user.avatar_url" :src="item.user.avatar_url" cover />
                     <span v-else class="avatar-fallback">{{
-                      (item.user.displayname || "?").slice(0, 1).toUpperCase()
+                      displayNameFor(item.user).slice(0, 1).toUpperCase()
                     }}</span>
                   </v-avatar>
                   <span
@@ -78,18 +78,18 @@
                 </span>
                 <span class="user-title">
                   <v-tooltip
-                    v-if="item.user.tagline"
-                    :text="item.user.tagline"
+                    v-if="taglineFor(item.user)"
+                    :text="taglineFor(item.user)"
                     location="top"
                   >
                     <template #activator="{ props: tooltipProps }">
                       <span v-bind="tooltipProps" class="displayname">
-                        {{ item.user.displayname || "(no name)" }}
+                        {{ displayNameFor(item.user) }}
                       </span>
                     </template>
                   </v-tooltip>
                   <span v-else class="displayname">
-                    {{ item.user.displayname || "(no name)" }}
+                    {{ displayNameFor(item.user) }}
                   </span>
                 </span>
                 <span class="flag-wrap">
@@ -157,6 +157,7 @@ import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useMessagesStore } from "@/stores/messagesStore";
 import ChatLayoutFilterMenu from "./FilterMenu.vue";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const props = defineProps({
   users: { type: Array, default: () => [] }, // expects { id/user_id, displayname, online }
@@ -188,7 +189,7 @@ const emit = defineEmits([
 ]);
 
 const msgs = useMessagesStore();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const normalizedListType = computed(() =>
   ["online", "offline", "active"].includes(props.listType)
@@ -199,6 +200,16 @@ const normalizedListType = computed(() =>
 const idStr = (u) => String(u?.id ?? u?.user_id ?? "").trim();
 const isPinned = (u) => props.pinnedId && idStr(u) === props.pinnedId;
 const unreadFor = (u) => msgs.unreadByPeer?.[idStr(u)] || 0;
+const displayNameFor = (u) =>
+  resolveProfileLocalization({
+    profile: u,
+    readerLocale: locale?.value,
+  }).displayname || "(no name)";
+const taglineFor = (u) =>
+  resolveProfileLocalization({
+    profile: u,
+    readerLocale: locale?.value,
+  }).tagline;
 
 const isInactiveAi = (u) => {
   if (!u?.is_ai) return false;
@@ -223,7 +234,7 @@ const sortWithPin = (arr = []) =>
     const bPinned = isPinned(b);
     if (aPinned && !bPinned) return -1;
     if (!aPinned && bPinned) return 1;
-    return (a.displayname || "").localeCompare(b.displayname || "");
+    return displayNameFor(a).localeCompare(displayNameFor(b));
   });
 
 const onlineUsers = computed(() =>

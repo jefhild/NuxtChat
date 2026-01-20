@@ -3,7 +3,30 @@
     <!-- {{ profile }} -->
     <v-row justify="center">
       <v-col cols="12" md="8">
-        <ProfileCard :profile="profile" :avatar-decoration="avatarDecoration" />
+        <ProfileCard
+          :profile="profile"
+          :avatar-decoration="avatarDecoration"
+          :locale-override="localeOverride"
+        />
+
+        <v-row
+          v-if="localeOptions.length > 1"
+          class="mt-4"
+          justify="center"
+        >
+          <v-col cols="12" sm="6" md="4">
+            <v-select
+              v-model="localeOverride"
+              variant="underlined"
+              :items="localeOptions"
+              item-title="label"
+              item-value="code"
+              :label="t('components.profile-language.default')"
+              clearable
+              hide-details
+            />
+          </v-col>
+        </v-row>
 
         <v-container v-if="isPublic">
           <v-row class="mt-2" justify="center" v-if="isAuthenticated"
@@ -15,7 +38,7 @@
             <v-col cols="auto">
               <NuxtLink :to="localPath(`/chat?userslug=${profile?.slug}`)">
                 {{ $t("components.public-user-profile.chat") }}
-                {{ profile?.displayname }}
+                {{ localized.displayname }}
               </NuxtLink>
             </v-col>
           </v-row>
@@ -33,7 +56,7 @@
             <v-col cols="auto">
               <NuxtLink :to="localPath('/chat?userslug=imchatty')">
                 {{ $t("components.public-user-profile.chat") }}
-                {{ profile?.displayname }}
+                {{ localized.displayname }}
               </NuxtLink>
             </v-col>
           </v-row>
@@ -49,6 +72,10 @@ const localPath = useLocalePath();
 import { useAuthStore } from "@/stores/authStore1";
 import { useUserProfile } from "@/composables/useUserProfile";
 import ProfileCard from "@/components/ProfileCard.vue";
+import {
+  resolveProfileLocalization,
+  getProfileTranslationLocales,
+} from "@/composables/useProfileLocalization";
 
 const props = defineProps({
   selectedUserSlug: String,
@@ -64,8 +91,10 @@ const authStore = useAuthStore();
 const { profile, fetchUserProfileFromSlug, fetchUserProfile } =
   useUserProfile();
 
+const { t, locale } = useI18n();
 const { getAvatarDecorationFromId } = useDb();
 const avatarDecoration = ref("");
+const localeOverride = ref("");
 
 const loadProfile = async () => {
   if (props.selectedUserSlug) {
@@ -78,6 +107,22 @@ const loadProfile = async () => {
 };
 
 await loadProfile();
+
+const localized = computed(() =>
+  resolveProfileLocalization({
+    profile: profile.value,
+    readerLocale: locale?.value,
+    overrideLocale: localeOverride.value,
+  })
+);
+
+const localeOptions = computed(() => {
+  const locales = getProfileTranslationLocales(profile.value);
+  return locales.map((code) => ({
+    code,
+    label: t(`components.profile-language.options.${code}`, code.toUpperCase()),
+  }));
+});
 
 const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)

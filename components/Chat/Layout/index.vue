@@ -183,11 +183,11 @@
               <div class="px-4 py-4">
                 <template v-if="selectedUser">
                   <div
-                    v-if="selectedUser?.tagline"
+                    v-if="selectedUserLocalized.tagline"
                     class="text-body-1 font-italic mb-3 text-truncate"
-                    :title="selectedUser.tagline"
+                    :title="selectedUserLocalized.tagline"
                   >
-                    "{{ selectedUser.tagline }}"
+                    "{{ selectedUserLocalized.tagline }}"
                   </div>
 
                   <div
@@ -210,10 +210,10 @@
                   </div>
 
                   <div
-                    v-if="selectedUser?.bio"
+                    v-if="selectedUserLocalized.bio"
                     class="profile-bio text-body-2 text-medium-emphasis mb-3"
                   >
-                    {{ selectedUser.bio }}
+                    {{ selectedUserLocalized.bio }}
                   </div>
 
                   <div
@@ -469,11 +469,11 @@
               <div class="px-4 py-4">
                 <template v-if="selectedUser">
                   <div
-                    v-if="selectedUser?.tagline"
+                    v-if="selectedUserLocalized.tagline"
                     class="text-body-1 font-italic mb-3 text-truncate"
-                    :title="selectedUser.tagline"
+                    :title="selectedUserLocalized.tagline"
                   >
-                    "{{ selectedUser.tagline }}"
+                    "{{ selectedUserLocalized.tagline }}"
                   </div>
 
                   <div
@@ -496,10 +496,10 @@
                   </div>
 
                   <div
-                    v-if="selectedUser?.bio"
+                    v-if="selectedUserLocalized.bio"
                     class="profile-bio text-body-2 text-medium-emphasis mb-3"
                   >
-                    {{ selectedUser.bio }}
+                    {{ selectedUserLocalized.bio }}
                   </div>
 
                   <div
@@ -815,6 +815,7 @@ import { useTabFilters } from "@/composables/useTabFilters";
 import { useI18n } from "vue-i18n";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
 import ProfileDialog from "@/components/ProfileDialog.vue";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const auth = useAuthStore();
 const chat = useChatStore();
@@ -831,7 +832,7 @@ const RECENT_ACTIVE_POLL_MS = 5 * 60 * 1000;
 
 const route = useRoute();
 const router = useRouter();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const { smAndDown } = useDisplay();
 const hasMounted = ref(false);
@@ -848,6 +849,7 @@ const {
   deleteChatWithUser,
   insertBlockedUser,
   unblockUser,
+  getProfileTranslations,
 } = useDb();
 const supabase = getClient();
 
@@ -1088,20 +1090,6 @@ const selectedUserId = computed(
   () => chat.selectedUser?.user_id || chat.selectedUser?.id || null
 );
 
-const selectedUserRaw = computed(() => chat.selectedUser || null);
-
-const selectedUser = computed(() => {
-  const raw = selectedUserRaw.value;
-  if (!raw) return null;
-  const rawId = raw.user_id ?? raw.id;
-  if (!rawId) return raw;
-  const match = usersWithPresence.value.find((u) => {
-    const uid = u.user_id ?? u.id;
-    return String(uid) === String(rawId);
-  });
-  return match || raw;
-});
-
 const isSelectedUserBlocked = computed(() => {
   const selectedId = selectedUserId.value;
   if (!selectedId) return false;
@@ -1191,25 +1179,46 @@ const shareProfile = async () => {
 };
 
 const selectedUserInitial = computed(() => {
-  const name = selectedUser.value?.displayname || "";
+  const name = selectedUserLocalized.value.displayname || "";
   const trimmed = name.trim();
   if (trimmed.length) return trimmed[0].toUpperCase();
   return "?";
 });
 
-const deleteTargetName = computed(() =>
-  deleteTarget.value?.displayname ||
-  t("components.activeChats.unknown-user")
-);
+const deleteTargetName = computed(() => {
+  if (!deleteTarget.value) return t("components.activeChats.unknown-user");
+  const localized = resolveProfileLocalization({
+    profile: deleteTarget.value,
+    readerLocale: locale?.value,
+  });
+  return localized.displayname || deleteTarget.value?.displayname || t("components.activeChats.unknown-user");
+});
 const deletePrompt = computed(() =>
   t("components.activeChats.delete-with-user", { name: deleteTargetName.value })
+);
+
+const selectedUserTranslations = ref([]);
+const selectedUserWithTranslations = computed(() => {
+  if (!selectedUser.value) return null;
+  return {
+    ...selectedUser.value,
+    profile_translations: selectedUserTranslations.value,
+  };
+});
+
+const selectedUserLocalized = computed(() =>
+  resolveProfileLocalization({
+    profile: selectedUserWithTranslations.value,
+    readerLocale: locale?.value,
+  })
 );
 
 const selectedUserTitle = computed(() => {
   const user = selectedUser.value;
   if (!user) return "Select a user to start chatting";
   const parts = [];
-  if (user.displayname) parts.push(String(user.displayname));
+  if (selectedUserLocalized.value.displayname)
+    parts.push(String(selectedUserLocalized.value.displayname));
   if (user.age) parts.push(String(user.age));
   return parts.join(", ");
 });
@@ -1226,14 +1235,29 @@ const selectedUserLocation = computed(() => {
 const selectedUserSubtitle = computed(() => {
   const user = selectedUser.value;
   if (!user) return "Pick someone from the list on the left.";
-  if (user.tagline) return String(user.tagline);
+  if (selectedUserLocalized.value.tagline)
+    return String(selectedUserLocalized.value.tagline);
   if (selectedUserLocation.value) return selectedUserLocation.value;
-  if (user.bio) {
-    const bio = String(user.bio).trim();
+  if (selectedUserLocalized.value.bio || user.bio) {
+    const bio = String(selectedUserLocalized.value.bio || user.bio).trim();
     return bio.length > 80 ? `${bio.slice(0, 77)}...` : bio;
   }
   return "No additional details yet.";
 });
+
+const loadSelectedUserTranslations = async (userId) => {
+  if (!userId) {
+    selectedUserTranslations.value = [];
+    return;
+  }
+  try {
+    const { data } = await getProfileTranslations(userId);
+    selectedUserTranslations.value = data || [];
+  } catch (err) {
+    console.warn("[chat] selected user translations failed:", err);
+    selectedUserTranslations.value = [];
+  }
+};
 
 const selectedUserMeta = computed(() => {
   const user = selectedUser.value;
@@ -1482,6 +1506,28 @@ const usersWithPresence = computed(() => {
     ),
   ];
 });
+
+const selectedUserRaw = computed(() => chat.selectedUser || null);
+
+const selectedUser = computed(() => {
+  const raw = selectedUserRaw.value;
+  if (!raw) return null;
+  const rawId = raw.user_id ?? raw.id;
+  if (!rawId) return raw;
+  const match = usersWithPresence.value.find((u) => {
+    const uid = u.user_id ?? u.id;
+    return String(uid) === String(rawId);
+  });
+  return match || raw;
+});
+
+watch(
+  () => selectedUser.value?.user_id || selectedUser.value?.id,
+  (userId) => {
+    loadSelectedUserTranslations(userId);
+  },
+  { immediate: true }
+);
 
 function selectUser(u) {
   chat.setSelectedUser(u);

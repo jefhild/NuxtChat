@@ -3,12 +3,22 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
+
 const { locale } = useI18n();
 const route = useRoute();
 const slug = route.params.slug;
 
 const { profile, fetchUserProfileFromSlug } = useUserProfile();
 await fetchUserProfileFromSlug(slug);
+
+const localized = computed(() =>
+  resolveProfileLocalization({
+    profile: profile.value,
+    readerLocale: locale?.value,
+  })
+);
 
 // ✅ Define before it's used
 const getLimitedDescription = (text) =>
@@ -17,13 +27,13 @@ const getLimitedDescription = (text) =>
 // ✅ Call composable AFTER the function is declared
 useSeoI18nMeta("profiles.female", {
   dynamic: {
-    title: profile.value?.displayname,
-    description: getLimitedDescription(profile.value?.bio),
-    ogTitle: profile.value?.displayname,
-    ogDescription: getLimitedDescription(profile.value?.bio),
+    title: localized.value?.displayname,
+    description: getLimitedDescription(localized.value?.bio),
+    ogTitle: localized.value?.displayname,
+    ogDescription: getLimitedDescription(localized.value?.bio),
     ogImage: profile.value?.avatar_url,
-    twitterTitle: profile.value?.displayname,
-    twitterDescription: getLimitedDescription(profile.value?.bio),
+    twitterTitle: localized.value?.displayname,
+    twitterDescription: getLimitedDescription(localized.value?.bio),
     twitterImage: profile.value?.avatar_url,
   },
 });

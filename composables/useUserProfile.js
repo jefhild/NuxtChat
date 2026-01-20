@@ -13,6 +13,7 @@ export function useUserProfile() {
     getUserProfileFromSlug,
     updateProfile,
     insertProfileFromObject,
+    getProfileTranslations,
   } = useDb();
 
   const fetchUserProfile = async (userId) => {
@@ -23,9 +24,16 @@ export function useUserProfile() {
 
     const data = await getUserProfileFunctionFromId(userId);
     if (data && data.length > 0) {
-      profile.value = data[0];
-      editableProfile.value = { ...data[0] };
-      return data[0];
+      const baseProfile = data[0];
+      const { data: translations } = await getProfileTranslations(
+        baseProfile?.user_id
+      );
+      profile.value = {
+        ...baseProfile,
+        profile_translations: translations || [],
+      };
+      editableProfile.value = { ...profile.value };
+      return profile.value;
     } else {
       error.value = "Error fetching user profile";
       return null;
@@ -40,9 +48,16 @@ export function useUserProfile() {
 
     const data = await getUserProfileFromSlug(slug);
     if (data && data.length > 0) {
-      profile.value = data[0];
-      editableProfile.value = { ...data[0] };
-      return data[0];
+      const baseProfile = data[0];
+      const { data: translations } = await getProfileTranslations(
+        baseProfile?.user_id
+      );
+      profile.value = {
+        ...baseProfile,
+        profile_translations: translations || [],
+      };
+      editableProfile.value = { ...profile.value };
+      return profile.value;
     } else {
       error.value = "Error fetching user profile";
       return null;
@@ -97,6 +112,12 @@ export function useUserProfile() {
     if (!editableProfile.value) return;
 
     try {
+      const prev = profile.value || {};
+      const next = editableProfile.value || {};
+      const nameChanged = prev.displayname !== next.displayname;
+      const bioChanged = prev.bio !== next.bio;
+      const taglineChanged = prev.tagline !== next.tagline;
+
       await updateProfile(
         editableProfile.value.user_id,
         editableProfile.value.displayname,
@@ -115,6 +136,26 @@ export function useUserProfile() {
 
       profile.value = { ...editableProfile.value };
       isEditable.value = false;
+
+      if ((nameChanged || bioChanged || taglineChanged) && next.user_id) {
+        try {
+          await $fetch("/api/profile/translate", {
+            method: "POST",
+            body: {
+              userId: next.user_id,
+              displayname: next.displayname,
+              bio: next.bio,
+              tagline: next.tagline || null,
+              sourceLocale: next.preferred_locale || "en",
+              targetLocales: ["en", "fr", "ru", "zh"].filter(
+                (locale) => locale !== (next.preferred_locale || "en")
+              ),
+            },
+          });
+        } catch (err) {
+          console.warn("[profile] auto-translate failed:", err);
+        }
+      }
     } catch (err) {
       error.value = err.message;
       console.error("Error saving profile changes:", err);

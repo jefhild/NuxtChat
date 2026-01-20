@@ -537,6 +537,37 @@ export const useDb = () => {
     return data;
   };
 
+  const getProfileTranslations = async (userId) => {
+    const supabase = getClient();
+    if (!userId) return { data: null, error: new Error("user_id is required") };
+    return supabase
+      .from("profile_translations")
+      .select("locale, displayname, bio, tagline, source_locale")
+      .eq("user_id", userId);
+  };
+
+  const getProfileTranslationsForUsers = async (userIds = []) => {
+    const supabase = getClient();
+    const ids = Array.isArray(userIds)
+      ? userIds.map((id) => String(id)).filter(Boolean)
+      : [];
+    if (!ids.length) return { data: [], error: null };
+    return supabase
+      .from("profile_translations")
+      .select("user_id, locale, displayname, bio, tagline, source_locale")
+      .in("user_id", ids);
+  };
+
+  const upsertProfileTranslation = async (payload) => {
+    const supabase = getClient();
+    if (!payload?.user_id || !payload?.locale) {
+      return { error: new Error("user_id and locale are required") };
+    }
+    return supabase
+      .from("profile_translations")
+      .upsert(payload, { onConflict: "user_id,locale" });
+  };
+
   const getUserProfilePhoto = async (userId) => {
     const supabase = getClient();
     const { data, error } = await supabase
@@ -1902,6 +1933,7 @@ export const useDb = () => {
       ip = null,
       site_url = null,
       bio = null,
+      preferred_locale = null,
     } = profile;
 
     if (!user_id) return { error: new Error("user_id is required") };
@@ -1929,6 +1961,7 @@ export const useDb = () => {
         ip,
         site_url,
         bio,
+        preferred_locale,
       })
       .select("user_id")
       .maybeSingle();
@@ -3403,6 +3436,9 @@ const signInWithOtp = async (
 
     insertProfile,
     insertProfileFromObject,
+    getProfileTranslations,
+    getProfileTranslationsForUsers,
+    upsertProfileTranslation,
     insertMessage,
     insertFeedback,
     insertBlockedUser,

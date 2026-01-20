@@ -112,7 +112,27 @@ function isAiId(id) {
       const { data, error: dbError } = await db.getAllProfiles();
       // console.log('[chatStore] fetchChatUsers: fetched data len =', Array.isArray(data) ? data.length : 'n/a');
       if (dbError) throw dbError;
-      users.value = filterActiveAiUsers(data);
+      let nextUsers = filterActiveAiUsers(data);
+      const userIds = nextUsers.map((u) => u?.user_id).filter(Boolean);
+      if (userIds.length && db.getProfileTranslationsForUsers) {
+        try {
+          const { data: translations } =
+            await db.getProfileTranslationsForUsers(userIds);
+          const map = new Map();
+          (translations || []).forEach((row) => {
+            const key = row.user_id;
+            if (!map.has(key)) map.set(key, []);
+            map.get(key).push(row);
+          });
+          nextUsers = nextUsers.map((u) => ({
+            ...u,
+            profile_translations: map.get(u.user_id) || [],
+          }));
+        } catch (err) {
+          console.warn("[chatStore] translations failed:", err);
+        }
+      }
+      users.value = nextUsers;
       ensureImchattyPresent();
 
       if (!selectedUser.value) {

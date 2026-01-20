@@ -27,7 +27,7 @@ const isLoading = ref(true);
 
 const emit = defineEmits(["loaded"]);
 
-const { getRecentFemales } = useDb();
+const { getRecentFemales, getProfileTranslationsForUsers } = useDb();
 
 const props = defineProps({
   limit: Number,
@@ -37,12 +37,28 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
 onMounted(async () => {
-  // console.log("Fetching", props.limit);
   const data = await getRecentFemales(props.limit);
-  // console.log("Fetched", data);
-  if (data) {
-    femaleProfiles.value = data;
+  let next = Array.isArray(data) ? data : [];
+  const userIds = next.map((p) => p?.user_id).filter(Boolean);
+  if (userIds.length) {
+    try {
+      const { data: translations } =
+        await getProfileTranslationsForUsers(userIds);
+      const map = new Map();
+      (translations || []).forEach((row) => {
+        const key = row.user_id;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(row);
+      });
+      next = next.map((p) => ({
+        ...p,
+        profile_translations: map.get(p.user_id) || [],
+      }));
+    } catch (err) {
+      console.warn("[HomeFemale] translations failed:", err);
+    }
   }
+  femaleProfiles.value = next;
   isLoading.value = false;
   emit("loaded");
 });

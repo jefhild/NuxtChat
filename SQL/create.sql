@@ -177,6 +177,39 @@ CREATE TABLE public.profiles (
   CONSTRAINT fk_region FOREIGN KEY (region_id) REFERENCES regions (id)
 ) TABLESPACE pg_default;
 
+-- Table for storing profile translations
+CREATE TABLE public.profile_translations (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID NOT NULL
+    REFERENCES profiles (user_id) ON DELETE CASCADE,
+  locale TEXT NOT NULL,
+  displayname TEXT NULL,
+  bio TEXT NULL,
+  tagline TEXT NULL,
+  source_locale TEXT NULL,
+  provider TEXT NULL,
+  translated_at TIMESTAMPTZ NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT profile_translations_user_locale_key UNIQUE (user_id, locale)
+) TABLESPACE pg_default;
+
+CREATE INDEX profile_translations_user_id_idx
+  ON public.profile_translations (user_id) TABLESPACE pg_default;
+
+-- Table for tracking profile translation usage
+CREATE TABLE public.profile_translation_usage (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID NOT NULL
+    REFERENCES profiles (user_id) ON DELETE CASCADE,
+  day DATE NOT NULL,
+  count INTEGER NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT profile_translation_usage_user_day_key UNIQUE (user_id, day)
+) TABLESPACE pg_default;
+
+CREATE INDEX profile_translation_usage_user_id_idx
+  ON public.profile_translation_usage (user_id) TABLESPACE pg_default;
+
 -- Table for storing user presence
 create table public.presence (
   user_id uuid not null,

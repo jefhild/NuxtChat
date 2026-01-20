@@ -50,9 +50,11 @@
       <v-row class="mb-1 mt-2" align="center" no-gutters>
         <div class="d-flex flex-column justify-center">
           <span class="text-body-1 font-weight-medium">{{
-            userProfile.displayname
+            localized.displayname || userProfile.displayname
           }}</span>
-          <span class="text-caption text-grey">{{ userProfile.tagline }}</span>
+          <span class="text-caption text-grey">{{
+            localized.tagline || userProfile.tagline
+          }}</span>
         </div>
       </v-row>
 
@@ -228,7 +230,9 @@
 <script setup>
 import { usePresenceStore2 } from "@/stores/presenceStore2";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n();
+import { computed } from "vue";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
+const { t, locale } = useI18n();
 
 const { getInterests, getCountries, getStatuses } = useDb();
 
@@ -259,6 +263,13 @@ const props = defineProps({
     default: true,
   },
 });
+
+const localized = computed(() =>
+  resolveProfileLocalization({
+    profile: props.userProfile,
+    readerLocale: locale?.value,
+  })
+);
 
 const emit = defineEmits(["filter-changed", "update:showAi"]);
 const genders = [

@@ -40,6 +40,8 @@ import { useDb } from "@/composables/useDB";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useMarkdown } from "~/composables/useMarkdown";
 import { useTypingStore } from "@/stores/typingStore";
+import { useI18n } from "vue-i18n";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const typingStore = useTypingStore();
 
@@ -59,7 +61,13 @@ const messages = ref([]);
 const loading = ref(false);
 const typing = ref(false); // 🔹 NEW: show typing chip
 
-const peerName = computed(() => props.peer?.displayname || "");
+const { locale } = useI18n();
+const peerName = computed(() =>
+  resolveProfileLocalization({
+    profile: props.peer,
+    readerLocale: locale?.value,
+  }).displayname || ""
+);
 const peerAvatar = computed(
   () => props.peer?.avatar_url || props.peer?.avatar || ""
 );

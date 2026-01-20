@@ -27,7 +27,7 @@ const { t } = useI18n();
 
 const emit = defineEmits(["loaded"]);
 
-const { getRecentMales } = useDb();
+const { getRecentMales, getProfileTranslationsForUsers } = useDb();
 
 const props = defineProps({
   limit: Number,
@@ -35,9 +35,27 @@ const props = defineProps({
 
 onMounted(async () => {
   const data = await getRecentMales(profileLimit);
-  if (data) {
-    maleProfiles.value = data.slice(0, props.limit); // Limit to 4 profiles for display
+  let next = Array.isArray(data) ? data.slice(0, props.limit) : [];
+  const userIds = next.map((p) => p?.user_id).filter(Boolean);
+  if (userIds.length) {
+    try {
+      const { data: translations } =
+        await getProfileTranslationsForUsers(userIds);
+      const map = new Map();
+      (translations || []).forEach((row) => {
+        const key = row.user_id;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(row);
+      });
+      next = next.map((p) => ({
+        ...p,
+        profile_translations: map.get(p.user_id) || [],
+      }));
+    } catch (err) {
+      console.warn("[HomeMale] translations failed:", err);
+    }
   }
+  maleProfiles.value = next;
   isLoading.value = false;
   emit("loaded");
 });

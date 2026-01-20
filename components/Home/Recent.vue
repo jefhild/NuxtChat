@@ -33,14 +33,31 @@ const emit = defineEmits(["loaded"]);
 
 const isLoading = ref(true);
 const recentProfiles = ref([]);
-const { getRecentProfiles } = useDb();
+const { getRecentProfiles, getProfileTranslationsForUsers } = useDb();
 
 onMounted(async () => {
   const data = await getRecentProfiles(props.limit);
-  if (data) {
-    recentProfiles.value = data.slice(0, props.limit); // Limit to 4 profiles for display
+  let next = Array.isArray(data) ? data.slice(0, props.limit) : [];
+  const userIds = next.map((p) => p?.user_id).filter(Boolean);
+  if (userIds.length) {
+    try {
+      const { data: translations } =
+        await getProfileTranslationsForUsers(userIds);
+      const map = new Map();
+      (translations || []).forEach((row) => {
+        const key = row.user_id;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(row);
+      });
+      next = next.map((p) => ({
+        ...p,
+        profile_translations: map.get(p.user_id) || [],
+      }));
+    } catch (err) {
+      console.warn("[HomeRecent] translations failed:", err);
+    }
   }
-  // console.log("Recent Profiles:", recentProfiles.value);
+  recentProfiles.value = next;
   isLoading.value = false;
   emit("loaded");
 });

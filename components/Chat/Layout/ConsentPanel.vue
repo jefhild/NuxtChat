@@ -72,6 +72,7 @@
 import { computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useOnboardingDraftStore } from "@/stores/onboardingDraftStore";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const props = defineProps({
   authStatus: { type: String, default: "unauthenticated" },
@@ -165,8 +166,19 @@ const iconColor = computed(() => stateMeta.value.iconColor || "primary");
 const stateIcon = computed(() => stateMeta.value.icon);
 const stateLabel = computed(() => stateMeta.value.label);
 
+const { locale } = useI18n();
+const localized = computed(() =>
+  resolveProfileLocalization({
+    profile: props.userProfile,
+    readerLocale: locale?.value,
+  })
+);
 const displayName = computed(
-  () => props.userProfile?.displayname || props.userProfile?.username || ""
+  () =>
+    localized.value.displayname ||
+    props.userProfile?.displayname ||
+    props.userProfile?.username ||
+    ""
 );
 
 const displayNameFilled = computed(

@@ -17,10 +17,10 @@
             <div class="overlay mb-2">
               <v-row class="d-flex justify-center align-center text-center flex-column px-2 mb-2">
                 <div class="font-weight-bold text-white text-truncate">
-                  {{ profile.displayname }}
+                  {{ displayNameFor(profile) }}
                 </div>
-                <div v-if="profile.tagline" class="tagline text-white text-caption mt-1 text-truncate">
-                  {{ profile.tagline }}
+                <div v-if="taglineFor(profile)" class="tagline text-white text-caption mt-1 text-truncate">
+                  {{ taglineFor(profile) }}
                 </div>
                 <div v-if="profile.upvote_count" class="text-white d-flex align-center justify-center mt-1">
                   <v-icon size="16" class="mr-1" color="yellow">mdi-thumb-up</v-icon>
@@ -67,7 +67,10 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 const localPath = useLocalePath();
+const { locale } = useI18n();
 const props = defineProps({
   profiles: {
     type: Array,
@@ -93,6 +96,18 @@ const batchSize = 12; // How many to load each time
 const displayedProfiles = computed(() =>
 props.limit ? props.profiles.slice(0, loadedCount.value) : props.profiles
 );
+
+const displayNameFor = (profile) =>
+  resolveProfileLocalization({
+    profile,
+    readerLocale: locale?.value,
+  }).displayname || profile?.displayname || "";
+
+const taglineFor = (profile) =>
+  resolveProfileLocalization({
+    profile,
+    readerLocale: locale?.value,
+  }).tagline || profile?.tagline || "";
 
 const infiniteScrollTrigger = ref(null);
 

@@ -38,6 +38,34 @@ const AI_LIMITS = {
   authenticated: 200,
 };
 
+const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
+const CJK_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/;
+
+const hasCjk = (value) => CJK_RE.test(String(value || ""));
+
+function normalizeLocaleCode(value) {
+  const code = String(value || "").trim().toLowerCase();
+  if (!code) return null;
+  if (code.startsWith("zh")) return "zh";
+  if (code.startsWith("fr")) return "fr";
+  if (code.startsWith("ru")) return "ru";
+  if (code.startsWith("en")) return "en";
+  const base = code.split("-")[0];
+  return SUPPORTED_LOCALES.includes(base) ? base : null;
+}
+
+function pickPreferredLocaleFromBrowser() {
+  if (!import.meta.client || typeof navigator === "undefined") return null;
+  const candidates = Array.isArray(navigator.languages) && navigator.languages.length
+    ? navigator.languages
+    : [navigator.language];
+  for (const candidate of candidates) {
+    const norm = normalizeLocaleCode(candidate);
+    if (norm) return norm;
+  }
+  return null;
+}
+
 let _logoutInflight = null;
 
 async function _clearSupabaseTokensSafe() {
@@ -276,6 +304,7 @@ export const useAuthStore = defineStore("authStore1", {
         getClient,
         insertProfileFromObject,
         getUserProfileFunctionFromId,
+        upsertProfileTranslation,
       } = useDb();
 
       const supabase = getClient();
@@ -298,6 +327,13 @@ export const useAuthStore = defineStore("authStore1", {
       let stateId = pickId(draft.stateId, draft.state_id);
       let cityId = pickId(draft.cityId, draft.city_id);
       let ip = draft.ip ?? null;
+      let preferredLocale =
+        draft.preferred_locale ?? draft.preferredLocale ?? null;
+
+      if (!preferredLocale) {
+        preferredLocale = pickPreferredLocaleFromBrowser();
+      }
+      if (!preferredLocale) preferredLocale = "en";
 
       if (import.meta.client && !countryId) {
         try {
@@ -323,6 +359,7 @@ export const useAuthStore = defineStore("authStore1", {
         city_id: cityId,
         ip,
         avatar_url: avatarUrl ?? null,
+        preferred_locale: preferredLocale,
 
         provider: "anonymous",
       };
@@ -335,6 +372,38 @@ export const useAuthStore = defineStore("authStore1", {
         const isDuplicate =
           error.code === "23505" || msg.includes("duplicate key");
         if (!isDuplicate) throw error;
+      }
+
+      if (payload.displayname) {
+        await upsertProfileTranslation({
+          user_id: userId,
+          locale: preferredLocale,
+          displayname: payload.displayname,
+          bio: payload.bio,
+          tagline: draft.tagline ?? null,
+          source_locale: preferredLocale,
+        });
+      }
+
+      if (hasCjk(payload.displayname) || hasCjk(payload.bio)) {
+        const targets = new Set(["en"]);
+        if (preferredLocale && preferredLocale !== "zh") {
+          targets.add(preferredLocale);
+        }
+        try {
+          await $fetch("/api/profile/translate", {
+            method: "POST",
+            body: {
+              userId,
+              displayname: payload.displayname,
+              bio: payload.bio,
+              sourceLocale: "zh",
+              targetLocales: Array.from(targets),
+            },
+          });
+        } catch (err) {
+          console.warn("[finalize] profile translation failed:", err);
+        }
       }
 
       if (!avatarUrl) {

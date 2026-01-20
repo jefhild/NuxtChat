@@ -4,7 +4,7 @@ export function useFetchOnlineUsers() {
   const supabase = useSupabaseClient();
   const imchattyId = "a3962087-516b-48df-a3ff-3b070406d832"; // Replace with actual ID or a config value
 
-  const { getUsersFromIds } = useDb();
+  const { getUsersFromIds, getProfileTranslationsForUsers } = useDb();
   // Reactive states
   const arrayOnlineUsers = ref([]);
   const error = ref(null);
@@ -94,6 +94,29 @@ export function useFetchOnlineUsers() {
       "[fetchOnlineUsers] Final online users list:",
       combinedUsers.map((u) => u.displayname || u.user_id)
     );
+    const userIds = combinedUsers
+      .map((u) => u?.user_id)
+      .filter((id) => id);
+    if (userIds.length) {
+      try {
+        const { data: translations } = await getProfileTranslationsForUsers(
+          userIds
+        );
+        const map = new Map();
+        (translations || []).forEach((row) => {
+          const key = row.user_id;
+          if (!map.has(key)) map.set(key, []);
+          map.get(key).push(row);
+        });
+        combinedUsers = combinedUsers.map((u) => ({
+          ...u,
+          profile_translations: map.get(u.user_id) || [],
+        }));
+      } catch (e) {
+        console.warn("[fetchOnlineUsers] translations failed:", e);
+      }
+    }
+
     arrayOnlineUsers.value = combinedUsers;
     loading.value = false;
   };

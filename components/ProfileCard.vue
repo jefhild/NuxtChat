@@ -11,7 +11,7 @@
         height="150"
         width="150"
         class="rounded-circle cover-image mx-auto d-block ma-9"
-        :alt="`${profile.displayname} image`"
+        :alt="`${localized.displayname} image`"
       />
 
 
@@ -19,12 +19,12 @@
         v-if="avatarDecoration"
         :src="avatarDecoration"
         class="avatar-decoration"
-        :alt="`${profile.displayname} image decoration`"
+        :alt="`${localized.displayname} image decoration`"
       />
     </div>
 
     <NuxtLink :to="chatLink" class="profile-chat-cta">
-      {{ $t("components.profile-details.chat-cta", { name: profile?.displayname }) }}
+      {{ $t("components.profile-details.chat-cta", { name: localized.displayname }) }}
     </NuxtLink>
 
     <v-card-title>
@@ -32,7 +32,7 @@
         <v-col>
           <div class="profile-title-row">
             <h1 class="text-h5">
-              {{ profile?.displayname }}
+              {{ localized.displayname }}
             </h1>
             <div class="profile-age-flag">
               <v-icon
@@ -105,7 +105,7 @@
               </template>
             </v-list-item>
             <v-list-item
-              v-if="profile?.bio"
+              v-if="localized.bio"
               class="profile-details-about"
               prepend-icon="mdi-account-details-outline"
             >
@@ -115,7 +115,7 @@
                     {{ $t("components.public-user-profile.about-me") }}
                   </span>
                   <span class="profile-details-body">
-                    {{ profile.bio }}
+                    {{ localized.bio }}
                   </span>
                 </div>
               </template>
@@ -196,7 +196,7 @@
         rel="noopener noreferrer"
         :aria-label="
           $t('components.public-user-profile.visit1') +
-          `${profile?.displayname}` +
+          `${localized.displayname}` +
           $t('components.public-user-profile.visit2')
         "
       ></v-btn>
@@ -232,12 +232,14 @@
 <script setup>
 import { computed, ref } from "vue";
 import { getAvatar, getAvatarIcon, getGenderColor } from "@/composables/useUserUtils";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const props = defineProps({
   profile: { type: Object, default: null },
   avatarDecoration: { type: String, default: "" },
   maxWidth: { type: [Number, String], default: "100%" },
   stats: { type: Object, default: null },
+  localeOverride: { type: String, default: "" },
 });
 
 const emptyStats = {
@@ -254,7 +256,15 @@ const profileSiteUrl = computed(() => {
     : `https://${siteUrl.trim()}`;
 });
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+
+const localized = computed(() =>
+  resolveProfileLocalization({
+    profile: props.profile,
+    readerLocale: locale?.value,
+    overrideLocale: props.localeOverride,
+  })
+);
 const localPath = useLocalePath();
 const chatLink = computed(() => {
   const slug = props.profile?.slug;

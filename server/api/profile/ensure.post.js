@@ -188,6 +188,26 @@ export default defineEventHandler(async (event) => {
   if (!ins?.user_id)
     return new Response("Failed to create profile", { status: 500 });
 
+  if (displayname) {
+    try {
+      await client.from("profile_translations").upsert(
+        {
+          user_id: ins.user_id,
+          locale: preferred_locale || "en",
+          displayname,
+          bio: null,
+          tagline: null,
+          source_locale: preferred_locale || "en",
+          provider: "original",
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,locale" }
+      );
+    } catch (err) {
+      console.warn("[profile.ensure] translation seed failed:", err);
+    }
+  }
+
   // 6️⃣ Optional defaults (non-fatal)
   const defaultFavoriteId = "7d20548d-8a9d-4190-bce5-90c8d74c4a56";
   const defaultLookingForId = 1;

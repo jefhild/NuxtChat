@@ -8,6 +8,23 @@ export default defineNuxtConfig({
 
   css: ["@/assets/css/util.css"],
 
+  app: {
+    head: {
+      script: [
+        ...(process.env.TERMLY_ID
+          ? [
+              {
+                id: "termly-resource-blocker",
+                src: `https://app.termly.io/resource-blocker/${process.env.TERMLY_ID}?autoBlock=on`,
+                tagPosition: "head",
+                priority: -1000,
+              },
+            ]
+          : []),
+      ],
+    },
+  },
+
   build: {
     transpile: ["vuetify"],
   },

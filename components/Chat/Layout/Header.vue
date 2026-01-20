@@ -57,10 +57,10 @@
         @click.prevent="$emit('open-profile', selectedUser)"
       >
         <div class="text-body-1 font-weight-medium">
-          {{ selectedUser.displayname }}, {{ selectedUser.age }}
+          {{ localized.displayname }}, {{ selectedUser.age }}
         </div>
         <div class="text-subtitle-2">
-          {{ selectedUser.tagline }}
+          {{ localized.tagline || selectedUser.tagline }}
         </div>
       </a>
     </div>
@@ -72,7 +72,10 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { getAvatar } from "@/composables/useUserUtils";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const props = defineProps({
   selectedUser: Object,
@@ -81,6 +84,14 @@ const props = defineProps({
 });
 
 const { selectedUser, currentUser } = toRefs(props);
+const { locale } = useI18n();
+
+const localized = computed(() =>
+  resolveProfileLocalization({
+    profile: selectedUser.value,
+    readerLocale: locale?.value,
+  })
+);
 
 defineEmits(["open-profile"]);
 </script>

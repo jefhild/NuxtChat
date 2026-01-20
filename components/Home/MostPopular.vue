@@ -17,7 +17,7 @@
 <script setup>
 const localPath = useLocalePath();
 const popularProfiles = ref([]);
-const { getMostPopularProfiles } = useDb();
+const { getMostPopularProfiles, getProfileTranslationsForUsers } = useDb();
 
 const emit = defineEmits(['loaded']);
 
@@ -32,9 +32,27 @@ const props = defineProps({
 onMounted(async () => {
   // Fetch data on component mount
   const data = await getMostPopularProfiles(props.limit);
-  if (data) {
-    popularProfiles.value = data.slice(0, props.limit); // Limit to 4 profiles for display
+  let next = Array.isArray(data) ? data.slice(0, props.limit) : [];
+  const userIds = next.map((p) => p?.user_id).filter(Boolean);
+  if (userIds.length) {
+    try {
+      const { data: translations } =
+        await getProfileTranslationsForUsers(userIds);
+      const map = new Map();
+      (translations || []).forEach((row) => {
+        const key = row.user_id;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(row);
+      });
+      next = next.map((p) => ({
+        ...p,
+        profile_translations: map.get(p.user_id) || [],
+      }));
+    } catch (err) {
+      console.warn("[HomeMostPopular] translations failed:", err);
+    }
   }
+  popularProfiles.value = next;
   // console.log("Most Popular Profiles: ", popularProfiles.value);
   isLoading.value = false;
   emit('loaded');
