@@ -67,19 +67,19 @@
                     <v-avatar size="40">
                       <v-img
                         :src="getAvatar(item.avatar_url, item.gender_id)"
-                        :alt="item.displayname || 'Profile avatar'"
+                        :alt="displayNameFor(item) || 'Profile avatar'"
                       />
                     </v-avatar>
                   </v-badge>
                   <v-avatar v-else size="40">
                     <v-img
                       :src="getAvatar(item.avatar_url, item.gender_id)"
-                      :alt="item.displayname || 'Profile avatar'"
+                      :alt="displayNameFor(item) || 'Profile avatar'"
                     />
                   </v-avatar>
                   <div class="d-flex flex-column">
                     <span class="font-weight-medium">
-                      {{ item.displayname || "Unknown" }}
+                      {{ displayNameFor(item) }}
                     </span>
                     <span class="text-caption text-medium-emphasis">
                       {{ item.slug || item.user_id }}
@@ -442,6 +442,8 @@
 
 <script setup>
 import { getAvatar, getGenderPath } from "@/composables/useUserUtils";
+import { useI18n } from "vue-i18n";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const isLoading = ref(true);
 const profiles = ref([]); // will always be an array after load
@@ -468,6 +470,7 @@ const discussionMessagesLoading = ref(false);
 const deletingMessageIds = ref([]);
 const activeMessageUserId = ref(null);
 
+const { locale } = useI18n();
 const localPath = useLocalePath();
 const router = useRouter();
 
@@ -477,6 +480,12 @@ const {
   unmarkUserForDeletion,
   getUserActivitySummary,
 } = useDb();
+
+const displayNameFor = (profile) =>
+  resolveProfileLocalization({
+    profile,
+    readerLocale: locale?.value,
+  }).displayname || profile?.displayname || "Unknown";
 
 // tiny helper to coerce “maybe array” -> array
 const toArray = (val) => {

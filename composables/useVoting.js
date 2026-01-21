@@ -2,7 +2,9 @@ export function useVoting() {
   const auth = useAuthStore()
   // accept either `authStatus` (your convention) or `status` (fallback)
   const authState = computed(() => auth.authStatus ?? auth.status ?? null)
-  const canVote = computed(() => authState.value === 'authenticated')
+  const canVote = computed(() =>
+    ['authenticated', 'anon_authenticated'].includes(authState.value)
+  )
 
   async function voteThread(threadId, value) {
     if (!canVote.value) throw new Error("Sign in to vote");

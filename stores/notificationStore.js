@@ -11,13 +11,14 @@ export const useNotificationStore = defineStore('notificationStore', {
 	},
 
 	actions: {
-		addNotification(type, message, userId)
+		addNotification(type, message, userId, meta = {})
 		{
 			this.notifications.unshift({
 				id: crypto.randomUUID(), // unique ID for local tracking
 				type,                    // 'message', 'favorited', 'favorite_online'
 				message,                 // text to display
 				userId,                    // e.g., { id, displayname }
+				meta,
 				read: false,
 				created_at: new Date().toISOString()
 			});

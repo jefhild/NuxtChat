@@ -82,12 +82,31 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    let translationsByUserId = new Map();
+    if (userIds.length) {
+      const { data: translations, error: translationsErr } = await supa
+        .from("profile_translations")
+        .select("user_id, locale, displayname, bio, tagline, source_locale")
+        .in("user_id", userIds);
+
+      if (translationsErr) {
+        console.error("[admin/profiles] translations error:", translationsErr);
+      } else {
+        (translations || []).forEach((row) => {
+          const key = row.user_id;
+          if (!translationsByUserId.has(key)) translationsByUserId.set(key, []);
+          translationsByUserId.get(key).push(row);
+        });
+      }
+    }
+
     const merged = items.map((row) => {
       const extra = extraByUserId.get(row.user_id);
       return {
         ...row,
         email: extra?.email ?? row.email ?? null,
         created: row.created ?? null,
+        profile_translations: translationsByUserId.get(row.user_id) || [],
       };
     });
 

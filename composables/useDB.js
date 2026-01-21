@@ -31,6 +31,9 @@ export const useDb = () => {
   let _messagesChan = null;
   let _messagesFor = null; // if you track which user it's wired for
   let _messagesInflight = null;
+  let _favoritesChan = null;
+  let _favoritesFor = null;
+  let _favoritesInflight = null;
 
   const getCountryByIsoCode = async (isoCode) => {
     const supabase = getClient();
@@ -3300,6 +3303,119 @@ const signInWithOtp = async (
     return true;
   };
 
+  const subscribeToFavorites = async (meId, { onInsert } = {}) => {
+    if (!meId) return null;
+    const supabase = getClient();
+
+    if (_favoritesChan && _favoritesFor === meId) {
+      return async () => {
+        const ch = _favoritesChan;
+        _favoritesChan = null;
+        _favoritesFor = null;
+        _favoritesInflight = null;
+        try {
+          await ch.unsubscribe?.();
+        } catch {}
+        try {
+          await supabase.removeChannel?.(ch);
+        } catch {}
+      };
+    }
+
+    if (_favoritesInflight && _favoritesFor === meId) {
+      return _favoritesInflight;
+    }
+
+    if (_favoritesChan) {
+      try {
+        await _favoritesChan.unsubscribe?.();
+      } catch {}
+      try {
+        await supabase.removeChannel?.(_favoritesChan);
+      } catch {}
+      _favoritesChan = null;
+      _favoritesFor = null;
+      _favoritesInflight = null;
+    }
+
+    const mkChannel = (name, opts) =>
+      typeof supabase.channel === "function"
+        ? supabase.channel(name, opts)
+        : supabase.realtime.channel(name, opts);
+
+    const ch = mkChannel(`favorites-${meId}`);
+
+    ch.on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "favorites",
+        filter: `favorite_user_id=eq.${meId}`,
+      },
+      (payload) => onInsert?.(payload.new)
+    );
+
+    if (ch.__didSubscribe) {
+      // no-op
+    } else {
+      ch.__didSubscribe = true;
+    }
+
+    _favoritesFor = meId;
+    _favoritesInflight = (async () => {
+      await new Promise((resolve) => {
+        ch.subscribe((status) => {
+          if (status === "SUBSCRIBED") resolve();
+          else if (status === "CHANNEL_ERROR" || status === "CLOSED") {
+            resolve();
+          }
+        });
+      });
+
+      _favoritesChan = ch;
+
+      return async () => {
+        if (_favoritesChan === ch) {
+          _favoritesChan = null;
+          _favoritesFor = null;
+          _favoritesInflight = null;
+        }
+        try {
+          await ch.unsubscribe?.();
+        } catch {}
+        try {
+          await supabase.removeChannel?.(ch);
+        } catch {}
+      };
+    })();
+
+    return _favoritesInflight;
+  };
+
+  const unsubscribeFavorites = async () => {
+    const ch = _favoritesChan;
+    if (!ch) return false;
+
+    _favoritesChan = null;
+    _favoritesFor = null;
+
+    try {
+      await ch.unsubscribe?.();
+    } catch (e) {
+      console.warn("[rt] favorites unsubscribe error:", e?.message || e);
+    }
+
+    try {
+      const client = getClient();
+      await client.removeChannel?.(ch);
+    } catch (e) {
+      console.warn("[rt] favorites removeChannel error:", e?.message || e);
+    }
+
+    return true;
+  };
+
   const fetchUnreadCounts = async (me) => {
     const supabase = getClient();
     const { data, error } = await supabase
@@ -3505,6 +3621,8 @@ const signInWithOtp = async (
 
     subscribeToMessages,
     unsubscribeMessages,
+    subscribeToFavorites,
+    unsubscribeFavorites,
     fetchUnreadCounts,
     markThreadAsRead,
   };

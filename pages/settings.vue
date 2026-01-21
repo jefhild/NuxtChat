@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="!isLoading" fluid>
+  <v-container fluid>
     <!-- <HomeRow1 /> -->
 
     <PageHeader
@@ -20,7 +20,9 @@ const authStore = useAuthStore();
 const router = useRouter();
 const localPath = useLocalePath();
 
-const isLoading = ref(true);
+const isReady = computed(() =>
+  ["authenticated", "anon_authenticated"].includes(authStore.authStatus)
+);
 
 onMounted(async () => {
   // console.log("[settings] onMounted: checking auth...");
@@ -36,6 +38,5 @@ onMounted(async () => {
     return;
   }
 
-  isLoading.value = false;
 });
 </script>

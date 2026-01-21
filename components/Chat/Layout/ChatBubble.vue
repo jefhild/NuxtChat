@@ -51,7 +51,7 @@ const nameToShow = computed(() =>
   flex-direction: column;
   gap: 4px;
   margin: 10px 0;
-  max-width: 72ch;
+  max-width: min(100%, 900px);
 }
 .bubble-row--me {
   margin-left: auto;

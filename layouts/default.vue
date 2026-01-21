@@ -1,5 +1,6 @@
 <template>
   <NavBar />
+  <FavoriteToast />
   <!-- Main content; let children shrink to create scroll areas -->
   <v-main class="d-flex flex-column min-h-0" :style="mainStyle">
     <!-- Optional container; keep min-h-0 so inner flex can shrink -->
@@ -58,6 +59,7 @@ import { useDb } from "@/composables/useDB";
 import { useDisplay } from "vuetify";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
 import { useHead, useRoute } from "#imports";
+import { useFavoriteNotifications } from "@/composables/useFavoriteNotifications";
 
 const auth = useAuthStore();
 const presence = usePresenceStore2();
@@ -74,6 +76,8 @@ const {
   handleTouchMove,
   peekOffset,
 } = useFooterVisibility();
+
+useFavoriteNotifications();
 
 const isClient = typeof window !== "undefined";
 const isMobile = computed(() => hasMounted.value && smAndDown.value === true);

@@ -29,15 +29,23 @@ export function useMarkdown() {
       breaks: true, // convert \n to <br>
     });
 
-    // open links in new tab safely
+    // Open external links in a new tab; keep internal links in-app.
     const defaultLinkOpen =
       md.renderer.rules.link_open ||
       ((tokens, idx, opts, _env, self) => self.renderToken(tokens, idx, opts));
     md.renderer.rules.link_open = (tokens, idx, opts, env, self) => {
+      const hrefIdx = tokens[idx].attrIndex("href");
+      const href = hrefIdx >= 0 ? tokens[idx].attrs[hrefIdx][1] : "";
+      const isExternal =
+        /^https?:\/\//i.test(href) ||
+        /^\/\//.test(href) ||
+        /^mailto:/i.test(href) ||
+        /^tel:/i.test(href);
       const tIdx = tokens[idx].attrIndex("target");
-      if (tIdx < 0) tokens[idx].attrPush(["target", "_blank"]);
-      else tokens[idx].attrs[tIdx][1] = "_blank";
-      tokens[idx].attrPush(["rel", "noopener noreferrer"]);
+      const targetValue = isExternal ? "_blank" : "_self";
+      if (tIdx < 0) tokens[idx].attrPush(["target", targetValue]);
+      else tokens[idx].attrs[tIdx][1] = targetValue;
+      if (isExternal) tokens[idx].attrPush(["rel", "noopener noreferrer"]);
       return defaultLinkOpen(tokens, idx, opts, env, self);
     };
 
