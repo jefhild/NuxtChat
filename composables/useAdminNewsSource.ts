@@ -10,6 +10,9 @@ export type UrlDraftPayload = {
   sourceTitle?: string | null;
   sourceSummary?: string | null;
   sourceDomain?: string | null;
+  category?: string | null;
+  topics?: string[];
+  people?: string[];
   rewrite: {
     headline: string;
     summary: string;
@@ -23,11 +26,53 @@ export type UrlDraftPayload = {
   };
 };
 
+export type ManualRewritePayload = {
+  title: string;
+  summary?: string | null;
+  body: string;
+  link: string;
+  source?: string | null;
+  category?: string | null;
+  topics?: string[];
+  people?: string[];
+  publishedDate?: string | null;
+  instructions?: string;
+  personaKey: string;
+  promptOverride?: string;
+};
+
+export type ManualRewritePreviewPayload = {
+  title: string;
+  summary?: string | null;
+  body: string;
+  link: string;
+  source?: string | null;
+  category?: string | null;
+  topics?: string[];
+  people?: string[];
+  publishedDate?: string | null;
+  instructions?: string;
+};
+
 export const useAdminNewsSource = () => {
   const basePath = "/api/admin/news-source";
 
   const rewriteFromUrl = (payload: UrlRewritePayload) => {
     return $fetch(`${basePath}/rewrite`, {
+      method: "POST",
+      body: payload,
+    });
+  };
+
+  const previewManualRewrite = (payload: ManualRewritePreviewPayload) => {
+    return $fetch(`${basePath}/manual-preview`, {
+      method: "POST",
+      body: payload,
+    });
+  };
+
+  const rewriteManual = (payload: ManualRewritePayload) => {
+    return $fetch(`${basePath}/manual-rewrite`, {
       method: "POST",
       body: payload,
     });
@@ -42,6 +87,8 @@ export const useAdminNewsSource = () => {
 
   return {
     rewriteFromUrl,
+    previewManualRewrite,
+    rewriteManual,
     saveUrlDraft,
   };
 };
