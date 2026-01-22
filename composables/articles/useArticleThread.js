@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useDb } from "@/composables/useDB";
 
 export const useArticleThread = (threadIdRef) => {
@@ -54,6 +54,8 @@ export const useArticleThread = (threadIdRef) => {
   const isLoading = ref(false);
   const error = ref(null);
   let channel = null;
+  let unsubscribe = null;
+  let currentThreadId = null;
   const knownIds = new Set();
   const knownClientIds = new Set();
 
@@ -234,36 +236,48 @@ export const useArticleThread = (threadIdRef) => {
     }
   };
 
-  onMounted(() => {
-    loadInitial();
-    const unsub = subscribe();
+  const syncThread = async (nextId) => {
+    if (!nextId || !isValidId(nextId) || nextId === currentThreadId) return;
+    currentThreadId = nextId;
+
+    try {
+      unsubscribe?.();
+    } catch {}
+    unsubscribe = null;
+
+    await loadInitial();
+    unsubscribe = subscribe();
 
     // 👇 only join if authenticated
     const me =
       typeof useSupabaseUser === "function" ? useSupabaseUser()?.value : null;
-    if (isValidId(threadIdRef.value) && me?.id) {
+    if (me?.id) {
       $fetch("/api/articles/join", {
         method: "POST",
-        body: { threadId: threadIdRef.value },
+        body: { threadId: nextId },
       })
         .then((r) => console.debug("join ok", r))
         .catch((e) => console.error("join failed", e));
     } else {
-      console.debug(
-        "skip join: me?.id=",
-        me?.id,
-        "threadId=",
-        threadIdRef.value
-      );
+      console.debug("skip join: me?.id=", me?.id, "threadId=", nextId);
     }
+  };
 
+  onMounted(() => {
+    syncThread(threadIdRef?.value);
+  });
 
-    
-    onUnmounted(() => {
-      try {
-        unsub?.();
-      } catch {}
-    });
+  watch(
+    () => threadIdRef?.value,
+    (nextId) => {
+      syncThread(nextId);
+    }
+  );
+
+  onUnmounted(() => {
+    try {
+      unsubscribe?.();
+    } catch {}
   });
 
   return { messages, isLoading, error, loadInitial, send, seed };

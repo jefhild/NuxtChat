@@ -7,14 +7,14 @@
     <input
       v-model="localDraft"
       :placeholder="placeholderText"
-      class="flex-1 w-full border rounded px-3 py-2"
+      class="flex-1 w-full border rounded px-3 py-2 chat-composer-input"
       :disabled="isDisabled || !peerId"
       :title="isDisabled ? placeholderText : ''"
       @input="onInput"
       @keydown="onKey"
     />
     <button
-      class="shrink-0 rounded ml-2 px-3 py-2 border"
+      class="shrink-0 rounded ml-2 px-3 py-2 border chat-composer-send"
       :disabled="isDisabled || !peerId || !localDraft.trim()"
     >
       {{ t("components.message.composer.send") }}
@@ -137,6 +137,13 @@ function handleSubmit() {
   localDraft.value = "";
 }
 </script>
+
+<style scoped>
+.chat-composer-input,
+.chat-composer-send {
+  border-color: rgb(var(--v-theme-primary)) !important;
+}
+</style>
 
 <style scoped>
 form {

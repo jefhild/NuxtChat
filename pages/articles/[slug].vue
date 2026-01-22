@@ -275,10 +275,15 @@
       <v-col cols="12" class="text-center"> </v-col>
     </v-row>
 
+    <v-row class="mt-2">
+      <v-col cols="12" class="mx-auto" style="max-width: 80%">
+        <ArticlesDiscussionThread :thread-key="chatThreadKey" />
+      </v-col>
+    </v-row>
 
     <v-row class="mt-2">
       <v-col cols="12" md="8" class="mx-auto">
-        <v-card class="pa-4" elevation="1">
+        <v-card class="pa-4" elevation="0">
           <div class="d-flex flex-wrap ga-2 align-center justify-center">
             <v-btn
               v-if="supportsWebShare"
@@ -685,7 +690,7 @@ const safeDescription = computed(() => {
 
 onMounted(async () => {
   if (article.value?.id) {
-    chatThreadKey.value = await getThreadKeyByArticleId(article.value.id);
+    chatThreadKey.value = (await getThreadKeyByArticleId(article.value.id)) || "";
   }
   const [categoryData, tagData, peopleData] = await Promise.all([
     getAllCategories(),
