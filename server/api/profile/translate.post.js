@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 
 const CJK_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/;
+const CYRILLIC_RE = /[\u0400-\u04ff\u0500-\u052f]/;
 
 const normalizeLocale = (value) => {
   const code = String(value || "").trim().toLowerCase();
@@ -38,13 +39,27 @@ export default defineEventHandler(async (event) => {
     const bio = String(body.bio || "").trim();
     const tagline = String(body.tagline || "").trim();
     const hasTagline = Boolean(tagline);
-    const sourceLocale = normalizeLocale(body.sourceLocale) || "en";
+    const sourceLocaleRaw = normalizeLocale(body.sourceLocale) || "en";
     const targetLocalesRaw = Array.isArray(body.targetLocales)
       ? body.targetLocales
       : [];
     let targetLocales = Array.from(
       new Set(targetLocalesRaw.map(normalizeLocale).filter(Boolean))
-    ).filter((locale) => locale !== sourceLocale);
+    );
+    const fullText = [displayname, bio, tagline].filter(Boolean).join(" ");
+    const inferredLocale = CJK_RE.test(fullText)
+      ? "zh"
+      : CYRILLIC_RE.test(fullText)
+      ? "ru"
+      : "en";
+    const sourceLocale =
+      inferredLocale !== sourceLocaleRaw &&
+      (sourceLocaleRaw === "zh" ||
+        sourceLocaleRaw === "ru" ||
+        (sourceLocaleRaw === "en" && inferredLocale !== "en"))
+        ? inferredLocale
+        : sourceLocaleRaw;
+    targetLocales = targetLocales.filter((locale) => locale !== sourceLocale);
 
     if (!userId || (!displayname && !bio && !tagline)) {
       setResponseStatus(event, 400);

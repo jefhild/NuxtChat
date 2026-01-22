@@ -410,6 +410,11 @@ const saveChanges = async () => {
   if (!editableProfile.value?.user_id) return;
 
   saving.value = true;
+  const prev = props.userProfile || {};
+  const next = editableProfile.value || {};
+  const nameChanged = prev.displayname !== next.displayname;
+  const bioChanged = prev.bio !== next.bio;
+  const taglineChanged = prev.tagline !== next.tagline;
   bioTouched.value = true;
   if (bioTooShort.value) {
     saving.value = false;
@@ -439,6 +444,25 @@ const saveChanges = async () => {
     );
     console.info("Profile updated successfully.");
     isEditable.value = false;
+    if ((nameChanged || bioChanged || taglineChanged) && next.user_id) {
+      try {
+        await $fetch("/api/profile/translate", {
+          method: "POST",
+          body: {
+            userId: next.user_id,
+            displayname: next.displayname,
+            bio: next.bio,
+            tagline: next.tagline || null,
+            sourceLocale: next.preferred_locale || "en",
+            targetLocales: ["en", "fr", "ru", "zh"].filter(
+              (locale) => locale !== (next.preferred_locale || "en")
+            ),
+          },
+        });
+      } catch (err) {
+        console.warn("[settings] auto-translate failed:", err);
+      }
+    }
     if (completionMode.value && completionNext.value && completionReady.value) {
       router.push(localPath(completionNext.value));
     }
