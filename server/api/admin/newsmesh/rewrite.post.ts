@@ -4,35 +4,10 @@ import {
   AI_PERSONA_SELECT,
   getServiceRoleClient,
 } from "~/server/utils/aiBots";
-import type {
-  NewsmeshArticle,
-  RewritePayload,
-  RewriteReference,
-} from "./types";
+import type { RewritePayload, RewriteReference } from "./types";
+import { buildUserPrompt } from "~/server/utils/newsmeshRewrite";
 
 const MAX_BATCH = 5;
-
-const toList = (value: unknown): string[] => {
-  if (!value) return [];
-  if (Array.isArray(value)) {
-    return value
-      .map((entry) =>
-        typeof entry === "string" ? entry : JSON.stringify(entry)
-      )
-      .filter(Boolean);
-  }
-
-  if (typeof value === "object") {
-    return Object.values(value || {})
-      .map((entry) =>
-        typeof entry === "string" ? entry : JSON.stringify(entry)
-      )
-      .filter(Boolean);
-  }
-
-  if (typeof value === "string") return [value];
-  return [];
-};
 
 const sanitizeJsonResponse = (input = "") => {
   const trimmed = input.trim();
@@ -130,39 +105,7 @@ const normalizeReferences = (value: unknown): RewriteReference[] => {
     .filter((entry): entry is RewriteReference => Boolean(entry));
 };
 
-const buildArticleContext = (article: NewsmeshArticle) => {
-  const topics = toList(article.topics);
-  const people = toList(article.people);
-
-  const parts = [
-    `Stream: ${article.stream || "unknown"}`,
-    `Source: ${article.source || "unknown"}`,
-    article.published_date
-      ? `Published: ${new Date(article.published_date).toISOString()}`
-      : null,
-    `Title: ${article.title || "Untitled"}`,
-    article.description ? `Summary: ${article.description}` : null,
-    article.category ? `Category: ${article.category}` : null,
-    topics.length ? `Topics: ${topics.join(", ")}` : null,
-    people.length ? `People: ${people.join(", ")}` : null,
-    article.link ? `Canonical link: ${article.link}` : null,
-  ];
-
-  return parts.filter(Boolean).join("\n");
-};
-
-const DEFAULT_USER_INSTRUCTIONS = `
-You are assisting the Newsmesh editors. Take the supplied news record and rewrite it from your persona's perspective.
-The rewrite must:
-- Introduce a new angle or deeper context that was absent from the source summary.
-- Cite at least two references, either the original source link or well-known, relevant background material.
-- Highlight why this story matters for the audience represented by your persona.
-- Produce a body made of 3-5 short paragraphs formatted in Markdown.
-- Include a short summary (2 sentences) and a fresh headline.
-- Provide social captions as JSON: social.facebook.caption (1-2 sentences + URL), social.instagram.caption (1-2 sentences, 3-6 hashtags, no link).
-- Write the rewrite in the same language as the original record (title/summary). If the source is not English, keep that language for the headline, summary, body, and social captions.
-Return strict JSON only (no surrounding text): {"headline": string, "summary": string, "body": string, "references": [{"label": string, "url": string}], "social": {"facebook": {"caption": string, "link": string}, "instagram": {"caption": string, "image_url": string}}}.
-`;
+type PromptOverrideMap = Map<string, string>;
 
 const buildSystemPrompt = (persona: any) => {
   const rendered = mustache.render(persona?.system_prompt_template || "", {
@@ -190,6 +133,15 @@ export default defineEventHandler(async (event) => {
       : [];
     const personaKey = String(body.personaKey || "").trim();
     const extraInstructions = String(body.instructions || "").trim();
+    const promptOverrides: PromptOverrideMap = new Map(
+      Object.entries(
+        body.promptOverrides && typeof body.promptOverrides === "object"
+          ? body.promptOverrides
+          : {}
+      ).flatMap(([key, value]) =>
+        typeof value === "string" && value.trim() ? [[key, value.trim()]] : []
+      )
+    );
 
     if (!articleIds.length) {
       setResponseStatus(event, 400);
@@ -280,15 +232,15 @@ export default defineEventHandler(async (event) => {
     for (const articleId of articleIds) {
       const article = articleMap.get(articleId);
       if (!article) continue;
-
-      const baseInstructions = [DEFAULT_USER_INSTRUCTIONS.trim()];
-      if (extraInstructions) {
-        baseInstructions.push(`Editor notes: ${extraInstructions}`);
-      }
-
-      const userPrompt = `${baseInstructions.join(
-        "\n\n"
-      )}\n\nOriginal Record:\n${buildArticleContext(article)}`;
+      const overridePrompt = promptOverrides.get(articleId);
+      const userPrompt = overridePrompt
+        ? overridePrompt
+        : (
+            await buildUserPrompt({
+              article,
+              extraInstructions: extraInstructions || undefined,
+            })
+          ).prompt;
 
       const maxTokens = Math.max(persona.max_response_tokens ?? 0, 1200);
       const response = await openai.chat.completions.create({

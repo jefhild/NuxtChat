@@ -256,9 +256,9 @@
             color="primary"
             :disabled="!canRewrite"
             :loading="rewriting"
-            @click="runRewrite"
+            @click="openPromptDialog"
           >
-            Rewrite Selected
+            Review Prompt & Rewrite
           </v-btn>
           <v-btn
             color="error"
@@ -275,6 +275,108 @@
         </div>
       </v-card-text>
     </v-card>
+
+    <v-dialog v-model="promptDialog" max-width="1000">
+      <v-card class="pa-2">
+        <v-card-title class="d-flex align-center ga-3">
+          <div class="text-h6">Review Prompt</div>
+          <v-spacer />
+          <v-chip v-if="promptDrafts.length" size="small" variant="tonal">
+            {{ promptDrafts.length }} prompt(s)
+          </v-chip>
+        </v-card-title>
+        <v-card-text>
+          <v-alert
+            v-if="promptError"
+            type="error"
+            variant="tonal"
+            class="mb-4"
+            closable
+            @click:close="promptError = ''"
+          >
+            {{ promptError }}
+          </v-alert>
+
+          <v-progress-linear
+            v-if="promptLoading"
+            indeterminate
+            color="primary"
+            class="mb-4"
+          />
+
+          <div v-if="!promptLoading && !promptDrafts.length">
+            No prompts available yet.
+          </div>
+
+          <v-expansion-panels
+            v-else
+            multiple
+            class="prompt-panels"
+          >
+            <v-expansion-panel
+              v-for="draft in promptDrafts"
+              :key="draft.articleId"
+            >
+              <v-expansion-panel-title>
+                <div class="d-flex flex-column text-left">
+                  <div class="font-weight-medium">
+                    {{ draft.original.title || "Untitled article" }}
+                  </div>
+                  <div class="text-caption text-medium-emphasis">
+                    {{ draft.original.source || "Source unknown" }} ·
+                    {{ draft.stream }}
+                  </div>
+                </div>
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <v-alert
+                  v-if="!draft.sourceText"
+                  type="warning"
+                  variant="tonal"
+                  class="mb-3"
+                >
+                  Source text could not be extracted for this URL. The prompt may
+                  rely mostly on Newsmesh metadata.
+                </v-alert>
+                <v-alert
+                  v-else-if="draft.sourceText.length < SOURCE_TEXT_MIN"
+                  type="warning"
+                  variant="tonal"
+                  class="mb-3"
+                >
+                  Source text is short ({{ draft.sourceText.length }} chars). The
+                  rewrite may lack concrete details.
+                </v-alert>
+                <v-textarea
+                  v-model="draft.prompt"
+                  label="Rewrite prompt"
+                  rows="12"
+                  auto-grow
+                  hide-details="auto"
+                />
+                <div class="text-caption text-medium-emphasis mt-2">
+                  Edit the prompt before sending it to the model.
+                </div>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </v-card-text>
+        <v-card-actions class="d-flex align-center">
+          <v-spacer />
+          <v-btn variant="text" @click="promptDialog = false">
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            :disabled="promptLoading || !promptDrafts.length || !canRewrite"
+            :loading="rewriting"
+            @click="confirmRewrite"
+          >
+            Send to AI
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-card
       v-if="rewriteResults.length"
@@ -504,6 +606,20 @@ type NewsmeshRewriteResult = {
   draft?: DraftArticle;
 };
 
+type NewsmeshRewritePrompt = {
+  articleId: string;
+  stream: string;
+  prompt: string;
+  sourceText: string | null;
+  original: {
+    title: string | null;
+    description: string | null;
+    link: string | null;
+    source: string | null;
+    published_date: string | null;
+  };
+};
+
 type AdminBot = {
   persona_key: string;
   model: string;
@@ -518,6 +634,7 @@ const { listBots } = useAdminAiBots();
 const {
   fetchArticles,
   rewriteArticles,
+  previewRewritePrompts,
   saveRewriteDraft,
   triggerIngest,
   deleteArticles,
@@ -581,6 +698,12 @@ const deleting = ref(false);
 const rewriteResults = ref<NewsmeshRewriteResult[]>([]);
 const draftSaving = reactive<Record<string, boolean>>({});
 const deleteError = ref("");
+const promptDialog = ref(false);
+const promptLoading = ref(false);
+const promptError = ref("");
+const promptDrafts = ref<NewsmeshRewritePrompt[]>([]);
+
+const SOURCE_TEXT_MIN = 800;
 
 const canRewrite = computed(
   () => !!selectedPersona.value && selectedIds.value.length > 0 && !rewriting.value
@@ -756,17 +879,54 @@ const saveDraft = async (result: NewsmeshRewriteResult) => {
   }
 };
 
-const runRewrite = async () => {
+const openPromptDialog = async () => {
   if (!canRewrite.value) return;
+  promptError.value = "";
+  promptDrafts.value = [];
+  promptLoading.value = true;
+  promptDialog.value = true;
+  try {
+    const response = await previewRewritePrompts({
+      articleIds: selectedIds.value,
+      instructions: instructions.value || undefined,
+    });
+
+    if (!response?.success) {
+      throw new Error(response?.error || "Failed to build prompts");
+    }
+
+    promptDrafts.value = response.data || [];
+  } catch (error: any) {
+    console.error("[NewsmeshAdmin] prompt preview error", error);
+    promptError.value =
+      error?.message || "Unable to build prompts. Please try again.";
+  } finally {
+    promptLoading.value = false;
+  }
+};
+
+const confirmRewrite = async () => {
+  if (!canRewrite.value || !promptDrafts.value.length) return;
   rewriteError.value = "";
   draftError.value = "";
   Object.keys(draftSaving).forEach((key) => delete draftSaving[key]);
   rewriting.value = true;
   try {
+    const promptOverrides = promptDrafts.value.reduce<Record<string, string>>(
+      (acc, draft) => {
+        if (draft.prompt?.trim()) {
+          acc[draft.articleId] = draft.prompt.trim();
+        }
+        return acc;
+      },
+      {}
+    );
+
     const response = await rewriteArticles({
       articleIds: selectedIds.value,
       personaKey: selectedPersona.value,
       instructions: instructions.value || undefined,
+      promptOverrides,
     });
 
     if (!response?.success) {
@@ -774,6 +934,7 @@ const runRewrite = async () => {
     }
 
     rewriteResults.value = response.data || [];
+    promptDialog.value = false;
   } catch (error: any) {
     console.error("[NewsmeshAdmin] rewrite error", error);
     rewriteError.value =

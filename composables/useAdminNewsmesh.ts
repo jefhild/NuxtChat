@@ -10,6 +10,7 @@ export type NewsmeshRewritePayload = {
   articleIds: string[];
   personaKey: string;
   instructions?: string;
+  promptOverrides?: Record<string, string>;
 };
 
 export type NewsmeshRewriteReference = {
@@ -38,6 +39,11 @@ export type NewsmeshDraftPayload = {
   };
 };
 
+export type NewsmeshRewritePreviewPayload = {
+  articleIds: string[];
+  instructions?: string;
+};
+
 export const useAdminNewsmesh = () => {
   const basePath = "/api/admin/newsmesh";
 
@@ -47,6 +53,13 @@ export const useAdminNewsmesh = () => {
 
   const rewriteArticles = (payload: NewsmeshRewritePayload) => {
     return $fetch(`${basePath}/rewrite`, {
+      method: "POST",
+      body: payload,
+    });
+  };
+
+  const previewRewritePrompts = (payload: NewsmeshRewritePreviewPayload) => {
+    return $fetch(`${basePath}/rewrite-preview`, {
       method: "POST",
       body: payload,
     });
@@ -75,6 +88,7 @@ export const useAdminNewsmesh = () => {
   return {
     fetchArticles,
     rewriteArticles,
+    previewRewritePrompts,
     saveRewriteDraft,
     triggerIngest,
     deleteArticles,
