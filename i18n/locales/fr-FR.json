@@ -1181,8 +1181,16 @@
       "favorites": "Mes Favoris",
       "blocked": "Utilisateurs Bloqués",
       "upvotes": "Votes Positifs",
+      "photo-library": "Bibliothèque de photos",
       "loading": "Chargement...",
       "registered-only": "Utilisateurs enregistrés seulement"
+    },
+    "photo-library": {
+      "title": "Bibliothèque de photos",
+      "link": "Bibliothèque de photos",
+      "add": "Ajouter une photo",
+      "delete": "Supprimer une photo",
+      "placeholder": "Les outils de la bibliothèque de photos arrivent bientôt."
     },
     "status-selection": {
       "status": "Statut"

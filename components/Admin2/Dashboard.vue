@@ -156,7 +156,7 @@
                         size="small"
                         variant="text"
                         color="red"
-                        @click="openDeleteDialog(item)"
+                        @click="markForDeletion(item)"
                       />
                     </template>
                   </v-tooltip>
@@ -293,22 +293,6 @@
         </v-card>
       </v-col>
     </v-row>
-
-    <v-dialog v-model="confirmDeleteDialog" max-width="400px">
-      <v-card>
-        <v-card-title class="headline">Confirm Deletion</v-card-title>
-        <v-card-text>Are you sure you want to delete this user?</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="grey" variant="text" @click="confirmDeleteDialog = false">
-            Cancel
-          </v-btn>
-          <v-btn color="red" variant="text" @click="confirmDelete">
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
 
     <v-dialog v-model="purgeDialogOpen" max-width="460px">
       <v-card>
@@ -456,8 +440,6 @@ const activityByUserId = ref({});
 const activityLoadingIds = ref([]);
 const bulkActivityLoading = ref(false);
 const pendingReplyByUserId = ref({});
-const confirmDeleteDialog = ref(false);
-const userToDelete = ref(null);
 const purgeDialogOpen = ref(false);
 const purgeBusy = ref(false);
 const purgeError = ref("");
@@ -890,21 +872,15 @@ const deleteDiscussionMessage = async (message) => {
   }
 };
 
-function openDeleteDialog(profile) {
-  userToDelete.value = profile;
-  confirmDeleteDialog.value = true;
-}
-
-async function confirmDelete() {
-  if (!userToDelete.value) return;
+const markForDeletion = async (profile) => {
+  if (!profile?.user_id) return;
   try {
-    await markUserForDeletion(userToDelete.value.user_id);
-    handleUserDeleted(userToDelete.value.user_id);
-    confirmDeleteDialog.value = false;
+    await markUserForDeletion(profile.user_id);
+    handleUserDeleted(profile.user_id);
   } catch (error) {
-    console.error("Error marking user for deletion:", error);
+    console.error("[admin] mark user for deletion error:", error);
   }
-}
+};
 
 async function unmarkDeletion(profile) {
   try {

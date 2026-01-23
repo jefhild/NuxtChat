@@ -20,7 +20,7 @@
       <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <SettingsProfileSite
           :siteUrl="props.userProfile.site_url ?? ''"
-          :isEditable="props.isEditable"
+          :isEditable="props.isSiteEditable"
           @updateSite="(val) => emit('update:siteUrl', val)"
         />
       </v-col>
@@ -159,6 +159,7 @@ const props = defineProps({
   locationProps: Object,
   userProfile: Object,
   isEditable: Boolean,
+  isSiteEditable: Boolean,
   statuses: Array,
   genders: Array,
   locales: Array,

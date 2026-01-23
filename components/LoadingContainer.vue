@@ -2,8 +2,13 @@
 	<v-container fluid class="d-flex align-center justify-center fill-height text-center">
 		<v-row class="d-flex flex-column align-center" style="height: auto;">
 			<v-col cols="12" class="d-flex justify-center">
-				<NuxtImg src="/images/robot.png" alt="ImChatty logo" width="40"
-					style="filter: grayscale(100%) opacity(0.7);" />
+				<img
+					src="/images/robot.png"
+					alt="ImChatty logo"
+					width="40"
+					height="40"
+					style="filter: grayscale(100%) opacity(0.7);"
+				/>
 			</v-col>
 
 			<v-col cols="6" class="d-flex justify-center">

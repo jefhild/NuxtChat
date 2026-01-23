@@ -17,6 +17,7 @@
         <v-btn
           icon
           variant="text"
+          :class="{ 'chat-mobile-toggle--alert': showMobileActiveAlert }"
           @click="rightOpen = true"
           aria-label="Show active chat participants"
         >
@@ -87,6 +88,7 @@
                   variant="text"
                   size="x-small"
                   class="active-panel-toggle"
+                  :class="{ 'active-panel-toggle--alert': showActivePanelAlert }"
                   :aria-expanded="String(activePanelOpen)"
                   aria-controls="active-panel"
                   aria-label="Toggle active chats panel"
@@ -1033,6 +1035,18 @@ const deleteError = ref("");
 const deletingChat = ref(false);
 const isBlocking = ref(false);
 const shareToast = ref(false);
+const hasUnreadActiveChats = computed(() => {
+  const unread = msgs.unreadByPeer || {};
+  return (Array.isArray(activeChats.value) ? activeChats.value : []).some(
+    (id) => (unread[String(id)] || 0) > 0
+  );
+});
+const showActivePanelAlert = computed(
+  () => hasUnreadActiveChats.value && !activePanelOpen.value
+);
+const showMobileActiveAlert = computed(
+  () => hasUnreadActiveChats.value && !rightOpen.value
+);
 const clearReply = () => {
   replyingToMessage.value = null;
 };
@@ -1988,6 +2002,19 @@ function toggleFilters() {
   height: 28px;
 }
 
+.active-panel-toggle--alert,
+.chat-mobile-toggle--alert {
+  animation: active-panel-pulse 1.6s ease-in-out infinite;
+  border-color: rgba(220, 38, 38, 0.6);
+  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45),
+    0 0 16px rgba(220, 38, 38, 0.3);
+}
+
+.active-panel-toggle--alert :deep(.v-icon),
+.chat-mobile-toggle--alert :deep(.v-icon) {
+  color: rgba(220, 38, 38, 0.95);
+}
+
 .active-panel-toggle :deep(.v-icon) {
   color: rgba(var(--v-theme-on-surface), 0.8);
 }
@@ -2068,5 +2095,20 @@ function toggleFilters() {
 .chat-mobile-drawer :deep(.v-navigation-drawer) {
   top: var(--nav2-offset, 0px) !important;
   height: calc(100vh - var(--nav2-offset, 0px)) !important;
+}
+
+@keyframes active-panel-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.55),
+      0 0 16px rgba(220, 38, 38, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0),
+      0 0 18px rgba(220, 38, 38, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0),
+      0 0 16px rgba(220, 38, 38, 0.25);
+  }
 }
 </style>

@@ -1203,8 +1203,16 @@
       "favorites": "My Favorites",
       "blocked": "Blocked Users",
       "upvotes": "Upvotes",
+      "photo-library": "Photo Library",
       "loading": "Loading...",
       "registered-only": "Registered users only"
+    },
+    "photo-library": {
+      "title": "Photo library",
+      "link": "Photo library",
+      "add": "Add photo",
+      "delete": "Delete photo",
+      "placeholder": "Photo library tools are coming soon."
     },
     "status-selection": {
       "status": "Status"

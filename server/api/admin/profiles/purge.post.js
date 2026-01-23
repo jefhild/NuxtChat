@@ -56,8 +56,51 @@ export default defineEventHandler(async (event) => {
     const deletedUserIds = [];
     const failed = [];
 
+    const deleteDiscussionMessagesForUser = async (userId) => {
+      const { data: messages, error: messagesError } = await supa
+        .from("messages_v2")
+        .select("id")
+        .eq("sender_user_id", userId);
+      if (messagesError) {
+        return { error: { stage: "fetch_messages_v2", message: messagesError.message } };
+      }
+
+      const messageIds = (messages || []).map((row) => row.id).filter(Boolean);
+      if (messageIds.length) {
+        const { error: scoreError } = await supa
+          .from("message_scores")
+          .delete()
+          .in("message_id", messageIds);
+        if (scoreError) {
+          return {
+            error: { stage: "delete_message_scores", message: scoreError.message },
+          };
+        }
+      }
+
+      const { error: deleteError } = await supa
+        .from("messages_v2")
+        .delete()
+        .eq("sender_user_id", userId);
+      if (deleteError) {
+        return { error: { stage: "delete_messages_v2", message: deleteError.message } };
+      }
+
+      return { deletedCount: messageIds.length };
+    };
+
     for (const userId of userIds) {
       try {
+        const discussionCleanup = await deleteDiscussionMessagesForUser(userId);
+        if (discussionCleanup?.error) {
+          failed.push({
+            userId,
+            stage: discussionCleanup.error.stage,
+            message: discussionCleanup.error.message,
+          });
+          continue;
+        }
+
         const { error: authError } = await supa.auth.admin.deleteUser(userId);
         if (authError) {
           failed.push({ userId, stage: "auth_delete", message: authError.message });

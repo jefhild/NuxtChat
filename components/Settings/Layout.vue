@@ -33,7 +33,10 @@
                 </v-col>
                 <v-col class="settings-content-col">
                   <template v-if="userProfile">
-                    <SettingsProfileForm :userProfile="userProfile" />
+                    <SettingsProfileForm
+                      :userProfile="userProfile"
+                      @openPhotoLibrary="selectTab(5)"
+                    />
                   </template>
                   <template v-else>
                     <p>{{ $t("components.settings-container.loading") }}</p>
@@ -116,6 +119,31 @@
                 </v-col>
               </v-row>
             </v-tabs-window-item>
+            <v-tabs-window-item :value="5">
+              <v-row align="start">
+                <v-col cols="auto" class="settings-menu-col">
+                  <v-btn
+                    icon="mdi-menu"
+                    variant="text"
+                    aria-label="Open settings menu"
+                    @click="drawer = true"
+                  />
+                </v-col>
+                <v-col class="settings-content-col">
+                  <v-row v-if="!photoLibraryAvailable">
+                    <v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">
+                      {{ $t("components.settings-container.registered-only") }}
+                    </v-col>
+                  </v-row>
+                  <template v-else-if="userProfile?.user_id">
+                    <SettingsPhotoLibrary :userId="userProfile.user_id" />
+                  </template>
+                  <template v-else>
+                    <p>{{ $t("components.settings-container.loading") }}</p>
+                  </template>
+                </v-col>
+              </v-row>
+            </v-tabs-window-item>
           </v-tabs-window>
         </v-card>
       </v-col>
@@ -137,11 +165,16 @@ const userProfile = computed(() => authStore.userProfile);
 
 const isLoading = ref(true);
 
+const photoLibraryAvailable = computed(
+  () => authStore.authStatus === "authenticated"
+);
+
 const menuItems = computed(() => [
   { value: 1, title: t("components.settings-container.profile") },
   { value: 2, title: t("components.settings-container.favorites") },
   { value: 3, title: t("components.settings-container.blocked") },
   { value: 4, title: t("components.settings-container.upvotes") },
+  { value: 5, title: t("components.settings-container.photo-library") },
 ]);
 
 const selectTab = (value) => {

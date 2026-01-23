@@ -1180,8 +1180,16 @@
       "favorites": "我的收藏",
       "blocked": "屏蔽的用户",
       "upvotes": "点赞",
+      "photo-library": "照片库",
       "loading": "加载中...",
       "registered-only": "仅限注册用户"
+    },
+    "photo-library": {
+      "title": "照片库",
+      "link": "照片库",
+      "add": "添加照片",
+      "delete": "删除照片",
+      "placeholder": "照片库工具即将上线。"
     },
     "status-selection": {
       "status": "状态"

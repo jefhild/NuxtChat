@@ -10,6 +10,8 @@
       :errorMessage="avatarError"
       :displayKey="displayKey"
       :refreshLookingForMenu="refreshLookingForMenu"
+      :showPhotoLibrary="showPhotoLibrary"
+      @openPhotoLibrary="emit('openPhotoLibrary')"
       @refreshLookingForDisplay="displayKey++"
       @updateAvatarUrl="updateAvatarUrl"
       @randomAvatar="pickRandomAvatar"
@@ -19,6 +21,7 @@
     <SettingsProfileFormContent
       :userProfile="editableProfile"
       :isEditable="isEditable"
+      :isSiteEditable="isSiteEditable"
       :statuses="statuses"
       :genders="genders"
       :locales="supportedLocales"
@@ -50,6 +53,7 @@
       @linkAnonEmail="openLinkEmailDialog"
       @openAiBio="openAiBioDialog"
     />
+
     <v-dialog
       v-model="linkEmailDialogVisible"
       max-width="480"
@@ -175,6 +179,8 @@ const props = defineProps({
     default: false,
   },
 });
+
+const emit = defineEmits(["openPhotoLibrary"]);
 
 const {
   getStatuses,
@@ -310,6 +316,15 @@ const aiBioDisabled = computed(() => {
 
 const showAiBioButton = computed(() => {
   return isEditable.value;
+});
+
+const isSiteEditable = computed(() => {
+  if (!isEditable.value) return false;
+  return props.adminMode || authStore.authStatus === "authenticated";
+});
+
+const showPhotoLibrary = computed(() => {
+  return props.adminMode || authStore.authStatus === "authenticated";
 });
 
 const loadAiBioUses = () => {
