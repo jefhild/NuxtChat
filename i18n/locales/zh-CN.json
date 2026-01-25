@@ -1189,7 +1189,27 @@
       "link": "照片库",
       "add": "添加照片",
       "delete": "删除照片",
-      "placeholder": "照片库工具即将上线。"
+      "upload": "上传",
+      "refresh": "刷新",
+      "requirements": "图片最大 3MB。",
+      "loading": "正在加载照片...",
+      "empty": "暂无照片。上传一张开始吧。",
+      "status": {
+        "pending": "待审核",
+        "approved": "已通过",
+        "rejected": "已拒绝"
+      },
+      "delete-title": "删除照片？",
+      "delete-body": "这将从你的照片库中移除该照片。",
+      "cancel": "取消",
+      "confirm": "删除",
+      "upload-missing": "请选择要上传的照片。",
+      "upload-too-large": "请上传小于 5MB 的图片。",
+      "upload-success": "照片已提交审核。",
+      "upload-error": "上传失败，请重试。",
+      "load-error": "加载照片失败。",
+      "delete-success": "照片已删除。",
+      "delete-error": "删除照片失败。"
     },
     "status-selection": {
       "status": "状态"

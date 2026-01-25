@@ -7,13 +7,14 @@
       width="280"
       class="admin-drawer"
     >
-      <v-list>
+      <v-list density="compact" class="admin-drawer-list">
         <v-list-subheader>{{ $t("pages.admin.sections-title") }}</v-list-subheader>
 
         <v-list-item
           v-for="(item, i) in items"
           :key="i"
           :value="item.value"
+          class="admin-drawer-item"
           @click="
             selectedSection = item.value;
             drawer = false;
@@ -63,11 +64,13 @@ import AdminNewsSource from "~/components/Admin2/NewsSource.vue";
 import AdminEngagementRules from "~/components/Admin2/EngagementRules.vue";
 import AdminFaqs from "~/components/Admin2/Faqs.vue";
 import AdminProfileAvatars from "~/components/Admin2/ProfileAvatars.vue";
+import AdminProfilePhotos from "~/components/Admin2/ProfilePhotos.vue";
 import { useAuthStore } from "@/stores/authStore1";
 
 const { t } = useI18n();
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 const localPath = useLocalePath();
 
 const selectedSection = ref("dashboard");
@@ -125,15 +128,38 @@ const items = computed(() => [
     icon: "mdi-account-box",
     value: "profileAvatars",
   },
+  {
+    text: "Photo Library",
+    icon: "mdi-image-multiple",
+    value: "profilePhotos",
+  },
 ]);
+
+const sectionValues = computed(() =>
+  items.value.map((item) => item.value).filter(Boolean)
+);
+
+const syncSectionFromRoute = () => {
+  const section = String(route.query.section || "");
+  if (sectionValues.value.includes(section)) {
+    selectedSection.value = section;
+  }
+};
 
 onMounted(async () => {
   await authStore.checkAuth();
   if (!authStore.userProfile?.is_admin) {
     console.log("Unauthorized access to admin panel");
     router.push(localPath("/")); // or show unauthorized page
+    return;
   }
+  syncSectionFromRoute();
 });
+
+watch(
+  () => route.query.section,
+  () => syncSectionFromRoute()
+);
 
 const getSectionComponent = (section) => {
   switch (section) {
@@ -157,6 +183,8 @@ const getSectionComponent = (section) => {
       return AdminFaqs;
     case "profileAvatars":
       return AdminProfileAvatars;
+    case "profilePhotos":
+      return AdminProfilePhotos;
     default:
       return AdminDashboard;
   }
@@ -181,8 +209,21 @@ const getSectionComponent = (section) => {
   background-color: rgba(63, 81, 181, 0.5) !important;
   transition: background-color 0.2s ease;
 }
-  .admin-drawer {
-    margin-top: 64px;
-    height: calc(100% - 64px);
-  }
+.admin-drawer {
+  margin-top: 64px;
+  height: calc(100% - 64px);
+  overflow: hidden;
+}
+
+.admin-drawer :deep(.v-navigation-drawer__content) {
+  overflow-y: auto;
+}
+
+.admin-drawer-item {
+  min-height: 36px;
+}
+
+.admin-drawer-item :deep(.v-list-item-title) {
+  font-size: 0.9rem;
+}
 </style>

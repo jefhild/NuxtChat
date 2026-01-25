@@ -28,11 +28,24 @@
       md="6"
       class="d-flex flex-column align-center mt-4 mt-md-0"
     >
-      <v-card variant="tonal" class="photo-library-card">
+        <v-card variant="tonal" class="photo-library-card">
         <v-card-text class="photo-library-body">
           <v-row dense>
-            <v-col v-for="n in 6" :key="n" cols="6" sm="4">
+            <v-col v-for="(item, idx) in photoSlots" :key="idx" cols="6" sm="4">
+              <v-card v-if="item" variant="outlined" class="photo-library-thumb">
+                <v-img :src="item.url || item.public_url" aspect-ratio="4/3" cover />
+                <div class="photo-library-status">
+                  <v-chip
+                    size="x-small"
+                    :color="statusColor(item.status)"
+                    variant="tonal"
+                  >
+                    {{ statusLabel(item.status) }}
+                  </v-chip>
+                </div>
+              </v-card>
               <v-skeleton-loader
+                v-else
                 type="image"
                 class="photo-library-skeleton"
               />
@@ -56,10 +69,11 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
+import { computed } from "vue";
 
 const { t } = useI18n();
 
-defineProps({
+const props = defineProps({
   userProfile: Object,
   avatar: String,
   isEditable: Boolean,
@@ -69,6 +83,10 @@ defineProps({
   uploadLoading: Boolean,
   errorMessage: String,
   showPhotoLibrary: Boolean,
+  photoLibraryPhotos: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 defineEmits([
@@ -78,6 +96,22 @@ defineEmits([
   "uploadAvatar",
   "openPhotoLibrary",
 ]);
+
+const photoSlots = computed(() => {
+  const items = Array.isArray(props.photoLibraryPhotos)
+    ? props.photoLibraryPhotos
+    : [];
+  return Array.from({ length: 6 }, (_, idx) => items[idx] || null);
+});
+
+const statusLabel = (status) =>
+  t(`components.photo-library.status.${status || "pending"}`);
+
+const statusColor = (status) => {
+  if (status === "approved") return "success";
+  if (status === "rejected") return "error";
+  return "warning";
+};
 </script>
 
 <style scoped>
@@ -106,6 +140,17 @@ defineEmits([
   width: 100%;
   aspect-ratio: 4 / 3;
   border-radius: 10px;
+}
+
+.photo-library-thumb {
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-library-status {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
 }
 
 .photo-library-actions {

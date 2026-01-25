@@ -255,6 +255,20 @@
                           </div>
                         </div>
 
+                        <div v-if="hasPendingPhotos(item)" class="d-flex align-center ga-2">
+                          <div class="text-subtitle-2 text-medium-emphasis">
+                            Photo library
+                          </div>
+                          <v-btn
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                            :to="photoReviewLink"
+                          >
+                            Review pending photos
+                          </v-btn>
+                        </div>
+
                         <div>
                           <div class="text-subtitle-2 text-medium-emphasis mb-2">
                             Recent discussion threads
@@ -440,6 +454,7 @@ const activityByUserId = ref({});
 const activityLoadingIds = ref([]);
 const bulkActivityLoading = ref(false);
 const pendingReplyByUserId = ref({});
+const pendingPhotoUserIds = ref([]);
 const purgeDialogOpen = ref(false);
 const purgeBusy = ref(false);
 const purgeError = ref("");
@@ -486,10 +501,12 @@ onMounted(async () => {
     profiles.value = toArray(regRaw);
     aiProfiles.value = toArray(aiRaw);
     await loadReplyStatus([...profiles.value, ...aiProfiles.value]);
+    await loadPendingPhotoUsers();
   } catch (e) {
     console.error("[admin] getAllProfiles failed:", e);
     profiles.value = [];
     aiProfiles.value = [];
+    pendingPhotoUserIds.value = [];
   } finally {
     isLoading.value = false;
   }
@@ -512,14 +529,20 @@ const matchesSearch = (p) => {
   return haystack.includes(normSearch.value);
 };
 
-const filterOptions = [
+const pendingPhotoCount = computed(() => pendingPhotoUserIds.value.length);
+
+const filterOptions = computed(() => [
   { title: "All Human", value: "registered" },
   { title: "AI", value: "ai" },
   { title: "Anon authenticated", value: "anon_authenticated" },
   { title: "Authenticated", value: "authenticated" },
+  {
+    title: `Photos pending approval (${pendingPhotoCount.value})`,
+    value: "photos_pending",
+  },
   { title: "Simulated user", value: "simulated" },
   { title: "Forced online", value: "forced_online" },
-];
+]);
 
 const matchesFilter = (p) => {
   const hasEmail = !!p?.email;
@@ -541,8 +564,25 @@ const matchesFilter = (p) => {
       return isSimulated;
     case "forced_online":
       return isForcedOnline;
+    case "photos_pending":
+      return pendingPhotoUserIds.value.includes(p?.user_id);
     default:
       return true;
+  }
+};
+
+const loadPendingPhotoUsers = async () => {
+  try {
+    const result = await $fetch("/api/admin/profile-photos/list", {
+      query: { status: "pending", limit: 500 },
+    });
+    const ids = (result?.photos || [])
+      .map((photo) => photo.user_id)
+      .filter(Boolean);
+    pendingPhotoUserIds.value = Array.from(new Set(ids));
+  } catch (err) {
+    console.warn("[admin] load pending photo users failed:", err);
+    pendingPhotoUserIds.value = [];
   }
 };
 
@@ -601,6 +641,13 @@ const markedCount = computed(() => {
   const all = [...profiles.value, ...aiProfiles.value];
   return all.filter((p) => p?.marked_for_deletion_at).length;
 });
+
+const photoReviewLink = computed(() =>
+  localPath({ path: "/admin", query: { section: "profilePhotos" } })
+);
+
+const hasPendingPhotos = (profile) =>
+  pendingPhotoUserIds.value.includes(profile?.user_id);
 
 const buildProfileRow = (p) => {
   const activity = getActivity(p?.user_id);

@@ -128,10 +128,20 @@
                   </span>
                 </v-avatar>
                 <div class="min-w-0 ml-3">
-                  <div class="text-subtitle-1 font-weight-medium text-truncate">
+                  <div
+                    :class="[
+                      'profile-header-title text-subtitle-1 font-weight-medium',
+                      { 'text-truncate': smAndDown },
+                    ]"
+                  >
                     {{ selectedUserTitle }}
                   </div>
-                  <div class="text-body-2 text-medium-emphasis text-truncate">
+                  <div
+                    :class="[
+                      'profile-header-subtitle text-body-2 text-medium-emphasis',
+                      { 'text-truncate': smAndDown },
+                    ]"
+                  >
                     {{ selectedUserSubtitle }}
                   </div>
                 </div>
@@ -438,7 +448,12 @@
                 </span>
               </v-avatar>
               <div class="min-w-0 ml-2 mobile-profile-info">
-                <div class="text-subtitle-2 font-weight-medium text-truncate">
+                <div
+                  :class="[
+                    'text-subtitle-2 font-weight-medium',
+                    { 'text-truncate': smAndDown },
+                  ]"
+                >
                   {{ selectedUserTitle }}
                 </div>
                 <div class="text-body-2 text-medium-emphasis mobile-profile-subtitle">
@@ -472,7 +487,10 @@
                 <template v-if="selectedUser">
                   <div
                     v-if="selectedUserLocalized.tagline"
-                    class="text-body-1 font-italic mb-3 text-truncate"
+                    :class="[
+                      'text-body-1 font-italic mb-3',
+                      { 'text-truncate': smAndDown },
+                    ]"
                     :title="selectedUserLocalized.tagline"
                   >
                     "{{ selectedUserLocalized.tagline }}"
@@ -493,7 +511,9 @@
                       <span class="text-medium-emphasis mr-1">
                         {{ item.label }}:
                       </span>
-                      <span class="text-truncate">{{ item.value }}</span>
+                      <span :class="{ 'text-truncate': smAndDown }">
+                        {{ item.value }}
+                      </span>
                     </div>
                   </div>
 
@@ -1224,6 +1244,7 @@ const selectedUserLocalized = computed(() =>
   resolveProfileLocalization({
     profile: selectedUserWithTranslations.value,
     readerLocale: locale?.value,
+    taglineMaxLength: 0,
   })
 );
 
@@ -1253,8 +1274,7 @@ const selectedUserSubtitle = computed(() => {
     return String(selectedUserLocalized.value.tagline);
   if (selectedUserLocation.value) return selectedUserLocation.value;
   if (selectedUserLocalized.value.bio || user.bio) {
-    const bio = String(selectedUserLocalized.value.bio || user.bio).trim();
-    return bio.length > 80 ? `${bio.slice(0, 77)}...` : bio;
+    return String(selectedUserLocalized.value.bio || user.bio).trim();
   }
   return "No additional details yet.";
 });

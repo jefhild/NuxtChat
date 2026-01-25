@@ -1212,7 +1212,27 @@
       "link": "Photo library",
       "add": "Add photo",
       "delete": "Delete photo",
-      "placeholder": "Photo library tools are coming soon."
+      "upload": "Upload",
+      "refresh": "Refresh",
+      "requirements": "Max image size 3MB.",
+      "loading": "Loading photos...",
+      "empty": "No photos yet. Upload one to get started.",
+      "status": {
+        "pending": "Pending review",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "delete-title": "Delete photo?",
+      "delete-body": "This removes the photo from your library.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "upload-missing": "Please choose a photo to upload.",
+      "upload-too-large": "Please upload an image under 5MB.",
+      "upload-success": "Photo submitted for review.",
+      "upload-error": "Upload failed. Please try again.",
+      "load-error": "Failed to load photos.",
+      "delete-success": "Photo deleted.",
+      "delete-error": "Could not delete that photo."
     },
     "status-selection": {
       "status": "Status"

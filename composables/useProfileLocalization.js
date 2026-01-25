@@ -33,6 +33,7 @@ const pickField = (locales, map, key) => {
 
 const clampText = (value, maxLength = 30) => {
   if (!value) return value;
+  if (!maxLength || maxLength <= 0) return value;
   if (value.length <= maxLength) return value;
   return `${value.slice(0, maxLength).trim()}...`;
 };
@@ -42,6 +43,7 @@ export const resolveProfileLocalization = ({
   readerLocale,
   overrideLocale,
   fallbackLocales = ["en"],
+  taglineMaxLength = 30,
 } = {}) => {
   const translations = Array.isArray(profile?.profile_translations)
     ? profile.profile_translations
@@ -62,7 +64,7 @@ export const resolveProfileLocalization = ({
   return {
     displayname: displayname.value || profile?.displayname || "",
     bio: bio.value || profile?.bio || "",
-    tagline: clampText(tagline.value || profile?.tagline || ""),
+    tagline: clampText(tagline.value || profile?.tagline || "", taglineMaxLength),
     displaynameLocale: displayname.locale,
     bioLocale: bio.locale,
     taglineLocale: tagline.locale,

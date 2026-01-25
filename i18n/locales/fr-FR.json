@@ -1190,7 +1190,27 @@
       "link": "Bibliothèque de photos",
       "add": "Ajouter une photo",
       "delete": "Supprimer une photo",
-      "placeholder": "Les outils de la bibliothèque de photos arrivent bientôt."
+      "upload": "Téléverser",
+      "refresh": "Actualiser",
+      "requirements": "Taille max de l'image : 3 Mo.",
+      "loading": "Chargement des photos...",
+      "empty": "Aucune photo pour l'instant. Téléversez-en une pour commencer.",
+      "status": {
+        "pending": "En attente de validation",
+        "approved": "Approuvée",
+        "rejected": "Refusée"
+      },
+      "delete-title": "Supprimer la photo ?",
+      "delete-body": "Cela retire la photo de votre bibliothèque.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer",
+      "upload-missing": "Veuillez choisir une photo à téléverser.",
+      "upload-too-large": "Veuillez téléverser une image de moins de 5 Mo.",
+      "upload-success": "Photo envoyée pour validation.",
+      "upload-error": "Échec du téléversement. Veuillez réessayer.",
+      "load-error": "Impossible de charger les photos.",
+      "delete-success": "Photo supprimée.",
+      "delete-error": "Impossible de supprimer cette photo."
     },
     "status-selection": {
       "status": "Statut"

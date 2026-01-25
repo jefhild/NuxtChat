@@ -1,6 +1,9 @@
 import { serverSupabaseUser } from "#supabase/server";
 import { useDb } from "@/composables/useDB";
 
+const PROFILE_IMAGES_BUCKET = "profile-images";
+const PROFILE_LIBRARY_BUCKET = "profile-image-library";
+
 export default defineEventHandler(async (event) => {
   try {
     const user = await serverSupabaseUser(event);
@@ -56,6 +59,56 @@ export default defineEventHandler(async (event) => {
     const deletedUserIds = [];
     const failed = [];
 
+    const deleteProfileImagesForUser = async (userId) => {
+      const { data: photoRows, error: fetchError } = await supa
+        .from("profile_photos")
+        .select("storage_path")
+        .eq("user_id", userId);
+
+      if (fetchError) {
+        return { error: { stage: "fetch_profile_photos", message: fetchError.message } };
+      }
+
+      const paths = (photoRows || [])
+        .map((row) => row.storage_path)
+        .filter(Boolean);
+
+      if (paths.length) {
+        const { error: removeError } = await supa.storage
+          .from(PROFILE_LIBRARY_BUCKET)
+          .remove(paths);
+
+        if (removeError) {
+          return { error: { stage: "delete_profile_images", message: removeError.message } };
+        }
+      }
+
+      const { error: deleteError } = await supa
+        .from("profile_photos")
+        .delete()
+        .eq("user_id", userId);
+
+      if (deleteError) {
+        return { error: { stage: "delete_profile_photos", message: deleteError.message } };
+      }
+
+      const avatarPath = `${userId}/avatar.webp`;
+      const { error: avatarRemoveError } = await supa.storage
+        .from(PROFILE_IMAGES_BUCKET)
+        .remove([avatarPath]);
+
+      if (avatarRemoveError) {
+        return {
+          error: {
+            stage: "delete_profile_avatar",
+            message: avatarRemoveError.message,
+          },
+        };
+      }
+
+      return { success: true };
+    };
+
     const deleteDiscussionMessagesForUser = async (userId) => {
       const { data: messages, error: messagesError } = await supa
         .from("messages_v2")
@@ -91,6 +144,16 @@ export default defineEventHandler(async (event) => {
 
     for (const userId of userIds) {
       try {
+        const profileImageCleanup = await deleteProfileImagesForUser(userId);
+        if (profileImageCleanup?.error) {
+          failed.push({
+            userId,
+            stage: profileImageCleanup.error.stage,
+            message: profileImageCleanup.error.message,
+          });
+          continue;
+        }
+
         const discussionCleanup = await deleteDiscussionMessagesForUser(userId);
         if (discussionCleanup?.error) {
           failed.push({

@@ -11,6 +11,7 @@
       :displayKey="displayKey"
       :refreshLookingForMenu="refreshLookingForMenu"
       :showPhotoLibrary="showPhotoLibrary"
+      :photoLibraryPhotos="photoLibraryPreview"
       @openPhotoLibrary="emit('openPhotoLibrary')"
       @refreshLookingForDisplay="displayKey++"
       @updateAvatarUrl="updateAvatarUrl"
@@ -214,6 +215,7 @@ const {
 
 const statuses = ref([]);
 const genders = ref([]);
+const photoLibraryPreview = ref([]);
 
 const editableProfile = ref({ ...props.userProfile });
 const appliedGeoDefaults = ref(false);
@@ -326,6 +328,22 @@ const isSiteEditable = computed(() => {
 const showPhotoLibrary = computed(() => {
   return props.adminMode || authStore.authStatus === "authenticated";
 });
+
+const loadPhotoLibraryPreview = async () => {
+  if (!showPhotoLibrary.value) {
+    photoLibraryPreview.value = [];
+    return;
+  }
+
+  try {
+    const result = await $fetch("/api/profile/photos");
+    const items = Array.isArray(result?.photos) ? result.photos : [];
+    photoLibraryPreview.value = items.slice(0, 6);
+  } catch (err) {
+    console.warn("[settings] load photo library preview failed:", err);
+    photoLibraryPreview.value = [];
+  }
+};
 
 const loadAiBioUses = () => {
   if (!import.meta.client) return;
@@ -851,6 +869,7 @@ onMounted(async () => {
     if (authStore.authStatus === "anon_authenticated") {
       await refreshLinkedEmailState();
     }
+    await loadPhotoLibraryPreview();
 
 
 
