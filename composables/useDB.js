@@ -6,7 +6,22 @@ export const useDb = () => {
   /* Get functions */
   /*---------------*/
 
-  const getClient = () => useSupabaseClient();
+  const getClient = () => {
+    try {
+      return useSupabaseClient();
+    } catch (err) {
+      if (!import.meta.server) {
+        throw err;
+      }
+      const cfg = getConfig();
+      const url = cfg.public?.SUPABASE_URL || process.env.SUPABASE_URL;
+      const key = cfg.SUPABASE_KEY || process.env.SUPABASE_KEY;
+      if (!url || !key) {
+        throw err;
+      }
+      return createClient(url, key, { auth: { persistSession: false } });
+    }
+  };
 
   // 👇 Accept `event` explicitly so it works server-side
   // Build a server client from explicit params (no Nuxt APIs here)

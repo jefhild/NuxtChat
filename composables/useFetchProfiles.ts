@@ -1,8 +1,7 @@
 // composables/useFetchProfiles.ts
-const { getRegisteredUsersIds } = useDb();
-
 // This is your function to fetch profiles
 export async function fetchProfiles() {
+  const { getRegisteredUsersIds } = useDb();
   try {
     const { data: profiles, error } = await getRegisteredUsersIds();
 

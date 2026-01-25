@@ -105,6 +105,9 @@ export default defineNuxtConfig({
       },
     },
   },
+  image: {
+    domains: ["home.imchatty.com"],
+  },
   supabase: {
     redirectOptions: {
       login: "/",
@@ -237,7 +240,7 @@ export default defineNuxtConfig({
 
   routeRules: {
     "/people/**": { prerender: false, swr: 3600 },
-    "/profiles/**": { prerender: false, swr: 3600 },
+    "/profiles/**": { prerender: false },
     "/articles/**": { prerender: false, swr: 3600 },
     "/tags/**": { prerender: false, swr: 3600 },
   },

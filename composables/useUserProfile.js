@@ -47,6 +47,14 @@ export function useUserProfile() {
     }
 
     const data = await getUserProfileFromSlug(slug);
+    if (process.dev) {
+      const preview = Array.isArray(data) ? data[0] : data;
+      console.log("[useUserProfile] slug fetch", {
+        slug,
+        user_id: preview?.user_id,
+        avatar_url: preview?.avatar_url,
+      });
+    }
     if (data && data.length > 0) {
       const baseProfile = data[0];
       const { data: translations } = await getProfileTranslations(
