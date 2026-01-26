@@ -211,7 +211,12 @@
                       :key="item.key"
                       class="d-flex align-center mb-2"
                     >
-                      <v-icon size="18" class="mr-2 text-medium-emphasis">
+                      <v-icon
+                        size="18"
+                        class="mr-2 meta-icon"
+                        :class="item.color ? '' : 'text-medium-emphasis'"
+                        :style="item.color ? { color: item.color } : undefined"
+                      >
                         {{ item.icon }}
                       </v-icon>
                       <span class="text-medium-emphasis mr-1">
@@ -505,7 +510,12 @@
                       :key="item.key"
                       class="d-flex align-center mb-2"
                     >
-                      <v-icon size="18" class="mr-2 text-medium-emphasis">
+                      <v-icon
+                        size="18"
+                        class="mr-2 meta-icon"
+                        :class="item.color ? '' : 'text-medium-emphasis'"
+                        :style="item.color ? { color: item.color } : undefined"
+                      >
                         {{ item.icon }}
                       </v-icon>
                       <span class="text-medium-emphasis mr-1">
@@ -1232,6 +1242,7 @@ const deletePrompt = computed(() =>
 );
 
 const selectedUserTranslations = ref([]);
+const selectedUserPhotoCount = ref(0);
 const selectedUserWithTranslations = computed(() => {
   if (!selectedUser.value) return null;
   return {
@@ -1301,22 +1312,39 @@ const selectedUserMeta = computed(() => {
     meta.push({
       key: "age",
       icon: "mdi-cake-variant",
+      color: "#2563eb",
       label: "Age",
       value: String(user.age),
     });
   }
   if (user.gender) {
+    const photosLabel = t("components.profile-gallery.count-short", {
+      count: selectedUserPhotoCount.value,
+    });
+    const genderValue = String(user.gender);
+    const genderKey = genderValue.toLowerCase();
+    let genderIcon = "mdi-gender-male-female";
+    let genderColor = "#7c3aed";
+    if (genderKey === "male") {
+      genderIcon = "mdi-gender-male";
+      genderColor = "#2563eb";
+    } else if (genderKey === "female") {
+      genderIcon = "mdi-gender-female";
+      genderColor = "#ec4899";
+    }
     meta.push({
       key: "gender",
-      icon: "mdi-gender-male-female",
+      icon: genderIcon,
+      color: genderColor,
       label: "Gender",
-      value: String(user.gender),
+      value: `${genderValue} (${photosLabel})`,
     });
   }
   if (selectedUserLocation.value) {
     meta.push({
       key: "location",
       icon: "mdi-map-marker",
+      color: "#16a34a",
       label: "Location",
       value: selectedUserLocation.value,
     });
@@ -1331,6 +1359,22 @@ const selectedUserMeta = computed(() => {
   }
   return meta;
 });
+
+const loadSelectedUserPhotoCount = async (userId) => {
+  if (!userId) {
+    selectedUserPhotoCount.value = 0;
+    return;
+  }
+  try {
+    const res = await $fetch("/api/profile/photos-public", {
+      query: { userId },
+    });
+    selectedUserPhotoCount.value = Number(res?.count || 0);
+  } catch (err) {
+    console.warn("[chat] selected user photo count failed:", err);
+    selectedUserPhotoCount.value = 0;
+  }
+};
 
 const selectedUserInterests = computed(() => {
   const raw = selectedUser.value?.looking_for;
@@ -1357,6 +1401,14 @@ watch(
 watch(selectedUserId, () => {
   panelOpen.value = false;
 });
+
+watch(
+  selectedUserId,
+  (userId) => {
+    loadSelectedUserPhotoCount(userId);
+  },
+  { immediate: true }
+);
 
 // alias for clarity (ref)
 const peerId = selectedUserId;
@@ -2090,6 +2142,10 @@ function toggleFilters() {
 }
 .profile-meta-grid {
   column-gap: 24px;
+}
+.meta-icon {
+  position: relative;
+  top: -2px;
 }
 .profile-bio {
   white-space: pre-line;

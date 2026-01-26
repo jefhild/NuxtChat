@@ -11,6 +11,10 @@
       :profile="profile"
       :avatar-decoration="avatarDecoration"
       :stats="stats"
+      :photo-gallery-photos="photoGalleryPhotos"
+      :photo-gallery-count="photoGalleryCount"
+      :gallery-blurred="!canViewGallery"
+      @likePhoto="handlePhotoVote"
     >
       <template #overlay>
         <v-btn
@@ -36,6 +40,7 @@
 import { computed, ref, watch } from "vue";
 import ProfileCard from "@/components/ProfileCard.vue";
 import { useUserProfile } from "@/composables/useUserProfile";
+import { useAuthStore } from "@/stores/authStore1";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -52,10 +57,18 @@ const isOpen = computed({
 
 const { profile, fetchUserProfileFromSlug, fetchUserProfile } =
   useUserProfile();
+const authStore = useAuthStore();
 const { getAvatarDecorationFromId } = useDb();
 const avatarDecoration = ref("");
 const isLoading = ref(false);
 const stats = ref(null);
+const photoGalleryPhotos = ref([]);
+const photoGalleryCount = ref(0);
+
+const isAuthenticated = computed(() =>
+  ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
+);
+const canViewGallery = computed(() => authStore.authStatus === "authenticated");
 
 const loadStats = async () => {
   const userId = profile.value?.user_id || null;
@@ -77,6 +90,8 @@ const loadProfile = async () => {
   if (!props.slug && !props.userId) {
     profile.value = null;
     avatarDecoration.value = "";
+    photoGalleryPhotos.value = [];
+    photoGalleryCount.value = 0;
     return;
   }
   isLoading.value = true;
@@ -86,12 +101,54 @@ const loadProfile = async () => {
     } else if (props.userId) {
       await fetchUserProfile(props.userId);
     }
-    avatarDecoration.value = profile.value?.user_id
-      ? await getAvatarDecorationFromId(profile.value.user_id)
+    const resolvedId = profile.value?.user_id || profile.value?.id;
+    avatarDecoration.value = resolvedId
+      ? await getAvatarDecorationFromId(resolvedId)
       : "";
+    await loadPhotoGallery(resolvedId);
     await loadStats();
   } finally {
     isLoading.value = false;
+  }
+};
+
+const loadPhotoGallery = async (userId) => {
+  if (!userId) {
+    photoGalleryPhotos.value = [];
+    photoGalleryCount.value = 0;
+    return;
+  }
+  try {
+    const res = await $fetch("/api/profile/photos-public", {
+      query: { userId },
+    });
+    photoGalleryPhotos.value = Array.isArray(res?.photos) ? res.photos : [];
+    photoGalleryCount.value = Number(res?.count || 0);
+  } catch (error) {
+    console.warn("[profile-dialog] gallery load error:", error);
+    photoGalleryPhotos.value = [];
+    photoGalleryCount.value = 0;
+  }
+};
+
+const handlePhotoVote = async (photo) => {
+  if (!photo?.id || !canViewGallery.value) return;
+  try {
+    const res = await $fetch("/api/votes/profile-photo", {
+      method: "POST",
+      body: { photoId: photo.id, value: 1 },
+    });
+    photoGalleryPhotos.value = photoGalleryPhotos.value.map((item) =>
+      item.id === photo.id
+        ? {
+            ...item,
+            upvotes: Number(res?.upvotes ?? item.upvotes ?? 0),
+            myVote: Number(res?.userVote ?? item.myVote ?? 0),
+          }
+        : item
+    );
+  } catch (error) {
+    console.error("[profile-dialog] photo vote failed:", error);
   }
 };
 
@@ -103,6 +160,10 @@ watch(
   },
   { immediate: true }
 );
+
+onMounted(async () => {
+  await authStore.checkAuth();
+});
 </script>
 
 <style scoped>

@@ -1144,6 +1144,12 @@
       "discussion-label": "Обсуждение",
       "article-label": "Статья"
     },
+    "profile-gallery": {
+      "title": "Фотогалерея ({count} фото)",
+      "empty": "Пока нет одобренных фото.",
+      "signin": "Войдите, чтобы посмотреть",
+      "count-short": "{count} фото"
+    },
     "profile-details": {
       "title": "Профиль",
       "tagline-label": "Слоган",

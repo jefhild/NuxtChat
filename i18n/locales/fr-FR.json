@@ -1145,6 +1145,12 @@
       "discussion-label": "Discussion",
       "article-label": "Article"
     },
+    "profile-gallery": {
+      "title": "Galerie photo ({count} photos)",
+      "empty": "Aucune photo approuvée pour le moment.",
+      "signin": "Connectez-vous pour voir",
+      "count-short": "{count} photos"
+    },
     "profile-details": {
       "title": "Profil",
       "tagline-label": "Slogan",

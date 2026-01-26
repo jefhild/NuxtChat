@@ -6,6 +6,10 @@
         <ProfileCard
           :profile="profile"
           :avatar-decoration="avatarDecoration"
+          :photo-gallery-photos="photoGalleryPhotos"
+          :photo-gallery-count="photoGalleryCount"
+          :gallery-blurred="!canViewGallery"
+          @likePhoto="handlePhotoVote"
         />
 
         <v-container v-if="isPublic">
@@ -71,6 +75,8 @@ const { profile, fetchUserProfileFromSlug, fetchUserProfile } =
 const { t, locale } = useI18n();
 const { getAvatarDecorationFromId } = useDb();
 const avatarDecoration = ref("");
+const photoGalleryPhotos = ref([]);
+const photoGalleryCount = ref(0);
 
 const loadProfile = async () => {
   if (props.selectedUserSlug) {
@@ -79,6 +85,46 @@ const loadProfile = async () => {
   }
   if (props.selectedUserId) {
     await fetchUserProfile(props.selectedUserId);
+  }
+};
+
+const loadPhotoGallery = async (userId) => {
+  if (!userId) {
+    photoGalleryPhotos.value = [];
+    photoGalleryCount.value = 0;
+    return;
+  }
+  try {
+    const res = await $fetch("/api/profile/photos-public", {
+      query: { userId },
+    });
+    photoGalleryPhotos.value = Array.isArray(res?.photos) ? res.photos : [];
+    photoGalleryCount.value = Number(res?.count || 0);
+  } catch (error) {
+    console.warn("[public-profile] gallery load error:", error);
+    photoGalleryPhotos.value = [];
+    photoGalleryCount.value = 0;
+  }
+};
+
+const handlePhotoVote = async (photo) => {
+  if (!photo?.id || !canViewGallery.value) return;
+  try {
+    const res = await $fetch("/api/votes/profile-photo", {
+      method: "POST",
+      body: { photoId: photo.id, value: 1 },
+    });
+    photoGalleryPhotos.value = photoGalleryPhotos.value.map((item) =>
+      item.id === photo.id
+        ? {
+            ...item,
+            upvotes: Number(res?.upvotes ?? item.upvotes ?? 0),
+            myVote: Number(res?.userVote ?? item.myVote ?? 0),
+          }
+        : item
+    );
+  } catch (error) {
+    console.error("[public-profile] photo vote failed:", error);
   }
 };
 
@@ -94,6 +140,7 @@ const localized = computed(() =>
 const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
 );
+const canViewGallery = computed(() => authStore.authStatus === "authenticated");
 const isLoading = ref(true);
 
 onMounted(async () => {
@@ -112,11 +159,13 @@ watch(
 );
 
 watch(
-  () => profile.value?.user_id,
-  async (userId) => {
-    avatarDecoration.value = userId
-      ? await getAvatarDecorationFromId(userId)
+  () => [profile.value?.user_id, profile.value?.id, isAuthenticated.value],
+  async ([userId, fallbackId]) => {
+    const resolvedId = userId || fallbackId;
+    avatarDecoration.value = resolvedId
+      ? await getAvatarDecorationFromId(resolvedId)
       : "";
+    await loadPhotoGallery(resolvedId);
   },
   { immediate: true }
 );

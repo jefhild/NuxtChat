@@ -137,6 +137,63 @@
         </v-expansion-panel-text>
       </v-expansion-panel>
 
+      <v-expansion-panel value="gallery">
+        <v-expansion-panel-title class="profile-panel-title">
+          {{ $t("components.profile-gallery.title", { count: galleryCount }) }}
+        </v-expansion-panel-title>
+        <v-expansion-panel-text class="profile-gallery">
+          <template v-if="galleryDisplayItems.length">
+            <div class="profile-gallery-strip">
+            <div
+              v-for="item in galleryDisplayItems"
+              :key="item.id || item.storage_path || item.public_url || item._placeholderId"
+              class="profile-gallery-item"
+              :class="{ 'profile-gallery-item--blurred': galleryBlurred }"
+            >
+              <div class="profile-gallery-thumb-wrap">
+                <v-img
+                  v-if="item.url || item.public_url"
+                  :src="item.url || item.public_url"
+                  class="profile-gallery-thumb"
+                  cover
+                />
+                <div v-else class="profile-gallery-placeholder" />
+              </div>
+              <div
+                v-if="!galleryBlurred && (item.url || item.public_url)"
+                class="profile-gallery-vote"
+              >
+                <v-btn
+                  icon
+                  size="x-small"
+                  variant="text"
+                  class="profile-gallery-like"
+                  :color="item.myVote === 1 ? 'primary' : undefined"
+                  @click.stop="emit('likePhoto', item)"
+                >
+                  <v-icon size="14">mdi-thumb-up-outline</v-icon>
+                </v-btn>
+                <span class="profile-gallery-like-count">
+                  {{ item.upvotes ?? 0 }}
+                </span>
+              </div>
+            </div>
+            </div>
+            <div
+              v-if="galleryBlurred"
+              class="profile-gallery-signin"
+            >
+              <NuxtLink :to="localPath('/signin')">
+                {{ $t("components.profile-gallery.signin") }}
+              </NuxtLink>
+            </div>
+          </template>
+          <div v-else class="profile-gallery-empty">
+            {{ $t("components.profile-gallery.empty") }}
+          </div>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+
       <v-expansion-panel value="stats">
         <v-expansion-panel-title class="profile-panel-title">
           {{ $t("components.profile-stats.title") }}
@@ -252,8 +309,13 @@ const props = defineProps({
   avatarDecoration: { type: String, default: "" },
   maxWidth: { type: [Number, String], default: "100%" },
   stats: { type: Object, default: null },
+  photoGalleryPhotos: { type: Array, default: () => [] },
+  photoGalleryCount: { type: Number, default: 0 },
+  galleryBlurred: { type: Boolean, default: false },
   localeOverride: { type: String, default: "" },
 });
+
+const emit = defineEmits(["likePhoto"]);
 
 const emptyStats = {
   lastActive: null,
@@ -340,6 +402,32 @@ const formatStatSubtitle = (item, label) => {
 
 const statLink = (slug) =>
   slug ? localPath(`/chat/articles/${slug}`) : undefined;
+
+const galleryItems = computed(() => {
+  const items = Array.isArray(props.photoGalleryPhotos)
+    ? props.photoGalleryPhotos
+    : [];
+  const hasStatus = items.some((item) => item?.status);
+  if (!hasStatus) return items;
+  return items.filter((item) => item?.status === "approved");
+});
+
+const galleryBlurred = computed(() => props.galleryBlurred);
+
+const galleryCount = computed(() =>
+  galleryBlurred.value
+    ? Number(props.photoGalleryCount || 0)
+    : galleryItems.value.length
+);
+
+const galleryDisplayItems = computed(() => {
+  if (!galleryBlurred.value) return galleryItems.value;
+  const total = Number(props.photoGalleryCount || 0);
+  const show = Math.min(total || 0, 8);
+  return Array.from({ length: show }, (_, idx) => ({
+    _placeholderId: `placeholder-${idx}`,
+  }));
+});
 </script>
 
 <style scoped>
@@ -352,6 +440,8 @@ const statLink = (slug) =>
 }
 
 .profile-chat-cta {
+  display: block;
+  width: 100%;
   text-align: center;
   font-weight: 600;
   color: #2563eb;
@@ -476,6 +566,82 @@ const statLink = (slug) =>
 
 .profile-stats {
   background: rgba(17, 24, 39, 0.04);
+}
+
+.profile-gallery {
+  background: rgba(17, 24, 39, 0.04);
+}
+
+.profile-gallery-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 0 2px;
+}
+
+.profile-gallery-item {
+  flex: 0 0 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.profile-gallery-thumb-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.profile-gallery-thumb {
+  width: 100%;
+  height: 100%;
+}
+
+.profile-gallery-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #d8dbe2, #c3c7d1);
+  filter: blur(6px);
+}
+
+.profile-gallery-like {
+  align-self: center;
+  position: relative;
+  left: -2px;
+}
+
+.profile-gallery-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-gallery-like-count {
+  font-size: 0.75rem;
+  color: rgba(0, 0, 0, 0.7);
+  line-height: 1;
+}
+
+.profile-gallery-empty {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
+.profile-gallery-signin {
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+
+.profile-gallery-signin a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.profile-gallery-signin a:hover {
+  text-decoration: underline;
 }
 
 .profile-stats-tree {

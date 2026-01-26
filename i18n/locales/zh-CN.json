@@ -1144,6 +1144,12 @@
       "discussion-label": "讨论",
       "article-label": "文章"
     },
+    "profile-gallery": {
+      "title": "照片库（{count} 张）",
+      "empty": "暂无已审核通过的照片。",
+      "signin": "登录后可查看",
+      "count-short": "{count} 张"
+    },
     "profile-details": {
       "title": "个人资料",
       "tagline-label": "标语",

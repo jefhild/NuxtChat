@@ -1167,6 +1167,12 @@
       "discussion-label": "Discussion",
       "article-label": "Article"
     },
+    "profile-gallery": {
+      "title": "Photo Gallery ({count} photos)",
+      "empty": "No approved photos yet.",
+      "signin": "Sign in to view",
+      "count-short": "{count} photos"
+    },
     "profile-details": {
       "title": "Profile",
       "tagline-label": "Tag Line",
