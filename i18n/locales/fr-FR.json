@@ -1182,6 +1182,13 @@
       "blocked": "Utilisateurs Bloqués",
       "upvotes": "Votes Positifs",
       "photo-library": "Bibliothèque de photos",
+      "menu": {
+        "profile": "Mon Profil",
+        "favorites": "Mes Favoris",
+        "blocked": "Utilisateurs Bloqués",
+        "upvotes": "Votes Positifs",
+        "photo-library": "Bibliothèque de photos"
+      },
       "loading": "Chargement...",
       "registered-only": "Utilisateurs enregistrés seulement"
     },

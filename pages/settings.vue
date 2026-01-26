@@ -1,12 +1,6 @@
 <template>
   <v-container fluid>
     <!-- <HomeRow1 /> -->
-
-    <PageHeader
-      :text="$t('pages.settings.heading')"
-      :subtitle="$t('pages.settings.subtitle')"
-    />
-
     <SettingsLayout />
   </v-container>
 </template>

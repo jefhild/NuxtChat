@@ -1204,6 +1204,13 @@
       "blocked": "Blocked Users",
       "upvotes": "Upvotes",
       "photo-library": "Photo Library",
+      "menu": {
+        "profile": "My Profile",
+        "favorites": "My Favorites",
+        "blocked": "Blocked Users",
+        "upvotes": "Upvotes",
+        "photo-library": "Photo Library"
+      },
       "loading": "Loading...",
       "registered-only": "Registered users only"
     },
