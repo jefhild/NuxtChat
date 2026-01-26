@@ -11,10 +11,23 @@ export function useUserProfile() {
   const {
     getUserProfileFunctionFromId,
     getUserProfileFromSlug,
+    getUserProfileFromId,
     updateProfile,
     insertProfileFromObject,
     getProfileTranslations,
   } = useDb();
+
+  const ensurePreferredLocale = async (baseProfile) => {
+    if (!baseProfile?.user_id || baseProfile?.preferred_locale) {
+      return baseProfile;
+    }
+    const { data, error: profileError } = await getUserProfileFromId(
+      baseProfile.user_id
+    );
+    if (profileError) return baseProfile;
+    if (!data?.preferred_locale) return baseProfile;
+    return { ...baseProfile, preferred_locale: data.preferred_locale };
+  };
 
   const fetchUserProfile = async (userId) => {
     if (!userId) {
@@ -24,7 +37,8 @@ export function useUserProfile() {
 
     const data = await getUserProfileFunctionFromId(userId);
     if (data && data.length > 0) {
-      const baseProfile = data[0];
+      let baseProfile = data[0];
+      baseProfile = await ensurePreferredLocale(baseProfile);
       const { data: translations } = await getProfileTranslations(
         baseProfile?.user_id
       );
@@ -46,6 +60,11 @@ export function useUserProfile() {
       return null;
     }
 
+    const isUuid = (value) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        String(value)
+      );
+
     const data = await getUserProfileFromSlug(slug);
     if (process.dev) {
       const preview = Array.isArray(data) ? data[0] : data;
@@ -55,8 +74,12 @@ export function useUserProfile() {
         avatar_url: preview?.avatar_url,
       });
     }
+    if ((!data || data.length === 0) && isUuid(slug)) {
+      return await fetchUserProfile(slug);
+    }
     if (data && data.length > 0) {
-      const baseProfile = data[0];
+      let baseProfile = data[0];
+      baseProfile = await ensurePreferredLocale(baseProfile);
       const { data: translations } = await getProfileTranslations(
         baseProfile?.user_id
       );

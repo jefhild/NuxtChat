@@ -37,6 +37,7 @@ export default defineEventHandler(async (event) => {
 
     const query = getQuery(event) || {};
     const status = String(query.status || "").trim();
+    const userId = String(query.user_id || "").trim();
     const limit = Math.min(Number(query.limit || 200), 500);
 
     let builder = supa
@@ -47,6 +48,9 @@ export default defineEventHandler(async (event) => {
 
     if (status) {
       builder = builder.eq("status", status);
+    }
+    if (userId) {
+      builder = builder.eq("user_id", userId);
     }
 
     const { data, error } = await builder;

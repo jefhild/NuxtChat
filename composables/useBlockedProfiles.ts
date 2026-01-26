@@ -4,6 +4,7 @@ interface Profile {
   profile_id: string;
   user_id: string;
   displayname: string;
+  slug?: string | null;
   tagline: string;
   avatar_url: string | null;
   gender_id: number;

@@ -6,6 +6,10 @@ export const useArticleThread = (threadIdRef) => {
 
   const { getClient } = useDb();
   const supabase = import.meta.client ? getClient() : null;
+  const userRef =
+    import.meta.client && typeof useSupabaseUser === "function"
+      ? useSupabaseUser()
+      : ref(null);
 
   //----------------
 
@@ -58,6 +62,7 @@ export const useArticleThread = (threadIdRef) => {
   let currentThreadId = null;
   const knownIds = new Set();
   const knownClientIds = new Set();
+  let lastJoinKey = null;
 
   const seeded = ref(false);
 
@@ -192,6 +197,24 @@ export const useArticleThread = (threadIdRef) => {
     };
   };
 
+  const tryJoin = async (threadId) => {
+    if (!threadId || !isValidId(threadId)) return;
+    const userId = userRef?.value?.id || null;
+    if (!userId) return;
+    const joinKey = `${userId}:${threadId}`;
+    if (joinKey === lastJoinKey) return;
+    lastJoinKey = joinKey;
+    $fetch("/api/articles/join", {
+      method: "POST",
+      body: { threadId },
+    })
+      .then((r) => console.debug("join ok", r))
+      .catch((e) => {
+        lastJoinKey = null;
+        console.error("join failed", e);
+      });
+  };
+
   const send = async (text, { replyToId = null } = {}) => {
     if (!threadIdRef?.value) return;
     // get current authed user (client-only)
@@ -248,19 +271,7 @@ export const useArticleThread = (threadIdRef) => {
     await loadInitial();
     unsubscribe = subscribe();
 
-    // 👇 only join if authenticated
-    const me =
-      typeof useSupabaseUser === "function" ? useSupabaseUser()?.value : null;
-    if (me?.id) {
-      $fetch("/api/articles/join", {
-        method: "POST",
-        body: { threadId: nextId },
-      })
-        .then((r) => console.debug("join ok", r))
-        .catch((e) => console.error("join failed", e));
-    } else {
-      console.debug("skip join: me?.id=", me?.id, "threadId=", nextId);
-    }
+    await tryJoin(nextId);
   };
 
   onMounted(() => {
@@ -271,6 +282,13 @@ export const useArticleThread = (threadIdRef) => {
     () => threadIdRef?.value,
     (nextId) => {
       syncThread(nextId);
+    }
+  );
+
+  watch(
+    () => userRef?.value?.id,
+    () => {
+      tryJoin(threadIdRef?.value);
     }
   );
 

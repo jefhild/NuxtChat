@@ -248,6 +248,7 @@ watch(
     avatarError.value = "";
     ensurePreferredLocale();
     syncEditableState();
+    loadPhotoLibraryPreview(newProfile?.user_id);
   }
 );
 
@@ -329,14 +330,27 @@ const showPhotoLibrary = computed(() => {
   return props.adminMode || authStore.authStatus === "authenticated";
 });
 
-const loadPhotoLibraryPreview = async () => {
+const loadPhotoLibraryPreview = async (
+  userId = editableProfile.value?.user_id
+) => {
   if (!showPhotoLibrary.value) {
     photoLibraryPreview.value = [];
     return;
   }
 
   try {
-    const result = await $fetch("/api/profile/photos");
+    let result;
+    if (props.adminMode) {
+      if (!userId) {
+        photoLibraryPreview.value = [];
+        return;
+      }
+      result = await $fetch("/api/admin/profile-photos/list", {
+        query: { user_id: userId, limit: 6 },
+      });
+    } else {
+      result = await $fetch("/api/profile/photos");
+    }
     const items = Array.isArray(result?.photos) ? result.photos : [];
     photoLibraryPreview.value = items.slice(0, 6);
   } catch (err) {

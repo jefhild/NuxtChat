@@ -6,27 +6,7 @@
         <ProfileCard
           :profile="profile"
           :avatar-decoration="avatarDecoration"
-          :locale-override="localeOverride"
         />
-
-        <v-row
-          v-if="localeOptions.length > 1"
-          class="mt-4"
-          justify="center"
-        >
-          <v-col cols="12" sm="6" md="4">
-            <v-select
-              v-model="localeOverride"
-              variant="underlined"
-              :items="localeOptions"
-              item-title="label"
-              item-value="code"
-              :label="t('components.profile-language.default')"
-              clearable
-              hide-details
-            />
-          </v-col>
-        </v-row>
 
         <v-container v-if="isPublic">
           <v-row class="mt-2" justify="center" v-if="isAuthenticated"
@@ -72,10 +52,7 @@ const localPath = useLocalePath();
 import { useAuthStore } from "@/stores/authStore1";
 import { useUserProfile } from "@/composables/useUserProfile";
 import ProfileCard from "@/components/ProfileCard.vue";
-import {
-  resolveProfileLocalization,
-  getProfileTranslationLocales,
-} from "@/composables/useProfileLocalization";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const props = defineProps({
   selectedUserSlug: String,
@@ -94,7 +71,6 @@ const { profile, fetchUserProfileFromSlug, fetchUserProfile } =
 const { t, locale } = useI18n();
 const { getAvatarDecorationFromId } = useDb();
 const avatarDecoration = ref("");
-const localeOverride = ref("");
 
 const loadProfile = async () => {
   if (props.selectedUserSlug) {
@@ -112,17 +88,8 @@ const localized = computed(() =>
   resolveProfileLocalization({
     profile: profile.value,
     readerLocale: locale?.value,
-    overrideLocale: localeOverride.value,
   })
 );
-
-const localeOptions = computed(() => {
-  const locales = getProfileTranslationLocales(profile.value);
-  return locales.map((code) => ({
-    code,
-    label: t(`components.profile-language.options.${code}`, code.toUpperCase()),
-  }));
-});
 
 const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)

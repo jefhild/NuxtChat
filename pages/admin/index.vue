@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid class="admin-shell">
     <v-navigation-drawer
       v-model="drawer"
       temporary
@@ -31,16 +31,17 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-row class="mb-3">
-      <v-col cols="12" class="d-flex align-center ga-3">
-        <v-btn icon variant="text" @click="drawer = true">
+    <div class="admin-header-shell">
+      <div class="admin-header-actions">
+        <v-btn icon variant="text" class="admin-menu-btn" @click="drawer = true">
           <v-icon>mdi-menu</v-icon>
         </v-btn>
-        <div class="text-subtitle-1 font-weight-medium">
+        <div class="text-subtitle-1 font-weight-medium admin-header-title">
           {{ $t("pages.admin.sections-title") }}
         </div>
-      </v-col>
-    </v-row>
+      </div>
+      <PageHeader :text="`Admin ${currentSectionLabel}`" />
+    </div>
 
     <v-row>
       <!-- Main Content -->
@@ -65,6 +66,7 @@ import AdminEngagementRules from "~/components/Admin2/EngagementRules.vue";
 import AdminFaqs from "~/components/Admin2/Faqs.vue";
 import AdminProfileAvatars from "~/components/Admin2/ProfileAvatars.vue";
 import AdminProfilePhotos from "~/components/Admin2/ProfilePhotos.vue";
+import PageHeader from "~/components/PageHeader.vue";
 import { useAuthStore } from "@/stores/authStore1";
 
 const { t } = useI18n();
@@ -139,6 +141,11 @@ const sectionValues = computed(() =>
   items.value.map((item) => item.value).filter(Boolean)
 );
 
+const currentSectionLabel = computed(() => {
+  const match = items.value.find((item) => item.value === selectedSection.value);
+  return match?.text || "Dashboard";
+});
+
 const syncSectionFromRoute = () => {
   const section = String(route.query.section || "");
   if (sectionValues.value.includes(section)) {
@@ -198,6 +205,29 @@ const getSectionComponent = (section) => {
   font-size: 2.8rem;
   text-align: center;
   margin: 2.5rem 0;
+}
+
+.admin-shell {
+  padding-top: 6px;
+}
+
+.admin-header-shell {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.admin-header-actions {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1;
+}
+
+.admin-menu-btn {
+  margin: 0;
 }
 
 .v-list-item--active {

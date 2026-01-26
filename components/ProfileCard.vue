@@ -120,6 +120,19 @@
                 </div>
               </template>
             </v-list-item>
+            <v-list-item
+              v-if="defaultLanguageLabel"
+              prepend-icon="mdi-translate"
+            >
+              <template #title>
+                <div class="profile-details-row">
+                  <span class="profile-details-label">
+                    {{ $t("components.profile-language.default") }}:
+                  </span>
+                  <span class="profile-details-value">{{ defaultLanguageLabel }}</span>
+                </div>
+              </template>
+            </v-list-item>
           </v-list>
         </v-expansion-panel-text>
       </v-expansion-panel>
@@ -232,7 +245,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { getAvatar, getAvatarIcon, getGenderColor } from "@/composables/useUserUtils";
-import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
+import { resolveProfileLocalization, normalizeLocale } from "@/composables/useProfileLocalization";
 
 const props = defineProps({
   profile: { type: Object, default: null },
@@ -265,6 +278,15 @@ const localized = computed(() =>
     overrideLocale: props.localeOverride,
   })
 );
+const defaultLanguageCode = computed(() =>
+  normalizeLocale(props.profile?.preferred_locale)
+);
+const defaultLanguageLabel = computed(() => {
+  const code = defaultLanguageCode.value;
+  if (!code) return "—";
+  const label = t(`components.profile-language.options.${code}`, code.toUpperCase());
+  return label || code.toUpperCase();
+});
 const localPath = useLocalePath();
 const chatLink = computed(() => {
   const slug = props.profile?.slug;

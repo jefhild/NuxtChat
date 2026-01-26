@@ -165,14 +165,7 @@ const ensureCategoryRecord = async (
     .maybeSingle();
   if (existingError) throw existingError;
   if (existing) return existing.id;
-
-  const { data: inserted, error: insertError } = await supabase
-    .from("categories")
-    .insert({ name, slug })
-    .select("id")
-    .single();
-  if (insertError) throw insertError;
-  return inserted.id;
+  return null;
 };
 
 const ensureSlugRecords = async (

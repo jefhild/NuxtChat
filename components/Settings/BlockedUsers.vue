@@ -4,7 +4,7 @@
       <template v-if="blockedProfiles.length > 0">
         <v-col v-for="profile in blockedProfiles" :key="profile.profile_id" cols="12" sm="6" md="4">
           <!-- <v-card hover :to="`/profiles/${profile.user_id}`"> -->
-          <v-card v-if="genderMap[profile.gender_id]" hover @click="goToProfile(genderMap[profile.gender_id],profile.displayname)">
+          <v-card v-if="genderMap[profile.gender_id]" hover @click="goToProfile(profile)">
             <v-row>
               <v-col cols="12">
                 <div class="avatar-wrapper">
@@ -24,7 +24,7 @@
                 <v-col cols="8">
                   <v-btn variant="plain"
                     v-if="genderMap[profile.gender_id]"
-                    :to="`/profiles/${genderMap[profile.gender_id]}/${profile.displayname}`">
+                    :to="profilePathFor(profile) || undefined">
                       {{ profile.displayname }} ({{ profile.age }})
                     </v-btn>
                     <v-icon :color="getGenderColor(profile.gender_id)"
@@ -62,8 +62,9 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
 
-const { getAvatarDecorationFromId, getGenderFromId } = useDb();
+const { getAvatarDecorationFromId, getGenderFromId, getUserSlugFromId } = useDb();
 const avatarDecorations = ref<Record<string, string>>({});
+const slugByUserId = ref<Record<string, string>>({});
 // interface Profile {
 //   profile_id: string;
 //   user_id: string;
@@ -91,9 +92,20 @@ const handleUnblock = (userId: string) => {
   unblockAUser(userId);
 };
 
-const goToProfile = (genderName: any, displayName: any) => {
-  router.push(localPath(`/profiles/${genderName}/${displayName}`));
-}
+const profilePathFor = (profile: any) => {
+  const genderName = genderMap.value[profile.gender_id];
+  if (!genderName) return null;
+  const slug =
+    profile.slug || slugByUserId.value[profile.user_id] || profile.user_id;
+  if (!slug) return null;
+  return localPath(`/profiles/${genderName}/${slug}`);
+};
+
+const goToProfile = (profile: any) => {
+  const path = profilePathFor(profile);
+  if (!path) return;
+  router.push(path);
+};
 
 
 watch(blockedProfiles, async (newProfiles) =>
@@ -108,12 +120,17 @@ watch(blockedProfiles, async (newProfiles) =>
     }
 
     // Gender name
-    if (!genderMap.value[profile.gender_id])
-    {
+    if (!genderMap.value[profile.gender_id]) {
       const genderName = await getGenderFromId(profile.gender_id);
-      if (genderName)
-      {
+      if (genderName) {
         genderMap.value[profile.gender_id] = genderName;
+      }
+    }
+
+    if (!slugByUserId.value[profile.user_id]) {
+      const slug = profile.slug || (await getUserSlugFromId(profile.user_id));
+      if (slug) {
+        slugByUserId.value[profile.user_id] = slug;
       }
     }
   }

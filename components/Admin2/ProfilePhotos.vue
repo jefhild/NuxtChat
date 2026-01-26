@@ -64,33 +64,54 @@
               </v-chip>
             </div>
             <v-card-actions class="photo-actions">
-              <v-btn
-                size="small"
-                color="success"
-                variant="text"
-                :loading="actionLoading[photo.id] === 'approve'"
-                @click="approvePhoto(photo)"
-              >
-                Approve
-              </v-btn>
-              <v-btn
-                size="small"
-                color="warning"
-                variant="text"
-                :loading="actionLoading[photo.id] === 'reject'"
-                @click="rejectPhoto(photo)"
-              >
-                Reject
-              </v-btn>
-              <v-btn
-                size="small"
-                color="red"
-                variant="text"
-                :loading="actionLoading[photo.id] === 'delete'"
-                @click="deletePhoto(photo)"
-              >
-                Delete
-              </v-btn>
+              <v-tooltip text="Approve" location="top">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    icon
+                    size="small"
+                    color="success"
+                    variant="text"
+                    aria-label="Approve photo"
+                    :loading="actionLoading[photo.id] === 'approve'"
+                    @click="approvePhoto(photo)"
+                  >
+                    <v-icon>mdi-check</v-icon>
+                  </v-btn>
+                </template>
+              </v-tooltip>
+              <v-tooltip text="Reject" location="top">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    icon
+                    size="small"
+                    color="warning"
+                    variant="text"
+                    aria-label="Reject photo"
+                    :loading="actionLoading[photo.id] === 'reject'"
+                    @click="rejectPhoto(photo)"
+                  >
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+                </template>
+              </v-tooltip>
+              <v-tooltip text="Delete" location="top">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    icon
+                    size="small"
+                    color="error"
+                    variant="text"
+                    aria-label="Delete photo"
+                    :loading="actionLoading[photo.id] === 'delete'"
+                    @click="deletePhoto(photo)"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </template>
+              </v-tooltip>
             </v-card-actions>
           </v-card>
         </div>
@@ -279,7 +300,8 @@ onMounted(loadPhotos);
 
 .photo-actions {
   margin-top: auto;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 6px;
   padding: 8px 12px 12px;
 }
 

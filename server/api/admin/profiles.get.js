@@ -100,13 +100,44 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    let personaByUserId = new Map();
+    if (userIds.length) {
+      const { data: personas, error: personaErr } = await supa
+        .from("ai_personas")
+        .select(
+          "profile_user_id, persona_key, is_active, category:categories!ai_personas_category_id_fkey ( id, name, slug )"
+        )
+        .in("profile_user_id", userIds);
+
+      if (personaErr) {
+        console.error("[admin/profiles] personas error:", personaErr);
+      } else {
+        const byUser = new Map();
+        (personas || []).forEach((row) => {
+          const key = row.profile_user_id;
+          if (!key) return;
+          if (!byUser.has(key)) byUser.set(key, []);
+          byUser.get(key).push(row);
+        });
+        byUser.forEach((rows, key) => {
+          const active =
+            rows.find((row) => row.is_active) || rows[0] || null;
+          if (active) personaByUserId.set(key, active);
+        });
+      }
+    }
+
     const merged = items.map((row) => {
       const extra = extraByUserId.get(row.user_id);
+      const persona = personaByUserId.get(row.user_id) || null;
       return {
         ...row,
         email: extra?.email ?? row.email ?? null,
         created: row.created ?? null,
         profile_translations: translationsByUserId.get(row.user_id) || [],
+        ai_persona_key: persona?.persona_key || null,
+        ai_category_name: persona?.category?.name || null,
+        ai_category_slug: persona?.category?.slug || null,
       };
     });
 

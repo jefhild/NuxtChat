@@ -253,6 +253,17 @@
                               messages
                             </div>
                           </div>
+                          <div v-if="item.is_ai" class="flex-1">
+                            <div class="text-subtitle-2 text-medium-emphasis">
+                              Expertise
+                            </div>
+                            <div class="text-h6">
+                              {{ getAiCategoryLabel(item) }}
+                            </div>
+                            <div class="text-caption text-medium-emphasis">
+                              Category setting
+                            </div>
+                          </div>
                         </div>
 
                         <div v-if="hasPendingPhotos(item)" class="d-flex align-center ga-2">
@@ -810,16 +821,25 @@ const getCountryLabel = (profile) =>
 const getCountryEmoji = (profile) =>
   profile?.country_emoji || profile?.countries?.emoji || "";
 
+const getAiCategoryLabel = (profile) =>
+  profile?.ai_category_name ||
+  profile?.aiCategoryName ||
+  profile?.category_name ||
+  "—";
+
 const profilePath = (profile) => {
   const genderPath =
     profile?.gender?.toLowerCase?.() ||
     (profile?.gender_id ? getGenderPath(profile.gender_id) : "other");
-  const slug = profile?.slug || profile?.displayname || profile?.user_id;
+  const slug = profile?.slug || profile?.user_id;
+  if (!slug) return null;
   return localPath(`/profiles/${genderPath}/${slug}`);
 };
 
 const goToProfile = (profile) => {
-  router.push(profilePath(profile));
+  const path = profilePath(profile);
+  if (!path) return;
+  router.push(path);
 };
 
 const editProfile = (profile) => {
