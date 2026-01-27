@@ -1161,12 +1161,12 @@
       "close": "关闭"
     },
     "report-user-modal": {
+      "10": "10",
       "title": "举报用户",
       "select-issues": "选择所有相关问题",
       "describe-problem": "描述问题",
       "select-message": "选择特定消息（可选）",
       "selected-messages": "选定的消息：",
-      "10": "10",
       "cancel": "取消",
       "submit": "提交举报",
       "photo": "他们的照片",
@@ -1254,6 +1254,21 @@
     },
     "loadingContainer": {
       "loading": "加载中..."
+    },
+    "chatTranslation": {
+      "promptTitle": "翻译消息？",
+      "promptBody": "{name} 的默认语言是 {language}。要将你的消息翻译成 {language} 吗？",
+      "promptHint": "将使用对方的默认语言设置。你可以随时更改。",
+      "optionOnce": "仅翻译一次",
+      "optionOnceDesc": "只翻译这条消息。",
+      "optionAlways": "始终翻译",
+      "optionAlwaysDesc": "对该用户的所有消息都翻译。",
+      "optionNever": "从不翻译",
+      "optionNeverDesc": "按原样发送消息。",
+      "optionNotNow": "暂时不用",
+      "translated": "已翻译",
+      "someone": "该用户",
+      "theirLanguage": "对方的语言"
     }
   },
   "composables": {

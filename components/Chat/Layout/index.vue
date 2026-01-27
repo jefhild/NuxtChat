@@ -805,6 +805,63 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="translationPromptOpen" max-width="460">
+      <v-card>
+        <v-card-title class="text-h6">
+          {{ t("components.chatTranslation.promptTitle") }}
+        </v-card-title>
+        <v-card-text>
+          <div class="text-body-2 mb-3">
+            {{ translationPromptBody }}
+          </div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            {{ t("components.chatTranslation.promptHint") }}
+          </div>
+          <v-list density="compact" class="translation-choice-list">
+            <v-list-item
+              link
+              @click="applyTranslationChoice('once')"
+            >
+              <v-list-item-title>
+                {{ t("components.chatTranslation.optionOnce") }}
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                {{ t("components.chatTranslation.optionOnceDesc") }}
+              </v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item
+              link
+              @click="applyTranslationChoice('always')"
+            >
+              <v-list-item-title>
+                {{ t("components.chatTranslation.optionAlways") }}
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                {{ t("components.chatTranslation.optionAlwaysDesc") }}
+              </v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item
+              link
+              @click="applyTranslationChoice('never')"
+            >
+              <v-list-item-title>
+                {{ t("components.chatTranslation.optionNever") }}
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                {{ t("components.chatTranslation.optionNeverDesc") }}
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="translationPromptOpen = false">
+            {{ t("components.chatTranslation.optionNotNow") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar
       v-model="shareToast"
       :timeout="2500"
@@ -847,7 +904,10 @@ import { useTabFilters } from "@/composables/useTabFilters";
 import { useI18n } from "vue-i18n";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
 import ProfileDialog from "@/components/ProfileDialog.vue";
-import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
+import {
+  resolveProfileLocalization,
+  normalizeLocale,
+} from "@/composables/useProfileLocalization";
 
 const auth = useAuthStore();
 const chat = useChatStore();
@@ -882,6 +942,9 @@ const {
   insertBlockedUser,
   unblockUser,
   getProfileTranslations,
+  getUserProfileFunctionFromId,
+  getTranslationPreference,
+  upsertTranslationPreference,
 } = useDb();
 const supabase = getClient();
 
@@ -900,6 +963,11 @@ const showConsentPanelAuth = ref(true);
 const CONSENT_PANEL_HIDE_PREFIX = "consentPanelHidden:";
 const footerScroll = createFooterScrollHandler("chat-mobile");
 const consentAutoHideTimer = ref(null);
+const translationPromptOpen = ref(false);
+const translationPref = ref(null);
+const translationPrefLoading = ref(false);
+const pendingSendText = ref("");
+const pendingTranslatePeerId = ref(null);
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
@@ -1385,6 +1453,38 @@ const selectedUserInterests = computed(() => {
 });
 
 const loadingMsgs = computed(() => chat.loading);
+const peerPreferredLocaleOverride = ref(null);
+
+const loadPeerPreferredLocale = async (userId) => {
+  if (!userId) {
+    peerPreferredLocaleOverride.value = null;
+    return;
+  }
+  try {
+    const data = await getUserProfileFunctionFromId(userId);
+    const profile = Array.isArray(data) ? data[0] : data;
+    peerPreferredLocaleOverride.value = normalizeLocale(
+      profile?.preferred_locale
+    );
+  } catch (err) {
+    console.warn("[chat] selected user preferred locale failed:", err);
+    peerPreferredLocaleOverride.value = null;
+  }
+};
+
+const loadTranslationPreference = async (ownerId, receiverId) => {
+  if (!ownerId || !receiverId) {
+    translationPref.value = null;
+    return;
+  }
+  translationPrefLoading.value = true;
+  try {
+    const { data } = await getTranslationPreference(ownerId, receiverId);
+    translationPref.value = data || null;
+  } finally {
+    translationPrefLoading.value = false;
+  }
+};
 
 watch(
   () => auth.user?.id,
@@ -1406,6 +1506,27 @@ watch(
   selectedUserId,
   (userId) => {
     loadSelectedUserPhotoCount(userId);
+  },
+  { immediate: true }
+);
+
+watch(
+  selectedUserId,
+  (userId) => {
+    loadPeerPreferredLocale(userId);
+  },
+  { immediate: true }
+);
+
+watch(
+  [() => auth.user?.id, selectedUserId],
+  ([ownerId, receiverId]) => {
+    const peer = chat.selectedUser;
+    if (!ownerId || !receiverId || peer?.is_ai) {
+      translationPref.value = null;
+      return;
+    }
+    loadTranslationPreference(ownerId, receiverId);
   },
   { immediate: true }
 );
@@ -1441,6 +1562,13 @@ const props = defineProps({
   authStatus: { type: String, required: true },
 });
 const userProfile = computed(() => props.userProfile || null);
+const mePreferredLocale = computed(() =>
+  normalizeLocale(userProfile.value?.preferred_locale || locale.value)
+);
+const peerPreferredLocale = computed(() => {
+  const direct = normalizeLocale(chat.selectedUser?.preferred_locale);
+  return direct || peerPreferredLocaleOverride.value || null;
+});
 
 if (typeof window !== "undefined") window.__presenceFromLayout = presence2;
 
@@ -1605,6 +1733,22 @@ const selectedUser = computed(() => {
     return String(uid) === String(rawId);
   });
   return match || raw;
+});
+
+const translationTargetLabel = computed(() => {
+  const code = peerPreferredLocale.value;
+  if (!code) return null;
+  const label = t(
+    `components.profile-language.options.${code}`,
+    code.toUpperCase()
+  );
+  return label || code.toUpperCase();
+});
+
+const translationPromptBody = computed(() => {
+  const name = selectedUser.value?.displayname || t("components.chatTranslation.someone");
+  const language = translationTargetLabel.value || t("components.chatTranslation.theirLanguage");
+  return t("components.chatTranslation.promptBody", { name, language });
 });
 
 watch(
@@ -1863,11 +2007,111 @@ watch(
   }
 );
 
-async function onSend(text) {
+const resetTranslationPromptState = () => {
+  pendingSendText.value = "";
+  pendingTranslatePeerId.value = null;
+};
+
+watch(translationPromptOpen, (open) => {
+  if (!open) resetTranslationPromptState();
+});
+
+const maybePromptTranslation = async (text, selectedPeer, toId, sendingToBot) => {
+  if (!text) return true;
+  if (sendingToBot || selectedPeer?.is_ai) return true;
+  const ownerId = auth.user?.id;
+  if (!ownerId || !toId) return true;
+
+  const meLocale = mePreferredLocale.value;
+  const peerLocale = peerPreferredLocale.value;
+  if (!meLocale || !peerLocale || meLocale === peerLocale) return true;
+
+  if (!translationPref.value && !translationPrefLoading.value) {
+    await loadTranslationPreference(ownerId, toId);
+  }
+
+  const mode = translationPref.value?.mode || "ask";
+  if (mode === "always" || mode === "never") return true;
+
+  pendingSendText.value = text;
+  pendingTranslatePeerId.value = toId;
+  translationPromptOpen.value = true;
+  return false;
+};
+
+const applyTranslationChoice = async (mode) => {
+  const text = pendingSendText.value;
+  const peerId = pendingTranslatePeerId.value;
+  translationPromptOpen.value = false;
+
+  if (!text || !peerId) return;
+  if (String(peerId) !== String(selectedUserId.value)) return;
+
+  const ownerId = auth.user?.id;
+  if (!ownerId) return;
+
+  if (mode === "always" || mode === "never") {
+    await upsertTranslationPreference(ownerId, peerId, mode);
+    translationPref.value = {
+      ...(translationPref.value || {}),
+      owner_id: ownerId,
+      receiver_id: peerId,
+      mode,
+    };
+  }
+
+  await onSend(text, { bypassTranslationPrompt: true, translationMode: mode });
+};
+
+const translateChatMessage = async (text, targetLocale) => {
+  if (!text || !targetLocale) return null;
+  try {
+    const res = await $fetch("/api/chat/translate", {
+      method: "POST",
+      body: {
+        text,
+        targetLocale,
+        sourceLocaleHint: mePreferredLocale.value || null,
+      },
+    });
+    if (!res?.ok) return null;
+    const sourceLocale = normalizeLocale(res.sourceLocale);
+    const translatedText =
+      typeof res.translatedText === "string" ? res.translatedText : null;
+    const payload = {
+      original_language: sourceLocale || mePreferredLocale.value || null,
+    };
+    if (translatedText && sourceLocale && sourceLocale !== targetLocale) {
+      payload.translated_content = translatedText;
+      payload.translated_language = targetLocale;
+      payload.translation_engine = res.engine || "openai";
+      payload.translation_created_at = new Date().toISOString();
+    }
+    return payload;
+  } catch (err) {
+    console.warn("[chat] translate failed:", err);
+    return null;
+  }
+};
+
+async function onSend(
+  text,
+  { bypassTranslationPrompt = false, translationMode = null } = {}
+) {
   const selectedPeer = chat.selectedUser; // ✅ define a local alias
   const toId = selectedPeer?.user_id || selectedPeer?.id;
   const sendingToBot = toId === IMCHATTY_ID;
   if (isSelectedUserBlocked.value) return;
+
+  if (!bypassTranslationPrompt) {
+    const proceed = await maybePromptTranslation(
+      text,
+      selectedPeer,
+      toId,
+      sendingToBot
+    );
+    if (!proceed) return;
+  }
 
   // pre-auth onboarding
   if (isPreAuth.value && sendingToBot) {
@@ -1881,8 +2125,17 @@ async function onSend(text) {
     return;
   }
 
+  // translate if needed (DM only)
+  let translationPayload = null;
+  const mode = translationMode || translationPref.value?.mode || "ask";
+  const shouldTranslate = mode === "always" || mode === "once";
+  const targetLocale = peerPreferredLocale.value;
+  if (shouldTranslate && targetLocale && !sendingToBot) {
+    translationPayload = await translateChatMessage(text, targetLocale);
+  }
+
   // optimistic local send
-  regRef.value?.appendLocalAndSend?.(text);
+  regRef.value?.appendLocalAndSend?.(text, translationPayload);
 
   // BOT path only
   if ((selectedPeer?.is_ai || sendingToBot) && meId && toId) {
@@ -2171,6 +2424,12 @@ function toggleFilters() {
 .chat-mobile-drawer :deep(.v-navigation-drawer) {
   top: var(--nav2-offset, 0px) !important;
   height: calc(100vh - var(--nav2-offset, 0px)) !important;
+}
+.translation-choice-list :deep(.v-list-item) {
+  border-radius: 10px;
+}
+.translation-choice-list :deep(.v-list-item:hover) {
+  background: rgba(37, 99, 235, 0.08);
 }
 
 @keyframes active-panel-pulse {

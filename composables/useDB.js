@@ -245,6 +245,9 @@ export const useDb = () => {
         sender_id,
         receiver_id,
         content,
+        translated_content,
+        translated_language,
+        original_language,
         created_at,
         read,
         file_url,
@@ -2012,21 +2015,41 @@ export const useDb = () => {
     replyToMessageId = null,
     fileUrl = null,
     fileType = null,
-    fileName = null
+    fileName = null,
+    options = null
   ) => {
     const supabase = getClient();
+    const payload = {
+      sender_id: senderId,
+      receiver_id: receiverId,
+      content: message,
+      reply_to_message_id: replyToMessageId,
+      file_url: fileUrl,
+      file_type: fileType,
+      file_name: fileName,
+    };
+
+    if (options && typeof options === "object") {
+      if (options.original_language) {
+        payload.original_language = options.original_language;
+      }
+      if (options.translated_content) {
+        payload.translated_content = options.translated_content;
+      }
+      if (options.translated_language) {
+        payload.translated_language = options.translated_language;
+      }
+      if (options.translation_engine) {
+        payload.translation_engine = options.translation_engine;
+      }
+      if (options.translation_created_at) {
+        payload.translation_created_at = options.translation_created_at;
+      }
+    }
 
     const { data, error } = await supabase
       .from("messages")
-      .insert({
-        sender_id: senderId,
-        receiver_id: receiverId,
-        content: message,
-        reply_to_message_id: replyToMessageId,
-        file_url: fileUrl,
-        file_type: fileType,
-        file_name: fileName,
-      })
+      .insert(payload)
       .select("*");
 
     if (error) {
@@ -2036,6 +2059,54 @@ export const useDb = () => {
     }
 
     return data;
+  };
+
+  const getTranslationPreference = async (ownerId, receiverId) => {
+    if (!ownerId || !receiverId) {
+      return { data: null, error: null };
+    }
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("translation_preferences")
+      .select("*")
+      .eq("owner_id", ownerId)
+      .eq("receiver_id", receiverId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching translation preference:", error);
+    }
+    return { data, error };
+  };
+
+  const upsertTranslationPreference = async (ownerId, receiverId, mode) => {
+    if (!ownerId || !receiverId || !mode) {
+      return { data: null, error: null };
+    }
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("translation_preferences")
+      .upsert(
+        {
+          owner_id: ownerId,
+          receiver_id: receiverId,
+          mode,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "owner_id,receiver_id" }
+      )
+      .select("*")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error upserting translation preference:", error);
+      console.error("Translation preference payload:", {
+        owner_id: ownerId,
+        receiver_id: receiverId,
+        mode,
+      });
+    }
+    return { data, error };
   };
 
   const insertFeedback = async (feedback, userId) => {
@@ -3571,6 +3642,8 @@ const signInWithOtp = async (
     getProfileTranslationsForUsers,
     upsertProfileTranslation,
     insertMessage,
+    getTranslationPreference,
+    upsertTranslationPreference,
     insertFeedback,
     insertBlockedUser,
     insertInteractionCount,

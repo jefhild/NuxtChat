@@ -1162,12 +1162,12 @@
       "close": "Fermer"
     },
     "report-user-modal": {
+      "10": "10",
       "title": "Signaler l'Utilisateur",
       "select-issues": "Sélectionnez tous les problèmes pertinents",
       "describe-problem": "Décrivez le problème",
       "select-message": "Sélectionnez des messages spécifiques (optionnel)",
       "selected-messages": "Messages sélectionnés : ",
-      "10": "10",
       "cancel": "Annuler",
       "submit": "Soumettre le Rapport",
       "photo": "Leur photo",
@@ -1255,6 +1255,21 @@
     },
     "loadingContainer": {
       "loading": "Chargement..."
+    },
+    "chatTranslation": {
+      "promptTitle": "Traduire les messages ?",
+      "promptBody": "La langue par défaut de {name} est {language}. Traduire vos messages en {language} ?",
+      "promptHint": "Cela utilise sa langue par défaut. Vous pourrez modifier ce choix à tout moment.",
+      "optionOnce": "Traduire une fois",
+      "optionOnceDesc": "Traduire uniquement ce message.",
+      "optionAlways": "Toujours traduire",
+      "optionAlwaysDesc": "Traduire chaque message pour cet utilisateur.",
+      "optionNever": "Ne jamais traduire",
+      "optionNeverDesc": "Envoyer les messages tels quels.",
+      "optionNotNow": "Pas maintenant",
+      "translated": "Traduit",
+      "someone": "Cet utilisateur",
+      "theirLanguage": "sa langue"
     }
   },
   "composables": {

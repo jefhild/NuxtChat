@@ -14,10 +14,11 @@
         <template v-else>
           <ChatLayoutChatBubble
             :from-me="item.sender_id === meId"
-            :html="render(item.content)"
+            :html="render(item._displayContent)"
             :time="formatDisplayTime(item.created_at)"
             :name="item._name"
             :avatar="item._avatar"
+            :status="item._status"
             :show-meta="Boolean(item._name || item._avatar || item.created_at)"
           />
         </template>
@@ -61,7 +62,7 @@ const messages = ref([]);
 const loading = ref(false);
 const typing = ref(false); // 🔹 NEW: show typing chip
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 const peerName = computed(() =>
   resolveProfileLocalization({
     profile: props.peer,
@@ -94,11 +95,17 @@ function formatDisplayTime(timestamp) {
 }
 
 const items = computed(() => {
-  const base = (messages.value || []).map((m) => ({
-    ...m,
-    _name: m.sender_id === props.meId ? meName : peerName.value,
-    _avatar: m.sender_id === props.meId ? "" : peerAvatar.value,
-  }));
+  const base = (messages.value || []).map((m) => {
+    const isReceiver = String(m.receiver_id) === String(props.meId);
+    const hasTranslation = Boolean(m.translated_content) && isReceiver;
+    return {
+      ...m,
+      _name: m.sender_id === props.meId ? meName : peerName.value,
+      _avatar: m.sender_id === props.meId ? "" : peerAvatar.value,
+      _displayContent: hasTranslation ? m.translated_content : m.content,
+      _status: hasTranslation ? t("components.chatTranslation.translated") : "",
+    };
+  });
   return showTyping.value
     ? [...base, { _typing: true, id: `typing-${peerId.value}` }]
     : base;
@@ -260,7 +267,7 @@ async function appendPeerLocal(text) {
 
 
 // ── Sending my own message (unchanged)
-async function appendLocalAndSend(text) {
+async function appendLocalAndSend(text, options = null) {
   const meId = props.meId;
   if (!text || !meId || !peerId.value) return;
 
@@ -276,7 +283,7 @@ async function appendLocalAndSend(text) {
   messages.value = [...messages.value, temp];
   await scrollToBottom();
 
-  const rows = await db.insertMessage(peerId.value, meId, text);
+  const rows = await db.insertMessage(peerId.value, meId, text, null, null, null, null, options);
   if (Array.isArray(rows) && rows.length) {
     const idx = messages.value.findIndex((m) => m._tempKey === temp._tempKey);
     if (idx !== -1) messages.value[idx] = rows[0];

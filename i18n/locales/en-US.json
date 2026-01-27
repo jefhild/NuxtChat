@@ -1184,12 +1184,12 @@
       "close": "Close"
     },
     "report-user-modal": {
+      "10": "10",
       "title": "Report User",
       "select-issues": "Select all relevant issues",
       "describe-problem": "Describe the problem",
       "select-message": "Select specific messages (optional)",
       "selected-messages": "Selected messages: ",
-      "10": "10",
       "cancel": "Cancel",
       "submit": "Submit Report",
       "photo": "Their photo",
@@ -1277,6 +1277,21 @@
     },
     "loadingContainer": {
       "loading": "Loading..."
+    },
+    "chatTranslation": {
+      "promptTitle": "Translate messages?",
+      "promptBody": "{name}'s default language is {language}. Translate your messages to {language}?",
+      "promptHint": "This uses their default language setting. You can change this anytime.",
+      "optionOnce": "Translate once",
+      "optionOnceDesc": "Translate just this message.",
+      "optionAlways": "Always translate",
+      "optionAlwaysDesc": "Translate every message to this user.",
+      "optionNever": "Never translate",
+      "optionNeverDesc": "Send messages as-is.",
+      "optionNotNow": "Not now",
+      "translated": "Translated",
+      "someone": "This user",
+      "theirLanguage": "their language"
     }
   },
   "composables": {
