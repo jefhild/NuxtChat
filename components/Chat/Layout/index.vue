@@ -919,7 +919,7 @@ const { blockedUsers, loadBlockedUsers } = useBlockedUsers();
 const recentActiveIds = ref([]);
 const recentActiveLoading = ref(false);
 let recentActiveTimer = null;
-const RECENT_ACTIVE_MINUTES = 25;
+const RECENT_ACTIVE_MINUTES = 10;
 const RECENT_ACTIVE_POLL_MS = 5 * 60 * 1000;
 
 const route = useRoute();

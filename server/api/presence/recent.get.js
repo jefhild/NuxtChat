@@ -2,11 +2,11 @@ import { useDb } from "@/composables/useDB";
 
 export default defineEventHandler(async (event) => {
   const q = getQuery(event);
-  const minutesRaw = Number(q.minutes ?? 25);
+  const minutesRaw = Number(q.minutes ?? 10);
   const minutes =
     Number.isFinite(minutesRaw) && minutesRaw > 0
       ? Math.min(minutesRaw, 180)
-      : 25;
+      : 10;
 
   const cutoffIso = new Date(Date.now() - minutes * 60 * 1000).toISOString();
 
