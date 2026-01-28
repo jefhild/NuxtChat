@@ -110,13 +110,24 @@ const navigate = (slug) => {
 
 <style scoped>
 .compact-panel .v-expansion-panel-title {
-  padding-top: 4px !important;
-  padding-bottom: 4px !important;
-  min-height: 32px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  min-height: 28px !important;
+  font-size: 0.9rem;
 }
 .compact-panel .v-expansion-panel-text__wrapper {
-  padding-top: 4px !important;
-  padding-bottom: 4px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+
+.compact-panel :deep(.v-list-item) {
+  min-height: 28px;
+  padding: 0 6px;
+}
+
+.compact-panel :deep(.v-list-item .font-weight-medium) {
+  font-size: 0.85rem;
+  line-height: 1.2;
 }
 
 .scrolling-list {

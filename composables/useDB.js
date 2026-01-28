@@ -830,6 +830,20 @@ export const useDb = () => {
     return data;
   };
 
+  const getRecentProfilesByGender = async (profileLimit, genderFilter = null) => {
+    const supabase = getClient();
+    const { data, error } = await supabase.rpc("get_recent_profiles_by_gender", {
+      profile_limit: profileLimit,
+      gender_filter: genderFilter ?? null,
+    });
+
+    if (error) {
+      console.error("Error fetching recent profiles by gender:", error);
+    }
+
+    return data;
+  };
+
   const getMostPopularAiProfiles = async (profileLimit) => {
     const supabase = getClient();
     const { data, error } = await supabase.rpc("get_most_popular_ai_profiles", {
@@ -3580,6 +3594,7 @@ const signInWithOtp = async (
     //getOnlineUserCount,
     getMostPopularProfiles,
     getRecentProfiles,
+    getRecentProfilesByGender,
     getMostPopularAiProfiles,
     getBlockedProfiles,
     getUserBlockedProfiles,

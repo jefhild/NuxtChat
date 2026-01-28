@@ -548,8 +548,11 @@ CREATE OR REPLACE FUNCTION get_recent_females(
   provider TEXT,
   gender TEXT,
   country TEXT,
+  country_emoji TEXT,
+  has_email BOOLEAN,
+  comment_count INTEGER,
   upvote_count INTEGER,
-  created TIMESTAMP
+  created TIMESTAMPTZ
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -563,29 +566,35 @@ BEGIN
 	p.provider,
 	g.name AS gender,
 	c.name AS country,
-	COUNT(v.vote_type)::int AS upvote_count,
+	c.emoji AS country_emoji,
+	p.is_registered AS has_email,
+	COALESCE(m.comment_count, 0) AS comment_count,
+	COALESCE(v.upvote_count, 0) AS upvote_count,
 	p.created
   FROM 
 	profiles p
-  LEFT JOIN 
-	votes v ON p.id = v.profile_id AND v.vote_type = 'upvote'
+  LEFT JOIN (
+    SELECT votes.profile_id AS profile_id, COUNT(*)::int AS upvote_count
+    FROM votes
+    WHERE vote_type = 'upvote'
+    GROUP BY votes.profile_id
+  ) v ON p.id = v.profile_id
+  LEFT JOIN (
+    SELECT messages_v2.sender_user_id AS sender_user_id, COUNT(*)::int AS comment_count
+    FROM messages_v2
+    GROUP BY messages_v2.sender_user_id
+  ) m ON p.user_id = m.sender_user_id
   LEFT JOIN 
 	genders g ON p.gender_id = g.id
   LEFT JOIN 
 	countries c ON p.country_id = c.id
   WHERE 
-	p.is_ai IS NOT TRUE
-	AND (
-	  p.provider != 'anonymous'
-	  OR (
-	    p.displayname IS NOT NULL
-	    AND p.age IS NOT NULL
-	    AND p.gender_id IS NOT NULL
-	  )
-	)
+	p.avatar_url IS NOT NULL 
+	AND p.avatar_url != '' 
+	AND COALESCE(p.is_ai, false) = false
 	AND p.gender_id = 2                        -- Filter by gender_id = 2 (females)
   GROUP BY 
-	p.id, g.name, c.name
+	p.id, g.name, c.name, c.emoji, p.is_registered
   ORDER BY 
 	p.created DESC
   LIMIT profile_limit;  -- Use the parameter for the limit value
@@ -605,8 +614,11 @@ CREATE OR REPLACE FUNCTION get_recent_males(
   provider TEXT,
   gender TEXT,
   country TEXT,
+  country_emoji TEXT,
+  has_email BOOLEAN,
+  comment_count INTEGER,
   upvote_count INTEGER,
-  created TIMESTAMP
+  created TIMESTAMPTZ
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -620,12 +632,24 @@ BEGIN
 	p.provider,
 	g.name AS gender,
 	c.name AS country,
-	COUNT(v.vote_type)::int AS upvote_count,
+	c.emoji AS country_emoji,
+	p.is_registered AS has_email,
+	COALESCE(m.comment_count, 0) AS comment_count,
+	COALESCE(v.upvote_count, 0) AS upvote_count,
 	p.created
   FROM 
 	profiles p
-  LEFT JOIN 
-	votes v ON p.id = v.profile_id AND v.vote_type = 'upvote'
+  LEFT JOIN (
+    SELECT votes.profile_id AS profile_id, COUNT(*)::int AS upvote_count
+    FROM votes
+    WHERE vote_type = 'upvote'
+    GROUP BY votes.profile_id
+  ) v ON p.id = v.profile_id
+  LEFT JOIN (
+    SELECT messages_v2.sender_user_id AS sender_user_id, COUNT(*)::int AS comment_count
+    FROM messages_v2
+    GROUP BY messages_v2.sender_user_id
+  ) m ON p.user_id = m.sender_user_id
   LEFT JOIN 
 	genders g ON p.gender_id = g.id
   LEFT JOIN 
@@ -633,10 +657,10 @@ BEGIN
   WHERE 
 	p.avatar_url IS NOT NULL 
 	AND p.avatar_url != '' 
-	AND p.provider != 'anonymous'
+	AND COALESCE(p.is_ai, false) = false
 	AND p.gender_id = 1                        -- Filter by gender_id = 1 (males)
   GROUP BY 
-	p.id, g.name, c.name
+	p.id, g.name, c.name, c.emoji, p.is_registered
   ORDER BY 
 	p.created DESC
   LIMIT profile_limit;  -- Use the parameter for the limit value
@@ -700,6 +724,71 @@ BEGIN
 	p.avatar_url IS NOT NULL 
 	AND p.avatar_url != '' 
 	AND COALESCE(p.is_ai, false) = false
+  ORDER BY 
+	p.created DESC
+  LIMIT profile_limit;  -- Use the parameter for the limit value
+END;
+$$ LANGUAGE plpgsql;
+
+--PLPGSQL function to fetch the most recent profiles with optional gender filter
+CREATE OR REPLACE FUNCTION get_recent_profiles_by_gender(
+  profile_limit INTEGER,
+  gender_filter INTEGER DEFAULT NULL
+) RETURNS TABLE (
+  profile_id UUID,
+  user_id UUID,
+  displayname TEXT,
+  tagline TEXT,
+  age INTEGER,
+  avatar_url TEXT,
+  provider TEXT,
+  gender TEXT,
+  country TEXT,
+  country_emoji TEXT,
+  has_email BOOLEAN,
+  comment_count INTEGER,
+  upvote_count INTEGER,
+  created TIMESTAMPTZ
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+	p.id AS profile_id,
+	p.user_id,
+	p.displayname,
+	p.tagline,
+	p.age,
+	p.avatar_url,
+	p.provider,
+	g.name AS gender,
+	c.name AS country,
+	c.emoji AS country_emoji,
+	p.is_registered AS has_email,
+	COALESCE(m.comment_count, 0) AS comment_count,
+	COALESCE(v.upvote_count, 0) AS upvote_count,
+	p.created
+  FROM 
+	profiles p
+  LEFT JOIN (
+    SELECT votes.profile_id AS profile_id, COUNT(*)::int AS upvote_count
+    FROM votes
+    WHERE vote_type = 'upvote'
+    GROUP BY votes.profile_id
+  ) v ON p.id = v.profile_id
+  LEFT JOIN (
+    SELECT messages_v2.sender_user_id AS sender_user_id, COUNT(*)::int AS comment_count
+    FROM messages_v2
+    GROUP BY messages_v2.sender_user_id
+  ) m ON p.user_id = m.sender_user_id
+  LEFT JOIN 
+	genders g ON p.gender_id = g.id
+  LEFT JOIN 
+	countries c ON p.country_id = c.id
+  WHERE 
+	p.avatar_url IS NOT NULL 
+	AND p.avatar_url != '' 
+	AND COALESCE(p.is_ai, false) = false
+	AND (gender_filter IS NULL OR p.gender_id = gender_filter)
   ORDER BY 
 	p.created DESC
   LIMIT profile_limit;  -- Use the parameter for the limit value

@@ -8,8 +8,6 @@
       class="admin-drawer"
     >
       <v-list density="compact" class="admin-drawer-list">
-        <v-list-subheader>{{ $t("pages.admin.sections-title") }}</v-list-subheader>
-
         <v-list-item
           v-for="(item, i) in items"
           :key="i"
@@ -36,9 +34,6 @@
         <v-btn icon variant="text" class="admin-menu-btn" @click="drawer = true">
           <v-icon>mdi-menu</v-icon>
         </v-btn>
-        <div class="text-subtitle-1 font-weight-medium admin-header-title">
-          {{ $t("pages.admin.sections-title") }}
-        </div>
       </div>
       <PageHeader :text="`Admin ${currentSectionLabel}`" />
     </div>

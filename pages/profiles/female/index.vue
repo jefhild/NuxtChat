@@ -1,50 +1,116 @@
-<template v-if="!isLoading">
-  <v-container fluid>
-    <!-- Back Button -->
+<template>
+  <v-container fluid class="profiles-shell">
+    <div class="profiles-header-shell">
+      <div class="profiles-header-actions">
+        <v-btn
+          icon
+          variant="text"
+          color="primary"
+          aria-label="Open filters"
+          class="profiles-menu-btn"
+          @click="filtersOpen = true"
+        >
+          <v-icon>mdi-menu</v-icon>
+        </v-btn>
+      </div>
+      <PageHeader
+        :text="$t('pages.profiles.female.title')"
+        :subtitle="$t('pages.profiles.index.subtitle')"
+      />
+    </div>
+
+    <v-navigation-drawer
+      v-model="filtersOpen"
+      location="left"
+      temporary
+      width="260"
+      class="profiles-drawer"
+      aria-label="Profile filters"
+    >
+      <v-list density="compact" class="profiles-drawer-list text-body-2">
+        <v-list-subheader>{{ $t("pages.profiles.index.filters") }}</v-list-subheader>
+        <div class="px-3 py-2 d-flex flex-column ga-3">
+          <v-list-item :to="localPath('/profiles')">
+            <template #prepend>
+              <v-icon>mdi-account-multiple</v-icon>
+            </template>
+            {{ $t("pages.profiles.index.title") }}
+          </v-list-item>
+          <v-list-item :to="localPath('/profiles/male')">
+            <template #prepend>
+              <v-icon color="blue">mdi-gender-male</v-icon>
+            </template>
+            {{ $t("components.profile-container.gender-male") }}
+          </v-list-item>
+          <v-list-item :to="localPath('/profiles/female')">
+            <template #prepend>
+              <v-icon color="pink">mdi-gender-female</v-icon>
+            </template>
+            {{ $t("components.profile-container.gender-female") }}
+          </v-list-item>
+          <v-list-item :to="localPath('/profiles/other')">
+            <template #prepend>
+              <v-icon color="purple">mdi-gender-non-binary</v-icon>
+            </template>
+            {{ $t("components.profile-container.gender-other") }}
+          </v-list-item>
+        </div>
+      </v-list>
+    </v-navigation-drawer>
+
     <v-row>
       <v-col cols="12">
-        <!-- Page Title -->
-        <div class="d-flex justify-center mt-4">
-          <v-btn icon @click="$router.back()" color="primary" class="mr-4">
-            <v-icon>mdi-arrow-left</v-icon>
-          </v-btn>
-          <h1>{{ $t("pages.profiles.female.title") }}</h1>
-        </div>
+        <HomeProfiles :limit="100" gender="female" />
       </v-col>
     </v-row>
-
-    <!-- Content -->
-    <HomeFemale :limit="4" />
   </v-container>
 </template>
 
 <script setup>
-const isLoading = ref(false);
 const isAuthenticated = ref(false);
 const authStore = useAuthStore();
+const localPath = useLocalePath();
+const filtersOpen = ref(false);
 
 useSeoI18nMeta("profiles.female");
 
 onMounted(async () => {
-  isLoading.value = true;
   await authStore.checkAuth();
   isAuthenticated.value = authStore.user !== null;
-  isLoading.value = false;
 });
 </script>
 
 <style scoped>
-.green--text-h1 {
-  font-family: "poppins", sans-serif;
-  font-size: 2rem;
-  font-weight: 400;
-  color: rgb(51, 90, 78);
+.profiles-shell {
+  padding-top: 6px;
 }
 
-.imchattyLogo {
-  font-family: "Amatic SC", sans-serif;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: rgb(80, 51, 90);
+.profiles-header-shell {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.profiles-header-actions {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1;
+}
+
+.profiles-menu-btn {
+  margin: 0;
+}
+
+.profiles-drawer {
+  margin-top: 64px;
+  height: calc(100% - 64px);
+  overflow: hidden;
+}
+
+.profiles-drawer :deep(.v-navigation-drawer__content) {
+  overflow-y: auto;
 }
 </style>

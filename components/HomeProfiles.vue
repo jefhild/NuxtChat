@@ -12,21 +12,11 @@
             {{ $t("components.homeProfiles.subtitle") }}
           </div>
         </div>
-        <v-text-field
-          v-model="search"
-          :label="$t('components.homeProfiles.search')"
-          variant="outlined"
-          density="compact"
-          clearable
-          class="profiles-search profiles-search-inline"
-          hide-details
-        />
       </div>
 
       <v-data-table
         :headers="headers"
         :items="displayedProfiles"
-        :search="search"
         :items-per-page="-1"
         item-value="user_id"
         class="profiles-table"
@@ -133,12 +123,16 @@ import {
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const { t, locale } = useI18n();
-const { getRecentProfiles, getProfileTranslationsForUsers } = useDb();
+const { getRecentProfilesByGender, getProfileTranslationsForUsers } = useDb();
 
 const props = defineProps({
   limit: {
     type: Number,
     default: 36,
+  },
+  gender: {
+    type: String,
+    default: "",
   },
 });
 
@@ -146,7 +140,6 @@ const emit = defineEmits(["loaded"]);
 
 const isLoading = ref(true);
 const profiles = ref([]);
-const search = ref("");
 const loadedCount = ref(18);
 const batchSize = 12;
 const infiniteScrollTrigger = ref(null);
@@ -168,6 +161,18 @@ const isAiProfile = (profile) => {
   return value === true || value === "true" || value === 1;
 };
 
+const displayNameFor = (profile) =>
+  resolveProfileLocalization({
+    profile,
+    readerLocale: locale?.value,
+  }).displayname || profile?.displayname || "";
+
+const taglineFor = (profile) =>
+  resolveProfileLocalization({
+    profile,
+    readerLocale: locale?.value,
+  }).tagline || profile?.tagline || "";
+
 const resolveGenderId = (profile) => {
   if (profile?.gender_id) return profile.gender_id;
   const gender = typeof profile?.gender === "string" ? profile.gender.toLowerCase() : "";
@@ -183,21 +188,9 @@ const openProfileDialog = (profile) => {
   isProfileDialogOpen.value = true;
 };
 
-const displayedProfiles = computed(() =>
-  profiles.value.slice(0, loadedCount.value)
-);
-
-const displayNameFor = (profile) =>
-  resolveProfileLocalization({
-    profile,
-    readerLocale: locale?.value,
-  }).displayname || profile?.displayname || "";
-
-const taglineFor = (profile) =>
-  resolveProfileLocalization({
-    profile,
-    readerLocale: locale?.value,
-  }).tagline || profile?.tagline || "";
+const displayedProfiles = computed(() => {
+  return profiles.value.slice(0, loadedCount.value);
+});
 
 const hasMore = computed(() => loadedCount.value < profiles.value.length);
 let observer = null;
@@ -210,8 +203,13 @@ const loadMoreProfiles = () => {
   );
 };
 
+const loadProfiles = async () => {
+  const genderId = resolveGenderId({ gender: props.gender });
+  return getRecentProfilesByGender(props.limit, genderId ?? null);
+};
+
 onMounted(async () => {
-  const data = await getRecentProfiles(props.limit);
+  const data = await loadProfiles();
   let next = Array.isArray(data) ? data : [];
   const userIds = next.map((p) => p?.user_id).filter(Boolean);
   if (userIds.length) {
@@ -263,15 +261,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.profiles-search {
-  min-width: 220px;
-  max-width: 320px;
-}
-
-.profiles-search-inline {
-  margin-left: auto;
-}
-
 .profiles-table :deep(th) {
   font-weight: 600;
 }

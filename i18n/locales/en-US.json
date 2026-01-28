@@ -24,6 +24,7 @@
         "meet_people": "Meet People Like You",
         "discover_connections": "Discover real connections through anonymous chat.",
         "realtime_conversations": "Real-time conversations with people from around the world. A smarter, friendlier alternative.",
+        "profile_links": "Check out some of our recent {male}, {female}, and {other} users.",
         "get_chatting": "Get Chatting",
         "popular_ai_profiles": "Our Most Popular AI Profiles",
         "see_more_profiles": "See More Popular Profiles",
@@ -417,6 +418,7 @@
         "loading": "Loading articles...",
         "heading": "Explore Our Articles",
         "subtitle": "Chat with others, share experiences, and discover new perspectives.",
+        "filters": "Article Filters",
         "categories": "Categories",
         "tags": "Tags",
         "search": "Search Articles...",
@@ -672,34 +674,34 @@
         }
       },
       "female": {
-        "title": "Popular Female Profiles",
+        "title": "Recent Female Profiles",
         "meta": {
-          "title": "Top Female Profiles | ImChatty",
-          "description": "Explore the most popular female profiles on ImChatty. Browse authentic member pages featuring real photos, unique interests, and personalized details.",
-          "ogTitle": "Top Female Profiles on ImChatty",
+          "title": "Recent Female Profiles | ImChatty",
+          "description": "Explore recent female profiles on ImChatty. Browse authentic member pages featuring real photos, unique interests, and personalized details.",
+          "ogTitle": "Recent Female Profiles on ImChatty",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/female",
-          "ogDescription": "Discover trending female profiles on ImChatty. Browse member pages with real information, shared interests, and a focus on meaningful conversations.",
+          "ogDescription": "Discover recent female profiles on ImChatty. Browse member pages with real information, shared interests, and a focus on meaningful conversations.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "Popular Female Profiles | ImChatty",
+          "twitterTitle": "Recent Female Profiles | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "See who’s trending — explore the most viewed and rated female profiles on ImChatty with authentic details and personalized interests.",
+          "twitterDescription": "See who’s new — explore recent female profiles on ImChatty with authentic details and personalized interests.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "male": {
-        "title": "Popular Male Profiles",
+        "title": "Recent Male Profiles",
         "meta": {
-          "title": "Top Male Profiles | ImChatty",
-          "description": "Explore the most popular male profiles on ImChatty. Browse authentic profiles with real details, shared interests, and personalized introductions.",
-          "ogTitle": "Top Male Profiles on ImChatty",
+          "title": "Recent Male Profiles | ImChatty",
+          "description": "Explore recent male profiles on ImChatty. Browse authentic profiles with real details, shared interests, and personalized introductions.",
+          "ogTitle": "Recent Male Profiles on ImChatty",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/male",
-          "ogDescription": "Discover trending male profiles on ImChatty. View member pages featuring genuine interests, real bios, and meaningful connections.",
+          "ogDescription": "Discover recent male profiles on ImChatty. View member pages featuring genuine interests, real bios, and meaningful connections.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "Popular Male Profiles | ImChatty",
+          "twitterTitle": "Recent Male Profiles | ImChatty",
           "twitterCard": "summary_large_image",
-          "twitterDescription": "Meet the most viewed and top-rated male profiles on ImChatty. Real information, real people, and engaging conversations.",
+          "twitterDescription": "Meet the newest male profiles on ImChatty. Real information, real people, and engaging conversations.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
@@ -739,6 +741,7 @@
         "title": "Public Profiles",
         "heading": "Public Profiles",
         "subtitle": "Recent and popular profiles from real members",
+        "filters": "Browse profiles",
         "meta": {
           "title": "More Profiles",
           "description": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
@@ -750,6 +753,22 @@
           "twitterTitle": "Public Profiles",
           "twitterCard": "summary_large_image",
           "twitterDescription": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
+          "twitterImage": "https://imchatty.com/images/article-image.webp"
+        }
+      },
+      "otherList": {
+        "title": "Other Profiles",
+        "meta": {
+          "title": "Other Profiles | ImChatty",
+          "description": "Explore profiles from members who identify as other. Browse real profiles, shared interests, and meaningful conversations.",
+          "ogTitle": "Other Profiles on ImChatty",
+          "ogType": "website",
+          "ogUrl": "https://imchatty.com/profiles/other",
+          "ogDescription": "Discover other profiles on ImChatty. Browse member pages with real information and shared interests.",
+          "ogImage": "https://imchatty.com/images/robot.png",
+          "twitterTitle": "Other Profiles | ImChatty",
+          "twitterCard": "summary_large_image",
+          "twitterDescription": "Explore other profiles on ImChatty with authentic details and shared interests.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },

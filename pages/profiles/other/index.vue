@@ -14,7 +14,7 @@
         </v-btn>
       </div>
       <PageHeader
-        :text="$t('pages.profiles.male.title')"
+        :text="$t('pages.profiles.otherList.title')"
         :subtitle="$t('pages.profiles.index.subtitle')"
       />
     </div>
@@ -60,7 +60,7 @@
 
     <v-row>
       <v-col cols="12">
-        <HomeProfiles :limit="100" gender="male" />
+        <HomeProfiles :limit="100" gender="other" />
       </v-col>
     </v-row>
   </v-container>
@@ -71,7 +71,9 @@ const isAuthenticated = ref(false);
 const authStore = useAuthStore();
 const localPath = useLocalePath();
 const filtersOpen = ref(false);
-useSeoI18nMeta("profiles.male");
+
+useSeoI18nMeta("profiles.otherList");
+
 onMounted(async () => {
   await authStore.checkAuth();
   isAuthenticated.value = authStore.user !== null;

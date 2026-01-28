@@ -1,86 +1,72 @@
 <template>
-  <v-container fluid>
-    <v-row class="align-center mb-2 ga-2">
-      <v-col cols="auto" class="d-flex align-center">
+  <v-container fluid class="articles-shell">
+    <div class="articles-header-shell">
+      <div class="articles-header-actions">
         <v-btn
           icon
           variant="text"
           color="primary"
           aria-label="Open filters"
+          class="articles-menu-btn"
           @click="filtersOpen = true"
         >
           <v-icon>mdi-menu</v-icon>
         </v-btn>
-      </v-col>
-      <v-col>
-        <PageHeader
-          :text="$t('pages.articles.index.heading')"
-          :subtitle="$t('pages.articles.index.subtitle')"
-        />
-      </v-col>
-    </v-row>
+      </div>
+      <PageHeader
+        :text="$t('pages.articles.index.heading')"
+        :subtitle="$t('pages.articles.index.subtitle')"
+      />
+    </div>
 
     <v-navigation-drawer
       v-model="filtersOpen"
       location="left"
       temporary
-      width="360"
-      :style="filtersDrawerStyle"
-      class="filters-drawer"
+      width="280"
+      class="articles-drawer"
       aria-label="Article filters"
     >
-      <div class="d-flex align-center justify-space-between px-3 py-3">
-        <span class="text-subtitle-1 font-weight-medium">
-          {{ $t("pages.articles.index.heading") }}
-        </span>
-        <v-btn
-          icon
-          variant="text"
-          color="primary"
-          aria-label="Close filters"
-          @click="filtersOpen = false"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </div>
-      <v-divider />
-      <div class="px-3 py-2 d-flex flex-column ga-3">
-        <FilterExpansion
-          v-model="openFilterPanel"
-          panel-key="categories"
-          :title="$t('pages.categories.index.title')"
-          :selected-name="selectedCategoriesName"
-          :items="categories"
-          base-path="/categories"
-          :selected-slug="route.params?.slug || null"
-          panels-class="compact-panel"
-          :scrolling-list="true"
-        />
+      <v-list density="compact" class="articles-drawer-list">
+        <v-list-subheader>{{ $t("pages.articles.index.filters") }}</v-list-subheader>
+        <div class="px-3 py-2 d-flex flex-column ga-3">
+          <FilterExpansion
+            v-model="openFilterPanel"
+            panel-key="categories"
+            :title="$t('pages.categories.index.title')"
+            :selected-name="selectedCategoriesName"
+            :items="categories"
+            base-path="/categories"
+            :selected-slug="route.params?.slug || null"
+            panels-class="compact-panel"
+            :scrolling-list="true"
+          />
 
-        <FilterExpansion
-          v-model="openFilterPanel"
-          panel-key="tags"
-          :title="$t('pages.tags.index.title')"
-          :selected-name="selectedTagName"
-          :items="tags"
-          base-path="/tags"
-          :selected-slug="route.params?.slug || null"
-          panels-class="compact-panel"
-          :scrolling-list="true"
-        />
+          <FilterExpansion
+            v-model="openFilterPanel"
+            panel-key="tags"
+            :title="$t('pages.tags.index.title')"
+            :selected-name="selectedTagName"
+            :items="tags"
+            base-path="/tags"
+            :selected-slug="route.params?.slug || null"
+            panels-class="compact-panel"
+            :scrolling-list="true"
+          />
 
-        <FilterExpansion
-          v-model="openFilterPanel"
-          panel-key="people"
-          :title="$t('pages.people.index.title')"
-          :selected-name="selectedPeopleName"
-          :items="people"
-          base-path="/people"
-          :selected-slug="route.params?.slug || null"
-          panels-class="compact-panel"
-          :scrolling-list="true"
-        />
-      </div>
+          <FilterExpansion
+            v-model="openFilterPanel"
+            panel-key="people"
+            :title="$t('pages.people.index.title')"
+            :selected-name="selectedPeopleName"
+            :items="people"
+            base-path="/people"
+            :selected-slug="route.params?.slug || null"
+            panels-class="compact-panel"
+            :scrolling-list="true"
+          />
+        </div>
+      </v-list>
     </v-navigation-drawer>
 
     <LoadingContainer
@@ -152,7 +138,6 @@ const searchLabel = computed(() => t("pages.articles.index.search"));
 const articles = ref([]);
 const filtersOpen = ref(false);
 const openFilterPanel = ref(null);
-const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
 const tags = ref([]);
 const categories = ref([]);
 const people = ref([]);
@@ -283,6 +268,39 @@ h1 {
   font-weight: 600;
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
+}
+
+.articles-shell {
+  padding-top: 6px;
+}
+
+.articles-header-shell {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.articles-header-actions {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1;
+}
+
+.articles-menu-btn {
+  margin: 0;
+}
+
+.articles-drawer {
+  margin-top: 64px;
+  height: calc(100% - 64px);
+  overflow: hidden;
+}
+
+.articles-drawer :deep(.v-navigation-drawer__content) {
+  overflow-y: auto;
 }
 
 .search-bar {

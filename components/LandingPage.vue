@@ -59,27 +59,53 @@
       </v-sheet>
     </div>
     <!-- CTA Section -->
-    <v-container class="text-center py-8 mt-4 cta">
-      <v-chip color="primary" variant="tonal" class="mb-4">
-        {{ $t("pages.home.landing_page.meet_people") }}
-      </v-chip>
+    <div class="full-bleed">
+      <v-sheet class="cta cta-surface" elevation="0">
+        <v-container fluid class="text-center py-8 cta-content">
+          <v-chip color="primary" variant="tonal" class="mb-4">
+            {{ $t("pages.home.landing_page.meet_people") }}
+          </v-chip>
 
-      <div class="text-h5 font-weight-medium mb-2">
-        {{ $t("pages.home.landing_page.discover_connections") }}
-      </div>
-      <div class="text-body-1 mt-6">
-        {{ $t("pages.home.landing_page.realtime_conversations") }}
-      </div>
+          <div class="text-h5 font-weight-medium mb-2">
+            {{ $t("pages.home.landing_page.discover_connections") }}
+          </div>
+          <div class="text-body-1 mt-6">
+            {{ $t("pages.home.landing_page.realtime_conversations") }}
+          </div>
 
-      <v-btn
-        color="primary"
-        class="mr-4 mt-5"
-        size="large"
-        :to="localPath('/chat')"
-      >
-        {{ $t("pages.home.landing_page.get_chatting") }}
-      </v-btn>
-    </v-container>
+          <i18n-t
+            keypath="pages.home.landing_page.profile_links"
+            tag="div"
+            class="text-body-2 mt-4"
+          >
+            <template #male>
+              <NuxtLink :to="localPath('/profiles/male')" class="cta-link">
+                {{ $t("components.profile-container.gender-male") }}
+              </NuxtLink>
+            </template>
+            <template #female>
+              <NuxtLink :to="localPath('/profiles/female')" class="cta-link">
+                {{ $t("components.profile-container.gender-female") }}
+              </NuxtLink>
+            </template>
+            <template #other>
+              <NuxtLink :to="localPath('/profiles/other')" class="cta-link">
+                {{ $t("components.profile-container.gender-other") }}
+              </NuxtLink>
+            </template>
+          </i18n-t>
+
+          <v-btn
+            color="primary"
+            class="mr-4 mt-5"
+            size="large"
+            :to="localPath('/chat')"
+          >
+            {{ $t("pages.home.landing_page.get_chatting") }}
+          </v-btn>
+        </v-container>
+      </v-sheet>
+    </div>
 
     <!-- Article Sections -->
     <v-container fluid class="mt-10">
@@ -418,6 +444,24 @@ onMounted(async () => {
 .cta {
   background: linear-gradient(135deg, #e3f2fd, #f1f8e9);
   border-radius: 24px; /* more reasonable than 100px on small screens */
+}
+
+.cta-surface {
+  width: 100%;
+}
+
+.cta-content {
+  max-width: 1100px;
+}
+
+.cta-link {
+  color: #1e88e5;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cta-link:hover {
+  text-decoration: underline;
 }
 
 .final-cta {
