@@ -175,7 +175,7 @@ async function validateDisplayName(supa, value) {
  * Returns { actions: [...] } where actions can be:
  *  - { type: 'bot_message', text }
  *  - { type: 'set_consent', value: boolean }
- *  - { type: 'set_field', key: 'displayName'|'age'|'genderId'|'bio', value }
+ *  - { type: 'set_field', key: 'displayName'|'age'|'genderId'|'bio'|'tagline', value }
  *  - { type: 'finalize' }
  *
  * No messages are persisted here. The client (useOnboardingAi) applies actions
@@ -267,6 +267,96 @@ Return ONLY the bio text, no quotes.
       ru: "Оптимист на эспрессо в поиске напарника для маленьких приключений.",
       zh: "浓缩咖啡驱动的乐观派，想找个伙伴一起去小冒险。",
     });
+  }
+}
+
+function sanitizeTagline(value, { maxChars = 30, minChars = 4 } = {}) {
+  if (typeof value !== "string") return "";
+  const SPECIAL_CHARS_RE = /[!@#$%^&*(),.?":{}|<>]/g;
+  let text = value
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^[“”"'`]+|[“”"'`]+$/g, "")
+    .replace(SPECIAL_CHARS_RE, "")
+    .trim();
+  if (text.length > maxChars) text = text.slice(0, maxChars).trim();
+  if (text.length < minChars) return "";
+  return text;
+}
+
+function buildTaglineFallback({ keywords = [], locale = "en", maxChars = 30 }) {
+  const cleaned = (keywords || [])
+    .map((s) => String(s || "").trim())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  const fallback = pickVariant(locale, {
+    en: "Good vibes",
+    fr: "Bonne vibe",
+    ru: "Хороший вайб",
+    zh: "好心情",
+  });
+
+  if (!cleaned.length) return sanitizeTagline(fallback, { maxChars }) || "";
+
+  const parts = [];
+  const sep = " / ";
+  let current = "";
+  for (const kw of cleaned) {
+    const next = current ? `${current}${sep}${kw}` : kw;
+    if (next.length > maxChars) break;
+    current = next;
+    parts.push(kw);
+  }
+  const joined = parts.join(sep);
+  return sanitizeTagline(joined, { maxChars }) || sanitizeTagline(fallback, { maxChars }) || "";
+}
+
+async function generateTaglineFromKeywords({
+  apiKey,
+  keywords = [],
+  locale = "en",
+  maxChars = 30,
+  minChars = 4,
+}) {
+  const keywordList = (arr = []) =>
+    arr
+      .map((s) => String(s || "").trim())
+      .filter(Boolean)
+      .slice(0, 6)
+      .join(", ");
+
+  if (!canUseAI) {
+    return buildTaglineFallback({ keywords, locale, maxChars });
+  }
+
+  const openai = new OpenAI({ apiKey });
+
+  const prompt = `
+Write a short profile tagline (between ${minChars} and ${maxChars} characters).
+Language: ${locale}. Keep it friendly, specific, no clichés, no hashtags, no emojis, no quotes.
+Use these keywords if helpful: ${keywordList(keywords)}
+
+If the input is inappropriate/hateful, respond with exactly: inappropriate
+Return ONLY the tagline text, no quotes.
+`.trim();
+
+  try {
+    const resp = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let tagline = resp.choices?.[0]?.message?.content?.trim() || "";
+    if (!tagline) {
+      tagline = buildTaglineFallback({ keywords, locale, maxChars });
+    } else if (tagline.toLowerCase() === "inappropriate") {
+      tagline = buildTaglineFallback({ keywords, locale, maxChars });
+    }
+    return sanitizeTagline(tagline, { maxChars, minChars }) || "";
+  } catch {
+    return buildTaglineFallback({ keywords, locale, maxChars });
   }
 }
 
@@ -402,6 +492,7 @@ export default defineEventHandler(async (event) => {
       age: null,
       genderId: null,
       bio: null,
+      tagline: null,
     },
     missingFields: Array.isArray(missingFields) ? missingFields : [],
     isComplete: !!isComplete,
@@ -639,9 +730,19 @@ export default defineEventHandler(async (event) => {
           locale: localeCode,
           maxChars: 220,
         });
+        const taglineText = await generateTaglineFromKeywords({
+          apiKey,
+          keywords,
+          locale: localeCode,
+          maxChars: 30,
+          minChars: 4,
+        });
         return {
           actions: [
             { type: "set_field", key: "bio", value: bioText },
+            ...(taglineText
+              ? [{ type: "set_field", key: "tagline", value: taglineText }]
+              : []),
             { type: "finalize" },
           ],
         };
@@ -781,24 +882,34 @@ export default defineEventHandler(async (event) => {
 
     // If we're offline but the latest user message looks like keywords for a bio, generate a localized fallback bio.
     if (next === "bio" && latestUtter) {
-      const keywords = parseKeywords(latestUtter);
-      if (keywords.length) {
-        const bioText = await generateBioFromKeywords({
-          apiKey,
-          displayname: state.draftSummary.displayName ?? "",
-          age: state.draftSummary.age ?? "",
-          gender: state.draftSummary.genderId ?? "",
-          keywords,
-          locale: localeCode,
-          maxChars: 220,
-        });
-        return {
-          actions: [
-            { type: "set_field", key: "bio", value: bioText },
-            { type: "finalize" },
-          ],
-        };
-      }
+        const keywords = parseKeywords(latestUtter);
+        if (keywords.length) {
+          const bioText = await generateBioFromKeywords({
+            apiKey,
+            displayname: state.draftSummary.displayName ?? "",
+            age: state.draftSummary.age ?? "",
+            gender: state.draftSummary.genderId ?? "",
+            keywords,
+            locale: localeCode,
+            maxChars: 220,
+          });
+          const taglineText = await generateTaglineFromKeywords({
+            apiKey,
+            keywords,
+            locale: localeCode,
+            maxChars: 30,
+            minChars: 4,
+          });
+          return {
+            actions: [
+              { type: "set_field", key: "bio", value: bioText },
+              ...(taglineText
+                ? [{ type: "set_field", key: "tagline", value: taglineText }]
+                : []),
+              { type: "finalize" },
+            ],
+          };
+        }
     }
 
     const question = questionForField(next);
@@ -880,7 +991,7 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
           properties: {
             key: {
               type: "string",
-              enum: ["displayName", "age", "genderId", "bio"],
+              enum: ["displayName", "age", "genderId", "bio", "tagline"],
             },
             value: {},
           },
@@ -971,7 +1082,7 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
 
       if (
         name === "set_field" &&
-        ["displayName", "age", "genderId", "bio"].includes(args.key)
+        ["displayName", "age", "genderId", "bio", "tagline"].includes(args.key)
       ) {
         actions.push({ type: "set_field", key: args.key, value: args.value });
       }
@@ -1017,6 +1128,17 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
       });
 
       actions.push({ type: "set_field", key: "bio", value: bioText });
+
+      const taglineText = await generateTaglineFromKeywords({
+        apiKey,
+        keywords,
+        locale: bioLocale,
+        maxChars: 30,
+        minChars: 4,
+      });
+      if (taglineText) {
+        actions.push({ type: "set_field", key: "tagline", value: taglineText });
+      }
     }
 
     const displayNameAction = actions.find(
@@ -1086,7 +1208,7 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
     for (const a of actions) {
       if (
         a.type === "set_field" &&
-        ["displayName", "age", "genderId", "bio"].includes(a.key)
+        ["displayName", "age", "genderId", "bio", "tagline"].includes(a.key)
       ) {
         projected[a.key] = a.value;
         setFieldKeysThisRound.add(a.key);
@@ -1152,8 +1274,18 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
           locale: localeCode,
           maxChars: 220,
         });
+        const taglineText = await generateTaglineFromKeywords({
+          apiKey,
+          keywords,
+          locale: localeCode,
+          maxChars: 30,
+          minChars: 4,
+        });
         actions = [
           { type: "set_field", key: "bio", value: bioText },
+          ...(taglineText
+            ? [{ type: "set_field", key: "tagline", value: taglineText }]
+            : []),
           { type: "finalize" },
         ];
         return { actions };

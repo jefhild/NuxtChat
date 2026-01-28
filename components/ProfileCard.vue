@@ -526,6 +526,14 @@ const galleryDisplayItems = computed(() => {
   column-gap: 8px;
 }
 
+.profile-details-about .profile-details-row--stack {
+  grid-template-columns: 1fr;
+}
+
+.profile-details-about .profile-details-label {
+  min-width: 0;
+}
+
 .profile-details-label {
   min-width: 96px;
 }

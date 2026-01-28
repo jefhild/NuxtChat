@@ -15,6 +15,7 @@
       </div>
 
       <v-data-table
+        v-if="!smAndDown"
         :headers="headers"
         :items="displayedProfiles"
         :items-per-page="-1"
@@ -63,9 +64,6 @@
                   {{ $t("components.homeProfiles.aiBadge") }}
                 </v-chip>
               </button>
-              <span v-if="taglineFor(item)" class="text-caption text-medium-emphasis">
-                {{ taglineFor(item) }}
-              </span>
             </div>
           </div>
         </template>
@@ -97,6 +95,94 @@
         </template>
       </v-data-table>
 
+      <div v-else>
+        <v-alert
+          v-if="!displayedProfiles.length"
+          variant="tonal"
+          type="info"
+          class="mb-3"
+        >
+          {{ $t("components.homeProfiles.empty") }}
+        </v-alert>
+
+        <v-row dense>
+          <v-col
+            v-for="item in displayedProfiles"
+            :key="item.user_id || item.id"
+            cols="12"
+          >
+            <v-card
+              class="profile-card"
+              elevation="0"
+              border
+              role="button"
+              tabindex="0"
+              @click="openProfileDialog(item)"
+              @keyup.enter="openProfileDialog(item)"
+            >
+              <v-card-text class="d-flex align-start ga-3">
+                <div class="avatar-stack">
+                  <v-avatar size="48">
+                    <v-img
+                      :src="getAvatar(item.avatar_url, item.gender_id)"
+                      :alt="displayNameFor(item) || 'Profile avatar'"
+                    />
+                  </v-avatar>
+                  <v-avatar v-if="item.has_email" size="18" class="registered-badge">
+                    <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
+                  </v-avatar>
+                  <v-avatar size="28" class="gender-badge">
+                    <v-icon
+                      size="18"
+                      :color="getGenderColor(resolveGenderId(item))"
+                      :icon="getAvatarIcon(resolveGenderId(item))"
+                    />
+                  </v-avatar>
+                </div>
+
+                <div class="flex-1">
+                  <div class="profile-link d-flex align-center ga-2">
+                    {{ displayNameFor(item) || item.slug || item.user_id }}
+                    <v-chip
+                      v-if="isAiProfile(item)"
+                      size="x-small"
+                      color="deep-purple-darken-3"
+                      text-color="white"
+                      variant="tonal"
+                    >
+                      <v-icon size="14" class="mr-1">mdi-robot-outline</v-icon>
+                      {{ $t("components.homeProfiles.aiBadge") }}
+                    </v-chip>
+                  </div>
+                  <div class="profile-tagline text-body-2 text-medium-emphasis mt-1">
+                    <span v-if="taglineFor(item)">{{ taglineFor(item) }}</span>
+                    <span v-else class="tagline-placeholder">&nbsp;</span>
+                  </div>
+                  <div class="profile-meta-grid mt-2">
+                    <div class="meta-cell">
+                      <v-icon size="16" color="blue-grey-darken-1">mdi-cake-variant</v-icon>
+                      <span>{{ item.age ?? "—" }}</span>
+                    </div>
+                    <div class="meta-cell">
+                      <v-icon size="16" color="blue-grey-darken-1">mdi-map-marker</v-icon>
+                      <span class="country-flag">{{ item.country_emoji || "—" }}</span>
+                    </div>
+                    <div class="meta-cell">
+                      <v-icon size="16" color="blue-grey-darken-1">mdi-chat-outline</v-icon>
+                      <span>{{ item.comment_count ?? 0 }}</span>
+                    </div>
+                    <div class="meta-cell">
+                      <v-icon size="16" color="amber-darken-2">mdi-thumb-up</v-icon>
+                      <span>{{ item.upvote_count ?? 0 }}</span>
+                    </div>
+                  </div>
+                </div>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </div>
+
       <div
         v-if="hasMore"
         ref="infiniteScrollTrigger"
@@ -114,6 +200,7 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
+import { useDisplay } from "vuetify";
 import ProfileDialog from "@/components/ProfileDialog.vue";
 import {
   getAvatar,
@@ -137,6 +224,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["loaded"]);
+const { smAndDown } = useDisplay();
 
 const isLoading = ref(true);
 const profiles = ref([]);
@@ -285,6 +373,42 @@ onUnmounted(() => {
 
 .profile-link:hover {
   text-decoration: underline;
+}
+
+.profile-card {
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.profile-meta {
+  row-gap: 6px;
+  width: 100%;
+}
+
+.profile-tagline {
+  min-height: 20px;
+}
+
+.tagline-placeholder {
+  opacity: 0;
+}
+
+.profile-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.meta-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.country-flag {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .avatar-stack {

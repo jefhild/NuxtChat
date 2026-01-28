@@ -52,6 +52,7 @@ export function useOnboardingOrchestrator() {
             age: draft.age,
             gender_id: draft.genderId,
             bio: draft.bio,
+            tagline: draft.tagline,
           };
           await auth.finalizeOnboarding(payload); // persists + loads profile; flips to anon_authenticated.
           draft.setStage("done");

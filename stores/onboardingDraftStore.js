@@ -7,6 +7,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
     age: null,
     genderId: null, // 1=male, 2=female, 3=other (adjust to your mapping)
     bio: "",
+    tagline: "",
     consented: false,
     countryId: null,
     stateId: null,
@@ -41,6 +42,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
         age: state.age ?? null,
         genderId: state.genderId ?? null,
         bio: state.bio || null,
+        tagline: state.tagline || null,
         countryId: state.countryId ?? null,
         stateId: state.stateId ?? null,
         cityId: state.cityId ?? null,
@@ -70,6 +72,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
         "age",
         "genderId",
         "bio",
+        "tagline",
         "countryId",
         "stateId",
         "cityId",
@@ -102,6 +105,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
       this.age = null;
       this.genderId = null;
       this.bio = "";
+      this.tagline = "";
       this.consented = false;
       this.countryId = null;
       this.stateId = null;
@@ -126,6 +130,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           "age",
           "genderId",
           "bio",
+          "tagline",
           "consented",
           "countryId",
           "stateId",
@@ -148,20 +153,22 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           age,
           genderId,
           bio,
+          tagline,
           consented,
           countryId,
           stateId,
           cityId,
           ip,
-        stage,
-        updatedAt,
-        thread,
-      } = this;
+          stage,
+          updatedAt,
+          thread,
+        } = this;
         localStorage.setItem("onboardingDraft", JSON.stringify({
           displayName,
           age,
           genderId,
           bio,
+          tagline,
           consented,
           countryId,
           stateId,

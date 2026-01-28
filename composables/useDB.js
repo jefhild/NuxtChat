@@ -1968,6 +1968,7 @@ export const useDb = () => {
       ip = null,
       site_url = null,
       bio = null,
+      tagline = null,
       preferred_locale = null,
     } = profile;
 
@@ -1996,6 +1997,7 @@ export const useDb = () => {
         ip,
         site_url,
         bio,
+        tagline,
         preferred_locale,
       })
       .select("user_id")

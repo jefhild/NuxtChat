@@ -71,6 +71,7 @@ export function useOnboardingAi() {
         case "age":
         case "genderId":
         case "bio":
+        case "tagline":
           return k;
         default:
           return k; // let unknowns pass through (harmless with setField guard)
@@ -150,6 +151,7 @@ export function useOnboardingAi() {
             age: draft.age,
             gender_id: draft.genderId,
             bio: draft.bio,
+            tagline: draft.tagline,
             country_id: draft.countryId ?? null,
             state_id: draft.stateId ?? null,
             city_id: draft.cityId ?? null,
@@ -276,6 +278,7 @@ export function useOnboardingAi() {
       age: draft.age ?? null,
       genderId: draft.genderId ?? null,
       bio: typeof draft.bio === "string" ? draft.bio : "",
+      tagline: typeof draft.tagline === "string" ? draft.tagline : "",
     };
 
     const missing = required.filter((k) => {
@@ -415,6 +418,7 @@ if (!allowed) {
       age: draft.age ?? null,
       genderId: draft.genderId ?? null,
       bio: typeof draft.bio === "string" ? draft.bio : "",
+      tagline: typeof draft.tagline === "string" ? draft.tagline : "",
     };
     const missing = required.filter((k) => {
       const v = summary[k];

@@ -278,6 +278,7 @@ export const useAuthStore = defineStore("authStore1", {
         state_id: draft.state_id ?? null,
         city_id: draft.city_id ?? null,
         bio: draft.bio ?? null,
+        tagline: draft.tagline ?? null,
         interests: Array.isArray(draft.interests) ? draft.interests : [],
         descriptions: Array.isArray(draft.descriptions)
           ? draft.descriptions
@@ -354,6 +355,7 @@ export const useAuthStore = defineStore("authStore1", {
         age: Number.isFinite(toNum(draft.age)) ? toNum(draft.age) : null,
         gender_id: genderId,
         bio: draft.bio ?? null,
+        tagline: draft.tagline ?? null,
         country_id: countryId,
         state_id: stateId,
         city_id: cityId,
@@ -380,12 +382,16 @@ export const useAuthStore = defineStore("authStore1", {
           locale: preferredLocale,
           displayname: payload.displayname,
           bio: payload.bio,
-          tagline: draft.tagline ?? null,
+          tagline: payload.tagline,
           source_locale: preferredLocale,
         });
       }
 
-      if (hasCjk(payload.displayname) || hasCjk(payload.bio)) {
+      if (
+        hasCjk(payload.displayname) ||
+        hasCjk(payload.bio) ||
+        hasCjk(payload.tagline)
+      ) {
         const targets = new Set(["en"]);
         if (preferredLocale && preferredLocale !== "zh") {
           targets.add(preferredLocale);
@@ -397,6 +403,7 @@ export const useAuthStore = defineStore("authStore1", {
               userId,
               displayname: payload.displayname,
               bio: payload.bio,
+              tagline: payload.tagline,
               sourceLocale: "zh",
               targetLocales: Array.from(targets),
             },
