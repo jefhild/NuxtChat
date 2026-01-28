@@ -1088,6 +1088,8 @@
     },
     "profile-language": {
       "default": "Default Language",
+      "private_label": "Make profile private",
+      "private_helper": "Best-effort: removes your profile from our sitemap and asks crawlers not to index it.",
       "options": {
         "en": "English",
         "fr": "French",

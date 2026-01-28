@@ -1065,6 +1065,8 @@
     },
     "profile-language": {
       "default": "默认语言",
+      "private_label": "Make profile private",
+      "private_helper": "Best-effort: removes your profile from our sitemap and asks crawlers not to index it.",
       "options": {
         "en": "英语",
         "fr": "法语",

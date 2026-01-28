@@ -53,6 +53,13 @@ export default defineEventHandler(async (event) => {
 
     profilePayload.user_id = userId;
 
+    const personaPayload = buildPersonaPayload(personaInput, userId);
+    if (personaPayload.is_active === false) {
+      profilePayload.is_private = true;
+    } else if (personaPayload.is_active === true) {
+      profilePayload.is_private = false;
+    }
+
     const { data: existingProfile, error: profileLookupError } = await supabase
       .from("profiles")
       .select("user_id")
@@ -74,7 +81,6 @@ export default defineEventHandler(async (event) => {
       if (profileInsertError) throw profileInsertError;
     }
 
-    const personaPayload = buildPersonaPayload(personaInput, userId);
     const { data: personaRow, error: personaError } = await supabase
       .from("ai_personas")
       .insert(personaPayload)

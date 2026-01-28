@@ -37,4 +37,10 @@ useSeoI18nMeta("profiles.male", {
     twitterImage: profile.value?.avatar_url,
   },
 });
+
+useHead(() => ({
+  meta: profile.value?.is_private
+    ? [{ name: "robots", content: "noindex, nofollow" }]
+    : [],
+}));
 </script>

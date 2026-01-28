@@ -74,6 +74,38 @@
           @updateLocale="(val) => emit('update:preferredLocale', val)"
         />
       </v-col>
+      <v-col
+        v-if="props.isAuthenticated"
+        cols="12"
+        sm="6"
+        md="4"
+        class="px-1 py-0"
+      >
+        <div class="d-flex align-center">
+          <v-switch
+            inset
+            class="mt-2"
+            :disabled="!props.isEditable"
+            :model-value="Boolean(props.userProfile.is_private)"
+            :label="t('components.profile-language.private_label')"
+            @update:modelValue="(val) => emit('update:isPrivate', val)"
+          />
+          <v-tooltip
+            :text="t('components.profile-language.private_helper')"
+            location="top"
+          >
+            <template #activator="{ props: tooltipProps }">
+              <v-icon
+                size="18"
+                class="ml-2 mb-1 text-medium-emphasis"
+                v-bind="tooltipProps"
+              >
+                mdi-information-outline
+              </v-icon>
+            </template>
+          </v-tooltip>
+        </div>
+      </v-col>
     </v-row>
 
     <v-row class="ma-0 pa-0" dense>
@@ -175,6 +207,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isAuthenticated: {
+    type: Boolean,
+    default: false,
+  },
   showAiBioButton: {
     type: Boolean,
     default: false,
@@ -212,6 +248,7 @@ const emit = defineEmits([
   "update:state",
   "update:city",
   "update:preferredLocale",
+  "update:isPrivate",
   "update:bio",
   "validation",
   "save",

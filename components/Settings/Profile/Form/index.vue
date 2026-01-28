@@ -30,6 +30,7 @@
       :isMarkedForDeletion="isMarkedForDeletion"
       :deleteBusy="deleteBusy"
       :showEmailLinkPrompt="shouldOfferEmailLinkPrompt"
+      :isAuthenticated="authStore.authStatus === 'authenticated'"
       :showAiBioButton="showAiBioButton"
       :aiBioDisabled="aiBioDisabled"
       :aiBioLoading="aiBioLoading"
@@ -46,6 +47,7 @@
       @update:age="(val) => (editableProfile.age = val)"
       @update:genderId="(val) => (editableProfile.gender_id = val)"
       @update:preferredLocale="(val) => (editableProfile.preferred_locale = val)"
+      @update:isPrivate="(val) => (editableProfile.is_private = val)"
       @update:bio="(val) => (editableProfile.bio = val)"
       @save="saveChanges"
       @startEdit="startEditing"
@@ -487,7 +489,8 @@ const saveChanges = async () => {
       editableProfile.value.city_id,
       editableProfile.value.avatar_url,
       editableProfile.value.site_url,
-      editableProfile.value.preferred_locale
+      editableProfile.value.preferred_locale,
+      editableProfile.value.is_private
     );
     console.info("Profile updated successfully.");
     isEditable.value = false;

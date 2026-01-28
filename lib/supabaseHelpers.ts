@@ -7,13 +7,18 @@ const supabase = createClient(
 
 export async function getRegisteredUsersDisplaynames(options?: {
   onlyAI?: boolean;
+  includePrivate?: boolean;
 }) {
   const query = supabase
     .from("profiles")
-    .select("displayname, gender_id, slug, is_ai");
+    .select("displayname, gender_id, slug, is_ai, is_private");
 
   if (options?.onlyAI) {
     query.eq("is_ai", true);
+  }
+
+  if (!options?.includePrivate) {
+    query.eq("is_private", false);
   }
 
   return await query;

@@ -39,6 +39,11 @@ export default defineEventHandler(async (event) => {
       personaInput,
       persona.profile_user_id
     );
+    if (personaPayload.is_active === false) {
+      profilePayload.is_private = true;
+    } else if (personaPayload.is_active === true) {
+      profilePayload.is_private = false;
+    }
 
     const { error: profileUpdateError } = await supabase
       .from("profiles")

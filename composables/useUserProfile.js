@@ -162,7 +162,8 @@ export function useUserProfile() {
         editableProfile.value.city_id,
         editableProfile.value.avatar_url,
         editableProfile.value.site_url,
-        editableProfile.value.preferred_locale
+        editableProfile.value.preferred_locale,
+        editableProfile.value.is_private
       );
 
       profile.value = { ...editableProfile.value };

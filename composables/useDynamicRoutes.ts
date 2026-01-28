@@ -38,7 +38,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       peopleData,
     ] =
       await Promise.all([
-        getRegisteredUsersDisplaynames({ onlyAI: true }),
+        getRegisteredUsersDisplaynames(),
         getAllPublishedArticlesWithTags(),
         getAllCategories(),
         getAllTags(),
@@ -60,7 +60,6 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
     const profileRoutes = (
       await Promise.all(
         profiles
-          .filter((profile) => profile.is_ai)
           .map(async (profile) => {
             const slug =
               profile.slug ||
@@ -118,7 +117,7 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       tagData,
       peopleData,
     ] = await Promise.all([
-      getRegisteredUsersDisplaynames({ onlyAI: true }),
+      getRegisteredUsersDisplaynames(),
       getAllPublishedArticlesWithTags(),
       getAllCategories(),
       getAllTags(),
@@ -167,7 +166,6 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
     const profileRoutes = (
       await Promise.all(
         profiles
-          .filter((profile) => profile.is_ai)
           .map(async (profile) => {
             const slug =
               profile.slug ||
