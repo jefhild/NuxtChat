@@ -230,6 +230,19 @@ export default defineNuxtConfig({
       SUPABASE_REDIRECT: process.env.SUPABASE_REDIRECT,
       GOOGLE_ANALYTICS_ID: process.env.GOOGLE_ANALYTICS_ID,
       TERMLY_ID: process.env.TERMLY_ID,
+      CLARITY_ID: process.env.CLARITY_ID,
+      CLARITY_ENABLED: process.env.NUXT_PUBLIC_CLARITY_ENABLED ?? "true",
+      CLARITY_REQUIRE_CONSENT:
+        process.env.NUXT_PUBLIC_CLARITY_REQUIRE_CONSENT ?? "true",
+      CLARITY_CONSENT_COOKIE:
+        process.env.NUXT_PUBLIC_CLARITY_CONSENT_COOKIE ?? "TERMLY_API_CACHE",
+      CLARITY_CONSENT_STORAGE:
+        process.env.NUXT_PUBLIC_CLARITY_CONSENT_STORAGE ?? "both",
+      CLARITY_CONSENT_STORAGE_KEY:
+        process.env.NUXT_PUBLIC_CLARITY_CONSENT_STORAGE_KEY ??
+        "TERMLY_API_CACHE",
+      CLARITY_CONSENT_REGEX:
+        process.env.NUXT_PUBLIC_CLARITY_CONSENT_REGEX ?? "",
       ADSENSE_CLIENT: process.env.ADSENSE_CLIENT || "",
       SITE_URL: process.env.SITE_URL || "http://localhost:3000",
       HCAPTCHA_SITE_KEY: process.env.NUXT_PUBLIC_HCAPTCHA_SITE_KEY || "",
