@@ -451,7 +451,7 @@ onMounted(async () => {
 /* CTA shared background */
 .cta {
   background: linear-gradient(135deg, #e3f2fd, #f1f8e9);
-  border-radius: 24px; /* more reasonable than 100px on small screens */
+  border-radius: 0;
 }
 
 .cta-surface {
