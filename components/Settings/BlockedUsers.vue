@@ -9,7 +9,7 @@
               <v-col cols="12">
                 <div class="avatar-wrapper">
                   <NuxtImg :src="getProfileImage(profile.avatar_url, profile.gender_id)" height="200" width="200"
-                    class="rounded-circle cover-image mx-auto d-block ma-4" :alt="`${profile.displayname}'s image`"/>
+                    class="rounded-circle cover-image mx-auto d-block ma-4" :alt="`${displayNameFor(profile)}'s image`"/>
 
                   <NuxtImg v-if="avatarDecorations[profile.user_id]" :src="avatarDecorations[profile.user_id]"
                     class="avatar-decoration" />
@@ -25,7 +25,7 @@
                   <v-btn variant="plain"
                     v-if="genderMap[profile.gender_id]"
                     :to="profilePathFor(profile) || undefined">
-                      {{ profile.displayname }} ({{ profile.age }})
+                      {{ displayNameFor(profile) }} ({{ profile.age }})
                     </v-btn>
                     <v-icon :color="getGenderColor(profile.gender_id)"
                       :icon="getAvatarIcon(profile.gender_id)"></v-icon>
@@ -41,7 +41,7 @@
                 </v-col>
               </v-row>
             </v-card-title>
-            <v-card-subtitle>{{ profile.tagline }}</v-card-subtitle>
+            <v-card-subtitle>{{ taglineFor(profile) }}</v-card-subtitle>
           </v-card>
         </v-col>
       </template>
@@ -59,7 +59,8 @@ import { useBlockedProfiles } from "@/composables/useBlockedProfiles";
 // import { getAvatar } from "@/utils/userUtils"; // Import the helper function
 import { getAvatar } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n();
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
+const { t, locale } = useI18n();
 
 
 const { getAvatarDecorationFromId, getGenderFromId, getUserSlugFromId } = useDb();
@@ -86,6 +87,18 @@ const { blockedProfiles, unblockAUser } = useBlockedProfiles(props.userId);
 const getProfileImage = (avatar_url: string | null, gender_id: number) => {
   return getAvatar(avatar_url, gender_id);
 };
+
+const displayNameFor = (profile: any) =>
+  resolveProfileLocalization({
+    profile,
+    readerLocale: locale?.value,
+  }).displayname || profile?.displayname || "";
+
+const taglineFor = (profile: any) =>
+  resolveProfileLocalization({
+    profile,
+    readerLocale: locale?.value,
+  }).tagline || profile?.tagline || "";
 
 // Method to handle unblock button click
 const handleUnblock = (userId: string) => {

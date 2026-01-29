@@ -195,7 +195,7 @@
   <v-dialog v-model="isProfileDialogOpen" max-width="640">
     <v-card>
       <v-card-title class="d-flex justify-space-between">
-        <span>{{ modalUser?.displayname }}, {{ modalUser?.age }}</span>
+        <span>{{ modalUserLocalized.displayname }}, {{ modalUser?.age }}</span>
         <v-btn
           icon="mdi-close"
           variant="text"
@@ -211,8 +211,8 @@
             class="mr-4"
           />
           <div>
-            <div class="text-subtitle-1 mb-1">{{ modalUser?.tagline }}</div>
-            <div class="text-body-2">{{ modalUser?.bio }}</div>
+            <div class="text-subtitle-1 mb-1">{{ modalUserLocalized.tagline }}</div>
+            <div class="text-body-2">{{ modalUserLocalized.bio }}</div>
             <div class="text-caption mt-2">
               {{ modalUser?.country }} {{ modalUser?.country_emoji }}
               <span v-if="modalUser?.city">• {{ modalUser?.city }}</span>
@@ -235,6 +235,8 @@
 <script setup>
 // LAYOUT: Articles scaffold (topics | center | participants)
 import { useDisplay } from "vuetify";
+import { useI18n } from "vue-i18n";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 
 const props = defineProps({
@@ -251,6 +253,7 @@ const props = defineProps({
 const emit = defineEmits(["open-thread"]);
 
 const { smAndDown } = useDisplay();
+const { locale } = useI18n();
 
 // Local UI state (matches your ChatLayout patterns)
 const openPanels = ref([0]);
@@ -274,6 +277,12 @@ const activePanelOpen = useState(
 // Modal (kept for parity with ChatLayout; can be wired later)
 const isProfileDialogOpen = ref(false);
 const modalUser = ref(null);
+const modalUserLocalized = computed(() =>
+  resolveProfileLocalization({
+    profile: modalUser.value,
+    readerLocale: locale?.value,
+  })
+);
 
 // Helpers (no-ops/placeholder adaptations)
 const profileLink = "/profile";

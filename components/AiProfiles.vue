@@ -140,8 +140,9 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { getAvatar, getGenderPath } from "@/composables/useUserUtils";
+import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
-const { t, te } = useI18n();
+const { t, te, locale } = useI18n();
 const localPath = useLocalePath();
 
 const defaultSection = "AI Voices";
@@ -269,6 +270,10 @@ const personas = computed(() => {
   const payload = personaResponse.value?.data || [];
   return payload.map((persona) => {
     const profile = persona.profile || {};
+    const localized = resolveProfileLocalization({
+      profile,
+      readerLocale: locale?.value,
+    });
     const fallback =
       personaCopy[persona.persona_key] || personaCopy[profile.slug] || {};
 
@@ -278,14 +283,14 @@ const personas = computed(() => {
 
     return {
       id: persona.id,
-      name: profile.displayname || persona.persona_key,
+      name: localized.displayname || profile.displayname || persona.persona_key,
       role: persona.role || "Contributor",
       bias: persona.bias || fallback.bias || "",
       angle:
         persona.angle ||
         persona.summary ||
-        profile.tagline ||
-        profile.bio ||
+        localized.tagline ||
+        localized.bio ||
         fallback.angle ||
         "",
       region: persona.region || persona.locale || fallback.region || "",
@@ -296,7 +301,8 @@ const personas = computed(() => {
       categoryTitle:
         persona?.category?.name || fallback.categoryTitle || "AI Voices",
       categorySlug: categorySlug || fallback.categorySlug || "ai-voices",
-      tagline: profile.tagline || profile.bio || persona.role || "Contributor",
+      tagline:
+        localized.tagline || localized.bio || persona.role || "Contributor",
     };
   });
 });

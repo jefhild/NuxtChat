@@ -77,7 +77,7 @@
         <v-expansion-panel-text class="profile-details">
           <v-list class="profile-details-tree" density="compact" nav>
             <v-list-item
-              v-if="profile?.tagline"
+              v-if="localized.tagline"
               prepend-icon="mdi-tag-outline"
             >
               <template #title>
@@ -85,7 +85,7 @@
                   <span class="profile-details-label">
                     {{ $t("components.profile-details.tagline-label") }}:
                   </span>
-                  <span class="profile-details-value">{{ profile.tagline }}</span>
+                  <span class="profile-details-value">{{ localized.tagline }}</span>
                 </div>
               </template>
             </v-list-item>
