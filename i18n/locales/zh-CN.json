@@ -658,32 +658,32 @@
         }
       },
       "female": {
-        "title": "最新女性档案",
+        "title": "浏览女性档案，找到聊天对象",
         "meta": {
-          "title": "最新女性档案 | ImChatty",
+          "title": "浏览女性档案，找到聊天对象",
           "description": "探索 ImChatty 上最新的女性档案。查看真实照片、个性化兴趣和详细信息。",
-          "ogTitle": "ImChatty 最新女性档案",
+          "ogTitle": "浏览女性档案，找到聊天对象",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/female",
           "ogDescription": "浏览 ImChatty 上最新的女性档案。查看真实信息、兴趣标签和有意义的对话内容。",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "最新女性档案 | ImChatty",
+          "twitterTitle": "浏览女性档案，找到聊天对象",
           "twitterCard": "summary_large_image",
           "twitterDescription": "了解最新的女性用户档案，在 ImChatty 上发现真实兴趣与详细个性展示。",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "male": {
-        "title": "最新男性档案",
+        "title": "浏览男性档案，找到聊天对象",
         "meta": {
-          "title": "最新男性档案 | ImChatty",
+          "title": "浏览男性档案，找到聊天对象",
           "description": "浏览 ImChatty 上最新的男性档案，了解真实信息、共同兴趣和个性化介绍。",
-          "ogTitle": "ImChatty 最新男性档案",
+          "ogTitle": "浏览男性档案，找到聊天对象",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/male",
           "ogDescription": "发现 ImChatty 上最新的男性用户档案。查看真实资料、兴趣爱好和真诚互动。",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "最新男性档案 | ImChatty",
+          "twitterTitle": "浏览男性档案，找到聊天对象",
           "twitterCard": "summary_large_image",
           "twitterDescription": "查看 ImChatty 上最新的男性档案。真实信息、真人介绍、有趣的交流。",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
@@ -722,35 +722,35 @@
         }
       },
       "index": {
-        "title": "公开档案",
-        "heading": "公开资料",
+        "title": "浏览会员档案，结识聊天对象",
+        "heading": "浏览会员档案，结识聊天对象",
         "subtitle": "来自真实成员的最新和热门资料",
         "filters": "浏览档案",
         "meta": {
-          "title": "更多档案",
+          "title": "浏览会员档案，结识聊天对象",
           "description": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
-          "ogTitle": "公开档案",
+          "ogTitle": "浏览会员档案，结识聊天对象",
           "ogType": "Website",
           "ogUrl": "https://imchatty.com/profiles/",
           "ogDescription": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "公开档案",
+          "twitterTitle": "浏览会员档案，结识聊天对象",
           "twitterCard": "summary_large_image",
           "twitterDescription": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "otherList": {
-        "title": "其他档案",
+        "title": "浏览其他档案，找到聊天对象",
         "meta": {
-          "title": "其他档案 | ImChatty",
+          "title": "浏览其他档案，找到聊天对象",
           "description": "探索自我认同为其他性别的成员档案。浏览真实档案、共同兴趣和有意义的交流。",
-          "ogTitle": "ImChatty 其他档案",
+          "ogTitle": "浏览其他档案，找到聊天对象",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/other",
           "ogDescription": "在 ImChatty 上发现其他档案。浏览真实信息与共同兴趣的成员资料。",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "其他档案 | ImChatty",
+          "twitterTitle": "浏览其他档案，找到聊天对象",
           "twitterCard": "summary_large_image",
           "twitterDescription": "在 ImChatty 上探索其他档案，了解真实细节与共同兴趣。",
           "twitterImage": "https://imchatty.com/images/article-image.webp"

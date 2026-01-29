@@ -674,32 +674,32 @@
         }
       },
       "female": {
-        "title": "Recent Female Profiles",
+        "title": "Browse Female Profiles and Find Someone to Chat With",
         "meta": {
-          "title": "Recent Female Profiles | ImChatty",
+          "title": "Browse Female Profiles and Find Someone to Chat With",
           "description": "Explore recent female profiles on ImChatty. Browse authentic member pages featuring real photos, unique interests, and personalized details.",
-          "ogTitle": "Recent Female Profiles on ImChatty",
+          "ogTitle": "Browse Female Profiles and Find Someone to Chat With",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/female",
           "ogDescription": "Discover recent female profiles on ImChatty. Browse member pages with real information, shared interests, and a focus on meaningful conversations.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "Recent Female Profiles | ImChatty",
+          "twitterTitle": "Browse Female Profiles and Find Someone to Chat With",
           "twitterCard": "summary_large_image",
           "twitterDescription": "See who’s new — explore recent female profiles on ImChatty with authentic details and personalized interests.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "male": {
-        "title": "Recent Male Profiles",
+        "title": "Browse Male Profiles and Find Someone to Chat With",
         "meta": {
-          "title": "Recent Male Profiles | ImChatty",
+          "title": "Browse Male Profiles and Find Someone to Chat With",
           "description": "Explore recent male profiles on ImChatty. Browse authentic profiles with real details, shared interests, and personalized introductions.",
-          "ogTitle": "Recent Male Profiles on ImChatty",
+          "ogTitle": "Browse Male Profiles and Find Someone to Chat With",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/male",
           "ogDescription": "Discover recent male profiles on ImChatty. View member pages featuring genuine interests, real bios, and meaningful connections.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "Recent Male Profiles | ImChatty",
+          "twitterTitle": "Browse Male Profiles and Find Someone to Chat With",
           "twitterCard": "summary_large_image",
           "twitterDescription": "Meet the newest male profiles on ImChatty. Real information, real people, and engaging conversations.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
@@ -738,35 +738,35 @@
         }
       },
       "index": {
-        "title": "Public Profiles",
-        "heading": "Public Profiles",
+        "title": "Browse Member Profiles and Meet People to Chat With",
+        "heading": "Browse Member Profiles and Meet People to Chat With",
         "subtitle": "Recent and popular profiles from real members",
         "filters": "Browse profiles",
         "meta": {
-          "title": "More Profiles",
+          "title": "Browse Member Profiles and Meet People to Chat With",
           "description": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
-          "ogTitle": "Public Profiles",
+          "ogTitle": "Browse Member Profiles and Meet People to Chat With",
           "ogType": "Website",
           "ogUrl": "https://imchatty.com/profiles/",
           "ogDescription": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "Public Profiles",
+          "twitterTitle": "Browse Member Profiles and Meet People to Chat With",
           "twitterCard": "summary_large_image",
           "twitterDescription": "Check out our profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "otherList": {
-        "title": "Other Profiles",
+        "title": "Browse Other Profiles and Find Someone to Chat With",
         "meta": {
-          "title": "Other Profiles | ImChatty",
+          "title": "Browse Other Profiles and Find Someone to Chat With",
           "description": "Explore profiles from members who identify as other. Browse real profiles, shared interests, and meaningful conversations.",
-          "ogTitle": "Other Profiles on ImChatty",
+          "ogTitle": "Browse Other Profiles and Find Someone to Chat With",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/other",
           "ogDescription": "Discover other profiles on ImChatty. Browse member pages with real information and shared interests.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "Other Profiles | ImChatty",
+          "twitterTitle": "Browse Other Profiles and Find Someone to Chat With",
           "twitterCard": "summary_large_image",
           "twitterDescription": "Explore other profiles on ImChatty with authentic details and shared interests.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"

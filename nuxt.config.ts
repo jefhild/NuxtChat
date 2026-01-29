@@ -220,6 +220,8 @@ export default defineNuxtConfig({
     META_IG_USER_ID: process.env.META_IG_USER_ID,
     META_GRAPH_VERSION: process.env.META_GRAPH_VERSION || "v20.0",
     HCAPTCHA_SECRET: process.env.HCAPTCHA_SECRET,
+    INDEXNOW_KEY: process.env.INDEXNOW_KEY,
+    INDEXNOW_ENDPOINT: process.env.INDEXNOW_ENDPOINT,
 
     public: {
       // Non-sensitive keys (accessible on both server and client)

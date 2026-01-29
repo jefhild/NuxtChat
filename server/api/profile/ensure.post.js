@@ -2,6 +2,7 @@
 import { defineEventHandler, getRequestHeader } from "h3";
 import { createClient } from "@supabase/supabase-js";
 import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
+import { submitIndexNowUrls } from "~/server/utils/indexNow";
 
 const slugify = (s) =>
   String(s || "user")
@@ -181,7 +182,7 @@ export default defineEventHandler(async (event) => {
   const { data: ins, error: upErr } = await client
     .from("profiles")
     .upsert(payload, { onConflict: "user_id", ignoreDuplicates: false })
-    .select("user_id")
+    .select("user_id, slug, is_private")
     .maybeSingle();
 
   if (upErr) throw upErr;
@@ -205,6 +206,23 @@ export default defineEventHandler(async (event) => {
       );
     } catch (err) {
       console.warn("[profile.ensure] translation seed failed:", err);
+    }
+  }
+
+  if (!ins?.is_private) {
+    try {
+      const config = useRuntimeConfig();
+      const siteUrl = config.public?.SITE_URL;
+      const indexNowKey = config.INDEXNOW_KEY;
+      const profileSlug = ins?.slug || baseSlug;
+      await submitIndexNowUrls({
+        siteUrl,
+        key: indexNowKey,
+        endpoint: config.INDEXNOW_ENDPOINT,
+        urls: [`/profiles/${profileSlug}`],
+      });
+    } catch (err) {
+      console.warn("[profile.ensure] indexnow submit failed:", err);
     }
   }
 

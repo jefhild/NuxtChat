@@ -658,32 +658,32 @@
         }
       },
       "female": {
-        "title": "Profils Féminins Récents",
+        "title": "Parcourez les profils féminins et trouvez quelqu’un avec qui discuter",
         "meta": {
-          "title": "Profils féminins récents | ImChatty",
+          "title": "Parcourez les profils féminins et trouvez quelqu’un avec qui discuter",
           "description": "Découvrez les profils féminins récents sur ImChatty. Parcourez des profils authentiques avec photos réelles, centres d’intérêt uniques et détails personnalisés.",
-          "ogTitle": "Profils féminins récents sur ImChatty",
+          "ogTitle": "Parcourez les profils féminins et trouvez quelqu’un avec qui discuter",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/female",
           "ogDescription": "Découvrez les profils féminins récents sur ImChatty. Informations vérifiées, intérêts communs et conversations authentiques.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "Profils féminins récents | ImChatty",
+          "twitterTitle": "Parcourez les profils féminins et trouvez quelqu’un avec qui discuter",
           "twitterCard": "summary_large_image",
           "twitterDescription": "Découvrez les profils féminins récents sur ImChatty — détails authentiques et intérêts personnalisés.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "male": {
-        "title": "Profils Masculins Récents",
+        "title": "Parcourez les profils masculins et trouvez quelqu’un avec qui discuter",
         "meta": {
-          "title": "Profils masculins récents | ImChatty",
+          "title": "Parcourez les profils masculins et trouvez quelqu’un avec qui discuter",
           "description": "Découvrez les profils masculins récents sur ImChatty. Parcourez des profils authentiques avec des centres d’intérêt partagés et des présentations personnalisées.",
-          "ogTitle": "Profils masculins récents sur ImChatty",
+          "ogTitle": "Parcourez les profils masculins et trouvez quelqu’un avec qui discuter",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/male",
           "ogDescription": "Découvrez les profils masculins récents sur ImChatty. Informations réelles, biographies authentiques et connexions sincères.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "Profils masculins récents | ImChatty",
+          "twitterTitle": "Parcourez les profils masculins et trouvez quelqu’un avec qui discuter",
           "twitterCard": "summary_large_image",
           "twitterDescription": "Découvrez les profils masculins récents sur ImChatty. Informations vérifiées, personnes réelles et échanges enrichissants.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
@@ -722,35 +722,35 @@
         }
       },
       "index": {
-        "title": "Profils Publics",
-        "heading": "Profils publics",
+        "title": "Parcourez les profils des membres et rencontrez des personnes pour discuter",
+        "heading": "Parcourez les profils des membres et rencontrez des personnes pour discuter",
         "subtitle": "Profils récents et populaires de vrais membres",
         "filters": "Parcourir les profils",
         "meta": {
-          "title": "Plus de Profils",
+          "title": "Parcourez les profils des membres et rencontrez des personnes pour discuter",
           "description": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
-          "ogTitle": "Profils Publics",
+          "ogTitle": "Parcourez les profils des membres et rencontrez des personnes pour discuter",
           "ogType": "Website",
           "ogUrl": "https://imchatty.com/profiles/",
           "ogDescription": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "Profils Publics",
+          "twitterTitle": "Parcourez les profils des membres et rencontrez des personnes pour discuter",
           "twitterCard": "summary_large_image",
           "twitterDescription": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"
         }
       },
       "otherList": {
-        "title": "Profils autres",
+        "title": "Parcourez les profils autres et trouvez quelqu’un avec qui discuter",
         "meta": {
-          "title": "Profils autres | ImChatty",
+          "title": "Parcourez les profils autres et trouvez quelqu’un avec qui discuter",
           "description": "Explorez les profils des membres qui s'identifient comme autres. Parcourez de vrais profils, des intérêts communs et des conversations sincères.",
-          "ogTitle": "Profils autres sur ImChatty",
+          "ogTitle": "Parcourez les profils autres et trouvez quelqu’un avec qui discuter",
           "ogType": "website",
           "ogUrl": "https://imchatty.com/profiles/other",
           "ogDescription": "Découvrez les profils autres sur ImChatty. Parcourez des profils de membres avec des informations réelles et des intérêts partagés.",
           "ogImage": "https://imchatty.com/images/robot.png",
-          "twitterTitle": "Profils autres | ImChatty",
+          "twitterTitle": "Parcourez les profils autres et trouvez quelqu’un avec qui discuter",
           "twitterCard": "summary_large_image",
           "twitterDescription": "Explorez les profils autres sur ImChatty avec des détails authentiques et des intérêts partagés.",
           "twitterImage": "https://imchatty.com/images/article-image.webp"

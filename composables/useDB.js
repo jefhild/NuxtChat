@@ -2234,7 +2234,7 @@ export const useDb = () => {
     console.log("Inserted article:", data);
     if (error) {
       console.error("Error inserting article:", error);
-      return error;
+      return { data: null, error };
     }
 
     const articleId = data.id;
@@ -2242,7 +2242,7 @@ export const useDb = () => {
     // Step 2: Insert tag relations via admin endpoint (service role)
     await updateArticleTags(articleId, article.tag_ids || []);
 
-    return null; // no error
+    return { data, error: null };
   };
 
   const deleteCategoryAndReassign = async (categoryId, fallbackCategoryId) => {

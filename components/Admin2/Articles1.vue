@@ -1073,6 +1073,16 @@ const handleSubmit = async () => {
 
     const res = await insertArticle(form.value);
     if (res?.error) throw res.error;
+    if (form.value.is_published && res?.data?.id) {
+      try {
+        await $fetch("/api/indexnow/article", {
+          method: "POST",
+          body: { articleId: res.data.id },
+        });
+      } catch (err) {
+        console.warn("[articles] indexnow submit failed:", err);
+      }
+    }
 
     // Reset + update
     articleForm.value.reset();
@@ -1223,6 +1233,17 @@ const handleArticleUpdate = async () => {
       selectedArticle.value.id,
       selectedArticle.value.tag_ids
     );
+
+    if (selectedArticle.value.is_published) {
+      try {
+        await $fetch("/api/indexnow/article", {
+          method: "POST",
+          body: { articleId: selectedArticle.value.id },
+        });
+      } catch (err) {
+        console.warn("[articles] indexnow submit failed:", err);
+      }
+    }
 
     articles.value = await getAllArticlesWithTags(false);
     toggleEditDialog(null);
