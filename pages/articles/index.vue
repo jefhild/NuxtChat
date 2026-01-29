@@ -19,55 +19,57 @@
       />
     </div>
 
-    <v-navigation-drawer
-      v-model="filtersOpen"
-      location="left"
-      temporary
-      width="280"
-      class="articles-drawer"
-      aria-label="Article filters"
-    >
-      <v-list density="compact" class="articles-drawer-list">
-        <v-list-subheader>{{ $t("pages.articles.index.filters") }}</v-list-subheader>
-        <div class="px-3 py-2 d-flex flex-column ga-3">
-          <FilterExpansion
-            v-model="openFilterPanel"
-            panel-key="categories"
-            :title="$t('pages.categories.index.title')"
-            :selected-name="selectedCategoriesName"
-            :items="categories"
-            base-path="/categories"
-            :selected-slug="route.params?.slug || null"
-            panels-class="compact-panel"
-            :scrolling-list="true"
-          />
+    <ClientOnly>
+      <v-navigation-drawer
+        v-model="filtersOpen"
+        location="left"
+        temporary
+        width="280"
+        class="articles-drawer"
+        aria-label="Article filters"
+      >
+        <v-list density="compact" class="articles-drawer-list">
+          <v-list-subheader>{{ $t("pages.articles.index.filters") }}</v-list-subheader>
+          <div class="px-3 py-2 d-flex flex-column ga-3">
+            <FilterExpansion
+              v-model="openFilterPanel"
+              panel-key="categories"
+              :title="$t('pages.categories.index.title')"
+              :selected-name="selectedCategoriesName"
+              :items="categories"
+              base-path="/categories"
+              :selected-slug="route.params?.slug || null"
+              panels-class="compact-panel"
+              :scrolling-list="true"
+            />
 
-          <FilterExpansion
-            v-model="openFilterPanel"
-            panel-key="tags"
-            :title="$t('pages.tags.index.title')"
-            :selected-name="selectedTagName"
-            :items="tags"
-            base-path="/tags"
-            :selected-slug="route.params?.slug || null"
-            panels-class="compact-panel"
-            :scrolling-list="true"
-          />
+            <FilterExpansion
+              v-model="openFilterPanel"
+              panel-key="tags"
+              :title="$t('pages.tags.index.title')"
+              :selected-name="selectedTagName"
+              :items="tags"
+              base-path="/tags"
+              :selected-slug="route.params?.slug || null"
+              panels-class="compact-panel"
+              :scrolling-list="true"
+            />
 
-          <FilterExpansion
-            v-model="openFilterPanel"
-            panel-key="people"
-            :title="$t('pages.people.index.title')"
-            :selected-name="selectedPeopleName"
-            :items="people"
-            base-path="/people"
-            :selected-slug="route.params?.slug || null"
-            panels-class="compact-panel"
-            :scrolling-list="true"
-          />
-        </div>
-      </v-list>
-    </v-navigation-drawer>
+            <FilterExpansion
+              v-model="openFilterPanel"
+              panel-key="people"
+              :title="$t('pages.people.index.title')"
+              :selected-name="selectedPeopleName"
+              :items="people"
+              base-path="/people"
+              :selected-slug="route.params?.slug || null"
+              panels-class="compact-panel"
+              :scrolling-list="true"
+            />
+          </div>
+        </v-list>
+      </v-navigation-drawer>
+    </ClientOnly>
 
     <LoadingContainer
       v-if="isLoading"

@@ -5,7 +5,7 @@
       <v-col>
         <PageHeader
           :text="pageHeading"
-          :subtitle="$t('pages.chat.articles.subtitle')"
+          :subtitle="''"
         />
       </v-col>
     </v-row>
@@ -34,41 +34,6 @@
       </v-btn>
     </div>
 
-    <div v-if="articleImageUrl" class="mobile-image-wrapper d-md-none">
-      <v-img
-        :src="articleImageUrl"
-        height="64"
-        cover
-        class="mobile-header-img"
-        eager
-      />
-      <v-btn
-        icon
-        size="x-small"
-        color="white"
-        variant="text"
-        class="info-toggle-btn"
-        :aria-expanded="String(panelOpen)"
-        aria-controls="thread-info-panel"
-        @click="panelOpen = !panelOpen"
-      >
-        <v-icon :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
-      </v-btn>
-    </div>
-    <div v-else class="d-flex d-md-none justify-end mb-2 px-2">
-      <v-btn
-        icon
-        variant="text"
-        color="primary"
-        class="info-toggle-inline"
-        :aria-expanded="String(panelOpen)"
-        aria-controls="thread-info-panel"
-        @click="panelOpen = !panelOpen"
-      >
-        <v-icon :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
-      </v-btn>
-    </div>
-
     <!-- Desktop / tablet (>= md): 3 columns -->
     <v-row class="flex-grow-1 overflow-hidden min-h-0 d-none d-md-flex">
       <!-- LEFT: Topics -->
@@ -77,6 +42,11 @@
         md="3"
         class="pa-2 d-flex flex-column overflow-hidden min-h-0 d-none d-md-flex"
       >
+        <div class="topics-heading">
+          <h2 class="text-subtitle-1 font-weight-medium">
+            {{ $t("pages.articles.index.heading") }}
+          </h2>
+        </div>
         <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
           <div
             ref="leftScrollRef"
@@ -89,6 +59,7 @@
               :loading="loadingTopics"
               :format-date-time="formatDateTime"
               :locale-path="localePath"
+              :variant="smAndDown ? 'list' : 'cards'"
             />
           </div>
         </v-card>
@@ -105,7 +76,7 @@
       <v-col
         cols="12"
         :md="activePanelOpen ? 7 : 9"
-        class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative discussion-panel"
       >
         <div v-if="!smAndDown" class="active-panel-rail">
           <v-tooltip text="Participants" location="left">
@@ -130,68 +101,33 @@
             </template>
           </v-tooltip>
         </div>
-        <!-- Sticky header -->
-        <div class="messages-sticky-header d-none d-md-block">
-          <v-img
-            v-if="articleImageUrl"
-            :src="articleImageUrl"
-            height="80"
-            cover
-            class="d-flex align-center justify-space-between px-3 py-2 image-header-img"
+        <div v-if="hasMounted && topicThread?.article" class="discussion-toolbar">
+          <v-btn
+            size="small"
+            variant="tonal"
+            color="primary"
+            :aria-expanded="String(panelOpen)"
+            aria-controls="thread-info-panel"
+            @click="panelOpen = !panelOpen"
           >
-            <v-btn
-              icon
-              size="x-small"
-              color="white"
-              variant="text"
-              class="image-toggle-btn"
-              :aria-expanded="String(panelOpen)"
-              aria-controls="thread-info-panel"
-              @click="panelOpen = !panelOpen"
-            >
-              <v-icon :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
-            </v-btn>
-            <div
-              class="min-w-0 text-white w-100 d-flex justify-center text-center"
-            >
-              <div>
-                <p
-                  class="text-subtitle-1 font-weight-medium cursor-pointer image-title"
-                  @click="panelOpen = !panelOpen"
-                >
-                  {{ topicThread?.article?.title || "See the full article" }}
-                </p>
-              </div>
-
-              <v-btn
-                icon
-                size="x-small"
-                color="white"
-                class="d-md-none"
-                :aria-expanded="String(panelOpen)"
-                aria-controls="thread-info-panel"
-                @click="panelOpen = !panelOpen"
-              >
-                <v-icon
-                  :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-                />
-              </v-btn>
-            </div>
-          </v-img>
+            <v-icon start>
+              mdi-file-document-outline
+            </v-icon>
+            {{ panelOpen ? "Hide article" : "Read article" }}
+          </v-btn>
         </div>
-
         <!-- Overlay panel that drops over the scrollable list -->
         <v-expand-transition>
           <v-card
             v-if="panelOpen"
             id="thread-info-panel"
-            class="mx-1"
-            elevation="6"
+            class="mx-1 article-panel"
+            variant="flat"
             :aria-hidden="String(!panelOpen)"
           >
-            <div class="px-8 py-3">
+            <div class="px-8 py-3 article-panel__content">
               <!-- Always render full article (sanitized) -->
-              <div v-html="sanitizedArticleHtml"></div>
+              <div v-html="dropdownArticleHtml"></div>
             </div>
           </v-card>
         </v-expand-transition>
@@ -277,20 +213,34 @@
     <v-row class="flex-grow-1 overflow-hidden min-h-0 d-flex d-md-none">
       <v-col
         cols="12"
-        class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
+        class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative discussion-panel"
       >
+        <div v-if="hasMounted && topicThread?.article" class="discussion-toolbar">
+          <v-btn
+            size="small"
+            variant="tonal"
+            color="primary"
+            :aria-expanded="String(panelOpen)"
+            aria-controls="thread-info-panel"
+            @click="panelOpen = !panelOpen"
+          >
+            <v-icon start>
+              mdi-file-document-outline
+            </v-icon>
+            {{ panelOpen ? "Hide article" : "Read article" }}
+          </v-btn>
+        </div>
         <!-- keep your existing CENTER (Thread) content 1:1 here -->
-        <div class="messages-sticky-header d-none d-md-block"></div>
         <v-expand-transition>
           <v-card
             v-if="panelOpen"
             id="thread-info-panel"
-            class="mx-1"
-            elevation="6"
+            class="mx-1 article-panel"
+            variant="flat"
             :aria-hidden="String(!panelOpen)"
           >
-            <div class="px-8 py-3">
-              <div v-html="sanitizedArticleHtml"></div>
+            <div class="px-8 py-3 article-panel__content">
+              <div v-html="dropdownArticleHtml"></div>
             </div>
           </v-card>
         </v-expand-transition>
@@ -368,6 +318,7 @@
             :loading="loadingTopics"
             :format-date-time="formatDateTime"
             :locale-path="localePath"
+            variant="list"
             @select="() => (leftOpen = false)"
           />
         </div>
@@ -518,6 +469,12 @@ const pageHeading = computed(
 // compute reactively, no snapshot const
 const sanitizedArticleHtml = computed(() =>
   sanitizeHtml(topicThread.value?.article?.content ?? "")
+);
+const dropdownArticleHtml = computed(() =>
+  sanitizedArticleHtml.value.replace(
+    /<h[12][^>]*>[\s\S]*?<\/h[12]>/i,
+    ""
+  )
 );
 
 // Accessibility: close with Escape
@@ -1188,5 +1145,36 @@ useSeoMeta({
 .chat-mobile-drawer :deep(.v-navigation-drawer) {
   top: var(--nav2-offset, 0px) !important;
   height: calc(100vh - var(--nav2-offset, 0px)) !important;
+}
+.discussion-panel {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 12px;
+  background: linear-gradient(
+      180deg,
+      rgba(var(--v-theme-on-surface), 0.04),
+      rgba(var(--v-theme-surface), 0) 140px
+    ),
+    rgb(var(--v-theme-surface));
+}
+@media (min-width: 960px) {
+  .discussion-panel {
+    margin-top: 8px;
+  }
+}
+.discussion-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 6px 0;
+}
+.topics-heading {
+  padding: 0 0 4px 8px;
+}
+.article-panel {
+  background: transparent;
+  box-shadow: none;
+}
+.article-panel__content {
+  max-height: 45vh;
+  overflow-y: auto;
 }
 </style>

@@ -413,7 +413,7 @@
     "articles": {
       "index": {
         "loading": "Chargement des articles...",
-        "heading": "Découvrez nos articles",
+        "heading": "Articles récents",
         "subtitle": "Discutez avec d'autres, partagez vos expériences et découvrez de nouvelles perspectives.",
         "filters": "Filtres des articles",
         "categories": "Catégories",

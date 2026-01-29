@@ -413,7 +413,7 @@
     "articles": {
       "index": {
         "loading": "加载文章中...",
-        "heading": "探索我们的文章",
+        "heading": "最新文章",
         "subtitle": "与他人聊天、分享经验并发现新的视角。",
         "filters": "文章筛选",
         "categories": "分类",

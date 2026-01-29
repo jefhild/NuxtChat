@@ -416,7 +416,7 @@
     "articles": {
       "index": {
         "loading": "Loading articles...",
-        "heading": "Explore Our Articles",
+        "heading": "Recent Articles",
         "subtitle": "Chat with others, share experiences, and discover new perspectives.",
         "filters": "Article Filters",
         "categories": "Categories",
