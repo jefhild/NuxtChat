@@ -1,7 +1,5 @@
 <template>
-  <LoadingContainer v-if="isLoading" />
-
-  <v-container v-else fluid class="pa-0">
+  <v-container fluid class="pa-0">
     <!-- Hero Section -->
     <div class="full-bleed">
       <v-sheet class="hero w-100" height="85vh">
@@ -113,24 +111,34 @@
         {{ $t("pages.home.landing_page.check_articles") }}
       </h2>
 
-      <v-row>
-        <v-col
-          v-for="article in articles"
-          :key="article.id"
-          class="pa-3"
-          cols="12"
-          sm="6"
-          md="4"
-        >
-          <ArticleCard :article="article" :chatThreadId="article.threadSlug ?? undefined"/>
-        </v-col>
-      </v-row>
+      <template v-if="isLoading">
+        <v-row>
+          <v-col v-for="n in 6" :key="n" class="pa-3" cols="12" sm="6" md="4">
+            <v-skeleton-loader type="image, article" />
+          </v-col>
+        </v-row>
+      </template>
 
-      <div class="text-center mt-6">
-        <v-btn variant="outlined" color="primary" :to="localPath('/articles')">
-          {{ $t("pages.home.landing_page.see_more_articles") }}
-        </v-btn>
-      </div>
+      <template v-else>
+        <v-row>
+          <v-col
+            v-for="article in articles"
+            :key="article.id"
+            class="pa-3"
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <ArticleCard :article="article" :chatThreadId="article.threadSlug ?? undefined"/>
+          </v-col>
+        </v-row>
+
+        <div class="text-center mt-6">
+          <v-btn variant="outlined" color="primary" :to="localPath('/articles')">
+            {{ $t("pages.home.landing_page.see_more_articles") }}
+          </v-btn>
+        </div>
+      </template>
     </v-container>
 
     <!-- Final CTA Banner -->
