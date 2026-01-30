@@ -1272,6 +1272,16 @@
       "aiAgents": "Agents IA et biais",
       "realHumans": "Humains réels"
     },
+    "presence": {
+      "label": "Présence",
+      "auto": "Auto",
+      "away": "Absent",
+      "offline": "Hors ligne"
+    },
+    "away": {
+      "reply": "L’utilisateur {name} est absent et verra ce message à son retour.",
+      "link-cta": "Associez votre e-mail pour ne pas manquer une réponse"
+    },
     "users-ai": {
       "ai-users": "Utilisateurs IA",
       "active": "actif"

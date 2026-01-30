@@ -8,6 +8,7 @@
         <v-btn
           icon
           variant="text"
+          :class="{ 'chat-mobile-toggle--alert': showMobileUnreadAlert }"
           @click="leftOpen = true"
           aria-label="Show online participants"
         >
@@ -151,20 +152,14 @@
                 <v-chip
                   v-if="selectedUser"
                   size="small"
-                  :color="selectedUser?.online ? 'success' : 'grey'"
+                  :color="selectedUserPresenceColor"
                   variant="flat"
                   class="font-weight-medium mr-2"
                 >
                   <v-icon size="14" class="mr-1">
-                    {{
-                      selectedUser?.online ? "mdi-circle" : "mdi-circle-outline"
-                    }}
+                    {{ selectedUserPresenceIcon }}
                   </v-icon>
-                  {{
-                    selectedUser?.online
-                      ? $t("components.users.online")
-                      : $t("components.users.offline")
-                  }}
+                  {{ selectedUserPresenceLabel }}
                 </v-chip>
                 <v-btn
                   icon
@@ -439,19 +434,41 @@
             @click="panelOpen = !panelOpen"
           >
             <div class="d-flex align-center mobile-profile-left">
-              <v-avatar size="40" color="primary" variant="tonal">
-                <v-img
-                  v-if="selectedUser && selectedUser.avatar_url"
-                  :src="selectedUser.avatar_url"
-                  cover
-                />
-                <span
-                  v-else
-                  class="avatar-fallback text-body-2 font-weight-medium"
+              <div class="mobile-avatar-wrap">
+                <v-avatar size="40" color="primary" variant="tonal">
+                  <v-img
+                    v-if="selectedUser && selectedUser.avatar_url"
+                    :src="selectedUser.avatar_url"
+                    cover
+                  />
+                  <span
+                    v-else
+                    class="avatar-fallback text-body-2 font-weight-medium"
+                  >
+                    {{ selectedUserInitial }}
+                  </span>
+                </v-avatar>
+                <v-icon
+                  v-if="selectedUser"
+                  size="14"
+                  class="mobile-gender-icon"
+                  :class="{
+                    'is-male': selectedUser?.gender_id === 1,
+                    'is-female': selectedUser?.gender_id === 2,
+                    'is-other':
+                      selectedUser?.gender_id !== 1 &&
+                      selectedUser?.gender_id !== 2,
+                  }"
                 >
-                  {{ selectedUserInitial }}
-                </span>
-              </v-avatar>
+                  {{
+                    selectedUser?.gender_id === 1
+                      ? "mdi-gender-male"
+                      : selectedUser?.gender_id === 2
+                      ? "mdi-gender-female"
+                      : "mdi-gender-non-binary"
+                  }}
+                </v-icon>
+              </div>
               <div class="min-w-0 ml-2 mobile-profile-info">
                 <div
                   :class="[
@@ -466,6 +483,19 @@
                 </div>
               </div>
             </div>
+
+            <v-chip
+              v-if="selectedUser"
+              size="x-small"
+              :color="selectedUserPresenceColor"
+              variant="flat"
+              class="font-weight-medium mobile-presence-pill"
+            >
+              <v-icon size="12" class="mr-1">
+                {{ selectedUserPresenceIcon }}
+              </v-icon>
+              {{ selectedUserPresenceLabel }}
+            </v-chip>
 
             <v-btn
               icon
@@ -1139,11 +1169,15 @@ const hasUnreadActiveChats = computed(() => {
     (id) => (unread[String(id)] || 0) > 0
   );
 });
+const unreadCount = computed(() => msgs.totalUnread || 0);
 const showActivePanelAlert = computed(
   () => hasUnreadActiveChats.value && !activePanelOpen.value
 );
 const showMobileActiveAlert = computed(
   () => hasUnreadActiveChats.value && !rightOpen.value
+);
+const showMobileUnreadAlert = computed(
+  () => unreadCount.value > 0 && !leftOpen.value
 );
 const clearReply = () => {
   replyingToMessage.value = null;
@@ -1166,8 +1200,7 @@ const fetchRecentActiveIds = async () => {
   }
 };
 
-const onlineIds = computed(() => {
-  // primary: the store getter
+const realtimeIds = computed(() => {
   const storeIds = Array.isArray(presence2.onlineUserIds)
     ? presence2.onlineUserIds
     : [];
@@ -1178,16 +1211,14 @@ const onlineIds = computed(() => {
         (k) => !String(k).startsWith("observer:")
       );
 
-  const normalizedPresence = presenceIds.map((s) =>
-    String(s).trim().toLowerCase()
-  );
-  const normalizedRecent = (Array.isArray(recentActiveIds.value)
-    ? recentActiveIds.value
-    : []
-  ).map((s) => String(s).trim().toLowerCase());
-
-  return Array.from(new Set([...normalizedPresence, ...normalizedRecent]));
+  return presenceIds.map((s) => String(s).trim().toLowerCase());
 });
+
+const recentActiveNormalized = computed(() =>
+  (Array.isArray(recentActiveIds.value) ? recentActiveIds.value : []).map((s) =>
+    String(s).trim().toLowerCase()
+  )
+);
 
 const openPanels = ref([0]); // start open; use [] if you want it closed initially
 const togglePanel0 = () => {
@@ -1603,7 +1634,8 @@ const usersWithPresence = computed(() => {
   // ——— presence dependency (reactive) ———
   // console.log('[usersWithPresence] src len =', Array.isArray(chat.users) ? chat.users.length : 'n/a');
 
-  const onlineSet = new Set(onlineIds.value);
+  const realtimeSet = new Set(realtimeIds.value);
+  const recentActiveSet = new Set(recentActiveNormalized.value);
 
   const resolvePresenceKey = (u) =>
     String(u?.user_id ?? u?.auth_user_id ?? u?.uid ?? u?.id ?? "")
@@ -1643,11 +1675,28 @@ const usersWithPresence = computed(() => {
 
       // presence check uses the *auth id* resolver (lowercased)
       const forcedOnline = u.force_online === true;
-      const online = forcedOnline
-        ? true
-        : u.is_ai
-        ? true
-        : onlineSet.has(resolvePresenceKey(u));
+      const manualStatus = String(u.manual_status || "").trim().toLowerCase();
+      const isRealtimeOnline = realtimeSet.has(resolvePresenceKey(u));
+      const isRecentActive = recentActiveSet.has(resolvePresenceKey(u));
+
+      let presence = "offline";
+      if (manualStatus === "away") {
+        presence = "away";
+      } else if (manualStatus === "offline" && !forcedOnline) {
+        presence = "offline";
+      } else if (u.is_ai) {
+        presence = "online";
+      } else if (isRealtimeOnline) {
+        presence = "online";
+      } else if (isRecentActive) {
+        presence = "away";
+      } else if (forcedOnline) {
+        presence = "away";
+      } else {
+        presence = "offline";
+      }
+
+      const online = presence !== "offline";
 
       const genderFromStr =
         typeof u.gender === "string"
@@ -1665,7 +1714,7 @@ const usersWithPresence = computed(() => {
         id, // keep original outward id
         user_id: rawUid, // keep original auth id too
         online, // override any stale u.online
-        presence: online ? "online" : "offline",
+        presence,
         gender_id_norm:
           u.gender_id != null ? Number(u.gender_id) : genderFromStr,
         status_id_norm: u.status_id != null ? Number(u.status_id) : null,
@@ -1733,6 +1782,34 @@ const selectedUser = computed(() => {
     return String(uid) === String(rawId);
   });
   return match || raw;
+});
+
+const selectedUserPresence = computed(() => {
+  const presence = selectedUser.value?.presence;
+  if (presence === "online" || presence === "away" || presence === "offline") {
+    return presence;
+  }
+  return selectedUser.value?.online ? "online" : "offline";
+});
+
+const selectedUserPresenceLabel = computed(() => {
+  if (selectedUserPresence.value === "online") {
+    return t("components.users.online");
+  }
+  if (selectedUserPresence.value === "away") {
+    return "Away";
+  }
+  return t("components.users.offline");
+});
+
+const selectedUserPresenceIcon = computed(() =>
+  selectedUserPresence.value === "offline" ? "mdi-circle-outline" : "mdi-circle"
+);
+
+const selectedUserPresenceColor = computed(() => {
+  if (selectedUserPresence.value === "online") return "success";
+  if (selectedUserPresence.value === "away") return "warning";
+  return "grey";
 });
 
 const translationTargetLabel = computed(() => {
@@ -2098,7 +2175,7 @@ async function onSend(
   text,
   { bypassTranslationPrompt = false, translationMode = null } = {}
 ) {
-  const selectedPeer = chat.selectedUser; // ✅ define a local alias
+  const selectedPeer = selectedUser.value || chat.selectedUser;
   const toId = selectedPeer?.user_id || selectedPeer?.id;
   const sendingToBot = toId === IMCHATTY_ID;
   if (isSelectedUserBlocked.value) return;
@@ -2136,6 +2213,30 @@ async function onSend(
 
   // optimistic local send
   regRef.value?.appendLocalAndSend?.(text, translationPayload);
+
+  if (
+    selectedPeer &&
+    selectedPeer.presence === "away" &&
+    !selectedPeer.is_ai &&
+    !sendingToBot
+  ) {
+    const name = selectedUserLocalized.value?.displayname || "User";
+    let msg = t("components.away.reply", { name });
+    if (auth.authStatus === "anon_authenticated") {
+      const link = localePath({
+        path: "/settings",
+        query: { linkEmail: "1" },
+      });
+      msg += ` [${t("components.away.link-cta")}](${link}).`;
+    }
+    regRef.value?.setTyping?.(true);
+    regRef.value?.appendPeerLocal?.(msg, {
+      senderId: IMCHATTY_ID,
+      senderName: "ImChatty",
+      senderAvatar: "/images/imchatty-avatar.png",
+    });
+    setTimeout(() => regRef.value?.setTyping?.(false), 700);
+  }
 
   // BOT path only
   if ((selectedPeer?.is_ai || sendingToBot) && meId && toId) {
@@ -2416,6 +2517,32 @@ function toggleFilters() {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.mobile-presence-pill {
+  margin-left: auto;
+  margin-right: 8px;
+}
+.mobile-avatar-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.mobile-gender-icon {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  background: #fff;
+  border-radius: 999px;
+  padding: 3px;
+  color: #1d3b58;
+}
+.mobile-gender-icon.is-male {
+  color: #2563eb;
+}
+.mobile-gender-icon.is-female {
+  color: #ec4899;
+}
+.mobile-gender-icon.is-other {
+  color: #7c3aed;
 }
 .chat-mobile-drawer {
   z-index: 1700 !important;

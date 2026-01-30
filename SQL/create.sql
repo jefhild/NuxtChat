@@ -215,6 +215,9 @@ create table public.presence (
   user_id uuid not null,
   status text null,
   last_active timestamp without time zone null,
+  manual_status text null,
+  manual_status_updated_at timestamp with time zone null,
+  last_seen_at timestamp with time zone null,
   constraint presence_pkey primary key (user_id),
   constraint presence_user_id_fkey foreign KEY (user_id) references auth.users (id) on delete CASCADE
 ) TABLESPACE pg_default;

@@ -68,6 +68,19 @@
 
     <v-row class="ma-0 pa-0" dense>
       <v-col cols="12" sm="6" md="4" class="px-1 py-0">
+        <v-select
+          :disabled="props.presenceDisabled"
+          :loading="props.presenceLoading"
+          variant="underlined"
+          :items="presenceOptions"
+          item-title="label"
+          item-value="value"
+          :label="t('components.presence.label')"
+          :model-value="props.presenceStatus"
+          @update:modelValue="(val) => emit('update:presenceStatus', val)"
+        />
+      </v-col>
+      <v-col cols="12" sm="6" md="4" class="px-1 py-0">
         <SettingsProfileLanguage
           :selectedLocale="props.userProfile.preferred_locale ?? 'en'"
           :locales="props.locales"
@@ -174,6 +187,18 @@ const props = defineProps({
   statuses: Array,
   genders: Array,
   locales: Array,
+  presenceStatus: {
+    type: String,
+    default: "auto",
+  },
+  presenceDisabled: {
+    type: Boolean,
+    default: false,
+  },
+  presenceLoading: {
+    type: Boolean,
+    default: false,
+  },
   isMarkedForDeletion: {
     type: Boolean,
     default: false,
@@ -231,6 +256,7 @@ const emit = defineEmits([
   "update:state",
   "update:city",
   "update:preferredLocale",
+  "update:presenceStatus",
   "update:isPrivate",
   "update:bio",
   "validation",
@@ -244,6 +270,12 @@ const emit = defineEmits([
 
 const { isEditable } = toRefs(props);
 const { t } = useI18n();
+
+const presenceOptions = [
+  { label: t("components.presence.auto"), value: "auto" },
+  { label: t("components.presence.away"), value: "away" },
+  { label: t("components.presence.offline"), value: "offline" },
+];
 </script>
 
 <style scoped>

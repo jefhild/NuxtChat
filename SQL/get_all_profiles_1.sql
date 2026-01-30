@@ -21,6 +21,8 @@ RETURNS TABLE(
   is_ai boolean,
   force_online boolean,
   is_simulated boolean,
+  manual_status text,
+  last_seen_at timestamptz,
   marked_for_deletion_at timestamptz,
   slug text,
   persona_is_active boolean,
@@ -52,6 +54,8 @@ BEGIN
     p.is_ai,
     p.force_online,
     p.is_simulated,
+    pr.manual_status::text,
+    pr.last_seen_at::timestamptz,
     p.marked_for_deletion_at::timestamptz,
     MIN(p.slug)::text AS slug,
     bool_or(ap.is_active) AS persona_is_active,
@@ -64,6 +68,7 @@ BEGIN
   LEFT JOIN user_looking_for ulf ON p.user_id = ulf.user_id
   LEFT JOIN looking_for lf ON ulf.looking_for_id = lf.id
   LEFT JOIN status ON p.status_id = status.id
+  LEFT JOIN presence pr ON pr.user_id = p.user_id
   LEFT JOIN ai_personas ap ON ap.profile_user_id = p.user_id
   WHERE (p_is_ai IS NULL OR p.is_ai = p_is_ai)
   GROUP BY 

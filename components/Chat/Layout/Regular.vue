@@ -48,6 +48,9 @@ const typingStore = useTypingStore();
 
 const { init: initMd, render } = useMarkdown();
 
+const IMCHATTY_ID = "a3962087-516b-48df-a3ff-3b070406d832";
+const IMCHATTY_AVATAR = "/images/imchatty-avatar.png";
+
 const props = defineProps({
   meId: { type: String, required: true },
   peer: { type: Object, default: null }, // should contain displayname/id
@@ -98,10 +101,21 @@ const items = computed(() => {
   const base = (messages.value || []).map((m) => {
     const isReceiver = String(m.receiver_id) === String(props.meId);
     const hasTranslation = Boolean(m.translated_content) && isReceiver;
+    const senderId = String(m.sender_id || "");
+    let name =
+      m._senderName ??
+      (senderId === String(props.meId) ? meName : peerName.value);
+    let avatar =
+      m._senderAvatar ??
+      (senderId === String(props.meId) ? "" : peerAvatar.value);
+    if (!m._senderName && senderId === IMCHATTY_ID) {
+      name = "ImChatty";
+      avatar = IMCHATTY_AVATAR;
+    }
     return {
       ...m,
-      _name: m.sender_id === props.meId ? meName : peerName.value,
-      _avatar: m.sender_id === props.meId ? "" : peerAvatar.value,
+      _name: name,
+      _avatar: avatar,
       _displayContent: hasTranslation ? m.translated_content : m.content,
       _status: hasTranslation ? t("components.chatTranslation.translated") : "",
     };
@@ -246,17 +260,20 @@ function setTyping(val, label) {
 
 
 // temp-append a peer (bot/other user) message
-async function appendPeerLocal(text) {
+async function appendPeerLocal(text, options = null) {
   if (!text || !props.meId || !peerId.value) return;
+  const senderId = options?.senderId || peerId.value;
 
   const temp = {
     _peerTempKey: `peer-tmp-${Date.now()}`,
     id: null,
-    sender_id: peerId.value,   // ← pretend it came from the peer
+    sender_id: senderId,
     receiver_id: props.meId,
     content: text,
     created_at: new Date().toISOString(),
     read: false,
+    _senderName: options?.senderName || null,
+    _senderAvatar: options?.senderAvatar || null,
   };
   messages.value = [...messages.value, temp];
   await scrollToBottom();

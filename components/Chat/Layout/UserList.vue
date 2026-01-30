@@ -20,7 +20,7 @@
               }}</span>
             </v-avatar>
 
-            <span class="presence-dot" :class="u.online ? 'on' : 'off'"></span>
+            <span class="presence-dot" :class="presenceClass(u)"></span>
 
             <span v-if="unreadFor(u) > 0" class="unread-badge">
               <span class="unread-dot"></span>
@@ -108,6 +108,18 @@ const taglineFor = (u) =>
     readerLocale: locale?.value,
   }).tagline;
 
+const presenceValue = (u) => {
+  const p = u?.presence;
+  if (p === "online" || p === "away" || p === "offline") return p;
+  return u?.online ? "online" : "offline";
+};
+
+const presenceClass = (u) => {
+  const p = presenceValue(u);
+  if (p === "away") return "away";
+  return p === "online" ? "on" : "off";
+};
+
 // Virtual scroll sizing
 const itemHeight = 48; // tweak to match your row CSS (padding + line-height)
 const wrapRef = ref(null);
@@ -190,6 +202,9 @@ const listHeight = computed(() => props.height ?? innerHeight.value);
 .presence-dot.on {
   background: #20c997;
 } /* green */
+.presence-dot.away {
+  background: #f59e0b;
+}
 .presence-dot.off {
   background: #bdbdbd;
 }

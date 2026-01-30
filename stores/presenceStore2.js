@@ -57,6 +57,21 @@ export const usePresenceStore2 = defineStore("presenceStore2", {
       this.onlineUsers = this._flatten(raw); // replace array to keep reactivity
     },
 
+    async _trackNow() {
+      if (
+        this.channel?.track &&
+        this.presenceKey &&
+        !this.presenceKey.startsWith("observer:")
+      ) {
+        try {
+          await this.channel.track({
+            status: this.status,
+            online_at: new Date().toISOString(),
+          });
+        } catch {}
+      }
+    },
+
     async leave() {
       const chan = this.channel;
       this.channel = null;

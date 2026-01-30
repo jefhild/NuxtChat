@@ -64,7 +64,7 @@ import { useFavoriteNotifications } from "@/composables/useFavoriteNotifications
 const auth = useAuthStore();
 const presence = usePresenceStore2();
 const messages = useMessagesStore();
-const { updateLastActive } = useDb();
+const { updateLastActive, touchPresence } = useDb();
 const { smAndDown } = useDisplay();
 const hasMounted = ref(false);
 const route = useRoute();
@@ -273,6 +273,23 @@ const stopHeartbeat = () => {
   }
 };
 
+let presenceTouchTimer = null;
+const startPresenceTouch = (userId) => {
+  if (!isClient || !userId) return;
+  if (presenceTouchTimer) clearInterval(presenceTouchTimer);
+  touchPresence(userId);
+  presenceTouchTimer = window.setInterval(
+    () => touchPresence(userId),
+    60 * 1000
+  );
+};
+const stopPresenceTouch = () => {
+  if (presenceTouchTimer) {
+    window.clearInterval(presenceTouchTimer);
+    presenceTouchTimer = null;
+  }
+};
+
 // ---------- SINGLE-FLIGHT, IDEMPOTENT WIRING ----------
 let wireInflight = null; // Promise | null
 let lastModeKey = null; // "user:<id>" | "observer"
@@ -320,10 +337,12 @@ async function setPresenceForUserId(userId) {
       if (desired === "observer") {
         await presence.observe(); // creates fresh observer channel
         startHeartbeat();
+        stopPresenceTouch();
       } else {
         const id = desired.slice("user:".length);
         await presence.connect({ userId: id }); // creates fresh tracked channel
         stopHeartbeat();
+        startPresenceTouch(id);
       }
 
       lastModeKey = desired;
@@ -380,6 +399,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("online", onOnline);
   window.removeEventListener("offline", onOffline);
   stopHeartbeat();
+  stopPresenceTouch();
 });
 
 // ---------- SINGLE SOURCE OF TRUTH ----------

@@ -1294,6 +1294,16 @@
       "aiAgents": "AI Personas",
       "realHumans": "Real Humans"
     },
+    "presence": {
+      "label": "Presence",
+      "auto": "Auto",
+      "away": "Away",
+      "offline": "Offline"
+    },
+    "away": {
+      "reply": "User {name} is away but will see this message when they return.",
+      "link-cta": "Link your email if you don't want to miss a response"
+    },
     "users-ai": {
       "ai-users": "AI Users",
       "active": "active"

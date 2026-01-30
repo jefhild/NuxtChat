@@ -1566,6 +1566,47 @@ export const useDb = () => {
     }
   };
 
+  const getPresenceStatus = async (userId) => {
+    const supabase = getClient();
+    if (!userId) return { data: null, error: null };
+    const { data, error } = await supabase
+      .from("presence")
+      .select("user_id, manual_status, manual_status_updated_at, last_seen_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) {
+      console.error("Error fetching presence status:", error);
+    }
+    return { data, error };
+  };
+
+  const setPresenceStatus = async (userId, manualStatus) => {
+    const supabase = getClient();
+    if (!userId) return { error: null };
+    const payload = {
+      user_id: userId,
+      manual_status: manualStatus ?? null,
+      manual_status_updated_at: new Date().toISOString(),
+    };
+    const { error } = await supabase.from("presence").upsert(payload);
+    if (error) {
+      console.error("Error updating presence status:", error);
+    }
+    return { error };
+  };
+
+  const touchPresence = async (userId) => {
+    const supabase = getClient();
+    if (!userId) return { error: null };
+    const { error } = await supabase
+      .from("presence")
+      .upsert({ user_id: userId, last_seen_at: new Date().toISOString() });
+    if (error) {
+      console.error("Error updating presence heartbeat:", error);
+    }
+    return { error };
+  };
+
   const updateGender = async (genderID, userId) => {
     const supabase = getClient();
 
@@ -3668,6 +3709,9 @@ const verifyEmailOtp = async (email, token) => {
     updateProvider,
     updateBio,
     updateStatus,
+    getPresenceStatus,
+    setPresenceStatus,
+    touchPresence,
     updateGender,
     updateTagline,
     updateProfilePhoto,

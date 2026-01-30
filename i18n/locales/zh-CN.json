@@ -1271,6 +1271,16 @@
       "aiAgents": "AI 代理与偏见",
       "realHumans": "真实用户"
     },
+    "presence": {
+      "label": "在线状态",
+      "auto": "自动",
+      "away": "离开",
+      "offline": "离线"
+    },
+    "away": {
+      "reply": "用户 {name} 暂时离开，回来后会看到这条消息。",
+      "link-cta": "关联邮箱以免错过回复"
+    },
     "users-ai": {
       "ai-users": "AI用户",
       "active": "活跃"

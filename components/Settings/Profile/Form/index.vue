@@ -50,6 +50,9 @@
       :statuses="statuses"
       :genders="genders"
       :locales="supportedLocales"
+      :presenceStatus="presenceStatus"
+      :presenceDisabled="presenceDisabled"
+      :presenceLoading="presenceUpdating"
       :locationProps="locationProps"
       :isMarkedForDeletion="isMarkedForDeletion"
       :deleteBusy="deleteBusy"
@@ -72,6 +75,7 @@
       @update:age="(val) => (editableProfile.age = val)"
       @update:genderId="(val) => (editableProfile.gender_id = val)"
       @update:preferredLocale="(val) => (editableProfile.preferred_locale = val)"
+      @update:presenceStatus="onPresenceStatusChange"
       @update:isPrivate="(val) => (editableProfile.is_private = val)"
       @update:bio="(val) => (editableProfile.bio = val)"
       @save="saveChanges"
@@ -217,6 +221,8 @@ const {
   getStatesByCountry,
   getCitiesByState,
   updateProfile,
+  getPresenceStatus,
+  setPresenceStatus,
   hasEmail,
   updateUserEmail,
   markUserForDeletion,
@@ -243,6 +249,8 @@ const {
 const statuses = ref([]);
 const genders = ref([]);
 const photoLibraryPreview = ref([]);
+const presenceStatus = ref("auto");
+const presenceUpdating = ref(false);
 
 const editableProfile = ref({ ...props.userProfile });
 const appliedGeoDefaults = ref(false);
@@ -320,6 +328,7 @@ const randomAvatarLoading = ref(false);
 const avatarUploadLoading = ref(false);
 const avatarError = ref("");
 const taglineError = ref("");
+const isEditable = ref(false); // default to false for safety
 
 const completionMode = computed(() => {
   return route.query.complete === "1" || route.query.complete === "true";
@@ -374,6 +383,41 @@ const showPhotoLibrary = computed(() => {
     authStore.authStatus === "anon_authenticated"
   );
 });
+
+const presenceDisabled = computed(() => {
+  if (!editableProfile.value?.user_id) return true;
+  if (!isEditable.value) return true;
+  if (props.adminMode) return true;
+  return !["anon_authenticated", "authenticated"].includes(authStore.authStatus);
+});
+
+const normalizePresenceValue = (value) => {
+  if (value === "away" || value === "offline") return value;
+  return "auto";
+};
+
+const loadPresenceStatus = async (userId) => {
+  if (!userId || presenceDisabled.value) return;
+  try {
+    const { data } = await getPresenceStatus(userId);
+    presenceStatus.value = normalizePresenceValue(data?.manual_status);
+  } catch (err) {
+    console.warn("[settings] presence load failed:", err);
+  }
+};
+
+const onPresenceStatusChange = async (val) => {
+  const next = normalizePresenceValue(val);
+  presenceStatus.value = next;
+  const userId = editableProfile.value?.user_id;
+  if (!userId || presenceDisabled.value) return;
+  presenceUpdating.value = true;
+  try {
+    await setPresenceStatus(userId, next === "auto" ? null : next);
+  } finally {
+    presenceUpdating.value = false;
+  }
+};
 
 const loadPhotoLibraryPreview = async (
   userId = editableProfile.value?.user_id
@@ -697,6 +741,19 @@ const submitLinkEmail = async () => {
   }
 };
 
+const linkEmailQueryOpened = ref(false);
+watch(
+  () => route.query.linkEmail,
+  (val) => {
+    if (!import.meta.client || linkEmailQueryOpened.value) return;
+    if (val === "1" || val === "true") {
+      openLinkEmailDialog();
+      linkEmailQueryOpened.value = true;
+    }
+  },
+  { immediate: true }
+);
+
 watch(
   () => authStore.authStatus,
   (status) => {
@@ -712,6 +769,14 @@ watch(
 );
 
 watch(
+  () => [editableProfile.value?.user_id, presenceDisabled.value],
+  ([userId, disabled]) => {
+    if (!disabled) loadPresenceStatus(userId);
+  },
+  { immediate: true }
+);
+
+watch(
   () => aiBioStorageKey.value,
   () => {
     loadAiBioUses();
@@ -719,7 +784,6 @@ watch(
   { immediate: true }
 );
 
-const isEditable = ref(false); // default to false for safety
 const needsProfileCompletion = computed(() => {
   const profile = editableProfile.value || {};
   return !profile.avatar_url;

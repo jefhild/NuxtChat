@@ -69,7 +69,7 @@
                   </v-avatar>
                   <span
                     class="presence-dot"
-                    :class="item.user.online ? 'on' : 'off'"
+                    :class="presenceClass(item.user)"
                   />
                   <span v-if="item.unread > 0" class="unread-badge">
                     <span class="unread-dot"></span>
@@ -237,11 +237,31 @@ const sortWithPin = (arr = []) =>
     return displayNameFor(a).localeCompare(displayNameFor(b));
   });
 
+const presenceValue = (u) => {
+  const p = u?.presence;
+  if (p === "online" || p === "away" || p === "offline") return p;
+  return u?.online ? "online" : "offline";
+};
+
+const presenceClass = (u) => {
+  const p = presenceValue(u);
+  if (p === "away") return "away";
+  return p === "online" ? "on" : "off";
+};
+
 const onlineUsers = computed(() =>
-  sortWithPin(filteredUsers.value.filter((u) => !!u.online && !u.hidden))
+  sortWithPin(
+    filteredUsers.value.filter(
+      (u) => presenceValue(u) !== "offline" && !u.hidden
+    )
+  )
 );
 const offlineUsers = computed(() =>
-  sortWithPin(filteredUsers.value.filter((u) => !u.online && !u.hidden))
+  sortWithPin(
+    filteredUsers.value.filter(
+      (u) => presenceValue(u) === "offline" && !u.hidden
+    )
+  )
 );
 
 const activeSet = computed(
@@ -543,6 +563,10 @@ function toggleGroup(id) {
 
 .presence-dot.on {
   background: #20c997;
+}
+
+.presence-dot.away {
+  background: #f59e0b;
 }
 
 .presence-dot.off {
