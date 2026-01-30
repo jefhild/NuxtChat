@@ -12,6 +12,7 @@ import { useI18n } from "vue-i18n";
 let __onBotMessage = (payload) => {
   const text = typeof payload === "string" ? payload : payload?.text;
 };
+let __finalizeInFlight = false;
 export function setOnboardingBotMessageHandler(fn) {
   if (typeof fn === "function") __onBotMessage = fn;
 }
@@ -134,7 +135,11 @@ export function useOnboardingAi() {
 
       // ---- finalize ----
       if (a.type === "finalize") {
-        if (draft.stage === "finalizing" || draft.stage === "done") {
+        if (
+          __finalizeInFlight ||
+          draft.stage === "finalizing" ||
+          draft.stage === "done"
+        ) {
           sawFinalize = true;
           continue;
         }
@@ -142,6 +147,7 @@ export function useOnboardingAi() {
         const {
           public: { IMCHATTY_ID },
         } = useRuntimeConfig();
+        __finalizeInFlight = true;
         if (typeof draft.setStage === "function") draft.setStage("finalizing");
         else draft.stage = "finalizing";
         try {
@@ -220,6 +226,8 @@ export function useOnboardingAi() {
               "Hmm, I couldn’t finish saving your profile. Please try again from Settings."
             );
           }
+        } finally {
+          __finalizeInFlight = false;
         }
 
         // prevent any auto-resume logic after finalize
