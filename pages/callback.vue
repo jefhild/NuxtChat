@@ -26,7 +26,17 @@ onMounted(async () => {
     history.replaceState(null, '', location.pathname + location.search)
   }
 
-  // With detectSessionInUrl: true, the SDK already exchanged the code when this page loaded
+  // PKCE magic links can race the auto-exchange; try exchange explicitly if needed
+  const code = typeof route.query.code === 'string' ? route.query.code : null
+  const { data: sessionData } = await supabase.auth.getSession()
+  if (!sessionData?.session && code) {
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+    if (exchangeError) {
+      console.error('[callback] exchangeCodeForSession failed', exchangeError)
+    }
+  }
+
+  // With detectSessionInUrl: true, the SDK may have already exchanged the code
   const { data, error } = await supabase.auth.getUser()
   if (error || !data?.user) {
     console.error('[callback] no user after auto-exchange', error)
