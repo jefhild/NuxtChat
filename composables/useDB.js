@@ -3089,7 +3089,7 @@ export const useDb = () => {
 
 const signInWithOtp = async (
   email,
-  { next = "/chat", redirectTo } = {}
+  { next = "/chat", redirectTo, mode = "magic" } = {}
 ) => {
   const supabase = getClient();
   const config = getConfig();
@@ -3111,18 +3111,34 @@ const signInWithOtp = async (
   );
   const defaultRedirect = `${origin}/callback?next=${encodeURIComponent(next)}`;
   const emailRedirectTo =
-    normalizeRedirect(redirectTo) || envRedirect || defaultRedirect;
+    mode === "magic"
+      ? normalizeRedirect(redirectTo) || envRedirect || defaultRedirect
+      : null;
 
-  console.info("[auth] emailRedirectTo:", emailRedirectTo);
+  if (emailRedirectTo) {
+    console.info("[auth] emailRedirectTo:", emailRedirectTo);
+  } else {
+    console.info("[auth] emailRedirectTo: <none> (OTP mode)");
+  }
+
+  const options = { shouldCreateUser: true };
+  if (emailRedirectTo) options.emailRedirectTo = emailRedirectTo;
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: {
-      emailRedirectTo,
-      shouldCreateUser: true, // optional
-    },
+    options,
   });
   if (error) throw error;
+};
+
+const verifyEmailOtp = async (email, token) => {
+  const supabase = getClient();
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: "email",
+  });
+  return { data, error };
 };
 
 
@@ -3737,6 +3753,7 @@ const signInWithOtp = async (
     authUpdateProfile,
     authSignOut,
     signInWithOtp,
+    verifyEmailOtp,
     signInAnonymously,
     signInWithOAuth,
     linkIdentity,
