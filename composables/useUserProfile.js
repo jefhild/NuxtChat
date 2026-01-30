@@ -148,7 +148,6 @@ export function useUserProfile() {
       const nameChanged = prev.displayname !== next.displayname;
       const bioChanged = prev.bio !== next.bio;
       const taglineChanged = prev.tagline !== next.tagline;
-
       await updateProfile(
         editableProfile.value.user_id,
         editableProfile.value.displayname,

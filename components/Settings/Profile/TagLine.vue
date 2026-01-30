@@ -5,6 +5,7 @@
     :label="$t('components.profile-tagline.label')"
     variant="underlined"
     :rules="[blockedDomainRule, specialCharsRule, minLengthRule, maxLengthRule]"
+    :error-messages="props.errorMessage ? [props.errorMessage] : []"
   ></v-text-field>
 
   <!-- <div v-else>
@@ -24,6 +25,10 @@ const props = defineProps({
   isEditable: {
     type: Boolean,
     required: true,
+  },
+  errorMessage: {
+    type: String,
+    default: "",
   },
 });
 

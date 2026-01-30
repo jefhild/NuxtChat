@@ -1686,26 +1686,44 @@ export const useDb = () => {
     is_private
   ) => {
     const supabase = getClient();
+    const updatePayload = {
+      displayname,
+      tagline,
+      gender_id,
+      status_id,
+      age,
+      bio,
+      country_id,
+      state_id,
+      city_id,
+      avatar_url,
+      site_url,
+      preferred_locale,
+      is_private,
+    };
+
+    // Remove undefined (and null is_private to avoid NOT NULL errors)
+    Object.keys(updatePayload).forEach((key) => {
+      if (updatePayload[key] === undefined) {
+        delete updatePayload[key];
+      }
+    });
+    if (updatePayload.is_private == null) delete updatePayload.is_private;
 
     const { error } = await supabase
       .from("profiles")
-      .update({
-        displayname: displayname,
-        tagline: tagline,
-        gender_id: gender_id,
-        status_id: status_id,
-        age: age,
-        bio: bio,
-        country_id: country_id,
-        state_id: state_id,
-        city_id: city_id,
-        avatar_url: avatar_url,
-        site_url: site_url,
-        preferred_locale: preferred_locale,
-        is_private: is_private,
-      })
+      .update(updatePayload)
       .eq("user_id", id);
-    if (error) throw error;
+    if (error) {
+      console.error("[updateProfile] failed:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        payloadKeys: Object.keys(updatePayload),
+      });
+      throw error;
+    }
   };
 
   async function upsertProfileWithJoins(payload) {

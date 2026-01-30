@@ -28,17 +28,28 @@
       md="6"
       class="d-flex flex-column align-center mt-4 mt-md-0"
     >
-      <v-card class="photo-library-card" elevation="1">
+      <v-card
+        class="photo-library-card"
+        :class="{ 'photo-library-card--disabled': photoLibraryDisabled }"
+        elevation="1"
+      >
         <div class="photo-library-hero">
-          <v-img
-            v-if="heroPhoto"
-            :src="heroPhoto"
-            class="photo-library-hero-image"
-            cover
+          <v-skeleton-loader
+            v-if="photoLibraryDisabled"
+            type="image"
+            class="photo-library-hero-skeleton"
           />
-          <div v-else class="photo-library-hero-placeholder">
-            <v-icon size="40" color="grey-lighten-2">mdi-image-multiple</v-icon>
-          </div>
+          <template v-else>
+            <v-img
+              v-if="heroPhoto"
+              :src="heroPhoto"
+              class="photo-library-hero-image"
+              cover
+            />
+            <div v-else class="photo-library-hero-placeholder">
+              <v-icon size="40" color="grey-lighten-2">mdi-image-multiple</v-icon>
+            </div>
+          </template>
         </div>
         <v-card-text class="photo-library-body">
           <div class="photo-library-strip-wrap">
@@ -47,6 +58,7 @@
               variant="text"
               size="small"
               class="photo-library-chevron left"
+              :disabled="photoLibraryDisabled"
               @click="scrollThumbs(-1)"
             >
               <v-icon size="18">mdi-chevron-left</v-icon>
@@ -57,19 +69,20 @@
                 :key="idx"
                 class="photo-library-slot"
               >
-                <v-card
-                  v-if="item"
-                  variant="outlined"
-                  class="photo-library-thumb"
-                  @click="setHeroFromIndex(idx)"
-                >
-                  <v-img :src="item.url || item.public_url" aspect-ratio="1" cover />
-                </v-card>
-                <v-skeleton-loader
-                  v-else
-                  type="image"
-                  class="photo-library-skeleton"
-                />
+                <template v-if="!photoLibraryDisabled && item">
+                  <v-card
+                    variant="outlined"
+                    class="photo-library-thumb"
+                    @click="setHeroFromIndex(idx)"
+                  >
+                    <v-img
+                      :src="item.url || item.public_url"
+                      aspect-ratio="1"
+                      cover
+                    />
+                  </v-card>
+                </template>
+                <v-skeleton-loader type="image" class="photo-library-skeleton" />
               </div>
             </div>
             <v-btn
@@ -77,6 +90,7 @@
               variant="text"
               size="small"
               class="photo-library-chevron right"
+              :disabled="photoLibraryDisabled"
               @click="scrollThumbs(1)"
             >
               <v-icon size="18">mdi-chevron-right</v-icon>
@@ -88,10 +102,21 @@
             variant="text"
             append-icon="mdi-arrow-expand-right"
             color="blue"
+            :disabled="photoLibraryDisabled"
             @click="$emit('openPhotoLibrary')"
           >
             {{ t("components.photo-library.link") }}
           </v-btn>
+          <span
+            v-if="photoLibraryDisabled"
+            class="photo-library-hint photo-library-hint-link"
+            role="button"
+            tabindex="0"
+            @click="$emit('openLinkEmail')"
+            @keydown.enter.prevent="$emit('openLinkEmail')"
+          >
+            {{ t("components.photo-library.disabled-hint") }}
+          </span>
         </div>
       </v-card>
     </v-col>
@@ -114,6 +139,10 @@ const props = defineProps({
   uploadLoading: Boolean,
   errorMessage: String,
   showPhotoLibrary: Boolean,
+  photoLibraryDisabled: {
+    type: Boolean,
+    default: false,
+  },
   photoLibraryPhotos: {
     type: Array,
     default: () => [],
@@ -126,6 +155,7 @@ defineEmits([
   "randomAvatar",
   "uploadAvatar",
   "openPhotoLibrary",
+  "openLinkEmail",
 ]);
 
 const photoSlots = computed(() => {
@@ -148,6 +178,7 @@ const heroPhoto = computed(() => {
 });
 
 const setHeroFromIndex = (idx) => {
+  if (props.photoLibraryDisabled) return;
   const items = Array.isArray(props.photoLibraryPhotos)
     ? props.photoLibraryPhotos
     : [];
@@ -156,6 +187,7 @@ const setHeroFromIndex = (idx) => {
 };
 
 const scrollThumbs = (direction) => {
+  if (props.photoLibraryDisabled) return;
   const container = thumbsRef.value;
   if (!container) return;
   const step = 68;
@@ -192,6 +224,10 @@ watch(
   background: #fff;
 }
 
+.photo-library-card--disabled {
+  opacity: 0.7;
+}
+
 .photo-library-hero {
   position: relative;
   height: 160px;
@@ -199,6 +235,11 @@ watch(
 }
 
 .photo-library-hero-image {
+  width: 100%;
+  height: 100%;
+}
+
+.photo-library-hero-skeleton {
   width: 100%;
   height: 100%;
 }
@@ -272,9 +313,21 @@ watch(
   padding: 8px 12px 12px;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   min-height: 44px;
+  align-items: center;
+  gap: 8px;
 }
 
 .photo-library-link {
   letter-spacing: 0.02em;
+}
+
+.photo-library-hint {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.photo-library-hint-link {
+  cursor: pointer;
+  text-decoration: underline;
 }
 </style>

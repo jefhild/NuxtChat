@@ -1098,7 +1098,7 @@
       }
     },
     "profile-email-link": {
-      "prompt": "Link an email to secure your chats and pick up where you left off anywhere.",
+      "prompt": "Link your email. Don't miss any messages, just pick up where you left off!",
       "cta": "Link your email",
       "dialog-title": "Link Your Email",
       "dialog-description": "Enter and confirm the email you'd like to attach to this anonymous account. We'll send a confirmation link.",
@@ -1165,6 +1165,7 @@
     },
     "profile-tagline": {
       "label": "Tagline",
+      "required": "Please add a tagline before saving",
       "min-4": "Minimum 4 characters required",
       "max-30": "Maximum 30 characters allowed",
       "less-3-special": "Less than 3 special characters required",
@@ -1244,6 +1245,7 @@
     "photo-library": {
       "title": "Photo library",
       "link": "Photo library",
+      "disabled-hint": "Link your email to unlock",
       "add": "Add photo",
       "delete": "Delete photo",
       "upload": "Upload",

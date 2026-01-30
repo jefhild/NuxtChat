@@ -1076,7 +1076,7 @@
       }
     },
     "profile-email-link": {
-      "prompt": "Associez une adresse e-mail pour sécuriser vos discussions et les reprendre où que vous soyez.",
+      "prompt": "Associez votre e-mail. Ne manquez aucun message, reprenez où vous vous êtes arrêté.",
       "cta": "Associer mon e-mail",
       "dialog-title": "Associer votre e-mail",
       "dialog-description": "Saisissez et confirmez l’adresse e-mail que vous souhaitez lier à ce compte anonyme. Nous vous enverrons un lien de confirmation.",
@@ -1143,6 +1143,7 @@
     },
     "profile-tagline": {
       "label": "Slogan",
+      "required": "Ajoutez un slogan avant d’enregistrer",
       "min-4": "Minimum 4 caractères requis",
       "max-30": "Maximum 30 caractères autorisés",
       "less-3-special": "Moins de 3 caractères spéciaux requis",
@@ -1222,6 +1223,7 @@
     "photo-library": {
       "title": "Bibliothèque de photos",
       "link": "Bibliothèque de photos",
+      "disabled-hint": "Liez votre e-mail pour déverrouiller",
       "add": "Ajouter une photo",
       "delete": "Supprimer une photo",
       "upload": "Téléverser",

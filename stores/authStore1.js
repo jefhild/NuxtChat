@@ -8,17 +8,19 @@ import { useGeoLocationDefaults } from "@/composables/useGeoLocationDefaults";
 
 function resolveAuthStatus({ session, user, profile }) {
   if (!session || !user) return "unauthenticated";
+  const needsOnboarding = !!(
+    !profile ||
+    !profile.displayname ||
+    !profile.age ||
+    !profile.gender_id ||
+    !profile.bio
+  );
   if (user.is_anonymous) {
     if (user.email_confirmed_at) return "authenticated";
-    const complete = !!(
-      profile?.displayname &&
-      profile?.age &&
-      profile?.gender_id
-    );
     if (!profile) return "guest";
-    return complete ? "anon_authenticated" : "onboarding";
+    return needsOnboarding ? "onboarding" : "anon_authenticated";
   }
-  return "authenticated";
+  return needsOnboarding ? "onboarding" : "authenticated";
 }
 
 /**
@@ -305,6 +307,7 @@ export const useAuthStore = defineStore("authStore1", {
         getClient,
         insertProfileFromObject,
         getUserProfileFunctionFromId,
+        updateProfile,
         upsertProfileTranslation,
       } = useDb();
 
@@ -368,12 +371,30 @@ export const useAuthStore = defineStore("authStore1", {
 
       console.log("[finalize] payload", payload);
 
-      const { error } = await insertProfileFromObject(payload);
-      if (error) {
-        const msg = String(error.message || "");
-        const isDuplicate =
-          error.code === "23505" || msg.includes("duplicate key");
-        if (!isDuplicate) throw error;
+      const existingArr = await getUserProfileFunctionFromId(userId);
+      const existing =
+        Array.isArray(existingArr) ? existingArr[0] : existingArr ?? null;
+
+      if (existing?.user_id) {
+        await updateProfile(
+          userId,
+          payload.displayname,
+          payload.tagline,
+          payload.gender_id,
+          payload.status_id ?? null,
+          payload.age,
+          payload.bio,
+          payload.country_id,
+          payload.state_id,
+          payload.city_id,
+          payload.avatar_url ?? existing.avatar_url ?? null,
+          payload.site_url ?? existing.site_url ?? null,
+          payload.preferred_locale ?? existing.preferred_locale ?? null,
+          existing.is_private ?? null
+        );
+      } else {
+        const { error } = await insertProfileFromObject(payload);
+        if (error) throw error;
       }
 
       if (payload.displayname) {

@@ -1075,7 +1075,7 @@
       }
     },
     "profile-email-link": {
-      "prompt": "绑定电子邮箱以保护您的聊天，并可随时随地继续对话。",
+      "prompt": "绑定邮箱。不要错过任何消息，随时从上次离开的地方继续！",
       "cta": "绑定邮箱",
       "dialog-title": "绑定您的邮箱",
       "dialog-description": "请输入并确认您想要绑定到此匿名账户的电子邮箱地址。我们会发送一封确认邮件。",
@@ -1142,6 +1142,7 @@
     },
     "profile-tagline": {
       "label": "标语",
+      "required": "保存前请填写标语",
       "min-4": "至少需要4个字符",
       "max-30": "最多允许30个字符",
       "less-3-special": "需要少于3个特殊字符",
@@ -1221,6 +1222,7 @@
     "photo-library": {
       "title": "照片库",
       "link": "照片库",
+      "disabled-hint": "绑定邮箱后解锁",
       "add": "添加照片",
       "delete": "删除照片",
       "upload": "上传",

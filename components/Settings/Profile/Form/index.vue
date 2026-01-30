@@ -11,13 +11,37 @@
       :displayKey="displayKey"
       :refreshLookingForMenu="refreshLookingForMenu"
       :showPhotoLibrary="showPhotoLibrary"
+      :photoLibraryDisabled="isPhotoLibraryDisabled"
       :photoLibraryPhotos="photoLibraryPreview"
       @openPhotoLibrary="emit('openPhotoLibrary')"
+      @openLinkEmail="openLinkEmailDialog"
       @refreshLookingForDisplay="displayKey++"
       @updateAvatarUrl="updateAvatarUrl"
       @randomAvatar="pickRandomAvatar"
       @uploadAvatar="uploadAvatar"
     />
+    <v-row v-if="shouldOfferEmailLinkPrompt" class="ma-0 pa-0" dense>
+      <v-col cols="12">
+        <v-alert variant="tonal" type="info" density="comfortable">
+          <div
+            class="d-flex flex-column flex-sm-row align-center justify-space-between"
+          >
+            <span class="text-body-2">
+              {{ t("components.profile-email-link.prompt") }}
+            </span>
+            <span
+              class="text-link-btn mt-2 mt-sm-0"
+              role="button"
+              tabindex="0"
+              @click="openLinkEmailDialog"
+              @keydown.enter.prevent="openLinkEmailDialog"
+            >
+              {{ t("components.profile-email-link.cta") }}
+            </span>
+          </div>
+        </v-alert>
+      </v-col>
+    </v-row>
 
     <SettingsProfileFormContent
       :userProfile="editableProfile"
@@ -37,6 +61,7 @@
       :aiBioRemaining="aiBioRemaining"
       :bioMinLength="MIN_BIO_LENGTH"
       :bioErrorMessage="bioErrorMessage"
+      :tagLineErrorMessage="taglineError"
       @update:country="onUpdateCountry"
       @update:state="onUpdateState"
       @update:city="onUpdateCity"
@@ -254,6 +279,15 @@ watch(
   }
 );
 
+watch(
+  () => editableProfile.value?.tagline,
+  (val) => {
+    if (taglineError.value && String(val || "").trim()) {
+      taglineError.value = "";
+    }
+  }
+);
+
 const displayKey = ref(0);
 const refreshLookingForMenu = ref(false);
 
@@ -285,6 +319,7 @@ const aiBioUses = ref(0);
 const randomAvatarLoading = ref(false);
 const avatarUploadLoading = ref(false);
 const avatarError = ref("");
+const taglineError = ref("");
 
 const completionMode = computed(() => {
   return route.query.complete === "1" || route.query.complete === "true";
@@ -328,14 +363,22 @@ const isSiteEditable = computed(() => {
   return props.adminMode || authStore.authStatus === "authenticated";
 });
 
+const isPhotoLibraryDisabled = computed(() => {
+  return authStore.authStatus === "anon_authenticated";
+});
+
 const showPhotoLibrary = computed(() => {
-  return props.adminMode || authStore.authStatus === "authenticated";
+  return (
+    props.adminMode ||
+    authStore.authStatus === "authenticated" ||
+    authStore.authStatus === "anon_authenticated"
+  );
 });
 
 const loadPhotoLibraryPreview = async (
   userId = editableProfile.value?.user_id
 ) => {
-  if (!showPhotoLibrary.value) {
+  if (!showPhotoLibrary.value || isPhotoLibraryDisabled.value) {
     photoLibraryPreview.value = [];
     return;
   }
@@ -469,6 +512,12 @@ const saveChanges = async () => {
     saving.value = false;
     return;
   }
+  if (!String(editableProfile.value?.tagline || "").trim()) {
+    taglineError.value = t("components.profile-tagline.required");
+    saving.value = false;
+    return;
+  }
+  taglineError.value = "";
   if (!editableProfile.value?.avatar_url) {
     avatarError.value = "Please add a profile photo before saving.";
     saving.value = false;

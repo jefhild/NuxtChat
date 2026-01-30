@@ -14,6 +14,7 @@
         <SettingsProfileTagLine
           :tagLine="props.userProfile.tagline ?? '...'"
           :isEditable="props.isEditable"
+          :errorMessage="props.tagLineErrorMessage"
           @updateTagLine="(val) => emit('update:tagLine', val)"
         />
       </v-col>
@@ -124,28 +125,6 @@
         />
       </v-col>
     </v-row>
-    <v-row v-if="props.showEmailLinkPrompt" class="ma-0 pa-0" dense>
-      <v-col cols="12">
-        <v-alert variant="tonal" type="info" density="comfortable">
-          <div
-            class="d-flex flex-column flex-sm-row align-center justify-space-between"
-          >
-            <span class="text-body-2">
-              {{ t("components.profile-email-link.prompt") }}
-            </span>
-            <v-btn
-              variant="text"
-              class="text-link-btn mt-2 mt-sm-0"
-              density="comfortable"
-              @click="emit('linkAnonEmail')"
-            >
-              {{ t("components.profile-email-link.cta") }}
-            </v-btn>
-          </div>
-        </v-alert>
-      </v-col>
-    </v-row>
-
     <v-row class="mt-4" align="center">
       <v-col cols="12" sm="6" class="d-flex justify-start">
         <v-btn
@@ -235,6 +214,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  tagLineErrorMessage: {
+    type: String,
+    default: "",
+  },
 });
 
 const emit = defineEmits([
@@ -283,6 +266,22 @@ const { t } = useI18n();
 
 .settings-profile-form {
   --v-field-label-color: #1e88e5;
+}
+
+:global(.settings-profile-form .v-row) {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+:global(.settings-profile-form .v-col) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+:global(.settings-profile-form .v-field__input),
+:global(.settings-profile-form .v-select__selection-text),
+:global(.settings-profile-form .v-field__field) {
+  font-size: 0.9rem;
 }
 
 :global(.settings-profile-form .v-field__label),
