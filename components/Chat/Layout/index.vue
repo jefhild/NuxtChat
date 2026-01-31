@@ -3,6 +3,7 @@
     <v-container fluid class="d-flex flex-column h-100 min-h-0">
       <!-- Mobile controls: left drawer (Topics) + right drawer (Participants) -->
       <div
+        v-if="showMobileControls"
         class="d-md-none d-flex align-center justify-space-between px-2 py-2 chat-mobile-controls"
       >
         <v-btn
@@ -1179,6 +1180,18 @@ const showMobileActiveAlert = computed(
 const showMobileUnreadAlert = computed(
   () => unreadCount.value > 0 && !leftOpen.value
 );
+const openLeftDrawer = () => {
+  leftOpen.value = true;
+};
+const openRightDrawer = () => {
+  rightOpen.value = true;
+};
+defineExpose({
+  openLeftDrawer,
+  openRightDrawer,
+  showMobileUnreadAlert,
+  showMobileActiveAlert,
+});
 const clearReply = () => {
   replyingToMessage.value = null;
 };
@@ -1591,6 +1604,7 @@ const props = defineProps({
   user: Object,
   userProfile: Object,
   authStatus: { type: String, required: true },
+  showMobileControls: { type: Boolean, default: true },
 });
 const userProfile = computed(() => props.userProfile || null);
 const mePreferredLocale = computed(() =>
