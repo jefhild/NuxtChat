@@ -128,6 +128,9 @@ export default defineNuxtConfig({
         "*/faq",
         "/*/faq",
         "/faq",
+        "*/feeds",
+        "/*/feeds",
+        "/feeds",
         "/*/logout",
         "/logout",
         "/signin",
@@ -308,17 +311,17 @@ export default defineNuxtConfig({
 
       // TEMP: log prerender route counts to diagnose OOM
       const profileCount = dynamicRoutes.filter((r) =>
-        r.includes("/profiles/")
+        r.includes("/profiles/"),
       ).length;
       const articleCount = dynamicRoutes.filter((r) =>
-        r.includes("/articles/")
+        r.includes("/articles/"),
       ).length;
       const peopleCount = dynamicRoutes.filter((r) =>
-        r.includes("/people/")
+        r.includes("/people/"),
       ).length;
       const tagCount = dynamicRoutes.filter((r) => r.includes("/tags/")).length;
       const categoryCount = dynamicRoutes.filter((r) =>
-        r.includes("/categories/")
+        r.includes("/categories/"),
       ).length;
       console.info("prerender totals", {
         total: dynamicRoutes.length,

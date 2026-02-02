@@ -61,6 +61,7 @@ import AdminEngagementRules from "~/components/Admin2/EngagementRules.vue";
 import AdminFaqs from "~/components/Admin2/Faqs.vue";
 import AdminProfileAvatars from "~/components/Admin2/ProfileAvatars.vue";
 import AdminProfilePhotos from "~/components/Admin2/ProfilePhotos.vue";
+import AdminMoodFeedAdmin from "~/components/Admin2/MoodFeedAdmin.vue";
 import PageHeader from "~/components/PageHeader.vue";
 import { useAuthStore } from "@/stores/authStore1";
 
@@ -126,6 +127,11 @@ const items = computed(() => [
     value: "profileAvatars",
   },
   {
+    text: t("pages.admin.sections.moodFeed"),
+    icon: "mdi-comment-question-outline",
+    value: "moodFeed",
+  },
+  {
     text: "Photo Library",
     icon: "mdi-image-multiple",
     value: "profilePhotos",
@@ -187,6 +193,8 @@ const getSectionComponent = (section) => {
       return AdminProfileAvatars;
     case "profilePhotos":
       return AdminProfilePhotos;
+    case "moodFeed":
+      return AdminMoodFeedAdmin;
     default:
       return AdminDashboard;
   }

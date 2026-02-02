@@ -350,6 +350,9 @@
               :me-id="auth.user?.id"
               :peer="chat.selectedUser"
               :blocked-user-ids="blockedUsers"
+              :quick-replies="moodQuickReplies"
+              :show-quick-replies="showMoodQuickReplies"
+              @quick-reply="onMoodQuickReply"
             />
           </div>
 
@@ -1644,6 +1647,97 @@ const canSend = computed(() => {
   return ["anon_authenticated", "authenticated"].includes(auth.authStatus);
 });
 
+const MOOD_MAX_ATTEMPTS = 3;
+const moodPromptBusy = ref(false);
+
+const moodQuickReplies = computed(() => {
+  if (draftStore.moodFeedStage === "confirm") {
+    return [t("onboarding.yes"), t("onboarding.no")];
+  }
+  if (draftStore.moodFeedStage === "prompt") {
+    return [];
+  }
+  return [];
+});
+
+const showMoodQuickReplies = computed(
+  () =>
+    ["authenticated", "anon_authenticated"].includes(auth.authStatus) &&
+    isBotSelected.value &&
+    ["prompt", "confirm"].includes(draftStore.moodFeedStage)
+);
+
+watch(
+  () => auth.authStatus,
+  (status) => {
+    if (["authenticated", "anon_authenticated"].includes(status)) {
+      maybeTriggerMoodPrompt();
+    }
+  }
+);
+
+onMounted(() => {
+  if (["authenticated", "anon_authenticated"].includes(auth.authStatus)) {
+    maybeTriggerMoodPrompt();
+  }
+});
+
+const MOOD_WORDS = {
+  yes: {
+    en: ["yes", "y", "yeah", "yep", "sure", "ok", "okay"],
+    fr: ["oui", "o", "d'accord", "ok"],
+    ru: ["да", "ок", "ok", "хорошо"],
+    zh: ["是", "好", "好的", "行", "可以", "ok"],
+  },
+  no: {
+    en: ["no", "n", "nope", "nah"],
+    fr: ["non", "n"],
+    ru: ["нет", "не"],
+    zh: ["不", "不是", "不对", "不行", "不可以"],
+  },
+  skip: {
+    en: ["skip", "later", "not now"],
+    fr: ["passer", "plus tard", "pas maintenant"],
+    ru: ["пропустить", "позже", "не сейчас"],
+    zh: ["跳过", "稍后", "现在不"],
+  },
+};
+
+const moodLocaleKey = computed(() => normalizeLocale(locale.value) || "en");
+
+function normalizeText(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]+/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function matchesMoodWord(value, group, labelFallback = "") {
+  const norm = normalizeText(value);
+  if (!norm) return false;
+  const lang = moodLocaleKey.value || "en";
+  const words = MOOD_WORDS[group]?.[lang] || [];
+  const label = normalizeText(labelFallback);
+  return words.includes(norm) || (label && norm === label);
+}
+
+function isMoodYes(text) {
+  return matchesMoodWord(text, "yes", t("onboarding.yes"));
+}
+function isMoodNo(text) {
+  return matchesMoodWord(text, "no", t("onboarding.no"));
+}
+function isMoodSkip(text) {
+  return matchesMoodWord(text, "skip", t("onboarding.moodFeed.skip"));
+}
+
+function onMoodQuickReply(label) {
+  if (!label) return;
+  onSend(label, { bypassTranslationPrompt: true });
+}
+
 const usersWithPresence = computed(() => {
   // ——— presence dependency (reactive) ———
   // console.log('[usersWithPresence] src len =', Array.isArray(chat.users) ? chat.users.length : 'n/a');
@@ -2216,6 +2310,11 @@ async function onSend(
     return;
   }
 
+  if (sendingToBot) {
+    const handled = await handleMoodFeedMessage(text);
+    if (handled) return;
+  }
+
   // translate if needed (DM only)
   let translationPayload = null;
   const mode = translationMode || translationPref.value?.mode || "ask";
@@ -2247,7 +2346,7 @@ async function onSend(
     regRef.value?.appendPeerLocal?.(msg, {
       senderId: IMCHATTY_ID,
       senderName: "ImChatty",
-      senderAvatar: "/images/imchatty-avatar.png",
+      senderAvatar: "/images/robot.png",
     });
     setTimeout(() => regRef.value?.setTyping?.(false), 700);
   }
@@ -2317,6 +2416,188 @@ function genderSegmentFromUser(u) {
 function mapCountryToId(countryName) {
   // if you have a lookup already, use it; otherwise pass null to RPC
   return null;
+}
+
+async function pushMoodBotMessage(text) {
+  if (!text || !auth.user?.id) return;
+  if (isBotSelected.value) {
+    regRef.value?.appendPeerLocal?.(text, {
+      senderId: IMCHATTY_ID,
+      senderName: "ImChatty",
+      senderAvatar: "/images/robot.png",
+    });
+  }
+  try {
+    await insertMessage(auth.user.id, IMCHATTY_ID, text);
+    chat.addActivePeer?.(IMCHATTY_ID);
+  } catch (err) {
+    console.warn("[mood-feed] bot message insert failed:", err?.message || err);
+  }
+}
+
+async function fetchMoodPrompt() {
+  try {
+    const res = await $fetch("/api/mood-feed/prompts/random", {
+      query: { locale: locale.value },
+    });
+    if (!res?.promptText) return null;
+    draftStore.setField?.("moodFeedPrompt", res.promptText);
+    if (res.promptKey) {
+      draftStore.setField?.("moodFeedPromptKey", res.promptKey);
+    }
+    return res.promptText;
+  } catch (err) {
+    console.warn("[mood-feed] prompt fetch failed:", err?.message || err);
+    return null;
+  }
+}
+
+function formatMoodPrompt(text) {
+  const trimmed = String(text || "").trim();
+  return trimmed ? `**${trimmed}**` : "";
+}
+
+async function maybeTriggerMoodPrompt() {
+  if (moodPromptBusy.value) return;
+  if (!["authenticated", "anon_authenticated"].includes(auth.authStatus)) return;
+  if (!auth.user?.id) return;
+  if (draftStore.moodFeedStage === "prompt" || draftStore.moodFeedStage === "confirm")
+    return;
+  moodPromptBusy.value = true;
+  try {
+    const needs = await $fetch("/api/mood-feed/needs-prompt");
+    if (!needs?.needsPrompt) return;
+    const promptText =
+      draftStore.moodFeedPrompt && String(draftStore.moodFeedPrompt).trim()
+        ? draftStore.moodFeedPrompt
+        : await fetchMoodPrompt();
+    if (!promptText) return;
+    draftStore.setField?.("moodFeedStage", "prompt");
+    draftStore.setField?.("moodFeedAttempts", 0);
+    draftStore.setField?.("moodFeedAnswer", "");
+    draftStore.setField?.("moodFeedRefined", "");
+    await pushMoodBotMessage(formatMoodPrompt(promptText));
+  } finally {
+    moodPromptBusy.value = false;
+  }
+}
+
+async function createMoodFeedEntry(status) {
+  try {
+    await $fetch("/api/mood-feed/entries", {
+      method: "POST",
+      body: {
+        promptText: draftStore.moodFeedPrompt || null,
+        promptKey: draftStore.moodFeedPromptKey || null,
+        originalText: draftStore.moodFeedAnswer || null,
+        refinedText: draftStore.moodFeedRefined || draftStore.moodFeedAnswer || "",
+        status,
+        locale: locale.value,
+      },
+    });
+    return true;
+  } catch (err) {
+    console.warn("[mood-feed] create entry failed:", err?.message || err);
+    return false;
+  }
+}
+
+async function refineMoodFeedResponse(text) {
+  const trimmed = String(text || "").trim();
+  if (!trimmed) return;
+  if (!draftStore.moodFeedPrompt) {
+    await fetchMoodPrompt();
+  }
+  let refined = trimmed;
+  try {
+    const res = await $fetch("/api/mood-feed/refine", {
+      method: "POST",
+      body: {
+        prompt: draftStore.moodFeedPrompt || "",
+        response: trimmed,
+        locale: locale.value,
+      },
+    });
+    if (res?.refined) refined = String(res.refined).trim() || trimmed;
+  } catch {}
+
+  const attempts = Number(draftStore.moodFeedAttempts || 0) + 1;
+  draftStore.setField?.("moodFeedAttempts", attempts);
+  draftStore.setField?.("moodFeedAnswer", trimmed);
+  draftStore.setField?.("moodFeedRefined", refined);
+  draftStore.setField?.("moodFeedStage", "confirm");
+
+  await pushMoodBotMessage(
+    t("onboarding.moodFeed.confirm", { text: refined })
+  );
+}
+
+async function handleMoodFeedMessage(text) {
+  if (!["authenticated", "anon_authenticated"].includes(auth.authStatus))
+    return false;
+  if (!isBotSelected.value) return false;
+  if (!["prompt", "confirm"].includes(draftStore.moodFeedStage)) return false;
+
+  await regRef.value?.appendLocalAndSend?.(text);
+
+  if (isMoodSkip(text)) {
+    try {
+      await $fetch("/api/mood-feed/skip", { method: "POST" });
+    } catch {}
+    draftStore.setField?.("moodFeedStage", "done");
+    draftStore.setField?.("moodFeedStatus", "skipped");
+    await pushMoodBotMessage(t("onboarding.moodFeed.skipAck"));
+    return true;
+  }
+
+  if (draftStore.moodFeedStage === "prompt") {
+    await refineMoodFeedResponse(text);
+    return true;
+  }
+
+  if (draftStore.moodFeedStage === "confirm") {
+    if (isMoodYes(text)) {
+      const ok = await createMoodFeedEntry("published");
+      draftStore.setField?.("moodFeedStage", "done");
+      draftStore.setField?.(
+        "moodFeedStatus",
+        ok ? "published" : "pending_validation"
+      );
+      await pushMoodBotMessage(
+        ok
+          ? t("onboarding.moodFeed.accepted", {
+              feedUrl: localePath("/feeds"),
+            })
+          : t("onboarding.moodFeed.saveFailed")
+      );
+      return true;
+    }
+    if (isMoodNo(text)) {
+      if ((draftStore.moodFeedAttempts || 0) >= MOOD_MAX_ATTEMPTS) {
+        await createMoodFeedEntry("pending_validation");
+        draftStore.setField?.("moodFeedStage", "done");
+        draftStore.setField?.("moodFeedStatus", "pending_validation");
+        await pushMoodBotMessage(t("onboarding.moodFeed.needsValidation"));
+        return true;
+      }
+      draftStore.setField?.("moodFeedStage", "prompt");
+      await pushMoodBotMessage(t("onboarding.moodFeed.rephrase"));
+      return true;
+    }
+
+    if ((draftStore.moodFeedAttempts || 0) >= MOOD_MAX_ATTEMPTS) {
+      await createMoodFeedEntry("pending_validation");
+      draftStore.setField?.("moodFeedStage", "done");
+      draftStore.setField?.("moodFeedStatus", "pending_validation");
+      await pushMoodBotMessage(t("onboarding.moodFeed.needsValidation"));
+      return true;
+    }
+
+    await refineMoodFeedResponse(text);
+    return true;
+  }
+
+  return false;
 }
 
 async function refreshActiveChats() {
@@ -2420,6 +2701,7 @@ function toggleFilters() {
 .chat-col {
   max-width: 800px;
 }
+
 
 .active-panel-rail {
   --active-rail-width: 34px;

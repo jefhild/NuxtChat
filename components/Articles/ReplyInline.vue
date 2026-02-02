@@ -9,11 +9,11 @@
       density="comfortable"
       :disabled="disabled || loading"
       :counter="500"
-      placeholder="Write a reply…"
+      :placeholder="placeholder"
     />
     <div class="d-flex justify-end ga-2 mt-1">
       <v-btn size="small" variant="text" @click="emit('cancel')" :disabled="loading">Cancel</v-btn>
-      <v-btn size="small" color="primary" :loading="loading" :disabled="disabled" @click="onSubmit">Reply</v-btn>
+      <v-btn size="small" color="primary" :loading="loading" :disabled="disabled" @click="onSubmit">{{ submitLabel }}</v-btn>
     </div>
   </div>
 </template>
@@ -27,6 +27,8 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
   autoFocus: { type: Boolean, default: true },
+  submitLabel: { type: String, default: 'Reply' },
+  placeholder: { type: String, default: 'Write a reply…' },
 })
 const emit = defineEmits(['update:modelValue', 'submit', 'cancel'])
 

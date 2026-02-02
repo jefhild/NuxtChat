@@ -52,6 +52,18 @@
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
     },
+    "feeds": {
+      "heading": "Mood Feed",
+      "subtitle": "Short, honest snapshots from the community.",
+      "composePlaceholder": "Share a short phrase that captures your mood…",
+      "postButton": "Post",
+      "signinNotice": "Sign in to post or reply.",
+      "linkEmailNotice": "Link your email to post or reply.",
+      "empty": "No Mood Feed entries yet.",
+      "replyPlaceholder": "Write a reply...",
+      "replyButton": "Reply",
+      "cancelButton": "Cancel"
+    },
     "about": {
       "heading": "About Us",
       "subtitle": "Learn more about ImChatty — a unique platform for anonymous chatting with real users or AI.",
@@ -389,7 +401,8 @@
         "reports": "Reports",
         "aiBots": "AI Bots",
         "profileAvatars": "Profile Avatars",
-        "faqs": "FAQs"
+        "faqs": "FAQs",
+        "moodFeed": "Mood Feed"
       },
       "faq": {
         "kicker": "FAQ Manager",
@@ -834,6 +847,7 @@
       "imchatty": "ImChatty",
       "blog": "Articles",
       "chat": "Chat",
+      "feeds": "Mood Feed",
       "discussions": "Discussions",
       "settings": "Settings",
       "admin": "Admin",
@@ -1388,6 +1402,15 @@
     "captchaFailed": "CAPTCHA failed. Please try again.",
     "welcomeHeadline": "🎉 Welcome, **{name}**! Here’s your starter bio:",
     "welcomeBioIntro": "Below is a first draft—polish it or keep it as-is.",
-    "welcomeSettings": "✨ Add a photo and refine your profile in [Settings]({settingsUrl}) to get more chats."
+    "welcomeSettings": "✨ Add a photo and refine your profile in [Settings]({settingsUrl}) to get more chats.",
+    "moodFeed": {
+      "confirm": "So you're saying \"{text}\". Is that right?",
+      "rephrase": "No problem—can you rephrase that in a short phrase?",
+      "needsValidation": "We’ll need to validate your Mood Feed entry, so I’ve set it aside for review.",
+      "accepted": "Got it. I posted your Mood Feed entry [here]({feedUrl}).",
+      "saveFailed": "I’ll need to validate your Mood Feed entry before posting it.",
+      "skip": "Skip",
+      "skipAck": "No worries. I’ll ask again later."
+    }
   }
 }

@@ -51,6 +51,18 @@
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
     },
+    "feeds": {
+      "heading": "Mood Feed",
+      "subtitle": "Des instantanés courts et sincères de la communauté.",
+      "composePlaceholder": "Partage une courte phrase qui capture ton humeur…",
+      "postButton": "Publier",
+      "signinNotice": "Connecte-toi pour publier ou répondre.",
+      "linkEmailNotice": "Lie ton e-mail pour publier ou répondre.",
+      "empty": "Aucune entrée Mood Feed pour le moment.",
+      "replyPlaceholder": "Écris une réponse…",
+      "replyButton": "Répondre",
+      "cancelButton": "Annuler"
+    },
     "about": {
       "heading": "À propos de nous",
       "subtitle": "En savoir plus sur ImChatty — une plateforme unique pour discuter anonymement avec de vrais utilisateurs ou une intelligence artificielle.",
@@ -386,7 +398,8 @@
         "reports": "Rapports",
         "aiBots": "Bots IA",
         "profileAvatars": "Avatars de profil",
-        "faqs": "FAQs"
+        "faqs": "FAQs",
+        "moodFeed": "Mood Feed"
       },
       "faq": {
         "kicker": "FAQ Manager",
@@ -818,6 +831,7 @@
       "imchatty": "ImChatty",
       "blog": "Articles",
       "chat": "Chat",
+      "feeds": "Mood Feed",
       "discussions": "Discussions",
       "settings": "Paramètres",
       "admin": "Panneau Admin",
@@ -1366,6 +1380,15 @@
     "captchaFailed": "Échec du CAPTCHA. Veuillez réessayer.",
     "welcomeHeadline": "🎉 Bienvenue, **{name}** ! Voici ta bio de départ :",
     "welcomeBioIntro": "C’est un premier jet — améliore-le ou garde-le tel quel.",
-    "welcomeSettings": "✨ Ajoute une photo et peaufine ton profil dans les [Réglages]({settingsUrl}) pour plus d’échanges."
+    "welcomeSettings": "✨ Ajoute une photo et peaufine ton profil dans les [Réglages]({settingsUrl}) pour plus d’échanges.",
+    "moodFeed": {
+      "confirm": "Donc tu dis \"{text}\". C’est bien ça ?",
+      "rephrase": "Pas de souci — peux-tu reformuler en une courte phrase ?",
+      "needsValidation": "Nous devons valider ton entrée Mood Feed, donc je l’ai mise de côté pour examen.",
+      "accepted": "Compris. J’ai publié ton entrée Mood Feed [ici]({feedUrl}).",
+      "saveFailed": "Je dois valider ton entrée Mood Feed avant de la publier.",
+      "skip": "Passer",
+      "skipAck": "Pas de souci. Je redemanderai plus tard."
+    }
   }
 }

@@ -16,6 +16,14 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
     stage: "idle", // 'idle' | 'consent' | 'collecting' | 'confirm' | 'finalizing' | 'done'
     updatedAt: null,
     thread: [], // ephemeral onboarding conversation
+    // Mood Feed onboarding (auth-only)
+    moodFeedStage: "idle", // 'idle' | 'prompt' | 'confirm' | 'done'
+    moodFeedPrompt: "",
+    moodFeedPromptKey: "",
+    moodFeedAnswer: "",
+    moodFeedRefined: "",
+    moodFeedAttempts: 0,
+    moodFeedStatus: "", // 'published' | 'pending_validation'
   }),
 
   getters: {
@@ -80,6 +88,13 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
         "consented",
         "stage",
         "thread",
+        "moodFeedStage",
+        "moodFeedPrompt",
+        "moodFeedPromptKey",
+        "moodFeedAnswer",
+        "moodFeedRefined",
+        "moodFeedAttempts",
+        "moodFeedStatus",
       ]);
 
       if (!allowed.has(key)) return;
@@ -112,6 +127,13 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
       this.cityId = null;
       this.ip = null;
       this.thread = [];
+      this.moodFeedStage = "idle";
+      this.moodFeedPrompt = "";
+      this.moodFeedPromptKey = "";
+      this.moodFeedAnswer = "";
+      this.moodFeedRefined = "";
+      this.moodFeedAttempts = 0;
+      this.moodFeedStatus = "";
       this.stage = "idle";
       this.updatedAt = null;
       try {
@@ -138,6 +160,13 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           "stage",
           "updatedAt",
           "thread",
+          "moodFeedStage",
+          "moodFeedPrompt",
+          "moodFeedPromptKey",
+          "moodFeedAnswer",
+          "moodFeedRefined",
+          "moodFeedAttempts",
+          "moodFeedStatus",
         ]) {
           if (k in data) this[k] = data[k];
         }
@@ -162,6 +191,13 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           stage,
           updatedAt,
           thread,
+          moodFeedStage,
+          moodFeedPrompt,
+          moodFeedPromptKey,
+          moodFeedAnswer,
+          moodFeedRefined,
+          moodFeedAttempts,
+          moodFeedStatus,
         } = this;
         localStorage.setItem("onboardingDraft", JSON.stringify({
           displayName,
@@ -177,6 +213,13 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           stage,
           updatedAt,
           thread,
+          moodFeedStage,
+          moodFeedPrompt,
+          moodFeedPromptKey,
+          moodFeedAnswer,
+          moodFeedRefined,
+          moodFeedAttempts,
+          moodFeedStatus,
         }));
       } catch {
         /* ignore */

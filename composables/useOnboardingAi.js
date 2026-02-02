@@ -4,6 +4,8 @@ import { useChatStore } from "~/stores/chatStore";
 import { useDb } from "@/composables/useDB";
 import { useAiQuota } from "@/composables/useAiQuota";
 import { useI18n } from "vue-i18n";
+import { useTypingStore } from "@/stores/typingStore";
+import { useLocalePath } from "#imports";
 
 // const localePath = useLocalePath() // if run on client/setup
 // const settingsUrl = localePath('/settings') // e.g. /fr/settings
@@ -19,13 +21,45 @@ export function setOnboardingBotMessageHandler(fn) {
 
 export function useOnboardingAi() {
   const { locale, t } = useI18n();
+  const localePath = useLocalePath();
   const draft = useOnboardingDraftStore(); 
   const auth = useAuthStore();
   const chat = useChatStore();
   const db = useDb();
+  const typingStore = useTypingStore();
   // const { tryConsume } = useAiQuota();
 
   const IMCHATTY_ID = "a3962087-516b-48df-a3ff-3b070406d832";
+  const MOOD_MAX_ATTEMPTS = 3;
+
+  const normalizeLocale = (value) => {
+    const code = String(value || "").trim().toLowerCase();
+    if (!code) return "en";
+    if (code.startsWith("zh")) return "zh";
+    if (code.startsWith("fr")) return "fr";
+    if (code.startsWith("ru")) return "ru";
+    return "en";
+  };
+
+  const YES_WORDS = {
+    en: ["yes", "y", "yeah", "yep", "sure", "ok", "okay"],
+    fr: ["oui", "o", "d'accord", "ok"],
+    ru: ["да", "ок", "ok", "хорошо"],
+    zh: ["是", "好", "好的", "行", "可以", "ok"],
+  };
+  const NO_WORDS = {
+    en: ["no", "n", "nope", "nah"],
+    fr: ["non", "n"],
+    ru: ["нет", "не"],
+    zh: ["不", "不是", "不对", "不行", "不可以"],
+  };
+
+  const shouldCollectMoodFeed = () => !!auth.user?.id;
+
+  const isMoodFeedActive = () =>
+    shouldCollectMoodFeed() &&
+    draft.moodFeedStage &&
+    draft.moodFeedStage !== "done";
 
   function ensureBotSelected() {
     chat.initializeDefaultUser(auth.authStatus);
@@ -143,94 +177,7 @@ export function useOnboardingAi() {
           sawFinalize = true;
           continue;
         }
-        // console.log("[onboarding][finalize] received action");
-        const {
-          public: { IMCHATTY_ID },
-        } = useRuntimeConfig();
-        __finalizeInFlight = true;
-        if (typeof draft.setStage === "function") draft.setStage("finalizing");
-        else draft.stage = "finalizing";
-        try {
-          // 1) Persist the profile
-          await auth.finalizeOnboarding({
-            displayname: draft.displayName,
-            age: draft.age,
-            gender_id: draft.genderId,
-            bio: draft.bio,
-            tagline: draft.tagline,
-            country_id: draft.countryId ?? null,
-            state_id: draft.stateId ?? null,
-            city_id: draft.cityId ?? null,
-            ip: draft.ip ?? null,
-          });
-          // console.log("[onboarding][finalize] DB write done");
-
-          // 2) Resolve the receiverId (the user's AUTH UID)
-          // Prefer the profile’s user_id; fall back to the session/user id
-          const receiverId =
-            auth.userProfile?.user_id ??
-            auth.session?.user?.id ??
-            auth.user?.id ??
-            null;
-
-          // 3) Insert the welcome message as a real chat message from ImChatty
-          const { insertMessage } = useDb();
-          if (
-            IMCHATTY_ID &&
-            receiverId &&
-            typeof insertMessage === "function"
-          ) {
-            const rawName =
-              draft.displayName ??
-              auth.userProfile?.displayname ??
-              auth.session?.user?.user_metadata?.displayname ??
-              "";
-
-            const rawBio = draft.bio ?? "";
-
-            const display =
-              String(rawName)
-                .trim()
-                .replace(/\s+/g, " ") // collapse weird spacing
-                .slice(0, 40) || // keep it reasonable
-              "there"; // friendly fallback
-
-            const settingsUrl = "/settings";
-            const welcome =
-              `${t("onboarding.welcomeHeadline", { name: display })} ` +
-              `[[br]] ` +
-              `${t("onboarding.welcomeBioIntro")} ` +
-              `[[divider]] ` +
-              `_${rawBio}_ ` +
-              `[[divider]] ` +
-              `${t("onboarding.welcomeSettings", { settingsUrl })}`;
-
-            await insertMessage(receiverId, IMCHATTY_ID, welcome);
-          }
-
-          // 4) Mark onboarding complete in the draft store
-          if (typeof draft.setStage === "function") draft.setStage("done");
-          else draft.stage = "done";
-
-          // (Optional) If your UI needs the bot thread selected for any follow-up UI:
-          if (typeof ensureBotSelected === "function") {
-            try {
-              ensureBotSelected();
-            } catch {}
-          }
-        } catch (err) {
-          if (typeof draft.setStage === "function") draft.setStage("collecting");
-          else draft.stage = "collecting";
-          if (typeof pushBotMessage === "function") {
-            pushBotMessage(
-              "Hmm, I couldn’t finish saving your profile. Please try again from Settings."
-            );
-          }
-        } finally {
-          __finalizeInFlight = false;
-        }
-
-        // prevent any auto-resume logic after finalize
+        await handleFinalize();
         sawFinalize = true;
         continue;
       }
@@ -247,6 +194,276 @@ export function useOnboardingAi() {
       } catch (e) {
       }
     }
+  }
+
+  async function performFinalize() {
+    if (__finalizeInFlight) return;
+    const {
+      public: { IMCHATTY_ID },
+    } = useRuntimeConfig();
+    __finalizeInFlight = true;
+    if (typeof draft.setStage === "function") draft.setStage("finalizing");
+    else draft.stage = "finalizing";
+    try {
+      await auth.finalizeOnboarding({
+        displayname: draft.displayName,
+        age: draft.age,
+        gender_id: draft.genderId,
+        bio: draft.bio,
+        tagline: draft.tagline,
+        country_id: draft.countryId ?? null,
+        state_id: draft.stateId ?? null,
+        city_id: draft.cityId ?? null,
+        ip: draft.ip ?? null,
+      });
+
+      const receiverId =
+        auth.userProfile?.user_id ??
+        auth.session?.user?.id ??
+        auth.user?.id ??
+        null;
+
+      const { insertMessage } = useDb();
+      if (IMCHATTY_ID && receiverId && typeof insertMessage === "function") {
+        const rawName =
+          draft.displayName ??
+          auth.userProfile?.displayname ??
+          auth.session?.user?.user_metadata?.displayname ??
+          "";
+
+        const rawBio = draft.bio ?? "";
+
+        const display =
+          String(rawName)
+            .trim()
+            .replace(/\s+/g, " ")
+            .slice(0, 40) || "there";
+
+        const settingsUrl = "/settings";
+        const welcome =
+          `${t("onboarding.welcomeHeadline", { name: display })} ` +
+          `[[br]] ` +
+          `${t("onboarding.welcomeBioIntro")} ` +
+          `[[divider]] ` +
+          `_${rawBio}_ ` +
+          `[[divider]] ` +
+          `${t("onboarding.welcomeSettings", { settingsUrl })}`;
+
+        await insertMessage(receiverId, IMCHATTY_ID, welcome);
+        await maybeStartMoodFeedAfterWelcome(receiverId);
+      }
+
+      if (typeof draft.setStage === "function") draft.setStage("done");
+      else draft.stage = "done";
+
+      if (typeof ensureBotSelected === "function") {
+        try {
+          ensureBotSelected();
+        } catch {}
+      }
+    } catch (err) {
+      if (typeof draft.setStage === "function") draft.setStage("collecting");
+      else draft.stage = "collecting";
+      if (typeof pushBotMessage === "function") {
+        pushBotMessage(
+          "Hmm, I couldn’t finish saving your profile. Please try again from Settings."
+        );
+      }
+    } finally {
+      __finalizeInFlight = false;
+    }
+  }
+
+  function getYesLabel() {
+    return t("onboarding.yes", "Yes");
+  }
+  function getNoLabel() {
+    return t("onboarding.no", "No");
+  }
+
+  function isYes(text) {
+    const norm = String(text || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]+/gu, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!norm) return false;
+    const localeKey = normalizeLocale(locale.value);
+    const list = new Set([
+      getYesLabel().toLowerCase(),
+      ...(YES_WORDS[localeKey] || []),
+    ]);
+    return list.has(norm);
+  }
+
+  function isNo(text) {
+    const norm = String(text || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]+/gu, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!norm) return false;
+    const localeKey = normalizeLocale(locale.value);
+    const list = new Set([
+      getNoLabel().toLowerCase(),
+      ...(NO_WORDS[localeKey] || []),
+    ]);
+    return list.has(norm);
+  }
+
+  async function ensureMoodFeedPrompt() {
+    if (draft.moodFeedPrompt && String(draft.moodFeedPrompt).trim()) {
+      return draft.moodFeedPrompt;
+    }
+    try {
+      const res = await $fetch("/api/mood-feed/prompts/random", {
+        query: { locale: locale.value },
+      });
+      if (res?.promptText) {
+        draft.setField?.("moodFeedPrompt", res.promptText);
+        if (res.promptKey) {
+          draft.setField?.("moodFeedPromptKey", res.promptKey);
+        }
+        return res.promptText;
+      }
+    } catch {}
+    return "";
+  }
+
+  const formatMoodPrompt = (text) => {
+    const trimmed = String(text || "").trim();
+    return trimmed ? `**${trimmed}**` : "";
+  };
+
+  async function startMoodFeedPrompt() {
+    const prompt = await ensureMoodFeedPrompt();
+    if (!prompt) return false;
+    draft.setField?.("moodFeedStage", "prompt");
+    pushBotMessage({ text: formatMoodPrompt(prompt) });
+    return true;
+  }
+
+  async function refineMoodFeedResponse(text) {
+    const trimmed = String(text || "").trim();
+    if (!trimmed) return;
+    let refined = trimmed;
+    const prompt = await ensureMoodFeedPrompt();
+    try {
+      const res = await $fetch("/api/mood-feed/refine", {
+        method: "POST",
+        body: {
+          prompt,
+          response: trimmed,
+          locale: locale?.value || "en",
+        },
+      });
+      if (res?.refined) refined = String(res.refined).trim() || trimmed;
+    } catch {
+      refined = trimmed;
+    }
+
+    const attempts = Number(draft.moodFeedAttempts || 0) + 1;
+    draft.setField?.("moodFeedAttempts", attempts);
+    draft.setField?.("moodFeedAnswer", trimmed);
+    draft.setField?.("moodFeedRefined", refined);
+    draft.setField?.("moodFeedStage", "confirm");
+
+    const confirmText = t("onboarding.moodFeed.confirm", { text: refined });
+    pushBotMessage({
+      text: confirmText,
+      quickReplies: [getYesLabel(), getNoLabel()],
+    });
+  }
+
+  async function createMoodFeedEntry(status) {
+    try {
+      const payload = {
+        promptText: draft.moodFeedPrompt || null,
+        promptKey: draft.moodFeedPromptKey || null,
+        originalText: draft.moodFeedAnswer || null,
+        refinedText: draft.moodFeedRefined || draft.moodFeedAnswer || "",
+        status,
+        locale: locale?.value || "en",
+      };
+      await $fetch("/api/mood-feed/entries", {
+        method: "POST",
+        body: payload,
+      });
+      return true;
+    } catch (e) {
+      console.warn("[mood-feed] create entry failed:", e?.message || e);
+      return false;
+    }
+  }
+
+  async function acceptMoodFeed() {
+    const ok = await createMoodFeedEntry("published");
+    draft.setField?.("moodFeedStage", "done");
+    draft.setField?.("moodFeedStatus", ok ? "published" : "pending_validation");
+    if (ok) {
+      pushBotMessage({
+        text: t("onboarding.moodFeed.accepted", { feedUrl: localePath("/feeds") }),
+      });
+    } else {
+    pushBotMessage({
+      text: t("onboarding.moodFeed.saveFailed"),
+    });
+    }
+    await performFinalize();
+  }
+
+  async function queueMoodFeedForValidation() {
+    await createMoodFeedEntry("pending_validation");
+    draft.setField?.("moodFeedStage", "done");
+    draft.setField?.("moodFeedStatus", "pending_validation");
+    pushBotMessage({
+      text: t("onboarding.moodFeed.needsValidation"),
+    });
+    await performFinalize();
+  }
+
+  async function handleFinalize() {
+    await performFinalize();
+  }
+
+  async function handleMoodFeedMessage(text) {
+    if (!isMoodFeedActive()) return false;
+
+    const stage = draft.moodFeedStage || "idle";
+    if (stage === "prompt") {
+      await refineMoodFeedResponse(text);
+      return true;
+    }
+
+    if (stage === "confirm") {
+      if (isYes(text)) {
+        await acceptMoodFeed();
+        return true;
+      }
+      if (isNo(text)) {
+        if ((draft.moodFeedAttempts || 0) >= MOOD_MAX_ATTEMPTS) {
+          await queueMoodFeedForValidation();
+          return true;
+        }
+        draft.setField?.("moodFeedStage", "prompt");
+        pushBotMessage({
+          text: t("onboarding.moodFeed.rephrase"),
+        });
+        return true;
+      }
+
+      // Treat other input as a new response
+      if ((draft.moodFeedAttempts || 0) >= MOOD_MAX_ATTEMPTS) {
+        await queueMoodFeedForValidation();
+        return true;
+      }
+      await refineMoodFeedResponse(text);
+      return true;
+    }
+
+    return false;
   }
 
   async function callApi(body) {
@@ -420,6 +637,10 @@ if (!allowed) {
       // Before consent (or no uid yet): skip quota entirely so onboarding can proceed.
     }
 
+    if (await handleMoodFeedMessage(text)) {
+      return;
+    }
+
     const required = ["displayName", "age", "genderId", "bio"];
     const summary = {
       displayName: draft.displayName ?? null,
@@ -456,3 +677,41 @@ if (!allowed) {
 
   return { resume, sendUserMessage };
 }
+  async function maybeStartMoodFeedAfterWelcome(receiverId) {
+    if (!shouldCollectMoodFeed()) return false;
+    if (!receiverId) return false;
+    const stage = draft.moodFeedStage || "idle";
+    if (stage !== "idle" && stage !== "done") return false;
+    if (stage === "done") return false;
+
+    try {
+      const needs = await $fetch("/api/mood-feed/needs-prompt");
+      if (needs && needs.needsPrompt === false) return false;
+    } catch {
+      // ignore and continue to prompt
+    }
+
+    const prompt = await ensureMoodFeedPrompt();
+    if (!prompt) return false;
+    draft.setField?.("moodFeedStage", "prompt");
+    draft.setField?.("moodFeedAttempts", 0);
+    draft.setField?.("moodFeedAnswer", "");
+    draft.setField?.("moodFeedRefined", "");
+
+    const { insertMessage } = useDb();
+    let typingTimer = null;
+    try {
+      typingStore.set(IMCHATTY_ID, true);
+      await new Promise((resolve) => {
+        typingTimer = setTimeout(resolve, 900);
+      });
+      await insertMessage(receiverId, IMCHATTY_ID, formatMoodPrompt(prompt));
+      chat.addActivePeer?.(IMCHATTY_ID);
+    } catch (err) {
+      console.warn("[mood-feed] prompt insert failed:", err?.message || err);
+    } finally {
+      if (typingTimer) clearTimeout(typingTimer);
+      typingStore.clear(IMCHATTY_ID);
+    }
+    return true;
+  }

@@ -51,6 +51,18 @@
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
     },
+    "feeds": {
+      "heading": "Mood Feed",
+      "subtitle": "来自社区的简短真诚快照。",
+      "composePlaceholder": "分享一句能代表你心情的短句…",
+      "postButton": "发布",
+      "signinNotice": "登录后才能发布或回复。",
+      "linkEmailNotice": "绑定邮箱后才能发布或回复。",
+      "empty": "暂时还没有 Mood Feed 内容。",
+      "replyPlaceholder": "写下你的回复…",
+      "replyButton": "回复",
+      "cancelButton": "取消"
+    },
     "about": {
       "heading": "关于我们",
       "subtitle": "了解更多关于 ImChatty —— 一个独特的平台，让您可以与真人或人工智能匿名聊天。",
@@ -386,7 +398,8 @@
         "reports": "报告",
         "aiBots": "AI 机器人",
         "profileAvatars": "个人头像",
-        "faqs": "FAQs"
+        "faqs": "FAQs",
+        "moodFeed": "心情动态"
       },
       "faq": {
         "kicker": "FAQ Manager",
@@ -818,6 +831,7 @@
       "imchatty": "ImChatty",
       "blog": "文章",
       "chat": "聊天",
+      "feeds": "Mood Feed",
       "discussions": "讨论",
       "settings": "设置",
       "admin": "管理面板",
@@ -1365,6 +1379,15 @@
     "captchaFailed": "CAPTCHA 验证失败，请重试。",
     "welcomeHeadline": "🎉 欢迎，**{name}**！先看看这版简介：",
     "welcomeBioIntro": "这是初稿——你可以微调或直接使用。",
-    "welcomeSettings": "✨ 想要更多聊天？去[设置页面]({settingsUrl})添加照片并完善资料。"
+    "welcomeSettings": "✨ 想要更多聊天？去[设置页面]({settingsUrl})添加照片并完善资料。",
+    "moodFeed": {
+      "confirm": "所以你是说“{text}”。对吗？",
+      "rephrase": "没问题——你能用一句更短的话重新表述吗？",
+      "needsValidation": "我们需要先审核你的 Mood Feed 内容，我已先把它放到审核队列。",
+      "accepted": "明白了。我已发布你的 Mood Feed 内容 [在这里]({feedUrl})。",
+      "saveFailed": "发布前需要先审核你的 Mood Feed 内容。",
+      "skip": "跳过",
+      "skipAck": "没问题。我稍后再问。"
+    }
   }
 }

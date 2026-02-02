@@ -12,15 +12,32 @@
           <ChatLayoutTypingBubble />
         </template>
         <template v-else>
-          <ChatLayoutChatBubble
-            :from-me="item.sender_id === meId"
-            :html="render(item._displayContent)"
-            :time="formatDisplayTime(item.created_at)"
-            :name="item._name"
-            :avatar="item._avatar"
-            :status="item._status"
-            :show-meta="Boolean(item._name || item._avatar || item.created_at)"
-          />
+          <div>
+            <ChatLayoutChatBubble
+              :from-me="item.sender_id === meId"
+              :html="render(item._displayContent)"
+              :time="formatDisplayTime(item.created_at)"
+              :name="item._name"
+              :avatar="item._avatar"
+              :status="item._status"
+              :show-meta="Boolean(item._name || item._avatar || item.created_at)"
+            />
+            <div
+              v-if="showQuickReplies && isLastBotMessage(item)"
+              class="chat-quick-replies"
+            >
+              <v-chip
+                v-for="q in quickReplies"
+                :key="q"
+                color="primary"
+                variant="outlined"
+                size="small"
+                @click="$emit('quick-reply', q)"
+              >
+                {{ q }}
+              </v-chip>
+            </div>
+          </div>
         </template>
       </template>
     </v-virtual-scroll>
@@ -49,13 +66,16 @@ const typingStore = useTypingStore();
 const { init: initMd, render } = useMarkdown();
 
 const IMCHATTY_ID = "a3962087-516b-48df-a3ff-3b070406d832";
-const IMCHATTY_AVATAR = "/images/imchatty-avatar.png";
+const IMCHATTY_AVATAR = "/images/robot.png";
 
 const props = defineProps({
   meId: { type: String, required: true },
   peer: { type: Object, default: null }, // should contain displayname/id
   blockedUserIds: { type: Array, default: () => [] },
+  quickReplies: { type: Array, default: () => [] },
+  showQuickReplies: { type: Boolean, default: false },
 });
+defineEmits(["quick-reply"]);
 
 const db = useDb();
 const msgs = useMessagesStore();
@@ -124,6 +144,24 @@ const items = computed(() => {
     ? [...base, { _typing: true, id: `typing-${peerId.value}` }]
     : base;
 });
+
+const lastBotMessageId = computed(() => {
+  const list = items.value || [];
+  for (let i = list.length - 1; i >= 0; i -= 1) {
+    const it = list[i];
+    if (it?._typing) continue;
+    if (String(it.sender_id) === String(peerId.value)) return it.id || it._peerTempKey || null;
+  }
+  return null;
+});
+
+function isLastBotMessage(item) {
+  if (!item) return false;
+  const botId = String(peerId.value);
+  if (String(item.sender_id) !== botId) return false;
+  const id = item.id || item._peerTempKey || null;
+  return !!id && id === lastBotMessageId.value;
+}
 
 const peerId = computed(() =>
   String(props.peer?.user_id || props.peer?.id || "")
@@ -469,6 +507,14 @@ watch(
   font-size: 12px;
   color: #555;
   margin-left: 4px;
+}
+
+.chat-quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 8px;
+  padding-left: 42px;
 }
 @keyframes blink {
   0%,

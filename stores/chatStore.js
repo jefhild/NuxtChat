@@ -46,7 +46,7 @@ export const useChatStore = defineStore("chatStore", () => {
           displayname: "ImChatty",
           tagline: "Your helpful guide",
           gender_id: 3,
-          avatar_url: "/images/imchatty-avatar.png",
+          avatar_url: "/images/robot.png",
         },
         ...users.value,
       ];

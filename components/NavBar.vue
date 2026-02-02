@@ -35,6 +35,11 @@
                 {{ $t("components.navbar.blog") }}
               </NuxtLink>
             </li>
+            <li>
+              <NuxtLink :to="localPath('/feeds')" class="nav2__link" exact>
+                {{ $t("components.navbar.feeds") || "Mood Feed" }}
+              </NuxtLink>
+            </li>
             <li v-if="userProfile?.is_admin">
               <NuxtLink :to="localPath('/admin')" class="nav2__link" exact>
                 {{ $t("components.navbar.admin") }}
@@ -96,6 +101,9 @@
               </v-list-item>
               <v-list-item :to="localPath('/articles')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.blog") }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item :to="localPath('/feeds')" link @click="closeMobileMenu">
+                <v-list-item-title>{{ $t("components.navbar.feeds") || "Mood Feed" }}</v-list-item-title>
               </v-list-item>
               <v-list-item v-if="userProfile?.is_admin" :to="localPath('/admin')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.admin") }}</v-list-item-title>
