@@ -122,7 +122,6 @@ export default defineNuxtConfig({
         "/callback/*",
         "*/chat",
         "/chat",
-        "/^/chat/articles(/.*)?$/",
         "*/about",
         "/*/about",
         "/about",

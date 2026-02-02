@@ -220,8 +220,8 @@
                 prepend-icon="mdi-chat-outline"
                 :title="item.title"
                 :subtitle="formatStatSubtitle(item, discussionLabel)"
-                :to="statLink(item.slug)"
-                :link="Boolean(item.slug)"
+                :to="statLink(item)"
+                :link="Boolean(statLink(item))"
               />
             </v-list-group>
             <v-list-group value="upvotes">
@@ -239,8 +239,8 @@
                 prepend-icon="mdi-newspaper-variant-outline"
                 :title="item.title"
                 :subtitle="formatStatSubtitle(item, item.type === 'thread' ? discussionLabel : articleLabel)"
-                :to="statLink(item.slug)"
-                :link="Boolean(item.slug)"
+                :to="statLink(item)"
+                :link="Boolean(statLink(item))"
               />
             </v-list-group>
           </v-list>
@@ -400,8 +400,11 @@ const formatStatSubtitle = (item, label) => {
   }
 };
 
-const statLink = (slug) =>
-  slug ? localPath(`/chat/articles/${slug}`) : undefined;
+const statLink = (item) => {
+  const slug = item?.articleSlug ?? item?.article?.slug ?? item?.slug;
+  if (!slug) return undefined;
+  return `${localPath(`/articles/${slug}`)}#discussion`;
+};
 
 const galleryItems = computed(() => {
   const items = Array.isArray(props.photoGalleryPhotos)

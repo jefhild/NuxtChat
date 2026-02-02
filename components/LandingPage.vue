@@ -162,7 +162,7 @@
                 color="primary"
                 class="hero-btn"
                 size="large"
-                :to="localPath('/chat/articles')"
+                :to="localPath('/chat')"
               >
                 {{ $t("pages.home.landing_page.get_chatting_now") }}
               </v-btn>

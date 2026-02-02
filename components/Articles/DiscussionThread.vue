@@ -9,14 +9,6 @@
           {{ subtitleText }}
         </div>
       </div>
-      <v-btn
-        v-if="threadKey"
-        variant="text"
-        size="small"
-        :to="localePath(`/chat/articles/${encodeURIComponent(threadKey)}`)"
-      >
-        Open full discussion
-      </v-btn>
     </div>
 
     <v-skeleton-loader

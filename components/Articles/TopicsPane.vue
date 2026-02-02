@@ -25,6 +25,12 @@ const cardImageFor = (t) => {
   if (t?.botAvatarUrl) return t.botAvatarUrl
   return '/images/article-image.webp'
 }
+
+const discussionPathFor = (t) => {
+  const slug = t?.article?.slug || t?.slug
+  if (!slug) return undefined
+  return `${props.localePath(`/articles/${slug}`)}#discussion`
+}
 </script>
 
 <template>
@@ -34,7 +40,7 @@ const cardImageFor = (t) => {
       <NuxtLink
         v-for="t in topics"
         :key="t.id"
-        :to="localePath(`/chat/articles/${t.slug}`)"
+        :to="discussionPathFor(t)"
         class="topic-card-link"
         @click="emit('select', t)"
       >
@@ -80,8 +86,8 @@ const cardImageFor = (t) => {
         :key="t.id"
         :active="t.slug === slug"
         class="cursor-pointer"
-        :to="localePath(`/chat/articles/${t.slug}`)"
-        link
+        :to="discussionPathFor(t)"
+        :link="Boolean(discussionPathFor(t))"
         @click="emit('select', t)"
       >
         <template #prepend>

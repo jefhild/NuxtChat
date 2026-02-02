@@ -131,8 +131,9 @@
                 class="hero-chat-btn"
                 :to="
                   localPath(
-                    '/chat/articles/' + encodeURIComponent(chatThreadKey || '')
+                    `/articles/${article?.slug || ''}`
                   )
+                    + '#discussion'
                 "
                 :disabled="!chatThreadKey"
                 :aria-label="$t('pages.articles.detail.go_to_discussion')"
@@ -275,8 +276,8 @@
       <v-col cols="12" class="text-center"> </v-col>
     </v-row>
 
-    <v-row class="mt-2">
-      <v-col cols="12" class="mx-auto" style="max-width: 80%">
+    <v-row class="mt-2" id="discussion">
+      <v-col cols="12" class="mx-auto article-thread-col">
         <ArticlesDiscussionThread :thread-key="chatThreadKey" />
       </v-col>
     </v-row>
@@ -897,6 +898,11 @@ const formatDate = (date) =>
   width: 100%;
   line-height: 1.7;
   font-size: 1rem;
+}
+
+.article-thread-col {
+  max-width: none;
+  width: 100%;
 }
 
 .unstyled-link {

@@ -49,7 +49,7 @@
           <!-- {{ chatThreadId }} -->
           <NuxtLink
             v-if="chatThreadId"
-            :to="localPath(`/chat/articles/${chatThreadId}`)"
+            :to="`${localPath(`/articles/${article.slug}`)}#discussion`"
             class="discuss-link"
             @click.stop
           >

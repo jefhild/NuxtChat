@@ -19,16 +19,6 @@
         <nav class="nav2__links d-none d-md-flex" aria-label="Primary navigation">
           <ul class="nav2__list">
             <li>
-              <NuxtLink :to="localPath('/articles')" class="nav2__link" exact>
-                {{ $t("components.navbar.blog") }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink :to="localPath('/chat/articles')" class="nav2__link" exact>
-                {{ $t("components.navbar.discussions") }}
-              </NuxtLink>
-            </li>
-            <li>
               <NuxtLink
                 :to="localPath('/chat')"
                 :class="['nav2__link', { 'nav2__link--chat': hasUnread }]"
@@ -38,6 +28,11 @@
                 <span v-if="hasUnread" class="nav2__badge" aria-hidden="true">
                   {{ unreadLabel }}
                 </span>
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink :to="localPath('/articles')" class="nav2__link" exact>
+                {{ $t("components.navbar.blog") }}
               </NuxtLink>
             </li>
             <li v-if="userProfile?.is_admin">
@@ -87,12 +82,6 @@
             </template>
 
             <v-list aria-label="Mobile Navigation">
-              <v-list-item :to="localPath('/articles')" link @click="closeMobileMenu">
-                <v-list-item-title>{{ $t("components.navbar.blog") }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item :to="localPath('/chat/articles')" link @click="closeMobileMenu">
-                <v-list-item-title>{{ $t("components.navbar.discussions") }}</v-list-item-title>
-              </v-list-item>
               <v-list-item :to="localPath('/chat')" link @click="closeMobileMenu">
                 <v-list-item-title class="nav2__mobile-title">
                   {{ $t("components.navbar.chat") }}
@@ -104,6 +93,9 @@
                     {{ unreadLabel }}
                   </span>
                 </v-list-item-title>
+              </v-list-item>
+              <v-list-item :to="localPath('/articles')" link @click="closeMobileMenu">
+                <v-list-item-title>{{ $t("components.navbar.blog") }}</v-list-item-title>
               </v-list-item>
               <v-list-item v-if="userProfile?.is_admin" :to="localPath('/admin')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.admin") }}</v-list-item-title>
