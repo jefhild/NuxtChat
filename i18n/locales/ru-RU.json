@@ -54,6 +54,19 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "Короткие и честные заметки от сообщества.",
+      "meta": {
+        "title": "Mood Feed | Анонимные настроения сообщества - ImChatty",
+        "description": "Короткие и честные обновления настроения от сообщества ImChatty. Читайте быстрые заметки, отвечайте анонимно и делитесь своим настроением.",
+        "ogTitle": "Mood Feed: честные заметки сообщества",
+        "ogType": "website",
+        "ogUrl": "https://imchatty.com/feeds",
+        "ogDescription": "Смотрите короткие сообщения о настроении и присоединяйтесь к разговору анонимно.",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Mood Feed от ImChatty",
+        "twitterDescription": "Короткие и честные обновления настроения от сообщества. Читайте, отвечайте и делитесь своим.",
+        "twitterImage": "https://imchatty.com/images/robot.png"
+      },
       "composePlaceholder": "Поделитесь короткой фразой, отражающей ваше настроение…",
       "postButton": "Опубликовать",
       "signinNotice": "Войдите, чтобы публиковать и отвечать.",

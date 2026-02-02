@@ -55,6 +55,19 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "Short, honest snapshots from the community.",
+      "meta": {
+        "title": "Mood Feed | Anonymous Community Check-ins - ImChatty",
+        "description": "Browse short, honest mood updates from the ImChatty community. Read quick snapshots, reply anonymously, and share how you're feeling.",
+        "ogTitle": "Mood Feed: Honest Community Check-ins",
+        "ogType": "website",
+        "ogUrl": "https://imchatty.com/feeds",
+        "ogDescription": "See quick mood posts from the community and join the conversation anonymously.",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "ImChatty Mood Feed",
+        "twitterDescription": "Short, honest mood updates from the community. Read, reply, and share yours.",
+        "twitterImage": "https://imchatty.com/images/robot.png"
+      },
       "composePlaceholder": "Share a short phrase that captures your mood…",
       "postButton": "Post",
       "signinNotice": "Sign in to post or reply.",

@@ -54,6 +54,19 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "来自社区的简短真诚快照。",
+      "meta": {
+        "title": "Mood Feed | 匿名社区心情动态 - ImChatty",
+        "description": "浏览 ImChatty 社区的简短心情更新。阅读快速快照，匿名回复并分享你的感受。",
+        "ogTitle": "Mood Feed：社区真诚心情动态",
+        "ogType": "website",
+        "ogUrl": "https://imchatty.com/feeds",
+        "ogDescription": "查看社区的快速心情帖子，并匿名加入交流。",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "ImChatty Mood Feed",
+        "twitterDescription": "来自社区的简短心情更新。阅读、回复并分享你的心情。",
+        "twitterImage": "https://imchatty.com/images/robot.png"
+      },
       "composePlaceholder": "分享一句能代表你心情的短句…",
       "postButton": "发布",
       "signinNotice": "登录后才能发布或回复。",

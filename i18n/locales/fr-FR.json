@@ -54,6 +54,19 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "Des instantanés courts et sincères de la communauté.",
+      "meta": {
+        "title": "Mood Feed | Humeurs anonymes de la communauté - ImChatty",
+        "description": "Parcourez de courts messages d'humeur de la communauté ImChatty. Lisez des instantanés, répondez anonymement et partagez ce que vous ressentez.",
+        "ogTitle": "Mood Feed : humeurs sincères de la communauté",
+        "ogType": "website",
+        "ogUrl": "https://imchatty.com/feeds",
+        "ogDescription": "Découvrez de rapides messages d'humeur de la communauté et rejoignez la conversation anonymement.",
+        "ogImage": "https://imchatty.com/images/robot.png",
+        "twitterCard": "summary_large_image",
+        "twitterTitle": "Mood Feed d'ImChatty",
+        "twitterDescription": "De courtes mises à jour d'humeur de la communauté. Lisez, répondez et partagez la vôtre.",
+        "twitterImage": "https://imchatty.com/images/robot.png"
+      },
       "composePlaceholder": "Partage une courte phrase qui capture ton humeur…",
       "postButton": "Publier",
       "signinNotice": "Connecte-toi pour publier ou répondre.",

@@ -65,6 +65,8 @@ const { locale, t } = useI18n();
 const auth = useAuthStore();
 const localPath = useLocalePath();
 
+useSeoI18nMeta("feeds");
+
 const threads = ref([]);
 const loading = ref(true);
 const canPost = computed(() => auth.authStatus === "authenticated");
