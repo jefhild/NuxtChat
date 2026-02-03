@@ -1194,7 +1194,7 @@
       "label": "Tagline",
       "required": "Please add a tagline before saving",
       "min-4": "Minimum 4 characters required",
-      "max-30": "Maximum 30 characters allowed",
+      "max-45": "Maximum 45 characters allowed",
       "less-3-special": "Less than 3 special characters required",
       "no-domain": "Domain names or links are not allowed"
     },

@@ -53,11 +53,15 @@ export default defineEventHandler(async (event) => {
   const model = config.OPENAI_MODEL || "gpt-4o-mini";
 
   const sys = [
-    "Rewrite the user's response into a very short, clever mood phrase.",
+    "Rewrite the user's response into a very short, direct, interesting mood phrase.",
+    "Preserve the core meaning and target; do not soften or change intent.",
+    "Avoid cutesy metaphors, puns, or playful framing unless the tone explicitly calls for it.",
     "It must clearly answer the prompt but should not repeat the user's words.",
-    "Keep it playful and a little funny. 4-10 words max.",
+    "4-10 words max. Plain text only.",
+    "Sound human and natural. Avoid AI-ish phrasing, formulaic patterns, or over-clever slogans.",
+    "Prefer simple, specific, conversational wording over abstract or ornate phrasing.",
     "Avoid quotes, hashtags, emojis, and punctuation spam.",
-    "Return plain text only.",
+    "If tone is 'serious', be blunt, plain, and literal (no jokes or whimsy).",
     `Language: ${locale}.`,
     `Tone: ${tone}.`,
   ].join("\n");

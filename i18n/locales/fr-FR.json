@@ -1172,7 +1172,7 @@
       "label": "Slogan",
       "required": "Ajoutez un slogan avant d’enregistrer",
       "min-4": "Minimum 4 caractères requis",
-      "max-30": "Maximum 30 caractères autorisés",
+      "max-45": "Maximum 45 caractères autorisés",
       "less-3-special": "Moins de 3 caractères spéciaux requis",
       "no-domain": "Les noms de domaine ou liens ne sont pas autorisés"
     },

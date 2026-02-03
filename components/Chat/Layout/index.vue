@@ -932,7 +932,7 @@ import { useOnboardingAi } from "~/composables/useOnboardingAi";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
 import { useDisplay } from "vuetify";
 import { useDb } from "@/composables/useDB";
-import { useLocalePath } from "#imports";
+import { useLocalePath, useRoute } from "#imports";
 import { useAiQuota } from "~/composables/useAiQuota";
 import { useTabFilters } from "@/composables/useTabFilters";
 import { useI18n } from "vue-i18n";
@@ -2869,4 +2869,5 @@ function toggleFilters() {
       0 0 16px rgba(220, 38, 38, 0.25);
   }
 }
+
 </style>

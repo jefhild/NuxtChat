@@ -270,7 +270,7 @@ Return ONLY the bio text, no quotes.
   }
 }
 
-function sanitizeTagline(value, { maxChars = 30, minChars = 4 } = {}) {
+function sanitizeTagline(value, { maxChars = 45, minChars = 4 } = {}) {
   if (typeof value !== "string") return "";
   const SPECIAL_CHARS_RE = /[!@#$%^&*(),.?":{}|<>]/g;
   let text = value
@@ -285,7 +285,7 @@ function sanitizeTagline(value, { maxChars = 30, minChars = 4 } = {}) {
   return text;
 }
 
-function buildTaglineFallback({ keywords = [], locale = "en", maxChars = 30 }) {
+function buildTaglineFallback({ keywords = [], locale = "en", maxChars = 45 }) {
   const cleaned = (keywords || [])
     .map((s) => String(s || "").trim())
     .filter(Boolean)
@@ -317,7 +317,7 @@ async function generateTaglineFromKeywords({
   apiKey,
   keywords = [],
   locale = "en",
-  maxChars = 30,
+  maxChars = 45,
   minChars = 4,
 }) {
   const keywordList = (arr = []) =>
@@ -734,7 +734,7 @@ export default defineEventHandler(async (event) => {
           apiKey,
           keywords,
           locale: localeCode,
-          maxChars: 30,
+          maxChars: 45,
           minChars: 4,
         });
         return {
@@ -897,7 +897,7 @@ export default defineEventHandler(async (event) => {
             apiKey,
             keywords,
             locale: localeCode,
-            maxChars: 30,
+            maxChars: 45,
             minChars: 4,
           });
           return {
@@ -1133,7 +1133,7 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
         apiKey,
         keywords,
         locale: bioLocale,
-        maxChars: 30,
+        maxChars: 45,
         minChars: 4,
       });
       if (taglineText) {
@@ -1278,7 +1278,7 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
           apiKey,
           keywords,
           locale: localeCode,
-          maxChars: 30,
+          maxChars: 45,
           minChars: 4,
         });
         actions = [

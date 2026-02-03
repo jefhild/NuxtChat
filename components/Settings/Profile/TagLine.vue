@@ -43,7 +43,7 @@ const minLengthRule = (value) => {
 };
 
 const maxLengthRule = (value) => {
-  return value.length <= 30 || t("components.profile-tagline.max-30");
+  return value.length <= 45 || t("components.profile-tagline.max-45");
 };
 
 // Rule to check for special characters
