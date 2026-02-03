@@ -1,6 +1,14 @@
 import { DEFAULT_USER_INSTRUCTIONS } from "~/server/utils/newsmeshRewrite";
 
 const MAX_SOURCE_CHARS = 6000;
+const HUMAN_TONE_INSTRUCTIONS = `
+Write like a human editor, not a model:
+- Vary sentence length and structure; avoid formulaic openers and closers.
+- Prefer concrete, specific language over generic commentary.
+- Avoid meta phrasing like "this article," "the piece," or "in conclusion."
+- Do not overuse hedging ("may", "might", "could") unless the source warrants it.
+- Keep the persona voice natural and distinct; no buzzwordy or overly polished phrasing.
+`.trim();
 
 export type ManualRewriteInput = {
   title: string;
@@ -54,7 +62,10 @@ export const buildManualPrompt = (input: {
   article: ManualRewriteInput;
   extraInstructions?: string;
 }) => {
-  const baseInstructions = [DEFAULT_USER_INSTRUCTIONS.trim()];
+  const baseInstructions = [
+    DEFAULT_USER_INSTRUCTIONS.trim(),
+    HUMAN_TONE_INSTRUCTIONS,
+  ];
   if (input.extraInstructions) {
     baseInstructions.push(`Editor notes: ${input.extraInstructions}`);
   }

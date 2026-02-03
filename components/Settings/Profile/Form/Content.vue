@@ -19,10 +19,11 @@
         />
       </v-col>
       <v-col cols="12" sm="6" md="4" class="px-1 py-0">
-        <SettingsProfileSite
-          :siteUrl="props.userProfile.site_url ?? ''"
-          :isEditable="props.isSiteEditable"
-          @updateSite="(val) => emit('update:siteUrl', val)"
+        <SettingsProfileLanguage
+          :selectedLocale="props.userProfile.preferred_locale ?? 'en'"
+          :locales="props.locales"
+          :isEditable="props.isEditable"
+          @updateLocale="(val) => emit('update:preferredLocale', val)"
         />
       </v-col>
     </v-row>
@@ -81,11 +82,10 @@
         />
       </v-col>
       <v-col cols="12" sm="6" md="4" class="px-1 py-0">
-        <SettingsProfileLanguage
-          :selectedLocale="props.userProfile.preferred_locale ?? 'en'"
-          :locales="props.locales"
-          :isEditable="props.isEditable"
-          @updateLocale="(val) => emit('update:preferredLocale', val)"
+        <SettingsProfileSite
+          :siteUrl="props.userProfile.site_url ?? ''"
+          :isEditable="props.isSiteEditable"
+          @updateSite="(val) => emit('update:siteUrl', val)"
         />
       </v-col>
       <v-col

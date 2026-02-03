@@ -77,15 +77,34 @@
         <v-expansion-panel-text class="profile-details">
           <v-list class="profile-details-tree" density="compact" nav>
             <v-list-item
-              v-if="localized.tagline"
+              v-if="localized.tagline || defaultLanguageLabel"
               prepend-icon="mdi-tag-outline"
             >
               <template #title>
-                <div class="profile-details-row">
-                  <span class="profile-details-label">
-                    {{ $t("components.profile-details.tagline-label") }}:
-                  </span>
-                  <span class="profile-details-value">{{ localized.tagline }}</span>
+                <div class="profile-details-row profile-details-row--split">
+                  <div
+                    v-if="localized.tagline"
+                    class="profile-details-split-item"
+                  >
+                    <span class="profile-details-label">
+                      {{ $t("components.profile-details.tagline-label") }}:
+                    </span>
+                    <span class="profile-details-value">
+                      {{ localized.tagline }}
+                    </span>
+                  </div>
+                  <div
+                    v-if="defaultLanguageLabel"
+                    class="profile-details-split-item"
+                  >
+                    <span class="profile-details-label">
+                      <v-icon size="14" class="mr-1">mdi-translate</v-icon>
+                      {{ $t("components.profile-language.default") }}:
+                    </span>
+                    <span class="profile-details-value">
+                      {{ defaultLanguageLabel }}
+                    </span>
+                  </div>
                 </div>
               </template>
             </v-list-item>
@@ -117,19 +136,6 @@
                   <span class="profile-details-body">
                     {{ localized.bio }}
                   </span>
-                </div>
-              </template>
-            </v-list-item>
-            <v-list-item
-              v-if="defaultLanguageLabel"
-              prepend-icon="mdi-translate"
-            >
-              <template #title>
-                <div class="profile-details-row">
-                  <span class="profile-details-label">
-                    {{ $t("components.profile-language.default") }}:
-                  </span>
-                  <span class="profile-details-value">{{ defaultLanguageLabel }}</span>
                 </div>
               </template>
             </v-list-item>
@@ -527,6 +533,34 @@ const galleryDisplayItems = computed(() => {
   grid-template-columns: 96px 1fr;
   align-items: start;
   column-gap: 8px;
+}
+
+.profile-details-row--split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.profile-details-split-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.profile-details-split-item .profile-details-label {
+  min-width: auto;
+}
+
+.profile-details-split-item .profile-details-value {
+  text-align: left;
+}
+
+@media (max-width: 600px) {
+  .profile-details-row--split {
+    grid-template-columns: 1fr;
+  }
 }
 
 .profile-details-about .profile-details-row--stack {
