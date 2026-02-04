@@ -1,8 +1,11 @@
 // server/api/aiGenerateBio.post.js
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 
 export default defineEventHandler(async (event) => {
-  const { OPENAI_API_KEY } = useRuntimeConfig();
+  const config = useRuntimeConfig();
+  const { client: openai, apiKey } = getOpenAIClient({
+    runtimeConfig: config,
+  });
   const body = await readBody(event);
 
   // Accept both string and array for keywords
@@ -24,14 +27,12 @@ export default defineEventHandler(async (event) => {
         .filter(Boolean);
 
   // If no key, return a safe fallback instead of erroring the UI
-  if (!OPENAI_API_KEY) {
+  if (!apiKey || !openai) {
     const fallback = locale.startsWith("fr")
       ? "Accro aux cafés, amateur de jeux de mots et randonneur du dimanche. Si tu ris facilement, on s’entendra bien."
       : "Coffee-fueled pun appreciator and weekend hiker. If you laugh easily, we’ll get along great.";
     return { ok: true, bio: fallback };
   }
-
-  const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
   const prompt = `
 Write a short ${tone} dating-style bio (max ${maxChars} characters).

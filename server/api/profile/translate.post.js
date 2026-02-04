@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 
 const CJK_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/;
@@ -102,7 +102,12 @@ export default defineEventHandler(async (event) => {
       return { ok: false, error: "Translation limit reached." };
     }
 
-    if (!config.OPENAI_API_KEY || !targetLocales.length) {
+    const { client: openai, apiKey, model } = getOpenAIClient({
+      runtimeConfig: config,
+      model: config.OPENAI_MODEL || "gpt-4.1-mini",
+    });
+
+    if (!apiKey || !openai || !targetLocales.length) {
       return { ok: true, translated: [] };
     }
 
@@ -117,9 +122,6 @@ export default defineEventHandler(async (event) => {
         },
         { onConflict: "user_id,day" }
       );
-
-    const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
-    const model = config.OPENAI_MODEL || "gpt-4.1-mini";
 
     const translated = [];
 

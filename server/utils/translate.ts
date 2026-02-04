@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 
 const CJK_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/;
 const CYRILLIC_RE = /[\u0400-\u04ff\u0500-\u052f]/;
@@ -63,7 +63,12 @@ export const translateText = async ({
 
   const fallbackSource = normalizedHint || detectLocaleFallback(trimmed);
 
-  if (!config?.OPENAI_API_KEY) {
+  const { client: openai, apiKey, model } = getOpenAIClient({
+    config,
+    model: config?.OPENAI_MODEL || "gpt-4.1-mini",
+  });
+
+  if (!apiKey || !openai) {
     return {
       ok: true,
       sourceLocale: fallbackSource,
@@ -71,9 +76,6 @@ export const translateText = async ({
       engine: "fallback",
     };
   }
-
-  const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
-  const model = config.OPENAI_MODEL || "gpt-4.1-mini";
 
   const response = await openai.chat.completions.create({
     model,

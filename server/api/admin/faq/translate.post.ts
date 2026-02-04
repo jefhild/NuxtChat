@@ -1,4 +1,5 @@
-import OpenAI from "openai";
+import type OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 
 const sanitizeJsonResponse = (input = "") => {
@@ -88,7 +89,11 @@ const translateTitle = async (
 export default defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
-    if (!config.OPENAI_API_KEY) {
+    const { client: openai, apiKey, model } = getOpenAIClient({
+      runtimeConfig: config,
+      model: config.OPENAI_MODEL || "gpt-4.1-mini",
+    });
+    if (!apiKey || !openai) {
       setResponseStatus(event, 400);
       return { success: false, error: "OPENAI_API_KEY is not configured" };
     }
@@ -107,8 +112,6 @@ export default defineEventHandler(async (event) => {
     }
 
     const supabase = await getServiceRoleClient(event);
-    const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
-    const model = config.OPENAI_MODEL || "gpt-4.1-mini";
 
     if (type === "entry") {
       const { data: sourceRow, error: sourceError } = await supabase

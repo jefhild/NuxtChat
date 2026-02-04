@@ -17,16 +17,31 @@ export default defineEventHandler(async (event) => {
     cfg.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  const { data, error } = await supa
-    .from("profiles")
-    .select("user_id")
-    .gte("last_active", cutoffIso);
+  const [{ data: presenceData, error: presenceError }, { data: profileData, error: profileError }] =
+    await Promise.all([
+      supa
+        .from("presence")
+        .select("user_id")
+        .gte("last_seen_at", cutoffIso),
+      supa
+        .from("profiles")
+        .select("user_id")
+        .gte("last_active", cutoffIso),
+    ]);
 
-  if (error) {
-    throw createError({ statusCode: 500, statusMessage: error.message });
+  if (presenceError || profileError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: (presenceError || profileError).message,
+    });
   }
 
-  const ids = (data || []).map((row) => row.user_id).filter(Boolean);
+  const ids = [
+    ...(presenceData || []).map((row) => row.user_id),
+    ...(profileData || []).map((row) => row.user_id),
+  ].filter(Boolean);
 
-  return { ids, minutes, cutoff: cutoffIso };
+  const uniqueIds = Array.from(new Set(ids));
+
+  return { ids: uniqueIds, minutes, cutoff: cutoffIso };
 });

@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import sharp from "sharp";
 import { createClient } from "@supabase/supabase-js";
 import { createError, defineEventHandler, readBody } from "h3";
@@ -48,12 +48,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig();
-  const apiKey = config.openaiApiKey || config.OPENAI_API_KEY;
-  if (!apiKey) {
+  const { client: openai, apiKey } = getOpenAIClient({
+    runtimeConfig: config,
+  });
+  if (!apiKey || !openai) {
     throw createError({ statusCode: 500, statusMessage: "Missing OpenAI key" });
   }
-
-  const openai = new OpenAI({ apiKey });
   const prompt = buildPrompt({ displayname, gender, age, bio });
 
   const hashString = (input) => {

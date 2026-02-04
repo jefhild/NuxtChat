@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 
 const sanitizeJsonResponse = (input = "") => {
@@ -26,7 +26,11 @@ const normalizeLocale = (value: unknown) =>
 export default defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig();
-    if (!config.OPENAI_API_KEY) {
+    const { client: openai, apiKey, model } = getOpenAIClient({
+      runtimeConfig: config,
+      model: config.OPENAI_MODEL || "gpt-4.1-mini",
+    });
+    if (!apiKey || !openai) {
       setResponseStatus(event, 400);
       return { success: false, error: "OPENAI_API_KEY is not configured" };
     }
@@ -105,9 +109,6 @@ export default defineEventHandler(async (event) => {
         if (row?.locale) existingLocales.add(String(row.locale));
       });
     }
-
-    const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
-    const model = config.OPENAI_MODEL || "gpt-4.1-mini";
 
     const translated: string[] = [];
     const skipped: string[] = [];

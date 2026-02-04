@@ -1,5 +1,5 @@
 // server/api/aiChat.post.js
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import mustache from "mustache";
 import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
 
@@ -10,7 +10,10 @@ export default defineEventHandler(async (event) => {
   const debug = isDev || query.debug === "1";
 
   try {
-    if (!config.OPENAI_API_KEY) {
+    const { client: openai, apiKey } = getOpenAIClient({
+      runtimeConfig: config,
+    });
+    if (!apiKey || !openai) {
       console.error("[aiChat] Missing OPENAI_API_KEY");
       throw createError({
         statusCode: 500,
@@ -124,8 +127,6 @@ export default defineEventHandler(async (event) => {
       )}"\n`;
     }
 
-
-    const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
     const response = await openai.chat.completions.create({
       model: persona.model || "gpt-4o-mini",

@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 
@@ -88,10 +88,11 @@ export default defineEventHandler(async (event) => {
   );
 
   const config = useRuntimeConfig(event);
-  const apiKey = config.OPENAI_API_KEY || process.env.OPENAI_API_KEY;
-  if (apiKey) {
-    const openai = new OpenAI({ apiKey });
-    const model = config.OPENAI_MODEL || "gpt-4o-mini";
+  const { client: openai, apiKey, model } = getOpenAIClient({
+    runtimeConfig: config,
+    model: config.OPENAI_MODEL || "gpt-4o-mini",
+  });
+  if (apiKey && openai) {
     const targets = SUPPORTED_LOCALES.filter((l) => l !== sourceLocale);
     for (const targetLocale of targets) {
       try {

@@ -1,12 +1,15 @@
 // server/api/aiOnboarding.js
 import { defineEventHandler, readBody, getRequestHeader } from "h3";
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import { useDb } from "@/composables/useDB";
 
 const config = useRuntimeConfig();
-const apiKey = config.OPENAI_API_KEY || process.env.OPENAI_API_KEY; // belt & suspenders
-const model = config.OPENAI_MODEL || process.env.OPENAI_MODEL || "gpt-4.1-mini";
-const preferAI = !!(config.OPENAI_API_KEY || process.env.OPENAI_API_KEY);
+const { client: openaiClient, apiKey, model: defaultModel } = getOpenAIClient({
+  runtimeConfig: config,
+});
+const model =
+  config.OPENAI_MODEL || process.env.OPENAI_MODEL || defaultModel || "gpt-4.1-mini";
+const preferAI = !!apiKey;
 const canUseAI = !!apiKey; // true if a private key is available on the server
 
 const STRINGS = {
@@ -219,7 +222,10 @@ async function generateBioFromKeywords({
     });
   }
 
-  const openai = new OpenAI({ apiKey });
+  const openai = openaiClient;
+  if (!openai) {
+    throw new Error("OPENAI_API_KEY misconfigured");
+  }
 
   const prompt = `
 Write a short ${tone} dating-style bio (max ${maxChars} characters).
@@ -331,7 +337,10 @@ async function generateTaglineFromKeywords({
     return buildTaglineFallback({ keywords, locale, maxChars });
   }
 
-  const openai = new OpenAI({ apiKey });
+  const openai = openaiClient;
+  if (!openai) {
+    throw new Error("OPENAI_API_KEY misconfigured");
+  }
 
   const prompt = `
 Write a short profile tagline (between ${minChars} and ${maxChars} characters).
@@ -926,7 +935,10 @@ export default defineEventHandler(async (event) => {
   // ------------------------------------------------------------------
   // (C) OpenAI path
   // ------------------------------------------------------------------
-  const client = new OpenAI({ apiKey });
+  const client = openaiClient;
+  if (!client) {
+    throw new Error("OPENAI_API_KEY misconfigured");
+  }
   const MODEL = model;
 
   const system = `You are the Onboarding Orchestrator for a chat app. Language for all bot_message outputs: ${localeCode}.

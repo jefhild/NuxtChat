@@ -1,10 +1,9 @@
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
-
-  const openai = new OpenAI({
-    apiKey: config.OPENAI_API_KEY,
+  const { client: openai, apiKey } = getOpenAIClient({
+    runtimeConfig: config,
   });
 
   const body = await readBody(event);
@@ -23,6 +22,9 @@ export default defineEventHandler(async (event) => {
 
   if (!userMessage) {
     throw createError({ statusCode: 400, message: "User message is required" });
+  }
+  if (!apiKey || !openai) {
+    throw createError({ statusCode: 500, message: "OPENAI_API_KEY misconfigured" });
   }
   const questionHints = {
     0: 'Return a single **one-word** pseudonym (no spaces or symbols), like: { "answer": "ShadowWolf" }. Reject multiple words or blank values by returning { "answer": "Invalid" }.',

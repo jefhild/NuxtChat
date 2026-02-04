@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import mustache from "mustache";
 import {
   AI_PERSONA_SELECT,
@@ -121,6 +121,9 @@ You are now contributing rewritten news briefs for the Newsmesh editorial workfl
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const { client: openai, apiKey } = getOpenAIClient({
+    runtimeConfig: config,
+  });
   if (!config.OPENAI_API_KEY) {
     setResponseStatus(event, 500);
     return { success: false, error: "OPENAI_API_KEY is not configured" };
@@ -213,7 +216,9 @@ export default defineEventHandler(async (event) => {
       articles.map((article) => [article.id, article] as const)
     );
 
-    const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
+    if (!apiKey || !openai) {
+      throw new Error("OPENAI_API_KEY is not configured");
+    }
     const systemPrompt = buildSystemPrompt(persona);
 
     const results: Array<{

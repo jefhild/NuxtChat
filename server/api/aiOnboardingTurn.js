@@ -1,5 +1,5 @@
 // server/api/aiOnboardingTurn.post.js
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import { useDb } from "@/composables/useDB";
 
 const DISPLAYNAME_MAX = 40;
@@ -57,6 +57,9 @@ async function validateDisplayName(supa, value) {
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const { client: openai, apiKey } = getOpenAIClient({
+    runtimeConfig: config,
+  });
   const { getServerClientFrom } = useDb();
   let supa = null;
   try {
@@ -94,7 +97,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // If no API key, graceful fallback (still respects chip policy)
-  if (!config.OPENAI_API_KEY) {
+  if (!apiKey || !openai) {
     return {
       ok: true,
       utterance:
@@ -111,7 +114,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
+    // openai client already resolved above
 
     const sys = `
 You are ImChatty's onboarding assistant. Help complete the user's minimum profile data.

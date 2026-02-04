@@ -1,6 +1,6 @@
 import { useDb } from "@/composables/useDB";
 import { serverSupabaseUser } from "#supabase/server";
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 
 export default defineEventHandler(async (event) => {
   // const user = event.context?.auth?.user || null;
@@ -428,13 +428,15 @@ async function generateWelcomeText({ supa, threadId, locale = "en" }) {
 
   const config = useRuntimeConfig();
   // unify on one key name in nuxt.config.ts: runtimeConfig: { openaiApiKey: process.env.OPENAI_API_KEY }
-  const apiKey = config.openaiApiKey || config.OPENAI_API_KEY;
+  const { client: openai, apiKey, model } = getOpenAIClient({
+    runtimeConfig: config,
+    model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+  });
 
   console.log("[join.post] Using OpenAI:", Boolean(apiKey));
 
-  if (apiKey) {
+  if (apiKey && openai) {
     try {
-      const openai = new OpenAI({ apiKey });
       const controller = new AbortController();
       const timeout = setTimeout(() => {
         console.log("[join.post] OpenAI call aborted by timeout");
@@ -466,7 +468,7 @@ async function generateWelcomeText({ supa, threadId, locale = "en" }) {
 
       const resp = await openai.responses.create(
         {
-          model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+          model,
           input: [
             { role: "system", content: system },
             { role: "user", content: user },

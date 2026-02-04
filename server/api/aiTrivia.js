@@ -1,10 +1,10 @@
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 
 export default defineEventHandler(async (event) =>{
 	const config = useRuntimeConfig();
-	const openai = new OpenAI({
-		apiKey: config.OPENAI_API_KEY, // Store your key securely in environment variables
-	  });
+	const { client: openai, apiKey } = getOpenAIClient({
+		runtimeConfig: config,
+	});
 	
 	const body = await readBody(event);
 	console.log("Server received body:", body);
@@ -14,6 +14,9 @@ export default defineEventHandler(async (event) =>{
 	if (!userInput)
 	{
 		throw createError({ statusCode: 400, message: "keywords are required" });
+	}
+	if (!apiKey || !openai) {
+		throw createError({ statusCode: 500, message: "OPENAI_API_KEY misconfigured" });
 	}
 
 	const systemPrompt = `You are a trivia master. You have a vast knowledge of random facts and information.`

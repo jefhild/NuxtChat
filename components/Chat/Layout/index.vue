@@ -955,6 +955,8 @@ const recentActiveLoading = ref(false);
 let recentActiveTimer = null;
 const RECENT_ACTIVE_MINUTES = 10;
 const RECENT_ACTIVE_POLL_MS = 5 * 60 * 1000;
+const AWAY_NOTICE_COOLDOWN_MS = 15 * 60 * 1000;
+const AWAY_NOTICE_STORAGE_KEY = "awayNoticeCooldown:v1";
 
 const route = useRoute();
 const router = useRouter();
@@ -1002,6 +1004,7 @@ const translationPref = ref(null);
 const translationPrefLoading = ref(false);
 const pendingSendText = ref("");
 const pendingTranslatePeerId = ref(null);
+const awayNoticeMap = ref(null);
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
@@ -1025,6 +1028,48 @@ const filters = reactive({
 const { sendUserMessage } = useOnboardingAi();
 
 const { tabFilters, canShow, setMany } = useTabFilters();
+
+function loadAwayNoticeMap() {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(AWAY_NOTICE_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveAwayNoticeMap(map) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      AWAY_NOTICE_STORAGE_KEY,
+      JSON.stringify(map || {})
+    );
+  } catch {}
+}
+
+function getAwayNoticeMap() {
+  if (!awayNoticeMap.value) awayNoticeMap.value = loadAwayNoticeMap();
+  return awayNoticeMap.value;
+}
+
+function canShowAwayNotice(userId) {
+  if (!userId) return false;
+  const map = getAwayNoticeMap();
+  const last = Number(map[userId] || 0);
+  if (!Number.isFinite(last) || last <= 0) return true;
+  return Date.now() - last > AWAY_NOTICE_COOLDOWN_MS;
+}
+
+function markAwayNoticeShown(userId) {
+  if (!userId) return;
+  const map = getAwayNoticeMap();
+  map[userId] = Date.now();
+  awayNoticeMap.value = map;
+  saveAwayNoticeMap(map);
+}
 
 // v-model proxy: allows the child to "assign" a new object,
 // but we merge it into the existing reactive state.
@@ -1102,6 +1147,7 @@ const onMobileTouchMove = (event) => {
 
 onMounted(() => {
   hasMounted.value = true;
+  awayNoticeMap.value = loadAwayNoticeMap();
   // ensure drawers don't render mobile server-side then stay off on desktop
   if (!smAndDown.value) {
     leftOpen.value = false;
@@ -2333,22 +2379,27 @@ async function onSend(
     !selectedPeer.is_ai &&
     !sendingToBot
   ) {
-    const name = selectedUserLocalized.value?.displayname || "User";
-    let msg = t("components.away.reply", { name });
-    if (auth.authStatus === "anon_authenticated") {
-      const link = localePath({
-        path: "/settings",
-        query: { linkEmail: "1" },
+    const toKey = String(toId || "").trim().toLowerCase();
+    const isRecentlyActive = recentActiveNormalized.value.includes(toKey);
+    if (!isRecentlyActive && canShowAwayNotice(toId)) {
+      const name = selectedUserLocalized.value?.displayname || "User";
+      let msg = t("components.away.reply", { name });
+      if (auth.authStatus === "anon_authenticated") {
+        const link = localePath({
+          path: "/settings",
+          query: { linkEmail: "1" },
+        });
+        msg += ` [${t("components.away.link-cta")}](${link}).`;
+      }
+      regRef.value?.setTyping?.(true);
+      regRef.value?.appendPeerLocal?.(msg, {
+        senderId: IMCHATTY_ID,
+        senderName: "ImChatty",
+        senderAvatar: "/images/robot.png",
       });
-      msg += ` [${t("components.away.link-cta")}](${link}).`;
+      setTimeout(() => regRef.value?.setTyping?.(false), 700);
+      markAwayNoticeShown(toId);
     }
-    regRef.value?.setTyping?.(true);
-    regRef.value?.appendPeerLocal?.(msg, {
-      senderId: IMCHATTY_ID,
-      senderName: "ImChatty",
-      senderAvatar: "/images/robot.png",
-    });
-    setTimeout(() => regRef.value?.setTyping?.(false), 700);
   }
 
   // BOT path only

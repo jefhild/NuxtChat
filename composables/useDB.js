@@ -1604,6 +1604,13 @@ export const useDb = () => {
     if (error) {
       console.error("Error updating presence heartbeat:", error);
     }
+    const { error: activeError } = await supabase
+      .from("profiles")
+      .update({ last_active: new Date().toISOString() })
+      .eq("user_id", userId);
+    if (activeError) {
+      console.error("Error updating last active from heartbeat:", activeError);
+    }
     return { error };
   };
 

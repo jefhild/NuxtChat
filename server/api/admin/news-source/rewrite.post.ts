@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import mustache from "mustache";
 import {
   AI_PERSONA_SELECT,
@@ -218,6 +218,9 @@ The rewrite must:
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const { client: openai, apiKey } = getOpenAIClient({
+    runtimeConfig: config,
+  });
   if (!config.OPENAI_API_KEY) {
     setResponseStatus(event, 500);
     return { success: false, error: "OPENAI_API_KEY is not configured" };
@@ -309,7 +312,9 @@ export default defineEventHandler(async (event) => {
       .filter(Boolean)
       .join("\n");
 
-    const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
+    if (!apiKey || !openai) {
+      throw new Error("OPENAI_API_KEY is not configured");
+    }
 
     const maxTokens = Math.max(persona.max_response_tokens ?? 0, 1200);
     const aiResponse = await openai.chat.completions.create({
