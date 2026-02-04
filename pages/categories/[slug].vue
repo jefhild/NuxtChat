@@ -1,21 +1,20 @@
 <template>
-  <v-container fluid>
-    <v-row class="align-center mb-2 ga-2">
-      <v-col cols="auto" class="d-flex align-center">
+  <v-container class="filters-shell" fluid>
+    <div class="filters-header-shell">
+      <div class="filters-header-actions">
         <v-btn
           icon
           variant="text"
           color="primary"
           aria-label="Open filters"
+          class="filters-menu-btn"
           @click="filtersOpen = true"
         >
           <v-icon>mdi-menu</v-icon>
         </v-btn>
-      </v-col>
-      <v-col>
-        <PageHeader :text="categoryHeading" :subtitle="categorySubtitle" />
-      </v-col>
-    </v-row>
+      </div>
+      <PageHeader :text="categoryHeading" :subtitle="categorySubtitle" />
+    </div>
 
     <v-navigation-drawer
       v-model="filtersOpen"
@@ -26,70 +25,62 @@
       class="filters-drawer"
       aria-label="Category filters"
     >
-      <div class="d-flex align-center justify-space-between px-3 py-3">
-        <span class="text-subtitle-1 font-weight-medium">
+      <v-list density="compact" class="filters-drawer-list">
+        <v-list-subheader>{{ $t("pages.articles.index.filters") }}</v-list-subheader>
+        <div class="filters-drawer-title px-3 pb-2">
           {{ categoryHeading }}
-        </span>
-        <v-btn
-          icon
-          variant="text"
-          color="primary"
-          aria-label="Close filters"
-          @click="filtersOpen = false"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </div>
-      <v-divider />
-      <div class="px-3 py-2 d-flex flex-column ga-3">
-        <FilterExpansion
-          v-model="openFilterPanel"
-          panel-key="categories"
-          :title="$t('pages.categories.index.title')"
-          :items="categories"
-          base-path="/categories"
-          :selected-slug="route.params?.slug || null"
-          panels-class="compact-panel"
-          variant="inset"
-          :scrolling-list="true"
-        >
-          <template #title="{ selectedName, title }">
-            <span>Categories: {{ selectedName || title }}</span>
-          </template>
-        </FilterExpansion>
+        </div>
+        <v-divider />
+        <div class="px-3 py-2 d-flex flex-column ga-3">
+          <FilterExpansion
+            v-model="openFilterPanel"
+            panel-key="categories"
+            :title="$t('pages.categories.index.title')"
+            :items="categories"
+            base-path="/categories"
+            :selected-slug="route.params?.slug || null"
+            panels-class="compact-panel"
+            variant="inset"
+            :scrolling-list="true"
+          >
+            <template #title="{ selectedName, title }">
+              <span>Categories: {{ selectedName || title }}</span>
+            </template>
+          </FilterExpansion>
 
-        <FilterExpansion
-          v-model="openFilterPanel"
-          panel-key="tags"
-          :title="$t('pages.tags.index.title')"
-          :items="tags"
-          base-path="/tags"
-          :selected-slug="null"
-          panels-class="compact-panel"
-          variant="inset"
-          :scrolling-list="true"
-        >
-          <template #title="{ selectedName, title }">
-            <span>Tags: {{ selectedName || title }}</span>
-          </template>
-        </FilterExpansion>
+          <FilterExpansion
+            v-model="openFilterPanel"
+            panel-key="tags"
+            :title="$t('pages.tags.index.title')"
+            :items="tags"
+            base-path="/tags"
+            :selected-slug="null"
+            panels-class="compact-panel"
+            variant="inset"
+            :scrolling-list="true"
+          >
+            <template #title="{ selectedName, title }">
+              <span>Tags: {{ selectedName || title }}</span>
+            </template>
+          </FilterExpansion>
 
-        <FilterExpansion
-          v-model="openFilterPanel"
-          panel-key="people"
-          :title="$t('pages.people.index.title')"
-          :items="people"
-          base-path="/people"
-          :selected-slug="null"
-          panels-class="compact-panel"
-          variant="inset"
-          :scrolling-list="true"
-        >
-          <template #title="{ selectedName, title }">
-            <span>People: {{ selectedName || title }}</span>
-          </template>
-        </FilterExpansion>
-      </div>
+          <FilterExpansion
+            v-model="openFilterPanel"
+            panel-key="people"
+            :title="$t('pages.people.index.title')"
+            :items="people"
+            base-path="/people"
+            :selected-slug="null"
+            panels-class="compact-panel"
+            variant="inset"
+            :scrolling-list="true"
+          >
+            <template #title="{ selectedName, title }">
+              <span>People: {{ selectedName || title }}</span>
+            </template>
+          </FilterExpansion>
+        </div>
+      </v-list>
     </v-navigation-drawer>
 
     <LoadingContainer
@@ -350,6 +341,52 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.filters-shell {
+  padding-top: 6px;
+}
+
+.filters-header-shell {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.filters-header-actions {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1;
+}
+
+.filters-menu-btn {
+  margin: 0;
+}
+
+.filters-header-shell :deep(.page-header-row) {
+  padding-left: 52px;
+  box-sizing: border-box;
+}
+
+.filters-drawer {
+  margin-top: 64px;
+  height: calc(100% - 64px);
+  overflow: hidden;
+}
+
+.filters-drawer :deep(.v-navigation-drawer__content) {
+  overflow-y: auto;
+}
+
+.filters-drawer-title {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .page-title {
   font-family: "Poppins", sans-serif;
   font-weight: 700;

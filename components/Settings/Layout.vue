@@ -6,7 +6,6 @@
       location="left"
       width="280"
       class="settings-drawer"
-      :style="drawerStyle"
     >
       <v-list density="compact" class="settings-drawer-list">
         <v-list-subheader>{{ settingsHeading }}</v-list-subheader>
@@ -198,11 +197,6 @@ const selectTab = (value) => {
   drawer.value = false;
 };
 
-const drawerStyle = computed(() => ({
-  top: "var(--nav2-offset, 0px)",
-  height: "calc(100vh - var(--nav2-offset, 0px))",
-}));
-
 onMounted(async () => {
   // await authStore.checkAuth();
   // user.value = authStore.user;
@@ -243,12 +237,6 @@ onMounted(async () => {
   height: calc(100% - 64px);
   overflow: hidden;
   z-index: 1700 !important;
-}
-
-:global(.settings-drawer .v-overlay__content),
-:global(.settings-drawer .v-navigation-drawer) {
-  top: var(--nav2-offset, 0px) !important;
-  height: calc(100vh - var(--nav2-offset, 0px)) !important;
 }
 
 :global(.settings-drawer .v-navigation-drawer__content) {

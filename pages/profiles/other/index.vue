@@ -90,6 +90,11 @@ onMounted(async () => {
   margin-bottom: 8px;
 }
 
+.profiles-header-shell :deep(.page-header-row) {
+  padding-left: 52px;
+  box-sizing: border-box;
+}
+
 .profiles-header-actions {
   position: absolute;
   top: 6px;
