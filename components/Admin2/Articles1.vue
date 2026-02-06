@@ -334,14 +334,15 @@
             </v-col>
           </v-row>
 
-          <v-select
-            v-model="selectedArticle.tag_ids"
+          <v-combobox
+            v-model="selectedArticle.tag_names"
             :items="tags"
             item-title="name"
-            item-value="id"
+            item-value="name"
             label="Tags"
             multiple
             chips
+            clearable
           />
 
           <v-textarea
@@ -872,6 +873,17 @@ const getTagIdsFromTopics = (topics) => {
     .filter(Boolean);
 };
 
+const getTagNamesFromTopics = (topics) => {
+  const names = normalizeTopicList(topics);
+  if (!names.length) return [];
+  const normalized = names.map((name) => name.trim()).filter(Boolean);
+  if (!normalized.length) return [];
+  const byName = new Map(
+    tags.value.map((t) => [String(t.name || "").toLowerCase(), t.name])
+  );
+  return normalized.map((name) => byName.get(name.toLowerCase()) || name);
+};
+
 const findTagIdFromArticleTag = (tag) => {
   if (!tag) return null;
 
@@ -1133,9 +1145,13 @@ const toggleEditDialog = async (article) => {
   let topicTagIds = !articleTags.length
     ? getTagIdsFromTopics(newsmeshTopics)
     : [];
+  let topicTagNames = !articleTags.length
+    ? getTagNamesFromTopics(newsmeshTopics)
+    : [];
   if (!articleTags.length && newsmeshTopics && !topicTagIds.length) {
     tags.value = (await getAllTags()) || [];
     topicTagIds = getTagIdsFromTopics(newsmeshTopics);
+    topicTagNames = getTagNamesFromTopics(newsmeshTopics);
   }
   const existingSocial = article.rewrite_meta?.social || {};
   selectedArticle.value = {
@@ -1160,14 +1176,16 @@ const toggleEditDialog = async (article) => {
       categories.value.find((cat) => cat.name === article.category_name)?.id ||
       "",
 
-    // Map tag names to their corresponding IDs
-    tag_ids: (articleTags || [])
-      .map((tagEntry) => findTagIdFromArticleTag(tagEntry))
-      .filter(Boolean), // remove any nulls
+    // Map tag names for the combobox (allows existing + new tags)
+    tag_names: normalizeTopicList(articleTags),
     is_published: article.is_published ?? true,
   };
-  if (!selectedArticle.value.tag_ids.length && topicTagIds.length) {
-    selectedArticle.value.tag_ids = topicTagIds;
+  if (
+    (!selectedArticle.value.tag_names ||
+      !selectedArticle.value.tag_names.length) &&
+    topicTagNames.length
+  ) {
+    selectedArticle.value.tag_names = topicTagNames;
   }
 
   editDialog.value = true;
@@ -1229,10 +1247,9 @@ const handleArticleUpdate = async () => {
       throw error;
     }
 
-    await updateArticleTags(
-      selectedArticle.value.id,
-      selectedArticle.value.tag_ids
-    );
+    await updateArticleTags(selectedArticle.value.id, {
+      tagNames: normalizeTopicList(selectedArticle.value.tag_names || []),
+    });
 
     if (selectedArticle.value.is_published) {
       try {

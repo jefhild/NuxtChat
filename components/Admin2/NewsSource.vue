@@ -478,6 +478,17 @@ const manualPromptPayload = ref<ManualRewriteInput | null>(null);
 
 const SOURCE_TEXT_MIN = 800;
 
+const normalizeListInput = (values: Array<string | Record<string, any>> = []) =>
+  (values || [])
+    .map((entry) => {
+      if (typeof entry === "string") return entry.trim();
+      if (entry && typeof entry === "object") {
+        return String(entry.name || entry.value || entry.label || "").trim();
+      }
+      return "";
+    })
+    .filter((entry) => entry);
+
 const canManualRewrite = computed(
   () =>
     !!manualTitle.value.trim() &&
@@ -618,6 +629,9 @@ const openManualPromptDialog = async () => {
   manualPromptLoading.value = true;
   manualPromptDialog.value = true;
 
+  const topics = normalizeListInput(manualTopics.value);
+  const people = normalizeListInput(manualPeople.value);
+
   const payload = {
     title: manualTitle.value.trim(),
     summary: manualSummary.value.trim() || undefined,
@@ -625,8 +639,8 @@ const openManualPromptDialog = async () => {
     link: manualLink.value.trim(),
     source: manualSource.value.trim() || undefined,
     category: manualCategory.value.trim() || undefined,
-    topics: manualTopics.value,
-    people: manualPeople.value,
+    topics,
+    people,
     instructions: manualInstructions.value || undefined,
   };
 
@@ -644,8 +658,8 @@ const openManualPromptDialog = async () => {
       original: response.data.original,
       meta: response.data.meta || {
         category: payload.category || null,
-        topics: payload.topics || [],
-        people: payload.people || [],
+        topics: topics || [],
+        people: people || [],
       },
     };
   } catch (error: any) {
@@ -691,8 +705,8 @@ const confirmManualRewrite = async () => {
         sourceDomain: response.data.sourceDomain || null,
         personaKey: response.data.personaKey,
         category: manualPromptDraft.value?.meta?.category || null,
-        topics: manualPromptDraft.value?.meta?.topics || [],
-        people: manualPromptDraft.value?.meta?.people || [],
+        topics: normalizeListInput(manualPromptDraft.value?.meta?.topics || []),
+        people: normalizeListInput(manualPromptDraft.value?.meta?.people || []),
         original: {
           title: response.data.original?.title || response.data.sourceTitle,
           description:

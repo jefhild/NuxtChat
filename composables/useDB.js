@@ -1896,11 +1896,17 @@ export const useDb = () => {
     return { data, error };
   };
 
-  const updateArticleTags = async (articleId, tagIds) => {
+  const updateArticleTags = async (articleId, tagIdsOrPayload) => {
     try {
+      const payload = Array.isArray(tagIdsOrPayload)
+        ? { tagIds: tagIdsOrPayload || [] }
+        : {
+            tagIds: tagIdsOrPayload?.tagIds || [],
+            tagNames: tagIdsOrPayload?.tagNames || [],
+          };
       const response = await $fetch("/api/admin/articles/tags", {
         method: "POST",
-        body: { articleId, tagIds: tagIds || [] },
+        body: { articleId, ...payload },
       });
       if (!response?.success) {
         throw new Error(response?.error || "Unable to update article tags.");
