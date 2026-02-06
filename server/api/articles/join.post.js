@@ -125,16 +125,35 @@ async function ensureCategoryPersonasEnrolled({ supa, threadId }) {
 async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
   try {
     const safeWelcome = welcomeText || "Let's start the discussion.";
-    // Avoid duplicates: if any persona reactions already exist, skip
+    // Avoid repeats: only add reactions for personas not already used on this thread
     const { data: existing } = await supa
       .from("messages_v2")
-      .select("id")
+      .select("id, meta")
       .eq("thread_id", threadId)
-      .eq("message_type", "persona_reaction")
-      .limit(1);
-    if (existing && existing.length) return;
+      .eq("message_type", "persona_reaction");
+    const usedPersonaIds = new Set(
+      (existing || [])
+        .map((row) => row?.meta?.persona_id)
+        .filter((id) => id)
+    );
+    const usedPersonaKeys = new Set(
+      (existing || [])
+        .map((row) => row?.meta?.persona_key)
+        .filter((key) => key)
+    );
+    const remainingNeeded = Math.max(0, 2 - (existing?.length || 0));
+    if (remainingNeeded === 0) return;
 
-    // Fetch up to 2 active personas already enrolled on this thread (with profile)
+    const pickRandom = (list, count) => {
+      const copy = Array.isArray(list) ? list.slice() : [];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy.slice(0, count);
+    };
+
+    // Fetch active personas already enrolled on this thread (with profile)
     const { data: personaRows, error: personaErr } = await supa
       .from("thread_participants")
       .select(
@@ -156,17 +175,23 @@ async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
       )
       .eq("thread_id", threadId)
       .eq("kind", "persona")
-      .not("persona_id", "is", null)
-      .limit(2);
+      .not("persona_id", "is", null);
     if (personaErr) {
       console.error("[join.post] fetch personas error:", personaErr.message);
       return;
     }
-    const personas =
+    const personas = pickRandom(
       (personaRows || [])
         .map((p) => p.persona)
-        .filter((p) => p && p.is_active)
-        .slice(0, 2);
+        .filter(
+          (p) =>
+            p &&
+            p.is_active &&
+            !usedPersonaIds.has(p.id) &&
+            !usedPersonaKeys.has(p.persona_key)
+        ),
+      remainingNeeded
+    );
 
     if (!personas.length) return;
 

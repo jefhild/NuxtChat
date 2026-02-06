@@ -1,6 +1,17 @@
-import { DEFAULT_USER_INSTRUCTIONS } from "~/server/utils/newsmeshRewrite";
-
 const MAX_SOURCE_CHARS = 6000;
+const DEFAULT_USER_INSTRUCTIONS = `
+You are assisting the Newsmesh editors. Take the supplied news record and rewrite it from your persona's perspective.
+The rewrite must:
+- Introduce a new angle or deeper context that was absent from the source summary.
+- Cite at least two references, either the original source link or well-known, relevant background material.
+- Highlight why this story matters for the audience represented by your persona.
+- Produce a body made of 3-5 short paragraphs formatted in Markdown.
+- Include a short summary (2 sentences) and a fresh headline.
+- Provide social captions as JSON: social.facebook.caption (1-2 sentences + URL), social.instagram.caption (1-2 sentences, 3-6 hashtags, no link).
+- Write the rewrite in the same language as the original record (title/summary). If the source is not English, keep that language for the headline, summary, body, and social captions.
+- Ground the rewrite in concrete details from the Source Article Text if provided (names, numbers, dates, quotes).
+Return strict JSON only (no surrounding text): {"headline": string, "summary": string, "body": string, "references": [{"label": string, "url": string}], "social": {"facebook": {"caption": string, "link": string}, "instagram": {"caption": string, "image_url": string}}}.
+`;
 const HUMAN_TONE_INSTRUCTIONS = `
 Write like a human editor, not a model:
 - Vary sentence length and structure; avoid formulaic openers and closers.
