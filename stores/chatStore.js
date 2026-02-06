@@ -172,9 +172,9 @@ function isAiId(id) {
     activeChats.value = merged;
   }
 
-  async function fetchActiveChats() {
+  async function fetchActiveChats(userId) {
     try {
-      const { data, error: dbError } = await db.getActiveChats();
+      const { data, error: dbError } = await db.getActiveChats(userId);
       if (dbError) throw dbError;
       const ids = normalizeActiveIds(data);
       activeChats.value = ids;
@@ -215,7 +215,7 @@ function isAiId(id) {
       () => msgs.incoming,
       (m) => {
         if (!m) return;
-        const me = String(auth.user?.id || "");
+        const me = String(msgs._me || auth.user?.id || "");
         if (!me) return;
 
         const sender = String(m.sender_id || "");

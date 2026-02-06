@@ -270,12 +270,16 @@ const loadThread = async () => {
 };
 onMounted(loadThread);
 
-onMounted(async () => {
-  // Safe to call; your store will no-op if already wired
-  await msgs.init(props.meId);
-});
+watch(
+  () => props.meId,
+  async (nextId) => {
+    // Safe to call; your store will no-op if already wired
+    await msgs.init(nextId);
+  },
+  { immediate: true }
+);
 
-watch([() => peerId.value, () => props.blockedUserIds], loadThread);
+watch([() => peerId.value, () => props.blockedUserIds, () => props.meId], loadThread);
 
 // ── Expose functions parent can call
 defineExpose({
@@ -360,8 +364,13 @@ watch(
   async (m) => {
     if (!m) return;
 
-    // only for this open thread
-    if (String(m.sender_id) !== peerId.value || String(m.receiver_id) !== props.meId) {
+    const sender = String(m.sender_id || "");
+    const receiver = String(m.receiver_id || "");
+    const me = String(props.meId || "");
+    const peer = String(peerId.value || "");
+
+    // only for this open thread (either direction)
+    if (!((sender === peer && receiver === me) || (sender === me && receiver === peer))) {
       return;
     }
     if (

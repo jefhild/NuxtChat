@@ -217,7 +217,7 @@ export default defineNuxtConfig({
     META_PAGE_ACCESS_TOKEN: process.env.META_PAGE_ACCESS_TOKEN,
     META_IG_USER_ID: process.env.META_IG_USER_ID,
     META_GRAPH_VERSION: process.env.META_GRAPH_VERSION || "v20.0",
-    HCAPTCHA_SECRET: process.env.HCAPTCHA_SECRET,
+    TURNSTILE_SECRET: process.env.TURNSTILE_SECRET,
     INDEXNOW_KEY: process.env.INDEXNOW_KEY,
     INDEXNOW_ENDPOINT: process.env.INDEXNOW_ENDPOINT,
 
@@ -243,7 +243,7 @@ export default defineNuxtConfig({
         process.env.NUXT_PUBLIC_CLARITY_CONSENT_REGEX ?? "",
       ADSENSE_CLIENT: process.env.ADSENSE_CLIENT || "",
       SITE_URL: process.env.SITE_URL || "http://localhost:3000",
-      HCAPTCHA_SITE_KEY: process.env.NUXT_PUBLIC_HCAPTCHA_SITE_KEY || "",
+      TURNSTILE_SITE_KEY: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || "",
       IMCHATTY_ID:
         process.env.IMCHATTY_ID || "a3962087-516b-48df-a3ff-3b070406d832",
     },

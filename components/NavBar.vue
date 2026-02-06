@@ -40,7 +40,7 @@
                 {{ $t("components.navbar.feeds") || "Mood Feed" }}
               </NuxtLink>
             </li>
-            <li v-if="userProfile?.is_admin">
+            <li v-if="userProfile?.is_admin && !isImpersonating">
               <NuxtLink :to="localPath('/admin')" class="nav2__link" exact>
                 {{ $t("components.navbar.admin") }}
               </NuxtLink>
@@ -64,12 +64,24 @@
 
           <div class="nav2__lang d-none d-md-flex" aria-label="Language selector">
             <LanguageSwitcher />
+            <NuxtLink
+              v-if="isImpersonating"
+              :to="localPath('/admin')"
+              class="nav2__admin-dot"
+              aria-label="Return to admin"
+            />
           </div>
         </nav>
 
         <div class="d-flex d-md-none align-center nav2__mobile-actions">
           <div class="nav2__lang nav2__lang--mobile" aria-label="Language selector">
             <LanguageSwitcher />
+            <NuxtLink
+              v-if="isImpersonating"
+              :to="localPath('/admin')"
+              class="nav2__admin-dot"
+              aria-label="Return to admin"
+            />
           </div>
           <v-menu v-model="mobileMenuOpen" :close-on-content-click="false">
             <template #activator="{ props }">
@@ -105,7 +117,12 @@
               <v-list-item :to="localPath('/feeds')" link @click="closeMobileMenu">
                 <v-list-item-title>{{ $t("components.navbar.feeds") || "Mood Feed" }}</v-list-item-title>
               </v-list-item>
-              <v-list-item v-if="userProfile?.is_admin" :to="localPath('/admin')" link @click="closeMobileMenu">
+              <v-list-item
+                v-if="userProfile?.is_admin && !isImpersonating"
+                :to="localPath('/admin')"
+                link
+                @click="closeMobileMenu"
+              >
                 <v-list-item-title>{{ $t("components.navbar.admin") }}</v-list-item-title>
               </v-list-item>
               <v-list-item v-if="isAuthenticated" :to="localPath('/settings')" link @click="closeMobileMenu">
@@ -196,6 +213,12 @@ const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
 );
 const userProfile = computed(() => authStore.userProfile);
+const isImpersonating = computed(() => {
+  if (!userProfile.value?.is_admin) return false;
+  let v = route.query?.asUser ?? route.query?.asuser ?? route.query?.as_user;
+  if (Array.isArray(v)) v = v[0];
+  return v != null && String(v).trim().length > 0;
+});
 const unreadCount = computed(() => messages.totalUnread || 0);
 const hasUnread = computed(() => unreadCount.value > 0);
 const unreadLabel = computed(() =>
@@ -495,6 +518,23 @@ onBeforeUnmount(() => {
   height: 2px;
   background: currentColor;
   border-radius: 99px;
+}
+
+.nav2__admin-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: #16a34a;
+  opacity: 0.55;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.nav2__admin-dot:hover,
+.nav2__admin-dot:focus-visible {
+  opacity: 0.9;
+  transform: scale(1.1);
 }
 
 .nav2--transparent {

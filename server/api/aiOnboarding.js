@@ -401,7 +401,7 @@ export default defineEventHandler(async (event) => {
     );
   } catch {}
 
-  const captchaSecret = cfg.HCAPTCHA_SECRET || process.env.HCAPTCHA_SECRET;
+  const captchaSecret = cfg.TURNSTILE_SECRET || process.env.TURNSTILE_SECRET;
   const captchaRequired = !!captchaSecret;
 
   async function verifyCaptchaToken(token) {
@@ -416,13 +416,16 @@ export default defineEventHandler(async (event) => {
         getRequestHeader(event, "x-forwarded-for") ||
         getRequestHeader(event, "x-real-ip");
       if (ip) body.set("remoteip", ip.split(",")[0].trim());
-      const res = await $fetch("https://hcaptcha.com/siteverify", {
-        method: "POST",
-        headers: {
-          "content-type": "application/x-www-form-urlencoded",
-        },
-        body,
-      });
+      const res = await $fetch(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/x-www-form-urlencoded",
+          },
+          body,
+        }
+      );
       return !!res?.success;
     } catch {
       return false;

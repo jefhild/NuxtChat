@@ -102,7 +102,7 @@
               v-if="showCaptcha"
               class="mt-3 d-flex flex-column align-center"
             >
-              <HcaptchaWidget
+              <TurnstileWidget
                 :site-key="captchaSiteKey"
                 @verified="onCaptchaVerified"
                 @expired="onCaptchaExpired"
@@ -176,7 +176,7 @@ const captchaToken = ref("");
 const captchaError = ref("");
 const pendingConsent = ref(false);
 const captchaSiteKey = computed(
-  () => config.public?.HCAPTCHA_SITE_KEY || ""
+  () => config.public?.TURNSTILE_SITE_KEY || ""
 );
 const captchaEnabled = computed(() => !!captchaSiteKey.value);
 const showCaptcha = computed(

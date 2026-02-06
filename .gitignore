@@ -20,6 +20,10 @@ logs
 .fleet
 .idea
 
+# Local mock chat scripts
+scripts/mock-chat.mjs
+scripts/mock-chat*.json
+
 # Local env files
 .env
 .env.*

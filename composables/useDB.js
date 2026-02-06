@@ -3394,6 +3394,17 @@ const verifyEmailOtp = async (email, token) => {
       },
       (payload) => onInsert?.(payload.new)
     );
+    // Also listen for messages I sent (for admin-inserted mock chats, etc.)
+    ch.on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `sender_id=eq.${meId}`,
+      },
+      (payload) => onInsert?.(payload.new)
+    );
     ch.on(
       "postgres_changes",
       {

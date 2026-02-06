@@ -347,7 +347,7 @@
               ref="regRef"
               :key="`reg-${auth.authStatus}`"
               :authStatus="auth.authStatus"
-              :me-id="auth.user?.id"
+              :me-id="meId"
               :peer="chat.selectedUser"
               :blocked-user-ids="blockedUsers"
               :quick-replies="moodQuickReplies"
@@ -684,7 +684,7 @@
               ref="regRef"
               :key="`reg-${auth.authStatus}`"
               :authStatus="auth.authStatus"
-              :me-id="auth.user?.id"
+              :me-id="meId"
               :peer="chat.selectedUser"
               :blocked-user-ids="blockedUsers"
             />
@@ -1244,8 +1244,21 @@ defineExpose({
 const clearReply = () => {
   replyingToMessage.value = null;
 };
-// keep primitive since your realtime is working with it
-const meId = auth.user?.id;
+const normalizeQueryId = (v) => {
+  if (v == null) return null;
+  if (Array.isArray(v)) v = v[0];
+  const s = String(v).trim();
+  return s.length ? s : null;
+};
+
+const isAdmin = computed(() => !!auth.userProfile?.is_admin);
+const asUserId = computed(() =>
+  normalizeQueryId(route.query.asUser ?? route.query.asuser ?? route.query.as_user)
+);
+// effective "me" for chat: admin may impersonate via ?asUser=
+const meId = computed(() =>
+  isAdmin.value && asUserId.value ? asUserId.value : auth.user?.id || null
+);
 
 const fetchRecentActiveIds = async () => {
   if (recentActiveLoading.value) return;
@@ -1304,7 +1317,7 @@ const isSelectedUserBlocked = computed(() => {
 });
 
 const isSelfSelected = computed(() => {
-  const userId = auth.user?.id;
+  const userId = meId.value;
   const selectedId = selectedUserId.value;
   if (!userId || !selectedId) return false;
   return String(userId) === String(selectedId);
@@ -1321,7 +1334,7 @@ const blockTooltip = computed(() =>
 );
 
 const toggleBlockSelectedUser = async () => {
-  const userId = auth.user?.id;
+  const userId = meId.value;
   const blockedUserId = selectedUserId.value;
   if (!userId || !blockedUserId) {
     if (!userId) {
@@ -1580,7 +1593,7 @@ const loadTranslationPreference = async (ownerId, receiverId) => {
 };
 
 watch(
-  () => auth.user?.id,
+  () => meId.value,
   (userId) => {
     if (userId) {
       loadBlockedUsers(userId);
@@ -1612,7 +1625,7 @@ watch(
 );
 
 watch(
-  [() => auth.user?.id, selectedUserId],
+  [() => meId.value, selectedUserId],
   ([ownerId, receiverId]) => {
     const peer = chat.selectedUser;
     if (!ownerId || !receiverId || peer?.is_ai) {
@@ -1629,8 +1642,8 @@ const peerId = selectedUserId;
 
 // stable key for typing channel / DM room
 const conversationKey = computed(() =>
-  meId && peerId.value
-    ? [String(meId), String(peerId.value)].sort().join(":")
+  meId.value && peerId.value
+    ? [String(meId.value), String(peerId.value)].sort().join(":")
     : null
 );
 const profileLink = computed(() => {
@@ -1796,7 +1809,7 @@ const usersWithPresence = computed(() => {
       .trim()
       .toLowerCase();
 
-  const meKey = String(auth.user?.id ?? "")
+  const meKey = String(meId.value ?? "")
     .trim()
     .toLowerCase();
 
@@ -2060,14 +2073,14 @@ function closeDeleteDialog() {
 }
 
 async function confirmDeleteChat() {
-  if (!deleteTarget.value || !meId) return;
+  if (!deleteTarget.value || !meId.value) return;
   const peerId = deleteTarget.value.user_id || deleteTarget.value.id;
   if (!peerId) return;
 
   deletingChat.value = true;
   deleteError.value = "";
   try {
-    const err = await deleteChatWithUser(meId, peerId);
+    const err = await deleteChatWithUser(meId.value, peerId);
     if (err) throw err;
 
     // update active list + unread counts locally
@@ -2185,7 +2198,7 @@ onMounted(async () => {
   refreshActiveChats();
 
   await chat.fetchChatUsers();
-  await chat.fetchActiveChats();
+  await chat.fetchActiveChats(meId.value);
   chat.initActiveChatsWatcher();
   chat.initializeDefaultUser(auth.authStatus);
 });
@@ -2207,7 +2220,7 @@ onBeforeUnmount(async () => {
   }
 });
 
-watch(() => auth.user?.id, refreshActiveChats);
+watch(() => meId.value, refreshActiveChats);
 
 watch(
   () => [
@@ -2250,7 +2263,7 @@ watch(translationPromptOpen, (open) => {
 const maybePromptTranslation = async (text, selectedPeer, toId, sendingToBot) => {
   if (!text) return true;
   if (sendingToBot || selectedPeer?.is_ai) return true;
-  const ownerId = auth.user?.id;
+  const ownerId = meId.value;
   if (!ownerId || !toId) return true;
 
   const meLocale = mePreferredLocale.value;
@@ -2278,7 +2291,7 @@ const applyTranslationChoice = async (mode) => {
   if (!text || !peerId) return;
   if (String(peerId) !== String(selectedUserId.value)) return;
 
-  const ownerId = auth.user?.id;
+  const ownerId = meId.value;
   if (!ownerId) return;
 
   if (mode === "always" || mode === "never") {
@@ -2403,7 +2416,7 @@ async function onSend(
   }
 
   // BOT path only
-  if ((selectedPeer?.is_ai || sendingToBot) && meId && toId) {
+  if ((selectedPeer?.is_ai || sendingToBot) && meId.value && toId) {
     // ✅ (optional but recommended) show local typing bubble in Regular3
     regRef.value?.setTyping?.(true);
 
@@ -2416,14 +2429,14 @@ async function onSend(
 
       // 2) persist (current bot thread)
       try {
-        await insertMessage(meId, toId, msg);
+        await insertMessage(meId.value, toId, msg);
       } catch (e) {}
 
       // 3) also persist to ImChatty thread (optional)
       try {
         const imchatty = chat.getUserById?.(IMCHATTY_ID);
         if (imchatty) {
-          await insertMessage(meId, IMCHATTY_ID, msg);
+          await insertMessage(meId.value, IMCHATTY_ID, msg);
           chat.addActivePeer?.(IMCHATTY_ID);
         }
       } catch (e) {}
@@ -2444,7 +2457,7 @@ async function onSend(
         replyTo
       );
       if (aiText) regRef.value?.appendPeerLocal?.(aiText);
-      await insertMessage(meId, toId, aiText);
+      await insertMessage(meId.value, toId, aiText);
     } catch (e) {
       console.error("[AI] fetch/insert failed", e);
     } finally {
@@ -2470,7 +2483,7 @@ function mapCountryToId(countryName) {
 }
 
 async function pushMoodBotMessage(text) {
-  if (!text || !auth.user?.id) return;
+  if (!text || !meId.value) return;
   if (isBotSelected.value) {
     regRef.value?.appendPeerLocal?.(text, {
       senderId: IMCHATTY_ID,
@@ -2479,7 +2492,7 @@ async function pushMoodBotMessage(text) {
     });
   }
   try {
-    await insertMessage(auth.user.id, IMCHATTY_ID, text);
+    await insertMessage(meId.value, IMCHATTY_ID, text);
     chat.addActivePeer?.(IMCHATTY_ID);
   } catch (err) {
     console.warn("[mood-feed] bot message insert failed:", err?.message || err);
@@ -2511,7 +2524,7 @@ function formatMoodPrompt(text) {
 async function maybeTriggerMoodPrompt() {
   if (moodPromptBusy.value) return;
   if (!["authenticated", "anon_authenticated"].includes(auth.authStatus)) return;
-  if (!auth.user?.id) return;
+  if (!meId.value) return;
   if (draftStore.moodFeedStage === "prompt" || draftStore.moodFeedStage === "confirm")
     return;
   moodPromptBusy.value = true;
@@ -2652,7 +2665,7 @@ async function handleMoodFeedMessage(text) {
 }
 
 async function refreshActiveChats() {
-  const me = auth.user?.id;
+  const me = meId.value;
   if (!me) {
     activeChats.value = [];
     return;

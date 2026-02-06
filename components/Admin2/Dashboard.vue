@@ -121,6 +121,18 @@
 
               <template #item.actions="{ item }">
                 <div class="d-flex align-center ga-1">
+                  <v-tooltip text="Mock chat">
+                    <template #activator="{ props }">
+                      <v-btn
+                        v-bind="props"
+                        icon="mdi-message-text-fast"
+                        size="small"
+                        variant="text"
+                        color="deep-purple"
+                        @click="openMockChatDialog(item)"
+                      />
+                    </template>
+                  </v-tooltip>
                   <v-tooltip text="View profile">
                     <template #activator="{ props }">
                       <v-btn
@@ -183,6 +195,14 @@
                         <v-progress-linear indeterminate color="primary" />
                       </div>
                       <div v-else class="d-flex flex-column ga-4">
+                        <div class="d-flex align-center ga-3">
+                          <div class="text-subtitle-2 text-medium-emphasis">
+                            User ID
+                          </div>
+                          <div class="text-body-2 font-weight-medium">
+                            {{ item.user_id || "—" }}
+                          </div>
+                        </div>
                         <div class="d-flex flex-column flex-md-row ga-6">
                           <div class="flex-1">
                             <div class="text-subtitle-2 text-medium-emphasis">
@@ -350,6 +370,120 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="mockDialogOpen" max-width="720px" persistent>
+      <v-card>
+        <v-card-title class="headline">Mock chat script</v-card-title>
+        <v-card-text>
+          <div class="d-flex flex-column ga-4">
+            <div class="d-flex flex-column ga-1">
+              <div class="text-caption text-medium-emphasis">User A (impersonated)</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ mockUserA?.displayname || mockUserA?.slug || mockUserA?.user_id || "—" }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                {{ mockUserA?.user_id || "" }}
+              </div>
+            </div>
+
+            <v-select
+              v-model="mockUserB"
+              :items="mockUserOptions"
+              label="User B"
+              variant="outlined"
+              density="compact"
+              item-title="label"
+              item-value="value"
+              clearable
+              hide-details
+            />
+
+            <v-file-input
+              label="Upload JSON script"
+              variant="outlined"
+              density="compact"
+              accept=".json,application/json"
+              show-size
+              @update:model-value="onMockFileSelected"
+            />
+
+            <v-textarea
+              v-model="mockJsonText"
+              label="JSON script"
+              variant="outlined"
+              rows="8"
+              auto-grow
+              placeholder='{"userB":"...","delayMs":1200,"messages":[{"from":"A","text":"hi"}]}'
+            />
+
+            <div class="d-flex flex-column flex-md-row ga-4">
+              <v-text-field
+                v-model.number="mockStartDelayMs"
+                label="Start delay (ms)"
+                type="number"
+                variant="outlined"
+                density="compact"
+              />
+              <v-text-field
+                v-model.number="mockDelayMs"
+                label="Delay between messages (ms)"
+                type="number"
+                variant="outlined"
+                density="compact"
+              />
+              <v-switch
+                v-model="mockOpenInNewTab"
+                label="Open chat in new tab"
+                inset
+              />
+            </div>
+
+            <div v-if="mockError" class="text-caption text-error">
+              {{ mockError }}
+            </div>
+
+            <div v-if="mockRunning" class="text-caption text-medium-emphasis">
+              Sending {{ mockProgress.done }} / {{ mockProgress.total }}…
+            </div>
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            color="grey"
+            :disabled="mockRunning"
+            @click="closeMockChatDialog"
+          >
+            Close
+          </v-btn>
+          <v-btn
+            variant="text"
+            color="red"
+            v-if="mockRunning"
+            @click="cancelMockChat"
+          >
+            Stop
+          </v-btn>
+          <v-btn
+            variant="text"
+            color="orange"
+            :disabled="mockRunning || !mockInsertedIds.length"
+            @click="deleteLastMockRun"
+          >
+            Delete last run
+          </v-btn>
+          <v-btn
+            variant="text"
+            color="primary"
+            :loading="mockRunning"
+            @click="runMockChat"
+          >
+            Start mock chat
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-dialog v-model="chatDialogOpen" max-width="980px">
       <v-card>
         <v-card-title class="headline">Chat messages</v-card-title>
@@ -477,6 +611,18 @@ const chatMessagesLoading = ref(false);
 const discussionMessagesLoading = ref(false);
 const deletingMessageIds = ref([]);
 const activeMessageUserId = ref(null);
+const mockDialogOpen = ref(false);
+const mockUserA = ref(null);
+const mockUserB = ref("");
+const mockJsonText = ref("");
+const mockDelayMs = ref(1200);
+const mockStartDelayMs = ref(2000);
+const mockOpenInNewTab = ref(true);
+const mockRunning = ref(false);
+const mockProgress = ref({ done: 0, total: 0 });
+const mockError = ref("");
+const mockInsertedIds = ref([]);
+let mockAbort = false;
 
 const { locale } = useI18n();
 const localPath = useLocalePath();
@@ -541,6 +687,16 @@ const matchesSearch = (p) => {
 };
 
 const pendingPhotoCount = computed(() => pendingPhotoUserIds.value.length);
+const mockUserOptions = computed(() => {
+  const all = [...profiles.value, ...aiProfiles.value];
+  return all
+    .map((p) => {
+      const labelBase = displayNameFor(p) || p?.slug || p?.user_id || "Unknown";
+      const label = `${labelBase} — ${p?.user_id || "—"}`;
+      return { label, value: p?.user_id || "" };
+    })
+    .filter((o) => o.value);
+});
 
 const filterOptions = computed(() => [
   { title: "All Human", value: "registered" },
@@ -845,6 +1001,168 @@ const goToProfile = (profile) => {
 const editProfile = (profile) => {
   if (!profile?.user_id) return;
   router.push(localPath(`/admin/profiles/${profile.user_id}`));
+};
+
+const openMockChatDialog = (profile) => {
+  mockUserA.value = profile || null;
+  mockUserB.value = "";
+  mockJsonText.value = "";
+  mockDelayMs.value = 1200;
+  mockStartDelayMs.value = 2000;
+  mockOpenInNewTab.value = true;
+  mockRunning.value = false;
+  mockProgress.value = { done: 0, total: 0 };
+  mockError.value = "";
+  mockInsertedIds.value = [];
+  mockAbort = false;
+  mockDialogOpen.value = true;
+};
+
+const closeMockChatDialog = () => {
+  if (mockRunning.value) return;
+  mockDialogOpen.value = false;
+  mockUserA.value = null;
+  mockUserB.value = "";
+  mockJsonText.value = "";
+  mockError.value = "";
+  mockProgress.value = { done: 0, total: 0 };
+  mockInsertedIds.value = [];
+  mockAbort = false;
+};
+
+const onMockFileSelected = async (files) => {
+  try {
+    const file = Array.isArray(files) ? files[0] : files;
+    if (!file) return;
+    const text = await file.text();
+    mockJsonText.value = text;
+    const parsed = JSON.parse(text);
+    if (parsed?.userB) mockUserB.value = String(parsed.userB);
+    if (Number.isFinite(parsed?.delayMs)) mockDelayMs.value = Number(parsed.delayMs);
+  } catch (err) {
+    mockError.value = "Invalid JSON file.";
+  }
+};
+
+const parseMockPayload = () => {
+  if (!mockJsonText.value) {
+    return { error: "Please paste or upload a JSON script." };
+  }
+  try {
+    const payload = JSON.parse(mockJsonText.value);
+    const messages = Array.isArray(payload?.messages) ? payload.messages : [];
+    if (!messages.length) {
+      return { error: "messages[] is required and cannot be empty." };
+    }
+    const userB = String(payload?.userB || mockUserB.value || "").trim();
+    if (!userB) return { error: "userB is required." };
+    return {
+      userB,
+      delayMs: Number.isFinite(payload?.delayMs) ? Number(payload.delayMs) : null,
+      messages,
+    };
+  } catch (err) {
+    return { error: "Invalid JSON content." };
+  }
+};
+
+const runMockChat = async () => {
+  if (!mockUserA.value?.user_id) {
+    mockError.value = "User A is missing.";
+    return;
+  }
+  mockError.value = "";
+  const parsed = parseMockPayload();
+  if (parsed.error) {
+    mockError.value = parsed.error;
+    return;
+  }
+
+  const userA = mockUserA.value.user_id;
+  const userB = parsed.userB;
+  const messages = parsed.messages;
+  const delay = Number.isFinite(mockDelayMs.value)
+    ? Number(mockDelayMs.value)
+    : parsed.delayMs || 1200;
+  const startDelay = Number.isFinite(mockStartDelayMs.value)
+    ? Number(mockStartDelayMs.value)
+    : 2000;
+
+  const chatPath = localPath({
+    path: "/chat",
+    query: { asUser: userA, userId: userB },
+  });
+  if (mockOpenInNewTab.value && typeof window !== "undefined") {
+    window.open(chatPath, "_blank");
+  } else {
+    router.push(chatPath);
+  }
+
+  mockRunning.value = true;
+  mockAbort = false;
+  mockProgress.value = { done: 0, total: messages.length };
+  mockInsertedIds.value = [];
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  await sleep(startDelay);
+
+  for (let i = 0; i < messages.length; i++) {
+    if (mockAbort) break;
+    const m = messages[i] || {};
+    const from = String(m.from || "").toUpperCase();
+    const text = String(m.text ?? m.content ?? "").trim();
+    if (!text) {
+      mockProgress.value = { done: i + 1, total: messages.length };
+      continue;
+    }
+    const sender_id = from === "B" ? userB : userA;
+    const receiver_id = from === "B" ? userA : userB;
+    try {
+      const res = await $fetch("/api/admin/messages", {
+        method: "POST",
+        body: { sender_id, receiver_id, content: text },
+      });
+      if (res?.item?.id) {
+        mockInsertedIds.value = [...mockInsertedIds.value, res.item.id];
+      }
+    } catch (err) {
+      mockError.value =
+        err?.data?.error?.message ||
+        err?.message ||
+        "Failed to insert a message.";
+      break;
+    }
+    mockProgress.value = { done: i + 1, total: messages.length };
+    if (i < messages.length - 1) await sleep(delay);
+  }
+
+  mockRunning.value = false;
+};
+
+const cancelMockChat = () => {
+  mockAbort = true;
+  mockRunning.value = false;
+};
+
+const deleteLastMockRun = async () => {
+  if (!mockInsertedIds.value.length) return;
+  mockError.value = "";
+  const ids = [...mockInsertedIds.value];
+  for (const id of ids) {
+    try {
+      await $fetch(`/api/admin/chat-messages/${id}`, { method: "DELETE" });
+    } catch (err) {
+      mockError.value =
+        err?.data?.error?.message ||
+        err?.message ||
+        "Failed to delete one or more messages.";
+      break;
+    }
+  }
+  if (!mockError.value) {
+    mockInsertedIds.value = [];
+  }
 };
 
 const goToThread = (thread) => {
