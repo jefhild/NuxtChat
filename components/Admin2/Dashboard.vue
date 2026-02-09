@@ -370,8 +370,8 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="mockDialogOpen" max-width="720px" persistent>
-      <v-card>
+    <v-dialog v-model="mockDialogOpen" max-width="720px" persistent scrollable>
+      <v-card class="admin-mock-dialog">
         <v-card-title class="headline">Mock chat script</v-card-title>
         <v-card-text>
           <div class="d-flex flex-column ga-4">
@@ -1355,5 +1355,19 @@ const purgeMarkedProfiles = async () => {
 
 .admin-purge {
   white-space: nowrap;
+}
+
+.admin-mock-dialog {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-mock-dialog :deep(.v-card-text) {
+  overflow-y: auto;
+}
+
+.admin-mock-dialog :deep(.v-card-actions) {
+  flex-shrink: 0;
 }
 </style>
