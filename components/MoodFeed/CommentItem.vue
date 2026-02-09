@@ -21,7 +21,7 @@
           v-if="avatarUrl && userId"
           type="button"
           class="cmt-avatar-btn mr-2"
-          @click="$emit('profile', userId)"
+          @click="onProfileClick"
         >
           <v-avatar size="28">
             <v-img :src="avatarUrl" />
@@ -35,7 +35,7 @@
             v-if="userId"
             type="button"
             class="cmt-name text-body-2 text-blue-darken-4"
-            @click="$emit('profile', userId)"
+            @click="onProfileClick"
           >
             {{ displayname }}
           </button>
@@ -54,13 +54,19 @@
 
       <div class="body text-body-2">
         <div v-if="parentName" class="text-caption text-medium-emphasis mb-1">
-          replying to @{{ parentName }}
+          {{ t("pages.feeds.replyingTo", "Replying to") }} @{{ parentName }}
+        </div>
+        <div
+          v-if="translatedFromLabel"
+          class="text-caption text-medium-emphasis mb-1"
+        >
+          {{ translatedFromLabel }}
         </div>
         <div v-if="masked" class="text-caption text-disabled">
-          [hidden: guidelines]
+          {{ t("pages.feeds.hiddenNotice", "[hidden: guidelines]") }}
         </div>
         <div v-else-if="deleted" class="text-caption text-disabled">
-          [deleted]
+          {{ t("pages.feeds.deletedNotice", "[deleted]") }}
         </div>
         <div v-else class="cmt-body">{{ content }}</div>
       </div>
@@ -83,7 +89,7 @@
             :disabled="disabled || senderKind === 'system'"
             @click="canReply ? $emit('reply', id) : $emit('login')"
           >
-            Reply
+            {{ t("pages.feeds.replyButton", "Reply") }}
           </v-btn>
         </div>
       </div>
@@ -94,17 +100,23 @@
 
 <script setup>
 import MoodFeedVoteControls from "@/components/MoodFeed/VoteControls.vue";
+import { useI18n } from "vue-i18n";
 
-const emit = defineEmits(["reply", "vote", "menu", "login", "profile"]);
+const emit = defineEmits(["reply", "vote", "menu", "login", "profile", "register"]);
+const { t, locale } = useI18n();
 
 const props = defineProps({
   id: { type: String, required: true },
   depth: { type: Number, default: 0 },
   displayname: { type: String, required: true },
   userId: { type: String, default: null },
+  meId: { type: String, default: null },
   avatarUrl: { type: String, default: null },
   senderKind: { type: String, default: "user" },
   createdAt: { type: String, required: true },
+  displayLocale: { type: String, default: null },
+  sourceLocale: { type: String, default: null },
+  authorIsAnonymous: { type: Boolean, default: false },
   content: { type: String, required: true },
   score: { type: Number, default: 0 },
   myVote: { type: Number, default: 0 },
@@ -117,6 +129,40 @@ const props = defineProps({
 });
 
 const activatorId = computed(() => `comment-menu-btn-${props.id}`);
+const normalizeLocale = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .split("-")[0];
+
+const showTranslationLabel = computed(() => {
+  if (!props.displayLocale || !props.sourceLocale) return false;
+  const displayBase = normalizeLocale(props.displayLocale);
+  const sourceBase = normalizeLocale(props.sourceLocale);
+  if (!displayBase || !sourceBase) return false;
+  return displayBase !== sourceBase;
+});
+
+const formatLocale = (value) => {
+  const base = normalizeLocale(value);
+  if (!base) return "";
+  const uiBase = normalizeLocale(locale.value);
+  const labelsByUi = {
+    en: { en: "English", fr: "French", ru: "Russian", zh: "Chinese" },
+    fr: { en: "Anglais", fr: "Français", ru: "Russe", zh: "Chinois" },
+    ru: { en: "Английский", fr: "Французский", ru: "Русский", zh: "Китайский" },
+    zh: { en: "英语", fr: "法语", ru: "俄语", zh: "中文" },
+  };
+  const label = labelsByUi[uiBase]?.[base];
+  return label || base.toUpperCase();
+};
+
+const translatedFromLabel = computed(() => {
+  if (!showTranslationLabel.value) return "";
+  const formatted = formatLocale(props.sourceLocale);
+  if (!formatted) return "";
+  return t("pages.feeds.translatedFrom", { locale: formatted });
+});
 
 const timeFmt = new Intl.DateTimeFormat("en-GB", {
   year: "numeric",
@@ -137,6 +183,19 @@ const formatDate = (iso) => {
 
 function onMenuClick(e) {
   emit("menu", { id: props.id, el: e?.currentTarget || null });
+}
+
+function onProfileClick() {
+  if (!props.userId) return;
+  if (
+    props.authorIsAnonymous &&
+    props.meId &&
+    String(props.userId) === String(props.meId)
+  ) {
+    emit("register");
+    return;
+  }
+  emit("profile", props.userId);
 }
 </script>
 

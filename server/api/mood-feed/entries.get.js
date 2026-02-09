@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
         "source_locale",
         "status",
         "created_at",
-        "profiles (user_id, displayname, gender_id, avatar_url, profile_translations (locale, displayname, bio, tagline, source_locale))",
+        "mood_feed_authors (user_id, displayname, avatar_url, is_anonymous)",
       ].join(",")
     )
     .eq("status", "published")
@@ -108,13 +108,46 @@ export default defineEventHandler(async (event) => {
             "user_id",
             "content",
             "source_locale",
+            "status",
             "created_at",
-            "profiles (user_id, displayname, gender_id, avatar_url, profile_translations (locale, displayname, bio, tagline, source_locale))",
+            "mood_feed_authors (user_id, displayname, avatar_url, is_anonymous)",
           ].join(",")
         )
         .in("entry_id", entryIds)
+        .eq("status", "published")
         .order("created_at", { ascending: true }),
     ]);
+
+  const userIds = Array.from(
+    new Set((entries || []).map((e) => e.user_id).filter(Boolean))
+  );
+  const replyUserIds = Array.from(
+    new Set((repliesRes.data || []).map((r) => r.user_id).filter(Boolean))
+  );
+  const allUserIds = Array.from(new Set([...userIds, ...replyUserIds]));
+  const profilesRes = allUserIds.length
+    ? await supabase
+        .from("profiles")
+        .select(
+          [
+            "user_id",
+            "displayname",
+            "gender_id",
+            "avatar_url",
+            "profile_translations (locale, displayname, bio, tagline, source_locale)",
+          ].join(",")
+        )
+        .in("user_id", allUserIds)
+    : { data: [] };
+  if (profilesRes?.error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: profilesRes.error.message,
+    });
+  }
+  const profileMap = new Map(
+    (profilesRes.data || []).map((p) => [p.user_id, p])
+  );
 
   const translationByEntry = new Map();
   for (const row of translationsRes.data || []) {
@@ -245,6 +278,7 @@ export default defineEventHandler(async (event) => {
     const replies = repliesRaw.map((reply) => {
       const replyTranslation = pickReplyTranslation(reply);
       const replyScore = replyScoreMap.get(reply.id) || {};
+      const profile = profileMap.get(reply.user_id) || null;
       return {
         id: reply.id,
         entryId: reply.entry_id,
@@ -254,7 +288,10 @@ export default defineEventHandler(async (event) => {
         displayText: replyTranslation.text,
         displayLocale: replyTranslation.locale,
         sourceLocale: reply.source_locale || null,
-        profile: reply.profiles || null,
+        profile,
+        authorDisplayname: reply.mood_feed_authors?.displayname || null,
+        authorAvatarUrl: reply.mood_feed_authors?.avatar_url || null,
+        authorIsAnonymous: reply.mood_feed_authors?.is_anonymous || false,
         score: replyScore.score ?? 0,
         upvotes: replyScore.upvotes ?? 0,
         downvotes: replyScore.downvotes ?? 0,
@@ -271,7 +308,10 @@ export default defineEventHandler(async (event) => {
       displayText: translation.text,
       displayLocale: translation.locale,
       sourceLocale: entry.source_locale || null,
-      profile: entry.profiles || null,
+      profile: profileMap.get(entry.user_id) || null,
+      authorDisplayname: entry.mood_feed_authors?.displayname || null,
+      authorAvatarUrl: entry.mood_feed_authors?.avatar_url || null,
+      authorIsAnonymous: entry.mood_feed_authors?.is_anonymous || false,
       score: score.score ?? 0,
       upvotes: score.upvotes ?? 0,
       downvotes: score.downvotes ?? 0,

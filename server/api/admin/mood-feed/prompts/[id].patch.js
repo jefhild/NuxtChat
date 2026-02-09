@@ -3,6 +3,21 @@ import { useDb } from "@/composables/useDB";
 import { translateText, normalizeLocale } from "@/server/utils/translate";
 
 const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
+const TRANSLATE_TIMEOUT_MS = 4000;
+
+const translateWithTimeout = async ({
+  text,
+  targetLocale,
+  sourceLocaleHint,
+  config,
+}) => {
+  return Promise.race([
+    translateText({ text, targetLocale, sourceLocaleHint, config }),
+    new Promise((resolve) =>
+      setTimeout(() => resolve({ ok: false, translatedText: null }), TRANSLATE_TIMEOUT_MS)
+    ),
+  ]);
+};
 
 const fetchAdminClient = (event) => {
   const cfg = useRuntimeConfig(event);
@@ -104,30 +119,34 @@ export default defineEventHandler(async (event) => {
           "[admin/mood-feed.prompts] translation upsert error:",
           upsertErr
         );
-        setResponseStatus(event, 500);
-        return { error: { stage: "translation", message: upsertErr.message } };
+        // Non-fatal: keep prompt but skip translation upsert
       }
 
       if (translateAll) {
         const cfg = useRuntimeConfig(event);
-        for (const targetLocale of SUPPORTED_LOCALES) {
-          if (targetLocale === locale) continue;
-          try {
-            const translated = await translateText({
+        const targets = SUPPORTED_LOCALES.filter((l) => l !== locale);
+        const results = await Promise.allSettled(
+          targets.map((targetLocale) =>
+            translateWithTimeout({
               text: promptText,
               targetLocale,
               sourceLocaleHint: locale,
               config: cfg,
-            });
-            if (!translated?.translatedText) continue;
+            }).then((translated) => ({ targetLocale, translated }))
+          )
+        );
+
+        for (const res of results) {
+          if (res.status !== "fulfilled") continue;
+          const { targetLocale, translated } = res.value || {};
+          if (!translated?.translatedText || !targetLocale) continue;
+          try {
             await supa.from("mood_feed_prompt_translations").upsert(
               {
                 prompt_id: promptId,
                 locale: targetLocale,
                 prompt_text: translated.translatedText,
                 source_locale: locale,
-                provider: translated.engine || "openai",
-                translated_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
               },
               { onConflict: "prompt_id,locale" }

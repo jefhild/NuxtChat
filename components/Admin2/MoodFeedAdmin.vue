@@ -84,6 +84,121 @@
       </v-table>
     </v-card>
 
+    <v-card class="pa-4 mb-4" elevation="2">
+      <v-card-title class="d-flex align-center">
+        <v-icon class="mr-2">mdi-shield-check-outline</v-icon>
+        Pending Moderation
+        <v-spacer />
+        <v-btn variant="text" icon="mdi-refresh" @click="loadModeration" />
+      </v-card-title>
+
+      <v-divider class="mb-4" />
+
+      <LoadingContainer v-if="moderationLoading" />
+
+      <v-alert
+        v-else-if="pendingEntries.length === 0 && pendingReplies.length === 0"
+        type="info"
+        class="mt-2"
+      >
+        No items awaiting moderation.
+      </v-alert>
+
+      <div v-else>
+        <div v-if="pendingEntries.length" class="mb-6">
+          <div class="text-subtitle-2 font-weight-medium mb-2">Entries</div>
+          <v-table>
+            <thead>
+              <tr>
+                <th>Prompt</th>
+                <th>Response</th>
+                <th>Author</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="entry in pendingEntries" :key="entry.id">
+                <td class="prompt-text">
+                  {{ entry.prompt_text || entry.prompt_key || "—" }}
+                </td>
+                <td class="prompt-text">
+                  {{ entry.refined_text || entry.original_text || "—" }}
+                </td>
+                <td>{{ entry.profiles?.displayname || entry.user_id }}</td>
+                <td>{{ formatDate(entry.created_at) }}</td>
+                <td class="actions-col">
+                  <v-btn
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    @click="updateEntryStatus(entry, 'published')"
+                  >
+                    Approve
+                  </v-btn>
+                  <v-btn
+                    size="small"
+                    color="red"
+                    variant="text"
+                    @click="updateEntryStatus(entry, 'rejected')"
+                  >
+                    Reject
+                  </v-btn>
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
+
+        <div v-if="pendingReplies.length">
+          <div class="text-subtitle-2 font-weight-medium mb-2">Replies</div>
+          <v-table>
+            <thead>
+              <tr>
+                <th>Prompt</th>
+                <th>Reply</th>
+                <th>Author</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="reply in pendingReplies" :key="reply.id">
+                <td class="prompt-text">
+                  {{
+                    reply.mood_feed_entries?.prompt_text ||
+                    reply.mood_feed_entries?.prompt_key ||
+                    "—"
+                  }}
+                </td>
+                <td class="prompt-text">{{ reply.content || "—" }}</td>
+                <td>{{ reply.profiles?.displayname || reply.user_id }}</td>
+                <td>{{ formatDate(reply.created_at) }}</td>
+                <td class="actions-col">
+                  <v-btn
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    @click="updateReplyStatus(reply, 'published')"
+                  >
+                    Approve
+                  </v-btn>
+                  <v-btn
+                    size="small"
+                    color="red"
+                    variant="text"
+                    @click="updateReplyStatus(reply, 'rejected')"
+                  >
+                    Reject
+                  </v-btn>
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
+      </div>
+    </v-card>
+
     <MoodFeedFlags />
   </div>
 
@@ -95,6 +210,14 @@
       </v-card-title>
       <v-divider />
       <v-card-text>
+        <v-alert
+          v-if="promptSaveError"
+          type="error"
+          class="mb-3"
+          variant="tonal"
+        >
+          {{ promptSaveError }}
+        </v-alert>
         <v-text-field
           v-model="dialog.form.prompt_key"
           label="Prompt Key"
@@ -141,6 +264,10 @@ const prompts = ref([]);
 const defaultTone = ref("funny");
 const isLoading = ref(true);
 const saving = ref(false);
+const moderationLoading = ref(true);
+const pendingEntries = ref([]);
+const pendingReplies = ref([]);
+const promptSaveError = ref("");
 
 const dialog = reactive({
   open: false,
@@ -237,6 +364,7 @@ const closeDialog = () => {
 const saveDialog = async () => {
   if (!dialog.form.prompt_key.trim()) return;
   saving.value = true;
+  promptSaveError.value = "";
   try {
     if (dialog.mode === "create") {
       await $fetch("/api/admin/mood-feed/prompts", {
@@ -265,8 +393,57 @@ const saveDialog = async () => {
     dialog.open = false;
   } catch (error) {
     console.error("[admin][mood-feed] prompt save error", error);
+    const msg =
+      error?.data?.error?.message ||
+      error?.response?._data?.error?.message ||
+      error?.statusMessage ||
+      "Failed to save prompt.";
+    promptSaveError.value = msg;
   } finally {
     saving.value = false;
+  }
+};
+
+const loadModeration = async () => {
+  moderationLoading.value = true;
+  try {
+    const res = await $fetch("/api/admin/mood-feed/moderation");
+    pendingEntries.value = res?.entries || [];
+    pendingReplies.value = res?.replies || [];
+  } catch (error) {
+    console.error("[admin][mood-feed] moderation load error", error);
+    pendingEntries.value = [];
+    pendingReplies.value = [];
+  } finally {
+    moderationLoading.value = false;
+  }
+};
+
+onMounted(loadModeration);
+
+const updateEntryStatus = async (entry, status) => {
+  if (!entry?.id) return;
+  try {
+    await $fetch(`/api/admin/mood-feed/entries/${entry.id}`, {
+      method: "PATCH",
+      body: { status },
+    });
+    pendingEntries.value = pendingEntries.value.filter((e) => e.id !== entry.id);
+  } catch (error) {
+    console.error("[admin][mood-feed] entry status update error", error);
+  }
+};
+
+const updateReplyStatus = async (reply, status) => {
+  if (!reply?.id) return;
+  try {
+    await $fetch(`/api/admin/mood-feed/replies/${reply.id}`, {
+      method: "PATCH",
+      body: { status },
+    });
+    pendingReplies.value = pendingReplies.value.filter((r) => r.id !== reply.id);
+  } catch (error) {
+    console.error("[admin][mood-feed] reply status update error", error);
   }
 };
 

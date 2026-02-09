@@ -29,6 +29,7 @@
       @menu="openMessageMenu"
       @login-request="$emit('login-request')"
       @profile="$emit('profile', $event)"
+      @register="$emit('register')"
     />
     <div v-else class="text-body-2 text-medium-emphasis mb-2">
       {{ emptyText }}
@@ -44,16 +45,23 @@
     transition="fade-transition"
   >
     <v-list density="compact" min-width="180">
-      <v-list-item
-        v-if="isMineSelected"
-        prepend-icon="mdi-delete"
-        @click="onDelete"
-      >
-        <v-list-item-title>Delete</v-list-item-title>
-      </v-list-item>
-      <v-list-item v-else prepend-icon="mdi-flag" @click="onFlag">
-        <v-list-item-title>Flag</v-list-item-title>
-      </v-list-item>
+    <v-list-item
+      v-if="isMineSelected"
+      prepend-icon="mdi-delete"
+      @click="onDelete"
+    >
+      <v-list-item-title>{{ t("pages.feeds.deleteButton", "Delete") }}</v-list-item-title>
+    </v-list-item>
+    <v-list-item
+      v-if="isMineSelected && isAnonSelected"
+      prepend-icon="mdi-account-plus"
+      @click="onRegister"
+    >
+      <v-list-item-title>{{ t("pages.feeds.registerCta", "Register now") }}</v-list-item-title>
+    </v-list-item>
+    <v-list-item v-else prepend-icon="mdi-flag" @click="onFlag">
+      <v-list-item-title>{{ t("pages.feeds.flagButton", "Flag") }}</v-list-item-title>
+    </v-list-item>
     </v-list>
   </v-menu>
 </template>
@@ -69,7 +77,7 @@ const props = defineProps({
   meId: { type: String, default: null },
   canReply: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
-  emptyText: { type: String, default: "No replies yet." },
+  emptyText: { type: String, default: null },
 });
 
 const emit = defineEmits([
@@ -80,9 +88,13 @@ const emit = defineEmits([
   "delete-reply",
   "flag",
   "profile",
+  "register",
 ]);
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
+const emptyText = computed(
+  () => props.emptyText || t("pages.feeds.emptyReplies", "No replies yet.")
+);
 
 const promptText = computed(() => props.thread.promptText || "");
 
@@ -99,12 +111,21 @@ const entryMessages = computed(() =>
       senderKind: "user",
       content: entry.displayText,
       createdAt: entry.createdAt,
+      displayLocale: entry.displayLocale || null,
+      sourceLocale: entry.sourceLocale || null,
       score: entry.score ?? 0,
       myVote: entry.userVote ?? 0,
       authorId: entry.userId,
+      authorIsAnonymous: !!entry.authorIsAnonymous,
       displayname:
-        entryAuthor.displayname || entry.profile?.displayname || "User",
-      avatarUrl: entry.profile?.avatar_url || null,
+        entryAuthor.displayname ||
+        entry.profile?.displayname ||
+        entry.authorDisplayname ||
+        "User",
+      avatarUrl:
+        entry.profile?.avatar_url ||
+        entry.authorAvatarUrl ||
+        (entry.authorIsAnonymous ? "/images/avatars/guest-avatar.webp" : null),
       voteTarget: "entry",
     };
   })
@@ -131,12 +152,21 @@ const replyMessages = computed(() => {
         senderKind: "user",
         content: reply.displayText,
         createdAt: reply.createdAt,
+        displayLocale: reply.displayLocale || null,
+        sourceLocale: reply.sourceLocale || null,
         score: reply.score ?? 0,
         myVote: reply.userVote ?? 0,
         authorId: reply.userId,
+        authorIsAnonymous: !!reply.authorIsAnonymous,
         displayname:
-          replyAuthor.displayname || reply.profile?.displayname || "User",
-        avatarUrl: reply.profile?.avatar_url || null,
+          replyAuthor.displayname ||
+          reply.profile?.displayname ||
+          reply.authorDisplayname ||
+          "User",
+        avatarUrl:
+          reply.profile?.avatar_url ||
+          reply.authorAvatarUrl ||
+          (reply.authorIsAnonymous ? "/images/avatars/guest-avatar.webp" : null),
         voteTarget: "reply",
       });
     }
@@ -167,6 +197,11 @@ const isMineSelected = computed(() => {
   if (!menu.id || !props.meId) return false;
   const msg = messageMap.value.get(menu.id);
   return !!msg && String(msg.authorId) === String(props.meId);
+});
+const isAnonSelected = computed(() => {
+  if (!menu.id) return false;
+  const msg = messageMap.value.get(menu.id);
+  return !!msg && !!msg.authorIsAnonymous;
 });
 
 function openMessageMenu({ id, el }) {
@@ -201,6 +236,11 @@ function onFlag() {
   } else {
     emit("flag", { targetType: "reply", targetId: id });
   }
+}
+
+function onRegister() {
+  menu.open = false;
+  emit("register");
 }
 
 function handleReply({ id, text }) {

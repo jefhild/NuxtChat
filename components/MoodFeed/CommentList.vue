@@ -8,9 +8,13 @@
           :depth="item.depth"
           :displayname="item.displayname"
           :user-id="item.authorId || null"
+          :me-id="meId"
           :avatar-url="item.avatarUrl"
           :sender-kind="item.senderKind"
           :created-at="item.createdAt"
+          :display-locale="item.displayLocale"
+          :source-locale="item.sourceLocale"
+          :author-is-anonymous="item.authorIsAnonymous"
           :content="item.content"
           :score="item.score"
           :my-vote="item.myVote"
@@ -24,6 +28,7 @@
           @menu="$emit('menu', $event)"
           @login="$emit('login-request')"
           @profile="$emit('profile', $event)"
+          @register="$emit('register')"
         >
           <template #reply-composer>
             <v-expand-transition>
@@ -31,8 +36,8 @@
                 <ReplyInline
                   :model-value="drafts.get(item.id) || ''"
                   :disabled="!canReply"
-                  submit-label="Save"
-                  placeholder="Write a reply…"
+                  :submit-label="t('pages.feeds.replyButton', 'Reply')"
+                  :placeholder="t('pages.feeds.replyPlaceholder', 'Write a reply...')"
                   @update:modelValue="val => drafts.set(item.id, val)"
                   @submit="txt => onSubmitReply(item.id, txt)"
                   @cancel="() => onCancelReply(item.id)"
@@ -48,6 +53,7 @@
 
 <script setup>
 import { computed, ref, reactive, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import MoodFeedCommentItem from "./CommentItem.vue";
 import ReplyInline from "../Articles/ReplyInline.vue";
 
@@ -67,6 +73,7 @@ const emit = defineEmits([
   "login-request",
   "profile",
 ]);
+const { t } = useI18n();
 
 const byId = computed(() => {
   const m = new Map();

@@ -278,6 +278,19 @@ if (import.meta.client) {
     // });
 
     setOnboardingBotMessageHandler(captureBotMessage);
+    try {
+      const notices = ["mfLimitNotice", "mfRegisterNotice"];
+      for (const key of notices) {
+        const notice = localStorage.getItem(key);
+        if (!notice) continue;
+        draft.appendThreadMessage({
+          from: "imchatty",
+          text: notice,
+          ts: Date.now(),
+        });
+        localStorage.removeItem(key);
+      }
+    } catch {}
     if (props.isPreAuth && props.isBotSelected && !booted.value) {
       const needsResume =
         !props.consented || (props.consented && draft.stage !== "done");

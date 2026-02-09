@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
     model: config.OPENAI_MODEL || "gpt-4o-mini",
   });
   if (!apiKey || !openai) {
-    return { refined: response.slice(0, 140) };
+    return { refined: response.slice(0, 140), tone };
   }
 
   const sys = [
@@ -86,9 +86,9 @@ export default defineEventHandler(async (event) => {
     const refined =
       String(resp?.choices?.[0]?.message?.content || "").trim() ||
       response.slice(0, 140);
-    return { refined };
+    return { refined, tone };
   } catch (err) {
     console.warn("[mood-feed.refine] fallback:", err?.message || err);
-    return { refined: response.slice(0, 140) };
+    return { refined: response.slice(0, 140), tone };
   }
 });

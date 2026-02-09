@@ -1,4 +1,3 @@
-import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 
 const normalizeLocale = (value) => {
@@ -14,10 +13,6 @@ const pickRandom = (list = []) =>
   list[Math.floor(Math.random() * list.length)];
 
 export default defineEventHandler(async (event) => {
-  const user = await serverSupabaseUser(event);
-  if (!user?.id)
-    throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-
   const query = getQuery(event) || {};
   const locale = normalizeLocale(query.locale || "en");
   const supabase = await getServiceRoleClient(event);
