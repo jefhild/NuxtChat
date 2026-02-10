@@ -33,46 +33,6 @@
             class="mt-4"
             variant="outlined"
           >
-            <v-card-title>Simulated User Controls</v-card-title>
-            <v-card-text>
-              <v-row dense>
-                <v-col cols="12" sm="6">
-                  <v-switch
-                    v-model="adminFlags.force_online"
-                    label="Force online"
-                    color="primary"
-                    hide-details
-                  />
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-switch
-                    v-model="adminFlags.is_simulated"
-                    label="Simulated user"
-                    color="primary"
-                    hide-details
-                  />
-                </v-col>
-              </v-row>
-              <div class="d-flex align-center ga-2 mt-2">
-                <v-btn
-                  color="primary"
-                  :loading="flagsSaving"
-                  @click="saveAdminFlags"
-                >
-                  Save flags
-                </v-btn>
-                <span v-if="flagsStatus" class="text-caption">
-                  {{ flagsStatus }}
-                </span>
-              </div>
-            </v-card-text>
-          </v-card>
-
-          <v-card
-            v-if="userProfile && isAdmin"
-            class="mt-4"
-            variant="outlined"
-          >
             <v-card-title>Simulated Inbox</v-card-title>
             <v-card-text>
               <div class="d-flex align-center ga-2 mb-3">
@@ -199,13 +159,6 @@ const loading = ref(true);
 const loadError = ref("");
 const isAdmin = computed(() => !!authStore.userProfile?.is_admin);
 
-const adminFlags = reactive({
-  force_online: false,
-  is_simulated: false,
-});
-const flagsSaving = ref(false);
-const flagsStatus = ref("");
-
 const inboxMessages = ref([]);
 const inboxLoading = ref(false);
 const inboxError = ref("");
@@ -228,40 +181,10 @@ const fetchProfile = async () => {
     const { data, error } = await getUserProfileFromId(userId);
     if (error) throw error;
     userProfile.value = data;
-    adminFlags.force_online = !!data?.force_online;
-    adminFlags.is_simulated = !!data?.is_simulated;
   } catch (error) {
     console.error("[admin][profile] load error", error);
     loadError.value =
       error?.message || "Unable to load the selected profile.";
-  }
-};
-
-const saveAdminFlags = async () => {
-  if (!userProfile.value?.user_id) return;
-  flagsSaving.value = true;
-  flagsStatus.value = "";
-  try {
-    const res = await $fetch("/api/admin/profiles-flags", {
-      method: "PATCH",
-      body: {
-        user_id: userProfile.value.user_id,
-        force_online: adminFlags.force_online,
-        is_simulated: adminFlags.is_simulated,
-      },
-    });
-    if (res?.item) {
-      userProfile.value = { ...userProfile.value, ...res.item };
-    }
-    flagsStatus.value = "Saved";
-  } catch (error) {
-    console.error("[admin][profile] flags save error", error);
-    flagsStatus.value = "Save failed";
-  } finally {
-    flagsSaving.value = false;
-    setTimeout(() => {
-      flagsStatus.value = "";
-    }, 2000);
   }
 };
 

@@ -60,23 +60,77 @@
                     v-if="hasPendingReply(item)"
                     color="red"
                     dot
-                    location="top end"
+                    location="bottom end"
                     offset-x="2"
                     offset-y="2"
                   >
+                    <div class="admin-avatar-wrap">
+                      <v-avatar size="40">
+                        <v-img
+                          :src="getAvatar(item.avatar_url, item.gender_id)"
+                          :alt="displayNameFor(item) || 'Profile avatar'"
+                        />
+                      </v-avatar>
+                      <span
+                        v-if="getCountryEmoji(item)"
+                        class="admin-flag-icon"
+                        aria-hidden="true"
+                      >
+                        {{ getCountryEmoji(item) }}
+                      </span>
+                      <v-icon
+                        v-if="item?.gender_id"
+                        size="14"
+                        class="admin-gender-icon"
+                        :class="{
+                          'is-male': item?.gender_id === 1,
+                          'is-female': item?.gender_id === 2,
+                          'is-other': item?.gender_id !== 1 && item?.gender_id !== 2,
+                        }"
+                      >
+                        {{
+                          item?.gender_id === 1
+                            ? "mdi-gender-male"
+                            : item?.gender_id === 2
+                            ? "mdi-gender-female"
+                            : "mdi-gender-non-binary"
+                        }}
+                      </v-icon>
+                    </div>
+                  </v-badge>
+                  <div v-else class="admin-avatar-wrap">
                     <v-avatar size="40">
                       <v-img
                         :src="getAvatar(item.avatar_url, item.gender_id)"
                         :alt="displayNameFor(item) || 'Profile avatar'"
                       />
                     </v-avatar>
-                  </v-badge>
-                  <v-avatar v-else size="40">
-                    <v-img
-                      :src="getAvatar(item.avatar_url, item.gender_id)"
-                      :alt="displayNameFor(item) || 'Profile avatar'"
-                    />
-                  </v-avatar>
+                    <span
+                      v-if="getCountryEmoji(item)"
+                      class="admin-flag-icon"
+                      aria-hidden="true"
+                    >
+                      {{ getCountryEmoji(item) }}
+                    </span>
+                    <v-icon
+                      v-if="item?.gender_id"
+                      size="14"
+                      class="admin-gender-icon"
+                      :class="{
+                        'is-male': item?.gender_id === 1,
+                        'is-female': item?.gender_id === 2,
+                        'is-other': item?.gender_id !== 1 && item?.gender_id !== 2,
+                      }"
+                    >
+                      {{
+                        item?.gender_id === 1
+                          ? "mdi-gender-male"
+                          : item?.gender_id === 2
+                          ? "mdi-gender-female"
+                          : "mdi-gender-non-binary"
+                      }}
+                    </v-icon>
+                  </div>
                   <div class="d-flex flex-column">
                     <span class="font-weight-medium">
                       {{ displayNameFor(item) }}
@@ -92,31 +146,6 @@
                     </span>
                   </div>
                 </div>
-              </template>
-
-              <template #item.gender="{ item }">
-                <span>{{ getGenderLabel(item) }}</span>
-              </template>
-
-              <template #item.country="{ item }">
-                <span>
-                  {{ getCountryLabel(item) }}
-                  <span v-if="getCountryEmoji(item)">
-                    {{ getCountryEmoji(item) }}
-                  </span>
-                </span>
-              </template>
-
-              <template #item.createdAtSort="{ item }">
-                <span class="text-body-2 admin-nowrap">
-                  {{ formatDate(item.createdAt) }}
-                </span>
-              </template>
-
-              <template #item.email="{ item }">
-                <span class="text-body-2 admin-ellipsis">
-                  {{ item.email || "—" }}
-                </span>
               </template>
 
               <template #item.actions="{ item }">
@@ -195,12 +224,41 @@
                         <v-progress-linear indeterminate color="primary" />
                       </div>
                       <div v-else class="d-flex flex-column ga-4">
-                        <div class="d-flex align-center ga-3">
-                          <div class="text-subtitle-2 text-medium-emphasis">
-                            User ID
+                        <div class="admin-detail-grid">
+                          <div class="admin-detail-item">
+                            <div class="text-subtitle-2 text-medium-emphasis">
+                              User ID
+                            </div>
+                            <div class="text-body-2 font-weight-medium">
+                              {{ item.user_id || "—" }}
+                            </div>
                           </div>
-                          <div class="text-body-2 font-weight-medium">
-                            {{ item.user_id || "—" }}
+                          <div class="admin-detail-item">
+                            <div class="text-subtitle-2 text-medium-emphasis">
+                              Country
+                            </div>
+                            <div class="text-body-2 font-weight-medium">
+                              {{ getCountryLabel(item) }}
+                              <span v-if="getCountryEmoji(item)">
+                                {{ getCountryEmoji(item) }}
+                              </span>
+                            </div>
+                          </div>
+                          <div class="admin-detail-item">
+                            <div class="text-subtitle-2 text-medium-emphasis">
+                              Joined
+                            </div>
+                            <div class="text-body-2 font-weight-medium">
+                              {{ formatDate(item.createdAt) }}
+                            </div>
+                          </div>
+                          <div class="admin-detail-item">
+                            <div class="text-subtitle-2 text-medium-emphasis">
+                              Email
+                            </div>
+                            <div class="text-body-2 font-weight-medium admin-ellipsis">
+                              {{ item.email || "—" }}
+                            </div>
                           </div>
                         </div>
                         <div class="d-flex flex-column flex-md-row ga-6">
@@ -298,6 +356,34 @@
                           >
                             Review pending photos
                           </v-btn>
+                        </div>
+
+                        <div class="d-flex flex-column ga-3">
+                          <div class="text-subtitle-2 text-medium-emphasis">
+                            Simulated user controls
+                          </div>
+                          <div class="d-flex flex-column flex-md-row align-start ga-4">
+                            <v-switch
+                              v-model="getAdminFlags(item).force_online"
+                              label="Force online"
+                              color="primary"
+                              hide-details
+                              @update:model-value="onAdminFlagToggle(item)"
+                            />
+                            <v-switch
+                              v-model="getAdminFlags(item).is_simulated"
+                              label="Simulated user"
+                              color="primary"
+                              hide-details
+                              @update:model-value="onAdminFlagToggle(item)"
+                            />
+                            <span
+                              v-if="adminFlagsStatus(item.user_id)"
+                              class="text-caption"
+                            >
+                              {{ adminFlagsStatus(item.user_id) }}
+                            </span>
+                          </div>
                         </div>
 
                         <div>
@@ -599,6 +685,10 @@ const activityByUserId = ref({});
 const activityLoadingIds = ref([]);
 const bulkActivityLoading = ref(false);
 const pendingReplyByUserId = ref({});
+const adminFlagsByUserId = ref({});
+const adminFlagsSavingByUserId = ref({});
+const adminFlagsStatusByUserId = ref({});
+const adminFlagsSaveTimers = ref({});
 const pendingPhotoUserIds = ref([]);
 const purgeDialogOpen = ref(false);
 const purgeBusy = ref(false);
@@ -778,10 +868,6 @@ const sortBy = computed(() => {
 
 const tableHeaders = [
   { title: "Profile", key: "profile", sortable: false },
-  { title: "Gender", key: "gender" },
-  { title: "Country", key: "country" },
-  { title: "Joined", key: "createdAtSort", align: "end" },
-  { title: "Email", key: "email" },
   { title: "Actions", key: "actions", sortable: false },
 ];
 
@@ -912,6 +998,22 @@ const loadReplyStatus = async (profilesList) => {
     }
   }
   pendingReplyByUserId.value = nextStatus;
+};
+
+const refreshReplyStatusFor = async (userId) => {
+  if (!userId) return;
+  try {
+    const response = await $fetch("/api/admin/reply-status", {
+      query: { user_ids: userId },
+    });
+    const map = response?.items || {};
+    pendingReplyByUserId.value = {
+      ...pendingReplyByUserId.value,
+      [userId]: !!map[userId],
+    };
+  } catch (error) {
+    console.error("[admin] loadReplyStatus error:", error);
+  }
 };
 
 const ensureActivityLoaded = async (userId) => {
@@ -1286,6 +1388,123 @@ async function handleUserDeleted(userId, undo = false) {
   );
 }
 
+const syncProfileFlags = (userId, nextFlags) => {
+  const apply = (list) =>
+    list.map((p) =>
+      p?.user_id === userId ? { ...p, ...nextFlags } : p
+    );
+  profiles.value = apply(profiles.value);
+  aiProfiles.value = apply(aiProfiles.value);
+};
+
+const getAdminFlags = (profile) => {
+  if (!profile?.user_id) {
+    return { force_online: false, is_simulated: false };
+  }
+  const userId = profile.user_id;
+  if (!adminFlagsByUserId.value[userId]) {
+    adminFlagsByUserId.value = {
+      ...adminFlagsByUserId.value,
+      [userId]: {
+        force_online: !!profile.force_online,
+        is_simulated: !!profile.is_simulated,
+      },
+    };
+  }
+  return adminFlagsByUserId.value[userId];
+};
+
+const isAdminFlagsSaving = (userId) =>
+  !!adminFlagsSavingByUserId.value[userId];
+
+const adminFlagsStatus = (userId) => adminFlagsStatusByUserId.value[userId] || "";
+
+const saveAdminFlagsFor = async (profile) => {
+  const userId = profile?.user_id;
+  if (!userId) return;
+  const flags = getAdminFlags(profile);
+  adminFlagsSavingByUserId.value = {
+    ...adminFlagsSavingByUserId.value,
+    [userId]: true,
+  };
+  adminFlagsStatusByUserId.value = {
+    ...adminFlagsStatusByUserId.value,
+    [userId]: "",
+  };
+  try {
+    const res = await $fetch("/api/admin/profiles-flags", {
+      method: "PATCH",
+      body: {
+        user_id: userId,
+        force_online: flags.force_online,
+        is_simulated: flags.is_simulated,
+      },
+    });
+    if (res?.item) {
+      syncProfileFlags(userId, res.item);
+      adminFlagsByUserId.value = {
+        ...adminFlagsByUserId.value,
+        [userId]: {
+          force_online: !!res.item.force_online,
+          is_simulated: !!res.item.is_simulated,
+        },
+      };
+    } else {
+      syncProfileFlags(userId, {
+        force_online: !!flags.force_online,
+        is_simulated: !!flags.is_simulated,
+      });
+    }
+
+    if (flags.is_simulated) {
+      await refreshReplyStatusFor(userId);
+    } else {
+      const nextPending = { ...pendingReplyByUserId.value };
+      delete nextPending[userId];
+      pendingReplyByUserId.value = nextPending;
+    }
+
+    adminFlagsStatusByUserId.value = {
+      ...adminFlagsStatusByUserId.value,
+      [userId]: "Saved",
+    };
+  } catch (error) {
+    console.error("[admin] flags save error:", error);
+    adminFlagsStatusByUserId.value = {
+      ...adminFlagsStatusByUserId.value,
+      [userId]: "Save failed",
+    };
+  } finally {
+    adminFlagsSavingByUserId.value = {
+      ...adminFlagsSavingByUserId.value,
+      [userId]: false,
+    };
+    setTimeout(() => {
+      adminFlagsStatusByUserId.value = {
+        ...adminFlagsStatusByUserId.value,
+        [userId]: "",
+      };
+    }, 2000);
+  }
+};
+
+const onAdminFlagToggle = (profile) => {
+  const userId = profile?.user_id;
+  if (!userId) return;
+  const timers = adminFlagsSaveTimers.value;
+  if (timers[userId]) {
+    clearTimeout(timers[userId]);
+  }
+  adminFlagsStatusByUserId.value = {
+    ...adminFlagsStatusByUserId.value,
+    [userId]: "Saving...",
+  };
+  adminFlagsSaveTimers.value = {
+    ...adminFlagsSaveTimers.value,
+    [userId]: setTimeout(() => saveAdminFlagsFor(profile), 350),
+  };
+};
+
 const purgeMarkedProfiles = async () => {
   purgeBusy.value = true;
   purgeError.value = "";
@@ -1343,6 +1562,72 @@ const purgeMarkedProfiles = async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: bottom;
+}
+
+.admin-avatar-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.admin-gender-icon {
+  position: absolute;
+  left: -3px;
+  bottom: -3px;
+  background: #fff;
+  border-radius: 999px;
+  padding: 3px;
+  color: #1d3b58;
+}
+
+.admin-flag-icon {
+  position: absolute;
+  right: -3px;
+  top: -3px;
+  background: #fff;
+  border-radius: 999px;
+  padding: 2px 4px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.admin-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px 24px;
+}
+
+.admin-detail-item {
+  min-width: 0;
+}
+
+@media (max-width: 1260px) {
+  .admin-detail-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .admin-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .admin-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-gender-icon.is-male {
+  color: #2563eb;
+}
+
+.admin-gender-icon.is-female {
+  color: #ec4899;
+}
+
+.admin-gender-icon.is-other {
+  color: #7c3aed;
 }
 
 .admin-sort {
