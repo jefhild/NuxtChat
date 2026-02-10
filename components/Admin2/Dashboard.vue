@@ -45,7 +45,6 @@
               :items="activeProfiles"
               :items-per-page="-1"
               item-value="user_id"
-              show-expand
               fixed-header
               height="680"
               class="admin-table"
@@ -132,9 +131,14 @@
                     </v-icon>
                   </div>
                   <div class="d-flex flex-column">
-                    <span class="font-weight-medium">
+                    <button
+                      type="button"
+                      class="admin-profile-link font-weight-medium"
+                      :aria-expanded="isExpanded(item.user_id) ? 'true' : 'false'"
+                      @click="toggleExpanded(item.user_id)"
+                    >
                       {{ displayNameFor(item) }}
-                    </span>
+                    </button>
                     <span class="text-caption text-medium-emphasis">
                       {{ item.slug || item.user_id }}
                     </span>
@@ -149,7 +153,7 @@
               </template>
 
               <template #item.actions="{ item }">
-                <div class="d-flex align-center ga-1">
+                <div class="d-flex align-center ga-1 admin-actions">
                   <v-tooltip text="Mock chat">
                     <template #activator="{ props }">
                       <v-btn
@@ -731,6 +735,19 @@ const displayNameFor = (profile) =>
     readerLocale: locale?.value,
   }).displayname || profile?.displayname || "Unknown";
 
+const isExpanded = (userId) => expanded.value.includes(userId);
+const toggleExpanded = (userId) => {
+  if (!userId) return;
+  const next = [...expanded.value];
+  const index = next.indexOf(userId);
+  if (index === -1) {
+    next.push(userId);
+  } else {
+    next.splice(index, 1);
+  }
+  expanded.value = next;
+};
+
 // tiny helper to coerce “maybe array” -> array
 const toArray = (val) => {
   if (Array.isArray(val)) return val;
@@ -868,7 +885,7 @@ const sortBy = computed(() => {
 
 const tableHeaders = [
   { title: "Profile", key: "profile", sortable: false },
-  { title: "Actions", key: "actions", sortable: false },
+  { title: "Actions", key: "actions", sortable: false, align: "center" },
 ];
 
 const chatMessageHeaders = [
@@ -1551,6 +1568,12 @@ const purgeMarkedProfiles = async () => {
   white-space: nowrap;
 }
 
+.admin-table :deep(th[data-column="actions"]),
+.admin-table :deep(td[data-column="actions"]) {
+  text-align: center;
+  justify-content: center;
+}
+
 .admin-nowrap {
   white-space: nowrap;
 }
@@ -1654,5 +1677,29 @@ const purgeMarkedProfiles = async () => {
 
 .admin-mock-dialog :deep(.v-card-actions) {
   flex-shrink: 0;
+}
+
+.admin-actions {
+  width: 100%;
+  justify-content: center;
+}
+
+.admin-profile-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #1d4ed8;
+  cursor: pointer;
+  text-align: left;
+}
+
+.admin-profile-link:hover {
+  text-decoration: underline;
+}
+
+.admin-profile-link:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 </style>
