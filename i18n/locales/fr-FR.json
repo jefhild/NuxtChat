@@ -1276,16 +1276,26 @@
       "favorites": "Mes Favoris",
       "blocked": "Utilisateurs Bloqués",
       "upvotes": "Votes Positifs",
+      "chat-settings": "Paramètres du chat",
       "photo-library": "Bibliothèque de photos",
       "menu": {
         "profile": "Mon Profil",
         "favorites": "Mes Favoris",
         "blocked": "Utilisateurs Bloqués",
         "upvotes": "Votes Positifs",
+        "chat-settings": "Paramètres du chat",
         "photo-library": "Bibliothèque de photos"
       },
       "loading": "Chargement...",
       "registered-only": "Utilisateurs enregistrés seulement"
+    },
+    "chat-settings": {
+      "title": "Paramètres du chat",
+      "subtitle": "Contrôlez comment ImChatty interagit avec vous dans le chat.",
+      "mood-question": "Question d’humeur quotidienne",
+      "mood-question-helper": "Laissez ImChatty vous poser une question d’humeur quotidienne dans le chat.",
+      "snooze": "Mettre en pause 7 jours",
+      "snoozed": "En pause jusqu’au {date}"
     },
     "photo-library": {
       "title": "Bibliothèque de photos",

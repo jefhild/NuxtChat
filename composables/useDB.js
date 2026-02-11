@@ -1731,7 +1731,9 @@ export const useDb = () => {
     avatar_url,
     site_url,
     preferred_locale,
-    is_private
+    is_private,
+    mood_feed_prompt_enabled,
+    mood_feed_prompt_snooze_until
   ) => {
     const supabase = getClient();
     const updatePayload = {
@@ -1748,6 +1750,8 @@ export const useDb = () => {
       site_url,
       preferred_locale,
       is_private,
+      mood_feed_prompt_enabled,
+      mood_feed_prompt_snooze_until,
     };
 
     // Remove undefined (and null is_private to avoid NOT NULL errors)

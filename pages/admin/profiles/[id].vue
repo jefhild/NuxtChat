@@ -44,6 +44,37 @@
                 >
                   Refresh inbox
                 </v-btn>
+                <v-select
+                  v-model="deletePeerId"
+                  :items="peerOptions"
+                  item-title="label"
+                  item-value="value"
+                  density="compact"
+                  variant="outlined"
+                  label="Select user"
+                  class="delete-peer-select"
+                  hide-details
+                />
+                <v-btn
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  :disabled="deleteBusy || !deletePeerId"
+                  :loading="deleteBusy"
+                  @click="deletePeerDialog = true"
+                >
+                  Delete with selected user
+                </v-btn>
+                <v-btn
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  :disabled="deleteBusy || !userProfile?.user_id"
+                  :loading="deleteBusy"
+                  @click="deleteDialog = true"
+                >
+                  Delete all messages
+                </v-btn>
                 <span v-if="inboxError" class="text-caption text-error">
                   {{ inboxError }}
                 </span>
@@ -129,6 +160,52 @@
               </div>
             </v-card-text>
           </v-card>
+          <v-dialog v-model="deleteDialog" max-width="480">
+            <v-card>
+              <v-card-title class="text-h6">
+                Delete all messages?
+              </v-card-title>
+              <v-card-text>
+                This will permanently delete all messages sent or received by this
+                user. This cannot be undone.
+              </v-card-text>
+              <v-card-actions class="justify-end">
+                <v-btn variant="text" @click="deleteDialog = false">
+                  Cancel
+                </v-btn>
+                <v-btn
+                  color="error"
+                  :loading="deleteBusy"
+                  @click="deleteAllMessages"
+                >
+                  Delete
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-dialog v-model="deletePeerDialog" max-width="480">
+            <v-card>
+              <v-card-title class="text-h6">
+                Delete messages with selected user?
+              </v-card-title>
+              <v-card-text>
+                This will permanently delete all messages between this user and the
+                selected user. This cannot be undone.
+              </v-card-text>
+              <v-card-actions class="justify-end">
+                <v-btn variant="text" @click="deletePeerDialog = false">
+                  Cancel
+                </v-btn>
+                <v-btn
+                  color="error"
+                  :loading="deleteBusy"
+                  @click="deleteMessagesWithPeer"
+                >
+                  Delete
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
           <v-alert
             v-if="!userProfile"
             type="info"
@@ -162,6 +239,25 @@ const isAdmin = computed(() => !!authStore.userProfile?.is_admin);
 const inboxMessages = ref([]);
 const inboxLoading = ref(false);
 const inboxError = ref("");
+const deleteDialog = ref(false);
+const deletePeerDialog = ref(false);
+const deleteBusy = ref(false);
+const deletePeerId = ref("");
+
+const peerOptions = computed(() => {
+  const map = new Map();
+  for (const msg of inboxMessages.value || []) {
+    if (msg?.sender_id && msg?.sender_id !== userProfile.value?.user_id) {
+      if (!map.has(msg.sender_id)) {
+        map.set(
+          msg.sender_id,
+          msg.sender?.displayname || msg.sender_id
+        );
+      }
+    }
+  }
+  return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
+});
 
 const compose = reactive({
   receiverId: "",
@@ -260,6 +356,47 @@ const markMessageRead = async (msg) => {
   }
 };
 
+const deleteAllMessages = async () => {
+  if (!userProfile.value?.user_id) return;
+  deleteBusy.value = true;
+  inboxError.value = "";
+  try {
+    await $fetch("/api/admin/messages-delete", {
+      method: "POST",
+      body: { user_id: userProfile.value.user_id },
+    });
+    inboxMessages.value = [];
+    deleteDialog.value = false;
+  } catch (error) {
+    console.error("[admin][profile] delete messages error", error);
+    inboxError.value = "Unable to delete messages";
+  } finally {
+    deleteBusy.value = false;
+  }
+};
+
+const deleteMessagesWithPeer = async () => {
+  if (!userProfile.value?.user_id || !deletePeerId.value) return;
+  deleteBusy.value = true;
+  inboxError.value = "";
+  try {
+    await $fetch("/api/admin/messages-delete", {
+      method: "POST",
+      body: {
+        user_id: userProfile.value.user_id,
+        peer_id: deletePeerId.value,
+      },
+    });
+    deletePeerDialog.value = false;
+    await loadInbox();
+  } catch (error) {
+    console.error("[admin][profile] delete peer messages error", error);
+    inboxError.value = "Unable to delete messages";
+  } finally {
+    deleteBusy.value = false;
+  }
+};
+
 const formatTimestamp = (value) => {
   if (!value) return "";
   const date = new Date(value);
@@ -289,5 +426,9 @@ onMounted(async () => {
   background-color: #e53935;
   margin-right: 6px;
   vertical-align: middle;
+}
+
+.delete-peer-select {
+  min-width: 200px;
 }
 </style>

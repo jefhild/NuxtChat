@@ -707,6 +707,14 @@ if (!allowed) {
       });
       await insertMessage(receiverId, IMCHATTY_ID, formatMoodPrompt(prompt));
       chat.addActivePeer?.(IMCHATTY_ID);
+      try {
+        await $fetch("/api/mood-feed/prompted", { method: "POST" });
+      } catch (err) {
+        console.warn(
+          "[mood-feed] prompt acknowledge failed:",
+          err?.message || err
+        );
+      }
     } catch (err) {
       console.warn("[mood-feed] prompt insert failed:", err?.message || err);
     } finally {

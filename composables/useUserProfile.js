@@ -29,6 +29,22 @@ export function useUserProfile() {
     return { ...baseProfile, preferred_locale: data.preferred_locale };
   };
 
+  const ensureMoodFeedPrefs = async (baseProfile) => {
+    if (!baseProfile?.user_id) return baseProfile;
+    const { data, error: profileError } = await getUserProfileFromId(
+      baseProfile.user_id
+    );
+    if (profileError || !data) return baseProfile;
+    return {
+      ...baseProfile,
+      mood_feed_prompt_enabled:
+        data.mood_feed_prompt_enabled ?? baseProfile.mood_feed_prompt_enabled,
+      mood_feed_prompt_snooze_until:
+        data.mood_feed_prompt_snooze_until ??
+        baseProfile.mood_feed_prompt_snooze_until,
+    };
+  };
+
   const fetchUserProfile = async (userId) => {
     if (!userId) {
       error.value = "User ID is required";
@@ -39,6 +55,7 @@ export function useUserProfile() {
     if (data && data.length > 0) {
       let baseProfile = data[0];
       baseProfile = await ensurePreferredLocale(baseProfile);
+      baseProfile = await ensureMoodFeedPrefs(baseProfile);
       const { data: translations } = await getProfileTranslations(
         baseProfile?.user_id
       );
@@ -80,6 +97,7 @@ export function useUserProfile() {
     if (data && data.length > 0) {
       let baseProfile = data[0];
       baseProfile = await ensurePreferredLocale(baseProfile);
+      baseProfile = await ensureMoodFeedPrefs(baseProfile);
       const { data: translations } = await getProfileTranslations(
         baseProfile?.user_id
       );
@@ -162,7 +180,9 @@ export function useUserProfile() {
         editableProfile.value.avatar_url,
         editableProfile.value.site_url,
         editableProfile.value.preferred_locale,
-        editableProfile.value.is_private
+        editableProfile.value.is_private,
+        editableProfile.value.mood_feed_prompt_enabled,
+        editableProfile.value.mood_feed_prompt_snooze_until
       );
 
       profile.value = { ...editableProfile.value };

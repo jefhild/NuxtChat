@@ -45,7 +45,7 @@
                   <template v-if="userProfile">
                     <SettingsProfileForm
                       :userProfile="userProfile"
-                      @openPhotoLibrary="selectTab(5)"
+                      @openPhotoLibrary="selectTab(6)"
                     />
                   </template>
                   <template v-else>
@@ -104,6 +104,13 @@
               </v-row>
             </v-tabs-window-item>
             <v-tabs-window-item :value="5">
+              <v-row align="start">
+                <v-col class="settings-content-col">
+                  <SettingsChatSettings />
+                </v-col>
+              </v-row>
+            </v-tabs-window-item>
+            <v-tabs-window-item :value="6">
               <v-row align="start">
                 <v-col class="settings-content-col">
                   <v-row v-if="!photoLibraryAvailable">
@@ -177,6 +184,12 @@ const menuItems = computed(() => [
     },
     {
       value: 5,
+      label: t("components.settings-container.chat-settings"),
+      title: t("components.settings-container.menu.chat-settings"),
+      icon: "mdi-chat-outline",
+    },
+    {
+      value: 6,
       label: t("components.settings-container.photo-library"),
       title: t("components.settings-container.menu.photo-library"),
       icon: "mdi-image-multiple",

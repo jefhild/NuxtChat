@@ -1275,16 +1275,26 @@
       "favorites": "我的收藏",
       "blocked": "屏蔽的用户",
       "upvotes": "点赞",
+      "chat-settings": "聊天设置",
       "photo-library": "照片库",
       "menu": {
         "profile": "我的档案",
         "favorites": "我的收藏",
         "blocked": "屏蔽的用户",
         "upvotes": "点赞",
+        "chat-settings": "聊天设置",
         "photo-library": "照片库"
       },
       "loading": "加载中...",
       "registered-only": "仅限注册用户"
+    },
+    "chat-settings": {
+      "title": "聊天设置",
+      "subtitle": "控制 ImChatty 在聊天中的交互方式。",
+      "mood-question": "每日心情问题",
+      "mood-question-helper": "让 ImChatty 在聊天中每天问你一个心情问题。",
+      "snooze": "暂停 7 天",
+      "snoozed": "暂停至 {date}"
     },
     "photo-library": {
       "title": "照片库",
