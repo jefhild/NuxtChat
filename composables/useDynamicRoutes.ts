@@ -28,6 +28,35 @@ function buildArticleImageUrl(imagePath?: string | null) {
   return cleanPath ? `${supabaseArticlesBase}/articles/${cleanPath}` : null;
 }
 
+function normalizeLocaleCode(value?: string | null) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .split("-")[0];
+  return normalized || "";
+}
+
+function getArticleAvailableLocales(article: any): string[] {
+  const available = new Set<string>();
+  const originalLocale = normalizeLocaleCode(article?.original_language_code);
+  if (originalLocale) {
+    available.add(originalLocale);
+  } else {
+    available.add(defaultLocale);
+  }
+
+  const translations = Array.isArray(article?.article_translations)
+    ? article.article_translations
+    : [];
+
+  translations.forEach((entry: any) => {
+    const locale = normalizeLocaleCode(entry?.locale);
+    if (locale) available.add(locale);
+  });
+
+  return SUPPORTED_LOCALES.filter((locale) => available.has(locale));
+}
+
 export async function getAllDynamicRoutes(): Promise<string[]> {
   try {
     const [
@@ -73,7 +102,10 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       )
     ).filter((route): route is string => Boolean(route));
 
-    const articleRoutes = articleData.map((a) => `/articles/${a.slug}`);
+    const articleRoutes = articleData.map((a) => ({
+      path: `/articles/${a.slug}`,
+      locales: getArticleAvailableLocales(a),
+    }));
     const categoryRoutes = categoryData.map((c) => `/categories/${c.slug}`);
     const tagRoutes = tagData.map((t) => `/tags/${t.slug}`);
     const peopleRoutes = peopleData.map((p) => `/people/${p.slug}`);
@@ -85,7 +117,6 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       ...homeRoutes,
       ...staticPages,
       ...profileRoutes,
-      ...articleRoutes,
       ...categoryRoutes,
       ...tagRoutes,
       ...peopleRoutes,
@@ -95,7 +126,11 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       SUPPORTED_LOCALES.map((locale) => localizePath(route, locale))
     );
 
-    return localizedRoutes;
+    const localizedArticleRoutes = articleRoutes.flatMap((route) =>
+      route.locales.map((locale) => localizePath(route.path, locale))
+    );
+
+    return [...localizedRoutes, ...localizedArticleRoutes];
   } catch (error) {
     console.error("Error fetching dynamic routes:", error);
     return [];
@@ -183,11 +218,15 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
 
     articleData.forEach((article) => {
       const imageUrl = buildArticleImageUrl(article?.image_path);
-      addLocalizedRoutes(
-        `/articles/${article.slug}`,
-        article?.created_at,
-        imageUrl ? [{ loc: imageUrl }] : undefined
-      );
+      const localizedArticlePath = `/articles/${article.slug}`;
+      const locales = getArticleAvailableLocales(article);
+      locales.forEach((locale) => {
+        localizedRoutes.push({
+          loc: localizePath(localizedArticlePath, locale),
+          lastmod: article?.created_at || fallbackLastmod,
+          images: imageUrl ? [{ loc: imageUrl }] : undefined,
+        });
+      });
     });
 
     categoryData.forEach((category) =>

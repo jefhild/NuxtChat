@@ -281,7 +281,10 @@ const translation = computed(() => {
   const target = activeLocale.value;
   return (
     translationRecords.value.find(
-      (entry) => String(entry?.locale || "").toLowerCase() === target
+      (entry) =>
+        String(entry?.locale || "")
+          .toLowerCase()
+          .split("-")[0] === target
     ) || null
   );
 });

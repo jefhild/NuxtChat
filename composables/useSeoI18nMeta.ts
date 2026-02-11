@@ -1,7 +1,11 @@
+import { unref } from "vue";
+
 export function useSeoI18nMeta(
   section: string,
   options?: {
     overrideUrl?: string;
+    availableLocaleCodes?: string[] | { value: string[] };
+    robots?: string | { value: string };
     dynamic?: {
       title?: string;
       description?: string;
@@ -50,7 +54,17 @@ export function useSeoI18nMeta(
     "en-US";
   const ogLocale = String(localeIso).replace("-", "_");
 
-  const hreflangLinks = (localeCodes?.value || [])
+  const configuredLocaleCodes = localeCodes?.value || [];
+  const rawAvailableLocaleCodes = unref(options?.availableLocaleCodes as any);
+  const allowedLocaleCodes = Array.isArray(rawAvailableLocaleCodes)
+    ? rawAvailableLocaleCodes
+    : configuredLocaleCodes;
+  const localeCodeSet = new Set(allowedLocaleCodes);
+  const finalLocaleCodes = configuredLocaleCodes.filter((code) =>
+    localeCodeSet.has(code)
+  );
+
+  const hreflangLinks = finalLocaleCodes
     .map((code) => {
       const path = switchLocalePath(code);
       const href = toAbsoluteUrl(path);
@@ -68,7 +82,7 @@ export function useSeoI18nMeta(
   const defaultLocale = "en";
   const defaultPath = switchLocalePath(defaultLocale);
   const defaultHref = toAbsoluteUrl(defaultPath);
-  if (defaultHref) {
+  if (defaultHref && localeCodeSet.has(defaultLocale)) {
     hreflangLinks.push({
       rel: "alternate",
       hreflang: "x-default",
@@ -99,6 +113,14 @@ export function useSeoI18nMeta(
         name: "description",
         content: dynamic.description || tf("description"),
       },
+      ...(unref(options?.robots as any)
+        ? [
+            {
+              name: "robots",
+              content: unref(options?.robots as any),
+            },
+          ]
+        : []),
       { property: "og:site_name", content: siteName },
       { property: "og:locale", content: ogLocale },
       { property: "og:title", content: dynamic.ogTitle || tf("ogTitle") },

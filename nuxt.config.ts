@@ -303,29 +303,29 @@ export default defineNuxtConfig({
       if (process.env.PRERENDER_DYNAMIC !== "true") return; // keep builds light by default
       let dynamicRoutes = await getAllDynamicRoutes().catch(() => []);
       dynamicRoutes = dynamicRoutes.filter((r) => !/\/settings$/.test(r));
-      nitroConfig.prerender.routes?.push(...dynamicRoutes);
 
-      // TEMP: log prerender route counts to diagnose OOM
-      const profileCount = dynamicRoutes.filter((r) =>
-        r.includes("/profiles/"),
-      ).length;
-      const articleCount = dynamicRoutes.filter((r) =>
-        r.includes("/articles/"),
-      ).length;
-      const peopleCount = dynamicRoutes.filter((r) =>
-        r.includes("/people/"),
-      ).length;
-      const tagCount = dynamicRoutes.filter((r) => r.includes("/tags/")).length;
-      const categoryCount = dynamicRoutes.filter((r) =>
-        r.includes("/categories/"),
-      ).length;
+      // Keep prerender route set small and stable; dynamic non-article pages are SSR.
+      const articleRoutes = dynamicRoutes.filter((r) => r.includes("/articles/"));
+      const MAX_DYNAMIC_PRERENDER_ROUTES = Number(
+        process.env.MAX_DYNAMIC_PRERENDER_ROUTES || 1200,
+      );
+      const cappedArticleRoutes = articleRoutes.slice(
+        0,
+        MAX_DYNAMIC_PRERENDER_ROUTES,
+      );
+
+      nitroConfig.prerender.routes?.push(...cappedArticleRoutes);
+
+      // Log useful counts for build diagnostics.
       console.info("prerender totals", {
-        total: dynamicRoutes.length,
-        profiles: profileCount,
-        articles: articleCount,
-        people: peopleCount,
-        tags: tagCount,
-        categories: categoryCount,
+        discovered: dynamicRoutes.length,
+        articles: articleRoutes.length,
+        injected: cappedArticleRoutes.length,
+        capped:
+          articleRoutes.length > cappedArticleRoutes.length
+            ? articleRoutes.length - cappedArticleRoutes.length
+            : 0,
+        cap: MAX_DYNAMIC_PRERENDER_ROUTES,
       });
     },
   },

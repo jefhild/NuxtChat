@@ -360,6 +360,7 @@ import { nextTick } from "vue";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 const { locale } = useI18n();
 const localPath = useLocalePath();
+const switchLocalePath = useSwitchLocalePath();
 const config = useRuntimeConfig();
 const supabase = useSupabaseClient?.();
 const route = useRoute();
@@ -426,9 +427,41 @@ const translations = computed(() =>
     ? article.value.article_translations
     : []
 );
+const originalArticleLocale = computed(() => {
+  const raw = String(article.value?.original_language_code || "en")
+    .split("-")[0]
+    .trim()
+    .toLowerCase();
+  return raw || "en";
+});
+const availableArticleLocales = computed(() => {
+  const locales = new Set([originalArticleLocale.value]);
+  translations.value.forEach((entry) => {
+    const code = String(entry?.locale || "")
+      .split("-")[0]
+      .trim()
+      .toLowerCase();
+    if (code) locales.add(code);
+  });
+  return Array.from(locales);
+});
+const isCurrentLocaleTranslated = computed(() =>
+  availableArticleLocales.value.includes(baseLocale.value)
+);
+const canonicalLocale = computed(() => {
+  if (isCurrentLocaleTranslated.value) return baseLocale.value;
+  if (availableArticleLocales.value.includes("en")) return "en";
+  return availableArticleLocales.value[0] || "en";
+});
+const canonicalPath = computed(
+  () => switchLocalePath(canonicalLocale.value) || route.path || "/"
+);
 const activeTranslation = computed(() =>
   translations.value.find(
-    (entry) => String(entry?.locale || "").toLowerCase() === baseLocale.value
+    (entry) =>
+      String(entry?.locale || "")
+        .toLowerCase()
+        .split("-")[0] === baseLocale.value
   )
 );
 const rewriteHeadline = computed(
@@ -704,6 +737,9 @@ onMounted(async () => {
 });
 
 useSeoI18nMeta("articles.index", {
+  availableLocaleCodes: availableArticleLocales,
+  robots: isCurrentLocaleTranslated.value ? undefined : "noindex,follow",
+  overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
   dynamic: {
     title: seoTitle,
     description: safeDescription,
