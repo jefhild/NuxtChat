@@ -1,0 +1,30 @@
+import withNuxt from "./.nuxt/eslint.config.mjs";
+
+export default withNuxt({
+  name: "newsmesh/soft-start",
+  rules: {
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-dynamic-delete": "warn",
+    "import/first": "warn",
+    "no-empty": "warn",
+    "no-irregular-whitespace": "warn",
+    "no-undef": "warn",
+    "no-unused-vars": "warn",
+    "no-unsafe-finally": "warn",
+    "prefer-const": "warn",
+    "nuxt/prefer-import-meta": "warn",
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "vue/multi-word-component-names": "warn",
+    "vue/no-expose-after-await": "warn",
+    "vue/no-multiple-template-root": "warn",
+    "vue/no-dupe-keys": "warn",
+    "vue/no-useless-template-attributes": "warn",
+    "vue/no-v-text-v-html-on-component": "warn",
+    "vue/require-valid-default-prop": "warn",
+    "vue/require-toggle-inside-transition": "warn",
+    "vue/valid-v-else": "warn",
+    "vue/valid-v-if": "warn",
+    "vue/valid-v-slot": "warn",
+  },
+});

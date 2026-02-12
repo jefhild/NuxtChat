@@ -37,6 +37,7 @@ export default defineNuxtConfig({
       });
     },
     "@nuxtjs/supabase",
+    "@nuxt/eslint",
     "@pinia/nuxt",
     "@nuxt/image",
     "@nuxtjs/google-fonts",
