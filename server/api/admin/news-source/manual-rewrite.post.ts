@@ -183,6 +183,76 @@ const normalizeReferences = (
   return Array.from(dedup.values());
 };
 
+const countSentences = (value: string) => {
+  const matches = value.match(/[.!?。！？]+/g);
+  return matches ? matches.length : 0;
+};
+
+const countParagraphs = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return 0;
+  let blocks = trimmed
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+  if (blocks.length <= 1) {
+    blocks = trimmed
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+  return blocks.length;
+};
+
+const assessRewriteQuality = (input: {
+  parsed: any;
+  sourceUrl: string;
+  sourceLabel: string;
+}) => {
+  const headline =
+    typeof input.parsed?.headline === "string"
+      ? input.parsed.headline.trim()
+      : typeof input.parsed?.title === "string"
+      ? input.parsed.title.trim()
+      : "";
+  const summary =
+    typeof input.parsed?.summary === "string"
+      ? input.parsed.summary.trim()
+      : "";
+  const body =
+    typeof input.parsed?.body === "string"
+      ? input.parsed.body.trim()
+      : typeof input.parsed?.content === "string"
+      ? input.parsed.content.trim()
+      : "";
+  const references = normalizeReferences(
+    input.parsed?.references,
+    input.sourceUrl,
+    input.sourceLabel
+  );
+
+  const issues: string[] = [];
+  if (headline.length < 12) {
+    issues.push("headline is too short");
+  }
+  const summarySentenceCount = countSentences(summary);
+  if (summary.length < 80 || (summarySentenceCount < 2 && summary.length < 110)) {
+    issues.push("summary should be two clear sentences");
+  }
+  const paragraphCount = countParagraphs(body);
+  if (paragraphCount < 3 || paragraphCount > 5) {
+    issues.push("body should be 3-5 paragraphs");
+  }
+  if (body.length < 280) {
+    issues.push("body is too short");
+  }
+  if (references.length < 2) {
+    issues.push("at least two references are required");
+  }
+
+  return { issues, headline, summary, body, references };
+};
+
 const buildSystemPrompt = (persona: any) => {
   const rendered = mustache.render(persona?.system_prompt_template || "", {
     userName: "Newsmesh Editor",
@@ -292,59 +362,66 @@ export default defineEventHandler(async (event) => {
     const systemPrompt = buildSystemPrompt(persona);
 
     const maxTokens = Math.max(persona.max_response_tokens ?? 0, 1200);
-    const response = await openai.chat.completions.create({
-      model: persona.model || "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: prompt },
-      ],
-      response_format: { type: "json_object" },
-      temperature: persona.temperature ?? 0.7,
-      top_p: persona.top_p ?? 1,
-      presence_penalty: persona.presence_penalty ?? 0,
-      frequency_penalty: persona.frequency_penalty ?? 0,
-      max_tokens: maxTokens,
+    const requestRewrite = async (userPrompt: string) => {
+      const response = await openai.chat.completions.create({
+        model: persona.model || "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        response_format: { type: "json_object" },
+        temperature: persona.temperature ?? 0.7,
+        top_p: persona.top_p ?? 1,
+        presence_penalty: persona.presence_penalty ?? 0,
+        frequency_penalty: persona.frequency_penalty ?? 0,
+        max_tokens: maxTokens,
+      });
+      const raw = response?.choices?.[0]?.message?.content ?? "";
+      return { raw, parsed: sanitizeJsonResponse(raw) };
+    };
+
+    let aiResult = await requestRewrite(prompt);
+    let quality = assessRewriteQuality({
+      parsed: aiResult.parsed,
+      sourceUrl: link,
+      sourceLabel,
     });
 
-    const raw = response?.choices?.[0]?.message?.content ?? "";
-    const parsed = sanitizeJsonResponse(raw);
+    if (quality.issues.length) {
+      const repairPrompt = `${prompt}
 
-    const references = normalizeReferences(parsed?.references, link, sourceLabel);
+Your previous JSON response did not pass QA: ${quality.issues.join(
+        "; "
+      )}. Rewrite and return strict JSON only with high factual specificity, 3-5 markdown paragraphs, a two-sentence summary, and at least two references.`;
+      aiResult = await requestRewrite(repairPrompt);
+      quality = assessRewriteQuality({
+        parsed: aiResult.parsed,
+        sourceUrl: link,
+        sourceLabel,
+      });
+    }
+
+    if (quality.issues.length) {
+      setResponseStatus(event, 422);
+      return {
+        success: false,
+        error: "The AI response did not meet rewrite quality requirements.",
+      };
+    }
 
     const fallbackSocial = buildFallbackSocial({
-      headline:
-        typeof parsed?.headline === "string"
-          ? parsed.headline
-          : typeof parsed?.title === "string"
-          ? parsed.title
-          : title,
-      summary:
-        typeof parsed?.summary === "string"
-          ? parsed.summary
-          : summaryFallback || "",
+      headline: quality.headline || title,
+      summary: quality.summary || summaryFallback || "",
       url: link,
     });
 
     const rewrite: RewritePayload = {
-      headline:
-        typeof parsed?.headline === "string"
-          ? parsed.headline
-          : typeof parsed?.title === "string"
-          ? parsed.title
-          : title,
-      summary:
-        typeof parsed?.summary === "string"
-          ? parsed.summary
-          : summaryFallback || "",
-      body:
-        typeof parsed?.body === "string"
-          ? parsed.body
-          : typeof parsed?.content === "string"
-          ? parsed.content
-          : raw,
-      references,
-      social: normalizeSocial(parsed?.social, fallbackSocial),
-      raw,
+      headline: quality.headline || title,
+      summary: quality.summary || summaryFallback || "",
+      body: quality.body,
+      references: quality.references,
+      social: normalizeSocial(aiResult.parsed?.social, fallbackSocial),
+      raw: aiResult.raw,
     };
 
     return {

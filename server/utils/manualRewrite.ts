@@ -1,4 +1,4 @@
-const MAX_SOURCE_CHARS = 6000;
+const MAX_SOURCE_CHARS = 7000;
 const DEFAULT_USER_INSTRUCTIONS = `
 You are assisting the Newsmesh editors. Take the supplied news record and rewrite it from your persona's perspective.
 The rewrite must:
@@ -82,7 +82,11 @@ export const buildManualPrompt = (input: {
   }
 
   const cleanedBody = String(input.article.body || "")
-    .replace(/\s+/g, " ")
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
   const sourceText = cleanedBody
     ? truncateText(cleanedBody, MAX_SOURCE_CHARS)
