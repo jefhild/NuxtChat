@@ -832,6 +832,7 @@ const onUpdateCity = (val) => {
   editableProfile.value.city_id = val;
 };
 
+
 const updateDeletionState = (markedAt) => {
   if (editableProfile.value) {
     editableProfile.value.marked_for_deletion_at = markedAt;

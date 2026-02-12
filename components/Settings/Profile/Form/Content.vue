@@ -276,6 +276,7 @@ const presenceOptions = [
   { label: t("components.presence.away"), value: "away" },
   { label: t("components.presence.offline"), value: "offline" },
 ];
+
 </script>
 
 <style scoped>

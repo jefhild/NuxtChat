@@ -1298,16 +1298,26 @@
       "favorites": "My Favorites",
       "blocked": "Blocked Users",
       "upvotes": "Upvotes",
+      "chat-settings": "Chat Settings",
       "photo-library": "Photo Library",
       "menu": {
         "profile": "My Profile",
         "favorites": "My Favorites",
         "blocked": "Blocked Users",
         "upvotes": "Upvotes",
+        "chat-settings": "Chat Settings",
         "photo-library": "Photo Library"
       },
       "loading": "Loading...",
       "registered-only": "Registered users only"
+    },
+    "chat-settings": {
+      "title": "Chat Settings",
+      "subtitle": "Control how ImChatty interacts with you in chat.",
+      "mood-question": "Daily mood question",
+      "mood-question-helper": "Let ImChatty ask you a daily mood question in chat.",
+      "snooze": "Snooze 7 days",
+      "snoozed": "Snoozed until {date}"
     },
     "photo-library": {
       "title": "Photo library",
