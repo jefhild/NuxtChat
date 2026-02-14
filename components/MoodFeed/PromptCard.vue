@@ -74,6 +74,7 @@ import { resolveProfileLocalization } from "@/composables/useProfileLocalization
 
 const props = defineProps({
   thread: { type: Object, required: true },
+  initialExpanded: { type: Boolean, default: true },
   meId: { type: String, default: null },
   canReply: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
@@ -174,7 +175,7 @@ const replyMessages = computed(() => {
   return out;
 });
 
-const expanded = ref(true);
+const expanded = ref(props.initialExpanded);
 const hasExtras = computed(() => {
   const totalMessages = entryMessages.value.length + replyMessages.value.length;
   return totalMessages > 1;

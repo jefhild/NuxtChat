@@ -53,9 +53,10 @@
       </div>
       <div v-else>
         <MoodFeedPromptCard
-          v-for="thread in threads"
+          v-for="(thread, index) in threads"
           :key="thread.promptKey || thread.id || thread.promptText"
           :thread="thread"
+          :initial-expanded="index === 0"
           :me-id="auth.user?.id || null"
           :can-reply="canPost"
           :loading="loading"

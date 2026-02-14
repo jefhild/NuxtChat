@@ -35,8 +35,9 @@
           >
             <v-card-title>Simulated Inbox</v-card-title>
             <v-card-text>
-              <div class="d-flex align-center ga-2 mb-3">
+              <div class="inbox-actions d-flex align-center ga-2 mb-3 flex-wrap">
                 <v-btn
+                  class="inbox-action-btn"
                   variant="outlined"
                   size="small"
                   :loading="inboxLoading"
@@ -56,6 +57,7 @@
                   hide-details
                 />
                 <v-btn
+                  class="inbox-action-btn"
                   variant="outlined"
                   size="small"
                   color="error"
@@ -66,6 +68,7 @@
                   Delete with selected user
                 </v-btn>
                 <v-btn
+                  class="inbox-action-btn"
                   variant="outlined"
                   size="small"
                   color="error"
@@ -428,7 +431,29 @@ onMounted(async () => {
   vertical-align: middle;
 }
 
+.inbox-actions {
+  row-gap: 8px;
+}
+
 .delete-peer-select {
   min-width: 200px;
+  flex: 1 1 220px;
+}
+
+.inbox-action-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .inbox-actions {
+    align-items: stretch !important;
+  }
+
+  .delete-peer-select,
+  .inbox-action-btn {
+    width: 100%;
+    flex: 1 1 100%;
+  }
 }
 </style>
