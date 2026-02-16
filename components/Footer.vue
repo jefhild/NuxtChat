@@ -1,9 +1,9 @@
 <template>
   <div class="compact-footer">
-    <v-row>
-      <v-col class="text-center">
-        <v-card flat class="compact-footer__card">
-          <v-card-text class="compact-footer__content">
+    <div class="compact-footer__row">
+      <div class="compact-footer__col text-center">
+        <div class="compact-footer__card">
+          <div class="compact-footer__content">
             <!-- Footer Content -->
             <NuxtLink :to="localPath('/about')" class="compact-footer__link">{{
               $t("components.footer.about")
@@ -45,8 +45,9 @@
               target="_blank"
               rel="noopener"
               class="compact-footer__icon-link"
+              aria-label="GitHub"
             >
-              <v-icon>mdi-github</v-icon>
+              <i class="mdi mdi-github" aria-hidden="true" />
             </a>
             |
             <!-- Instagram Icon -->
@@ -55,8 +56,9 @@
               target="_blank"
               rel="noopener"
               class="compact-footer__icon-link"
+              aria-label="Instagram"
             >
-              <v-icon>mdi-instagram</v-icon>
+              <i class="mdi mdi-instagram" aria-hidden="true" />
             </a>
             |
             <!-- Facebook Icon -->
@@ -65,8 +67,9 @@
               target="_blank"
               rel="noopener"
               class="compact-footer__icon-link"
+              aria-label="Facebook"
             >
-              <v-icon>mdi-facebook</v-icon>
+              <i class="mdi mdi-facebook" aria-hidden="true" />
             </a>
             |
             <!-- Reddit Icon -->
@@ -75,13 +78,14 @@
               target="_blank"
               rel="noopener"
               class="compact-footer__icon-link"
+              aria-label="Reddit"
             >
-              <v-icon>mdi-reddit</v-icon>
+              <i class="mdi mdi-reddit" aria-hidden="true" />
             </a>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -98,13 +102,14 @@ const localPath = useLocalePath();
   justify-content: center;
 }
 
-.compact-footer :deep(.v-row) {
+.compact-footer__row {
   margin: 0;
   width: 100%;
   justify-content: center;
+  display: flex;
 }
 
-.compact-footer :deep(.v-col) {
+.compact-footer__col {
   padding: 0;
   max-width: 100%;
   flex: 0 1 auto;
@@ -142,7 +147,8 @@ const localPath = useLocalePath();
   padding: 0;
 }
 
-.compact-footer__icon-link :deep(.v-icon) {
+.compact-footer__icon-link i {
+  font-size: 1.15rem;
   border: none !important;
   box-shadow: none !important;
   background: transparent !important;

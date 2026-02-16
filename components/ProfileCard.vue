@@ -294,10 +294,10 @@
 
       <ButtonFavorite :profile="profile" />
 
-      <v-btn color="blue medium-emphasis" icon="mdi-cancel" size="small"></v-btn>
+      <v-btn color="medium-emphasis" icon="mdi-cancel" size="small"></v-btn>
 
       <v-btn
-        color="black medium-emphasis"
+        color="medium-emphasis"
         icon="mdi-share-variant"
         size="small"
       ></v-btn>
@@ -446,6 +446,17 @@ const galleryDisplayItems = computed(() => {
 
 .profile-card {
   width: 100%;
+  --profile-chat-cta-color: #2563eb;
+  --profile-subtitle-1: #757575;
+  --profile-subtitle-2: #9e9e9e;
+  --profile-surface-soft: rgba(17, 24, 39, 0.04);
+  --profile-label-color: rgba(0, 0, 0, 0.75);
+  --profile-value-color: #1d4ed8;
+  --profile-value-green: #15803d;
+  --profile-body-color: #374151;
+  --profile-panel-title-color: rgba(0, 0, 0, 0.6);
+  --profile-gallery-count-color: rgba(0, 0, 0, 0.7);
+  --profile-gallery-empty-color: rgba(0, 0, 0, 0.6);
 }
 
 .profile-chat-cta {
@@ -453,7 +464,7 @@ const galleryDisplayItems = computed(() => {
   width: 100%;
   text-align: center;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--profile-chat-cta-color);
   margin-top: -12px;
   margin-bottom: 8px;
   text-decoration: none;
@@ -502,16 +513,16 @@ const galleryDisplayItems = computed(() => {
 
 .subtitle-1 {
   font-size: 1.2rem;
-  color: #757575;
+  color: var(--profile-subtitle-1);
 }
 
 .subtitle-2 {
   font-size: 1rem;
-  color: #9e9e9e;
+  color: var(--profile-subtitle-2);
 }
 
 .profile-details {
-  background: rgba(17, 24, 39, 0.04);
+  background: var(--profile-surface-soft);
 }
 
 .profile-details-tree {
@@ -573,18 +584,19 @@ const galleryDisplayItems = computed(() => {
 
 .profile-details-label {
   min-width: 96px;
+  color: var(--profile-label-color);
 }
 
 .profile-details-value {
   flex: 1;
   text-align: center;
   font-weight: 700;
-  color: #1d4ed8;
+  color: var(--profile-value-color);
   font-size: 1rem;
 }
 
 .profile-details-value--green {
-  color: #15803d;
+  color: var(--profile-value-green);
 }
 
 .profile-details-bio {
@@ -599,7 +611,7 @@ const galleryDisplayItems = computed(() => {
 .profile-details-body {
   flex: 1;
   line-height: 1.5;
-  color: #374151;
+  color: var(--profile-body-color);
   white-space: normal;
   min-width: 0;
 }
@@ -610,11 +622,11 @@ const galleryDisplayItems = computed(() => {
 }
 
 .profile-stats {
-  background: rgba(17, 24, 39, 0.04);
+  background: var(--profile-surface-soft);
 }
 
 .profile-gallery {
-  background: rgba(17, 24, 39, 0.04);
+  background: var(--profile-surface-soft);
 }
 
 .profile-gallery-strip {
@@ -665,12 +677,12 @@ const galleryDisplayItems = computed(() => {
 
 .profile-gallery-like-count {
   font-size: 0.75rem;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--profile-gallery-count-color);
   line-height: 1;
 }
 
 .profile-gallery-empty {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--profile-gallery-empty-color);
   font-size: 0.9rem;
   padding: 8px 0;
 }
@@ -702,10 +714,24 @@ const galleryDisplayItems = computed(() => {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.7rem;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--profile-panel-title-color);
 }
 
 .profile-panels :deep(.v-expansion-panel-text__wrapper) {
   padding: 0 16px 12px;
+}
+
+:global(.v-theme--dark) .profile-card {
+  --profile-chat-cta-color: #7aa2ff;
+  --profile-subtitle-1: rgba(255, 255, 255, 0.86);
+  --profile-subtitle-2: rgba(255, 255, 255, 0.72);
+  --profile-surface-soft: rgba(255, 255, 255, 0.06);
+  --profile-label-color: rgba(255, 255, 255, 0.8);
+  --profile-value-color: #8ab4ff;
+  --profile-value-green: #4ade80;
+  --profile-body-color: rgba(255, 255, 255, 0.86);
+  --profile-panel-title-color: rgba(255, 255, 255, 0.72);
+  --profile-gallery-count-color: rgba(255, 255, 255, 0.78);
+  --profile-gallery-empty-color: rgba(255, 255, 255, 0.72);
 }
 </style>

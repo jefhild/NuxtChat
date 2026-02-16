@@ -44,11 +44,13 @@
     </v-sheet>
 
     <div class="feeds-list">
-      <v-skeleton-loader
-        v-if="loading"
-        type="list-item@4"
-        class="mt-4"
-      />
+      <div v-if="loading" class="feeds-loading mt-4" aria-live="polite" aria-label="Loading..." role="alert">
+        <div v-for="n in 4" :key="`feed-skeleton-${n}`" class="feeds-loading-item">
+          <div class="feeds-loading-line feeds-loading-line--title" />
+          <div class="feeds-loading-line feeds-loading-line--body" />
+          <div class="feeds-loading-line feeds-loading-line--body" />
+        </div>
+      </div>
       <div v-else-if="!threads.length" class="text-body-2 mt-4">
         {{ $t("pages.feeds.empty") }}
       </div>
@@ -779,6 +781,39 @@ if (import.meta.client) {
 .feeds-list > div {
   display: grid;
   gap: 14px;
+}
+
+.feeds-loading {
+  display: grid;
+  gap: 12px;
+}
+
+.feeds-loading-item {
+  border-radius: 14px;
+  border: 1px solid var(--mf-panel-border);
+  background: var(--mf-panel-bg);
+  padding: 14px;
+}
+
+.feeds-loading-line {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.feeds-loading-line--title {
+  width: 48%;
+  margin-bottom: 10px;
+}
+
+.feeds-loading-line--body {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.feeds-loading-line--body:last-child {
+  width: 72%;
+  margin-bottom: 0;
 }
 
 .prompt-input :deep(.v-field) {

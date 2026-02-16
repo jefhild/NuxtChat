@@ -253,6 +253,8 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-03-13",
 
   routeRules: {
+    "/feeds": { ssr: false },
+    "/*/feeds": { ssr: false },
     "/people/**": { prerender: false, swr: 3600 },
     "/profiles/**": { prerender: false },
     "/articles/**": { prerender: false, swr: 3600 },

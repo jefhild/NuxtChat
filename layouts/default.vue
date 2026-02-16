@@ -7,6 +7,7 @@
     :class="{
       'profiles-route-main': isProfilesRoute,
       'chat-route-main': isChatRoute,
+      'feeds-route-main': isFeedsRoute,
     }"
     :style="mainStyle"
   >
@@ -14,7 +15,7 @@
     <v-container
       fluid
       class="d-flex flex-column flex-grow-1 min-h-0 pa-0"
-      :class="isProfilesRoute || isChatRoute ? 'px-0' : 'px-sm-6'"
+      :class="isProfilesRoute || isChatRoute || isFeedsRoute ? 'px-0' : 'px-sm-6'"
     >
       <!-- NuxtPage should be allowed to grow/shrink -->
       <div class="d-flex flex-column flex-grow-1 min-h-0">
@@ -27,7 +28,7 @@
   <div
     v-if="!isMobile"
     class="app-footer app-footer--desktop"
-    :class="{ 'app-footer--chat': isChatRoute }"
+    :class="{ 'app-footer--chat': isChatRoute, 'app-footer--feeds': isFeedsRoute }"
   >
     <Footer />
   </div>
@@ -38,6 +39,7 @@
     :class="{
       'app-footer--hidden': isChatRoute && !footerVisible,
       'app-footer--chat': isChatRoute,
+      'app-footer--feeds': isFeedsRoute,
     }"
     @touchstart.passive="onFooterTouchStart"
     @touchmove.passive="onFooterTouchMove"
@@ -99,6 +101,7 @@ const isClient = typeof window !== "undefined";
 const isMobile = computed(() => hasMounted.value && smAndDown.value === true);
 const isChatRoute = computed(() => (route.path || "").includes("/chat"));
 const isProfilesRoute = computed(() => (route.path || "").startsWith("/profiles"));
+const isFeedsRoute = computed(() => (route.path || "").startsWith("/feeds"));
 const mainStyle = computed(() => {
   const isChat = isChatRoute.value;
   const base = {
@@ -490,6 +493,11 @@ if (isClient) {
   border-top: 1px solid rgba(148, 163, 184, 0.24);
 }
 
+.app-footer--feeds {
+  background: #0f172a !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.24);
+}
+
 .app-footer--hidden {
   transform: translateY(calc(100% - 14px));
 }
@@ -554,6 +562,10 @@ if (isClient) {
 }
 
 .chat-route-main {
+  background: #0f172a;
+}
+
+.feeds-route-main {
   background: #0f172a;
 }
 

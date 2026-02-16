@@ -23,8 +23,9 @@ export default defineNuxtPlugin((app) => {
     path: "/",
   });
   const initialMode = normalizeThemeMode(themeCookie.value);
-  const initialTheme =
-    initialMode === "system" ? resolveSystemTheme() : initialMode;
+  // Keep first render deterministic across SSR/static HTML and client hydration.
+  // Apply the persisted mode after mount.
+  const initialTheme = "light";
 
   const vuetify = createVuetify({
     defaults: {
