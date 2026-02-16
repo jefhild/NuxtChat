@@ -3,6 +3,7 @@ import "@mdi/font/css/materialdesignicons.css";
 
 import "vuetify/styles";
 import { createVuetify } from "vuetify";
+import { onNuxtReady } from "#app";
 
 export default defineNuxtPlugin((app) => {
   const THEME_COOKIE_KEY = "imchatty_theme";
@@ -90,7 +91,9 @@ export default defineNuxtPlugin((app) => {
   };
 
   if (import.meta.client) {
-    app.hook("app:mounted", () => {
+    onNuxtReady(() => {
+      // Apply persisted/system theme only when Nuxt is fully ready so
+      // async component hydration has already settled.
       applyThemeMode(initialMode);
 
       // First visit: no cookie yet. Persist "system" mode by default.
