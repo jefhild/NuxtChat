@@ -2,11 +2,19 @@
   <NavBar />
   <FavoriteToast />
   <!-- Main content; let children shrink to create scroll areas -->
-  <v-main class="d-flex flex-column min-h-0" :style="mainStyle">
+  <v-main
+    class="d-flex flex-column min-h-0"
+    :class="{
+      'profiles-route-main': isProfilesRoute,
+      'chat-route-main': isChatRoute,
+    }"
+    :style="mainStyle"
+  >
     <!-- Optional container; keep min-h-0 so inner flex can shrink -->
     <v-container
       fluid
-      class="d-flex flex-column flex-grow-1 min-h-0 pa-0 px-sm-6"
+      class="d-flex flex-column flex-grow-1 min-h-0 pa-0"
+      :class="isProfilesRoute || isChatRoute ? 'px-0' : 'px-sm-6'"
     >
       <!-- NuxtPage should be allowed to grow/shrink -->
       <div class="d-flex flex-column flex-grow-1 min-h-0">
@@ -16,14 +24,21 @@
   </v-main>
 
   <!-- FOOTER must be an app footer to reserve space -->
-  <v-footer v-if="!isMobile" app elevation="0" class="app-footer">
+  <div
+    v-if="!isMobile"
+    class="app-footer app-footer--desktop"
+    :class="{ 'app-footer--chat': isChatRoute }"
+  >
     <Footer />
-  </v-footer>
+  </div>
 
   <div
     v-else
     class="app-footer app-footer--mobile"
-    :class="{ 'app-footer--hidden': !footerVisible }"
+    :class="{
+      'app-footer--hidden': isChatRoute && !footerVisible,
+      'app-footer--chat': isChatRoute,
+    }"
     @touchstart.passive="onFooterTouchStart"
     @touchmove.passive="onFooterTouchMove"
   >
@@ -39,6 +54,7 @@
   <button
     v-if="showFooterFab"
     class="app-footer__fab"
+    :class="{ 'app-footer__fab--footer-open': footerVisible }"
     type="button"
     aria-label="Show footer"
     @click="toggleFooter"
@@ -51,7 +67,7 @@
 
 <script setup>
 import NavBar from "~/components/NavBar.vue";
-import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { usePresenceStore2 } from "@/stores/presenceStore2";
 import { useMessagesStore } from "@/stores/messagesStore";
@@ -82,12 +98,25 @@ useFavoriteNotifications();
 const isClient = typeof window !== "undefined";
 const isMobile = computed(() => hasMounted.value && smAndDown.value === true);
 const isChatRoute = computed(() => (route.path || "").includes("/chat"));
+const isProfilesRoute = computed(() => (route.path || "").startsWith("/profiles"));
 const mainStyle = computed(() => {
+  const isChat = isChatRoute.value;
   const base = {
-    paddingTop: "var(--nav2-offset, 0px)",
+    paddingTop: isChat
+      ? "calc(var(--nav2-offset, 78px) + 6px)"
+      : "var(--nav2-offset, 0px)",
   };
-  if (!isMobile.value) return base;
-  const padding = footerVisible.value ? 64 : peekOffset + 12;
+  if (!isMobile.value) {
+    if (!isChat) return base;
+    return {
+      ...base,
+      paddingBottom: "56px",
+    };
+  }
+  const chatMinBottom = isChat ? 56 : 0;
+  const padding = footerVisible.value
+    ? 64
+    : Math.max(peekOffset + 12, chatMinBottom);
   return {
     ...base,
     paddingBottom: `calc(${padding}px + env(safe-area-inset-bottom, 0px))`,
@@ -123,6 +152,21 @@ const unreadLabel = computed(() =>
 const ACTIVITY_AUTH_STATUSES = ["anon_authenticated", "authenticated"];
 let lastNavPingAt = 0;
 
+const clearOrphanedOverlays = () => {
+  if (!isClient) return;
+  const overlays = document.querySelectorAll(".v-overlay");
+  overlays.forEach((overlay) => {
+    const isActive = overlay.classList.contains("v-overlay--active");
+    if (!isActive) return;
+    const contents = Array.from(overlay.querySelectorAll(".v-overlay__content"));
+    const hasVisibleContent = contents.some((el) => el.offsetParent !== null);
+    // Active scrim with no visible content is stale and can dim the page indefinitely.
+    if (!hasVisibleContent) {
+      overlay.remove();
+    }
+  });
+};
+
 const touchLastActive = async () => {
   if (!isClient) return;
   if (!ACTIVITY_AUTH_STATUSES.includes(auth.authStatus)) return;
@@ -145,6 +189,9 @@ watch(
   () => route.fullPath,
   () => {
     touchLastActive();
+    nextTick(() => {
+      clearOrphanedOverlays();
+    });
   },
   { immediate: true }
 );
@@ -425,8 +472,22 @@ if (isClient) {
 </script>
 
 <style>
-.app-footer {
+.app-footer,
+.v-footer.app-footer {
   transition: transform 160ms ease, opacity 160ms ease;
+  background: rgb(var(--v-theme-surface)) !important;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  border-top: 0;
+  flex: 0 0 auto;
+  min-height: 0;
+  height: auto;
+  width: 100%;
+  padding: 0;
+}
+
+.app-footer--chat {
+  background: #0f172a !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.24);
 }
 
 .app-footer--hidden {
@@ -436,16 +497,17 @@ if (isClient) {
 .app-footer__handle {
   display: none;
   position: absolute;
-  top: 2px;
+  top: 6px;
   left: 50%;
   transform: translateX(-50%);
-  width: 34px;
-  height: 5px;
+  width: 54px;
+  height: 7px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(148, 163, 184, 0.75);
   border: none;
   cursor: pointer;
-  transition: background-color 120ms ease;
+  box-shadow: 0 1px 4px rgba(2, 6, 23, 0.45);
+  transition: background-color 120ms ease, transform 120ms ease;
 }
 
 .app-footer--mobile .app-footer__handle {
@@ -457,25 +519,42 @@ if (isClient) {
 }
 
 .app-footer__handle:hover {
-  background: rgba(0, 0, 0, 0.28);
+  background: rgba(203, 213, 225, 0.95);
+  transform: translateX(-50%) scale(1.03);
 }
 
 .app-footer__fab {
   position: fixed;
   right: 12px;
   bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-  width: 36px;
-  height: 36px;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
-  border: none;
-  background: rgba(0, 0, 0, 0.04);
-  color: rgba(0, 0, 0, 0.6);
-  box-shadow: none;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.55);
+  color: rgba(226, 232, 240, 0.85);
+  box-shadow: 0 4px 10px rgba(2, 6, 23, 0.22);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 1200;
+  z-index: 1300;
+}
+
+.app-footer__fab--footer-open {
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+
+.v-theme--dark .profiles-route-main {
+  background: #0f172a;
+}
+
+.v-theme--dark .v-main {
+  background: #0f172a;
+}
+
+.chat-route-main {
+  background: #0f172a;
 }
 
 @media (max-width: 960px) {
@@ -486,17 +565,33 @@ if (isClient) {
     bottom: 0;
     z-index: 1100;
     padding: 0;
-    background: transparent;
+    background: rgb(var(--v-theme-surface));
+    min-height: 52px;
+    max-height: 88px;
+    overflow: hidden;
   }
 
   .app-footer .compact-footer {
     border-radius: 12px 12px 0 0;
-    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -6px 24px rgba(var(--v-theme-on-surface), 0.12);
     padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .app-footer--mobile .compact-footer__content {
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: block;
   }
 
   .app-footer__handle {
     display: block;
   }
+}
+
+.v-theme--dark .app-footer,
+.v-theme--dark .v-footer.app-footer {
+  background: #141923 !important;
+  border-top-color: transparent;
 }
 </style>

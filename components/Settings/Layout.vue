@@ -37,97 +37,79 @@
 
     <v-row>
       <v-col cols="12">
-        <v-card class="border-0 elevation-0">
-          <v-tabs-window v-model="tab" v-if="!isLoading">
-            <v-tabs-window-item :value="1">
-              <v-row align="start">
-                <v-col class="settings-content-col">
-                  <template v-if="userProfile">
-                    <SettingsProfileForm
-                      :userProfile="userProfile"
-                      @openPhotoLibrary="selectTab(6)"
-                    />
-                  </template>
-                  <template v-else>
-                    <p>{{ $t("components.settings-container.loading") }}</p>
-                  </template>
-                </v-col>
-              </v-row>
-            </v-tabs-window-item>
-            <v-tabs-window-item :value="2">
-              <v-row align="start">
-                <v-col class="settings-content-col">
-                  <v-row>
-                    <v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">
-                      {{ $t("components.settings-container.registered-only") }}
-                    </v-col>
-                  </v-row>
-                  <!-- <template v-if="user?.id">
-                    <SettingsFavorites :userId="user.id" />
-                  </template> -->
+        <v-card class="settings-panel-card border-0 elevation-0">
+          <template v-if="!isLoading">
+            <v-row v-if="tab === 1" align="start">
+              <v-col class="settings-content-col">
+                <template v-if="userProfile">
+                  <SettingsProfileForm
+                    :userProfile="userProfile"
+                    @openPhotoLibrary="selectTab(6)"
+                  />
+                </template>
+                <template v-else>
+                  <p>{{ $t("components.settings-container.loading") }}</p>
+                </template>
+              </v-col>
+            </v-row>
 
-                  <template v-if="userProfile?.user_id">
-                    <SettingsFavorites :userId="userProfile.user_id" />
-                  </template>
-                </v-col>
-              </v-row>
-            </v-tabs-window-item>
-            <v-tabs-window-item :value="3">
-              <v-row align="start">
-                <v-col class="settings-content-col">
-                  <template v-if="user?.id">
-                    <!-- <SettingsBlockedUsers :userId="user.id" /> -->
-                    <SettingsBlockedUsers :userId="userProfile.user_id" />
-                  </template>
-                  <template v-else>
-                    <p>{{ $t("components.settings-container.loading") }}</p>
-                  </template>
-                </v-col>
-              </v-row>
-            </v-tabs-window-item>
-            <v-tabs-window-item :value="4">
-              <v-row align="start">
-                <v-col class="settings-content-col">
-                  <!-- <v-row>
-                    <v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis"
-                      >Registered Users Only</v-col
-                    >
-                  </v-row> -->
-                  <template v-if="user?.id">
-                    <!-- <SettingsUpvotes :userId="user.id" /> -->
-                    <SettingsUpvotes :userId="userProfile.user_id" />
-                  </template>
-                  <template v-else>
-                    <p>{{ $t("components.settings-container.loading") }}</p>
-                  </template>
-                </v-col>
-              </v-row>
-            </v-tabs-window-item>
-            <v-tabs-window-item :value="5">
-              <v-row align="start">
-                <v-col class="settings-content-col">
-                  <SettingsChatSettings />
-                </v-col>
-              </v-row>
-            </v-tabs-window-item>
-            <v-tabs-window-item :value="6">
-              <v-row align="start">
-                <v-col class="settings-content-col">
-                  <v-row v-if="!photoLibraryAvailable">
-                    <v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">
-                      {{ $t("components.settings-container.registered-only") }}
-                    </v-col>
-                  </v-row>
-                  <template v-else-if="userProfile?.user_id">
-                    <SettingsPhotoLibrary :userId="userProfile.user_id" />
-                  </template>
-                  <template v-else>
-                    <p>{{ $t("components.settings-container.loading") }}</p>
-                  </template>
-                </v-col>
-              </v-row>
-            </v-tabs-window-item>
-          </v-tabs-window>
+            <v-row v-else-if="tab === 2" align="start">
+              <v-col class="settings-content-col">
+                <v-row>
+                  <v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">
+                    {{ $t("components.settings-container.registered-only") }}
+                  </v-col>
+                </v-row>
+                <template v-if="userProfile?.user_id">
+                  <SettingsFavorites :userId="userProfile.user_id" />
+                </template>
+              </v-col>
+            </v-row>
+
+            <v-row v-else-if="tab === 3" align="start">
+              <v-col class="settings-content-col">
+                <template v-if="user?.id">
+                  <SettingsBlockedUsers :userId="userProfile.user_id" />
+                </template>
+                <template v-else>
+                  <p>{{ $t("components.settings-container.loading") }}</p>
+                </template>
+              </v-col>
+            </v-row>
+
+            <v-row v-else-if="tab === 4" align="start">
+              <v-col class="settings-content-col">
+                <template v-if="user?.id">
+                  <SettingsUpvotes :userId="userProfile.user_id" />
+                </template>
+                <template v-else>
+                  <p>{{ $t("components.settings-container.loading") }}</p>
+                </template>
+              </v-col>
+            </v-row>
+
+            <v-row v-else-if="tab === 5" align="start">
+              <v-col class="settings-content-col">
+                <SettingsChatSettings />
+              </v-col>
+            </v-row>
+
+            <v-row v-else-if="tab === 6" align="start">
+              <v-col class="settings-content-col">
+                <v-row v-if="!photoLibraryAvailable">
+                  <v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">
+                    {{ $t("components.settings-container.registered-only") }}
+                  </v-col>
+                </v-row>
+                <template v-else-if="userProfile?.user_id">
+                  <SettingsPhotoLibrary :userId="userProfile.user_id" />
+                </template>
+                <template v-else>
+                  <p>{{ $t("components.settings-container.loading") }}</p>
+                </template>
+              </v-col>
+            </v-row>
+          </template>
         </v-card>
       </v-col>
     </v-row>
@@ -184,8 +166,8 @@ const menuItems = computed(() => [
     },
     {
       value: 5,
-      label: t("components.settings-container.chat-settings"),
-      title: t("components.settings-container.menu.chat-settings"),
+      label: t("components.settings-container.site-settings", "Site Settings"),
+      title: t("components.settings-container.menu.site-settings", "Site Settings"),
       icon: "mdi-chat-outline",
     },
     {
@@ -224,6 +206,11 @@ onMounted(async () => {
 
 :global(.settings-shell) {
   padding-top: 6px;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+  max-width: 1260px;
+  margin: 0 auto;
+  overflow-x: clip;
 }
 
 .settings-header-shell {
@@ -265,11 +252,49 @@ onMounted(async () => {
 }
 
 :global(.settings-drawer .v-list-item--active) {
-  background-color: rgba(63, 81, 181, 0.1);
+  background-color: rgba(var(--v-theme-primary), 0.12);
 }
 
 :global(.settings-drawer .v-list-item:hover) {
-  background-color: rgba(63, 81, 181, 0.5) !important;
+  background-color: rgba(var(--v-theme-primary), 0.2) !important;
   transition: background-color 0.2s ease;
+}
+
+.settings-panel-card {
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+:global(.v-theme--dark) .settings-panel-card {
+  background: #0f172a;
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+:global(.settings-panel-card .v-field__overlay) {
+  background: transparent !important;
+}
+
+:global(.v-theme--dark .settings-panel-card .v-field) {
+  background-color: transparent;
+}
+
+/* Route-scoped hard clamp: prevent Vuetify grid/gutter layers from bleeding
+   across the viewport and creating horizontal seam artifacts on /settings. */
+:global(.settings-shell .v-row) {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+:global(.settings-shell .v-col) {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+:global(.settings-shell .v-card),
+:global(.settings-shell .v-card-text),
+:global(.settings-shell .v-sheet) {
+  backdrop-filter: none !important;
 }
 </style>

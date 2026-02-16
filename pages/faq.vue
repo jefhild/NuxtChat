@@ -6,7 +6,12 @@
     >
       <template #icon>
         <ClientOnly>
-          <v-tooltip :text="$t('pages.faq.tooltip')" location="bottom">
+          <v-tooltip
+            :text="$t('pages.faq.tooltip')"
+            location="bottom"
+            :scrim="false"
+            :open-on-click="false"
+          >
             <template #activator="{ props }">
               <v-icon v-bind="props" icon="mdi-help-circle-outline" />
             </template>

@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="legal-page legal-page--privacy">
     <v-row
       ><v-col
         ><h1>{{ $t("pages.privacy.title") }}</h1></v-col

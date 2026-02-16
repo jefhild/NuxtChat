@@ -7,7 +7,7 @@
     <input
       v-model="localDraft"
       :placeholder="placeholderText"
-      class="flex-1 w-full border rounded px-3 py-2 chat-composer-input"
+      class="flex-1 border rounded px-3 py-2 chat-composer-input"
       :disabled="isDisabled || !peerId"
       :title="isDisabled ? placeholderText : ''"
       @input="onInput"
@@ -139,13 +139,6 @@ function handleSubmit() {
 </script>
 
 <style scoped>
-.chat-composer-input,
-.chat-composer-send {
-  border-color: rgb(var(--v-theme-primary)) !important;
-}
-</style>
-
-<style scoped>
 form {
   width: 100%;
   display: flex;
@@ -158,5 +151,42 @@ input {
 }
 button {
   flex: 0 0 auto;
+}
+
+.chat-composer-input {
+  background: #0b1220;
+  color: #e2e8f0;
+  border-color: #2563eb !important;
+}
+
+.chat-composer-input::placeholder {
+  color: #94a3b8;
+}
+
+.chat-composer-input:focus {
+  outline: none;
+  border-color: #60a5fa !important;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.25);
+}
+
+.chat-composer-input:disabled {
+  background: #111827;
+  color: #94a3b8;
+}
+
+.chat-composer-send {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #3b82f6 !important;
+}
+
+.chat-composer-send:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.chat-composer-send:disabled {
+  background: #1f2937;
+  color: #94a3b8;
+  border-color: #334155 !important;
 }
 </style>

@@ -32,3 +32,14 @@ defineProps({
 	text: String,
 })
 </script>
+
+<style scoped>
+.v-container {
+	background: rgb(var(--v-theme-surface));
+	color: rgb(var(--v-theme-on-surface));
+}
+
+:deep(.v-progress-linear) {
+	background-color: rgba(var(--v-theme-on-surface), 0.2) !important;
+}
+</style>

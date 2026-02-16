@@ -66,7 +66,7 @@ const nameToShow = computed(() =>
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: rgba(0, 0, 0, 0.55);
+  color: #94a3b8;
   font-size: 12px;
   line-height: 1.2;
 }
@@ -76,9 +76,11 @@ const nameToShow = computed(() =>
 }
 .bubble-name {
   font-weight: 600;
+  color: #cbd5e1;
 }
 .bubble-time {
-  opacity: 0.7;
+  color: #94a3b8;
+  opacity: 0.9;
 }
 
 .bubble {
@@ -88,40 +90,41 @@ const nameToShow = computed(() =>
   font-size: 14px;
   line-height: 1.5;
   word-break: break-word;
-  background: #f5f6f8;
-  color: #0f1f3a;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  background: #334155;
+  color: #e2e8f0;
+  box-shadow: 0 6px 16px rgba(2, 6, 23, 0.28);
   transition: transform 120ms ease, box-shadow 120ms ease;
 }
 .bubble--me {
-  background: linear-gradient(145deg, #e3f2ff, #d5e9ff);
-  color: #0f1f3a;
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
+  color: #eff6ff;
   border-bottom-right-radius: 4px;
 }
 .bubble--them {
-  background: #f5f6f8;
-  color: #0f1f3a;
+  background: #334155;
+  color: #e2e8f0;
   border-bottom-left-radius: 4px;
 }
 .bubble:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 20px rgba(2, 6, 23, 0.34);
 }
 .bubble :deep(a) {
-  color: inherit;
+  color: #bfdbfe;
   text-decoration: underline;
-  text-decoration-color: rgba(0, 0, 0, 0.35);
+  text-decoration-color: rgba(191, 219, 254, 0.45);
 }
 .bubble :deep(hr) {
   border: 0;
-  border-top: 1px dashed rgba(15, 31, 58, 0.25);
+  border-top: 1px dashed rgba(148, 163, 184, 0.35);
   margin: 8px 0;
 }
 
 .bubble-status {
   margin-top: 2px;
   font-size: 12px;
-  opacity: 0.6;
+  color: #94a3b8;
+  opacity: 0.9;
 }
 
 .bubble-avatar :deep(img) {

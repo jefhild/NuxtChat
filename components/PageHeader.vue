@@ -83,11 +83,12 @@ defineProps({
   font-family: "Poppins", sans-serif;
   /* font-size: 1.2rem;*/
   font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
   /* margin-bottom: 0.25rem; */
 }
 
 .page-header-subtitle {
-  color: #666;
+  color: rgba(var(--v-theme-on-surface), 0.72);
   /* font-size: 1rem;*/
   font-weight: 400;
   margin-top: 0;

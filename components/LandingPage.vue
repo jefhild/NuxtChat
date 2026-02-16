@@ -107,7 +107,13 @@
 
     <!-- Article Sections -->
     <v-container fluid class="mt-10">
-      <h2 class="text-h4 text-center font-weight-bold mb-8">
+      <h2
+        :class="[
+          'text-h4 text-center font-weight-medium mb-8 home-articles-heading',
+          { 'home-articles-heading--dark': isDarkTheme },
+        ]"
+        :style="{ color: isDarkTheme ? '#f8fafc' : '#0f172a' }"
+      >
         {{ $t("pages.home.landing_page.check_articles") }}
       </h2>
 
@@ -253,6 +259,7 @@ import { ref, computed, onMounted, watch, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useLocalePath } from "#imports";
+import { useTheme } from "vuetify";
 import { useAuthStore } from "@/stores/authStore1";
 import { useDb } from "@/composables/useDB";
 
@@ -260,6 +267,7 @@ const { t } = useI18n();
 const router = useRouter();
 const localPath = useLocalePath();
 const authStore = useAuthStore();
+const theme = useTheme();
 const {
   getMostPopularAiProfiles,
   getAllPublishedArticlesWithTags,
@@ -275,6 +283,7 @@ const mostPopularAiProfiles = ref([]);
 const authStatus = computed(() => authStore.authStatus);
 const userProfile = computed(() => authStore.userProfile);
 const isAnonAuthed = computed(() => authStatus.value === "anon_authenticated");
+const isDarkTheme = computed(() => theme.global.current.value.dark);
 
 const linkEmailDialogVisible = ref(false);
 const linkEmailSubmitting = ref(false);
@@ -458,8 +467,14 @@ onMounted(async () => {
   width: 100%;
 }
 
+.cta.v-sheet {
+  /* Override Vuetify sheet inline background color in both themes. */
+  background: linear-gradient(135deg, #e3f2fd, #f1f8e9) !important;
+}
+
 .cta-content {
   max-width: 1100px;
+  color: #0f172a;
 }
 
 .cta-link {
@@ -470,6 +485,38 @@ onMounted(async () => {
 
 .cta-link:hover {
   text-decoration: underline;
+}
+
+:global(.v-theme--dark .cta.v-sheet) {
+  background:
+    radial-gradient(1000px 360px at 10% 0%, rgba(37, 99, 235, 0.2), transparent 60%),
+    linear-gradient(180deg, #0b1220 0%, #0f172a 100%) !important;
+}
+
+:global(.v-theme--dark .cta-content) {
+  color: #e2e8f0;
+}
+
+:global(.v-theme--dark .cta-content) :deep(.v-chip) {
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+:global(.v-theme--dark .cta-link) {
+  color: #93c5fd;
+}
+
+.home-articles-heading {
+  color: rgba(var(--v-theme-on-surface), 0.95);
+}
+
+.home-articles-heading--dark {
+  color: #f8fafc !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .home-articles-heading {
+    color: #f8fafc !important;
+  }
 }
 
 .final-cta {

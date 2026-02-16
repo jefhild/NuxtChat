@@ -1,10 +1,10 @@
 <template>
-  <div class="chat-layout-root d-flex flex-column h-100 min-h-0">
-    <v-container fluid class="d-flex flex-column h-100 min-h-0">
+  <div class="chat-layout-root d-flex flex-column flex-grow-1 min-h-0">
+    <v-container fluid class="d-flex flex-column flex-grow-1 min-h-0 pa-0">
       <!-- Mobile controls: left drawer (Topics) + right drawer (Participants) -->
       <div
         v-if="showMobileControls"
-        class="d-md-none d-flex align-center justify-space-between px-2 py-2 chat-mobile-controls"
+        class="d-md-none d-flex align-center justify-space-between px-2 py-1 chat-mobile-controls"
       >
         <v-btn
           icon
@@ -23,21 +23,22 @@
           @click="rightOpen = true"
           aria-label="Show active chat participants"
         >
-          <v-icon>mdi-chat-processing-outline</v-icon>
+          <v-icon color="blue-lighten-2">mdi-chat-processing-outline</v-icon>
         </v-btn>
       </div>
       <!-- Desktop / tablet (>= md): 3 columns -->
       <v-row
-        v-if="!smAndDown"
-        class="flex-grow-1 overflow-hidden min-h-0 d-none d-md-flex"
+        v-if="!isMobileLayout"
+        class="chat-grid-row flex-grow-1 overflow-hidden min-h-0 ma-0"
+        no-gutters
       >
         <!-- LEFT: Topics -->
-        <v-col
-          cols="12"
-          md="3"
-          class="pa-2 d-flex flex-column overflow-hidden min-h-0 d-none d-md-flex"
-        >
-          <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+          <v-col
+            cols="12"
+            md="3"
+            class="px-2 pt-0 pb-0 d-flex flex-column overflow-hidden min-h-0"
+          >
+          <v-card flat class="chat-pane-card d-flex flex-column flex-grow-1 min-h-0">
             <div
               ref="leftScrollRef"
               class="flex-grow-1 overflow-auto min-h-0 users-scroll"
@@ -63,7 +64,7 @@
           </v-card>
 
           <ClientOnly>
-            <div v-if="consentPanelVisible" class="d-none d-md-block mt-2">
+            <div v-if="consentPanelVisible" class="d-none d-md-block mt-1">
               <ChatLayoutConsentPanel
                 :auth-status="auth.authStatus"
                 :user-profile="userProfile"
@@ -79,7 +80,7 @@
         <v-col
           cols="12"
           :md="activePanelOpen ? 7 : 9"
-          class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
+          class="chat-thread-col pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
         >
           <div class="active-panel-rail">
             <v-tooltip text="Active chats" location="left">
@@ -184,7 +185,7 @@
             <v-card
               v-if="panelOpen"
               id="thread-info-panel"
-              class="mx-1"
+              class="mx-1 thread-info-panel-card"
               elevation="6"
               :aria-hidden="String(!panelOpen)"
             >
@@ -192,7 +193,7 @@
                 <template v-if="selectedUser">
                   <div
                     v-if="selectedUserLocalized.tagline"
-                    class="text-body-1 font-italic mb-3 text-truncate"
+                    class="text-body-1 font-italic mb-3 text-truncate profile-tagline"
                     :title="selectedUserLocalized.tagline"
                   >
                     "{{ selectedUserLocalized.tagline }}"
@@ -215,16 +216,16 @@
                       >
                         {{ item.icon }}
                       </v-icon>
-                      <span class="text-medium-emphasis mr-1">
+                      <span class="mr-1 profile-meta-label">
                         {{ item.label }}:
                       </span>
-                      <span class="text-truncate">{{ item.value }}</span>
+                      <span class="text-truncate profile-meta-value">{{ item.value }}</span>
                     </div>
                   </div>
 
                   <div
                     v-if="selectedUserLocalized.bio"
-                    class="profile-bio text-body-2 text-medium-emphasis mb-3"
+                    class="profile-bio text-body-2 mb-3"
                   >
                     {{ selectedUserLocalized.bio }}
                   </div>
@@ -249,6 +250,7 @@
                       v-if="selectedUser"
                       size="small"
                       variant="tonal"
+                      class="profile-view-btn"
                       prepend-icon="mdi-account-box-outline"
                       @click="openProfileDialog(selectedUser)"
                     >
@@ -272,11 +274,12 @@
                               :color="
                                 isSelectedUserBlocked
                                   ? 'red darken-2'
-                                  : 'blue medium-emphasis'
+                                  : 'blue-lighten-2'
                               "
                               icon="mdi-cancel"
                               size="small"
                               variant="text"
+                              class="profile-action-btn profile-action-btn--block"
                               :disabled="isBlockDisabled"
                               aria-label="Block user"
                               @click="toggleBlockSelectedUser"
@@ -291,10 +294,11 @@
                         <template #activator="{ props }">
                           <span v-bind="props">
                             <v-btn
-                              color="black medium-emphasis"
+                              color="blue-grey-lighten-2"
                               icon="mdi-share-variant"
                               size="small"
                               variant="text"
+                              class="profile-action-btn profile-action-btn--share"
                               :disabled="!profileLink"
                               aria-label="Share profile"
                               @click="shareProfile"
@@ -306,7 +310,7 @@
                   </div>
                 </template>
                 <template v-else>
-                  <div class="text-body-2 text-medium-emphasis">
+                  <div class="text-body-2 profile-empty-state">
                     Select a user to view profile details.
                   </div>
                 </template>
@@ -317,7 +321,7 @@
           <!-- Scrollable messages list -->
           <div
             ref="centerScrollRef"
-            class="flex-grow-1 overflow-auto users-scroll min-h-0 px-2 py-2"
+            class="flex-grow-1 overflow-auto users-scroll min-h-0 px-1 py-2"
             style="flex: 1 1 0"
             @scroll.passive="onMobileScroll"
             @touchstart.passive="onMobileTouchStart"
@@ -326,11 +330,11 @@
             <v-skeleton-loader
               v-if="loadingMsgs"
               type="list-item@6"
-              class="pa-2"
+              class="pa-2 chat-loading-skeleton"
             />
 
             <ChatLayoutOnboarding
-              v-if="isPreAuth"
+              v-if="isPreAuth && isBotSelected"
               ref="onbRef"
               :key="'onb'"
               :authStatus="auth.authStatus"
@@ -343,7 +347,7 @@
             />
 
             <ChatLayoutRegular
-              v-else
+              v-else-if="selectedUserId"
               ref="regRef"
               :key="`reg-${auth.authStatus}`"
               :authStatus="auth.authStatus"
@@ -354,10 +358,19 @@
               :show-quick-replies="showMoodQuickReplies"
               @quick-reply="onMoodQuickReply"
             />
+            <v-alert
+              v-else
+              type="info"
+              variant="tonal"
+              density="comfortable"
+              class="ma-2"
+            >
+              {{ t("components.message.composer.sign-in") }}
+            </v-alert>
           </div>
 
           <!-- Composer -->
-          <div class="border-t pt-2" style="flex: 0 0 auto">
+          <div class="chat-composer-wrap border-t pt-2" style="flex: 0 0 auto">
             <v-alert
               v-if="isSelectedUserBlocked"
               type="warning"
@@ -384,12 +397,12 @@
           v-if="activePanelOpen"
           cols="12"
           md="2"
-          class="pa-2 d-flex flex-column overflow-hidden d-none d-md-flex min-h-0"
+          class="px-2 pt-0 pb-0 d-flex flex-column overflow-hidden min-h-0"
         >
           <v-card
             id="active-panel"
             flat
-            class="d-flex flex-column flex-grow-1 min-h-0 active-panel-card"
+            class="chat-pane-card d-flex flex-column flex-grow-1 min-h-0 active-panel-card"
           >
             <div
               ref="rightScrollRef"
@@ -422,12 +435,13 @@
 
       <!-- Mobile (< md): only the Thread pane -->
       <v-row
-        v-if="smAndDown"
-        class="flex-grow-1 overflow-hidden min-h-0 d-flex d-md-none"
+        v-if="isMobileLayout"
+        class="chat-grid-row flex-grow-1 overflow-hidden min-h-0 ma-0"
+        no-gutters
       >
         <v-col
           cols="12"
-          class="pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
+          class="chat-thread-col pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
         >
           <button
             class="messages-sticky-header messages-sticky-header-button d-flex d-md-none px-3 py-2 align-center justify-space-between"
@@ -518,7 +532,7 @@
             <v-card
               v-if="panelOpen"
               id="thread-info-panel"
-              class="mx-1"
+              class="mx-1 thread-info-panel-card"
               elevation="6"
               :aria-hidden="String(!panelOpen)"
             >
@@ -527,7 +541,7 @@
                   <div
                     v-if="selectedUserLocalized.tagline"
                     :class="[
-                      'text-body-1 font-italic mb-3',
+                      'text-body-1 font-italic mb-3 profile-tagline',
                       { 'text-truncate': smAndDown },
                     ]"
                     :title="selectedUserLocalized.tagline"
@@ -552,10 +566,13 @@
                       >
                         {{ item.icon }}
                       </v-icon>
-                      <span class="text-medium-emphasis mr-1">
+                      <span class="mr-1 profile-meta-label">
                         {{ item.label }}:
                       </span>
-                      <span :class="{ 'text-truncate': smAndDown }">
+                      <span
+                        class="profile-meta-value"
+                        :class="{ 'text-truncate': smAndDown }"
+                      >
                         {{ item.value }}
                       </span>
                     </div>
@@ -563,7 +580,7 @@
 
                   <div
                     v-if="selectedUserLocalized.bio"
-                    class="profile-bio text-body-2 text-medium-emphasis mb-3"
+                    class="profile-bio text-body-2 mb-3"
                   >
                     {{ selectedUserLocalized.bio }}
                   </div>
@@ -588,6 +605,7 @@
                       v-if="selectedUser"
                       size="small"
                       variant="tonal"
+                      class="profile-view-btn"
                       prepend-icon="mdi-account-box-outline"
                       @click="openProfileDialog(selectedUser)"
                     >
@@ -611,11 +629,12 @@
                               :color="
                                 isSelectedUserBlocked
                                   ? 'red darken-2'
-                                  : 'blue medium-emphasis'
+                                  : 'blue-lighten-2'
                               "
                               icon="mdi-cancel"
                               size="small"
                               variant="text"
+                              class="profile-action-btn profile-action-btn--block"
                               :disabled="isBlockDisabled"
                               aria-label="Block user"
                               @click="toggleBlockSelectedUser"
@@ -630,10 +649,11 @@
                         <template #activator="{ props }">
                           <span v-bind="props">
                             <v-btn
-                              color="black medium-emphasis"
+                              color="blue-grey-lighten-2"
                               icon="mdi-share-variant"
                               size="small"
                               variant="text"
+                              class="profile-action-btn profile-action-btn--share"
                               :disabled="!profileLink"
                               aria-label="Share profile"
                               @click="shareProfile"
@@ -645,7 +665,7 @@
                   </div>
                 </template>
                 <template v-else>
-                  <div class="text-body-2 text-medium-emphasis">
+                  <div class="text-body-2 profile-empty-state">
                     Select a user to view profile details.
                   </div>
                 </template>
@@ -655,7 +675,7 @@
 
           <div
             ref="centerScrollRef"
-            class="flex-grow-1 overflow-auto users-scroll min-h-0 px-2 py-2"
+            class="flex-grow-1 overflow-auto users-scroll min-h-0 px-1 py-2"
             style="flex: 1 1 0"
             @scroll.passive="
               panelOpen && autoCloseOnScroll && (panelOpen = false)
@@ -664,10 +684,10 @@
             <v-skeleton-loader
               v-if="loadingMsgs"
               type="list-item@6"
-              class="pa-2"
+              class="pa-2 chat-loading-skeleton"
             />
             <ChatLayoutOnboarding
-              v-if="isPreAuth"
+              v-if="isPreAuth && isBotSelected"
               ref="onbRef"
               :key="'onb'"
               :authStatus="auth.authStatus"
@@ -680,7 +700,7 @@
             />
 
             <ChatLayoutRegular
-              v-else
+              v-else-if="selectedUserId"
               ref="regRef"
               :key="`reg-${auth.authStatus}`"
               :authStatus="auth.authStatus"
@@ -688,9 +708,18 @@
               :peer="chat.selectedUser"
               :blocked-user-ids="blockedUsers"
             />
+            <v-alert
+              v-else
+              type="info"
+              variant="tonal"
+              density="comfortable"
+              class="ma-2"
+            >
+              {{ t("components.message.composer.sign-in") }}
+            </v-alert>
           </div>
 
-          <div class="border-t pt-2" style="flex: 0 0 auto">
+          <div class="chat-composer-wrap border-t pt-2" style="flex: 0 0 auto">
             <v-alert
               v-if="isSelectedUserBlocked"
               type="warning"
@@ -722,13 +751,15 @@
       class="d-md-none chat-mobile-drawer"
       width="320"
       :mobile="isMobileDrawer"
+      :scrim="true"
       aria-label="Topics drawer"
+      @click:outside="leftOpen = false"
     >
       <div
         class="pa-2 d-flex flex-column overflow-hidden min-h-0"
         style="height: 100%"
       >
-        <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+        <v-card flat class="chat-pane-card d-flex flex-column flex-grow-1 min-h-0">
           <div
             ref="leftScrollRefMobile"
             class="flex-grow-1 overflow-auto min-h-0 users-scroll"
@@ -763,13 +794,15 @@
       class="d-md-none chat-mobile-drawer"
       width="300"
       :mobile="isMobileDrawer"
+      :scrim="true"
       aria-label="Participants drawer"
+      @click:outside="rightOpen = false"
     >
       <div
         class="pa-2 d-flex flex-column overflow-hidden min-h-0"
         style="height: 100%"
       >
-        <v-card flat class="d-flex flex-column flex-grow-1 min-h-0">
+        <v-card flat class="chat-pane-card d-flex flex-column flex-grow-1 min-h-0">
           <div
             ref="rightScrollRefMobile"
             class="flex-grow-1 overflow-auto min-h-0 users-scroll"
@@ -922,6 +955,7 @@ import {
   watch,
   onMounted,
   onBeforeUnmount,
+  nextTick,
 } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import { useMessagesStore } from "@/stores/messagesStore";
@@ -961,9 +995,11 @@ const AWAY_NOTICE_STORAGE_KEY = "awayNoticeCooldown:v1";
 const route = useRoute();
 const router = useRouter();
 const { t, locale } = useI18n();
+const PREAUTH_STATUSES = ["anonymous", "unauthenticated", "guest", "onboarding"];
 
 const { smAndDown } = useDisplay();
 const hasMounted = ref(false);
+const isMobileLayout = ref(false);
 const {
   createScrollHandler: createFooterScrollHandler,
   setTouchStart: setFooterTouchStart,
@@ -1145,8 +1181,15 @@ const onMobileTouchMove = (event) => {
   handleFooterTouchMove("chat-mobile", t.clientY);
 };
 
+function updateLayoutMode() {
+  if (typeof window === "undefined") return;
+  isMobileLayout.value = window.innerWidth < 960;
+}
+
 onMounted(() => {
   hasMounted.value = true;
+  updateLayoutMode();
+  window.addEventListener("resize", updateLayoutMode, { passive: true });
   awayNoticeMap.value = loadAwayNoticeMap();
   // ensure drawers don't render mobile server-side then stay off on desktop
   if (!smAndDown.value) {
@@ -1656,7 +1699,7 @@ const profileLink = computed(() => {
 });
 
 const shouldDisableToggle = computed(() =>
-  ["unauthenticated", "guest", "onboarding"].includes(auth.authStatus)
+  PREAUTH_STATUSES.includes(auth.authStatus)
 );
 
 // ———————————————————————————————————————————
@@ -1693,7 +1736,7 @@ function updateFilters(f) {
 
 // ---- Auth-gated computed flags
 const isPreAuth = computed(() =>
-  ["unauthenticated", "guest", "onboarding"].includes(auth.authStatus)
+  PREAUTH_STATUSES.includes(auth.authStatus)
 );
 const isBotSelected = computed(() => {
   const sel = chat.selectedUser;
@@ -1937,6 +1980,28 @@ const usersWithPresence = computed(() => {
   ];
 });
 
+const preauthBotDefaultApplied = ref(false);
+
+watch(
+  () => [isPreAuth.value, usersWithPresence.value.length, selectedUserId.value],
+  ([preAuth]) => {
+    if (!preAuth) {
+      preauthBotDefaultApplied.value = false;
+      return;
+    }
+    if (preauthBotDefaultApplied.value) return;
+    const bot = usersWithPresence.value.find(
+      (u) => String(u?.user_id ?? u?.id ?? "") === IMCHATTY_ID
+    );
+    if (!bot) return;
+    if (String(selectedUserId.value || "") !== IMCHATTY_ID) {
+      chat.setSelectedUser(bot);
+    }
+    preauthBotDefaultApplied.value = true;
+  },
+  { immediate: true }
+);
+
 const selectedUserRaw = computed(() => chat.selectedUser || null);
 
 const selectedUser = computed(() => {
@@ -2050,6 +2115,9 @@ function onConsentClose() {
 }
 
 onBeforeUnmount(() => {
+  if (typeof window !== "undefined") {
+    window.removeEventListener("resize", updateLayoutMode);
+  }
   if (consentAutoHideTimer.value) {
     clearTimeout(consentAutoHideTimer.value);
     consentAutoHideTimer.value = null;
@@ -2740,12 +2808,44 @@ function toggleFilters() {
 </script>
 
 <style scoped>
+.chat-layout-root {
+  color: rgb(var(--v-theme-on-surface));
+  background: #0f172a;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.chat-pane-card {
+  background: #1e293b !important;
+  border: 1px solid rgba(148, 163, 184, 0.45) !important;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.45);
+}
+
+.chat-thread-col {
+  background: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 12px;
+}
+
 /* Keep the messages header visible while content scrolls */
 .messages-sticky-header {
   position: sticky;
   top: 0;
   z-index: 2;
-  background: rgb(var(--v-theme-surface));
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.42);
+  border-radius: 10px;
+}
+
+.messages-sticky-header:not(.messages-sticky-header-button) {
+  margin: 0 -8px 0;
+}
+
+@media (min-width: 960px) {
+  .chat-thread-col {
+    padding-top: 0 !important;
+  }
 }
 
 /* Nice, minimal scroll areas */
@@ -2764,6 +2864,27 @@ function toggleFilters() {
 
 .chat-col {
   max-width: 800px;
+}
+
+.chat-loading-skeleton {
+  background: transparent !important;
+}
+
+.chat-loading-skeleton :deep(.v-skeleton-loader__bone) {
+  background: #1e293b !important;
+}
+
+.chat-loading-skeleton :deep(.v-skeleton-loader__bone::after) {
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0) 0%,
+    rgba(51, 65, 85, 0.45) 50%,
+    rgba(30, 41, 59, 0) 100%
+  ) !important;
+}
+
+.chat-grid-row {
+  margin: 0 !important;
 }
 
 
@@ -2809,6 +2930,11 @@ function toggleFilters() {
   transition: opacity 0.2s ease, transform 0.25s ease;
 }
 
+.profile-header-title,
+.profile-header-subtitle {
+  color: #e2e8f0 !important;
+}
+
 .header-chevron {
   position: absolute;
   right: 8px;
@@ -2834,6 +2960,7 @@ function toggleFilters() {
   border: 0;
   width: 100%;
   text-align: left;
+  color: #e2e8f0;
 }
 .messages-sticky-header-button:disabled {
   cursor: default;
@@ -2845,6 +2972,22 @@ function toggleFilters() {
 }
 .profile-header-actions {
   gap: 8px;
+}
+
+.profile-header-actions :deep(.v-chip .v-icon) {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.profile-header-actions :deep(.v-btn.v-btn--icon) {
+  background: rgba(30, 41, 59, 0.62) !important;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  color: #e2e8f0 !important;
+}
+
+.profile-header-actions :deep(.v-btn.v-btn--icon:hover) {
+  background: rgba(51, 65, 85, 0.72) !important;
 }
 .avatar-fallback {
   width: 100%;
@@ -2863,24 +3006,74 @@ function toggleFilters() {
 }
 .profile-bio {
   white-space: pre-line;
+  color: #cbd5e1;
+}
+.thread-info-panel-card {
+  background: #0f172a !important;
+  border: 1px solid rgba(148, 163, 184, 0.45) !important;
+  color: #e2e8f0 !important;
+}
+
+.profile-tagline {
+  color: #e2e8f0 !important;
+}
+
+.profile-meta-label {
+  color: #94a3b8 !important;
+}
+
+.profile-meta-value {
+  color: #e2e8f0 !important;
+}
+
+.profile-view-btn {
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #dbeafe !important;
+}
+
+.profile-action-btn {
+  opacity: 0.92;
+}
+
+.profile-action-btn--share :deep(.v-icon) {
+  color: #cbd5e1 !important;
+}
+
+.profile-empty-state {
+  color: #94a3b8 !important;
 }
 .chat-mobile-controls {
-  margin-top: -20px;
+  margin-top: 0;
   margin-bottom: 2px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(15, 23, 42, 0.96);
 }
 .mobile-profile-info {
   min-width: 0;
 }
 .mobile-profile-subtitle {
+  color: #cbd5e1 !important;
   white-space: normal;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.messages-sticky-header-button :deep(.text-subtitle-2) {
+  color: #e2e8f0 !important;
+}
 .mobile-presence-pill {
   margin-left: auto;
   margin-right: 8px;
+}
+
+.mobile-presence-pill :deep(.v-icon),
+.messages-sticky-header-button :deep(.v-chip .v-icon) {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 .mobile-avatar-wrap {
   position: relative;
@@ -2890,7 +3083,7 @@ function toggleFilters() {
   position: absolute;
   right: -3px;
   bottom: -3px;
-  background: #fff;
+  background: transparent;
   border-radius: 999px;
   padding: 3px;
   color: #1d3b58;
@@ -2911,7 +3104,57 @@ function toggleFilters() {
 .chat-mobile-drawer :deep(.v-navigation-drawer) {
   top: var(--nav2-offset, 0px) !important;
   height: calc(100vh - var(--nav2-offset, 0px)) !important;
+  background: #0f172a !important;
+  border: none !important;
+  border-inline: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
+
+.chat-mobile-drawer :deep(.v-navigation-drawer__content) {
+  background: #0f172a !important;
+  padding-top: 30px;
+}
+
+.chat-mobile-drawer :deep(.chat-pane-card) {
+  border-top: none !important;
+  margin-top: 18px;
+}
+
+.chat-mobile-drawer :deep(.users-scroll) {
+  scrollbar-color: rgba(148, 163, 184, 0.55) #0f172a;
+}
+
+.chat-mobile-drawer :deep(.users-scroll::-webkit-scrollbar) {
+  width: 10px;
+}
+
+.chat-mobile-drawer :deep(.users-scroll::-webkit-scrollbar-track) {
+  background: #0f172a;
+}
+
+.chat-mobile-drawer :deep(.users-scroll::-webkit-scrollbar-thumb) {
+  background: rgba(148, 163, 184, 0.55);
+  border-radius: 999px;
+}
+
+@media (max-width: 959px) {
+  .chat-mobile-controls {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    min-height: 38px;
+  }
+
+  .chat-mobile-controls :deep(.v-btn--icon) {
+    width: 34px;
+    height: 34px;
+  }
+
+  .chat-composer-wrap {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .translation-choice-list :deep(.v-list-item) {
   border-radius: 10px;
 }

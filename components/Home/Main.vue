@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="signin-shell">
     <v-row class="mt-3 mb-3">
       <v-col cols="12" sm="4" order="1" order-sm="1">
         <v-row no-gutters>
@@ -7,7 +7,7 @@
             <p class="text-center green-text-poppins mb-2">
               <!-- {{ rowCount }} users online -->
             </p>
-            <v-card>
+            <v-card class="signin-provider-card">
               <v-card-title
                 ><h1 class="green--text-h1">
                   {{ $t("components.home.main.sign-in") }}
@@ -18,14 +18,15 @@
                   <v-btn
                     v-for="provider in providerButtons"
                     :key="provider.component"
-                    class="signin-btn text-blue"
+                    class="signin-btn"
                     variant="plain"
+                    :style="{ '--provider-icon-color': provider.iconColor }"
                     :aria-label="$t(provider.labelKey)"
                     @click="switchModel(provider.component)"
                   >
                     <v-icon
                       :icon="provider.icon"
-                      :color="provider.iconColor"
+                      :style="{ color: provider.iconColor }"
                       class="signin-icon"
                     />
                     <span class="green--text-h2 signin-label">
@@ -41,7 +42,7 @@
 
       <!-- Second Column: Main Content -->
       <v-col cols="12" sm="8" order="2" order-sm="2">
-        <v-card :class="{ 'highlight-card': highlight }">
+        <v-card class="signin-detail-card" :class="{ 'highlight-card': highlight }">
           <v-card-text>
             <LoginContainer1 :selectedModel="selectedModel" />
           </v-card-text>
@@ -63,31 +64,31 @@ const providerButtons = [
     component: "LoginGoogle",
     labelKey: "components.home.main.google",
     icon: "mdi-google",
-    iconColor: "#4285F4",
+    iconColor: "#DB4437",
   },
   {
     component: "LoginFacebook",
     labelKey: "components.home.main.facebook",
     icon: "mdi-facebook",
-    iconColor: "#1877F2",
+    iconColor: "#17A9FD",
   },
   {
     component: "LoginGitHub",
     labelKey: "components.home.main.github",
     icon: "mdi-github",
-    iconColor: "#24292e",
+    iconColor: "#8CF2A6",
   },
   {
     component: "LoginDiscord",
     labelKey: "components.home.main.discord",
     icon: [discordIconPath],
-    iconColor: "#5865F2",
+    iconColor: "#738ADB",
   },
   {
     component: "LoginEmail",
     labelKey: "components.home.main.email",
     icon: "mdi-email-outline",
-    iconColor: "#335a4e",
+    iconColor: "#4DD4C6",
   },
 ];
 
@@ -113,7 +114,7 @@ const switchModel = (model) => {
   font-family: "poppins", sans-serif;
   font-size: clamp(1.5rem, 2vw + 1rem, 2.2rem);
   font-weight: 400;
-  color: rgb(51, 90, 78);
+  color: rgba(var(--v-theme-on-surface), 0.92);
 }
 
 .imchattyLogo {
@@ -125,14 +126,45 @@ const switchModel = (model) => {
 
 .green-text-poppins {
   font-family: "poppins", sans-serif;
-  color: rgb(51, 90, 78);
+  color: rgba(var(--v-theme-on-surface), 0.72);
 }
 
 .green--text-h2 {
   font-family: "poppins", sans-serif;
   font-size: clamp(0.95rem, 1.2vw + 0.6rem, 1.15rem);
   font-weight: 500;
-  color: rgb(51, 90, 78);
+  color: rgba(var(--v-theme-on-surface), 0.86);
+}
+
+.signin-shell {
+  color: rgba(var(--v-theme-on-surface), 0.92);
+  background: transparent;
+  border-radius: 12px;
+  min-height: calc(100vh - var(--nav2-offset, 0px) - 90px);
+  padding-top: 10px;
+  padding-bottom: 16px;
+}
+
+.signin-provider-card,
+.signin-detail-card {
+  background: rgba(var(--v-theme-surface), 0.94) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.15) !important;
+  box-shadow: 0 8px 18px rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.signin-detail-card :deep(h2),
+.signin-detail-card :deep(.text-h5) {
+  color: rgba(var(--v-theme-on-surface), 0.94) !important;
+}
+
+.signin-detail-card :deep(.v-label),
+.signin-detail-card :deep(.text-caption),
+.signin-detail-card :deep(.text-justify) {
+  color: rgba(var(--v-theme-on-surface), 0.84) !important;
+}
+
+.signin-detail-card :deep(a) {
+  color: rgb(var(--v-theme-primary)) !important;
 }
 
 .signin-list {
@@ -148,10 +180,58 @@ const switchModel = (model) => {
   padding-inline-end: 0;
   text-transform: none;
   width: 100%;
+  color: rgba(var(--v-theme-on-surface), 0.86) !important;
+}
+
+:global(.v-theme--dark .signin-shell) {
+  color: #e2e8f0;
+  background:
+    radial-gradient(1200px 520px at 20% 0%, rgba(30, 58, 138, 0.2), transparent 60%),
+    linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+}
+
+:global(.v-theme--dark .signin-provider-card),
+:global(.v-theme--dark .signin-detail-card) {
+  background: rgba(15, 23, 42, 0.72) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.35);
+}
+
+:global(.v-theme--dark .green-text-poppins) {
+  color: #94a3b8;
+}
+
+:global(.v-theme--dark .green--text-h1) {
+  color: #e2e8f0;
+}
+
+:global(.v-theme--dark .green--text-h2) {
+  color: #cbd5e1;
+}
+
+:global(.v-theme--dark .signin-btn) {
+  color: #cbd5e1 !important;
+}
+
+:global(.v-theme--dark .signin-detail-card) :deep(h2),
+:global(.v-theme--dark .signin-detail-card) :deep(.text-h5) {
+  color: #e2e8f0 !important;
+}
+
+:global(.v-theme--dark .signin-detail-card) :deep(.v-label),
+:global(.v-theme--dark .signin-detail-card) :deep(.text-caption),
+:global(.v-theme--dark .signin-detail-card) :deep(.text-justify) {
+  color: #cbd5e1 !important;
+}
+
+:global(.v-theme--dark .signin-detail-card) :deep(a) {
+  color: #93c5fd !important;
 }
 
 .signin-icon {
   font-size: 1.5rem;
+  color: var(--provider-icon-color) !important;
+  opacity: 1 !important;
 }
 
 @media (max-width: 600px) {

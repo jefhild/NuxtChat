@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid class="pa-0">
     <LoadingContainer v-if="isLoading" />
 
     <div v-else>
@@ -38,7 +38,7 @@
               <v-avatar v-if="item.has_email" size="18" class="registered-badge">
                 <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
               </v-avatar>
-              <v-avatar size="30" class="gender-badge">
+              <v-avatar size="30" color="transparent" class="gender-badge">
                 <v-icon
                   size="20"
                   :color="getGenderColor(resolveGenderId(item))"
@@ -131,7 +131,7 @@
                   <v-avatar v-if="item.has_email" size="18" class="registered-badge">
                     <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
                   </v-avatar>
-                  <v-avatar size="28" class="gender-badge">
+                  <v-avatar size="28" color="transparent" class="gender-badge">
                     <v-icon
                       size="18"
                       :color="getGenderColor(resolveGenderId(item))"
@@ -420,7 +420,26 @@ onUnmounted(() => {
   position: absolute;
   right: -8px;
   bottom: -8px;
-  background: transparent;
+  --v-avatar-background: transparent;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.gender-badge :deep(.v-avatar) {
+  --v-avatar-background: transparent;
+  background: transparent !important;
+}
+
+.gender-badge :deep(.v-avatar__underlay) {
+  background: transparent !important;
+}
+
+.gender-badge :deep(.v-avatar__content) {
+  background: transparent !important;
+}
+
+.gender-badge :deep(.v-icon) {
+  background: transparent !important;
 }
 
 .registered-badge {

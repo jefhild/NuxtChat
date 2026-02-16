@@ -1,9 +1,18 @@
 <template>
   <div class="d-flex align-center">
     <div v-for="icon in lookingForIcons" :key="icon.id" class="pa-1">
-      <v-icon size="20" :color="icon.color" v-tooltip="icon.tooltip">
-        {{ icon.icon }}
-      </v-icon>
+      <v-tooltip
+        :text="icon.tooltip"
+        location="top"
+        :scrim="false"
+        :open-on-click="false"
+      >
+        <template #activator="{ props: tooltipProps }">
+          <v-icon size="20" :color="icon.color" v-bind="tooltipProps">
+            {{ icon.icon }}
+          </v-icon>
+        </template>
+      </v-tooltip>
     </div>
   </div>
 </template>

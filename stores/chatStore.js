@@ -7,6 +7,7 @@ import { useAiQuota } from "~/composables/useAiQuota";
 
 const IMCHATTY_ID = "a3962087-516b-48df-a3ff-3b070406d832";
 const LS_KEY = "lastSelectedUserId";
+const PREAUTH_STATUSES = ["anonymous", "unauthenticated", "guest", "onboarding"];
 
 export const useChatStore = defineStore("chatStore", () => {
   const users = ref([]); // directory (real + AI)
@@ -153,6 +154,7 @@ function isAiId(id) {
       console.error("[chatStore] fetchChatUsers error:", err);
       error.value = err;
     } finally {
+      ensureImchattyPresent();
       loading.value = false;
     }
   }
@@ -189,7 +191,7 @@ function isAiId(id) {
     if (selectedUser.value) return; // keep current selection
     if (!users.value.length) return;
 
-    if (["unauthenticated", "guest", "onboarding"].includes(authStatus)) {
+    if (PREAUTH_STATUSES.includes(authStatus)) {
       selectImchatty();
       return;
     }

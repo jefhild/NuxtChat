@@ -1,10 +1,10 @@
 <template>
-  <div class="d-flex flex-column h-100">
+  <div class="onboarding-shell d-flex flex-column h-100">
     <div ref="scrollEl" class="flex-grow-1 overflow-auto">
       <!-- Ephemeral onboarding bubbles -->
 
       <!-- {{ consented }} -->
-      <div v-if="isPreAuth && isBotSelected" class="pa-2">
+      <div v-if="isPreAuth && isBotSelected" class="px-1 py-2">
         <div
           v-if="isFinalizing"
           class="d-flex align-center justify-center pa-6 flex-column text-center"
@@ -514,6 +514,30 @@ function onCaptchaError() {
 </script>
 
 <style scoped>
+.onboarding-shell {
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.55);
+  border: none;
+  border-radius: 10px;
+  padding: 4px 6px;
+}
+
+.onboarding-shell .text-caption,
+.onboarding-shell .text-body-1,
+.onboarding-shell .text-body-2 {
+  color: #cbd5e1 !important;
+}
+
+.onboarding-shell :deep(.bg-grey-lighten-3) {
+  background: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+.onboarding-shell :deep(.bg-primary) {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
 .dot {
   display: inline-block;
   width: 6px;

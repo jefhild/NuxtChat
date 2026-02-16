@@ -1,5 +1,5 @@
 <template>
-  <v-row no-gutters justify="center">
+  <v-row no-gutters justify="center" class="settings-media-row">
     <v-col
       cols="12"
       :md="showPhotoLibrary ? 6 : 12"
@@ -31,7 +31,8 @@
       <v-card
         class="photo-library-card"
         :class="{ 'photo-library-card--disabled': photoLibraryDisabled }"
-        elevation="1"
+        elevation="0"
+        variant="outlined"
       >
         <div class="photo-library-hero">
           <v-skeleton-loader
@@ -82,7 +83,11 @@
                     />
                   </v-card>
                 </template>
-                <v-skeleton-loader type="image" class="photo-library-skeleton" />
+                <v-skeleton-loader
+                  v-else
+                  type="image"
+                  class="photo-library-skeleton"
+                />
               </div>
             </div>
             <v-btn
@@ -208,6 +213,10 @@ watch(
 </script>
 
 <style scoped>
+.settings-media-row {
+  margin-top: 6px;
+}
+
 :deep(.profile-photo-card) {
   width: 100%;
   max-width: 360px;
@@ -221,7 +230,8 @@ watch(
   min-height: 296px;
   border-radius: 14px;
   overflow: hidden;
-  background: #fff;
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
 
 .photo-library-card--disabled {
@@ -276,7 +286,8 @@ watch(
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(var(--v-theme-surface), 0.9);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.2);
 }
 
 .photo-library-chevron.left {
@@ -311,7 +322,7 @@ watch(
   display: flex;
   justify-content: flex-start;
   padding: 8px 12px 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.06);
   min-height: 44px;
   align-items: center;
   gap: 8px;
@@ -323,7 +334,7 @@ watch(
 
 .photo-library-hint {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgba(var(--v-theme-on-surface), 0.68);
 }
 
 .photo-library-hint-link {

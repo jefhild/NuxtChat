@@ -3,7 +3,7 @@ import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 import { getAllDynamicRoutes } from "./composables/useDynamicRoutes";
 
 export default defineNuxtConfig({
-  // devtools: { enabled: true },
+  devtools: { enabled: false },
   ssr: true,
 
   css: ["@/assets/css/util.css"],
@@ -11,7 +11,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       script: [
-        ...(process.env.TERMLY_ID
+        ...(process.env.TERMLY_ID && process.env.NODE_ENV === "production"
           ? [
               {
                 id: "termly-resource-blocker",

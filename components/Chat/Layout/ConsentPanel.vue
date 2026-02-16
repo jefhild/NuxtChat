@@ -1,5 +1,10 @@
 <template>
-  <v-card class="consent-card" :color="cardColor" :rounded="rounded" :flat="flat">
+  <v-card
+    :class="['consent-card', `consent-card--${state}`]"
+    :color="cardColor"
+    :rounded="rounded"
+    :flat="flat"
+  >
     <div class="card-header">
       <div class="chip">
         <v-icon size="16" class="mr-1" :color="iconColor">{{ stateIcon }}</v-icon>
@@ -276,7 +281,11 @@ function onPrimary() {
 
 <style scoped>
 .consent-card {
-  padding: 8px 10px;
+  padding: 6px 8px;
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  border-radius: 12px;
 }
 .card-header {
   display: flex;
@@ -290,7 +299,8 @@ function onPrimary() {
   align-items: center;
   padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(148, 163, 184, 0.18);
+  color: #e2e8f0;
   font-weight: 600;
   font-size: 13px;
 }
@@ -304,12 +314,12 @@ function onPrimary() {
 .body-title {
   font-weight: 700;
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.8);
+  color: #f8fafc;
   margin-bottom: 0;
 }
 .body-sub {
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.65);
+  color: #cbd5e1;
   line-height: 1.3;
 }
 .close-btn {
@@ -328,5 +338,10 @@ function onPrimary() {
   white-space: normal;
   line-height: 1.2;
   text-align: center;
+}
+
+.consent-card :deep(.v-progress-linear__background),
+.consent-card :deep(.v-progress-linear__buffer) {
+  opacity: 0.22;
 }
 </style>

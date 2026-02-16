@@ -34,15 +34,15 @@
           <button
             v-if="userId"
             type="button"
-            class="cmt-name text-body-2 text-blue-darken-4"
+            class="cmt-name text-body-2"
             @click="onProfileClick"
           >
             {{ displayname }}
           </button>
-          <strong v-else class="text-body-2 text-blue-darken-4">
+          <strong v-else class="cmt-name-static text-body-2">
             {{ displayname }}
           </strong>
-          <span class="text-caption text-medium-emphasis"
+          <span class="cmt-meta text-caption"
             >• {{ formatDate(createdAt) }}</span
           >
         </div>
@@ -53,12 +53,12 @@
       </div>
 
       <div class="body text-body-2">
-        <div v-if="parentName" class="text-caption text-medium-emphasis mb-1">
+        <div v-if="parentName" class="cmt-meta text-caption mb-1">
           {{ t("pages.feeds.replyingTo", "Replying to") }} @{{ parentName }}
         </div>
         <div
           v-if="translatedFromLabel"
-          class="text-caption text-medium-emphasis mb-1"
+          class="cmt-meta text-caption mb-1"
         >
           {{ translatedFromLabel }}
         </div>
@@ -201,22 +201,40 @@ function onProfileClick() {
 
 <style scoped>
 .cmt {
+  --mf-cmt-bg: color-mix(in oklab, rgb(var(--v-theme-surface)) 94%, rgb(var(--v-theme-primary)) 6%);
+  --mf-cmt-border: rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.12);
+  --mf-cmt-hover-bg: color-mix(in oklab, rgb(var(--v-theme-surface)) 84%, rgb(var(--v-theme-primary)) 16%);
+  --mf-cmt-hover-border: rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.22);
+  --mf-cmt-reply-bg: color-mix(in oklab, rgb(var(--v-theme-surface)) 90%, rgb(var(--v-theme-primary)) 10%);
+  --mf-cmt-reply-border: rgba(var(--v-theme-primary-rgb, 59, 130, 246), 0.5);
+  --mf-cmt-line: rgba(var(--v-theme-primary-rgb, 59, 130, 246), 0.34);
+  --mf-cmt-body: rgba(226, 232, 240, 0.96);
+  --mf-cmt-name: #60a5fa;
+  --mf-cmt-meta: rgba(203, 213, 225, 0.84);
   --indent: 0px;
   position: relative;
   margin: 0;
-  border-radius: 0;
+  border-radius: 10px;
   box-shadow: none;
-  background: transparent;
+  background: var(--mf-cmt-bg);
+  border: 1px solid var(--mf-cmt-border);
+}
+
+.cmt.v-theme--dark {
+  --mf-cmt-body: rgba(226, 232, 240, 0.96);
+  --mf-cmt-name: #60a5fa;
+  --mf-cmt-meta: rgba(203, 213, 225, 0.84);
+}
+
+.cmt.v-theme--light {
+  --mf-cmt-body: rgba(30, 41, 59, 0.94);
+  --mf-cmt-name: #1d4ed8;
+  --mf-cmt-meta: rgba(51, 65, 85, 0.72);
 }
 
 .cmt:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-  background-color: rgba(var(--v-theme-on-surface-rgb, 0, 0, 0), 0.02);
-}
-
-.cmt:hover {
-  outline: 1px solid rgba(var(--v-theme-on-surface-rgb, 0, 0, 0), 0.06);
-  outline-offset: -1px;
+  background: var(--mf-cmt-hover-bg);
+  border-color: var(--mf-cmt-hover-border);
 }
 
 .cmt--depth-0 {
@@ -230,16 +248,18 @@ function onProfileClick() {
 }
 
 .cmt-inner {
-  padding-top: 0px;
-  padding-right: 8px;
-  padding-bottom: 0px;
+  padding-top: 4px;
+  padding-right: 10px;
+  padding-bottom: 4px;
   padding-left: calc(var(--indent) + 16px) !important;
 }
 
 .cmt-inner.is-reply {
-  background: rgba(var(--v-theme-on-surface-rgb, 0, 0, 0), 0.02);
-  border-left: 3px solid rgba(var(--v-theme-on-surface-rgb, 0, 0, 0), 0.2);
+  background: var(--mf-cmt-reply-bg);
+  border-left: 3px solid var(--mf-cmt-reply-border);
   margin-left: 6px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
 .cmt-inner.has-avatar .body,
@@ -254,8 +274,8 @@ function onProfileClick() {
   top: 6px;
   bottom: 6px;
   width: 3px;
-  background: rgba(var(--v-theme-on-surface-rgb, 0, 0, 0), 0.18);
-  opacity: 1;
+  background: var(--mf-cmt-line);
+  opacity: 0.75;
 }
 .cmt--depth-0::before {
   display: none;
@@ -274,11 +294,11 @@ function onProfileClick() {
 }
 .cmt .body {
   margin-top: 0 !important;
-  margin-bottom: 2px !important;
+  margin-bottom: 4px !important;
 }
 
 .cmt .actions {
-  margin-top: 0;
+  margin-top: 2px;
   margin-bottom: 0;
 }
 
@@ -294,17 +314,28 @@ function onProfileClick() {
   line-height: 1.2;
 }
 
+.cmt-meta {
+  color: var(--mf-cmt-meta) !important;
+}
+
 .cmt-body {
   white-space: pre-wrap;
   margin: 0;
+  line-height: 1.5;
+  color: var(--mf-cmt-body);
 }
 
 .cmt-name {
   font-weight: 700;
+  color: var(--mf-cmt-name);
   cursor: pointer;
   background: none;
   border: none;
   padding: 0;
+}
+
+.cmt-name-static {
+  color: var(--mf-cmt-name);
 }
 
 .cmt-name:hover {
@@ -337,5 +368,21 @@ function onProfileClick() {
 }
 .v-avatar {
   --v-avatar-size: 24px;
+}
+
+@media (max-width: 960px) {
+  .cmt {
+    border-radius: 8px;
+  }
+
+  .cmt-inner {
+    padding-right: 8px;
+    padding-left: calc(var(--indent) + 12px) !important;
+  }
+
+  .cmt-inner.has-avatar .body,
+  .cmt-inner.has-avatar .actions {
+    padding-left: 0;
+  }
 }
 </style>

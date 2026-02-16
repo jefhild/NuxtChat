@@ -1,5 +1,5 @@
 <template>
-  <v-card flat class="chat-users-container pa-2 d-flex flex-column h-100">
+  <v-card flat class="chat-users-container pa-1 d-flex flex-column h-100">
     <div class="users-header px-1 py-1 mb-0">
       <div class="header-left">
         <span class="header-text">
@@ -29,7 +29,7 @@
         <div class="users-content d-flex flex-column flex-grow-1 min-h-0">
           <div
             v-if="!displayUsers.length"
-            class="pa-3 text-body-2 text-medium-emphasis"
+            class="pa-3 text-body-2 users-empty-state"
           >
             {{ $t(emptyStateKey) }}
           </div>
@@ -415,13 +415,14 @@ function toggleGroup(id) {
 <style scoped>
 .chat-users-container {
   height: 100%;
+  background: transparent !important;
 }
 .users-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   min-height: 32px;
-  border-bottom: 1px solid rgba(13, 37, 63, 0.08);
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   background: transparent;
 }
 .header-left {
@@ -434,7 +435,7 @@ function toggleGroup(id) {
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #5c677d;
+  color: #cbd5e1;
 }
 .header-count {
   display: inline-flex;
@@ -444,8 +445,8 @@ function toggleGroup(id) {
   height: 20px;
   padding: 0 6px;
   border-radius: 999px;
-  background: rgba(25, 118, 210, 0.12);
-  color: #1a5fb4;
+  background: rgba(59, 130, 246, 0.24);
+  color: #dbeafe;
   font-size: 12px;
   font-weight: 600;
 }
@@ -479,13 +480,17 @@ function toggleGroup(id) {
   flex: 1 1 auto;
 }
 
+.users-empty-state {
+  color: #cbd5e1 !important;
+}
+
 .group-row {
   display: flex;
   align-items: center;
   gap: 6px;
   height: 32px;
   padding: 0 4px;
-  color: #1a3b7a;
+  color: #e2e8f0;
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -495,7 +500,7 @@ function toggleGroup(id) {
 }
 
 .group-caret {
-  color: rgba(26, 59, 122, 0.7);
+  color: #94a3b8;
 }
 
 .group-label {
@@ -513,8 +518,8 @@ function toggleGroup(id) {
   height: 16px;
   padding: 0 6px;
   border-radius: 999px;
-  background: rgba(25, 118, 210, 0.12);
-  color: #1a5fb4;
+  background: rgba(59, 130, 246, 0.24);
+  color: #dbeafe;
   font-size: 11px;
   font-weight: 700;
 }
@@ -530,7 +535,7 @@ function toggleGroup(id) {
 }
 
 .user-row.selected {
-  background: rgba(25, 118, 210, 0.08);
+  background: rgba(59, 130, 246, 0.24);
 }
 
 .avatar-wrap {
@@ -545,8 +550,8 @@ function toggleGroup(id) {
   height: 100%;
   display: grid;
   place-items: center;
-  background: #e0e0e0;
-  color: #555;
+  background: rgba(var(--v-theme-on-surface), 0.14);
+  color: rgba(var(--v-theme-on-surface), 0.82);
   font-weight: 600;
   font-size: 12px;
 }
@@ -558,7 +563,7 @@ function toggleGroup(id) {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  box-shadow: 0 0 0 2px #fff;
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-surface), 0.98);
 }
 
 .presence-dot.on {
@@ -607,7 +612,7 @@ function toggleGroup(id) {
   min-width: 0;
   font-size: 13px;
   font-weight: 600;
-  color: #1a1f36;
+  color: #e2e8f0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -629,7 +634,7 @@ function toggleGroup(id) {
 }
 
 .gender-icon {
-  color: rgba(26, 31, 54, 0.6);
+  color: rgba(var(--v-theme-on-surface), 0.65);
 }
 
 .gender-male {

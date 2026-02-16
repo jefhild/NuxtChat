@@ -1,5 +1,10 @@
 <template>
-  <v-card class="mx-auto mb-3" flat v-if="authStateUI.showForm">
+  <v-card
+    class="mx-auto mb-3 settings-form-root"
+    variant="flat"
+    elevation="0"
+    v-if="authStateUI.showForm"
+  >
     <SettingsProfileHeader
       v-if="editableProfile?.user_id"
       :userProfile="editableProfile"
@@ -57,7 +62,6 @@
       :isMarkedForDeletion="isMarkedForDeletion"
       :deleteBusy="deleteBusy"
       :showEmailLinkPrompt="shouldOfferEmailLinkPrompt"
-      :isAuthenticated="authStore.authStatus === 'authenticated'"
       :showAiBioButton="showAiBioButton"
       :aiBioDisabled="aiBioDisabled"
       :aiBioLoading="aiBioLoading"
@@ -76,7 +80,6 @@
       @update:genderId="(val) => (editableProfile.gender_id = val)"
       @update:preferredLocale="(val) => (editableProfile.preferred_locale = val)"
       @update:presenceStatus="onPresenceStatusChange"
-      @update:isPrivate="(val) => (editableProfile.is_private = val)"
       @update:bio="(val) => (editableProfile.bio = val)"
       @save="saveChanges"
       @startEdit="startEditing"
@@ -1071,5 +1074,11 @@ onMounted(async () => {
 
 .text-link-btn:hover {
   text-decoration: underline;
+}
+
+.settings-form-root {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 </style>

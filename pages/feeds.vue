@@ -9,8 +9,8 @@
       </div>
     </div>
 
-    <v-sheet class="pa-3 mood-prompt-bar" elevation="0">
-      <div class="d-flex flex-wrap align-center gap-3">
+    <v-sheet class="pa-3 pa-md-4 mood-prompt-bar" elevation="0">
+      <div class="d-flex flex-wrap align-center gap-3 prompt-row">
         <div class="prompt-text">
           <span v-if="promptLoading">
             {{ t("pages.feeds.promptLoading", "Loading question...") }}
@@ -22,8 +22,8 @@
         <v-text-field
           v-model="promptAnswer"
           class="prompt-input"
-          variant="underlined"
-          density="compact"
+          variant="outlined"
+          density="comfortable"
           hide-details
           :placeholder="t('pages.feeds.promptPlaceholder', 'Your response...')"
           maxlength="280"
@@ -32,6 +32,7 @@
         <v-btn
           color="primary"
           class="prompt-submit"
+          size="large"
           :loading="submitBusy"
           :disabled="submitBusy || !promptAnswer.trim()"
           @click="onSubmitPrompt"
@@ -697,31 +698,135 @@ if (import.meta.client) {
 
 <style scoped>
 .feeds-shell {
+  --mf-panel-border: rgba(148, 163, 184, 0.28);
+  --mf-panel-bg:
+    radial-gradient(1200px 240px at 8% 0%, rgba(59, 130, 246, 0.16), transparent 62%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.72));
+  --mf-panel-text: #dbe6ff;
+  --mf-divider: rgba(148, 163, 184, 0.26);
+  --mf-input-bg: rgba(2, 6, 23, 0.6);
+  --mf-input-border: rgba(148, 163, 184, 0.34);
+  --mf-input-text: #e8eefc;
+  --mf-input-placeholder: rgba(148, 163, 184, 0.85);
   min-height: 100vh;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding-top: 10px;
+  padding-bottom: 18px;
 }
+
+:global(.v-theme--light) .feeds-shell {
+  --mf-panel-border: rgba(100, 116, 139, 0.24);
+  --mf-panel-bg:
+    radial-gradient(1400px 240px at 8% 0%, rgba(59, 130, 246, 0.08), transparent 62%),
+    linear-gradient(135deg, rgba(241, 245, 249, 0.98), rgba(226, 232, 240, 0.92));
+  --mf-panel-text: #1e293b;
+  --mf-divider: rgba(100, 116, 139, 0.24);
+  --mf-input-bg: rgba(255, 255, 255, 0.9);
+  --mf-input-border: rgba(100, 116, 139, 0.34);
+  --mf-input-text: #0f172a;
+  --mf-input-placeholder: rgba(71, 85, 105, 0.72);
+}
+
 .feeds-header-shell {
-  margin-bottom: 12px;
-}
-.mood-prompt-bar {
   margin-bottom: 16px;
 }
+
+.mood-prompt-bar {
+  margin-bottom: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--mf-panel-border);
+  background: var(--mf-panel-bg);
+  backdrop-filter: blur(6px);
+}
+
+.prompt-row {
+  row-gap: 12px;
+  column-gap: 10px;
+}
+
 .prompt-divider {
   margin-top: 12px;
   border: 0;
-  border-top: 1px solid rgba(var(--v-theme-on-surface-rgb, 0, 0, 0), 0.08);
+  border-top: 1px solid var(--mf-divider);
 }
+
 .prompt-text {
-  flex: 1 1 260px;
+  flex: 1 1 360px;
   font-weight: 600;
+  font-size: clamp(1.05rem, 1.6vw, 1.24rem);
+  color: var(--mf-panel-text);
+  letter-spacing: 0.012em;
+  line-height: 1.35;
 }
+
 .prompt-input {
-  flex: 1 1 240px;
-  min-width: 200px;
+  flex: 1 1 420px;
+  min-width: 240px;
 }
+
 .prompt-submit {
-  margin-left: 6px;
+  min-width: 132px;
+  letter-spacing: 0.04em;
+  border-radius: 10px;
+  height: 46px;
 }
+
 .feeds-list {
-  margin-top: 18px;
+  margin-top: 10px;
+}
+
+.feeds-list > div {
+  display: grid;
+  gap: 14px;
+}
+
+.prompt-input :deep(.v-field) {
+  border-radius: 11px;
+  background: var(--mf-input-bg);
+  border: 1px solid var(--mf-input-border);
+}
+
+.prompt-input :deep(.v-field__input),
+.prompt-input :deep(input) {
+  color: var(--mf-input-text);
+}
+
+.prompt-input :deep(input::placeholder) {
+  color: var(--mf-input-placeholder);
+}
+
+.prompt-input :deep(.v-field--focused) {
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.24);
+}
+
+@media (max-width: 960px) {
+  .feeds-shell {
+    padding-top: 4px;
+    padding-bottom: 8px;
+  }
+
+  .mood-prompt-bar {
+    border-radius: 12px;
+  }
+
+  .prompt-text {
+    flex-basis: 100%;
+    font-size: 1.02rem;
+  }
+
+  .prompt-input {
+    min-width: 100%;
+    flex-basis: 100%;
+  }
+
+  .prompt-submit {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .feeds-list > div {
+    gap: 10px;
+  }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="legal-page legal-page--cookies">
     <span
       style="
         display: block;

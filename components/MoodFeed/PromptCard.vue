@@ -1,5 +1,5 @@
 <template>
-  <v-card class="pa-4 mood-thread" elevation="1">
+  <v-card class="pa-4 pa-md-5 mood-thread" elevation="0">
     <div class="mood-thread__header" v-if="promptText || hasExtras">
       <div class="mood-thread__question">
         {{ promptText }}
@@ -7,6 +7,7 @@
       <v-spacer />
       <v-btn
         v-if="hasExtras"
+        class="thread-toggle"
         icon
         variant="text"
         density="comfortable"
@@ -259,18 +260,68 @@ function handleVote(payload) {
 
 <style scoped>
 .mood-thread {
-  margin-bottom: 16px;
+  --mf-thread-border: rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.16);
+  --mf-thread-bg:
+    radial-gradient(1200px 320px at 4% 0%, rgba(var(--v-theme-primary-rgb, 59, 130, 246), 0.1), transparent 62%),
+    color-mix(in oklab, rgb(var(--v-theme-surface)) 92%, rgb(var(--v-theme-primary)) 8%);
+  --mf-thread-shadow:
+    0 8px 18px rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.12),
+    inset 0 1px 0 rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.08);
+  --mf-thread-divider: rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.14);
+  --mf-thread-question: color-mix(in oklab, rgb(var(--v-theme-primary)) 82%, rgb(var(--v-theme-on-surface)) 18%);
+  --mf-thread-toggle-bg: color-mix(in oklab, rgb(var(--v-theme-surface)) 88%, rgb(var(--v-theme-primary)) 12%);
+  --mf-thread-toggle-border: rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.2);
+  --mf-thread-toggle-fg: rgb(var(--v-theme-primary));
+  --mf-thread-toggle-hover: color-mix(in oklab, rgb(var(--v-theme-surface)) 78%, rgb(var(--v-theme-primary)) 22%);
+  --mf-thread-item-divider: rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.1);
+  border-radius: 16px;
+  border: 1px solid var(--mf-thread-border);
+  background: var(--mf-thread-bg);
+  box-shadow: var(--mf-thread-shadow);
+  backdrop-filter: blur(5px);
 }
+
 .mood-thread__header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--mf-thread-divider);
 }
 
 .mood-thread__question {
-  font-size: 1rem;
+  font-size: clamp(1.03rem, 1.2vw, 1.2rem);
   font-weight: 700;
-  color: rgba(var(--v-theme-primary-rgb, 63, 81, 181), 0.95);
+  line-height: 1.4;
+  color: var(--mf-thread-question);
+  letter-spacing: 0.012em;
+}
+
+.thread-toggle {
+  border: 1px solid var(--mf-thread-toggle-border);
+  background: var(--mf-thread-toggle-bg);
+  color: var(--mf-thread-toggle-fg);
+}
+
+.thread-toggle:hover {
+  background: var(--mf-thread-toggle-hover);
+}
+
+.mood-thread :deep(.cmt + .cmt) {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--mf-thread-item-divider);
+}
+
+@media (max-width: 960px) {
+  .mood-thread {
+    border-radius: 12px;
+  }
+
+  .mood-thread__header {
+    margin-bottom: 10px;
+    padding-bottom: 7px;
+  }
 }
 </style>

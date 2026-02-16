@@ -1,5 +1,8 @@
 <template>
-  <v-container fluid class="profiles-shell">
+  <v-container
+    fluid
+    :class="['profiles-shell', { 'profiles-shell--dark': isDarkTheme }]"
+  >
     <div class="profiles-header-shell">
       <div class="profiles-header-actions">
         <v-btn
@@ -67,10 +70,14 @@
 </template>
 
 <script setup>
+import { useTheme } from "vuetify";
+
 const isAuthenticated = ref(false);
 const authStore = useAuthStore();
 const localPath = useLocalePath();
 const filtersOpen = ref(false);
+const theme = useTheme();
+const isDarkTheme = computed(() => theme.global.current.value.dark);
 useSeoI18nMeta("profiles.male");
 onMounted(async () => {
   await authStore.checkAuth();
@@ -81,6 +88,7 @@ onMounted(async () => {
 <style scoped>
 .profiles-shell {
   padding-top: 6px;
+  min-height: 100%;
 }
 
 .profiles-header-shell {
@@ -115,5 +123,22 @@ onMounted(async () => {
 
 .profiles-drawer :deep(.v-navigation-drawer__content) {
   overflow-y: auto;
+}
+
+.profiles-shell--dark {
+  background: #0f172a;
+  border-radius: 0;
+  color: #e2e8f0;
+}
+
+.profiles-shell--dark :deep(.page-header-text),
+.profiles-shell--dark :deep(.page-header-subtitle),
+.profiles-shell--dark :deep(.text-h6),
+.profiles-shell--dark :deep(.text-body-2) {
+  color: #e2e8f0 !important;
+}
+
+.profiles-shell--dark :deep(.text-medium-emphasis) {
+  color: #94a3b8 !important;
 }
 </style>

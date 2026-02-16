@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="legal-page legal-page--terms">
     <v-row>
       <v-col>
         <h1>{{ $t("pages.terms.page.title") }}</h1>

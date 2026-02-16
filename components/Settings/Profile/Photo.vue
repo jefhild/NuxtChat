@@ -1,7 +1,7 @@
 <template>
   <v-row no-gutters>
     <v-col class="d-flex flex-column align-center">
-      <v-card class="profile-photo-card" elevation="1">
+      <v-card class="profile-photo-card" elevation="0" variant="outlined">
         <div class="photo-hero">
           <NuxtImg
             v-if="previewAvatar"
@@ -142,6 +142,8 @@ const onFileChange = async (e: Event) => {
   max-width: 360px;
   border-radius: 14px;
   overflow: hidden;
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
 
 .photo-hero {
@@ -216,7 +218,7 @@ const onFileChange = async (e: Event) => {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.06);
   min-height: 44px;
 }
 
@@ -243,5 +245,9 @@ const onFileChange = async (e: Event) => {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+
+:deep(.text-link-btn) {
+  color: rgb(var(--v-theme-primary));
 }
 </style>

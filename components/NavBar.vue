@@ -90,7 +90,6 @@
                 type="button"
                 aria-label="Menu"
                 v-bind="props"
-                :style="{ color: menuIconColor }"
               >
                 <span class="nav2__menu-bar" />
                 <span class="nav2__menu-bar" />
@@ -273,14 +272,11 @@ const navClasses = computed(() => ({
   "nav2--solid": !isHome.value || isScrolled.value,
 }));
 
-const menuIconColor = computed(() =>
-  isHome.value && !isScrolled.value ? "#ffffff" : "#0f172a"
-);
-
 const applyNavOffsetVar = () => {
   if (!isClient) return;
-  const height = navRef.value?.offsetHeight || 72;
-  const value = isHome.value ? "0px" : `${height}px`;
+  const rawHeight = Number(navRef.value?.offsetHeight || 72);
+  const safeHeight = Math.min(Math.max(rawHeight, 56), 96);
+  const value = isHome.value ? "0px" : `${safeHeight}px`;
   document.documentElement.style.setProperty(NAV_OFFSET_VAR, value);
 };
 
@@ -366,7 +362,7 @@ onBeforeUnmount(() => {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1500;
+  z-index: 2100;
   padding: 8px 14px;
   color: #ffffff;
   transition: background-color 180ms ease, backdrop-filter 180ms ease, box-shadow 180ms ease,
@@ -459,7 +455,7 @@ onBeforeUnmount(() => {
   padding: 0 4px;
   border-radius: 9999px;
   background: #ff3b30;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-surface), 0.95);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -544,10 +540,10 @@ onBeforeUnmount(() => {
 }
 
 .nav2--solid {
-  background: rgba(255, 255, 255, 0.9);
-  color: #0f172a;
+  background: rgba(var(--v-theme-surface), 0.92);
+  color: rgb(var(--v-theme-on-surface));
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 28px rgba(var(--v-theme-on-surface), 0.14);
 }
 
 @media (max-width: 960px) {
