@@ -138,7 +138,7 @@ const mainStyle = computed(() => {
     if (!isChat) return base;
     return {
       ...base,
-      paddingBottom: "56px",
+      paddingBottom: "12px",
     };
   }
   const chatMinBottom = isChat ? 56 : 0;

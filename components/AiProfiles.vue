@@ -61,10 +61,10 @@
                 </span>
               </v-avatar>
               <div class="flex-grow-1">
-                <div class="text-subtitle-1 font-weight-medium">
+                <div class="text-subtitle-1 font-weight-medium ai-card-name">
                   {{ profile.name }}
                 </div>
-                <div class="text-caption text-medium-emphasis">
+                <div class="text-caption ai-card-tagline">
                   {{ profile.tagline }}
                 </div>
               </div>
@@ -72,8 +72,8 @@
                 v-if="profile.region"
                 size="x-small"
                 label
-                variant="tonal"
-                color="secondary"
+                variant="flat"
+                class="ai-card-region"
               >
                 {{ profile.region }}
               </v-chip>
@@ -82,14 +82,13 @@
             <v-chip
               v-if="profile.bias"
               size="small"
-              color="primary"
-              variant="tonal"
-              class="mb-3 font-weight-medium"
+              variant="flat"
+              class="mb-3 font-weight-medium ai-card-bias"
             >
               {{ profile.bias }}
             </v-chip>
 
-            <p class="text-body-2 text-medium-emphasis">
+            <p class="text-body-2 ai-card-angle">
               {{ profile.angle }}
             </p>
 
@@ -381,19 +380,48 @@ if (error.value) {
 }
 
 .ai-card {
+  --ai-card-bg: linear-gradient(
+    145deg,
+    rgba(var(--v-theme-surface), 0.96),
+    rgba(var(--v-theme-primary), 0.08)
+  );
+  --ai-card-border: rgba(var(--v-theme-on-surface), 0.2);
+  --ai-card-name: rgba(var(--v-theme-on-surface), 0.96);
+  --ai-card-muted: rgba(var(--v-theme-on-surface), 0.72);
+  --ai-card-region-bg: rgba(var(--v-theme-secondary), 0.2);
+  --ai-card-region-text: rgba(var(--v-theme-secondary), 0.98);
+  --ai-card-bias-bg: rgba(var(--v-theme-primary), 0.2);
+  --ai-card-bias-text: rgba(var(--v-theme-primary), 0.98);
+
   height: 100%;
   padding: 18px;
   transition: transform 120ms ease, box-shadow 120ms ease;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.9),
-    rgba(245, 248, 255, 0.85)
-  );
+  background: var(--ai-card-bg);
+  border-color: var(--ai-card-border) !important;
 }
 
 .ai-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 28px rgba(33, 33, 33, 0.12);
+}
+
+.ai-card-name {
+  color: var(--ai-card-name);
+}
+
+.ai-card-tagline,
+.ai-card-angle {
+  color: var(--ai-card-muted);
+}
+
+.ai-card-region {
+  background: var(--ai-card-region-bg) !important;
+  color: var(--ai-card-region-text) !important;
+}
+
+.ai-card-bias {
+  background: var(--ai-card-bias-bg) !important;
+  color: var(--ai-card-bias-text) !important;
 }
 
 .avatar-img {

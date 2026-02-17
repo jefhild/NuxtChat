@@ -635,6 +635,9 @@ function toggleGroup(id) {
 
 .gender-icon {
   color: rgba(var(--v-theme-on-surface), 0.65);
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .gender-male {
