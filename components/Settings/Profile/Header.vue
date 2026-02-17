@@ -10,6 +10,7 @@
         :editable="isEditable"
         :userId="userProfile.user_id"
         :avatarUrl="avatar"
+        :photoLibraryPhotos="photoLibraryPhotos"
         :randomLoading="randomLoading"
         :uploadLoading="uploadLoading"
         :errorMessage="errorMessage"
@@ -214,22 +215,23 @@ watch(
 
 <style scoped>
 .settings-media-row {
-  margin-top: 6px;
+  margin-top: 18px;
+  margin-bottom: 18px;
 }
 
 :deep(.profile-photo-card) {
-  width: 100%;
-  max-width: 360px;
+  width: 360px;
+  max-width: 100%;
 }
 
 .photo-library-card {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 360px;
+  width: 360px;
+  max-width: 100%;
   min-height: 296px;
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
   background: rgb(var(--v-theme-surface));
   border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
@@ -291,11 +293,11 @@ watch(
 }
 
 .photo-library-chevron.left {
-  left: 0;
+  left: -8px;
 }
 
 .photo-library-chevron.right {
-  right: 0;
+  right: -8px;
 }
 
 .photo-library-slot {
