@@ -1298,6 +1298,7 @@
       "favorites": "My Favorites",
       "blocked": "Blocked Users",
       "upvotes": "Upvotes",
+      "site-settings": "Site Settings",
       "chat-settings": "Chat Settings",
       "photo-library": "Photo Library",
       "menu": {
@@ -1305,6 +1306,7 @@
         "favorites": "My Favorites",
         "blocked": "Blocked Users",
         "upvotes": "Upvotes",
+        "site-settings": "Site Settings",
         "chat-settings": "Chat Settings",
         "photo-library": "Photo Library"
       },

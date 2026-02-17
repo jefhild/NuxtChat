@@ -126,6 +126,12 @@ const localPath = useLocalePath();
 .compact-footer__content {
   padding: 4px 0;
   color: rgba(var(--v-theme-on-surface), 0.92);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px 6px;
+  text-align: center;
 }
 
 .compact-footer__link {
@@ -135,6 +141,7 @@ const localPath = useLocalePath();
   border: none !important;
   box-shadow: none !important;
   outline: none;
+  overflow-wrap: anywhere;
 }
 
 .compact-footer__icon-link {
@@ -162,6 +169,7 @@ const localPath = useLocalePath();
   cursor: pointer;
   padding: 0;
   font: inherit;
+  overflow-wrap: anywhere;
 }
 
 :global(.v-theme--dark .compact-footer__card) {

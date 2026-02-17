@@ -37,7 +37,7 @@
     v-else
     class="app-footer app-footer--mobile"
     :class="{
-      'app-footer--hidden': isChatRoute && !footerVisible,
+      'app-footer--hidden': footerToggleEnabled && !footerVisible,
       'app-footer--chat': isChatRoute,
       'app-footer--feeds': isFeedsRoute,
     }"
@@ -99,9 +99,34 @@ useFavoriteNotifications();
 
 const isClient = typeof window !== "undefined";
 const isMobile = computed(() => hasMounted.value && smAndDown.value === true);
-const isChatRoute = computed(() => (route.path || "").includes("/chat"));
-const isProfilesRoute = computed(() => (route.path || "").startsWith("/profiles"));
-const isFeedsRoute = computed(() => (route.path || "").startsWith("/feeds"));
+const localeSegmentPattern = /^[a-z]{2}(?:-[A-Z]{2})?$/;
+const normalizedPath = computed(() => {
+  const rawPath = (route.path || "").split("?")[0];
+  const segments = rawPath.split("/").filter(Boolean);
+  if (!segments.length) return "/";
+  const withoutLocale = localeSegmentPattern.test(segments[0])
+    ? segments.slice(1)
+    : segments;
+  return `/${withoutLocale.join("/")}`.replace(/\/+$/, "") || "/";
+});
+const isChatRoute = computed(() => normalizedPath.value.startsWith("/chat"));
+const isProfilesRoute = computed(() =>
+  normalizedPath.value.startsWith("/profiles")
+);
+const isFeedsRoute = computed(() => normalizedPath.value.startsWith("/feeds"));
+const isArticlesRoute = computed(() =>
+  normalizedPath.value.startsWith("/articles")
+);
+const isHomeRoute = computed(() => {
+  return normalizedPath.value === "/";
+});
+const footerToggleEnabled = computed(
+  () =>
+    isChatRoute.value ||
+    isHomeRoute.value ||
+    isArticlesRoute.value ||
+    isFeedsRoute.value
+);
 const mainStyle = computed(() => {
   const isChat = isChatRoute.value;
   const base = {
@@ -147,7 +172,9 @@ const toggleFooter = () => {
   else showFooter();
 };
 
-const showFooterFab = computed(() => isMobile.value && isChatRoute.value);
+const showFooterFab = computed(
+  () => isMobile.value && footerToggleEnabled.value
+);
 const unreadCount = computed(() => messages.totalUnread || 0);
 const unreadLabel = computed(() =>
   unreadCount.value > 99 ? "99+" : `${unreadCount.value}`
@@ -579,8 +606,8 @@ if (isClient) {
     padding: 0;
     background: rgb(var(--v-theme-surface));
     min-height: 52px;
-    max-height: 88px;
-    overflow: hidden;
+    max-height: none;
+    overflow: visible;
   }
 
   .app-footer .compact-footer {
@@ -590,10 +617,9 @@ if (isClient) {
   }
 
   .app-footer--mobile .compact-footer__content {
-    white-space: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    display: block;
+    white-space: normal;
+    overflow: visible;
+    display: flex;
   }
 
   .app-footer__handle {

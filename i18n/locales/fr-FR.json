@@ -1276,6 +1276,7 @@
       "favorites": "Mes Favoris",
       "blocked": "Utilisateurs Bloqués",
       "upvotes": "Votes Positifs",
+      "site-settings": "Paramètres du site",
       "chat-settings": "Paramètres du chat",
       "photo-library": "Bibliothèque de photos",
       "menu": {
@@ -1283,6 +1284,7 @@
         "favorites": "Mes Favoris",
         "blocked": "Utilisateurs Bloqués",
         "upvotes": "Votes Positifs",
+        "site-settings": "Paramètres du site",
         "chat-settings": "Paramètres du chat",
         "photo-library": "Bibliothèque de photos"
       },

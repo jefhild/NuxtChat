@@ -1275,6 +1275,7 @@
       "favorites": "我的收藏",
       "blocked": "屏蔽的用户",
       "upvotes": "点赞",
+      "site-settings": "站点设置",
       "chat-settings": "聊天设置",
       "photo-library": "照片库",
       "menu": {
@@ -1282,6 +1283,7 @@
         "favorites": "我的收藏",
         "blocked": "屏蔽的用户",
         "upvotes": "点赞",
+        "site-settings": "站点设置",
         "chat-settings": "聊天设置",
         "photo-library": "照片库"
       },

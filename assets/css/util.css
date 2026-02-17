@@ -79,6 +79,44 @@ body,
   display: none !important;
 }
 
+/* Guard against menu/select overlays dimming the full page */
+.v-overlay.v-menu > .v-overlay__scrim,
+.v-overlay.v-select__menu > .v-overlay__scrim,
+.v-overlay.v-autocomplete__content > .v-overlay__scrim,
+.v-overlay.v-combobox__content > .v-overlay__scrim {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Ensure menu overlay roots never visually cover the app */
+.v-overlay.v-menu,
+.v-overlay.v-select__menu,
+.v-overlay.v-autocomplete__content,
+.v-overlay.v-combobox__content {
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  pointer-events: none !important;
+}
+
+.v-overlay.v-menu > .v-overlay__content,
+.v-overlay.v-select__menu > .v-overlay__content,
+.v-overlay.v-autocomplete__content > .v-overlay__content,
+.v-overlay.v-combobox__content > .v-overlay__content {
+  pointer-events: auto !important;
+}
+
+/* Keep dropdown overlay containers from inheriting fullscreen drawer geometry */
+.v-overlay.v-menu > .v-overlay__content,
+.v-overlay.v-select__menu > .v-overlay__content,
+.v-overlay.v-autocomplete__content > .v-overlay__content,
+.v-overlay.v-combobox__content > .v-overlay__content {
+  height: auto !important;
+  max-height: calc(100vh - var(--nav2-offset, 0px) - 12px);
+  background: transparent !important;
+}
+
 /* Legal pages: shared spacing, typography, and dark mode support */
 .legal-page {
   max-width: 980px;

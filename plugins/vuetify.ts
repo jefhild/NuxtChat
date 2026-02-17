@@ -30,6 +30,49 @@ export default defineNuxtPlugin((app) => {
 
   const vuetify = createVuetify({
     defaults: {
+      VOverlay: {
+        // Default to no page-dimming for lightweight overlays (menus/selects/tooltips).
+        scrim: false,
+      },
+      VDialog: {
+        // Keep modal dialogs dimmed.
+        scrim: true,
+      },
+      VMenu: {
+        // Dropdown/menu overlays should never dim or hide the page.
+        scrim: false,
+        attach: "body",
+        contained: false,
+        scrollStrategy: "reposition",
+        locationStrategy: "connected",
+      },
+      VSelect: {
+        menuProps: {
+          scrim: false,
+          attach: "body",
+          contained: false,
+          scrollStrategy: "reposition",
+          locationStrategy: "connected",
+        },
+      },
+      VAutocomplete: {
+        menuProps: {
+          scrim: false,
+          attach: "body",
+          contained: false,
+          scrollStrategy: "reposition",
+          locationStrategy: "connected",
+        },
+      },
+      VCombobox: {
+        menuProps: {
+          scrim: false,
+          attach: "body",
+          contained: false,
+          scrollStrategy: "reposition",
+          locationStrategy: "connected",
+        },
+      },
       VTooltip: {
         scrim: false,
         openOnClick: false,
