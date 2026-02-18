@@ -13,6 +13,7 @@ export function useSeoI18nMeta(
       ogDescription?: string;
       ogImage?: string;
       ogType?: string;
+      twitterCard?: string;
       twitterTitle?: string;
       twitterDescription?: string;
       twitterImage?: string;
@@ -131,7 +132,7 @@ export function useSeoI18nMeta(
       { property: "og:type", content: dynamic.ogType || tf("ogType") },
       { property: "og:url", content: canonicalHref },
       { property: "og:image", content: dynamic.ogImage || tf("ogImage") },
-      { name: "twitter:card", content: tf("twitterCard") },
+      { name: "twitter:card", content: dynamic.twitterCard || tf("twitterCard") },
       {
         name: "twitter:title",
         content: dynamic.twitterTitle || tf("twitterTitle"),

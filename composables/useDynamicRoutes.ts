@@ -110,7 +110,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
     const tagRoutes = tagData.map((t) => `/tags/${t.slug}`);
     const peopleRoutes = peopleData.map((p) => `/people/${p.slug}`);
 
-    const staticPages = ["/about", "/cookies", "/settings", "/people"];
+    const staticPages = ["/about", "/cookies", "/people"];
     const homeRoutes = ["/"];
 
     const allRoutes = [
@@ -171,7 +171,7 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       return [];
     }
 
-    const staticPages = ["/about", "/cookies", "/settings", "/people"];
+    const staticPages = ["/about", "/cookies", "/people"];
     const homeRoutes = ["/"];
     const fallbackLastmod = new Date().toISOString();
 

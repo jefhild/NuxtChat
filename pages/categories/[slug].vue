@@ -290,7 +290,7 @@ const { data: initialData, pending } = await useAsyncData(
       articles: articlesWithTags,
     };
   },
-  { watch: [slug], server: false }
+  { watch: [slug], server: true }
 );
 
 watchEffect(() => {

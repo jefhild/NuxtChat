@@ -196,11 +196,14 @@ export default defineNuxtConfig({
   robots: {
     disallow: [
       "/login",
+      "/signin",
       "/terms",
       "/privacy",
       "/settings",
+      "/*/settings",
       "/admin",
       "/callback",
+      "/*/callback",
       "/cdn-cgi",
     ],
     allow: ["/", "/_nuxt/"],
@@ -255,6 +258,18 @@ export default defineNuxtConfig({
   routeRules: {
     "/feeds": { ssr: false },
     "/*/feeds": { ssr: false },
+    "/settings": {
+      headers: { "x-robots-tag": "noindex, nofollow, noarchive" },
+    },
+    "/*/settings": {
+      headers: { "x-robots-tag": "noindex, nofollow, noarchive" },
+    },
+    "/callback": {
+      headers: { "x-robots-tag": "noindex, nofollow, noarchive" },
+    },
+    "/*/callback": {
+      headers: { "x-robots-tag": "noindex, nofollow, noarchive" },
+    },
     "/people/**": { prerender: false, swr: 3600 },
     "/profiles/**": { prerender: false },
     "/articles/**": { prerender: false, swr: 3600 },
@@ -337,13 +352,17 @@ export default defineNuxtConfig({
     sources: ["/api/sitemap/urls"],
     exclude: [
       "/login",
+      "/signin",
       "/logout",
       "/loginemail",
       "/loginfacebook",
       "/terms",
       "/privacy",
       "/settings",
+      "/**/settings",
       "/admin",
+      "/callback",
+      "/**/callback",
     ],
   },
 });

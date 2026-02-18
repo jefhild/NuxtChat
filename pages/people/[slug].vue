@@ -211,15 +211,17 @@ const limitedDescription = computed(() =>
   t("pages.people.slug.metaDescription", { name: displayName.value })
 );
 
-useSeoMeta({
-  title: computed(() => `${pageHeading.value} – ImChatty`),
-  description: limitedDescription,
-  ogTitle: computed(() => `${pageHeading.value} – ImChatty`),
-  ogDescription: limitedDescription,
-  ogImage: firstImage,
-  twitterTitle: computed(() => `${pageHeading.value} – ImChatty`),
-  twitterDescription: limitedDescription,
-  twitterImage: firstImage,
+useSeoI18nMeta("people.index", {
+  dynamic: {
+    title: computed(() => `${pageHeading.value} – ImChatty`),
+    description: limitedDescription,
+    ogTitle: computed(() => `${pageHeading.value} – ImChatty`),
+    ogDescription: limitedDescription,
+    ogImage: firstImage,
+    twitterTitle: computed(() => `${pageHeading.value} – ImChatty`),
+    twitterDescription: limitedDescription,
+    twitterImage: firstImage,
+  },
 });
 
 const loadMoreArticles = () => {
@@ -302,7 +304,7 @@ const { data: initialData, pending } = await useAsyncData(
       articles: articlesWithTags,
     };
   },
-  { watch: [slug], server: false }
+  { watch: [slug], server: true }
 );
 
 watchEffect(() => {

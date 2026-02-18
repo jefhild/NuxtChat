@@ -13,6 +13,10 @@ const localPath = useLocalePath()
 const supabase = useSupabaseClient()
 const draft = useOnboardingDraftStore()
 
+useHead({
+  meta: [{ name: "robots", content: "noindex, nofollow" }],
+})
+
 // sanitize ?next
 const rawNext = route.query.next
 const nextPath =

@@ -274,7 +274,7 @@ const { data: initialData, pending } = await useAsyncData(
       articles: articlesWithTags,
     };
   },
-  { watch: [tagSlug], server: false }
+  { watch: [tagSlug], server: true }
 );
 
 watchEffect(() => {

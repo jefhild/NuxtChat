@@ -32,7 +32,9 @@ function goLinkEmail() {
   navigateTo({ path: localePath("/settings"), query: { linkEmail: "1" } });
 }
 
-useSeoI18nMeta("signin");
+useSeoI18nMeta("signin", {
+  robots: "noindex,nofollow",
+});
 </script>
 
 <style scoped>

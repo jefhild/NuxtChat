@@ -6,25 +6,12 @@
 </template>
 
 <script setup>
-import { useAuthStore } from "@/stores/authStore1";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
-
-const auth = useAuthStore();
-
-useHead(() => ({
-  link: [
-    {
-      rel: "canonical",
-      href: "https://imchatty.com/logout",
-    },
-  ],
-}));
 
 const seoTitle = computed(() => t("pages.logout.meta.title"));
 const seoDescription = computed(() => t("pages.logout.meta.description"));
 const ogTitle = computed(() => t("pages.logout.meta.ogTitle"));
-const ogUrl = computed(() => t("pages.logout.meta.ogUrl"));
 const ogType = computed(() => t("pages.logout.meta.ogType"));
 const ogImage = computed(() => t("pages.logout.meta.ogImage"));
 const ogDescription = computed(() =>
@@ -36,17 +23,19 @@ const twitterDescription = computed(() =>
   t("pages.logout.meta.twitterDescription")
 );
 
-useSeoMeta({
-  title: seoTitle.value,
-  description: seoDescription.value,
-  ogTitle: ogTitle.value,
-  ogType: ogType.value,
-  ogUrl: ogUrl.value,
-  ogImage: ogImage.value,
-  ogDescription: ogDescription.value,
-  twitterCard: twitterCard.value,
-  twitterTitle: twitterTitle.value,
-  twitterDescription: twitterDescription.value,
+useSeoI18nMeta("logout", {
+  robots: "noindex,nofollow",
+  dynamic: {
+    title: seoTitle,
+    description: seoDescription,
+    ogTitle,
+    ogType,
+    ogImage,
+    ogDescription,
+    twitterCard,
+    twitterTitle,
+    twitterDescription,
+  },
 });
 
 onMounted(async () => {

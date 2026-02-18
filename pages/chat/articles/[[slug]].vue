@@ -941,8 +941,8 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 const canonicalUrl = computed(() => {
   // localePath gives you the localized route (e.g. /en/chat/articles/slug)
   const localizedPath = resolvedSlug.value
-    ? localePath(`/chat/articles/${resolvedSlug.value}`)
-    : localePath("/chat/articles");
+    ? localePath(`/articles/${resolvedSlug.value}`)
+    : localePath("/articles");
   // ensure absolute URL
   const base = (pub.SITE_URL || "http://localhost:3000").replace(/\/$/, "");
   return `${base}${localizedPath}`;
