@@ -1,3 +1,4 @@
+import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 
 const normalizeLocale = (value) => {
@@ -13,6 +14,7 @@ const pickRandom = (list = []) =>
   list[Math.floor(Math.random() * list.length)];
 
 export default defineEventHandler(async (event) => {
+  const user = await serverSupabaseUser(event);
   const query = getQuery(event) || {};
   const locale = normalizeLocale(query.locale || "en");
   const supabase = await getServiceRoleClient(event);
@@ -30,6 +32,27 @@ export default defineEventHandler(async (event) => {
   if (!rows.length && locale !== "en") {
     rows = await fetchByLocale("en");
   }
+
+  if (user?.id) {
+    const { data: answered } = await supabase
+      .from("mood_feed_entries")
+      .select("prompt_key")
+      .eq("user_id", user.id)
+      .not("prompt_key", "is", null);
+
+    const answeredKeys = new Set(
+      (answered || [])
+        .map((row) => String(row?.prompt_key || "").trim())
+        .filter(Boolean)
+    );
+
+    rows = rows.filter((row) => {
+      const key = String(row?.mood_feed_prompts?.prompt_key || "").trim();
+      if (!key) return true;
+      return !answeredKeys.has(key);
+    });
+  }
+
   const pick = pickRandom(rows);
   if (!pick?.prompt_text) {
     throw createError({ statusCode: 404, statusMessage: "No prompts available" });

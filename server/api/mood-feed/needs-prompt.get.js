@@ -8,9 +8,16 @@ export default defineEventHandler(async (event) => {
 
   const supabase = await getServiceRoleClient(event);
   const now = new Date();
-  const since = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  const since = new Date(now.getTime() - oneDayMs);
 
-  const [{ data: profile }, { data: entry }, { data: skip }] =
+  const [
+    { data: profile },
+    { data: entry },
+    { data: skip },
+    { data: answeredPrompts },
+    { data: activePrompts },
+  ] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -33,6 +40,15 @@ export default defineEventHandler(async (event) => {
         .order("skipped_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
+      supabase
+        .from("mood_feed_entries")
+        .select("prompt_key")
+        .eq("user_id", user.id)
+        .not("prompt_key", "is", null),
+      supabase
+        .from("mood_feed_prompts")
+        .select("prompt_key")
+        .eq("is_active", true),
     ]);
 
   if (profile?.mood_feed_prompt_enabled === false) {
@@ -58,14 +74,29 @@ export default defineEventHandler(async (event) => {
   const lastShownAt = profile?.mood_feed_prompt_last_shown_at
     ? new Date(profile.mood_feed_prompt_last_shown_at)
     : null;
-  if (lastShownAt) {
-    const resolvedAt =
-      lastEntryAt && lastSkipAt
-        ? new Date(Math.max(lastEntryAt.getTime(), lastSkipAt.getTime()))
-        : lastEntryAt || lastSkipAt || null;
-    if (!resolvedAt || resolvedAt < lastShownAt) {
-      return { needsPrompt: false };
-    }
+  if (lastShownAt && now.getTime() - lastShownAt.getTime() < oneDayMs) {
+    return { needsPrompt: false };
+  }
+
+  const activePromptKeys = new Set(
+    (activePrompts || [])
+      .map((row) => String(row?.prompt_key || "").trim())
+      .filter(Boolean)
+  );
+  if (!activePromptKeys.size) {
+    return { needsPrompt: false };
+  }
+
+  const answeredPromptKeys = new Set(
+    (answeredPrompts || [])
+      .map((row) => String(row?.prompt_key || "").trim())
+      .filter(Boolean)
+  );
+  const hasUnansweredPrompt = [...activePromptKeys].some(
+    (key) => !answeredPromptKeys.has(key)
+  );
+  if (!hasUnansweredPrompt) {
+    return { needsPrompt: false };
   }
 
   return { needsPrompt: true };

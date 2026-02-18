@@ -2599,16 +2599,18 @@ async function maybeTriggerMoodPrompt() {
   try {
     const needs = await $fetch("/api/mood-feed/needs-prompt");
     if (!needs?.needsPrompt) return;
-    const promptText =
-      draftStore.moodFeedPrompt && String(draftStore.moodFeedPrompt).trim()
-        ? draftStore.moodFeedPrompt
-        : await fetchMoodPrompt();
+    const promptText = await fetchMoodPrompt();
     if (!promptText) return;
     draftStore.setField?.("moodFeedStage", "prompt");
     draftStore.setField?.("moodFeedAttempts", 0);
     draftStore.setField?.("moodFeedAnswer", "");
     draftStore.setField?.("moodFeedRefined", "");
     await pushMoodBotMessage(formatMoodPrompt(promptText));
+    try {
+      await $fetch("/api/mood-feed/prompted", { method: "POST" });
+    } catch (err) {
+      console.warn("[mood-feed] prompt acknowledge failed:", err?.message || err);
+    }
   } finally {
     moodPromptBusy.value = false;
   }
@@ -2899,6 +2901,7 @@ function toggleFilters() {
   align-items: center;
   justify-content: center;
   z-index: 3;
+  pointer-events: none;
 }
 
 .active-panel-toggle {
@@ -2907,6 +2910,7 @@ function toggleFilters() {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
   width: 28px;
   height: 28px;
+  pointer-events: auto;
 }
 
 .active-panel-toggle--alert,

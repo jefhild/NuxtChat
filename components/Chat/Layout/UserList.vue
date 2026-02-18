@@ -43,25 +43,35 @@
           <!-- <span class="state">{{ u.online ? 'online' : 'offline' }}</span> -->
           <div class="flag-wrap">
             <span class="flag">{{ u.country_emoji }}</span>
-            <div v-if="showActions" class="actions">
-              <v-menu location="end" offset="6">
-                <template #activator="{ props: menuProps }">
-                  <v-btn
-                    v-bind="menuProps"
-                    icon="mdi-dots-horizontal"
-                    size="x-small"
-                    density="comfortable"
-                    variant="text"
-                    color="#1d3b58"
-                    @click.stop
-                  />
-                </template>
+            <div
+              v-if="showActions"
+              class="actions"
+              @click.stop
+              @mousedown.stop
+              @pointerdown.stop
+            >
+              <v-btn
+                icon="mdi-dots-horizontal"
+                size="x-small"
+                density="comfortable"
+                variant="plain"
+                class="action-menu-btn"
+                @click.stop.prevent="toggleActionMenu(u)"
+              />
+              <v-menu
+                :model-value="isActionMenuOpen(u)"
+                activator="parent"
+                location="start"
+                offset="6"
+                content-class="chat-user-actions-menu"
+                @update:model-value="setActionMenuOpen(u, $event)"
+              >
                 <v-list density="compact">
                   <v-list-item
                     value="delete-chat"
                     :title="$t('components.activeChats.delete-title')"
                     prepend-icon="mdi-trash-can-outline"
-                    @click.stop="$emit('delete-chat', u)"
+                    @click.stop="onActionMenuClick(u)"
                   />
                 </v-list>
               </v-menu>
@@ -88,8 +98,9 @@ const props = defineProps({
   hideTagline: { type: Boolean, default: false },
   showActions: { type: Boolean, default: false },
 });
-defineEmits(["user-selected", "delete-chat"]);
+const emit = defineEmits(["user-selected", "delete-chat"]);
 const showActions = computed(() => props.showActions === true);
+const actionMenuById = ref({});
 
 const idStr = (u) => String(u?.user_id ?? u?.id ?? "");
 const isSelected = (u) =>
@@ -144,6 +155,33 @@ onBeforeUnmount(() => {
 });
 
 const listHeight = computed(() => props.height ?? innerHeight.value);
+
+const menuId = (u) => idStr(u);
+const isActionMenuOpen = (u) => !!actionMenuById.value[menuId(u)];
+function setActionMenuOpen(u, isOpen) {
+  const id = menuId(u);
+  if (!id) return;
+  actionMenuById.value = {
+    ...actionMenuById.value,
+    [id]: !!isOpen,
+  };
+}
+function toggleActionMenu(u) {
+  const id = menuId(u);
+  if (!id) return;
+  const next = !actionMenuById.value[id];
+  actionMenuById.value = { [id]: next };
+}
+function onActionMenuClick(u) {
+  const id = menuId(u);
+  if (id) {
+    actionMenuById.value = {
+      ...actionMenuById.value,
+      [id]: false,
+    };
+  }
+  emit("delete-chat", u);
+}
 </script>
 
 <style scoped>
@@ -315,5 +353,26 @@ const listHeight = computed(() => props.height ?? innerHeight.value);
   position: absolute;
   top: -16px;
   right: -10px;
+}
+
+.actions :deep(.action-menu-btn) {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(148, 163, 184, 0.92) !important;
+  --v-btn-overlay-opacity: 0 !important;
+}
+
+.actions :deep(.action-menu-btn .v-btn__overlay),
+.actions :deep(.action-menu-btn .v-btn__underlay) {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+.actions :deep(.action-menu-btn .v-btn__content) {
+  background: transparent !important;
+}
+
+.actions :deep(.action-menu-btn:hover) {
+  background: rgba(30, 41, 59, 0.45) !important;
 }
 </style>

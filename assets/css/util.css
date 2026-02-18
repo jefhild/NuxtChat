@@ -117,6 +117,20 @@ body,
   background: transparent !important;
 }
 
+.v-overlay.v-menu.chat-user-actions-menu {
+  z-index: 2600 !important;
+}
+
+.v-overlay.v-menu.chat-user-actions-menu > .v-overlay__content {
+  pointer-events: auto !important;
+}
+
+.v-overlay.v-menu.chat-user-actions-menu .v-list {
+  background: #1e293b !important;
+  border: 1px solid rgba(148, 163, 184, 0.34) !important;
+  border-radius: 10px !important;
+}
+
 /* Legal pages: shared spacing, typography, and dark mode support */
 .legal-page {
   max-width: 980px;

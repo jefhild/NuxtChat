@@ -113,31 +113,41 @@
                   <span class="flag" v-if="item.user.country_emoji">
                     {{ item.user.country_emoji }}
                   </span>
-                  <div v-if="showActions" class="actions">
-                    <v-menu location="end" offset="6">
-                      <template #activator="{ props: menuProps }">
-                        <v-btn
-                          v-bind="menuProps"
-                          icon="mdi-dots-horizontal"
-                          size="x-small"
-                          density="compact"
-                          variant="text"
-                          color="#1d3b58"
-                          @click.stop
-                        />
-                      </template>
+                  <div
+                    v-if="showActions"
+                    class="actions"
+                    @click.stop
+                    @mousedown.stop
+                    @pointerdown.stop
+                  >
+                    <v-btn
+                      icon="mdi-dots-horizontal"
+                      size="x-small"
+                      density="compact"
+                      variant="plain"
+                      class="action-menu-btn"
+                      @click.stop.prevent="toggleActionMenu(item.user)"
+                    />
+                    <v-menu
+                      :model-value="isActionMenuOpen(item.user)"
+                      activator="parent"
+                      location="start"
+                      offset="6"
+                      content-class="chat-user-actions-menu"
+                      @update:model-value="setActionMenuOpen(item.user, $event)"
+                    >
                       <v-list density="compact">
                         <v-list-item
                           value="view-profile"
                           :title="$t('components.activeChats.profile-title')"
                           prepend-icon="mdi-card-account-details-outline"
-                          @click.stop="$emit('view-profile', item.user)"
+                          @click.stop="onActionMenuClick('view-profile', item.user)"
                         />
                         <v-list-item
                           value="delete-chat"
                           :title="$t('components.activeChats.delete-title')"
                           prepend-icon="mdi-trash-can-outline"
-                          @click.stop="$emit('delete-chat', item.user)"
+                          @click.stop="onActionMenuClick('delete-chat', item.user)"
                         />
                       </v-list>
                     </v-menu>
@@ -321,6 +331,7 @@ const humanUsers = computed(() =>
 const openedGroups = ref([]);
 const initializedOpen = ref(false);
 const manualOpened = ref(false);
+const actionMenuById = ref({});
 const translateOrFallback = (key, fallback) => {
   const val = t(key);
   return val && val !== key ? val : fallback;
@@ -401,6 +412,40 @@ watch(
 
 const isSelected = (u) =>
   props.selectedUserId && idStr(u) === String(props.selectedUserId);
+
+const menuId = (u) => idStr(u);
+const isActionMenuOpen = (u) => !!actionMenuById.value[menuId(u)];
+function setActionMenuOpen(u, isOpen) {
+  const id = menuId(u);
+  if (!id) return;
+  actionMenuById.value = {
+    ...actionMenuById.value,
+    [id]: !!isOpen,
+  };
+}
+function toggleActionMenu(u) {
+  const id = menuId(u);
+  if (!id) return;
+  const next = !actionMenuById.value[id];
+  actionMenuById.value = { [id]: next };
+}
+function onActionMenuClick(action, u) {
+  const id = menuId(u);
+  if (id) {
+    actionMenuById.value = {
+      ...actionMenuById.value,
+      [id]: false,
+    };
+  }
+  if (action === "view-profile") {
+    emit("view-profile", u);
+    return;
+  }
+  if (action === "delete-chat") {
+    emit("delete-chat", u);
+  }
+}
+
 const isGroupOpen = (id) => openedGroups.value.includes(id);
 function toggleGroup(id) {
   manualOpened.value = true;
@@ -655,6 +700,27 @@ function toggleGroup(id) {
 .actions {
   display: inline-flex;
   align-items: center;
+}
+
+.actions :deep(.action-menu-btn) {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(148, 163, 184, 0.92) !important;
+  --v-btn-overlay-opacity: 0 !important;
+}
+
+.actions :deep(.action-menu-btn .v-btn__overlay),
+.actions :deep(.action-menu-btn .v-btn__underlay) {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+.actions :deep(.action-menu-btn .v-btn__content) {
+  background: transparent !important;
+}
+
+.actions :deep(.action-menu-btn:hover) {
+  background: rgba(30, 41, 59, 0.45) !important;
 }
 
 .flag {
