@@ -2,12 +2,12 @@
   <v-sheet
     class="cmt"
     :class="[
-      `cmt--depth-${Math.min(2, Math.max(0, depth))}`,
       {
         'cmt--agent': senderKind === 'agent',
         'cmt--system': senderKind === 'system',
       },
     ]"
+    :style="{ '--indent': indentPx }"
     :color="senderKind === 'agent' ? 'surface-variant' : undefined"
     rounded="lg"
     elevation="0"
@@ -151,6 +151,9 @@
         <div v-if="parentName" class="text-caption text-medium-emphasis mb-1">
           replying to @{{ parentName }}
         </div>
+        <div v-if="isTranslated && translationLabel" class="text-caption text-medium-emphasis mb-1">
+          {{ translationLabel }}
+        </div>
         <div v-if="masked" class="text-caption text-disabled">
           [hidden: guidelines]
         </div>
@@ -204,6 +207,8 @@ const props = defineProps({
   parentExcerpt: { type: String, default: null },
   masked: { type: Boolean, default: false },
   deleted: { type: Boolean, default: false },
+  isTranslated: { type: Boolean, default: false },
+  translationLabel: { type: String, default: null },
   isOp: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
   canReply: { type: Boolean, default: true },
@@ -211,6 +216,9 @@ const props = defineProps({
 
 const activatorId = computed(() => `comment-menu-btn-${props.id}`);
 const peekOpen = ref(false);
+const indentPx = computed(
+  () => `${Math.min(5, Math.max(0, Number(props.depth) || 0)) * 18}px`
+);
 const profileHref = computed(() => {
   const slug = props.author?.slug;
   const genderName = props.author?.gender?.name || "";
@@ -270,17 +278,6 @@ function onMenuClick(e) {
 .cmt:hover {
   outline: 1px solid rgba(var(--v-theme-on-surface-rgb, 0, 0, 0), 0.06);
   outline-offset: -1px;
-}
-
-/* depth indent (max 2) */
-.cmt--depth-0 {
-  --indent: 0px;
-}
-.cmt--depth-1 {
-  --indent: 16px;
-}
-.cmt--depth-2 {
-  --indent: 32px;
 }
 
 /* ── Inner layout: compact padding + reliable left indent ─────────────────── */

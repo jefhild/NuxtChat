@@ -20,6 +20,8 @@
           :is-op="false"
           :masked="item.masked"
           :deleted="item.deleted"
+          :is-translated="item.isTranslated"
+          :translation-label="item.translationLabel"
           :parent-name="parentName(item)"
           :parent-excerpt="parentExcerpt(item)"
           @reply="toggleReply"
@@ -99,17 +101,30 @@ const childrenMap = computed(() => {
   return map
 })
 
-/** Flatten to a single array with depth 0..2, stable order, no duplicates */
+/** Flatten to a single array with full reply depth, stable order, no duplicates */
 const flatItems = computed(() => {
   const out = []
-  const pushDepth = (msg, depth) => out.push({ ...msg, depth })
+  const seen = new Set()
+  const pushDepth = (msg, depth) => {
+    if (!msg?.id || seen.has(msg.id)) return
+    seen.add(msg.id)
+    out.push({ ...msg, depth })
+  }
+  const walk = (msg, depth) => {
+    pushDepth(msg, depth)
+    const children = childrenMap.value.get(msg.id) || []
+    for (const child of children) {
+      walk(child, depth + 1)
+    }
+  }
   for (const r of roots.value) {
-    pushDepth(r, 0)
-    const c1 = childrenMap.value.get(r.id) || []
-    for (const m1 of c1) {
-      pushDepth(m1, 1)
-      const c2 = childrenMap.value.get(m1.id) || []
-      for (const m2 of c2) pushDepth(m2, 2)
+    walk(r, 0)
+  }
+
+  // Include orphaned/cyclic rows as top-level fallback so nothing disappears.
+  for (const m of props.messages || []) {
+    if (!seen.has(m?.id)) {
+      pushDepth(m, 0)
     }
   }
   return out

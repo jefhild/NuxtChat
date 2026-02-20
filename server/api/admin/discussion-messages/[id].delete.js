@@ -42,10 +42,29 @@ export default defineEventHandler(async (event) => {
       return { error: "Forbidden" };
     }
 
+    const { data: existing, error: existingErr } = await supa
+      .from("messages_v2")
+      .select("id")
+      .eq("id", messageId)
+      .maybeSingle();
+    if (existingErr) {
+      console.error(
+        "[admin/discussion-messages.delete] fetch message error:",
+        existingErr
+      );
+      setResponseStatus(event, 500);
+      return { error: { stage: "fetch_message", message: existingErr.message } };
+    }
+    if (!existing?.id) {
+      setResponseStatus(event, 404);
+      return { error: { stage: "fetch_message", message: "Message not found" } };
+    }
+
     const { error: scoreError } = await supa
-      .from("message_scores")
+      .from("votes_unified")
       .delete()
-      .eq("message_id", messageId);
+      .eq("target_type", "message")
+      .eq("target_id", messageId);
     if (scoreError) {
       console.error(
         "[admin/discussion-messages.delete] score delete error:",
@@ -53,6 +72,22 @@ export default defineEventHandler(async (event) => {
       );
       setResponseStatus(event, 500);
       return { error: { stage: "delete_scores", message: scoreError.message } };
+    }
+
+    // Prevent FK failures when replies point to the message being deleted.
+    const { error: unlinkRepliesError } = await supa
+      .from("messages_v2")
+      .update({ reply_to_message_id: null })
+      .eq("reply_to_message_id", messageId);
+    if (unlinkRepliesError) {
+      console.error(
+        "[admin/discussion-messages.delete] unlink replies error:",
+        unlinkRepliesError
+      );
+      setResponseStatus(event, 500);
+      return {
+        error: { stage: "unlink_replies", message: unlinkRepliesError.message },
+      };
     }
 
     const { error } = await supa

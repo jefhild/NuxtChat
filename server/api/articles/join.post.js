@@ -62,6 +62,7 @@ export default defineEventHandler(async (event) => {
       message_type: "welcome",
       content: welcomeText,
       visible: true,
+      meta: { source_locale: "en" },
     });
     if (insErr && insErr.code !== "23505") {
       throw createError({ statusCode: 500, statusMessage: insErr.message });
@@ -168,7 +169,8 @@ async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
               user_id,
               displayname,
               avatar_url,
-              slug
+              slug,
+              preferred_locale
             )
           )
         `
@@ -272,6 +274,7 @@ async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
         persona_displayname: first.profile?.displayname || first.persona_key,
         persona_avatar_url: first.profile?.avatar_url || null,
         persona_slug: first.profile?.slug || null,
+        source_locale: first.profile?.preferred_locale || "en",
       },
     };
 
@@ -324,6 +327,7 @@ async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
           persona_displayname: second.profile?.displayname || second.persona_key,
           persona_avatar_url: second.profile?.avatar_url || null,
           persona_slug: second.profile?.slug || null,
+          source_locale: second.profile?.preferred_locale || "en",
         },
       };
 

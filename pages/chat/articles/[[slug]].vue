@@ -611,10 +611,11 @@ const {
   async () => {
     if (!resolvedSlug.value) return { thread: null, items: [] };
     return await $fetch(
-      `/api/articles/threads/${resolvedSlug.value}/messages?limit=50`
+      `/api/articles/threads/${resolvedSlug.value}/messages`,
+      { query: { limit: 50, locale: locale.value } }
     );
   },
-  { watch: [resolvedSlug] }
+  { watch: [resolvedSlug, locale] }
 );
 const thread = computed(() => initial.value?.thread || null);
 const threadId = computed(() => thread.value?.id || "");
@@ -627,7 +628,7 @@ const {
   send,
   seed,
   clear, // optional in your composable
-} = useArticleThread(threadId);
+} = useArticleThread(threadId, locale);
 
 function goToImChatty() {
   router.push({ path: "/chat", query: { userslug: "imchatty" } });
@@ -700,7 +701,8 @@ watch(
     if (rtLen === 0 && ssrLen === 0) {
       try {
         const res = await $fetch(
-          `/api/articles/threads/${id}/messages?limit=50`
+          `/api/articles/threads/${id}/messages`,
+          { query: { limit: 50, locale: locale.value } }
         );
         if (Array.isArray(res?.items) && res.items.length) {
           seed(res.items);
@@ -912,7 +914,8 @@ async function loadMessages() {
   loadingMsgs.value = true;
   try {
     const { items } = await $fetch(
-      `/api/articles/threads/${encodeURIComponent(s)}/messages`
+      `/api/articles/threads/${encodeURIComponent(s)}/messages`,
+      { query: { limit: 50, locale: locale.value } }
     );
     messages.value = items ?? [];
   } finally {

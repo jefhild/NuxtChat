@@ -2,6 +2,7 @@ import { useDb } from "@/composables/useDB";
 import { serverSupabaseUser } from "#supabase/server";
 import { fetchPersonaById } from "~/server/utils/aiBots";
 import { fetchDefaultEngagementRule } from "~/server/utils/engagementRules";
+import { normalizeDiscussionLocale } from "@/server/utils/discussionTranslations";
 
 
 export default defineEventHandler(async (event) => {
@@ -32,6 +33,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: "Thread not found" });
   }
 
+  const { data: senderProfile } = await supa
+    .from("profiles")
+    .select("preferred_locale")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const sourceLocale = normalizeDiscussionLocale(senderProfile?.preferred_locale);
+  const metaPayload = {
+    ...(clientId ? { clientId } : {}),
+    ...(sourceLocale ? { source_locale: sourceLocale } : {}),
+  };
+
   const { error } = await supa.from("messages_v2").insert({
     thread_id: threadId,
     sender_kind: "user",
@@ -39,7 +51,7 @@ export default defineEventHandler(async (event) => {
     content,
     visible: true,
     reply_to_message_id: replyToMessageId || null,
-    meta: clientId ? { clientId } : null,
+    meta: Object.keys(metaPayload).length ? metaPayload : null,
   });
   if (error)
     throw createError({ statusCode: 500, statusMessage: error.message });
@@ -131,7 +143,8 @@ async function triggerPersonaFollowUp({
           user_id,
           displayname,
           avatar_url,
-          slug
+          slug,
+          preferred_locale
         )
       `
     )
@@ -202,6 +215,7 @@ async function triggerPersonaFollowUp({
       persona_displayname: personaDisplay,
       persona_avatar_url: personaRow.profile?.avatar_url || null,
       persona_slug: personaRow.profile?.slug || null,
+      source_locale: normalizeDiscussionLocale(personaRow.profile?.preferred_locale),
     },
   };
 

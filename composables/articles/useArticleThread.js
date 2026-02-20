@@ -1,7 +1,7 @@
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useDb } from "@/composables/useDB";
 
-export const useArticleThread = (threadIdRef) => {
+export const useArticleThread = (threadIdRef, localeRef = null) => {
   const isValidId = (id) => typeof id === "string" && id.length > 10;
 
   const { getClient } = useDb();
@@ -57,6 +57,9 @@ export const useArticleThread = (threadIdRef) => {
   const messages = ref([]);
   const isLoading = ref(false);
   const error = ref(null);
+  const authorMetaByUserId = new Map();
+  const authorMetaPromiseByUserId = new Map();
+  let refreshTimer = null;
   let channel = null;
   let unsubscribe = null;
   let currentThreadId = null;
@@ -92,10 +95,12 @@ export const useArticleThread = (threadIdRef) => {
     isLoading.value = true;
     error.value = null;
     try {
+      const locale =
+        typeof localeRef?.value === "string" ? localeRef.value.trim() : "";
       const res = await $fetch(
         `/api/articles/threads/${threadIdRef.value}/messages`,
         {
-          query: { limit },
+          query: { limit, ...(locale ? { locale } : {}) },
         }
       );
       const items = Array.isArray(res?.items) ? res.items : [];
@@ -108,6 +113,12 @@ export const useArticleThread = (threadIdRef) => {
           if (m?.id) knownIds.add(m.id);
           const cid = m?.meta?.clientId;
           if (cid) knownClientIds.add(cid);
+          const uid = m?.authorId || m?.senderUserId || m?.sender_user_id || null;
+          const displayname = m?.displayname || m?.author?.displayname || null;
+          const avatarUrl = m?.avatarUrl || m?.author?.avatarUrl || null;
+          if (uid && (displayname || avatarUrl)) {
+            authorMetaByUserId.set(uid, { displayname, avatarUrl });
+          }
         }
       }
     } catch (e) {
@@ -123,7 +134,72 @@ export const useArticleThread = (threadIdRef) => {
       return;
     knownIds.add(row.id);
     if (cid) knownClientIds.add(cid);
-    messages.value = [...messages.value, row];
+    const senderUserId = row?.senderUserId || row?.sender_user_id || null;
+    const cached = senderUserId ? authorMetaByUserId.get(senderUserId) : null;
+    const seededRow =
+      cached && row?.senderKind === "user"
+        ? {
+            ...row,
+            displayname: row?.displayname || cached.displayname || null,
+            avatarUrl: row?.avatarUrl || cached.avatarUrl || null,
+          }
+        : row;
+    messages.value = [...messages.value, seededRow];
+
+    // If incoming content is in a different locale, refresh from API so
+    // translated display content can be materialized and rendered.
+    const rowSourceLocale =
+      seededRow?.sourceLocale ||
+      seededRow?.meta?.source_locale ||
+      seededRow?.meta?.original_language ||
+      null;
+    const targetLocale =
+      typeof localeRef?.value === "string" ? localeRef.value.trim() : "";
+    if (
+      rowSourceLocale &&
+      targetLocale &&
+      String(rowSourceLocale).toLowerCase() !== String(targetLocale).toLowerCase()
+    ) {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        loadInitial(50).catch(() => {});
+      }, 450);
+    }
+
+    // Realtime INSERT payloads are bare rows; hydrate user display metadata lazily.
+    if (
+      supabase &&
+      senderUserId &&
+      row?.senderKind === "user" &&
+      !seededRow?.displayname &&
+      !authorMetaPromiseByUserId.has(senderUserId)
+    ) {
+      const p = supabase
+        .from("profiles")
+        .select("user_id, displayname, avatar_url")
+        .eq("user_id", senderUserId)
+        .maybeSingle()
+        .then(({ data }) => {
+          const displayname = data?.displayname || null;
+          const avatarUrl = data?.avatar_url || null;
+          authorMetaByUserId.set(senderUserId, { displayname, avatarUrl });
+          if (!displayname && !avatarUrl) return;
+          messages.value = (messages.value || []).map((m) => {
+            const uid = m?.authorId || m?.senderUserId || m?.sender_user_id || null;
+            if (uid !== senderUserId) return m;
+            return {
+              ...m,
+              displayname: m?.displayname || displayname,
+              avatarUrl: m?.avatarUrl || avatarUrl,
+            };
+          });
+        })
+        .catch(() => {})
+        .finally(() => {
+          authorMetaPromiseByUserId.delete(senderUserId);
+        });
+      authorMetaPromiseByUserId.set(senderUserId, p);
+    }
   };
 
   const applyUpdate = (row) => {
@@ -286,6 +362,13 @@ export const useArticleThread = (threadIdRef) => {
   );
 
   watch(
+    () => localeRef?.value,
+    () => {
+      loadInitial();
+    }
+  );
+
+  watch(
     () => userRef?.value?.id,
     () => {
       tryJoin(threadIdRef?.value);
@@ -296,6 +379,10 @@ export const useArticleThread = (threadIdRef) => {
     try {
       unsubscribe?.();
     } catch {}
+    if (refreshTimer) {
+      clearTimeout(refreshTimer);
+      refreshTimer = null;
+    }
   });
 
   return { messages, isLoading, error, loadInitial, send, seed };

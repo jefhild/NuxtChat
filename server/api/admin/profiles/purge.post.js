@@ -118,12 +118,13 @@ export default defineEventHandler(async (event) => {
         return { error: { stage: "fetch_messages_v2", message: messagesError.message } };
       }
 
-      const messageIds = (messages || []).map((row) => row.id).filter(Boolean);
-      if (messageIds.length) {
-        const { error: scoreError } = await supa
-          .from("message_scores")
+        const messageIds = (messages || []).map((row) => row.id).filter(Boolean);
+        if (messageIds.length) {
+          const { error: scoreError } = await supa
+          .from("votes_unified")
           .delete()
-          .in("message_id", messageIds);
+          .eq("target_type", "message")
+          .in("target_id", messageIds);
         if (scoreError) {
           return {
             error: { stage: "delete_message_scores", message: scoreError.message },

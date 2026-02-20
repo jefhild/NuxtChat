@@ -91,18 +91,22 @@
       </v-list-item>
 
       <v-list-item
-        v-if="isMineSelected"
+        v-if="canShowDeleteSelected"
         prepend-icon="mdi-delete"
+        :disabled="deletingMessage"
         @click="onDelete"
       >
-        <v-list-item-title>Delete</v-list-item-title>
+        <v-list-item-title>
+          {{ deletingMessage ? "Deleting..." : "Delete message" }}
+        </v-list-item-title>
       </v-list-item>
     </v-list>
   </v-menu>
 </template>
 
 <script setup>
-import { computed, ref, watch, reactive, nextTick } from "vue";
+import { computed, ref, watch, reactive, nextTick, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/authStore1";
 import { useArticleThread } from "@/composables/articles/useArticleThread";
 
@@ -119,6 +123,7 @@ const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const localePath = useLocalePath();
+const { locale } = useI18n();
 
 const draft = ref("");
 const threadId = ref("");
@@ -136,7 +141,7 @@ const initialItems = ref([]);
 const loadingInit = ref(false);
 
 const { messages, isLoading: loadingMsgs, send, seed } =
-  useArticleThread(threadId);
+  useArticleThread(threadId, locale);
 
 const isLoading = computed(() => loadingInit.value || loadingMsgs.value);
 
@@ -147,7 +152,7 @@ const fetchThread = async (key) => {
   try {
     const res = await $fetch(
       `/api/articles/threads/${encodeURIComponent(key)}/messages`,
-      { query: { limit: 50 } }
+      { query: { limit: 50, locale: locale.value } }
     );
     const thread = res?.thread || null;
     initialItems.value = Array.isArray(res?.items) ? res.items : [];
@@ -170,6 +175,13 @@ watch(
     if (key) fetchThread(key);
   },
   { immediate: true }
+);
+
+watch(
+  () => locale.value,
+  () => {
+    if (props.threadKey) fetchThread(props.threadKey);
+  }
 );
 
 function onSend(text) {
@@ -199,6 +211,29 @@ const messagesForUI = computed(() => {
     const displaynameFromMeta =
       raw?.meta?.persona_displayname || raw?.meta?.persona_key || null;
     const avatarFromMeta = raw?.meta?.persona_avatar_url || null;
+    const displayLocale = String(raw?.displayLocale || locale.value || "en");
+    const sourceLocale = String(
+      raw?.sourceLocale || raw?.meta?.source_locale || ""
+    );
+    const contentNow = String(raw?.content || "");
+    const originalContent = String(raw?.originalContent || "");
+    const isTranslated =
+      Boolean(sourceLocale) &&
+      Boolean(displayLocale) &&
+      sourceLocale !== displayLocale &&
+      Boolean(originalContent) &&
+      originalContent !== contentNow;
+    const languageLabelByCode = {
+      en: "English",
+      fr: "French",
+      ru: "Russian",
+      zh: "Chinese",
+    };
+    const sourceLanguage =
+      languageLabelByCode[sourceLocale] || sourceLocale.toUpperCase();
+    const translationLabel = isTranslated
+      ? `Translated from ${sourceLanguage}`
+      : null;
 
     return {
       ...raw,
@@ -214,6 +249,8 @@ const messagesForUI = computed(() => {
         authorProfile?.avatarUrl ??
         (raw.senderKind !== "user" ? avatarFromMeta : null) ??
         null,
+      isTranslated,
+      translationLabel,
     };
   });
 });
@@ -238,15 +275,16 @@ function openMessageMenu({ id, el }) {
   });
 }
 
-function getOwnerId(msg) {
-  return msg?.userId || msg?.authorId || msg?.senderId || null;
-}
+const isAdmin = computed(() => Boolean(auth.userProfile?.is_admin));
+const canDeleteSelected = computed(() => Boolean(menu.id) && isAdmin.value);
+const isMountedClient = ref(false);
+const canShowDeleteSelected = computed(
+  () => isMountedClient.value && canDeleteSelected.value
+);
+const deletingMessage = ref(false);
 
-const isMineSelected = computed(() => {
-  if (!menu.id) return false;
-  const msg = (messagesForUI.value || []).find((m) => m.id === menu.id);
-  const me = auth.user?.id || null;
-  return !!(msg && me && getOwnerId(msg) === me);
+onMounted(() => {
+  isMountedClient.value = true;
 });
 
 function onReport() {
@@ -254,7 +292,29 @@ function onReport() {
 }
 
 function onDelete() {
+  if (!menu.id || !isAdmin.value || deletingMessage.value) {
+    menu.open = false;
+    return;
+  }
+  const messageId = menu.id;
   menu.open = false;
+  deletingMessage.value = true;
+  $fetch(`/api/admin/discussion-messages/${messageId}`, { method: "DELETE" })
+    .then(() => {
+      messages.value = (messages.value || []).filter((m) => m.id !== messageId);
+      initialItems.value = (initialItems.value || []).filter(
+        (m) => m.id !== messageId
+      );
+    })
+    .catch((err) => {
+      console.error(
+        "[discussion] delete message failed:",
+        err?.data?.error || err?.data || err
+      );
+    })
+    .finally(() => {
+      deletingMessage.value = false;
+    });
 }
 
 function redirectToLogin() {

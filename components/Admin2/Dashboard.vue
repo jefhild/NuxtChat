@@ -166,6 +166,18 @@
                       />
                     </template>
                   </v-tooltip>
+                  <v-tooltip text="Mock discussion">
+                    <template #activator="{ props }">
+                      <v-btn
+                        v-bind="props"
+                        icon="mdi-forum-plus-outline"
+                        size="small"
+                        variant="text"
+                        color="teal"
+                        @click="openMockDiscussionDialog(item)"
+                      />
+                    </template>
+                  </v-tooltip>
                   <v-tooltip text="View profile">
                     <template #activator="{ props }">
                       <v-btn
@@ -574,6 +586,179 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog
+      v-model="mockDiscussionDialogOpen"
+      max-width="760px"
+      persistent
+      scrollable
+    >
+      <v-card class="admin-mock-dialog">
+        <v-card-title class="headline">Mock discussion script</v-card-title>
+        <v-card-text>
+          <div class="d-flex flex-column ga-4">
+            <div class="d-flex flex-column ga-1">
+              <div class="text-caption text-medium-emphasis">User A (impersonated)</div>
+              <div class="text-body-2 font-weight-medium">
+                {{
+                  mockDiscussionUserA?.displayname ||
+                  mockDiscussionUserA?.slug ||
+                  mockDiscussionUserA?.user_id ||
+                  "—"
+                }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                {{ mockDiscussionUserA?.user_id || "" }}
+              </div>
+            </div>
+
+            <v-select
+              v-model="mockDiscussionThreadId"
+              :items="mockDiscussionThreadOptions"
+              :loading="mockDiscussionThreadsLoading"
+              label="Article discussion thread"
+              variant="outlined"
+              density="compact"
+              item-title="label"
+              item-value="value"
+              clearable
+              hide-details
+            />
+
+            <v-select
+              v-model="mockDiscussionUserB"
+              :items="mockUserOptions"
+              label="User B"
+              variant="outlined"
+              density="compact"
+              item-title="label"
+              item-value="value"
+              clearable
+              hide-details
+            />
+
+            <v-select
+              v-model="mockDiscussionUserC"
+              :items="mockUserOptions"
+              label="User C (for 3-user template)"
+              variant="outlined"
+              density="compact"
+              item-title="label"
+              item-value="value"
+              clearable
+              hide-details
+            />
+
+            <div class="d-flex flex-column flex-md-row ga-4">
+              <v-select
+                v-model="mockDiscussionTemplate"
+                :items="mockDiscussionTemplateOptions"
+                label="Template"
+                variant="outlined"
+                density="compact"
+                item-title="label"
+                item-value="value"
+                hide-details
+              />
+              <v-btn
+                color="secondary"
+                variant="tonal"
+                @click="applyMockDiscussionTemplate"
+              >
+                Apply template
+              </v-btn>
+            </div>
+
+            <v-file-input
+              label="Upload JSON script"
+              variant="outlined"
+              density="compact"
+              accept=".json,application/json"
+              show-size
+              @update:model-value="onMockDiscussionFileSelected"
+            />
+
+            <v-textarea
+              v-model="mockDiscussionJsonText"
+              label="JSON script"
+              variant="outlined"
+              rows="9"
+              auto-grow
+              placeholder='{"threadId":"...","userB":"...","participants":{"C":"user-id"},"messages":[{"id":"m1","from":"A","text":"Hi"},{"from":"C","replyTo":"m1","text":"Reply"}]}'
+            />
+
+            <div class="d-flex flex-column flex-md-row ga-4">
+              <v-text-field
+                v-model.number="mockDiscussionStartDelayMs"
+                label="Start delay (ms)"
+                type="number"
+                variant="outlined"
+                density="compact"
+              />
+              <v-text-field
+                v-model.number="mockDiscussionDelayMs"
+                label="Delay between messages (ms)"
+                type="number"
+                variant="outlined"
+                density="compact"
+              />
+              <v-switch
+                v-model="mockDiscussionOpenInNewTab"
+                label="Open discussion in new tab"
+                inset
+              />
+            </div>
+
+            <div v-if="mockDiscussionError" class="text-caption text-error">
+              {{ mockDiscussionError }}
+            </div>
+
+            <div
+              v-if="mockDiscussionRunning"
+              class="text-caption text-medium-emphasis"
+            >
+              Sending {{ mockDiscussionProgress.done }} /
+              {{ mockDiscussionProgress.total }}…
+            </div>
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            color="grey"
+            :disabled="mockDiscussionRunning"
+            @click="closeMockDiscussionDialog"
+          >
+            Close
+          </v-btn>
+          <v-btn
+            variant="text"
+            color="red"
+            v-if="mockDiscussionRunning"
+            @click="cancelMockDiscussion"
+          >
+            Stop
+          </v-btn>
+          <v-btn
+            variant="text"
+            color="orange"
+            :disabled="mockDiscussionRunning || !mockDiscussionInsertedIds.length"
+            @click="deleteLastMockDiscussionRun"
+          >
+            Delete last run
+          </v-btn>
+          <v-btn
+            variant="text"
+            color="primary"
+            :loading="mockDiscussionRunning"
+            @click="runMockDiscussion"
+          >
+            Start mock discussion
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-dialog v-model="chatDialogOpen" max-width="980px">
       <v-card>
         <v-card-title class="headline">Chat messages</v-card-title>
@@ -717,6 +902,23 @@ const mockProgress = ref({ done: 0, total: 0 });
 const mockError = ref("");
 const mockInsertedIds = ref([]);
 let mockAbort = false;
+const mockDiscussionDialogOpen = ref(false);
+const mockDiscussionUserA = ref(null);
+const mockDiscussionUserB = ref("");
+const mockDiscussionUserC = ref("");
+const mockDiscussionThreadId = ref("");
+const mockDiscussionThreadItems = ref([]);
+const mockDiscussionThreadsLoading = ref(false);
+const mockDiscussionJsonText = ref("");
+const mockDiscussionTemplate = ref("two_user");
+const mockDiscussionDelayMs = ref(1200);
+const mockDiscussionStartDelayMs = ref(1500);
+const mockDiscussionOpenInNewTab = ref(true);
+const mockDiscussionRunning = ref(false);
+const mockDiscussionProgress = ref({ done: 0, total: 0 });
+const mockDiscussionError = ref("");
+const mockDiscussionInsertedIds = ref([]);
+let mockDiscussionAbort = false;
 
 const { locale } = useI18n();
 const localPath = useLocalePath();
@@ -804,6 +1006,24 @@ const mockUserOptions = computed(() => {
     })
     .filter((o) => o.value);
 });
+
+const mockDiscussionThreadOptions = computed(() =>
+  (mockDiscussionThreadItems.value || []).map((thread) => {
+    const articleDate = thread?.article_created_at || thread?.created_at || null;
+    const dateLabel = articleDate ? formatDate(articleDate) : "Unknown date";
+    const title =
+      thread?.article_title || thread?.title || thread?.slug || thread?.id || "Thread";
+    return {
+      value: thread.id,
+      label: `${dateLabel} — ${title}`,
+    };
+  })
+);
+
+const mockDiscussionTemplateOptions = [
+  { label: "2 users (A ↔ B)", value: "two_user" },
+  { label: "3 users (A/B/C replies)", value: "multi_user" },
+];
 
 const filterOptions = computed(() => [
   { title: "All Human", value: "registered" },
@@ -1281,6 +1501,326 @@ const deleteLastMockRun = async () => {
   }
   if (!mockError.value) {
     mockInsertedIds.value = [];
+  }
+};
+
+const loadMockDiscussionThreads = async () => {
+  mockDiscussionThreadsLoading.value = true;
+  try {
+    const response = await $fetch("/api/admin/discussion-threads", {
+      query: { limit: 300 },
+    });
+    mockDiscussionThreadItems.value = Array.isArray(response?.items)
+      ? response.items
+      : [];
+  } catch (error) {
+    console.error("[admin] loadMockDiscussionThreads error:", error);
+    mockDiscussionThreadItems.value = [];
+    mockDiscussionError.value =
+      error?.data?.error?.message ||
+      error?.message ||
+      "Failed to load published article discussions.";
+  } finally {
+    mockDiscussionThreadsLoading.value = false;
+  }
+};
+
+const openMockDiscussionDialog = async (profile) => {
+  mockDiscussionUserA.value = profile || null;
+  mockDiscussionUserB.value = "";
+  mockDiscussionUserC.value = "";
+  mockDiscussionThreadId.value = "";
+  mockDiscussionJsonText.value = "";
+  mockDiscussionTemplate.value = "two_user";
+  mockDiscussionDelayMs.value = 1200;
+  mockDiscussionStartDelayMs.value = 1500;
+  mockDiscussionOpenInNewTab.value = true;
+  mockDiscussionRunning.value = false;
+  mockDiscussionProgress.value = { done: 0, total: 0 };
+  mockDiscussionError.value = "";
+  mockDiscussionInsertedIds.value = [];
+  mockDiscussionAbort = false;
+  mockDiscussionDialogOpen.value = true;
+
+  await loadMockDiscussionThreads();
+  if (!mockDiscussionThreadId.value && mockDiscussionThreadItems.value.length) {
+    mockDiscussionThreadId.value = mockDiscussionThreadItems.value[0].id;
+  }
+};
+
+const closeMockDiscussionDialog = () => {
+  if (mockDiscussionRunning.value) return;
+  mockDiscussionDialogOpen.value = false;
+  mockDiscussionUserA.value = null;
+  mockDiscussionUserB.value = "";
+  mockDiscussionUserC.value = "";
+  mockDiscussionThreadId.value = "";
+  mockDiscussionJsonText.value = "";
+  mockDiscussionTemplate.value = "two_user";
+  mockDiscussionError.value = "";
+  mockDiscussionProgress.value = { done: 0, total: 0 };
+  mockDiscussionInsertedIds.value = [];
+  mockDiscussionAbort = false;
+};
+
+const applyMockDiscussionTemplate = () => {
+  const userAId = String(mockDiscussionUserA.value?.user_id || "").trim();
+  const userBId = String(mockDiscussionUserB.value || "").trim();
+  const userCSelected = String(mockDiscussionUserC.value || "").trim();
+  const threadId = String(mockDiscussionThreadId.value || "").trim();
+  const allUserIds = mockUserOptions.value
+    .map((item) => String(item?.value || "").trim())
+    .filter(Boolean);
+  const userCId =
+    userCSelected ||
+    allUserIds.find((id) => id && id !== userAId && id !== userBId) ||
+    "USER_ID_FOR_C";
+
+  const base = {
+    threadId: threadId || "THREAD_ID",
+    userB: userBId || "USER_ID_FOR_B",
+    delayMs: Number(mockDiscussionDelayMs.value) || 1200,
+  };
+
+  const payload =
+    mockDiscussionTemplate.value === "multi_user"
+      ? {
+          ...base,
+          participants: {
+            C: userCId,
+          },
+          messages: [
+            { id: "m1", from: "A", text: "Bonjour tout le monde", locale: "fr" },
+            {
+              id: "m2",
+              from: "C",
+              replyTo: "m1",
+              text: "I can translate that for the thread.",
+              locale: "en",
+            },
+            {
+              id: "m3",
+              from: "B",
+              replyTo: "m2",
+              text: "Great point. Let me respond in English.",
+              locale: "en",
+            },
+          ],
+        }
+      : {
+          ...base,
+          messages: [
+            { id: "m1", from: "A", text: "Bonjour, comment allez-vous?", locale: "fr" },
+            {
+              id: "m2",
+              from: "B",
+              replyTo: "m1",
+              text: "I am good, thanks. How are you?",
+              locale: "en",
+            },
+          ],
+        };
+
+  mockDiscussionJsonText.value = JSON.stringify(payload, null, 2);
+};
+
+const onMockDiscussionFileSelected = async (files) => {
+  try {
+    const file = Array.isArray(files) ? files[0] : files;
+    if (!file) return;
+    const text = await file.text();
+    mockDiscussionJsonText.value = text;
+    const parsed = JSON.parse(text);
+    if (parsed?.threadId) mockDiscussionThreadId.value = String(parsed.threadId);
+    if (parsed?.userB) mockDiscussionUserB.value = String(parsed.userB);
+    if (parsed?.participants?.C) {
+      mockDiscussionUserC.value = String(parsed.participants.C);
+    }
+    if (Number.isFinite(parsed?.delayMs)) {
+      mockDiscussionDelayMs.value = Number(parsed.delayMs);
+    }
+  } catch (err) {
+    mockDiscussionError.value = "Invalid JSON file.";
+  }
+};
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const parseMockDiscussionPayload = () => {
+  if (!mockDiscussionJsonText.value) {
+    return { error: "Please paste or upload a JSON script." };
+  }
+  try {
+    const payload = JSON.parse(mockDiscussionJsonText.value);
+    const messages = Array.isArray(payload?.messages) ? payload.messages : [];
+    if (!messages.length) {
+      return { error: "messages[] is required and cannot be empty." };
+    }
+    const threadId = String(payload?.threadId || mockDiscussionThreadId.value || "").trim();
+    if (!threadId) return { error: "threadId is required." };
+
+    const userB = String(payload?.userB || mockDiscussionUserB.value || "").trim();
+    const rawParticipants =
+      payload?.participants && typeof payload.participants === "object"
+        ? payload.participants
+        : {};
+
+    const participantMap = new Map();
+    const addParticipantAlias = (key, userId) => {
+      const k = String(key || "").trim();
+      const v = String(userId || "").trim();
+      if (!k || !v) return;
+      participantMap.set(k, v);
+      participantMap.set(k.toUpperCase(), v);
+    };
+
+    addParticipantAlias("A", mockDiscussionUserA.value?.user_id || "");
+    if (userB) addParticipantAlias("B", userB);
+    Object.entries(rawParticipants || {}).forEach(([key, value]) => {
+      addParticipantAlias(key, value);
+    });
+
+    return {
+      threadId,
+      messages,
+      delayMs: Number.isFinite(payload?.delayMs) ? Number(payload.delayMs) : null,
+      participantMap,
+    };
+  } catch (err) {
+    return { error: "Invalid JSON content." };
+  }
+};
+
+const runMockDiscussion = async () => {
+  if (!mockDiscussionUserA.value?.user_id) {
+    mockDiscussionError.value = "User A is missing.";
+    return;
+  }
+  mockDiscussionError.value = "";
+  const parsed = parseMockDiscussionPayload();
+  if (parsed.error) {
+    mockDiscussionError.value = parsed.error;
+    return;
+  }
+
+  const threadId = parsed.threadId;
+  const messages = parsed.messages;
+  const delay = Number.isFinite(mockDiscussionDelayMs.value)
+    ? Number(mockDiscussionDelayMs.value)
+    : parsed.delayMs || 1200;
+  const startDelay = Number.isFinite(mockDiscussionStartDelayMs.value)
+    ? Number(mockDiscussionStartDelayMs.value)
+    : 1500;
+
+  const selectedThread = mockDiscussionThreadItems.value.find((t) => t.id === threadId);
+  const articleSlug = String(selectedThread?.article_slug || "").trim();
+  const threadPath = articleSlug
+    ? `${localPath(`/articles/${articleSlug}`)}#discussion`
+    : localPath(`/chat/articles/${selectedThread?.slug || selectedThread?.id || threadId}`);
+  if (mockDiscussionOpenInNewTab.value && typeof window !== "undefined") {
+    window.open(threadPath, "_blank");
+  } else {
+    router.push(threadPath);
+  }
+
+  mockDiscussionRunning.value = true;
+  mockDiscussionAbort = false;
+  mockDiscussionProgress.value = { done: 0, total: messages.length };
+  mockDiscussionInsertedIds.value = [];
+  const insertedAliasMap = new Map();
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  await sleep(startDelay);
+
+  for (let i = 0; i < messages.length; i++) {
+    if (mockDiscussionAbort) break;
+    const m = messages[i] || {};
+    const fromRaw = String(m.from || "A").trim();
+    const senderUserId =
+      parsed.participantMap.get(fromRaw) ||
+      parsed.participantMap.get(fromRaw.toUpperCase()) ||
+      (UUID_RE.test(fromRaw) ? fromRaw : "");
+
+    const text = String(m.text ?? m.content ?? "").trim();
+    if (!text) {
+      mockDiscussionProgress.value = { done: i + 1, total: messages.length };
+      continue;
+    }
+    if (!senderUserId) {
+      mockDiscussionError.value = `Unknown sender alias "${fromRaw}" on message ${i + 1}.`;
+      break;
+    }
+
+    const replyToRaw = String(
+      m.replyTo ?? m.reply_to ?? m.replyToMessageId ?? ""
+    ).trim();
+    let replyToMessageId = null;
+    if (replyToRaw) {
+      replyToMessageId =
+        insertedAliasMap.get(replyToRaw) || (UUID_RE.test(replyToRaw) ? replyToRaw : null);
+      if (!replyToMessageId) {
+        mockDiscussionError.value = `Unknown replyTo "${replyToRaw}" on message ${i + 1}.`;
+        break;
+      }
+    }
+
+    const sourceLocale = String(
+      m.locale ?? m.source_locale ?? m.sourceLocale ?? ""
+    ).trim();
+
+    try {
+      const res = await $fetch("/api/admin/discussion-messages", {
+        method: "POST",
+        body: {
+          thread_id: threadId,
+          sender_user_id: senderUserId,
+          content: text,
+          reply_to_message_id: replyToMessageId,
+          source_locale: sourceLocale || null,
+        },
+      });
+      if (res?.item?.id) {
+        mockDiscussionInsertedIds.value = [...mockDiscussionInsertedIds.value, res.item.id];
+        const alias = String(m.id ?? "").trim();
+        if (alias) insertedAliasMap.set(alias, res.item.id);
+      }
+    } catch (err) {
+      mockDiscussionError.value =
+        err?.data?.error?.message ||
+        err?.message ||
+        "Failed to insert a discussion message.";
+      break;
+    }
+
+    mockDiscussionProgress.value = { done: i + 1, total: messages.length };
+    if (i < messages.length - 1) await sleep(delay);
+  }
+
+  mockDiscussionRunning.value = false;
+};
+
+const cancelMockDiscussion = () => {
+  mockDiscussionAbort = true;
+  mockDiscussionRunning.value = false;
+};
+
+const deleteLastMockDiscussionRun = async () => {
+  if (!mockDiscussionInsertedIds.value.length) return;
+  mockDiscussionError.value = "";
+  const ids = [...mockDiscussionInsertedIds.value];
+  for (const id of ids) {
+    try {
+      await $fetch(`/api/admin/discussion-messages/${id}`, { method: "DELETE" });
+    } catch (err) {
+      mockDiscussionError.value =
+        err?.data?.error?.message ||
+        err?.message ||
+        "Failed to delete one or more discussion messages.";
+      break;
+    }
+  }
+  if (!mockDiscussionError.value) {
+    mockDiscussionInsertedIds.value = [];
   }
 };
 

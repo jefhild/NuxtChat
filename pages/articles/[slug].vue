@@ -1044,10 +1044,74 @@ const formatDate = (date) =>
 
 .prose :deep(.newsmesh-article) {
   background: #fff;
+  color: #0f172a;
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 18px;
   padding: 2.25rem;
   box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+}
+
+.prose :deep(.newsmesh-article h1),
+.prose :deep(.newsmesh-article h2),
+.prose :deep(.newsmesh-article h3),
+.prose :deep(.newsmesh-article h4),
+.prose :deep(.newsmesh-article h5),
+.prose :deep(.newsmesh-article h6) {
+  color: #0f172a;
+}
+
+.prose :deep(.newsmesh-article p),
+.prose :deep(.newsmesh-article li),
+.prose :deep(.newsmesh-article blockquote) {
+  color: #334155;
+}
+
+.prose :deep(.newsmesh-article a) {
+  color: #1d4ed8;
+}
+
+.v-theme--dark .prose :deep(.newsmesh-article) {
+  background: rgba(15, 23, 42, 0.82);
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.3);
+  box-shadow: 0 20px 45px rgba(2, 6, 23, 0.5);
+}
+
+.v-theme--dark .prose :deep(.newsmesh-article h1),
+.v-theme--dark .prose :deep(.newsmesh-article h2),
+.v-theme--dark .prose :deep(.newsmesh-article h3),
+.v-theme--dark .prose :deep(.newsmesh-article h4),
+.v-theme--dark .prose :deep(.newsmesh-article h5),
+.v-theme--dark .prose :deep(.newsmesh-article h6) {
+  color: #f8fafc;
+}
+
+.v-theme--dark .prose :deep(.newsmesh-article p),
+.v-theme--dark .prose :deep(.newsmesh-article li),
+.v-theme--dark .prose :deep(.newsmesh-article blockquote) {
+  color: #cbd5e1;
+}
+
+.v-theme--dark .prose :deep(.newsmesh-article .article-header) {
+  border-bottom-color: rgba(148, 163, 184, 0.35);
+}
+
+.v-theme--dark .prose :deep(.newsmesh-article .source-line) {
+  color: #94a3b8;
+}
+
+.v-theme--dark .prose :deep(.newsmesh-article .persona-line) {
+  color: #2dd4bf;
+}
+
+.v-theme--dark .prose :deep(.newsmesh-article .article-summary) {
+  color: #cbd5e1;
+  background: rgba(30, 41, 59, 0.78);
+  border-left-color: #818cf8;
+}
+
+.v-theme--dark .prose :deep(.newsmesh-article a) {
+  color: #93c5fd;
 }
 
 .prose :deep(.newsmesh-article .article-header) {

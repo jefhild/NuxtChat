@@ -1,5 +1,9 @@
 import { serverSupabaseUser } from "#supabase/server";
 import { useDb } from "@/composables/useDB";
+import {
+  ensureDiscussionMessageTranslation,
+  normalizeDiscussionLocale,
+} from "@/server/utils/discussionTranslations";
 
 export default defineEventHandler(async (event) => {
   const key = String(getRouterParam(event, "key") || "");
@@ -11,6 +15,7 @@ export default defineEventHandler(async (event) => {
   try {
     user = await serverSupabaseUser(event);
   } catch {}
+  const query = getQuery(event);
 
   const cfg = useRuntimeConfig(event);
   const { getServerClientFrom } = useDb();
@@ -32,6 +37,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: "Thread not found" });
 
   const threadId = thread.id;
+
+  let requestedLocale = normalizeDiscussionLocale(String(query?.locale || ""));
+  if (!query?.locale && user?.id) {
+    const { data: viewerProfile } = await supa
+      .from("profiles")
+      .select("preferred_locale")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    requestedLocale = normalizeDiscussionLocale(viewerProfile?.preferred_locale);
+  }
 
   // 1) Base messages
   const { data: msgs, error: mErr } = await supa
@@ -66,8 +81,8 @@ export default defineEventHandler(async (event) => {
   // console.log("getting scores:", scores);
 
   // 3) Profiles (by user_id)
- let profMap = new Map();
- if (authorIds.length) {
+  let profMap = new Map();
+   if (authorIds.length) {
   const { data: profs, error: pErr } = await supa
     .from("profiles")
     .select(
@@ -83,7 +98,8 @@ export default defineEventHandler(async (event) => {
       countries:country_id ( id, name, emoji ),
       created,
       last_active,
-      slug
+      slug,
+      preferred_locale
     `
     )
     .in("user_id", authorIds);
@@ -91,6 +107,29 @@ export default defineEventHandler(async (event) => {
      throw createError({ statusCode: 500, statusMessage: pErr.message });
    profMap = new Map((profs || []).map((p) => [p.user_id, p]));
  }
+
+  const translationRows = await Promise.all(
+    (msgs || []).map((m) =>
+      ensureDiscussionMessageTranslation({
+        supa,
+        message: m,
+        targetLocale: requestedLocale,
+        config: cfg,
+        sourceLocaleHint: profMap.get(m?.sender_user_id)?.preferred_locale || null,
+      }).catch((error) => {
+        console.warn(
+          "[threads.messages] translation failed:",
+          error?.message || error
+        );
+        return null;
+      })
+    )
+  );
+  const translationByMessageId = new Map(
+    translationRows
+      .filter((row) => row?.message_id && row?.content)
+      .map((row) => [row.message_id, row])
+  );
 
   // 4) Current user votes
   let myVotes = [];
@@ -180,11 +219,14 @@ const toCamelProfile = (p) =>
       (m.sender_kind !== "user" ? m.meta?.persona_avatar_url || null : null);
 
     const agg = scoreMap.get(m.id) || {};
+    const translated = translationByMessageId.get(m.id) || null;
+    const displayContent = translated?.content || m.content;
     return {
       id: m.id,
       replyToMessageId: m.reply_to_message_id,
       senderKind: m.sender_kind,
-      content: m.content,
+      content: displayContent,
+      originalContent: m.content,
       createdAt: m.created_at,
       authorId: m.sender_user_id,
       // legacy view fields
@@ -199,6 +241,12 @@ const toCamelProfile = (p) =>
       upvotes: agg.upvotes ?? 0,
       downvotes: agg.downvotes ?? 0,
       myVote: user?.id ? myMap.get(m.id) ?? 0 : 0,
+      displayLocale: requestedLocale,
+      sourceLocale:
+        translated?.source_locale ||
+        m?.meta?.source_locale ||
+        prof?.preferred_locale ||
+        null,
     };
   });
 
