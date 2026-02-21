@@ -5,6 +5,7 @@ import {
   ensureAnonCaptcha,
   ensureMoodFeedAuthor,
   enforceAnonLimit,
+  enforceMoodFeedPostCooldown,
 } from "~/server/utils/moodFeedGuards";
 import { moderateMoodFeedText } from "~/server/utils/moodFeedModeration";
 
@@ -71,6 +72,12 @@ export default defineEventHandler(async (event) => {
     table: "mood_feed_entries",
     limit: 4,
     limitType: "entries",
+  });
+  await enforceMoodFeedPostCooldown({
+    supabase,
+    userId: user.id,
+    cooldownHours: 24,
+    promptKey,
   });
   await ensureMoodFeedAuthor(supabase, user);
 

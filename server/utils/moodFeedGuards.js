@@ -143,3 +143,92 @@ export const ensureAnonCaptcha = async ({
     { onConflict: "user_id" }
   );
 };
+
+export const getMoodFeedPostCooldown = async ({
+  supabase,
+  userId,
+  cooldownHours = 24,
+  promptKey = null,
+}) => {
+  const hours = Number.isFinite(Number(cooldownHours))
+    ? Math.max(1, Number(cooldownHours))
+    : 24;
+  if (!userId) {
+    return {
+      canPost: true,
+      cooldownHours: hours,
+      lastEntryAt: null,
+      nextAllowedAt: null,
+      remainingMs: 0,
+    };
+  }
+
+  let query = supabase
+    .from("mood_feed_entries")
+    .select("created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  const normalizedPromptKey = String(promptKey || "").trim();
+  if (normalizedPromptKey) {
+    query = query.eq("prompt_key", normalizedPromptKey);
+  }
+
+  const { data: lastEntry } = await query.maybeSingle();
+
+  const lastEntryAt = lastEntry?.created_at
+    ? new Date(lastEntry.created_at)
+    : null;
+  if (!lastEntryAt || Number.isNaN(lastEntryAt.getTime())) {
+    return {
+      canPost: true,
+      cooldownHours: hours,
+      lastEntryAt: null,
+      nextAllowedAt: null,
+      remainingMs: 0,
+    };
+  }
+
+  const nextAllowedAtDate = new Date(lastEntryAt.getTime() + hours * 60 * 60 * 1000);
+  const remainingMs = Math.max(0, nextAllowedAtDate.getTime() - Date.now());
+
+  return {
+    canPost: remainingMs <= 0,
+    cooldownHours: hours,
+    lastEntryAt: lastEntryAt.toISOString(),
+    nextAllowedAt: nextAllowedAtDate.toISOString(),
+    remainingMs,
+  };
+};
+
+export const enforceMoodFeedPostCooldown = async ({
+  supabase,
+  userId,
+  cooldownHours = 24,
+  promptKey = null,
+}) => {
+  const status = await getMoodFeedPostCooldown({
+    supabase,
+    userId,
+    cooldownHours,
+    promptKey,
+  });
+
+  if (!status.canPost) {
+    throw createError({
+      statusCode: 429,
+      statusMessage: "mood_feed_cooldown",
+      data: {
+        limitType: "cooldown",
+        cooldownHours: status.cooldownHours,
+        promptKey: String(promptKey || "").trim() || null,
+        nextAllowedAt: status.nextAllowedAt,
+        lastEntryAt: status.lastEntryAt,
+        remainingMs: status.remainingMs,
+      },
+    });
+  }
+
+  return status;
+};

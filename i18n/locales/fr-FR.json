@@ -100,6 +100,8 @@
       "noticePendingEntry": "Merci ! Votre réponse est en cours de validation avant d'apparaître.",
       "noticePosted": "Publié sur le Mood Feed.",
       "noticePendingReply": "Merci ! Votre réponse est en cours de validation avant d'apparaître.",
+      "noticeCooldown": "Vous pouvez publier une fois toutes les 24 heures. Réessayez dans {time}.",
+      "cooldownActive": "Vous pourrez publier à nouveau dans {time}.",
       "anonName": "Invité",
       "userName": "Utilisateur",
       "replyingTo": "En réponse à",
@@ -1002,6 +1004,7 @@
       "anon_authenticated-line2": "Profitez-en. Bonne discussion.",
       "action-label": "Ouvrir les informations de consentement ou démarrer le chat",
       "consent-cta": "Accepter les conditions",
+      "back-to-bio": "Retour à la bio",
       "settings": "Paramètres",
       "settings-disabled": "Paramètres (désactivés en mode anonyme)",
       "settings-aria-label": "Ouvrir la fenêtre des paramètres pour mettre à jour vos préférences de compte et vos informations personnelles"

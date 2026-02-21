@@ -34,11 +34,14 @@
           class="prompt-submit"
           size="large"
           :loading="submitBusy"
-          :disabled="submitBusy || !promptAnswer.trim()"
+          :disabled="promptSubmitDisabled"
           @click="onSubmitPrompt"
         >
           {{ t("pages.feeds.submitButton", "Submit") }}
         </v-btn>
+      </div>
+      <div v-if="cooldownActive" class="prompt-cooldown text-caption mt-2">
+        {{ cooldownLabel }}
       </div>
       <hr class="prompt-divider" />
     </v-sheet>
@@ -61,6 +64,7 @@
           :thread="thread"
           :initial-expanded="index === 0"
           :me-id="auth.user?.id || null"
+          :is-admin="isAdmin"
           :can-reply="canPost"
           :loading="loading"
           @send-reply="submitReply"
@@ -211,7 +215,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/authStore1";
 import MoodFeedPromptCard from "@/components/MoodFeed/PromptCard.vue";
@@ -229,6 +233,7 @@ useSeoI18nMeta("feeds");
 const threads = ref([]);
 const loading = ref(true);
 const canPost = computed(() => true);
+const isAdmin = computed(() => Boolean(auth.userProfile?.is_admin));
 const profileOpen = ref(false);
 const profileUserId = ref(null);
 const loginNoticeOpen = ref(false);
@@ -267,6 +272,45 @@ const limitDialogOpen = ref(false);
 const registerDialogOpen = ref(false);
 const submitNoticeOpen = ref(false);
 const submitNoticeText = ref("");
+const postEligibility = ref({
+  canPost: true,
+  cooldownHours: 24,
+  lastEntryAt: null,
+  nextAllowedAt: null,
+  remainingMs: 0,
+});
+const nowTick = ref(Date.now());
+let cooldownTimerId = null;
+
+const cooldownRemainingMs = computed(() => {
+  const next = postEligibility.value?.nextAllowedAt;
+  if (!next) return 0;
+  const nextAt = new Date(next).getTime();
+  if (!Number.isFinite(nextAt)) return 0;
+  return Math.max(0, nextAt - nowTick.value);
+});
+
+const cooldownActive = computed(() => cooldownRemainingMs.value > 0);
+
+const formatDuration = (ms) => {
+  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+};
+
+const cooldownLabel = computed(() =>
+  t("pages.feeds.cooldownActive", {
+    time: formatDuration(cooldownRemainingMs.value),
+  })
+);
+
+const promptSubmitDisabled = computed(
+  () => submitBusy.value || !promptAnswer.value.trim() || cooldownActive.value
+);
 
 async function loadEntries() {
   loading.value = true;
@@ -297,8 +341,34 @@ async function loadPrompt() {
     promptText.value = "";
     promptKey.value = null;
   } finally {
-    if (reqId !== promptReqId.value) return;
-    promptLoading.value = false;
+    if (reqId === promptReqId.value) {
+      promptLoading.value = false;
+    }
+  }
+}
+
+async function loadPostEligibility(targetPromptKey = null) {
+  const normalizedPromptKey =
+    String(targetPromptKey || promptKey.value || "").trim() || null;
+  try {
+    const res = await $fetch("/api/mood-feed/post-eligibility", {
+      query: normalizedPromptKey ? { promptKey: normalizedPromptKey } : undefined,
+    });
+    postEligibility.value = {
+      canPost: Boolean(res?.canPost ?? true),
+      cooldownHours: Number(res?.cooldownHours || 24),
+      lastEntryAt: res?.lastEntryAt || null,
+      nextAllowedAt: res?.nextAllowedAt || null,
+      remainingMs: Number(res?.remainingMs || 0),
+    };
+  } catch {
+    postEligibility.value = {
+      canPost: true,
+      cooldownHours: 24,
+      lastEntryAt: null,
+      nextAllowedAt: null,
+      remainingMs: 0,
+    };
   }
 }
 
@@ -355,6 +425,13 @@ function extractFetchError(err) {
 async function onSubmitPrompt() {
   const text = String(promptAnswer.value || "").trim().slice(0, 280);
   if (!text) return;
+  if (cooldownActive.value) {
+    submitNoticeText.value = t("pages.feeds.noticeCooldown", {
+      time: formatDuration(cooldownRemainingMs.value),
+    });
+    submitNoticeOpen.value = true;
+    return;
+  }
   const proceed = await ensureSessionReady(onSubmitPrompt);
   if (!proceed) return;
 
@@ -417,10 +494,25 @@ async function onConfirmRefine() {
     promptAnswer.value = "";
     await loadEntries();
     await loadPrompt();
+    await loadPostEligibility(refinedPromptKey.value || promptKey.value || null);
   } catch (err) {
     const { statusCode, statusMessage, data } = extractFetchError(err);
     if (statusCode === 429 && data?.limitType) {
-      handleAnonLimit();
+      if (data.limitType === "cooldown") {
+        postEligibility.value = {
+          canPost: false,
+          cooldownHours: Number(data?.cooldownHours || 24),
+          lastEntryAt: data?.lastEntryAt || null,
+          nextAllowedAt: data?.nextAllowedAt || null,
+          remainingMs: Number(data?.remainingMs || 0),
+        };
+        submitNoticeText.value = t("pages.feeds.noticeCooldown", {
+          time: formatDuration(cooldownRemainingMs.value),
+        });
+        submitNoticeOpen.value = true;
+      } else {
+        handleAnonLimit();
+      }
     } else if (statusCode === 403 && statusMessage === "captcha_required") {
       handleCaptchaRequired();
     } else if (statusCode === 403 && statusMessage === "captcha_failed") {
@@ -652,7 +744,10 @@ async function flagItem({ targetType, targetId }) {
 async function deleteEntry({ entryId }) {
   if (!entryId) return;
   try {
-    await $fetch(`/api/mood-feed/entries/${entryId}`, { method: "DELETE" });
+    const path = isAdmin.value
+      ? `/api/admin/mood-feed/entries/${entryId}`
+      : `/api/mood-feed/entries/${entryId}`;
+    await $fetch(path, { method: "DELETE" });
     threads.value = threads.value
       .map((thread) => {
         const entries = (thread.entries || []).filter(
@@ -689,6 +784,29 @@ onMounted(loadEntries);
 watch(locale, loadEntries);
 onMounted(loadPrompt);
 watch(locale, loadPrompt);
+onMounted(loadPostEligibility);
+watch(promptKey, (nextKey) => {
+  loadPostEligibility(nextKey);
+});
+watch(
+  () => auth.authStatus,
+  () => {
+    loadPostEligibility(promptKey.value || null);
+  }
+);
+
+onMounted(() => {
+  cooldownTimerId = window.setInterval(() => {
+    nowTick.value = Date.now();
+  }, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (cooldownTimerId) {
+    clearInterval(cooldownTimerId);
+    cooldownTimerId = null;
+  }
+});
 
 if (import.meta.client) {
   onMounted(() => {
@@ -751,6 +869,10 @@ if (import.meta.client) {
   margin-top: 12px;
   border: 0;
   border-top: 1px solid var(--mf-divider);
+}
+
+.prompt-cooldown {
+  color: #93c5fd;
 }
 
 .prompt-text {

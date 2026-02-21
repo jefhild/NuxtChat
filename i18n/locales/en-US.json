@@ -101,6 +101,8 @@
       "noticePendingEntry": "Thanks! Your response is under review before it appears.",
       "noticePosted": "Posted to the Mood Feed.",
       "noticePendingReply": "Thanks! Your reply is under review before it appears.",
+      "noticeCooldown": "You can post once every 24 hours. Try again in {time}.",
+      "cooldownActive": "You can post again in {time}.",
       "anonName": "Guest",
       "userName": "User",
       "replyingTo": "Replying to",
@@ -1018,6 +1020,7 @@
       "anon_authenticated-line2": "Enjoy. Happy chatting.",
       "action-label": "Open consent information or start chat",
       "consent-cta": "Accept terms & start",
+      "back-to-bio": "Back to bio",
       "settings": "Settings",
       "settings-disabled": "Settings (Disabled in Anonymous Mode)",
       "settings-aria-label": "Open settings modal to update your account preferences and personal information"

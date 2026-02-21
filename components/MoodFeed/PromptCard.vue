@@ -63,6 +63,13 @@
     <v-list-item v-else prepend-icon="mdi-flag" @click="onFlag">
       <v-list-item-title>{{ t("pages.feeds.flagButton", "Flag") }}</v-list-item-title>
     </v-list-item>
+    <v-list-item
+      v-if="canAdminDeleteEntrySelected"
+      prepend-icon="mdi-delete"
+      @click="onAdminDeleteEntry"
+    >
+      <v-list-item-title>{{ t("pages.feeds.deleteButton", "Delete") }}</v-list-item-title>
+    </v-list-item>
     </v-list>
   </v-menu>
 </template>
@@ -80,6 +87,7 @@ const props = defineProps({
   canReply: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
   emptyText: { type: String, default: null },
+  isAdmin: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -205,6 +213,11 @@ const isAnonSelected = computed(() => {
   const msg = messageMap.value.get(menu.id);
   return !!msg && !!msg.authorIsAnonymous;
 });
+const canAdminDeleteEntrySelected = computed(() => {
+  if (!props.isAdmin || isMineSelected.value || !menu.id) return false;
+  const msg = messageMap.value.get(menu.id);
+  return !!msg && msg.voteTarget === "entry";
+});
 
 function openMessageMenu({ id, el }) {
   menu.open = false;
@@ -243,6 +256,14 @@ function onFlag() {
 function onRegister() {
   menu.open = false;
   emit("register");
+}
+
+function onAdminDeleteEntry() {
+  const id = menu.id;
+  const msg = messageMap.value.get(id);
+  menu.open = false;
+  if (!id || !msg || msg.voteTarget !== "entry") return;
+  emit("delete-entry", { entryId: id });
 }
 
 function handleReply({ id, text }) {

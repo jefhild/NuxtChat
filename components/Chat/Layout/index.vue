@@ -117,19 +117,35 @@
               @click="panelOpen = !panelOpen"
             >
               <div class="d-flex align-center profile-header-left">
-                <v-avatar size="44" color="primary" variant="tonal">
-                  <v-img
-                    v-if="selectedUser && selectedUser.avatar_url"
-                    :src="selectedUser.avatar_url"
-                    cover
-                  />
+                <div class="selected-avatar-wrap">
+                  <v-avatar size="50" color="primary" variant="tonal">
+                    <v-img
+                      v-if="selectedUser && selectedUser.avatar_url"
+                      :src="selectedUser.avatar_url"
+                      cover
+                    />
+                    <span
+                      v-else
+                      class="avatar-fallback text-body-2 font-weight-medium"
+                    >
+                      {{ selectedUserInitial }}
+                    </span>
+                  </v-avatar>
                   <span
-                    v-else
-                    class="avatar-fallback text-body-2 font-weight-medium"
+                    v-if="selectedUserFlagEmoji"
+                    class="selected-avatar-flag"
                   >
-                    {{ selectedUserInitial }}
+                    {{ selectedUserFlagEmoji }}
                   </span>
-                </v-avatar>
+                  <v-icon
+                    v-if="selectedUser"
+                    size="20"
+                    class="selected-avatar-gender"
+                    :class="selectedUserGenderClass"
+                  >
+                    {{ selectedUserGenderIcon }}
+                  </v-icon>
+                </div>
                 <div class="min-w-0 ml-3">
                   <div
                     :class="[
@@ -204,7 +220,43 @@
                     class="profile-meta-grid text-body-2 mb-3"
                   >
                     <div
-                      v-for="item in selectedUserMeta"
+                      v-if="selectedUserPrimaryMetaItems.length"
+                      class="d-flex align-center flex-wrap mb-2 profile-meta-primary-row"
+                    >
+                      <div
+                        v-for="item in selectedUserPrimaryMetaItems"
+                        :key="item.key"
+                        class="d-flex align-center profile-meta-primary-item"
+                      >
+                        <v-icon
+                          size="18"
+                          class="mr-2 meta-icon"
+                          :class="item.color ? '' : 'text-medium-emphasis'"
+                          :style="item.color ? { color: item.color } : undefined"
+                        >
+                          {{ item.icon }}
+                        </v-icon>
+                        <span class="mr-1 profile-meta-label">
+                          {{ item.label }}:
+                        </span>
+                        <span class="profile-meta-value">
+                          <template v-if="item.key === 'gender'">
+                            {{ item.value }}
+                            <button
+                              class="profile-photo-count-link"
+                              type="button"
+                              :disabled="!selectedUserPhotoCount"
+                              @click.stop="openSelectedUserPhotosPanel"
+                            >
+                              ({{ selectedUserPhotoCountLabel }})
+                            </button>
+                          </template>
+                          <template v-else>{{ item.value }}</template>
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      v-for="item in selectedUserSecondaryMetaItems"
                       :key="item.key"
                       class="d-flex align-center mb-2"
                     >
@@ -223,8 +275,79 @@
                     </div>
                   </div>
 
+                  <div v-if="selectedUserPanelView === 'photos'" class="profile-photo-view mb-3">
+                    <div class="d-flex align-center justify-space-between mb-2">
+                      <span class="text-caption profile-meta-label">
+                        {{ selectedUserPhotoCount }} photos
+                      </span>
+                      <v-tooltip
+                        :text="t('components.chatheader.back-to-bio')"
+                        location="top"
+                      >
+                        <template #activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            icon="mdi-arrow-left-circle-outline"
+                            size="small"
+                            variant="text"
+                            class="profile-photo-back-btn"
+                            :aria-label="t('components.chatheader.back-to-bio')"
+                            @click="selectedUserPanelView = 'bio'"
+                          />
+                        </template>
+                      </v-tooltip>
+                    </div>
+                    <v-skeleton-loader
+                      v-if="selectedUserPhotosLoading"
+                      type="image"
+                      class="profile-photo-skeleton"
+                    />
+                    <div
+                      v-else-if="selectedUserPhotoSlides.length"
+                      class="profile-photo-carousel-wrap"
+                      :class="{ 'is-locked': shouldBlurSelectedUserPhotos }"
+                    >
+                      <v-carousel
+                        height="210"
+                        hide-delimiters
+                        show-arrows="hover"
+                        :cycle="false"
+                      >
+                        <v-carousel-item
+                          v-for="photo in selectedUserPhotoSlides"
+                          :key="photo.id"
+                        >
+                          <v-img
+                            v-if="photo.url"
+                            :src="photo.url"
+                            cover
+                            class="profile-photo-image"
+                          />
+                          <div v-else class="profile-photo-fallback">
+                            No photo preview
+                          </div>
+                        </v-carousel-item>
+                      </v-carousel>
+                      <div
+                        v-if="shouldBlurSelectedUserPhotos"
+                        class="profile-photo-lock-overlay"
+                      >
+                        <v-icon size="18" class="mr-1">mdi-lock</v-icon>
+                        <button
+                          type="button"
+                          class="profile-photo-lock-link"
+                          @click.stop="openPhotoAccessFlow"
+                        >
+                          {{ lockedPhotoCtaLabel }}
+                        </button>
+                      </div>
+                    </div>
+                    <div v-else class="text-body-2 text-medium-emphasis">
+                      No approved photos yet.
+                    </div>
+                  </div>
                   <div
-                    v-if="selectedUserLocalized.bio"
+                    v-else-if="selectedUserLocalized.bio"
                     class="profile-bio text-body-2 mb-3"
                   >
                     {{ selectedUserLocalized.bio }}
@@ -452,8 +575,8 @@
             @click="panelOpen = !panelOpen"
           >
             <div class="d-flex align-center mobile-profile-left">
-              <div class="mobile-avatar-wrap">
-                <v-avatar size="40" color="primary" variant="tonal">
+              <div class="selected-avatar-wrap mobile-avatar-wrap">
+                <v-avatar size="46" color="primary" variant="tonal">
                   <v-img
                     v-if="selectedUser && selectedUser.avatar_url"
                     :src="selectedUser.avatar_url"
@@ -466,25 +589,19 @@
                     {{ selectedUserInitial }}
                   </span>
                 </v-avatar>
+                <span
+                  v-if="selectedUserFlagEmoji"
+                  class="selected-avatar-flag"
+                >
+                  {{ selectedUserFlagEmoji }}
+                </span>
                 <v-icon
                   v-if="selectedUser"
-                  size="14"
-                  class="mobile-gender-icon"
-                  :class="{
-                    'is-male': selectedUser?.gender_id === 1,
-                    'is-female': selectedUser?.gender_id === 2,
-                    'is-other':
-                      selectedUser?.gender_id !== 1 &&
-                      selectedUser?.gender_id !== 2,
-                  }"
+                  size="20"
+                  class="selected-avatar-gender mobile-gender-icon"
+                  :class="selectedUserGenderClass"
                 >
-                  {{
-                    selectedUser?.gender_id === 1
-                      ? "mdi-gender-male"
-                      : selectedUser?.gender_id === 2
-                      ? "mdi-gender-female"
-                      : "mdi-gender-non-binary"
-                  }}
+                  {{ selectedUserGenderIcon }}
                 </v-icon>
               </div>
               <div class="min-w-0 ml-2 mobile-profile-info">
@@ -554,7 +671,43 @@
                     class="profile-meta-grid text-body-2 mb-3"
                   >
                     <div
-                      v-for="item in selectedUserMeta"
+                      v-if="selectedUserPrimaryMetaItems.length"
+                      class="d-flex align-center flex-wrap mb-2 profile-meta-primary-row"
+                    >
+                      <div
+                        v-for="item in selectedUserPrimaryMetaItems"
+                        :key="item.key"
+                        class="d-flex align-center profile-meta-primary-item"
+                      >
+                        <v-icon
+                          size="18"
+                          class="mr-2 meta-icon"
+                          :class="item.color ? '' : 'text-medium-emphasis'"
+                          :style="item.color ? { color: item.color } : undefined"
+                        >
+                          {{ item.icon }}
+                        </v-icon>
+                        <span class="mr-1 profile-meta-label">
+                          {{ item.label }}:
+                        </span>
+                        <span class="profile-meta-value">
+                          <template v-if="item.key === 'gender'">
+                            {{ item.value }}
+                            <button
+                              class="profile-photo-count-link"
+                              type="button"
+                              :disabled="!selectedUserPhotoCount"
+                              @click.stop="openSelectedUserPhotosPanel"
+                            >
+                              ({{ selectedUserPhotoCountLabel }})
+                            </button>
+                          </template>
+                          <template v-else>{{ item.value }}</template>
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      v-for="item in selectedUserSecondaryMetaItems"
                       :key="item.key"
                       class="d-flex align-center mb-2"
                     >
@@ -578,8 +731,79 @@
                     </div>
                   </div>
 
+                  <div v-if="selectedUserPanelView === 'photos'" class="profile-photo-view mb-3">
+                    <div class="d-flex align-center justify-space-between mb-2">
+                      <span class="text-caption profile-meta-label">
+                        {{ selectedUserPhotoCount }} photos
+                      </span>
+                      <v-tooltip
+                        :text="t('components.chatheader.back-to-bio')"
+                        location="top"
+                      >
+                        <template #activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            icon="mdi-arrow-left-circle-outline"
+                            size="small"
+                            variant="text"
+                            class="profile-photo-back-btn"
+                            :aria-label="t('components.chatheader.back-to-bio')"
+                            @click="selectedUserPanelView = 'bio'"
+                          />
+                        </template>
+                      </v-tooltip>
+                    </div>
+                    <v-skeleton-loader
+                      v-if="selectedUserPhotosLoading"
+                      type="image"
+                      class="profile-photo-skeleton"
+                    />
+                    <div
+                      v-else-if="selectedUserPhotoSlides.length"
+                      class="profile-photo-carousel-wrap"
+                      :class="{ 'is-locked': shouldBlurSelectedUserPhotos }"
+                    >
+                      <v-carousel
+                        height="210"
+                        hide-delimiters
+                        show-arrows="hover"
+                        :cycle="false"
+                      >
+                        <v-carousel-item
+                          v-for="photo in selectedUserPhotoSlides"
+                          :key="photo.id"
+                        >
+                          <v-img
+                            v-if="photo.url"
+                            :src="photo.url"
+                            cover
+                            class="profile-photo-image"
+                          />
+                          <div v-else class="profile-photo-fallback">
+                            No photo preview
+                          </div>
+                        </v-carousel-item>
+                      </v-carousel>
+                      <div
+                        v-if="shouldBlurSelectedUserPhotos"
+                        class="profile-photo-lock-overlay"
+                      >
+                        <v-icon size="18" class="mr-1">mdi-lock</v-icon>
+                        <button
+                          type="button"
+                          class="profile-photo-lock-link"
+                          @click.stop="openPhotoAccessFlow"
+                        >
+                          {{ lockedPhotoCtaLabel }}
+                        </button>
+                      </div>
+                    </div>
+                    <div v-else class="text-body-2 text-medium-emphasis">
+                      No approved photos yet.
+                    </div>
+                  </div>
                   <div
-                    v-if="selectedUserLocalized.bio"
+                    v-else-if="selectedUserLocalized.bio"
                     class="profile-bio text-body-2 mb-3"
                   >
                     {{ selectedUserLocalized.bio }}
@@ -1460,6 +1684,9 @@ const deletePrompt = computed(() =>
 
 const selectedUserTranslations = ref([]);
 const selectedUserPhotoCount = ref(0);
+const selectedUserPhotos = ref([]);
+const selectedUserPhotosLoading = ref(false);
+const selectedUserPanelView = ref("bio");
 const selectedUserWithTranslations = computed(() => {
   if (!selectedUser.value) return null;
   return {
@@ -1493,6 +1720,26 @@ const selectedUserLocation = computed(() => {
   const emoji = user.country_emoji ? String(user.country_emoji).trim() : "";
   if (emoji && location) return `${emoji} ${location}`;
   return emoji || location;
+});
+
+const selectedUserFlagEmoji = computed(() => {
+  const user = selectedUser.value;
+  if (!user?.country_emoji) return "";
+  return String(user.country_emoji).trim();
+});
+
+const selectedUserGenderIcon = computed(() => {
+  const genderId = Number(selectedUser.value?.gender_id);
+  if (genderId === 1) return "mdi-gender-male";
+  if (genderId === 2) return "mdi-gender-female";
+  return "mdi-gender-non-binary";
+});
+
+const selectedUserGenderClass = computed(() => {
+  const genderId = Number(selectedUser.value?.gender_id);
+  if (genderId === 1) return "is-male";
+  if (genderId === 2) return "is-female";
+  return "is-other";
 });
 
 const selectedUserSubtitle = computed(() => {
@@ -1535,9 +1782,6 @@ const selectedUserMeta = computed(() => {
     });
   }
   if (user.gender) {
-    const photosLabel = t("components.profile-gallery.count-short", {
-      count: selectedUserPhotoCount.value,
-    });
     const genderValue = String(user.gender);
     const genderKey = genderValue.toLowerCase();
     let genderIcon = "mdi-gender-male-female";
@@ -1554,7 +1798,7 @@ const selectedUserMeta = computed(() => {
       icon: genderIcon,
       color: genderColor,
       label: "Gender",
-      value: `${genderValue} (${photosLabel})`,
+      value: `${genderValue}`,
     });
   }
   if (selectedUserLocation.value) {
@@ -1577,19 +1821,102 @@ const selectedUserMeta = computed(() => {
   return meta;
 });
 
-const loadSelectedUserPhotoCount = async (userId) => {
-  if (!userId) {
-    selectedUserPhotoCount.value = 0;
+const selectedUserMetaByKey = computed(() => {
+  const map = new Map();
+  for (const item of selectedUserMeta.value || []) {
+    map.set(item.key, item);
+  }
+  return map;
+});
+
+const selectedUserPrimaryMetaItems = computed(() => {
+  const age = selectedUserMetaByKey.value.get("age");
+  const gender = selectedUserMetaByKey.value.get("gender");
+  const location = selectedUserMetaByKey.value.get("location");
+  return [age, gender, location].filter(Boolean);
+});
+
+const selectedUserSecondaryMetaItems = computed(() =>
+  (selectedUserMeta.value || []).filter(
+    (item) =>
+      item.key !== "age" &&
+      item.key !== "gender" &&
+      item.key !== "location"
+  )
+);
+
+const canViewSelectedUserPhotos = computed(
+  () => auth.authStatus === "authenticated"
+);
+
+const selectedUserPhotoCountLabel = computed(() =>
+  t("components.profile-gallery.count-short", {
+    count: selectedUserPhotoCount.value,
+  })
+);
+
+const selectedUserPhotoSlides = computed(() => {
+  if (selectedUserPhotos.value.length) {
+    return selectedUserPhotos.value.map((photo) => ({
+      id: photo.id,
+      url: photo.url || photo.public_url || "",
+    }));
+  }
+  if (selectedUserPhotoCount.value > 0) {
+    const fallbackUrl = String(selectedUser.value?.avatar_url || "").trim();
+    return Array.from(
+      { length: Math.min(selectedUserPhotoCount.value, 6) },
+      (_, idx) => ({
+        id: `placeholder-${idx}`,
+        url: fallbackUrl,
+      })
+    );
+  }
+  return [];
+});
+
+const shouldBlurSelectedUserPhotos = computed(
+  () => !canViewSelectedUserPhotos.value && selectedUserPhotoCount.value > 0
+);
+
+const lockedPhotoCtaLabel = computed(() =>
+  auth.authStatus === "anon_authenticated"
+    ? t("components.profile-email-link.cta")
+    : t("components.profile-gallery.signin")
+);
+
+const openPhotoAccessFlow = () => {
+  if (auth.authStatus === "anon_authenticated") {
+    navigateTo({ path: localePath("/settings"), query: { linkEmail: "1" } });
     return;
   }
+  navigateTo(localePath("/signin"));
+};
+
+const openSelectedUserPhotosPanel = () => {
+  if (!selectedUserPhotoCount.value) return;
+  selectedUserPanelView.value = "photos";
+};
+
+const loadSelectedUserPhotosData = async (userId) => {
+  if (!userId) {
+    selectedUserPhotoCount.value = 0;
+    selectedUserPhotos.value = [];
+    return;
+  }
+  selectedUserPhotosLoading.value = true;
   try {
     const res = await $fetch("/api/profile/photos-public", {
       query: { userId },
     });
     selectedUserPhotoCount.value = Number(res?.count || 0);
+    selectedUserPhotos.value = Array.isArray(res?.photos) ? res.photos : [];
   } catch (err) {
     console.warn("[chat] selected user photo count failed:", err);
     selectedUserPhotoCount.value = 0;
+    selectedUserPhotos.value = [];
+  } finally {
+    selectedUserPhotosLoading.value = false;
   }
 };
 
@@ -1649,14 +1976,24 @@ watch(
 
 watch(selectedUserId, () => {
   panelOpen.value = false;
+  selectedUserPanelView.value = "bio";
 });
 
 watch(
   selectedUserId,
   (userId) => {
-    loadSelectedUserPhotoCount(userId);
+    loadSelectedUserPhotosData(userId);
   },
   { immediate: true }
+);
+
+watch(
+  () => auth.authStatus,
+  () => {
+    if (selectedUserId.value) {
+      loadSelectedUserPhotosData(selectedUserId.value);
+    }
+  }
 );
 
 watch(
@@ -1750,6 +2087,7 @@ const canSend = computed(() => {
 });
 
 const MOOD_MAX_ATTEMPTS = 3;
+const MOOD_FEED_REPLY_MODE = "capture_and_chat"; // "capture_only" | "capture_and_chat"
 const moodPromptBusy = ref(false);
 
 const moodQuickReplies = computed(() => {
@@ -2413,6 +2751,7 @@ async function onSend(
   const selectedPeer = selectedUser.value || chat.selectedUser;
   const toId = selectedPeer?.user_id || selectedPeer?.id;
   const sendingToBot = toId === IMCHATTY_ID;
+  let moodHandled = false;
   if (isSelectedUserBlocked.value) return;
 
   if (!bypassTranslationPrompt) {
@@ -2438,8 +2777,11 @@ async function onSend(
   }
 
   if (sendingToBot) {
-    const handled = await handleMoodFeedMessage(text);
-    if (handled) return;
+    const handled = await handleMoodFeedMessage(text, { sendingToBot });
+    if (handled) {
+      moodHandled = true;
+      if (MOOD_FEED_REPLY_MODE !== "capture_and_chat") return;
+    }
   }
 
   // translate if needed (DM only)
@@ -2452,7 +2794,9 @@ async function onSend(
   }
 
   // optimistic local send
-  regRef.value?.appendLocalAndSend?.(text, translationPayload);
+  if (!moodHandled) {
+    regRef.value?.appendLocalAndSend?.(text, translationPayload);
+  }
 
   if (
     selectedPeer &&
@@ -2666,10 +3010,10 @@ async function refineMoodFeedResponse(text) {
   );
 }
 
-async function handleMoodFeedMessage(text) {
+async function handleMoodFeedMessage(text, { sendingToBot = false } = {}) {
   if (!["authenticated", "anon_authenticated"].includes(auth.authStatus))
     return false;
-  if (!isBotSelected.value) return false;
+  if (!sendingToBot) return false;
   if (!["prompt", "confirm"].includes(draftStore.moodFeedStage)) return false;
 
   await regRef.value?.appendLocalAndSend?.(text);
@@ -3004,6 +3348,86 @@ function toggleFilters() {
 .profile-meta-grid {
   column-gap: 24px;
 }
+.profile-meta-primary-row {
+  gap: 18px;
+}
+.profile-meta-primary-item {
+  min-width: 0;
+}
+.profile-photo-count-link,
+.profile-photo-back-link {
+  border: 0;
+  background: transparent;
+  color: #7cc2ff;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  text-decoration: underline;
+}
+.profile-photo-count-link:disabled {
+  opacity: 0.5;
+  cursor: default;
+  text-decoration: none;
+}
+.profile-photo-back-btn {
+  color: #7cc2ff !important;
+  opacity: 0.9;
+}
+.profile-photo-back-btn:hover {
+  opacity: 1;
+}
+.profile-photo-view {
+  position: relative;
+}
+.profile-photo-skeleton {
+  border-radius: 12px;
+  overflow: hidden;
+}
+.profile-photo-carousel-wrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+}
+.profile-photo-image {
+  width: 100%;
+  height: 100%;
+}
+.profile-photo-fallback {
+  height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.75);
+}
+.profile-photo-carousel-wrap.is-locked .profile-photo-image,
+.profile-photo-carousel-wrap.is-locked .profile-photo-fallback {
+  filter: blur(10px);
+  transform: scale(1.02);
+}
+.profile-photo-lock-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e2e8f0;
+  font-weight: 600;
+  background: rgba(2, 6, 23, 0.38);
+  gap: 6px;
+  pointer-events: none;
+}
+.profile-photo-lock-link {
+  pointer-events: auto;
+  border: 0;
+  background: transparent;
+  color: #e2e8f0;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
 .meta-icon {
   position: relative;
   top: -2px;
@@ -3079,26 +3503,36 @@ function toggleFilters() {
   border-radius: 0 !important;
   box-shadow: none !important;
 }
-.mobile-avatar-wrap {
+.selected-avatar-wrap {
   position: relative;
   display: inline-flex;
 }
-.mobile-gender-icon {
+.selected-avatar-flag {
   position: absolute;
-  right: -3px;
-  bottom: -3px;
+  right: -6px;
+  top: 2px;
+  font-size: 1.22rem;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(2, 6, 23, 0.75);
+  z-index: 2;
+}
+.selected-avatar-gender {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
   background: transparent;
   border-radius: 999px;
-  padding: 3px;
+  padding: 4px;
   color: #1d3b58;
+  z-index: 2;
 }
-.mobile-gender-icon.is-male {
+.selected-avatar-gender.is-male {
   color: #2563eb;
 }
-.mobile-gender-icon.is-female {
+.selected-avatar-gender.is-female {
   color: #ec4899;
 }
-.mobile-gender-icon.is-other {
+.selected-avatar-gender.is-other {
   color: #7c3aed;
 }
 .chat-mobile-drawer {

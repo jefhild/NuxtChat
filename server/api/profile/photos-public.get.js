@@ -14,7 +14,8 @@ export default defineEventHandler(async (event) => {
         throw err;
       }
     }
-    const canViewPhotos = Boolean(user?.id && !user.is_anonymous);
+    const requesterUserId = typeof user?.id === "string" ? user.id : "";
+    const canViewPhotos = Boolean(requesterUserId && !user?.is_anonymous);
 
     const query = getQuery(event) || {};
     const userId = String(query.userId || query.user_id || "").trim();
@@ -44,9 +45,6 @@ export default defineEventHandler(async (event) => {
     }
 
     const total = Number(count || 0);
-    if (!canViewPhotos) {
-      return { count: total, photos: [] };
-    }
 
     const { data, error } = await supa
       .from("profile_photos")
@@ -81,7 +79,7 @@ export default defineEventHandler(async (event) => {
           if (row.value === 1) {
             voteByPhotoId[targetId] = (voteByPhotoId[targetId] || 0) + 1;
           }
-          if (row.user_id === user.id) {
+          if (requesterUserId && row.user_id === requesterUserId) {
             myVoteByPhotoId[targetId] = row.value || 0;
           }
         }
@@ -113,7 +111,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    return { count: total, photos };
+    return { count: total, photos, is_locked: !canViewPhotos };
   } catch (err) {
     console.error("[profile/photos-public] error:", err);
     setResponseStatus(event, 500);

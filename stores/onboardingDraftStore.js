@@ -175,6 +175,10 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
       }
     },
 
+    hydrate() {
+      this.loadLocal();
+    },
+
     saveLocal() {
       try {
         const {

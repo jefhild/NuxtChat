@@ -79,7 +79,7 @@
                       </span>
                       <v-icon
                         v-if="item?.gender_id"
-                        size="14"
+                        size="20"
                         class="admin-gender-icon"
                         :class="{
                           'is-male': item?.gender_id === 1,
@@ -113,7 +113,7 @@
                     </span>
                     <v-icon
                       v-if="item?.gender_id"
-                      size="14"
+                      size="20"
                       class="admin-gender-icon"
                       :class="{
                         'is-male': item?.gender_id === 1,
@@ -2146,22 +2146,22 @@ const purgeMarkedProfiles = async () => {
 
 .admin-gender-icon {
   position: absolute;
-  left: -3px;
-  bottom: -3px;
-  background: #fff;
+  left: -4px;
+  bottom: -4px;
+  background: transparent;
   border-radius: 999px;
-  padding: 3px;
+  padding: 0;
   color: #1d3b58;
 }
 
 .admin-flag-icon {
   position: absolute;
-  right: -3px;
-  top: -3px;
-  background: #fff;
+  right: -4px;
+  top: -4px;
+  background: transparent;
   border-radius: 999px;
-  padding: 2px 4px;
-  font-size: 12px;
+  padding: 0;
+  font-size: 17px;
   line-height: 1;
 }
 

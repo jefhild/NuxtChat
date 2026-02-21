@@ -14,7 +14,15 @@ const pickRandom = (list = []) =>
   list[Math.floor(Math.random() * list.length)];
 
 export default defineEventHandler(async (event) => {
-  const user = await serverSupabaseUser(event);
+  let user = null;
+  try {
+    user = await serverSupabaseUser(event);
+  } catch (err) {
+    const message = err?.cause?.statusMessage || err?.message || "";
+    if (!message.includes("Auth session missing")) {
+      throw err;
+    }
+  }
   const query = getQuery(event) || {};
   const locale = normalizeLocale(query.locale || "en");
   const supabase = await getServiceRoleClient(event);
@@ -32,6 +40,7 @@ export default defineEventHandler(async (event) => {
   if (!rows.length && locale !== "en") {
     rows = await fetchByLocale("en");
   }
+  const allRows = [...rows];
 
   if (user?.id) {
     const { data: answered } = await supabase
@@ -46,11 +55,12 @@ export default defineEventHandler(async (event) => {
         .filter(Boolean)
     );
 
-    rows = rows.filter((row) => {
+    const unanswered = rows.filter((row) => {
       const key = String(row?.mood_feed_prompts?.prompt_key || "").trim();
       if (!key) return true;
       return !answeredKeys.has(key);
     });
+    rows = unanswered.length ? unanswered : allRows;
   }
 
   const pick = pickRandom(rows);
