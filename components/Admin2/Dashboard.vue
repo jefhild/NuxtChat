@@ -1712,11 +1712,23 @@ const runMockDiscussion = async () => {
     ? Number(mockDiscussionStartDelayMs.value)
     : 1500;
 
-  const selectedThread = mockDiscussionThreadItems.value.find((t) => t.id === threadId);
-  const articleSlug = String(selectedThread?.article_slug || "").trim();
-  const threadPath = articleSlug
-    ? `${localPath(`/articles/${articleSlug}`)}#discussion`
-    : localPath(`/chat/articles/${selectedThread?.slug || selectedThread?.id || threadId}`);
+  const selectedThread =
+    mockDiscussionThreadItems.value.find((t) => t.id === threadId) ||
+    mockDiscussionThreadItems.value.find((t) => t.id === mockDiscussionThreadId.value) ||
+    null;
+  if (!selectedThread?.id) {
+    mockDiscussionError.value = "Select a valid published article discussion thread.";
+    return;
+  }
+  const articleSlug = String(
+    selectedThread?.article_slug || selectedThread?.slug || ""
+  ).trim();
+  if (!articleSlug) {
+    mockDiscussionError.value =
+      "Selected thread is missing an article slug, cannot open article discussion.";
+    return;
+  }
+  const threadPath = `${localPath(`/articles/${articleSlug}`)}#discussion`;
   if (mockDiscussionOpenInNewTab.value && typeof window !== "undefined") {
     window.open(threadPath, "_blank");
   } else {
@@ -1825,9 +1837,9 @@ const deleteLastMockDiscussionRun = async () => {
 };
 
 const goToThread = (thread) => {
-  const key = thread?.slug || thread?.id;
-  if (!key) return;
-  router.push(localPath(`/chat/articles/${key}`));
+  const articleSlug = String(thread?.article_slug || thread?.slug || "").trim();
+  if (!articleSlug) return;
+  router.push(`${localPath(`/articles/${articleSlug}`)}#discussion`);
 };
 
 const openChatMessages = async (userId) => {

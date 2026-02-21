@@ -107,7 +107,7 @@ export default defineEventHandler(async (event) => {
     if (threadIds.size) {
       const { data: threadRows, error: threadsError } = await supa
         .from("threads")
-        .select("id, title, slug")
+        .select("id, title, slug, article_id")
         .in("id", Array.from(threadIds));
       if (threadsError) {
         console.error(
@@ -115,10 +115,32 @@ export default defineEventHandler(async (event) => {
           threadsError
         );
       } else {
+        let articleSlugById = new Map();
+        const articleIds = Array.from(
+          new Set((threadRows || []).map((t) => t.article_id).filter(Boolean))
+        );
+        if (articleIds.length) {
+          const { data: articleRows, error: articlesError } = await supa
+            .from("articles")
+            .select("id, slug")
+            .in("id", articleIds);
+          if (articlesError) {
+            console.error(
+              "[admin/activity-summary] articles error:",
+              articlesError
+            );
+          } else {
+            articleSlugById = new Map(
+              (articleRows || []).map((a) => [a.id, a.slug || null])
+            );
+          }
+        }
+
         threads = (threadRows || []).map((thread) => ({
           id: thread.id,
           title: thread.title,
           slug: thread.slug,
+          article_slug: articleSlugById.get(thread.article_id) || null,
           messageCount: threadCounts.get(thread.id) || 0,
         }));
         threads.sort((a, b) => b.messageCount - a.messageCount);
