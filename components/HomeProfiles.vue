@@ -35,6 +35,9 @@
                   :alt="displayNameFor(item) || 'Profile avatar'"
                 />
               </v-avatar>
+              <span v-if="item.country_emoji" class="avatar-flag">
+                {{ item.country_emoji }}
+              </span>
               <v-avatar v-if="item.has_email" size="18" class="registered-badge">
                 <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
               </v-avatar>
@@ -74,10 +77,6 @@
 
         <template #item.age="{ item }">
           <span class="text-body-2">{{ item.age ?? "—" }}</span>
-        </template>
-
-        <template #item.country="{ item }">
-          <span class="text-body-2">{{ item.country_emoji || "—" }}</span>
         </template>
 
         <template #item.comment_count="{ item }">
@@ -128,6 +127,9 @@
                       :alt="displayNameFor(item) || 'Profile avatar'"
                     />
                   </v-avatar>
+                  <span v-if="item.country_emoji" class="avatar-flag">
+                    {{ item.country_emoji }}
+                  </span>
                   <v-avatar v-if="item.has_email" size="18" class="registered-badge">
                     <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
                   </v-avatar>
@@ -162,10 +164,6 @@
                     <div class="meta-cell">
                       <v-icon size="16" color="blue-grey-darken-1">mdi-cake-variant</v-icon>
                       <span>{{ item.age ?? "—" }}</span>
-                    </div>
-                    <div class="meta-cell">
-                      <v-icon size="16" color="blue-grey-darken-1">mdi-map-marker</v-icon>
-                      <span class="country-flag">{{ item.country_emoji || "—" }}</span>
                     </div>
                     <div class="meta-cell">
                       <v-icon size="16" color="blue-grey-darken-1">mdi-chat-outline</v-icon>
@@ -237,9 +235,8 @@ const profileDialogSlug = ref(null);
 
 const headers = computed(() => [
   { title: t("components.homeProfiles.columns.profile"), key: "profile", sortable: false },
-  { title: t("components.homeProfiles.columns.tagline"), key: "tagline", width: 220, sortable: false },
+  { title: t("components.homeProfiles.columns.tagline"), key: "tagline", sortable: false },
   { title: t("components.homeProfiles.columns.age"), key: "age", align: "end", width: 72, sortable: false },
-  { title: t("components.homeProfiles.columns.country"), key: "country", width: 140, sortable: false },
   { title: t("components.homeProfiles.columns.comments"), key: "comment_count", align: "end", width: 120 },
   { title: t("components.homeProfiles.columns.upvotes"), key: "upvotes", align: "end", width: 100 },
 ]);
@@ -395,7 +392,7 @@ onUnmounted(() => {
 
 .profile-meta-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -406,14 +403,19 @@ onUnmounted(() => {
   font-size: 14px;
 }
 
-.country-flag {
-  font-size: 18px;
-  line-height: 1;
-}
-
 .avatar-stack {
   position: relative;
   display: inline-flex;
+}
+
+.avatar-flag {
+  position: absolute;
+  right: -6px;
+  top: 2px;
+  font-size: 1.12rem;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(2, 6, 23, 0.75);
+  z-index: 2;
 }
 
 .gender-badge {
