@@ -10,6 +10,8 @@
           :user-id="item.authorId || null"
           :me-id="meId"
           :avatar-url="item.avatarUrl"
+          :country-emoji="item.countryEmoji"
+          :gender-id="item.genderId"
           :sender-kind="item.senderKind"
           :created-at="item.createdAt"
           :display-locale="item.displayLocale"

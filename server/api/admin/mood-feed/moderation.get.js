@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
             "source_locale",
             "status",
             "created_at",
-            "profiles (user_id, displayname, avatar_url)",
+            "mood_feed_authors (user_id, displayname, avatar_url, is_anonymous)",
           ].join(",")
         )
         .eq("status", "pending_validation")
@@ -79,8 +79,7 @@ export default defineEventHandler(async (event) => {
             "source_locale",
             "status",
             "created_at",
-            "profiles (user_id, displayname, avatar_url)",
-            "mood_feed_entries (prompt_text, prompt_key, refined_text)",
+            "mood_feed_authors (user_id, displayname, avatar_url, is_anonymous)",
           ].join(",")
         )
         .eq("status", "pending_validation")
@@ -96,9 +95,53 @@ export default defineEventHandler(async (event) => {
       return { error: { stage: "replies", message: repliesRes.error.message } };
     }
 
+    const replyEntryIds = Array.from(
+      new Set((repliesRes.data || []).map((r) => r.entry_id).filter(Boolean))
+    );
+
+    let replyEntryMap = new Map();
+    if (replyEntryIds.length) {
+      const { data: replyEntries, error: replyEntriesErr } = await supa
+        .from("mood_feed_entries")
+        .select("id, prompt_text, prompt_key, refined_text")
+        .in("id", replyEntryIds);
+
+      if (replyEntriesErr) {
+        setResponseStatus(event, 500);
+        return {
+          error: { stage: "reply_entries", message: replyEntriesErr.message },
+        };
+      }
+
+      replyEntryMap = new Map((replyEntries || []).map((entry) => [entry.id, entry]));
+    }
+
+    const entries = (entriesRes.data || []).map((entry) => ({
+      ...entry,
+      profiles: entry.mood_feed_authors
+        ? {
+            user_id: entry.mood_feed_authors.user_id,
+            displayname: entry.mood_feed_authors.displayname,
+            avatar_url: entry.mood_feed_authors.avatar_url,
+          }
+        : null,
+    }));
+
+    const replies = (repliesRes.data || []).map((reply) => ({
+      ...reply,
+      profiles: reply.mood_feed_authors
+        ? {
+            user_id: reply.mood_feed_authors.user_id,
+            displayname: reply.mood_feed_authors.displayname,
+            avatar_url: reply.mood_feed_authors.avatar_url,
+          }
+        : null,
+      mood_feed_entries: replyEntryMap.get(reply.entry_id) || null,
+    }));
+
     return {
-      entries: entriesRes.data || [],
-      replies: repliesRes.data || [],
+      entries,
+      replies,
     };
   } catch (err) {
     console.error("[admin/mood-feed.moderation] error:", err);

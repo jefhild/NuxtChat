@@ -23,74 +23,98 @@
           class="cmt-avatar-btn mr-2"
           @click="onProfileClick"
         >
-          <v-avatar size="28">
-            <v-img :src="avatarUrl" />
-          </v-avatar>
+          <span class="cmt-avatar-wrap">
+            <v-avatar size="28">
+              <v-img :src="avatarUrl" />
+            </v-avatar>
+            <span v-if="flagEmoji" class="cmt-avatar-flag">{{ flagEmoji }}</span>
+            <v-icon
+              v-if="genderIcon"
+              size="16"
+              class="cmt-avatar-gender"
+              :class="genderClass"
+            >
+              {{ genderIcon }}
+            </v-icon>
+          </span>
         </button>
-        <v-avatar v-else size="28" class="mr-2" v-if="avatarUrl"
-          ><v-img :src="avatarUrl"
-        /></v-avatar>
-        <div class="d-flex align-center flex-wrap gap-2">
-          <button
-            v-if="userId"
-            type="button"
-            class="cmt-name text-body-2"
-            @click="onProfileClick"
+        <span v-else-if="avatarUrl" class="cmt-avatar-wrap mr-2">
+          <v-avatar size="28"><v-img :src="avatarUrl" /></v-avatar>
+          <span v-if="flagEmoji" class="cmt-avatar-flag">{{ flagEmoji }}</span>
+          <v-icon
+            v-if="genderIcon"
+            size="16"
+            class="cmt-avatar-gender"
+            :class="genderClass"
           >
-            {{ displayname }}
-          </button>
-          <strong v-else class="cmt-name-static text-body-2">
-            {{ displayname }}
-          </strong>
-          <span class="cmt-meta text-caption"
-            >• {{ formatDate(createdAt) }}</span
-          >
+            {{ genderIcon }}
+          </v-icon>
+        </span>
+        <div class="cmt-identity">
+          <div class="cmt-meta-row">
+            <button
+              v-if="userId"
+              type="button"
+              class="cmt-name text-body-2"
+              @click="onProfileClick"
+            >
+              {{ displayname }}
+            </button>
+            <strong v-else class="cmt-name-static text-body-2">
+              {{ displayname }}
+            </strong>
+            <span class="cmt-meta text-caption cmt-date">
+              {{ formatDate(createdAt) }}
+            </span>
+            <span
+              v-if="translatedFromLabel"
+              class="cmt-meta text-caption cmt-translated"
+            >
+              {{ translatedFromLabel }}
+            </span>
+          </div>
         </div>
         <v-spacer />
-        <v-btn icon variant="text" density="comfortable" @click="onMenuClick">
+        <v-btn class="menu-btn" icon variant="plain" density="comfortable" @click="onMenuClick">
           <v-icon size="18">mdi-dots-horizontal</v-icon>
         </v-btn>
       </div>
 
-      <div class="body text-body-2">
-        <div v-if="parentName" class="cmt-meta text-caption mb-1">
-          {{ t("pages.feeds.replyingTo", "Replying to") }} @{{ parentName }}
+      <div class="content-row">
+        <div class="body text-body-2">
+          <div v-if="parentName" class="cmt-meta text-caption mb-1">
+            {{ t("pages.feeds.replyingTo", "Replying to") }} @{{ parentName }}
+          </div>
+          <div v-if="masked" class="text-caption text-disabled">
+            {{ t("pages.feeds.hiddenNotice", "[hidden: guidelines]") }}
+          </div>
+          <div v-else-if="deleted" class="text-caption text-disabled">
+            {{ t("pages.feeds.deletedNotice", "[deleted]") }}
+          </div>
+          <div v-else class="cmt-body">{{ content }}</div>
         </div>
-        <div
-          v-if="translatedFromLabel"
-          class="cmt-meta text-caption mb-1"
-        >
-          {{ translatedFromLabel }}
-        </div>
-        <div v-if="masked" class="text-caption text-disabled">
-          {{ t("pages.feeds.hiddenNotice", "[hidden: guidelines]") }}
-        </div>
-        <div v-else-if="deleted" class="text-caption text-disabled">
-          {{ t("pages.feeds.deletedNotice", "[deleted]") }}
-        </div>
-        <div v-else class="cmt-body">{{ content }}</div>
-      </div>
 
-      <div class="actions d-flex align-end justify-end">
-        <MoodFeedVoteControls
-          :id="id"
-          :target="voteTarget"
-          :score="score"
-          :my-vote="myVote"
-          :disabled="disabled || senderKind === 'system'"
-          @vote="(payload) => $emit('vote', payload)"
-        />
-
-        <div class="reply-meta">
-          <v-btn
-            variant="text"
-            size="small"
-            class="ml-1"
+        <div class="actions d-flex align-center justify-end">
+          <MoodFeedVoteControls
+            :id="id"
+            :target="voteTarget"
+            :score="score"
+            :my-vote="myVote"
             :disabled="disabled || senderKind === 'system'"
-            @click="canReply ? $emit('reply', id) : $emit('login')"
-          >
-            {{ t("pages.feeds.replyButton", "Reply") }}
-          </v-btn>
+            @vote="(payload) => $emit('vote', payload)"
+          />
+
+          <div class="reply-meta">
+            <v-btn
+              class="ml-1 reply-btn"
+              variant="plain"
+              size="small"
+              :disabled="disabled || senderKind === 'system'"
+              @click="canReply ? $emit('reply', id) : $emit('login')"
+            >
+              {{ t("pages.feeds.replyButton", "Reply") }}
+            </v-btn>
+          </div>
         </div>
       </div>
       <slot name="reply-composer"></slot>
@@ -112,6 +136,8 @@ const props = defineProps({
   userId: { type: String, default: null },
   meId: { type: String, default: null },
   avatarUrl: { type: String, default: null },
+  countryEmoji: { type: String, default: "" },
+  genderId: { type: [String, Number, null], default: null },
   senderKind: { type: String, default: "user" },
   createdAt: { type: String, required: true },
   displayLocale: { type: String, default: null },
@@ -162,6 +188,23 @@ const translatedFromLabel = computed(() => {
   const formatted = formatLocale(props.sourceLocale);
   if (!formatted) return "";
   return t("pages.feeds.translatedFrom", { locale: formatted });
+});
+
+const flagEmoji = computed(() => String(props.countryEmoji || "").trim());
+const normalizedGenderId = computed(() => {
+  const id = Number(props.genderId);
+  return Number.isFinite(id) ? id : null;
+});
+const genderIcon = computed(() => {
+  if (normalizedGenderId.value === 1) return "mdi-gender-male";
+  if (normalizedGenderId.value === 2) return "mdi-gender-female";
+  if (normalizedGenderId.value === 3) return "mdi-gender-non-binary";
+  return "";
+});
+const genderClass = computed(() => {
+  if (normalizedGenderId.value === 1) return "is-male";
+  if (normalizedGenderId.value === 2) return "is-female";
+  return "is-other";
 });
 
 const timeFmt = new Intl.DateTimeFormat("en-GB", {
@@ -294,18 +337,56 @@ function onProfileClick() {
 }
 .cmt .body {
   margin-top: 0 !important;
-  margin-bottom: 4px !important;
+  margin-bottom: 0 !important;
+  min-width: 0;
 }
 
 .cmt .actions {
-  margin-top: 2px;
+  margin-top: 0;
   margin-bottom: 0;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.cmt .actions :deep(.v-btn),
+.menu-btn {
+  --v-btn-bg: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+.cmt .actions :deep(.v-btn__overlay),
+.cmt .actions :deep(.v-btn__underlay),
+.menu-btn :deep(.v-btn__overlay),
+.menu-btn :deep(.v-btn__underlay) {
+  background: transparent !important;
+}
+
+.content-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.content-row .body {
+  flex: 1 1 auto;
 }
 
 .reply-meta {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+}
+
+.reply-btn,
+.menu-btn {
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+.reply-btn:hover,
+.menu-btn:hover {
+  color: rgba(241, 245, 249, 0.98) !important;
 }
 
 .cmt .body .text-caption.text-medium-emphasis {
@@ -316,6 +397,30 @@ function onProfileClick() {
 
 .cmt-meta {
   color: var(--mf-cmt-meta) !important;
+}
+
+.cmt-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.cmt-identity {
+  min-width: 0;
+}
+
+.cmt-date::before {
+  content: "• ";
+}
+
+.cmt-translated::before {
+  content: "• ";
+}
+
+.cmt-translated {
+  font-style: italic;
 }
 
 .cmt-body {
@@ -340,6 +445,44 @@ function onProfileClick() {
 
 .cmt-name:hover {
   text-decoration: underline;
+}
+
+.cmt-avatar-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.cmt-avatar-flag {
+  position: absolute;
+  right: -6px;
+  top: -1px;
+  font-size: 1.02rem;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(2, 6, 23, 0.75);
+  z-index: 2;
+}
+
+.cmt-avatar-gender {
+  position: absolute;
+  left: -7px;
+  bottom: -6px;
+  background: transparent;
+  border-radius: 999px;
+  padding: 2px;
+  color: #9ca3af;
+  z-index: 2;
+}
+
+.cmt-avatar-gender.is-male {
+  color: #2563eb;
+}
+
+.cmt-avatar-gender.is-female {
+  color: #ec4899;
+}
+
+.cmt-avatar-gender.is-other {
+  color: #7c3aed;
 }
 
 .cmt-avatar-btn {
@@ -383,6 +526,29 @@ function onProfileClick() {
   .cmt-inner.has-avatar .body,
   .cmt-inner.has-avatar .actions {
     padding-left: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .content-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .cmt .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .cmt-meta-row { row-gap: 2px; }
+
+  .cmt-date::before {
+    content: "";
+  }
+
+  .cmt-translated::before {
+    content: "";
   }
 }
 </style>

@@ -3,6 +3,13 @@
     <div class="mood-thread__header" v-if="promptText || hasExtras">
       <div class="mood-thread__question">
         {{ promptText }}
+        <NuxtLink
+          v-if="promptRelatedHref"
+          :to="promptRelatedHref"
+          class="mood-thread__related"
+        >
+          [Related]
+        </NuxtLink>
       </div>
       <v-spacer />
       <v-btn
@@ -102,11 +109,17 @@ const emit = defineEmits([
 ]);
 
 const { locale, t } = useI18n();
+const localPath = useLocalePath();
 const emptyText = computed(
   () => props.emptyText || t("pages.feeds.emptyReplies", "No replies yet.")
 );
 
 const promptText = computed(() => props.thread.promptText || "");
+const promptRelatedHref = computed(() => {
+  const slug = String(props.thread?.relatedArticleSlug || "").trim();
+  if (!slug) return null;
+  return localPath(`/articles/${slug}`);
+});
 
 const entryMessages = computed(() =>
   (props.thread.entries || []).map((entry) => {
@@ -136,6 +149,14 @@ const entryMessages = computed(() =>
         entry.profile?.avatar_url ||
         entry.authorAvatarUrl ||
         (entry.authorIsAnonymous ? "/images/avatars/guest-avatar.webp" : null),
+      countryEmoji:
+        entry.profile?.country_emoji ||
+        entry.authorCountryEmoji ||
+        "",
+      genderId:
+        entry.profile?.gender_id ??
+        entry.authorGenderId ??
+        null,
       voteTarget: "entry",
     };
   })
@@ -177,6 +198,14 @@ const replyMessages = computed(() => {
           reply.profile?.avatar_url ||
           reply.authorAvatarUrl ||
           (reply.authorIsAnonymous ? "/images/avatars/guest-avatar.webp" : null),
+        countryEmoji:
+          reply.profile?.country_emoji ||
+          reply.authorCountryEmoji ||
+          "",
+        genderId:
+          reply.profile?.gender_id ??
+          reply.authorGenderId ??
+          null,
         voteTarget: "reply",
       });
     }
@@ -317,6 +346,18 @@ function handleVote(payload) {
   line-height: 1.4;
   color: var(--mf-thread-question);
   letter-spacing: 0.012em;
+}
+
+.mood-thread__related {
+  margin-left: 8px;
+  font-size: 0.8em;
+  font-weight: 600;
+  color: color-mix(in oklab, var(--mf-thread-question) 80%, #93c5fd 20%);
+  text-decoration: underline;
+}
+
+.mood-thread__related:hover {
+  color: #bfdbfe;
 }
 
 .thread-toggle {

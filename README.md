@@ -99,6 +99,22 @@ Contributions are always welcome!
 To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
 This document also includes guidelines for reporting bugs.
 
+## :clipboard: Tracking Work (Todos and Change Requests)
+To keep work portable across machines, track tasks directly in the repo:
+
+- `docs/TODO.md` for small, code-level tasks.
+- `docs/CHANGE_REQUESTS.md` for larger product or cross-cutting requests.
+- GitHub Issues for discussion-heavy items:
+  - Bug report: `.github/ISSUE_TEMPLATE/bug_report.md`
+  - Change request: `.github/ISSUE_TEMPLATE/change_request.md`
+  - Tech debt: `.github/ISSUE_TEMPLATE/tech_debt.md`
+
+Recommended flow:
+1. Capture quickly in `docs/TODO.md` or `docs/CHANGE_REQUESTS.md`.
+2. Open a GitHub issue when collaboration or design discussion is needed.
+3. Link issue IDs next to markdown items.
+4. Move completed items to each file's `Done` section with a date.
+
 <!-- License -->
 ## :warning: License
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.

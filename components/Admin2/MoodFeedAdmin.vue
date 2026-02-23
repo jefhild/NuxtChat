@@ -46,6 +46,7 @@
           <tr>
             <th>Key</th>
             <th>Prompt ({{ locale.toUpperCase() }})</th>
+            <th>Related</th>
             <th>Active</th>
             <th>Updated</th>
             <th>Actions</th>
@@ -56,6 +57,12 @@
             <td>{{ prompt.prompt_key }}</td>
             <td class="prompt-text">
               {{ prompt.prompt_text || "—" }}
+            </td>
+            <td class="prompt-text">
+              <span v-if="prompt.related_article_slug">
+                /articles/{{ prompt.related_article_slug }}
+              </span>
+              <span v-else>—</span>
             </td>
             <td>
               <v-switch
@@ -233,6 +240,16 @@
           rows="2"
           hide-details
         />
+        <v-select
+          v-model="dialog.form.related_article_slug"
+          class="mt-3"
+          label="Related Article (optional)"
+          :items="articleOptions"
+          item-title="label"
+          item-value="slug"
+          clearable
+          hide-details
+        />
         <div class="d-flex align-center mt-3">
           <v-switch
             v-model="dialog.form.is_active"
@@ -268,6 +285,7 @@ const moderationLoading = ref(true);
 const pendingEntries = ref([]);
 const pendingReplies = ref([]);
 const promptSaveError = ref("");
+const articleOptions = ref([]);
 
 const dialog = reactive({
   open: false,
@@ -276,6 +294,7 @@ const dialog = reactive({
     id: null,
     prompt_key: "",
     prompt_text: "",
+    related_article_slug: null,
     is_active: true,
   },
 });
@@ -327,8 +346,19 @@ const loadPrompts = async () => {
   }
 };
 
+const loadArticleOptions = async () => {
+  try {
+    const res = await $fetch("/api/admin/mood-feed/article-options");
+    articleOptions.value = res?.items || [];
+  } catch (error) {
+    console.error("[admin][mood-feed] article options load error", error);
+    articleOptions.value = [];
+  }
+};
+
 onMounted(loadPrompts);
 onMounted(loadSettings);
+onMounted(loadArticleOptions);
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -341,6 +371,7 @@ const openCreate = () => {
     id: null,
     prompt_key: "",
     prompt_text: "",
+    related_article_slug: null,
     is_active: true,
   };
   dialog.open = true;
@@ -352,6 +383,7 @@ const openEdit = (prompt) => {
     id: prompt.id,
     prompt_key: prompt.prompt_key,
     prompt_text: prompt.prompt_text || "",
+    related_article_slug: prompt.related_article_slug || null,
     is_active: !!prompt.is_active,
   };
   dialog.open = true;
@@ -372,6 +404,7 @@ const saveDialog = async () => {
         body: {
           prompt_key: dialog.form.prompt_key.trim(),
           prompt_text: dialog.form.prompt_text.trim(),
+          related_article_slug: dialog.form.related_article_slug || null,
           is_active: dialog.form.is_active,
           locale: locale.value,
           translate_all: true,
@@ -383,6 +416,7 @@ const saveDialog = async () => {
         body: {
           prompt_key: dialog.form.prompt_key.trim(),
           prompt_text: dialog.form.prompt_text.trim(),
+          related_article_slug: dialog.form.related_article_slug || null,
           is_active: dialog.form.is_active,
           locale: locale.value,
           translate_all: true,
@@ -454,6 +488,7 @@ const toggleActive = async (prompt, value) => {
       body: {
         prompt_key: prompt.prompt_key,
         prompt_text: prompt.prompt_text || "",
+        related_article_slug: prompt.related_article_slug || null,
         is_active: !!value,
         locale: locale.value,
         translate_all: false,

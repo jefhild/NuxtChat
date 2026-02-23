@@ -15,8 +15,15 @@
           <span v-if="promptLoading">
             {{ t("pages.feeds.promptLoading", "Loading question...") }}
           </span>
-          <span v-else>
+          <span v-else class="prompt-text-inline">
             {{ promptText || t("pages.feeds.promptFallback", "Share what's on your mind.") }}
+            <NuxtLink
+              v-if="promptRelatedHref"
+              :to="promptRelatedHref"
+              class="prompt-related-link"
+            >
+              [Related]
+            </NuxtLink>
           </span>
         </div>
         <v-text-field
@@ -249,6 +256,7 @@ const loginNoticeAction = computed(() =>
 );
 const promptText = ref("");
 const promptKey = ref(null);
+const promptRelatedArticleSlug = ref(null);
 const promptLoading = ref(false);
 const promptReqId = ref(0);
 const promptAnswer = ref("");
@@ -311,6 +319,11 @@ const cooldownLabel = computed(() =>
 const promptSubmitDisabled = computed(
   () => submitBusy.value || !promptAnswer.value.trim() || cooldownActive.value
 );
+const promptRelatedHref = computed(() => {
+  const slug = String(promptRelatedArticleSlug.value || "").trim();
+  if (!slug) return null;
+  return localPath(`/articles/${slug}`);
+});
 
 async function loadEntries() {
   loading.value = true;
@@ -336,10 +349,12 @@ async function loadPrompt() {
     if (reqId !== promptReqId.value) return;
     promptText.value = res?.promptText || "";
     promptKey.value = res?.promptKey || null;
+    promptRelatedArticleSlug.value = res?.relatedArticleSlug || null;
   } catch {
     if (reqId !== promptReqId.value) return;
     promptText.value = "";
     promptKey.value = null;
+    promptRelatedArticleSlug.value = null;
   } finally {
     if (reqId === promptReqId.value) {
       promptLoading.value = false;
@@ -632,6 +647,8 @@ async function submitReply({ entryId, text, replyToId }) {
     const authorAvatarUrl =
       profile?.avatar_url ||
       (auth.user?.is_anonymous ? "/images/avatars/guest-avatar.webp" : null);
+    const authorCountryEmoji = profile?.country_emoji || "";
+    const authorGenderId = profile?.gender_id ?? null;
     threads.value = threads.value.map((thread) => {
       const entries = (thread.entries || []).map((entry) => {
         if (entry.id !== entryId) return entry;
@@ -647,6 +664,8 @@ async function submitReply({ entryId, text, replyToId }) {
           profile,
           authorDisplayname,
           authorAvatarUrl,
+          authorCountryEmoji,
+          authorGenderId,
           score: 0,
           upvotes: 0,
           downvotes: 0,
@@ -882,6 +901,21 @@ if (import.meta.client) {
   color: var(--mf-panel-text);
   letter-spacing: 0.012em;
   line-height: 1.35;
+}
+
+.prompt-text-inline {
+  display: inline;
+}
+
+.prompt-related-link {
+  margin-left: 8px;
+  font-size: 0.88em;
+  color: color-mix(in oklab, var(--mf-panel-text) 80%, #93c5fd 20%);
+  text-decoration: underline;
+}
+
+.prompt-related-link:hover {
+  color: #bfdbfe;
 }
 
 .prompt-input {

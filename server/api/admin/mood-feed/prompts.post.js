@@ -60,6 +60,7 @@ export default defineEventHandler(async (event) => {
     const body = (await readBody(event)) || {};
     const promptKey = String(body.prompt_key || "").trim();
     const promptText = String(body.prompt_text || "").trim();
+    const relatedArticleSlug = String(body.related_article_slug || "").trim();
     const isActive =
       typeof body.is_active === "boolean" ? body.is_active : true;
     const locale = normalizeLocale(body.locale || "en") || "en";
@@ -80,11 +81,31 @@ export default defineEventHandler(async (event) => {
     );
     if (adminError) return adminError;
 
-    const { data: prompt, error: promptErr } = await supa
+    let { data: prompt, error: promptErr } = await supa
       .from("mood_feed_prompts")
-      .insert({ prompt_key: promptKey, is_active: isActive })
+      .insert({
+        prompt_key: promptKey,
+        related_article_slug: relatedArticleSlug || null,
+        is_active: isActive,
+      })
       .select("id, prompt_key")
       .single();
+
+    if (
+      promptErr &&
+      String(promptErr?.message || "").includes("related_article_slug")
+    ) {
+      const fallback = await supa
+        .from("mood_feed_prompts")
+        .insert({
+          prompt_key: promptKey,
+          is_active: isActive,
+        })
+        .select("id, prompt_key")
+        .single();
+      prompt = fallback.data;
+      promptErr = fallback.error;
+    }
 
     if (promptErr) {
       console.error("[admin/mood-feed.prompts] insert error:", promptErr);

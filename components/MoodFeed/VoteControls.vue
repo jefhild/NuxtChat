@@ -1,8 +1,9 @@
 <template>
-  <div class="d-flex align-center ga-1 text-disabled">
+  <div class="vote-controls d-flex align-center ga-1">
     <v-btn
+      class="vote-btn"
       icon
-      variant="text"
+      variant="plain"
       density="comfortable"
       :disabled="disabled || !canVote"
       :color="currentVote === 1 ? 'primary' : undefined"
@@ -14,8 +15,9 @@
     <span class="text-caption">{{ formatCount(currentScore) }}</span>
 
     <v-btn
+      class="vote-btn"
       icon
-      variant="text"
+      variant="plain"
       density="comfortable"
       :disabled="disabled || !canVote"
       :color="currentVote === -1 ? 'primary' : undefined"
@@ -93,3 +95,26 @@ async function handleVote(value) {
   }
 }
 </script>
+
+<style scoped>
+.vote-controls {
+  background: transparent !important;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.vote-controls :deep(.v-btn),
+.vote-controls :deep(.v-btn__overlay),
+.vote-controls :deep(.v-btn__underlay) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.vote-controls :deep(.vote-btn) {
+  --v-btn-bg: transparent !important;
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+.vote-controls :deep(.vote-btn:hover) {
+  color: rgba(241, 245, 249, 0.98) !important;
+}
+</style>

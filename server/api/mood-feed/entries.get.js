@@ -58,16 +58,35 @@ export default defineEventHandler(async (event) => {
   );
 
   const promptTranslations = promptKeys.length
-    ? await supabase
-        .from("mood_feed_prompts")
-        .select(
-          [
-            "id",
-            "prompt_key",
-            "mood_feed_prompt_translations (locale, prompt_text, source_locale)",
-          ].join(",")
-        )
-        .in("prompt_key", promptKeys)
+    ? await (async () => {
+        let result = await supabase
+          .from("mood_feed_prompts")
+          .select(
+            [
+              "id",
+              "prompt_key",
+              "related_article_slug",
+              "mood_feed_prompt_translations (locale, prompt_text, source_locale)",
+            ].join(",")
+          )
+          .in("prompt_key", promptKeys);
+        if (
+          result?.error &&
+          String(result.error?.message || "").includes("related_article_slug")
+        ) {
+          result = await supabase
+            .from("mood_feed_prompts")
+            .select(
+              [
+                "id",
+                "prompt_key",
+                "mood_feed_prompt_translations (locale, prompt_text, source_locale)",
+              ].join(",")
+            )
+            .in("prompt_key", promptKeys);
+        }
+        return result;
+      })()
     : { data: [] };
   if (promptTranslations?.error) {
     throw createError({
@@ -133,7 +152,9 @@ export default defineEventHandler(async (event) => {
             "user_id",
             "displayname",
             "gender_id",
+            "country_id",
             "avatar_url",
+            "countries:country_id (emoji)",
             "profile_translations (locale, displayname, bio, tagline, source_locale)",
           ].join(",")
         )
@@ -146,7 +167,11 @@ export default defineEventHandler(async (event) => {
     });
   }
   const profileMap = new Map(
-    (profilesRes.data || []).map((p) => [p.user_id, p])
+    (profilesRes.data || []).map((p) => {
+      const countryEmoji =
+        p?.country_emoji || p?.countries?.emoji || "";
+      return [p.user_id, { ...p, country_emoji: countryEmoji }];
+    })
   );
 
   const translationByEntry = new Map();
@@ -251,24 +276,36 @@ export default defineEventHandler(async (event) => {
     };
   };
 
-  const promptTextMap = new Map();
+  const promptMetaMap = new Map();
   for (const prompt of promptTranslations.data || []) {
     const rows = prompt.mood_feed_prompt_translations || [];
     if (!rows.length) {
-      promptTextMap.set(prompt.prompt_key, prompt.prompt_key);
+      promptMetaMap.set(prompt.prompt_key, {
+        promptText: prompt.prompt_key,
+        relatedArticleSlug: prompt.related_article_slug || null,
+      });
       continue;
     }
     const exact = rows.find((r) => r.locale === locale);
     if (exact) {
-      promptTextMap.set(prompt.prompt_key, exact.prompt_text);
+      promptMetaMap.set(prompt.prompt_key, {
+        promptText: exact.prompt_text,
+        relatedArticleSlug: prompt.related_article_slug || null,
+      });
       continue;
     }
     const fallback = rows.find((r) => r.locale === "en");
     if (fallback) {
-      promptTextMap.set(prompt.prompt_key, fallback.prompt_text);
+      promptMetaMap.set(prompt.prompt_key, {
+        promptText: fallback.prompt_text,
+        relatedArticleSlug: prompt.related_article_slug || null,
+      });
       continue;
     }
-    promptTextMap.set(prompt.prompt_key, rows[0]?.prompt_text || "");
+    promptMetaMap.set(prompt.prompt_key, {
+      promptText: rows[0]?.prompt_text || "",
+      relatedArticleSlug: prompt.related_article_slug || null,
+    });
   }
 
   const items = entries.map((entry) => {
@@ -326,13 +363,18 @@ export default defineEventHandler(async (event) => {
     const groupKey = entry.promptKey || "freeform";
     if (!groups.has(groupKey)) {
       const promptText =
-        entry.promptKey && promptTextMap.get(entry.promptKey)
-          ? promptTextMap.get(entry.promptKey)
+        entry.promptKey && promptMetaMap.get(entry.promptKey)?.promptText
+          ? promptMetaMap.get(entry.promptKey).promptText
           : entry.promptText || "Mood Feed";
+      const relatedArticleSlug =
+        entry.promptKey && promptMetaMap.get(entry.promptKey)?.relatedArticleSlug
+          ? promptMetaMap.get(entry.promptKey).relatedArticleSlug
+          : null;
       groups.set(groupKey, {
         id: groupKey,
         promptKey: entry.promptKey || null,
         promptText,
+        relatedArticleSlug,
         entries: [],
       });
     }

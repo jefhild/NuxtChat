@@ -66,6 +66,13 @@ export default defineEventHandler(async (event) => {
     const body = (await readBody(event)) || {};
     const promptKey = String(body.prompt_key || "").trim();
     const promptText = String(body.prompt_text || "").trim();
+    const hasRelatedArticleSlug = Object.prototype.hasOwnProperty.call(
+      body,
+      "related_article_slug"
+    );
+    const relatedArticleSlug = hasRelatedArticleSlug
+      ? String(body.related_article_slug || "").trim()
+      : null;
     const isActive =
       typeof body.is_active === "boolean" ? body.is_active : null;
     const locale = normalizeLocale(body.locale || "en") || "en";
@@ -81,17 +88,34 @@ export default defineEventHandler(async (event) => {
     );
     if (adminError) return adminError;
 
-    if (promptKey || typeof isActive === "boolean") {
+    if (promptKey || typeof isActive === "boolean" || hasRelatedArticleSlug) {
       const update = {
         updated_at: new Date().toISOString(),
       };
       if (promptKey) update.prompt_key = promptKey;
       if (typeof isActive === "boolean") update.is_active = isActive;
+      if (hasRelatedArticleSlug) {
+        update.related_article_slug = relatedArticleSlug || null;
+      }
 
-      const { error: updateErr } = await supa
+      let { error: updateErr } = await supa
         .from("mood_feed_prompts")
         .update(update)
         .eq("id", promptId);
+
+      if (
+        updateErr &&
+        hasRelatedArticleSlug &&
+        String(updateErr?.message || "").includes("related_article_slug")
+      ) {
+        const fallbackUpdate = { ...update };
+        delete fallbackUpdate.related_article_slug;
+        const fallback = await supa
+          .from("mood_feed_prompts")
+          .update(fallbackUpdate)
+          .eq("id", promptId);
+        updateErr = fallback.error;
+      }
 
       if (updateErr) {
         console.error("[admin/mood-feed.prompts] update error:", updateErr);
