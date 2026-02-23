@@ -63,7 +63,12 @@
         <v-row v-if="photos.length" dense class="mt-4">
           <v-col v-for="photo in photos" :key="photo.id" cols="6" sm="4" md="3">
             <v-card variant="outlined" class="photo-card">
-              <v-img :src="photo.url || photo.public_url" aspect-ratio="4/3" cover />
+              <v-img
+                :src="photo.url || photo.public_url"
+                aspect-ratio="4/3"
+                contain
+                class="photo-card-image"
+              />
               <div class="d-flex align-center justify-space-between pa-2">
                 <v-chip
                   size="x-small"
@@ -255,5 +260,9 @@ onMounted(loadPhotos);
 
 .photo-card {
   overflow: hidden;
+}
+
+.photo-card-image {
+  background: #0f172a;
 }
 </style>

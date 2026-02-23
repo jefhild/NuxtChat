@@ -42,11 +42,13 @@
             class="photo-library-hero-skeleton"
           />
           <template v-else>
-            <v-img
+            <NuxtImg
               v-if="heroPhoto"
               :src="heroPhoto"
               class="photo-library-hero-image"
-              cover
+              :style="heroPhotoStyle"
+              alt="Photo library hero"
+              @load="onHeroPhotoLoad"
             />
             <div v-else class="photo-library-hero-placeholder">
               <v-icon size="40" color="grey-lighten-2">mdi-image-multiple</v-icon>
@@ -173,6 +175,7 @@ const photoSlots = computed(() => {
 
 const thumbsRef = ref(null);
 const heroIndex = ref(0);
+const heroPhotoRatio = ref(1);
 
 const heroPhoto = computed(() => {
   const items = Array.isArray(props.photoLibraryPhotos)
@@ -182,6 +185,10 @@ const heroPhoto = computed(() => {
   const item = items[heroIndex.value % items.length];
   return item?.url || item?.public_url || "";
 });
+const heroPhotoStyle = computed(() => ({
+  objectFit: heroPhotoRatio.value <= 1.2 ? "contain" : "cover",
+  objectPosition: "50% 35%",
+}));
 
 const setHeroFromIndex = (idx) => {
   if (props.photoLibraryDisabled) return;
@@ -190,6 +197,13 @@ const setHeroFromIndex = (idx) => {
     : [];
   if (!items[idx]) return;
   heroIndex.value = idx;
+};
+
+const onHeroPhotoLoad = (event) => {
+  const image = event.target;
+  const width = Number(image?.naturalWidth || 0);
+  const height = Number(image?.naturalHeight || 0);
+  heroPhotoRatio.value = width && height ? width / height : 1;
 };
 
 const scrollThumbs = (direction) => {
@@ -208,6 +222,7 @@ watch(
   (next) => {
     const items = Array.isArray(next) ? next : [];
     heroIndex.value = items.length ? Math.floor(Math.random() * items.length) : 0;
+    heroPhotoRatio.value = 1;
   },
   { immediate: true }
 );

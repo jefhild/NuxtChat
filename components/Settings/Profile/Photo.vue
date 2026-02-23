@@ -7,7 +7,9 @@
             v-if="heroImage"
             :src="heroImage"
             class="photo-hero-image"
+            :style="heroImageStyle"
             alt="Profile Image"
+            @load="onHeroImageLoad"
           />
           <div v-else class="photo-hero-placeholder">
             <v-icon size="40" color="grey-lighten-2">mdi-account</v-icon>
@@ -42,6 +44,36 @@
                   @click="triggerFilePicker"
                 >
                   <v-icon size="14">mdi-upload</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+            <v-tooltip text="Move image up" location="bottom">
+              <template #activator="{ props: tooltipProps }">
+                <v-btn
+                  v-bind="tooltipProps"
+                  icon
+                  size="x-small"
+                  variant="tonal"
+                  class="photo-control-btn"
+                  :disabled="heroObjectFit === 'contain'"
+                  @click="nudgeHeroFocalY(-8)"
+                >
+                  <v-icon size="14">mdi-arrow-up</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+            <v-tooltip text="Move image down" location="bottom">
+              <template #activator="{ props: tooltipProps }">
+                <v-btn
+                  v-bind="tooltipProps"
+                  icon
+                  size="x-small"
+                  variant="tonal"
+                  class="photo-control-btn"
+                  :disabled="heroObjectFit === 'contain'"
+                  @click="nudgeHeroFocalY(8)"
+                >
+                  <v-icon size="14">mdi-arrow-down</v-icon>
                 </v-btn>
               </template>
             </v-tooltip>
@@ -176,6 +208,9 @@ const previewAvatar = computed(() => {
 });
 const thumbsRef = ref<HTMLElement | null>(null);
 const selectedImage = ref("");
+const heroAspectRatio = ref(1);
+const heroFocalY = ref(35);
+const HERO_DEFAULT_FOCAL_Y = 35;
 
 const normalizedLibraryPhotos = computed(() =>
   (Array.isArray(props.photoLibraryPhotos) ? props.photoLibraryPhotos : [])
@@ -203,6 +238,58 @@ const heroImage = computed(() => {
   if (genderAvatarOptions.value.length) return genderAvatarOptions.value[0];
   return normalizedLibraryPhotos.value[0] || "";
 });
+const heroObjectFit = computed(() =>
+  heroAspectRatio.value <= 1.2 ? "contain" : "cover"
+);
+const heroImageStyle = computed(() => ({
+  objectFit: heroObjectFit.value,
+  objectPosition: `50% ${heroFocalY.value}%`,
+}));
+
+const getHeroFocusStorageKey = (url: string) =>
+  `nuxtchat:hero-focus:${props.userId}:${url}`;
+
+const loadHeroFocalY = (url: string) => {
+  heroFocalY.value = HERO_DEFAULT_FOCAL_Y;
+  if (!import.meta.client || !url) return;
+  try {
+    const rawValue = window.localStorage.getItem(getHeroFocusStorageKey(url));
+    const parsed = Number(rawValue);
+    if (Number.isFinite(parsed)) {
+      heroFocalY.value = Math.min(90, Math.max(10, parsed));
+    }
+  } catch (err) {
+    console.warn("[settings] failed to load image focus:", err);
+  }
+};
+
+const persistHeroFocalY = () => {
+  if (!import.meta.client || !heroImage.value) return;
+  try {
+    window.localStorage.setItem(
+      getHeroFocusStorageKey(heroImage.value),
+      String(heroFocalY.value)
+    );
+  } catch (err) {
+    console.warn("[settings] failed to persist image focus:", err);
+  }
+};
+
+const nudgeHeroFocalY = (delta: number) => {
+  heroFocalY.value = Math.min(90, Math.max(10, heroFocalY.value + delta));
+  persistHeroFocalY();
+};
+
+const onHeroImageLoad = (event: Event) => {
+  const image = event.target as HTMLImageElement | null;
+  const width = Number(image?.naturalWidth || 0);
+  const height = Number(image?.naturalHeight || 0);
+  if (!width || !height) {
+    heroAspectRatio.value = 1;
+    return;
+  }
+  heroAspectRatio.value = width / height;
+};
 
 const hasCarousel = computed(() => photoSlots.value.some((slot) => !!slot));
 
@@ -257,6 +344,15 @@ watch(
   () => {
     selectedImage.value = "";
   }
+);
+
+watch(
+  () => heroImage.value,
+  (url) => {
+    heroAspectRatio.value = 1;
+    loadHeroFocalY(url || "");
+  },
+  { immediate: true }
 );
 
 watch(
