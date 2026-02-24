@@ -587,7 +587,10 @@ const saveChanges = async () => {
       editableProfile.value.avatar_url,
       editableProfile.value.site_url,
       editableProfile.value.preferred_locale,
-      editableProfile.value.is_private
+      editableProfile.value.is_private,
+      undefined,
+      undefined,
+      editableProfile.value.profile_card_theme
     );
     console.info("Profile updated successfully.");
     isEditable.value = false;

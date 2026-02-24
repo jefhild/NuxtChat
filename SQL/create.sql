@@ -164,6 +164,7 @@ CREATE TABLE public.profiles (
   force_online BOOLEAN NULL DEFAULT false,
   is_simulated BOOLEAN NULL DEFAULT false,
   preferred_locale TEXT NULL DEFAULT 'en',
+  profile_card_theme TEXT NULL DEFAULT 'trading',
   avatar_decoration_url TEXT NULL,
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT unique_user_id UNIQUE (user_id),

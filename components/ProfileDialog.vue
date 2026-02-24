@@ -15,6 +15,7 @@
       :photo-gallery-count="photoGalleryCount"
       :gallery-blurred="!canViewGallery"
       @likePhoto="handlePhotoVote"
+      @chat-now="isOpen = false"
     >
       <template #overlay>
         <v-btn

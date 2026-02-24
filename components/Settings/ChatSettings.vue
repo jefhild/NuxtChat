@@ -1,5 +1,6 @@
 <template>
-  <v-card class="mx-auto" flat>
+  <div>
+    <v-card class="mx-auto" flat>
     <v-card-text>
       <div class="text-subtitle-1 font-weight-medium mb-2">
         {{ t("components.chat-settings.title", "Site Settings") }}
@@ -31,7 +32,7 @@
             mandatory
             variant="outlined"
             color="primary"
-            @update:modelValue="setThemeMode"
+            @update:model-value="setThemeMode"
           >
             <v-btn value="system" size="small">
               {{ t("components.chat-settings.theme-system", "System") }}
@@ -59,6 +60,34 @@
           </v-tooltip>
         </div>
 
+        <div class="d-flex align-center flex-wrap mt-4">
+          <div class="text-body-2 font-weight-medium mr-3">
+            {{ t("components.chat-settings.profile-card-theme", "Profile card theme") }}
+          </div>
+          <v-select
+            v-model="cardThemeSelection"
+            :items="cardThemeOptions"
+            item-title="label"
+            item-value="value"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="profile-card-theme-select"
+            :disabled="saving || loading || !profile"
+            @update:model-value="saveProfileCardTheme"
+          />
+          <v-btn
+            class="ml-2"
+            size="small"
+            variant="outlined"
+            prepend-icon="mdi-eye-outline"
+            :disabled="loading || !profile"
+            @click="previewOpen = true"
+          >
+            {{ t("components.chat-settings.preview", "Preview") }}
+          </v-btn>
+        </div>
+
         <div class="d-flex align-center">
           <v-switch
             inset
@@ -66,7 +95,7 @@
             :disabled="saving || loading || !profile"
             :model-value="moodFeedPromptEnabled"
             :label="t('components.chat-settings.mood-question', 'Daily mood question')"
-            @update:modelValue="toggleMoodFeed"
+            @update:model-value="toggleMoodFeed"
           />
           <v-tooltip
             :text="t('components.chat-settings.mood-question-helper', 'Let ImChatty ask you a daily mood question in chat.')"
@@ -105,7 +134,7 @@
             :disabled="saving || loading || !profile"
             :model-value="profilePrivate"
             :label="t('components.profile-language.private_label')"
-            @update:modelValue="toggleProfilePrivacy"
+            @update:model-value="toggleProfilePrivacy"
           />
           <v-tooltip
             :text="t('components.profile-language.private_helper')"
@@ -124,7 +153,31 @@
         </div>
       </div>
     </v-card-text>
-  </v-card>
+    </v-card>
+
+    <v-dialog v-model="previewOpen" max-width="920" width="92vw">
+      <ProfileCard
+        v-if="previewProfile"
+        :profile="previewProfile"
+        :theme-override="cardThemeSelection"
+        :gallery-blurred="true"
+        :photo-gallery-count="3"
+        :photo-gallery-photos="[]"
+        @chat-now="previewOpen = false"
+      >
+        <template #overlay>
+          <v-btn
+            icon="mdi-close"
+            size="small"
+            variant="text"
+            aria-label="Close profile preview"
+            class="profile-preview-close"
+            @click="previewOpen = false"
+          />
+        </template>
+      </ProfileCard>
+    </v-dialog>
+  </div>
 </template>
 
 <script setup>
@@ -133,6 +186,7 @@ import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/authStore1";
 import { useDb } from "@/composables/useDB";
 import { useTheme } from "vuetify";
+import ProfileCard from "@/components/ProfileCard.vue";
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -147,8 +201,34 @@ const loading = ref(true);
 const saving = ref(false);
 const profile = ref(null);
 const themeMode = ref("system");
+const previewOpen = ref(false);
+const cardThemeSelection = ref("trading");
 const isAuthenticated = computed(() => authStore.authStatus === "authenticated");
 const profilePrivate = computed(() => Boolean(profile.value?.is_private));
+const cardThemeOptions = computed(() => [
+  {
+    value: "trading",
+    label: t("components.chat-settings.profile-card-theme-trading", "Trading Card"),
+  },
+  {
+    value: "vintage",
+    label: t("components.chat-settings.profile-card-theme-vintage", "Vintage Collector"),
+  },
+  {
+    value: "holo",
+    label: t("components.chat-settings.profile-card-theme-holo", "Holographic Neon"),
+  },
+]);
+const previewProfile = computed(() => {
+  if (!profile.value) return null;
+  return {
+    ...profile.value,
+    profile_card_theme: cardThemeSelection.value || "trading",
+    looking_for: Array.isArray(profile.value.looking_for)
+      ? profile.value.looking_for
+      : ["Love"],
+  };
+});
 
 const normalizeTheme = (value) =>
   value === "dark" || value === "light" || value === "system"
@@ -228,11 +308,21 @@ const loadProfile = async () => {
     if (profile.value?.mood_feed_prompt_snooze_until === undefined) {
       profile.value.mood_feed_prompt_snooze_until = null;
     }
+    if (!profile.value?.profile_card_theme) {
+      profile.value.profile_card_theme = "trading";
+    }
+    cardThemeSelection.value = profile.value.profile_card_theme;
   } catch (err) {
     console.warn("[chat-settings] load profile failed:", err);
   } finally {
     loading.value = false;
   }
+};
+
+const normalizeCardTheme = (value) => {
+  const key = String(value || "").trim().toLowerCase();
+  if (["trading", "vintage", "holo"].includes(key)) return key;
+  return "trading";
 };
 
 const savePrefs = async (nextEnabled, nextSnoozeUntil) => {
@@ -312,6 +402,45 @@ const toggleProfilePrivacy = async (val) => {
   }
 };
 
+const saveProfileCardTheme = async (themeValue) => {
+  if (!profile.value?.user_id) return;
+  const normalizedTheme = normalizeCardTheme(themeValue);
+  cardThemeSelection.value = normalizedTheme;
+  if (profile.value.profile_card_theme === normalizedTheme) return;
+
+  saving.value = true;
+  try {
+    await updateProfile(
+      profile.value.user_id,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      normalizedTheme
+    );
+    profile.value.profile_card_theme = normalizedTheme;
+    if (authStore.userProfile) {
+      authStore.userProfile.profile_card_theme = normalizedTheme;
+    }
+  } catch (err) {
+    console.error("[chat-settings] profile card theme save failed:", err);
+    cardThemeSelection.value = profile.value.profile_card_theme || "trading";
+  } finally {
+    saving.value = false;
+  }
+};
+
 onMounted(async () => {
   await loadProfile();
   const initialMode = normalizeTheme(themeCookie.value);
@@ -326,3 +455,17 @@ watch(
   }
 );
 </script>
+
+<style scoped>
+.profile-card-theme-select {
+  min-width: 220px;
+  max-width: 300px;
+}
+
+.profile-preview-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+}
+</style>

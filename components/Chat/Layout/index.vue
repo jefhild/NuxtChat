@@ -2367,6 +2367,14 @@ const selectedUser = computed(() => {
 });
 
 const selectedUserPresence = computed(() => {
+  if (isSelfSelected.value) {
+    const selfKey = String(meId.value ?? "")
+      .trim()
+      .toLowerCase();
+    if (selfKey && realtimeIds.value.includes(selfKey)) {
+      return "online";
+    }
+  }
   const presence = selectedUser.value?.presence;
   if (presence === "online" || presence === "away" || presence === "offline") {
     return presence;
@@ -2561,7 +2569,7 @@ function startProfilesRealtime() {
 // ———————————————————————————————————————————
 // URL-driven selection (?userId|id, ?userSlug|slug, or ?imchatty)
 // ———————————————————————————————————————————
-const selectedFromRouteOnce = ref(false);
+const lastAppliedRouteSelectionKey = ref(null);
 
 function normStr(v) {
   if (v == null) return null;
@@ -2588,14 +2596,15 @@ function findUserByIdOrSlug({ id, slug }) {
 }
 
 async function trySelectFromRoute() {
-  if (selectedFromRouteOnce.value) return; // don’t override a manual selection
-
   const q = route.query;
   const id = normStr(q.userId ?? q.id);
   const slug = normStr(q.userslug ?? q.slug);
   const wantsImChatty =
     Object.prototype.hasOwnProperty.call(q, "imchatty") ||
     normStr(q.imchatty) === "true";
+  const selectionKey = [id || "", slug || "", wantsImChatty ? "1" : "0"].join("|");
+  if (!id && !slug && !wantsImChatty) return;
+  if (selectionKey === lastAppliedRouteSelectionKey.value) return;
 
   let target = null;
   if (id || slug) {
@@ -2606,7 +2615,7 @@ async function trySelectFromRoute() {
 
   if (target) {
     chat.setSelectedUser(target);
-    selectedFromRouteOnce.value = true;
+    lastAppliedRouteSelectionKey.value = selectionKey;
   }
 }
 
@@ -2658,6 +2667,7 @@ watch(
   () => [
     route.query.userId,
     route.query.id,
+    route.query.userslug,
     route.query.userSlug,
     route.query.slug,
     route.query.imchatty,

@@ -83,14 +83,6 @@ export function useUserProfile() {
       );
 
     const data = await getUserProfileFromSlug(slug);
-    if (process.dev) {
-      const preview = Array.isArray(data) ? data[0] : data;
-      console.log("[useUserProfile] slug fetch", {
-        slug,
-        user_id: preview?.user_id,
-        avatar_url: preview?.avatar_url,
-      });
-    }
     if ((!data || data.length === 0) && isUuid(slug)) {
       return await fetchUserProfile(slug);
     }
@@ -182,7 +174,8 @@ export function useUserProfile() {
         editableProfile.value.preferred_locale,
         editableProfile.value.is_private,
         editableProfile.value.mood_feed_prompt_enabled,
-        editableProfile.value.mood_feed_prompt_snooze_until
+        editableProfile.value.mood_feed_prompt_snooze_until,
+        editableProfile.value.profile_card_theme
       );
 
       profile.value = { ...editableProfile.value };

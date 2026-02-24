@@ -1733,7 +1733,8 @@ export const useDb = () => {
     preferred_locale,
     is_private,
     mood_feed_prompt_enabled,
-    mood_feed_prompt_snooze_until
+    mood_feed_prompt_snooze_until,
+    profile_card_theme
   ) => {
     const supabase = getClient();
     const updatePayload = {
@@ -1752,6 +1753,7 @@ export const useDb = () => {
       is_private,
       mood_feed_prompt_enabled,
       mood_feed_prompt_snooze_until,
+      profile_card_theme,
     };
 
     // Remove undefined (and null is_private to avoid NOT NULL errors)
