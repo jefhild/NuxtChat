@@ -230,6 +230,7 @@ const {
   updateUserEmail,
   markUserForDeletion,
   unmarkUserForDeletion,
+  saveAvatar,
 } = useDb();
 
 const {
@@ -881,8 +882,7 @@ const buildAvatarDisplayUrl = (url) => {
 
 const localAvatar = ref(buildAvatarDisplayUrl(props.userProfile.avatar_url));
 
-const updateAvatarUrl = (newUrl) => {
-  const cleanUrl = stripAvatarQuery(newUrl);
+const applyAvatarUrl = (cleanUrl) => {
   localAvatar.value = buildAvatarDisplayUrl(cleanUrl);
   avatarError.value = "";
 
@@ -892,6 +892,26 @@ const updateAvatarUrl = (newUrl) => {
 
   if (!props.adminMode && authStore.userProfile) {
     authStore.userProfile.avatar_url = cleanUrl;
+  }
+};
+
+const updateAvatarUrl = async (newUrl) => {
+  const cleanUrl = stripAvatarQuery(newUrl);
+  if (!cleanUrl) return;
+  const prevUrl = stripAvatarQuery(editableProfile.value?.avatar_url);
+  applyAvatarUrl(cleanUrl);
+
+  const shouldPersistImmediately =
+    !props.adminMode && !isEditable.value && !!editableProfile.value?.user_id;
+
+  if (!shouldPersistImmediately || cleanUrl === prevUrl) {
+    return;
+  }
+
+  const saved = await saveAvatar(editableProfile.value.user_id, cleanUrl);
+  if (!saved) {
+    applyAvatarUrl(prevUrl || "");
+    avatarError.value = "Could not save that photo. Please try again.";
   }
 };
 

@@ -7,7 +7,6 @@ Short, code-level tasks that are easy to execute in one sitting.
 - [ ] [P2] [ux] Add a Browse Profiles Section
 - [ ] [P2] [ui] Full Profile Display is ugly. make it like a playing card
 - [ ] [P2] [ui] Mood Feed UI is ugly
-- [ ] [P2] [ui] Edit mode settings change avatar need to save or it doesn't
 - [ ] [P2] [ui] When someone tries to logout with an email, insist.
 
 ## Next
@@ -17,7 +16,8 @@ Short, code-level tasks that are easy to execute in one sitting.
 ## Done
 - [x] [P1] [profiles] Remove country column and show flag on avatar in `/profiles` (2026-02-23).
 - [x] [P1] [profiles] Verify avatar flag placement on `/profiles` at desktop breakpoints.
-- [x] [P2] [db] Add migration file for `messages_v2_reply_to_message_id_fkey` with `ON DELETE SET NULL`.
+- [x] [P2] [db] Add migration file for `messages_v2_reply_to_message_id_fkey` with `ON DELETE SET 
+- [x] [P2] [db] Profile image change not persisting outside edit mode.
 - [x] [P2] [ux] Add empty-state copy for profile tagline when missing.
 
 ## Conventions
