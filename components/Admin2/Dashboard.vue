@@ -347,6 +347,22 @@
                               messages
                             </div>
                           </div>
+                          <div class="flex-1">
+                            <div class="text-subtitle-2 text-medium-emphasis">
+                              AI limit hits
+                            </div>
+                            <div class="text-h6">
+                              {{ getActivity(item.user_id).aiLimitHitsCount || 0 }}
+                            </div>
+                            <div class="text-caption text-medium-emphasis">
+                              Last hit:
+                              {{
+                                formatDateTime(
+                                  getActivity(item.user_id).aiLimitLastAt
+                                )
+                              }}
+                            </div>
+                          </div>
                           <div v-if="item.is_ai" class="flex-1">
                             <div class="text-subtitle-2 text-medium-emphasis">
                               Expertise
@@ -428,6 +444,29 @@
                           </div>
                           <div v-else class="text-caption text-medium-emphasis">
                             No discussion threads yet.
+                          </div>
+                        </div>
+
+                        <div>
+                          <div class="text-subtitle-2 text-medium-emphasis mb-2">
+                            Recent AI limit notices
+                          </div>
+                          <div
+                            v-if="getActivity(item.user_id).aiLimitHitsSample?.length"
+                            class="d-flex flex-column ga-2"
+                          >
+                            <div
+                              v-for="hit in getActivity(item.user_id).aiLimitHitsSample.slice(0, 5)"
+                              :key="hit.id"
+                              class="text-caption text-medium-emphasis"
+                            >
+                              <strong>{{ formatDateTime(hit.created_at) }}</strong>
+                              -
+                              {{ hit.content }}
+                            </div>
+                          </div>
+                          <div v-else class="text-caption text-medium-emphasis">
+                            No AI limit notices yet.
                           </div>
                         </div>
                       </div>

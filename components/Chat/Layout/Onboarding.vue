@@ -55,7 +55,7 @@
           <!-- 🔹 Single trailing typing bubble (never duplicates) -->
           <div v-if="botTyping" class="my-1 text-left">
             <div
-              class="px-3 py-2 rounded-xl d-inline-block mb-1 bg-grey-lighten-3 typing-chip"
+              class="px-3 py-2 rounded-xl d-inline-block mb-1 typing-chip"
             >
               <span class="dot"></span>
               <span class="dot"></span>
@@ -569,12 +569,14 @@ function onCaptchaError() {
   align-items: center;
   gap: 6px;
   border-radius: 999px;
+  background: rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(148, 163, 184, 0.35);
 }
 .typing-chip .dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(226, 232, 240, 0.9);
   display: inline-block;
   animation: blink 1.2s infinite;
 }
@@ -589,7 +591,7 @@ function onCaptchaError() {
 }
 .typing-chip .typing-label {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgba(226, 232, 240, 0.95);
   margin-left: 4px;
 }
 @keyframes blink {

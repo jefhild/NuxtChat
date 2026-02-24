@@ -196,6 +196,7 @@ const itemHeight = 72;
 const listHeight = ref(420);
 
 let roWrap, roHeader, roComposer;
+let emptyThreadRetryTimer = null;
 function updateHeights() {
   // Make sure the outer parent of wrapRef has a fixed height (flex container with h-100 / min-h-0)
   // const wrapH = wrapRef.value?.clientHeight || 0;
@@ -227,6 +228,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   [roWrap, roHeader, roComposer].forEach((ro) => ro && ro.disconnect());
   window.removeEventListener("resize", updateHeights);
+  if (emptyThreadRetryTimer) {
+    clearTimeout(emptyThreadRetryTimer);
+    emptyThreadRetryTimer = null;
+  }
 });
 
 const scrollEl = () => (vsRef.value && vsRef.value.$el) || null;
@@ -244,6 +249,10 @@ function isNearBottom(el, threshold = 80) {
 
 // ── Load thread
 const loadThread = async () => {
+  if (emptyThreadRetryTimer) {
+    clearTimeout(emptyThreadRetryTimer);
+    emptyThreadRetryTimer = null;
+  }
   if (!props.meId || !peerId.value) {
     messages.value = [];
     typing.value = false; // clear typing when no peer
@@ -262,6 +271,38 @@ const loadThread = async () => {
         !blockedSet.value.has(String(msg.sender_id)) &&
         !blockedSet.value.has(String(msg.receiver_id))
     );
+    if (!messages.value.length && String(peerId.value) === IMCHATTY_ID) {
+      const meSnapshot = String(props.meId || "");
+      const peerSnapshot = String(peerId.value || "");
+      emptyThreadRetryTimer = setTimeout(async () => {
+        emptyThreadRetryTimer = null;
+        if (
+          String(props.meId || "") !== meSnapshot ||
+          String(peerId.value || "") !== peerSnapshot ||
+          messages.value.length
+        ) {
+          return;
+        }
+        try {
+          const retryRows = await db.getMessagesBetweenUsers(
+            props.meId,
+            peerId.value,
+            null,
+            40
+          );
+          const filtered = (retryRows || []).filter(
+            (msg) =>
+              !blockedSet.value.has(String(msg.sender_id)) &&
+              !blockedSet.value.has(String(msg.receiver_id))
+          );
+          if (filtered.length) {
+            messages.value = filtered;
+            await scrollToBottom();
+            await msgs.markThreadAsRead(peerId.value);
+          }
+        } catch {}
+      }, 900);
+    }
     await scrollToBottom();
     await msgs.markThreadAsRead(peerId.value);
   } finally {
@@ -292,6 +333,9 @@ defineExpose({
 // 🔹 NEW: toggler to show/hide typing chip (call when you start/stop AI)
 function setTyping(val, label) {
   typing.value = !!val;
+  if (typing.value) {
+    scrollToBottom();
+  }
   // you can optionally override label per call if you want
   if (typeof label === "string" && label) {
     // if you want dynamic labels, convert typingLabel to a ref and set here
@@ -380,8 +424,13 @@ watch(
       return;
     }
 
-    // once the real AI message arrives, stop typing chip
-    typing.value = false;
+    const isPeerToMe = sender === peer && receiver === me;
+    const isMeToPeer = sender === me && receiver === peer;
+
+    // only stop typing when the peer/bot message arrives (not on my own echo)
+    if (isPeerToMe) {
+      typing.value = false;
+    }
 
     // If we already have this message (e.g., from initial load), update/skip
     if (m.id != null) {
@@ -398,18 +447,37 @@ watch(
     }
 
     // Try to reconcile a peer temp message (avoid duplicates)
-    const idx = messages.value.findIndex(
+    const peerTempIdx = messages.value.findIndex(
       x =>
         x._peerTempKey &&                // only our temp peers
         x.sender_id === m.sender_id &&
         x.receiver_id === m.receiver_id &&
         x.content === m.content          // simple heuristic
     );
-    if (idx !== -1) {
+    if (peerTempIdx !== -1) {
       const copy = messages.value.slice();
-      copy[idx] = m;                     // replace temp with server row
+      copy[peerTempIdx] = m;             // replace temp with server row
       messages.value = copy;
     } else {
+      // Reconcile my optimistic local temp message to avoid transient duplicates
+      // when realtime echo arrives before insertMessage() resolves.
+      if (isMeToPeer) {
+        const myTempIdx = messages.value.findIndex(
+          (x) =>
+            x._tempKey &&
+            x.id == null &&
+            String(x.sender_id) === sender &&
+            String(x.receiver_id) === receiver &&
+            String(x.content || "") === String(m.content || "")
+        );
+        if (myTempIdx !== -1) {
+          const copy = messages.value.slice();
+          copy[myTempIdx] = m;
+          messages.value = copy;
+          await msgs.markThreadAsRead(peerId.value);
+          return;
+        }
+      }
       // no temp -> just append
       const el = scrollEl();
       const shouldStick = el ? isNearBottom(el) : true;

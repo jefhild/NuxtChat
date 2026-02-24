@@ -4,6 +4,7 @@ import { useOnboardingDraftStore } from "~/stores/onboardingDraftStore";
 import { useDb } from "@/composables/useDB";
 import { usePresenceStore2 } from "@/stores/presenceStore2";
 import { useGeoLocationDefaults } from "@/composables/useGeoLocationDefaults";
+import { getAiDailyLimitByStatus } from "~/constants/aiLimits";
 // import { useSupabaseClient } from "#imports"; // adjust if your import path differs
 
 function resolveAuthStatus({ session, user, profile }) {
@@ -31,14 +32,6 @@ function resolveAuthStatus({ session, user, profile }) {
  * - 'anon_authenticated': anonymous user with completed onboarding
  * - 'authenticated': fully registered user
  */
-
-const AI_LIMITS = {
-  unauthenticated: 0,
-  guest: 15, // enough for onboarding
-  onboarding: 15,
-  anon_authenticated: 50,
-  authenticated: 200,
-};
 
 const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
 const CJK_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/;
@@ -92,7 +85,7 @@ export const useAuthStore = defineStore("authStore1", {
 
   getters: {
     getAiLimit(state) {
-      return AI_LIMITS[state.authStatus] ?? 0;
+      return getAiDailyLimitByStatus(state.authStatus);
     },
     isProfileComplete(state) {
       const profile = state.userProfile || {};

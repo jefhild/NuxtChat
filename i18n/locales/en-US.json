@@ -907,6 +907,10 @@
       "settings": "Settings",
       "admin": "Admin",
       "logout": "Logout",
+      "logout_dialog_title": "Logout Of My Account",
+      "logout_email_prompt": "Before you log out, add your email so you don’t lose your chats and can be notified when someone messages you.",
+      "logout_add_email_now": "Add email now",
+      "logout_anyway": "Log out anyway",
       "signin": "Sign in",
       "aboutus": "About Us",
       "free-chat": "Profiles"

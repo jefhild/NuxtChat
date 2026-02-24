@@ -2,14 +2,7 @@
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "~/stores/authStore1";
 import { useDb } from "@/composables/useDB";
-
-const LIMITS = {
-  unauthenticated: 0,
-  guest: 2,
-  onboarding: 6,
-  anon_authenticated: 20,
-  authenticated: 200,
-};
+import { getAiDailyLimitByStatus } from "~/constants/aiLimits";
 
 export function limitReachedMessage(authStatus, limit) {
   switch (authStatus) {
@@ -18,7 +11,7 @@ export function limitReachedMessage(authStatus, limit) {
     case "onboarding":
       return `You’ve reached today’s onboarding AI  limit. If you're having a problem, sign in here.[Signin page](/signin)`;
     case "anon_authenticated":
-      return `You’ve reached today’s AI limit (${limit}). Verify your email to unlock higher limits and save your chats.`;
+      return `You’ve reached today’s AI limit (${limit}). Link your email for more free exchanges and saved chats. [Link email](/settings?linkEmail=1)`;
     case "authenticated":
       return `You’ve reached your daily AI limit (${limit}). It will reset at midnight (Europe/Paris).`;
     default:
@@ -34,8 +27,7 @@ export function useAiQuota() {
   const auth = useAuthStore();
   const { user, authStatus } = storeToRefs(auth);
 
-  const getDailyLimit = () =>
-    LIMITS[authStatus.value || "unauthenticated"] ?? 0;
+  const getDailyLimit = () => getAiDailyLimitByStatus(authStatus.value);
   const getUserId = () => user.value?.id || user.value?.user_id || null;
 
   const tryConsume = async () => {

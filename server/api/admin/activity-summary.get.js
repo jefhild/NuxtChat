@@ -48,6 +48,7 @@ export default defineEventHandler(async (event) => {
       { count: discussionCount, error: discussionCountError },
       { data: chatLast, error: chatLastError },
       { data: discussionRows, error: discussionRowsError },
+      { data: aiLimitRows, count: aiLimitCount, error: aiLimitError },
     ] = await Promise.all([
       supa
         .from("messages")
@@ -70,19 +71,28 @@ export default defineEventHandler(async (event) => {
         .eq("sender_user_id", userId)
         .order("created_at", { ascending: false })
         .limit(threadSampleLimit),
+      supa
+        .from("messages")
+        .select("id, sender_id, content, created_at", { count: "exact" })
+        .eq("receiver_id", userId)
+        .ilike("content", "%AI limit%")
+        .order("created_at", { ascending: false })
+        .limit(10),
     ]);
 
     if (
       chatCountError ||
       discussionCountError ||
       chatLastError ||
-      discussionRowsError
+      discussionRowsError ||
+      aiLimitError
     ) {
       const error =
         chatCountError ||
         discussionCountError ||
         chatLastError ||
-        discussionRowsError;
+        discussionRowsError ||
+        aiLimitError;
       console.error("[admin/activity-summary] query error:", error);
       setResponseStatus(event, 500);
       return { error: { stage: "counts", message: error.message } };
@@ -179,6 +189,14 @@ export default defineEventHandler(async (event) => {
         discussionUpvotes,
         discussionDownvotes,
         voteSampleSize: voteIds.length,
+        aiLimitHitsCount: aiLimitCount || 0,
+        aiLimitLastAt: aiLimitRows?.[0]?.created_at || null,
+        aiLimitHitsSample: (aiLimitRows || []).map((row) => ({
+          id: row.id,
+          sender_id: row.sender_id,
+          created_at: row.created_at,
+          content: row.content,
+        })),
       },
     };
   } catch (err) {

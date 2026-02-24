@@ -891,6 +891,10 @@
       "settings": "设置",
       "admin": "管理面板",
       "logout": "退出",
+      "logout_dialog_title": "退出我的账户",
+      "logout_email_prompt": "退出前请先添加邮箱，这样你不会丢失聊天记录，并且有人联系你时可以收到通知。",
+      "logout_add_email_now": "立即添加邮箱",
+      "logout_anyway": "仍然退出",
       "signin": "登录",
       "aboutus": "关于我们",
       "free-chat": "免费聊天"

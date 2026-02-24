@@ -18,14 +18,15 @@
   gap: 6px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
 .dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(226, 232, 240, 0.9);
   display: inline-block;
   animation: blink 1.2s infinite;
 }
@@ -36,7 +37,7 @@
 
 .typing-label {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgba(226, 232, 240, 0.95);
 }
 
 @keyframes blink {

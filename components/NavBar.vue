@@ -142,14 +142,25 @@
     <v-dialog v-model="logoutDialog" width="auto" :scrim="!isLoggingOut">
       <v-card max-width="420" class="logout-dialog-card" prepend-icon="mdi-account-remove">
         <template #title>
-          {{ isLoggingOut ? $t("components.navbar.logout") : "Logout Of My Account" }}
+          {{
+            isLoggingOut
+              ? $t("components.navbar.logout")
+              : $t("components.navbar.logout_dialog_title")
+          }}
         </template>
 
         <v-card-text>
           <v-row justify="center">
             <v-col class="text-center">
               <template v-if="!isLoggingOut">
-                {{ $t("pages.home.landing_page.logout_confirm") }}
+                <template v-if="isAnonAuthenticated">
+                  <div class="text-body-2">
+                    {{ $t("components.navbar.logout_email_prompt") }}
+                  </div>
+                </template>
+                <template v-else>
+                  {{ $t("pages.home.landing_page.logout_confirm") }}
+                </template>
               </template>
 
               <template v-else>
@@ -169,8 +180,20 @@
 
         <template #actions>
           <template v-if="!isLoggingOut">
+            <v-btn
+              v-if="isAnonAuthenticated"
+              color="primary"
+              variant="flat"
+              @click="goToLinkEmail"
+            >
+              {{ $t("components.navbar.logout_add_email_now") }}
+            </v-btn>
             <v-btn color="primary" text @click="confirmLogout">
-              {{ $t("pages.home.landing_page.logout_confirm_button") }}
+              {{
+                isAnonAuthenticated
+                  ? $t("components.navbar.logout_anyway")
+                  : $t("pages.home.landing_page.logout_confirm_button")
+              }}
             </v-btn>
             <v-spacer />
             <v-btn class="ms-auto" @click="logoutDialog = false">
@@ -210,6 +233,9 @@ const navRef = ref(null);
 
 const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
+);
+const isAnonAuthenticated = computed(
+  () => authStore.authStatus === "anon_authenticated"
 );
 const userProfile = computed(() => authStore.userProfile);
 const isImpersonating = computed(() => {
@@ -309,6 +335,11 @@ const handleMobileLogout = () => {
 
 const closeMobileMenu = () => {
   mobileMenuOpen.value = false;
+};
+
+const goToLinkEmail = async () => {
+  logoutDialog.value = false;
+  await router.push(localPath({ path: "/settings", query: { linkEmail: "1" } }));
 };
 
 const confirmLogout = async () => {

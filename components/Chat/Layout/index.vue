@@ -2087,8 +2087,8 @@ const canSend = computed(() => {
 });
 
 const MOOD_MAX_ATTEMPTS = 3;
-const MOOD_FEED_REPLY_MODE = "capture_and_chat"; // "capture_only" | "capture_and_chat"
 const moodPromptBusy = ref(false);
+const lastBotSubmission = ref({ text: "", at: 0 });
 
 const moodQuickReplies = computed(() => {
   if (draftStore.moodFeedStage === "confirm") {
@@ -2171,6 +2171,18 @@ function isMoodNo(text) {
 }
 function isMoodSkip(text) {
   return matchesMoodWord(text, "skip", t("onboarding.moodFeed.skip"));
+}
+
+function isDuplicateBotSubmission(text) {
+  const normalized = normalizeText(text);
+  if (!normalized) return false;
+  const now = Date.now();
+  const prev = lastBotSubmission.value || {};
+  const isDuplicate =
+    prev.text === normalized &&
+    now - Number(prev.at || 0) < 1200;
+  lastBotSubmission.value = { text: normalized, at: now };
+  return isDuplicate;
 }
 
 function onMoodQuickReply(label) {
@@ -2752,6 +2764,7 @@ async function onSend(
   const toId = selectedPeer?.user_id || selectedPeer?.id;
   const sendingToBot = toId === IMCHATTY_ID;
   let moodHandled = false;
+  let aiFollowupContext = null;
   if (isSelectedUserBlocked.value) return;
 
   if (!bypassTranslationPrompt) {
@@ -2777,10 +2790,34 @@ async function onSend(
   }
 
   if (sendingToBot) {
-    const handled = await handleMoodFeedMessage(text, { sendingToBot });
+    const stageBeforeMood = draftStore.moodFeedStage || "idle";
+    if (isDuplicateBotSubmission(text)) return;
+    const moodCaptureActive = ["prompt", "confirm"].includes(stageBeforeMood);
+    if (moodCaptureActive) {
+      regRef.value?.setTyping?.(true);
+    }
+    const allowPostMoodFollowup =
+      stageBeforeMood === "confirm" && isMoodYes(text);
+    if (allowPostMoodFollowup) {
+      aiFollowupContext = {
+        prompt: String(draftStore.moodFeedPrompt || "").trim(),
+        original: String(draftStore.moodFeedAnswer || "").trim(),
+        refined: String(draftStore.moodFeedRefined || "").trim(),
+      };
+    }
+    let handled = false;
+    try {
+      handled = await handleMoodFeedMessage(text, { sendingToBot });
+    } finally {
+      if (moodCaptureActive && !allowPostMoodFollowup) {
+        regRef.value?.setTyping?.(false);
+      }
+    }
     if (handled) {
       moodHandled = true;
-      if (MOOD_FEED_REPLY_MODE !== "capture_and_chat") return;
+      // Keep mood capture exclusive except for confirm+yes, where we let
+      // the regular AI continue so the dialog can flow naturally.
+      if (!allowPostMoodFollowup) return;
     }
   }
 
@@ -2859,10 +2896,14 @@ async function onSend(
 
     const history = regRef.value?.getLastMessages?.(10, selectedPeer) || [];
     const replyTo = replyingToMessage.value?.content ?? null;
+    const aiUserInput =
+      sendingToBot && aiFollowupContext
+        ? `The user just confirmed a mood-feed entry. Continue the chat naturally with an empathetic follow-up about this context, not a generic greeting.\nMood prompt: ${aiFollowupContext.prompt || "(none)"}\nUser original response: ${aiFollowupContext.original || text}\nRefined entry: ${aiFollowupContext.refined || aiFollowupContext.original || text}`
+        : text;
 
     try {
       const aiText = await fetchAiResponse(
-        text,
+        aiUserInput,
         selectedPeer,
         userProfile.value,
         history,

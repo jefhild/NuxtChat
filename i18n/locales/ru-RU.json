@@ -891,6 +891,10 @@
       "settings": "Настройки",
       "admin": "Админ-панель",
       "logout": "Выйти",
+      "logout_dialog_title": "Выход из аккаунта",
+      "logout_email_prompt": "Перед выходом добавьте e-mail, чтобы не потерять чаты и получать уведомления, когда вам пишут.",
+      "logout_add_email_now": "Добавить e-mail",
+      "logout_anyway": "Выйти всё равно",
       "signin": "Войти",
       "aboutus": "О нас",
       "free-chat": "Бесплатный чат"

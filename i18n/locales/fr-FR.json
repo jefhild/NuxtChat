@@ -891,6 +891,10 @@
       "settings": "Paramètres",
       "admin": "Panneau Admin",
       "logout": "Déconnexion",
+      "logout_dialog_title": "Déconnexion de Mon Compte",
+      "logout_email_prompt": "Avant de vous déconnecter, ajoutez votre e-mail pour ne pas perdre vos discussions et être averti si quelqu’un vous écrit.",
+      "logout_add_email_now": "Ajouter un e-mail",
+      "logout_anyway": "Se déconnecter quand même",
       "signin": "Se connecter",
       "aboutus": "À Propos de Nous",
       "free-chat": "Chat Gratuit"

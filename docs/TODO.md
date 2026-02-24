@@ -7,6 +7,8 @@ Short, code-level tasks that are easy to execute in one sitting.
 - [ ] [P2] [ux] Add a Browse Profiles Section
 - [ ] [P2] [ui] Full Profile Display is ugly. make it like a playing card
 - [ ] [P2] [ui] Mood Feed UI is ugly
+- [ ] [P2] [ui] Edit mode settings change avatar need to save or it doesn't
+- [ ] [P2] [ui] When someone tries to logout with an email, insist.
 
 ## Next
 - [ ] [P2] [chat] Audit selected-user header truncation on very long names/taglines.
