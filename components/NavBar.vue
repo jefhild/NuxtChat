@@ -180,25 +180,38 @@
 
         <template #actions>
           <template v-if="!isLoggingOut">
-            <v-btn
-              v-if="isAnonAuthenticated"
-              color="primary"
-              variant="flat"
-              @click="goToLinkEmail"
-            >
-              {{ $t("components.navbar.logout_add_email_now") }}
-            </v-btn>
-            <v-btn color="primary" text @click="confirmLogout">
-              {{
-                isAnonAuthenticated
-                  ? $t("components.navbar.logout_anyway")
-                  : $t("pages.home.landing_page.logout_confirm_button")
-              }}
-            </v-btn>
-            <v-spacer />
-            <v-btn class="ms-auto" @click="logoutDialog = false">
-              {{ $t("pages.home.landing_page.cancel") }}
-            </v-btn>
+            <template v-if="isAnonAuthenticated">
+              <div class="logout-actions-stack">
+                <v-btn
+                  color="primary"
+                  variant="flat"
+                  block
+                  @click="goToLinkEmail"
+                >
+                  {{ $t("components.navbar.logout_add_email_now") }}
+                </v-btn>
+                <v-btn
+                  color="primary"
+                  variant="text"
+                  block
+                  @click="confirmLogout"
+                >
+                  {{ $t("components.navbar.logout_anyway") }}
+                </v-btn>
+                <v-btn variant="text" block @click="logoutDialog = false">
+                  {{ $t("pages.home.landing_page.cancel") }}
+                </v-btn>
+              </div>
+            </template>
+            <template v-else>
+              <v-btn color="primary" text @click="confirmLogout">
+                {{ $t("pages.home.landing_page.logout_confirm_button") }}
+              </v-btn>
+              <v-spacer />
+              <v-btn class="ms-auto" @click="logoutDialog = false">
+                {{ $t("pages.home.landing_page.cancel") }}
+              </v-btn>
+            </template>
           </template>
 
           <template v-else>
@@ -526,8 +539,15 @@ onBeforeUnmount(() => {
 }
 
 .logout-dialog-card {
-  width: 360px;
-  max-width: 90vw;
+  width: min(440px, 94vw);
+  max-width: 94vw;
+}
+
+.logout-actions-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .nav2__menu {
