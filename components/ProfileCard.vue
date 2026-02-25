@@ -6,138 +6,128 @@
   >
     <div class="profile-card-glow" />
     <slot name="overlay" />
+    <div class="profile-card-rarity">Profile Card</div>
     <div class="profile-card-header">
-      <div class="profile-card-rarity">Profile Card</div>
-      <div class="avatar-wrapper">
-        <NuxtImg
-          :src="getAvatar(profile.avatar_url, profile.gender_id)"
-          height="150"
-          width="150"
-          class="rounded-circle cover-image mx-auto d-block ma-9"
-          :alt="`${localized.displayname} image`"
-        />
-
-        <NuxtImg
-          v-if="avatarDecoration"
-          :src="avatarDecoration"
-          class="avatar-decoration"
-          :alt="`${localized.displayname} image decoration`"
-        />
-      </div>
-
-      <NuxtLink :to="chatLink" class="profile-chat-cta" @click="emit('chat-now')">
-        {{ $t("components.profile-details.chat-cta", { name: localized.displayname }) }}
-      </NuxtLink>
-    </div>
-
-    <div class="profile-identity">
-      <div class="profile-title-row">
-        <h1 class="text-h5">
-          {{ localized.displayname }}
-        </h1>
-      </div>
-      <div class="profile-meta-chips">
-        <div class="profile-meta-chip">
-          <v-icon
-            v-if="profile?.gender_id"
-            class="gender-inline"
-            :color="getGenderColor(profile.gender_id)"
-            :icon="getAvatarIcon(profile.gender_id)"
-            size="17"
+      <div class="profile-card-hero">
+        <div class="avatar-wrapper">
+          <NuxtImg
+            :src="getAvatar(profile.avatar_url, profile.gender_id)"
+            height="112"
+            width="112"
+            class="rounded-circle cover-image profile-avatar-image"
+            :alt="`${localized.displayname} image`"
           />
-          <span v-if="profile?.age">
-            {{ profile.age }}{{ $t("components.profile-details.age-suffix") }}
-          </span>
+
+          <NuxtImg
+            v-if="avatarDecoration"
+            :src="avatarDecoration"
+            class="avatar-decoration"
+            :alt="`${localized.displayname} image decoration`"
+          />
         </div>
-        <div v-if="profile?.status" class="profile-meta-chip">
-          {{ profile.status }}
-        </div>
-        <v-tooltip
-          v-if="defaultLanguageLabel"
-          :text="$t('components.profile-language.default')"
-        >
-          <template #activator="{ props: tooltipProps }">
-            <div class="profile-meta-chip" v-bind="tooltipProps">
-              <v-icon size="15">mdi-translate</v-icon>
-              <span>{{ defaultLanguageLabel }}</span>
+
+        <div class="profile-identity">
+          <div class="profile-title-row">
+            <h1 class="text-h5">
+              {{ localized.displayname }}
+            </h1>
+          </div>
+
+          <div class="profile-stats-strip">
+            <div v-if="profile?.age" class="profile-stat-pill">
+              <v-icon
+                v-if="profile?.gender_id"
+                class="gender-inline"
+                :color="getGenderColor(profile.gender_id)"
+                :icon="getAvatarIcon(profile.gender_id)"
+                size="15"
+              />
+              <span>{{ profile.age }}{{ $t("components.profile-details.age-suffix") }}</span>
             </div>
-          </template>
-        </v-tooltip>
-        <div
-          v-if="profile?.country_emoji"
-          class="profile-meta-chip profile-meta-chip--flag"
-        >
-          <v-tooltip v-if="profile?.country_emoji && profile?.country" :text="profile.country">
-            <template #activator="{ props: tooltipProps }">
-              <span class="profile-flag" v-bind="tooltipProps">
+            <div v-if="profile?.status" class="profile-stat-pill">
+              {{ profile.status }}
+            </div>
+            <v-tooltip
+              v-if="defaultLanguageLabel"
+              :text="$t('components.profile-language.default')"
+            >
+              <template #activator="{ props: tooltipProps }">
+                <div class="profile-stat-pill" v-bind="tooltipProps">
+                  <v-icon size="13">mdi-translate</v-icon>
+                  <span>{{ defaultLanguageLabel }}</span>
+                </div>
+              </template>
+            </v-tooltip>
+            <div
+              v-if="lookingForUserId"
+              class="profile-stat-pill profile-stat-pill--looking-for"
+              :aria-label="$t('components.public-user-profile.looking-for')"
+            >
+              <SettingsProfileLookingForDisplay
+                :user-id="lookingForUserId"
+                :icon-size="13"
+              />
+            </div>
+            <v-tooltip
+              v-else-if="lookingForLabel"
+              :text="`${$t('components.public-user-profile.looking-for')} ${lookingForLabel}`"
+            >
+              <template #activator="{ props: tooltipProps }">
+                <div
+                  class="profile-stat-pill profile-stat-pill--icon-only"
+                  v-bind="tooltipProps"
+                  :aria-label="`${$t('components.public-user-profile.looking-for')} ${lookingForLabel}`"
+                >
+                  <v-icon size="13">mdi-account-search-outline</v-icon>
+                </div>
+              </template>
+            </v-tooltip>
+            <div v-if="profile?.country_emoji" class="profile-stat-pill profile-stat-pill--flag">
+              <v-tooltip v-if="profile?.country_emoji && profile?.country" :text="profile.country">
+                <template #activator="{ props: tooltipProps }">
+                  <span class="profile-flag" v-bind="tooltipProps">
+                    {{ profile.country_emoji }}
+                  </span>
+                </template>
+              </v-tooltip>
+              <span v-else-if="profile?.country_emoji" class="profile-flag">
                 {{ profile.country_emoji }}
               </span>
-            </template>
-          </v-tooltip>
-          <span v-else-if="profile?.country_emoji" class="profile-flag">
-            {{ profile.country_emoji }}
-          </span>
+            </div>
+          </div>
+
+          <p v-if="localized.tagline" class="profile-tagline-inline">
+            {{ localized.tagline }}
+          </p>
+
+          <NuxtLink :to="chatLink" class="profile-chat-cta" @click="emit('chat-now')">
+            {{ $t("components.profile-details.chat-cta", { name: localized.displayname }) }}
+          </NuxtLink>
         </div>
       </div>
     </div>
 
-    <v-expansion-panels v-model="expandedSections" multiple class="profile-panels">
-      <v-expansion-panel value="profile">
-        <v-expansion-panel-title class="profile-panel-title">
-          {{ $t("components.profile-details.title") }}
-        </v-expansion-panel-title>
-        <v-expansion-panel-text class="profile-details">
-          <v-list class="profile-details-tree" density="compact" nav>
-            <v-list-item
-              v-if="localized.tagline"
-              prepend-icon="mdi-tag-outline"
-            >
-              <template #title>
-                <div class="profile-details-row">
-                  <span class="profile-details-label">
-                    {{ $t("components.profile-details.tagline-label") }}:
-                  </span>
-                  <span class="profile-details-value">
-                    {{ localized.tagline }}
-                  </span>
-                </div>
-              </template>
-            </v-list-item>
-            <v-list-item
-              v-if="profile?.looking_for?.length"
-              prepend-icon="mdi-account-search-outline"
-            >
-              <template #title>
-                <div class="profile-details-row">
-                  <span class="profile-details-label">
-                    {{ $t("components.public-user-profile.looking-for") }}
-                  </span>
-                  <span class="profile-details-value profile-details-value--green">
-                    {{ profile.looking_for.join(", ") }}
-                  </span>
-                </div>
-              </template>
-            </v-list-item>
-            <v-list-item
-              v-if="localized.bio"
-              class="profile-details-about"
-              prepend-icon="mdi-account-details-outline"
-            >
-              <template #title>
-                <div class="profile-details-row profile-details-row--stack">
-                  <span class="profile-details-label">
-                    {{ $t("components.public-user-profile.about-me") }}
-                  </span>
-                  <span class="profile-details-body">
-                    {{ localized.bio }}
-                  </span>
-                </div>
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
+    <section v-if="localized.bio" class="profile-details profile-details--always-open">
+      <v-list class="profile-details-tree" density="compact" nav>
+        <v-list-item
+          class="profile-details-about"
+          prepend-icon="mdi-account-details-outline"
+        >
+          <template #title>
+            <div class="profile-details-row profile-details-row--stack">
+              <span class="profile-details-label">
+                {{ $t("components.public-user-profile.about-me") }}
+              </span>
+              <span class="profile-details-body">
+                {{ localized.bio }}
+              </span>
+            </div>
+          </template>
+        </v-list-item>
+      </v-list>
+    </section>
 
+    <v-expansion-panels v-model="expandedSections" multiple class="profile-panels">
       <v-expansion-panel value="gallery">
         <v-expansion-panel-title class="profile-panel-title">
           {{ $t("components.profile-gallery.title", { count: galleryCount }) }}
@@ -355,6 +345,10 @@ const defaultLanguageLabel = computed(() => {
   const label = t(`components.profile-language.options.${code}`, code.toUpperCase());
   return label || code.toUpperCase();
 });
+const lookingForLabel = computed(() =>
+  Array.isArray(props.profile?.looking_for) ? props.profile.looking_for.join(", ") : ""
+);
+const lookingForUserId = computed(() => props.profile?.user_id || props.profile?.id || "");
 const localPath = useLocalePath();
 const chatLink = computed(() => {
   const slug = props.profile?.slug;
@@ -364,7 +358,7 @@ const chatLink = computed(() => {
   return localPath("/chat");
 });
 
-const expandedSections = ref(["profile"]);
+const expandedSections = ref([]);
 
 const statsData = computed(() => props.stats || emptyStats);
 const discussionLabel = computed(() =>
@@ -521,36 +515,50 @@ const galleryDisplayItems = computed(() => {
 
 .profile-card-header {
   position: relative;
-  padding: 16px 22px 4px;
-  text-align: center;
+  padding: 14px 18px 8px;
 }
 
 .profile-card-rarity {
-  display: inline-flex;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: flex;
   align-items: center;
   justify-content: center;
   min-height: 24px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
+  padding: 4px 11px;
+  border-radius: 10px;
+  font-size: 0.64rem;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
   color: rgba(225, 236, 255, 0.9);
   background: rgba(15, 23, 42, 0.5);
   border: 1px solid rgba(191, 219, 254, 0.4);
+  box-shadow: 0 4px 10px rgba(2, 6, 23, 0.3);
+  backdrop-filter: blur(1px);
+}
+
+.profile-card-hero {
+  margin-top: 2px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
 }
 
 .profile-chat-cta {
   display: inline-flex;
-  margin-top: 0;
-  margin-bottom: 8px;
-  min-height: 34px;
+  margin-top: 8px;
+  min-height: 30px;
   border-radius: 999px;
   align-items: center;
   justify-content: center;
-  padding: 0 14px;
+  padding: 0 12px;
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
   color: var(--profile-chat-cta-color);
   text-decoration: none;
   border: 1px solid rgba(191, 219, 254, 0.42);
@@ -569,61 +577,103 @@ const galleryDisplayItems = computed(() => {
 .profile-title-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-bottom: 2px;
 }
 
 .profile-identity {
   position: relative;
-  padding: 0 20px 8px;
-  text-align: center;
+  text-align: left;
+  min-width: 0;
 }
 
 .profile-identity .text-h5 {
+  font-size: 1.7rem !important;
+  line-height: 1.05;
+  margin-bottom: 4px;
   color: #eef4ff;
   font-weight: 700;
 }
 
-.profile-meta-chips {
+.profile-stats-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
+  gap: 5px;
+  justify-content: flex-start;
 }
 
-.profile-meta-chip {
+.profile-stat-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 30px;
-  border-radius: 999px;
-  padding: 5px 11px;
-  font-size: 0.85rem;
+  gap: 5px;
+  min-height: 22px;
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
   font-weight: 600;
   color: rgba(237, 245, 255, 0.95);
-  border: 1px solid rgba(191, 219, 254, 0.4);
-  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(191, 219, 254, 0.3);
+  background: rgba(15, 23, 42, 0.48);
 }
 
-.profile-meta-chip--flag {
-  min-width: 44px;
+.profile-stat-pill--flag {
+  min-width: 32px;
   justify-content: center;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.profile-stat-pill--icon-only {
+  min-width: 24px;
+  justify-content: center;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.profile-stat-pill--looking-for {
+  min-height: 24px;
+  padding: 1px 6px;
+}
+
+.profile-stat-pill--looking-for :deep(.pa-1) {
+  padding: 0 2px !important;
 }
 
 .avatar-wrapper {
   position: relative;
-  margin-top: 8px;
+  width: 112px;
+  min-width: 112px;
 }
 
 .avatar-decoration {
   position: absolute;
-  top: -22px;
+  top: -18px;
   left: 50%;
   transform: translateX(-50%);
-  width: 245px;
+  width: 180px;
   pointer-events: none;
   z-index: 1;
   object-fit: contain;
+}
+
+.profile-avatar-image {
+  display: block;
+  box-shadow: 0 10px 20px rgba(2, 6, 23, 0.45);
+  border: 2px solid rgba(191, 219, 254, 0.45);
+}
+
+.profile-tagline-inline {
+  margin-top: 6px;
+  margin-bottom: 0;
+  color: var(--profile-body-color);
+  opacity: 0.9;
+  font-size: 0.83rem;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .gender-inline {
@@ -633,6 +683,10 @@ const galleryDisplayItems = computed(() => {
 .profile-details {
   background: var(--profile-surface-soft);
   border-radius: 14px;
+}
+
+.profile-details--always-open {
+  margin: 0 14px 10px;
 }
 
 .profile-details-tree {
@@ -822,10 +876,10 @@ const galleryDisplayItems = computed(() => {
 }
 
 .profile-panels :deep(.v-expansion-panel-title) {
-  padding: 10px 16px;
+  padding: 8px 14px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   color: var(--profile-panel-title-color);
 }
 
@@ -838,7 +892,7 @@ const galleryDisplayItems = computed(() => {
 }
 
 .profile-panels :deep(.v-expansion-panel-text__wrapper) {
-  padding: 0 16px 12px;
+  padding: 0 14px 10px;
 }
 
 .profile-card-actions {
@@ -854,26 +908,59 @@ const galleryDisplayItems = computed(() => {
     border-radius: 16px;
   }
 
+  .profile-card-rarity {
+    top: 10px;
+    right: 10px;
+    min-height: 21px;
+    font-size: 0.57rem;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+  }
+
   .profile-card-header {
-    padding: 14px 12px 4px;
+    padding: 12px 12px 8px;
+  }
+
+  .profile-card-hero {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 10px;
   }
 
   .profile-identity {
-    padding: 0 12px 8px;
+    text-align: center;
   }
 
-  .profile-meta-chips {
-    gap: 6px;
+  .profile-title-row {
+    justify-content: center;
   }
 
-  .profile-meta-chip {
-    font-size: 0.8rem;
-    min-height: 28px;
-    padding: 4px 10px;
+  .profile-identity .text-h5 {
+    width: 100%;
+    text-align: center;
+  }
+
+  .profile-stats-strip {
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .profile-stat-pill {
+    font-size: 0.66rem;
+    min-height: 20px;
+    padding: 2px 7px;
+  }
+
+  .profile-chat-cta {
+    margin-top: 7px;
+  }
+
+  .profile-tagline-inline {
+    text-align: center;
   }
 
   .avatar-decoration {
-    width: 215px;
+    width: 170px;
   }
 }
 

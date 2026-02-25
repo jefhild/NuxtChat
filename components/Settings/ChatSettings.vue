@@ -159,10 +159,11 @@
       <ProfileCard
         v-if="previewProfile"
         :profile="previewProfile"
+        :stats="previewStats"
         :theme-override="cardThemeSelection"
-        :gallery-blurred="true"
-        :photo-gallery-count="3"
-        :photo-gallery-photos="[]"
+        :gallery-blurred="previewGalleryBlurred"
+        :photo-gallery-count="previewGalleryCount"
+        :photo-gallery-photos="previewGalleryPhotos"
         @chat-now="previewOpen = false"
       >
         <template #overlay>
@@ -202,8 +203,12 @@ const saving = ref(false);
 const profile = ref(null);
 const themeMode = ref("system");
 const previewOpen = ref(false);
+const previewGalleryPhotos = ref([]);
+const previewGalleryCount = ref(0);
+const previewStats = ref(null);
 const cardThemeSelection = ref("trading");
 const isAuthenticated = computed(() => authStore.authStatus === "authenticated");
+const previewGalleryBlurred = computed(() => !isAuthenticated.value);
 const profilePrivate = computed(() => Boolean(profile.value?.is_private));
 const cardThemeOptions = computed(() => [
   {
@@ -316,6 +321,40 @@ const loadProfile = async () => {
     console.warn("[chat-settings] load profile failed:", err);
   } finally {
     loading.value = false;
+  }
+};
+
+const loadPreviewGallery = async () => {
+  if (!isAuthenticated.value || !profile.value?.user_id) {
+    previewGalleryPhotos.value = [];
+    previewGalleryCount.value = 0;
+    return;
+  }
+  try {
+    const result = await $fetch("/api/profile/photos");
+    const items = Array.isArray(result?.photos) ? result.photos : [];
+    previewGalleryPhotos.value = items;
+    previewGalleryCount.value = items.filter((item) => item?.status === "approved").length;
+  } catch (err) {
+    console.warn("[chat-settings] load preview gallery failed:", err);
+    previewGalleryPhotos.value = [];
+    previewGalleryCount.value = 0;
+  }
+};
+
+const loadPreviewStats = async () => {
+  const userId = profile.value?.user_id || profile.value?.id;
+  if (!userId) {
+    previewStats.value = null;
+    return;
+  }
+  try {
+    previewStats.value = await $fetch("/api/profile/stats", {
+      query: { userId },
+    });
+  } catch (err) {
+    console.warn("[chat-settings] load preview stats failed:", err);
+    previewStats.value = null;
   }
 };
 
@@ -443,6 +482,8 @@ const saveProfileCardTheme = async (themeValue) => {
 
 onMounted(async () => {
   await loadProfile();
+  await loadPreviewGallery();
+  await loadPreviewStats();
   const initialMode = normalizeTheme(themeCookie.value);
   themeMode.value = initialMode;
   applyThemePreference(initialMode);
@@ -452,6 +493,14 @@ watch(
   () => [vuetifyTheme?.global?.name?.value, themeCookie.value],
   () => {
     themeMode.value = normalizeTheme(themeCookie.value);
+  }
+);
+
+watch(
+  () => [authStore.authStatus, profile.value?.user_id],
+  async () => {
+    await loadPreviewGallery();
+    await loadPreviewStats();
   }
 );
 </script>

@@ -8,7 +8,7 @@
         :open-on-click="false"
       >
         <template #activator="{ props: tooltipProps }">
-          <v-icon size="20" :color="icon.color" v-bind="tooltipProps">
+          <v-icon :size="iconSize" :color="icon.color" v-bind="tooltipProps">
             {{ icon.icon }}
           </v-icon>
         </template>
@@ -23,8 +23,12 @@ import { useLookingFor } from "@/composables/useLookingFor";
 
 const props = defineProps({
   userId: {
-    type: String,
+    type: [String, Number],
     required: true,
+  },
+  iconSize: {
+    type: [String, Number],
+    default: 20,
   },
 });
 
