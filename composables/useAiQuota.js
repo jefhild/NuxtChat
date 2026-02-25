@@ -35,9 +35,7 @@ export function useAiQuota() {
     const uid = getUserId();
 
     if (!uid) {
-      const res = { allowed: false, used: 0, remaining: 0, limit };
-      console.info("[AI QUOTA] no session →", res);
-      return res;
+      return { allowed: false, used: 0, remaining: 0, limit };
     }
 
     const { data, error } = await supabase.rpc("ai_try_consume_any", {
@@ -58,7 +56,13 @@ export function useAiQuota() {
     }
 
     const res = { ...row, limit };
-    console.info("[AI QUOTA] →", res);
+    if (!res.allowed) {
+      console.info("[AI QUOTA] limit reached", {
+        used: res.used,
+        remaining: res.remaining,
+        limit: res.limit,
+      });
+    }
     return res;
   };
 

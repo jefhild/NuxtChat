@@ -2088,6 +2088,7 @@ const canSend = computed(() => {
 
 const MOOD_MAX_ATTEMPTS = 3;
 const moodPromptBusy = ref(false);
+const moodPromptDeferTimer = ref(null);
 const lastBotSubmission = ref({ text: "", at: 0 });
 
 const moodQuickReplies = computed(() => {
@@ -2483,6 +2484,10 @@ onBeforeUnmount(() => {
   if (recentActiveTimer) {
     clearInterval(recentActiveTimer);
     recentActiveTimer = null;
+  }
+  if (moodPromptDeferTimer.value) {
+    clearTimeout(moodPromptDeferTimer.value);
+    moodPromptDeferTimer.value = null;
   }
 });
 
@@ -2985,6 +2990,17 @@ function formatMoodPrompt(text) {
 }
 
 async function maybeTriggerMoodPrompt() {
+  const deferUntil = Number(draftStore.moodFeedDeferUntil || 0);
+  if (deferUntil > Date.now()) {
+    const waitMs = Math.max(50, deferUntil - Date.now() + 50);
+    if (!moodPromptDeferTimer.value) {
+      moodPromptDeferTimer.value = setTimeout(() => {
+        moodPromptDeferTimer.value = null;
+        maybeTriggerMoodPrompt();
+      }, waitMs);
+    }
+    return;
+  }
   if (moodPromptBusy.value) return;
   if (!["authenticated", "anon_authenticated"].includes(auth.authStatus)) return;
   if (!meId.value) return;
@@ -3000,6 +3016,7 @@ async function maybeTriggerMoodPrompt() {
     draftStore.setField?.("moodFeedAttempts", 0);
     draftStore.setField?.("moodFeedAnswer", "");
     draftStore.setField?.("moodFeedRefined", "");
+    draftStore.setField?.("moodFeedDeferUntil", 0);
     await pushMoodBotMessage(formatMoodPrompt(promptText));
     try {
       await $fetch("/api/mood-feed/prompted", { method: "POST" });

@@ -1342,6 +1342,7 @@
       "title": "Photo library",
       "link": "Photo library",
       "disabled-hint": "Link your email to unlock",
+      "locked-preview": "Locked preview",
       "add": "Add photo",
       "delete": "Delete photo",
       "upload": "Upload",
@@ -1485,6 +1486,7 @@
     "welcomeHeadline": "🎉 Welcome, **{name}**! Here’s your starter bio:",
     "welcomeBioIntro": "Below is a first draft—polish it or keep it as-is.",
     "welcomeSettings": "✨ Add a photo and refine your profile in [Settings]({settingsUrl}) to get more chats.",
+    "urgentLinkEmail": "⚠️ If you don't link your email you'll never know who reaches out to you!",
     "moodFeed": {
       "confirm": "So you're saying \"{text}\". Is that right?",
       "rephrase": "No problem—can you rephrase that in a short phrase?",

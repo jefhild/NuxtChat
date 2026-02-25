@@ -1319,6 +1319,7 @@
       "title": "照片库",
       "link": "照片库",
       "disabled-hint": "绑定邮箱后解锁",
+      "locked-preview": "预览已锁定",
       "add": "添加照片",
       "delete": "删除照片",
       "upload": "上传",
@@ -1462,6 +1463,7 @@
     "welcomeHeadline": "🎉 欢迎，**{name}**！先看看这版简介：",
     "welcomeBioIntro": "这是初稿——你可以微调或直接使用。",
     "welcomeSettings": "✨ 想要更多聊天？去[设置页面]({settingsUrl})添加照片并完善资料。",
+    "urgentLinkEmail": "⚠️ 如果你不绑定邮箱，你将永远不知道谁联系了你！",
     "moodFeed": {
       "confirm": "所以你是说“{text}”。对吗？",
       "rephrase": "没问题——你能用一句更短的话重新表述吗？",

@@ -550,13 +550,30 @@ const onFileChange = async (e: Event) => {
 }
 
 .lookingfor-disabled {
-  opacity: 0.6;
+  opacity: 1;
+  background: rgba(var(--v-theme-primary), 0.08);
+  border-radius: 10px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.2);
+}
+
+.lookingfor-disabled :deep(.v-btn.v-btn--disabled) {
+  opacity: 1 !important;
+  color: rgba(var(--v-theme-primary), 0.86) !important;
+}
+
+.lookingfor-disabled :deep(.v-btn.v-btn--disabled .v-btn__append) {
+  opacity: 1 !important;
+}
+
+.lookingfor-disabled :deep(.v-icon) {
+  opacity: 1 !important;
 }
 
 .lookingfor-icons {
   min-width: 120px;
   display: flex;
   justify-content: center;
+  filter: saturate(1.15);
 }
 .sr-only {
   position: absolute;

@@ -54,7 +54,11 @@ export function useOnboardingAi() {
     zh: ["不", "不是", "不对", "不行", "不可以"],
   };
 
-  const shouldCollectMoodFeed = () => !!auth.user?.id;
+  const shouldCollectMoodFeed = () =>
+    Boolean(
+      auth.user?.id || auth.session?.user?.id || auth.userProfile?.user_id
+    );
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const isMoodFeedActive = () =>
     shouldCollectMoodFeed() &&
@@ -204,6 +208,9 @@ export function useOnboardingAi() {
     __finalizeInFlight = true;
     if (typeof draft.setStage === "function") draft.setStage("finalizing");
     else draft.stage = "finalizing";
+    // Block any parallel mood-prompt auto-trigger while finalize + welcome
+    // sequencing is still in progress.
+    draft.setField?.("moodFeedDeferUntil", Date.now() + 7000);
     try {
       await auth.finalizeOnboarding({
         displayname: draft.displayName,
@@ -240,6 +247,13 @@ export function useOnboardingAi() {
             .slice(0, 40) || "there";
 
         const settingsUrl = "/settings";
+        const needsEmailLink = auth.authStatus === "anon_authenticated";
+        const moodDeferMs = needsEmailLink ? 2800 : 1400;
+        draft.setField?.("moodFeedDeferUntil", Date.now() + moodDeferMs);
+        const linkEmailUrl = localePath({
+          path: "/settings",
+          query: { linkEmail: "1" },
+        });
         const welcome =
           `${t("onboarding.welcomeHeadline", { name: display })} ` +
           `[[br]] ` +
@@ -250,6 +264,14 @@ export function useOnboardingAi() {
           `${t("onboarding.welcomeSettings", { settingsUrl })}`;
 
         await insertMessage(receiverId, IMCHATTY_ID, welcome);
+        await wait(1000);
+        if (needsEmailLink) {
+          const urgentLinkEmailMessage =
+            `${t("onboarding.urgentLinkEmail")} ` +
+            `[${t("components.profile-email-link.cta")}](${linkEmailUrl})`;
+          await insertMessage(receiverId, IMCHATTY_ID, urgentLinkEmailMessage);
+          await wait(1000);
+        }
         await maybeStartMoodFeedAfterWelcome(receiverId);
       }
 
@@ -697,6 +719,7 @@ if (!allowed) {
     draft.setField?.("moodFeedAttempts", 0);
     draft.setField?.("moodFeedAnswer", "");
     draft.setField?.("moodFeedRefined", "");
+    draft.setField?.("moodFeedDeferUntil", 0);
 
     const { insertMessage } = useDb();
     let typingTimer = null;

@@ -117,6 +117,9 @@ const isFeedsRoute = computed(() => normalizedPath.value.startsWith("/feeds"));
 const isArticlesRoute = computed(() =>
   normalizedPath.value.startsWith("/articles")
 );
+const isSettingsRoute = computed(() =>
+  normalizedPath.value.startsWith("/settings")
+);
 const isHomeRoute = computed(() => {
   return normalizedPath.value === "/";
 });
@@ -125,7 +128,8 @@ const footerToggleEnabled = computed(
     isChatRoute.value ||
     isHomeRoute.value ||
     isArticlesRoute.value ||
-    isFeedsRoute.value
+    isFeedsRoute.value ||
+    isSettingsRoute.value
 );
 const mainStyle = computed(() => {
   const isChat = isChatRoute.value;

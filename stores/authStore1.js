@@ -169,19 +169,12 @@ export const useAuthStore = defineStore("authStore1", {
 
       // ── 0) SSR guard ─────────────────────────────────────────────────────────────
       if (!import.meta.client) {
-        console.warn("[ensureAnon] called on server; skip");
         return null;
       }
-
-      console.log("[ensureAnon] start");
 
       // ── 1) Existing session? ─────────────────────────────────────────────────────
       const sess0 = await supabase.auth.getSession();
       const sessUserId = sess0.data?.session?.user?.id || null;
-      console.log("[ensureAnon] getSession(pre):", {
-        hasSession: !!sess0.data?.session,
-        sessUserId,
-      });
 
       if (sessUserId) {
         const user = sess0.data.session.user;
@@ -193,25 +186,15 @@ export const useAuthStore = defineStore("authStore1", {
               : "guest"
             : "authenticated",
         });
-        console.log("[ensureAnon] reuse session user:", {
-          id: user.id,
-          is_anonymous: user.is_anonymous,
-          authStatus: this.authStatus,
-        });
         return this.user;
       }
 
       // ── 2) No session → sign in anonymously ──────────────────────────────────────
-      console.log("[ensureAnon] signInAnonymously()…");
-      const { data: anonData, error: anonErr } =
-        await supabase.auth.signInAnonymously();
+      const { error: anonErr } = await supabase.auth.signInAnonymously();
       if (anonErr) {
         console.error("[ensureAnon] signInAnonymously failed:", anonErr);
         throw anonErr;
       }
-      console.log("[ensureAnon] signInAnonymously returned:", {
-        immediateUserId: anonData?.user?.id || null,
-      });
 
       // ── 3) Read back user (cookie may land a tick later) ─────────────────────────
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -219,18 +202,12 @@ export const useAuthStore = defineStore("authStore1", {
       // single immediate check
       let ures = await supabase.auth.getUser();
       let userId = ures.data?.user?.id || null;
-      console.log("[ensureAnon] getUser(immediate):", { userId });
 
       // short poll (only if needed)
       for (let i = 0; !userId && i < 10; i++) {
         await sleep(100);
         ures = await supabase.auth.getUser();
         userId = ures.data?.user?.id || null;
-        if (userId)
-          console.log("[ensureAnon] getUser(poll hit):", {
-            userId,
-            attempt: i + 1,
-          });
       }
 
       if (!userId) {
@@ -247,11 +224,6 @@ export const useAuthStore = defineStore("authStore1", {
       this.$patch({
         user,
         authStatus: this.onboardingLocal ? "onboarding" : "guest",
-      });
-      console.log("[ensureAnon] created anon user:", {
-        id: user.id,
-        is_anonymous: user.is_anonymous,
-        authStatus: this.authStatus,
       });
 
       return this.user;
@@ -361,8 +333,6 @@ export const useAuthStore = defineStore("authStore1", {
 
         provider: "anonymous",
       };
-
-      console.log("[finalize] payload", payload);
 
       const existingArr = await getUserProfileFunctionFromId(userId);
       const existing =

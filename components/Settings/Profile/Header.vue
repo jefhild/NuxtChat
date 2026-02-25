@@ -36,6 +36,13 @@
         variant="outlined"
       >
         <div class="photo-library-hero">
+          <div
+            v-if="photoLibraryDisabled"
+            class="photo-library-locked-badge"
+          >
+            <v-icon size="14" class="mr-1">mdi-lock</v-icon>
+            {{ t("components.photo-library.locked-preview") }}
+          </div>
           <v-skeleton-loader
             v-if="photoLibraryDisabled"
             type="image"
@@ -107,6 +114,7 @@
         </v-card-text>
         <div class="photo-library-footer">
           <v-btn
+            class="photo-library-link-btn"
             variant="text"
             append-icon="mdi-arrow-expand-right"
             color="blue"
@@ -252,7 +260,8 @@ watch(
 }
 
 .photo-library-card--disabled {
-  opacity: 0.7;
+  border-color: rgba(var(--v-theme-primary), 0.32);
+  box-shadow: inset 0 0 0 1px rgba(var(--v-theme-primary), 0.12);
 }
 
 .photo-library-hero {
@@ -269,6 +278,23 @@ watch(
 .photo-library-hero-skeleton {
   width: 100%;
   height: 100%;
+  opacity: 0.95;
+}
+
+.photo-library-locked-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: rgba(var(--v-theme-on-surface), 0.94);
+  background: rgba(var(--v-theme-surface), 0.86);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.2);
 }
 
 .photo-library-hero-placeholder {
@@ -323,6 +349,7 @@ watch(
   width: 64px;
   height: 64px;
   border-radius: 10px;
+  opacity: 0.95;
 }
 
 .photo-library-thumb {
@@ -350,12 +377,21 @@ watch(
 }
 
 .photo-library-hint {
-  font-size: 12px;
-  color: rgba(var(--v-theme-on-surface), 0.68);
+  font-size: 13px;
+  color: rgba(var(--v-theme-on-surface), 0.88);
 }
 
 .photo-library-hint-link {
   cursor: pointer;
   text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.photo-library-card--disabled .photo-library-link-btn {
+  color: rgba(var(--v-theme-primary), 0.8) !important;
+}
+
+.photo-library-card--disabled .photo-library-hint-link {
+  color: rgba(var(--v-theme-on-surface), 0.95);
 }
 </style>

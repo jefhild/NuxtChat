@@ -1320,6 +1320,7 @@
       "title": "Bibliothèque de photos",
       "link": "Bibliothèque de photos",
       "disabled-hint": "Liez votre e-mail pour déverrouiller",
+      "locked-preview": "Aperçu verrouillé",
       "add": "Ajouter une photo",
       "delete": "Supprimer une photo",
       "upload": "Téléverser",
@@ -1463,6 +1464,7 @@
     "welcomeHeadline": "🎉 Bienvenue, **{name}** ! Voici ta bio de départ :",
     "welcomeBioIntro": "C’est un premier jet — améliore-le ou garde-le tel quel.",
     "welcomeSettings": "✨ Ajoute une photo et peaufine ton profil dans les [Réglages]({settingsUrl}) pour plus d’échanges.",
+    "urgentLinkEmail": "⚠️ Si tu ne lies pas ton e-mail, tu ne sauras jamais qui te contacte !",
     "moodFeed": {
       "confirm": "Donc tu dis \"{text}\". C’est bien ça ?",
       "rephrase": "Pas de souci — peux-tu reformuler en une courte phrase ?",

@@ -147,7 +147,7 @@ import {
 import { useMarkdown } from "~/composables/useMarkdown";
 
 const { init: initMd, render } = useMarkdown();
-const { t, locale, availableLocales } = useI18n();
+const { t, te, locale, availableLocales } = useI18n();
 const config = useRuntimeConfig();
 
 const draft = useOnboardingDraftStore();
@@ -207,6 +207,7 @@ function isConsentPrompt(text = "") {
   const localized = allLocales
     .map((code) => {
       try {
+        if (!te("onboarding.consentPrompt", code)) return null;
         return t("onboarding.consentPrompt", {}, { locale: code });
       } catch {
         return null;
@@ -214,7 +215,9 @@ function isConsentPrompt(text = "") {
     })
     .filter(Boolean);
   const prompts = [
-    t("onboarding.consentPrompt"),
+    te("onboarding.consentPrompt")
+      ? t("onboarding.consentPrompt")
+      : "Do you confirm you are 18+ and accept the terms to continue?",
     "do you confirm you are 18+ and accept the terms to continue?",
     ...localized,
   ]
@@ -353,8 +356,6 @@ watch(
     }
   }
 );
-const TAG = "[onboarding][geo]";
-
 const withTimeout = (p, ms = 4000) =>
   Promise.race([
     p,
@@ -383,23 +384,14 @@ watch(
         const { countryId, stateId, cityId, ip } = await withTimeout(
           getDefaults()
         );
-        // console.log(`${TAG} defaults:`, { countryId, stateId, cityId });
 
         if (countryId) draft.setField("countryId", countryId);
         if (stateId) draft.setField("stateId", stateId);
         if (cityId) draft.setField("cityId", cityId);
         if (ip) draft.setField("ip", ip);
-
-        // sanity log
-        console.log(`${TAG} draft now:`, {
-          countryId: draft.countryId,
-          stateId: draft.stateId,
-          cityId: draft.cityId,
-          ip: draft.ip,
-        });
       } catch (e) {
         // DO NOT reference countryId/stateId/cityId here
-        console.warn(`${TAG} failed:`, e?.message || e, e?.stack || "");
+        console.warn("[onboarding][geo] failed:", e?.message || e, e?.stack || "");
       }
     })();
   }

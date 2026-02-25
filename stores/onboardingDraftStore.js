@@ -24,6 +24,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
     moodFeedRefined: "",
     moodFeedAttempts: 0,
     moodFeedStatus: "", // 'published' | 'pending_validation'
+    moodFeedDeferUntil: 0,
   }),
 
   getters: {
@@ -95,6 +96,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
         "moodFeedRefined",
         "moodFeedAttempts",
         "moodFeedStatus",
+        "moodFeedDeferUntil",
       ]);
 
       if (!allowed.has(key)) return;
@@ -134,6 +136,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
       this.moodFeedRefined = "";
       this.moodFeedAttempts = 0;
       this.moodFeedStatus = "";
+      this.moodFeedDeferUntil = 0;
       this.stage = "idle";
       this.updatedAt = null;
       try {
@@ -167,6 +170,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           "moodFeedRefined",
           "moodFeedAttempts",
           "moodFeedStatus",
+          "moodFeedDeferUntil",
         ]) {
           if (k in data) this[k] = data[k];
         }
@@ -202,6 +206,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           moodFeedRefined,
           moodFeedAttempts,
           moodFeedStatus,
+          moodFeedDeferUntil,
         } = this;
         localStorage.setItem("onboardingDraft", JSON.stringify({
           displayName,
@@ -224,6 +229,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           moodFeedRefined,
           moodFeedAttempts,
           moodFeedStatus,
+          moodFeedDeferUntil,
         }));
       } catch {
         /* ignore */
