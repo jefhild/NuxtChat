@@ -358,6 +358,7 @@ import { marked } from "marked";
 import ProfileDialog from "@/components/ProfileDialog.vue";
 import { nextTick } from "vue";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
+import { loadInstagramEmbeds } from "@/composables/useInstagramEmbeds.js";
 const { locale } = useI18n();
 const localPath = useLocalePath();
 const switchLocalePath = useSwitchLocalePath();
@@ -671,10 +672,67 @@ const articleBodyRef = ref(null);
 
 const renderedMarkdown = ref("");
 const htmlContent = ref("");
+
+const YOUTUBE_URL_PATTERN =
+  /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtube-nocookie\.com|youtu\.be)\//i;
+
+const extractYouTubeVideoId = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw || !YOUTUBE_URL_PATTERN.test(raw)) return null;
+
+  const normalized = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  try {
+    const parsed = new URL(normalized);
+    const hostname = parsed.hostname.replace(/^www\./i, "").toLowerCase();
+
+    if (hostname === "youtu.be") {
+      const shortId = parsed.pathname.split("/").filter(Boolean)[0] || "";
+      return /^[a-zA-Z0-9_-]{11}$/.test(shortId) ? shortId : null;
+    }
+
+    if (hostname === "youtube.com" || hostname === "youtube-nocookie.com") {
+      const pathParts = parsed.pathname.split("/").filter(Boolean);
+      const first = pathParts[0] || "";
+      if (first === "watch") {
+        const v = parsed.searchParams.get("v") || "";
+        return /^[a-zA-Z0-9_-]{11}$/.test(v) ? v : null;
+      }
+      if (first === "shorts" || first === "embed") {
+        const id = pathParts[1] || "";
+        return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+};
+
+const buildYouTubeEmbedHtml = (videoId) =>
+  `<div class="article-embed article-embed-youtube"><iframe src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
+
+const replaceStandaloneYouTubeLinksWithEmbeds = (html = "") =>
+  String(html || "").replace(
+    /<p>\s*<a\b[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>\s*<\/p>/gi,
+    (full, href) => {
+      const id = extractYouTubeVideoId(href);
+      return id ? buildYouTubeEmbedHtml(id) : full;
+    }
+  );
+
+const wrapYouTubeIframes = (html = "") =>
+  String(html || "").replace(
+    /<iframe\b([^>]*?)src=(['"])(https?:\/\/(?:www\.)?(?:youtube(?:-nocookie)?\.com|youtu\.be)\/[^'"]+)\2([^>]*)>\s*<\/iframe>/gi,
+    (full) => `<div class="article-embed article-embed-youtube">${full}</div>`
+  );
+
 if (activeTranslation.value?.body) {
   const bodyHtml = await marked(activeTranslation.value.body);
   const headerHtml = translatedHeader.value;
-  const sectionHtml = `<section class="rewrite-body">${bodyHtml}</section>`;
+  const embedsExpandedBody = wrapYouTubeIframes(
+    replaceStandaloneYouTubeLinksWithEmbeds(bodyHtml)
+  );
+  const sectionHtml = `<section class="rewrite-body">${embedsExpandedBody}</section>`;
   htmlContent.value = `<article class="newsmesh-article">${
     headerHtml || ""
   }${sectionHtml}</article>`;
@@ -685,7 +743,7 @@ if (activeTranslation.value?.body) {
 }
 
 if (htmlContent.value) {
-  renderedMarkdown.value = htmlContent.value;
+  renderedMarkdown.value = wrapYouTubeIframes(htmlContent.value);
 }
 
 const siteConfig = useSiteConfig();
@@ -726,10 +784,23 @@ onMounted(async () => {
   categories.value = categoryData || [];
   tags.value = tagData || [];
   people.value = peopleData || [];
-  // Ensure any embedded twitter blockquotes are parsed by the widgets script
   nextTick(() => {
     try {
-      if (articleBodyRef?.value) loadTwitterWidgets(articleBodyRef.value);
+      if (!articleBodyRef?.value) return;
+      loadTwitterWidgets(articleBodyRef.value);
+      loadInstagramEmbeds(articleBodyRef.value);
+    } catch (e) {
+      // ignore
+    }
+  });
+});
+
+watch(renderedMarkdown, () => {
+  nextTick(() => {
+    try {
+      if (!articleBodyRef?.value) return;
+      loadTwitterWidgets(articleBodyRef.value);
+      loadInstagramEmbeds(articleBodyRef.value);
     } catch (e) {
       // ignore
     }
@@ -1151,6 +1222,34 @@ const formatDate = (date) =>
 
 .prose :deep(.newsmesh-article .rewrite-body p:last-child) {
   margin-bottom: 0;
+}
+
+.prose :deep(.article-embed) {
+  margin: 1.25rem 0;
+}
+
+.prose :deep(.article-embed-youtube) {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.prose :deep(.article-embed-youtube iframe) {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
+  border-radius: 12px;
+}
+
+.prose :deep(blockquote.instagram-media) {
+  width: 100% !important;
+  max-width: 540px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .chip-link {
