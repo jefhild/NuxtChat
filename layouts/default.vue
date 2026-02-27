@@ -76,12 +76,16 @@ import { useMessagesStore } from "@/stores/messagesStore";
 import { useDb } from "@/composables/useDB";
 import { useDisplay } from "vuetify";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
-import { useHead, useRoute } from "#imports";
+import { useHead, useRoute, useRuntimeConfig, useSiteConfig } from "#imports";
 import { useFavoriteNotifications } from "@/composables/useFavoriteNotifications";
 
 const auth = useAuthStore();
 const presence = usePresenceStore2();
 const messages = useMessagesStore();
+const { t } = useI18n();
+const localePath = useLocalePath();
+const runtimeConfig = useRuntimeConfig();
+const siteConfig = useSiteConfig();
 const { updateLastActive, touchPresence } = useDb();
 const { smAndDown } = useDisplay();
 const hasMounted = ref(false);
@@ -185,6 +189,26 @@ const unreadCount = computed(() => messages.totalUnread || 0);
 const unreadLabel = computed(() =>
   unreadCount.value > 99 ? "99+" : `${unreadCount.value}`
 );
+const siteUrl = computed(() =>
+  String(siteConfig?.url || runtimeConfig.public.SITE_URL || "").replace(/\/+$/, "")
+);
+const primaryNavItems = computed(() => {
+  const items = [
+    { name: t("components.navbar.chat"), path: localePath("/chat") },
+    { name: t("components.navbar.blog"), path: localePath("/articles") },
+    { name: t("components.navbar.feeds") || "Mood Feed", path: localePath("/feeds") },
+    { name: "Categories", path: localePath("/categories") },
+    { name: "Tags", path: localePath("/tags") },
+    { name: "People", path: localePath("/people") },
+  ];
+
+  const deduped = new Map();
+  items.forEach((item) => {
+    if (!item?.path) return;
+    deduped.set(item.path, item);
+  });
+  return Array.from(deduped.values());
+});
 const ACTIVITY_AUTH_STATUSES = ["anon_authenticated", "authenticated"];
 let lastNavPingAt = 0;
 
@@ -253,6 +277,53 @@ useHead(() => ({
     return `${prefix}${base}`;
   },
 }));
+
+useHead(() => {
+  const base = siteUrl.value;
+  const toAbsoluteUrl = (path) => {
+    if (!path) return "";
+    if (/^https?:\/\//i.test(path)) return path;
+    if (!base) return path;
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return `${base}${normalized === "/" ? "" : normalized}`;
+  };
+
+  const navEntries = primaryNavItems.value
+    .map((item) => ({
+      name: item.name,
+      url: toAbsoluteUrl(item.path),
+    }))
+    .filter((item) => item.url);
+
+  return {
+    script: [
+      {
+        key: "ld-primary-navigation",
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebSite",
+              "@id": base ? `${base}/#website` : undefined,
+              url: base || undefined,
+              name: siteConfig?.name || "ImChatty",
+            },
+            {
+              "@type": "SiteNavigationElement",
+              name: "Primary Navigation",
+              hasPart: navEntries.map((entry) => ({
+                "@type": "WebPage",
+                name: entry.name,
+                url: entry.url,
+              })),
+            },
+          ],
+        }),
+      },
+    ],
+  };
+});
 
 onMounted(() => {
   if (!isClient) return;

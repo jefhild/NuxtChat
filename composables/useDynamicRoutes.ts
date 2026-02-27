@@ -180,7 +180,16 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       }))
       .filter((route) => route.locales.length > 0);
 
-    const staticPages = ["/about", "/cookies", "/people"];
+    const staticPages = [
+      "/about",
+      "/faq",
+      "/cookies",
+      "/articles",
+      "/categories",
+      "/tags",
+      "/people",
+      "/profiles",
+    ];
     const homeRoutes = ["/"];
 
     const allRoutes = [
@@ -241,7 +250,16 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       return [];
     }
 
-    const staticPages = ["/about", "/cookies", "/people"];
+    const staticPages = [
+      "/about",
+      "/faq",
+      "/cookies",
+      "/articles",
+      "/categories",
+      "/tags",
+      "/people",
+      "/profiles",
+    ];
     const homeRoutes = ["/"];
     const fallbackLastmod = new Date().toISOString();
 
