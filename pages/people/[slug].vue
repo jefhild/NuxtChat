@@ -139,9 +139,15 @@
 
 <script setup>
 const route = useRoute();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const config = useRuntimeConfig();
+const siteConfig = useSiteConfig();
+const switchLocalePath = useSwitchLocalePath();
 const supabaseBucket = config.public.SUPABASE_BUCKET;
+const baseUrl = (siteConfig?.url || config.public.SITE_URL || "").replace(
+  /\/+$/,
+  ""
+);
 
 const {
   getArticlesByPersonSlug,
@@ -160,6 +166,10 @@ const openFilterPanel = ref(null);
 const filtersOpen = ref(false);
 const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
 const slug = computed(() => route.params.slug);
+const currentLocale = computed(() => locale.value || "en");
+const baseLocale = computed(() =>
+  String(currentLocale.value || "en").split("-")[0].toLowerCase()
+);
 const searchQuery = ref("");
 const perPage = 12;
 const visibleCount = ref(perPage);
@@ -185,6 +195,49 @@ const pageHeading = computed(
   () => displayName.value || t("pages.people.index.title")
 );
 const pageSubtitle = computed(() => t("pages.people.index.subtitle"));
+
+const normalizeLocaleCode = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .split("-")[0];
+
+const availableTaxonomyLocales = computed(() => {
+  const locales = new Set(["en"]);
+  let hasLocaleMetadata = false;
+
+  for (const article of articles.value || []) {
+    const originalLocale = normalizeLocaleCode(article?.original_language_code);
+    if (originalLocale) {
+      locales.add(originalLocale);
+      hasLocaleMetadata = true;
+    }
+    const translations = Array.isArray(article?.article_translations)
+      ? article.article_translations
+      : [];
+    for (const entry of translations) {
+      const translationLocale = normalizeLocaleCode(entry?.locale);
+      if (translationLocale) {
+        locales.add(translationLocale);
+        hasLocaleMetadata = true;
+      }
+    }
+  }
+
+  return hasLocaleMetadata ? Array.from(locales) : ["en"];
+});
+
+const isCurrentLocaleAvailable = computed(() =>
+  availableTaxonomyLocales.value.includes(baseLocale.value)
+);
+const canonicalLocale = computed(() => {
+  if (isCurrentLocaleAvailable.value) return baseLocale.value;
+  if (availableTaxonomyLocales.value.includes("en")) return "en";
+  return availableTaxonomyLocales.value[0] || "en";
+});
+const canonicalPath = computed(
+  () => switchLocalePath(canonicalLocale.value) || route.path || "/"
+);
 
 const searchLabel = computed(() => t("pages.articles.index.search"));
 
@@ -212,6 +265,9 @@ const limitedDescription = computed(() =>
 );
 
 useSeoI18nMeta("people.index", {
+  availableLocaleCodes: availableTaxonomyLocales,
+  robots: isCurrentLocaleAvailable.value ? undefined : "noindex,follow",
+  overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
   dynamic: {
     title: computed(() => `${pageHeading.value} – ImChatty`),
     description: limitedDescription,

@@ -120,6 +120,7 @@ const isArticlesRoute = computed(() =>
 const isSettingsRoute = computed(() =>
   normalizedPath.value.startsWith("/settings")
 );
+const isAdminRoute = computed(() => normalizedPath.value.startsWith("/admin"));
 const isHomeRoute = computed(() => {
   return normalizedPath.value === "/";
 });
@@ -129,7 +130,8 @@ const footerToggleEnabled = computed(
     isHomeRoute.value ||
     isArticlesRoute.value ||
     isFeedsRoute.value ||
-    isSettingsRoute.value
+    isSettingsRoute.value ||
+    isAdminRoute.value
 );
 const mainStyle = computed(() => {
   const isChat = isChatRoute.value;

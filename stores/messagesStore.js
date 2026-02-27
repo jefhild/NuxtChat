@@ -17,6 +17,25 @@ export const useMessagesStore = defineStore("messages", {
     getUnreadFor: (s) => (peerId) => s.unreadByPeer?.[peerId] || 0,
   },
   actions: {
+    clearUnreadForPeers(peerIds = []) {
+      const normalized = new Set(
+        (Array.isArray(peerIds) ? peerIds : [peerIds])
+          .map((id) => String(id ?? "").trim().toLowerCase())
+          .filter(Boolean)
+      );
+      if (!normalized.size) return;
+
+      const entries = Object.entries(this.unreadByPeer || {});
+      const next = Object.fromEntries(
+        entries.filter(
+          ([k]) => !normalized.has(String(k).trim().toLowerCase())
+        )
+      );
+      if (Object.keys(next).length !== entries.length) {
+        this.unreadByPeer = next;
+      }
+    },
+
     async init(me) {
       if (!me) return;
 
@@ -87,7 +106,7 @@ export const useMessagesStore = defineStore("messages", {
       try {
         await this._db.markThreadAsRead(this._me, peerId);
       } catch {}
-      this.unreadByPeer = { ...this.unreadByPeer, [peerId]: 0 };
+      this.clearUnreadForPeers([peerId]);
     },
   },
 });

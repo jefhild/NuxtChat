@@ -143,10 +143,16 @@ const {
   getAllPeople,
 } = useDb();
 
-const { t, te } = useI18n();
+const { t, te, locale } = useI18n();
 const route = useRoute();
 const config = useRuntimeConfig();
+const siteConfig = useSiteConfig();
+const switchLocalePath = useSwitchLocalePath();
 const supabaseBucket = config.public.SUPABASE_BUCKET;
+const baseUrl = (siteConfig?.url || config.public.SITE_URL || "").replace(
+  /\/+$/,
+  ""
+);
 
 const articles = ref([]);
 const categories = ref([]);
@@ -154,6 +160,10 @@ const tags = ref([]);
 const people = ref([]);
 const searchQuery = ref("");
 const tagSlug = computed(() => route.params.slug);
+const currentLocale = computed(() => locale.value || "en");
+const baseLocale = computed(() =>
+  String(currentLocale.value || "en").split("-")[0].toLowerCase()
+);
 const openFilterPanel = ref(null);
 const filtersOpen = ref(false);
 const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
@@ -220,7 +230,53 @@ const tagHeading = computed(
 );
 const tagSubtitle = computed(() => t("pages.articles.tags.subtitle"));
 
+const normalizeLocaleCode = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .split("-")[0];
+
+const availableTaxonomyLocales = computed(() => {
+  const locales = new Set(["en"]);
+  let hasLocaleMetadata = false;
+
+  for (const article of articles.value || []) {
+    const originalLocale = normalizeLocaleCode(article?.original_language_code);
+    if (originalLocale) {
+      locales.add(originalLocale);
+      hasLocaleMetadata = true;
+    }
+    const translations = Array.isArray(article?.article_translations)
+      ? article.article_translations
+      : [];
+    for (const entry of translations) {
+      const translationLocale = normalizeLocaleCode(entry?.locale);
+      if (translationLocale) {
+        locales.add(translationLocale);
+        hasLocaleMetadata = true;
+      }
+    }
+  }
+
+  return hasLocaleMetadata ? Array.from(locales) : ["en"];
+});
+
+const isCurrentLocaleAvailable = computed(() =>
+  availableTaxonomyLocales.value.includes(baseLocale.value)
+);
+const canonicalLocale = computed(() => {
+  if (isCurrentLocaleAvailable.value) return baseLocale.value;
+  if (availableTaxonomyLocales.value.includes("en")) return "en";
+  return availableTaxonomyLocales.value[0] || "en";
+});
+const canonicalPath = computed(
+  () => switchLocalePath(canonicalLocale.value) || route.path || "/"
+);
+
 useSeoI18nMeta("tags.index", {
+  availableLocaleCodes: availableTaxonomyLocales,
+  robots: isCurrentLocaleAvailable.value ? undefined : "noindex,follow",
+  overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
   dynamic: {
     title: tagHeading,
     description: computed(() =>

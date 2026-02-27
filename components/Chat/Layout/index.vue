@@ -2505,7 +2505,20 @@ function closeDeleteDialog() {
 
 async function confirmDeleteChat() {
   if (!deleteTarget.value || !meId.value) return;
-  const peerId = deleteTarget.value.user_id || deleteTarget.value.id;
+  const candidatePeerIds = [
+    deleteTarget.value.user_id,
+    deleteTarget.value.id,
+    deleteTarget.value.auth_user_id,
+    deleteTarget.value.uid,
+  ]
+    .map((id) => String(id ?? "").trim())
+    .filter(Boolean);
+  if (!candidatePeerIds.length) return;
+
+  const unreadKeys = Object.keys(msgs?.unreadByPeer || {});
+  const peerId =
+    candidatePeerIds.find((id) => unreadKeys.includes(id)) ||
+    candidatePeerIds[0];
   if (!peerId) return;
 
   deletingChat.value = true;
@@ -2522,7 +2535,9 @@ async function confirmDeleteChat() {
     activeChats.value = (activeChats.value || []).filter(
       (id) => String(id) !== peerIdStr
     );
-    if (msgs?.unreadByPeer) {
+    if (msgs?.clearUnreadForPeers) {
+      msgs.clearUnreadForPeers([peerIdStr, ...candidatePeerIds]);
+    } else if (msgs?.unreadByPeer) {
       msgs.unreadByPeer = { ...msgs.unreadByPeer, [peerIdStr]: 0 };
     }
 

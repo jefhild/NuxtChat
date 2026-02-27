@@ -5,38 +5,49 @@
     <v-row v-else>
       <v-col cols="12">
         <v-card>
-          <v-card-text>
-            <div class="d-flex flex-column flex-md-row ga-4 mb-6">
+          <v-card-text class="admin-dashboard__card-text">
+            <div class="admin-controls">
               <v-text-field
                 v-model="search"
                 label="Search profiles..."
                 variant="outlined"
+                density="compact"
                 clearable
-                class="flex-1"
+                hide-details
+                class="admin-search"
               />
-              <v-select
-                v-model="filterSelection"
-                :items="filterOptions"
-                label="User filter"
-                variant="outlined"
-                class="admin-filter"
-              />
-              <v-select
-                v-model="sortSelection"
-                :items="sortOptions"
-                label="Sort by"
-                variant="outlined"
-                class="admin-sort"
-              />
-              <v-btn
-                v-if="markedCount"
-                color="red"
-                variant="outlined"
-                class="admin-purge"
-                @click="purgeDialogOpen = true"
-              >
-                Purge marked ({{ markedCount }})
-              </v-btn>
+
+              <div class="admin-select-row">
+                <v-select
+                  v-model="filterSelection"
+                  :items="filterOptions"
+                  label="User filter"
+                  variant="outlined"
+                  density="compact"
+                  hide-details
+                  class="admin-filter"
+                />
+                <v-select
+                  v-model="sortSelection"
+                  :items="sortOptions"
+                  label="Sort by"
+                  variant="outlined"
+                  density="compact"
+                  hide-details
+                  class="admin-sort"
+                />
+              </div>
+
+              <div v-if="markedCount" class="admin-purge-wrap">
+                <v-btn
+                  color="red"
+                  variant="outlined"
+                  class="admin-purge"
+                  @click="purgeDialogOpen = true"
+                >
+                  Purge marked ({{ markedCount }})
+                </v-btn>
+              </div>
             </div>
 
             <v-data-table
@@ -139,8 +150,15 @@
                     >
                       {{ displayNameFor(item) }}
                     </button>
-                    <span class="text-caption text-medium-emphasis">
-                      {{ item.slug || item.user_id }}
+                    <span
+                      class="text-caption text-medium-emphasis admin-profile-subline admin-profile-subline--desktop"
+                    >
+                      {{ formatDate(item.createdAt) }}
+                    </span>
+                    <span
+                      class="text-caption text-medium-emphasis admin-profile-subline admin-profile-subline--mobile"
+                    >
+                      {{ formatDate(item.createdAt) }}
                     </span>
                     <span
                       v-if="item.marked_for_deletion_at"
@@ -150,6 +168,12 @@
                     </span>
                   </div>
                 </div>
+              </template>
+
+              <template #item.tagline="{ item }">
+                <span class="text-caption text-medium-emphasis admin-tagline-cell">
+                  {{ taglineFor(item) || "—" }}
+                </span>
               </template>
 
               <template #item.actions="{ item }">
@@ -901,6 +925,7 @@
 import { getAvatar, getGenderPath } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
+import { useDisplay } from "vuetify";
 
 const isLoading = ref(true);
 const profiles = ref([]); // will always be an array after load
@@ -960,6 +985,7 @@ const mockDiscussionInsertedIds = ref([]);
 let mockDiscussionAbort = false;
 
 const { locale } = useI18n();
+const { mdAndUp } = useDisplay();
 const localPath = useLocalePath();
 const router = useRouter();
 
@@ -975,6 +1001,12 @@ const displayNameFor = (profile) =>
     profile,
     readerLocale: locale?.value,
   }).displayname || profile?.displayname || "Unknown";
+
+const taglineFor = (profile) =>
+  resolveProfileLocalization({
+    profile,
+    readerLocale: locale?.value,
+  }).tagline || profile?.tagline || "";
 
 const isExpanded = (userId) => expanded.value.includes(userId);
 const toggleExpanded = (userId) => {
@@ -1142,10 +1174,19 @@ const sortBy = computed(() => {
   }
 });
 
-const tableHeaders = [
-  { title: "Profile", key: "profile", sortable: false },
-  { title: "Actions", key: "actions", sortable: false, align: "center" },
-];
+const tableHeaders = computed(() => {
+  const headers = [{ title: "Profile", key: "profile", sortable: false }];
+  if (mdAndUp.value) {
+    headers.push({ title: "Tagline", key: "tagline", sortable: false });
+  }
+  headers.push({
+    title: "Actions",
+    key: "actions",
+    sortable: false,
+    align: "center",
+  });
+  return headers;
+});
 
 const chatMessageHeaders = [
   { title: "Created", key: "created_at" },
@@ -2155,8 +2196,37 @@ const purgeMarkedProfiles = async () => {
   padding-right: 16px;
 }
 
+.admin-dashboard__card-text {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.admin-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.admin-select-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-purge-wrap {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .admin-table :deep(thead th) {
   white-space: nowrap;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  font-size: 0.88rem;
+  line-height: 1.1;
 }
 
 .admin-table :deep(th[data-column="actions"]),
@@ -2245,11 +2315,11 @@ const purgeMarkedProfiles = async () => {
 }
 
 .admin-sort {
-  min-width: 220px;
+  min-width: 0;
 }
 
 .admin-filter {
-  min-width: 220px;
+  min-width: 0;
 }
 
 .admin-purge {
@@ -2275,6 +2345,18 @@ const purgeMarkedProfiles = async () => {
   justify-content: center;
 }
 
+.admin-tagline-cell {
+  display: inline-block;
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-profile-subline--mobile {
+  display: none;
+}
+
 .admin-profile-link {
   background: none;
   border: 0;
@@ -2292,5 +2374,28 @@ const purgeMarkedProfiles = async () => {
   outline: 2px solid #1d4ed8;
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+@media (max-width: 960px) {
+  .admin-profile-subline--desktop {
+    display: none;
+  }
+
+  .admin-profile-subline--mobile {
+    display: inline;
+  }
+
+  .admin-purge-wrap {
+    justify-content: flex-start;
+  }
+
+  .admin-table :deep(thead th) {
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    font-size: 0.8rem;
+    line-height: 1.15;
+  }
 }
 </style>
