@@ -6,7 +6,8 @@ Short, code-level tasks that are easy to execute in one sitting.
 
 - [ ] [P2] [ux] Add a Browse Profiles Section
 - [ ] [P2] [ui] Mood Feed UI is ugly
-- [ ] [P2] [ui] embed instagram and youtube in Articles page
+- [ ] [P3] [ux] Mood Feed Teaser to Home Page
+
 
 ## Next
 - [ ] [P2] [chat] Audit selected-user header truncation on very long names/taglines.
@@ -20,6 +21,7 @@ Short, code-level tasks that are easy to execute in one sitting.
 - [x] [P2] [ux] Add empty-state copy for profile tagline when missing.
 - [x] [P2] [ui] Full Profile Display is ugly. make it like a playing card
 - [x] [P2] [ui] When someone tries to logout with an email, insist.
+- [x] [P2] [ui] embed instagram and youtube in Articles page
 
 
 

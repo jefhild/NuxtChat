@@ -54,6 +54,9 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "来自社区的简短真诚快照。",
+      "promptTitle": "每日心情提问",
+      "promptSubtitle": "分享你的感受，和懂你的人建立连接。",
+      "seeAll": "浏览 Mood Feed",
       "meta": {
         "title": "Mood Feed | 匿名社区心情动态 - ImChatty",
         "description": "浏览 ImChatty 社区的简短心情更新。阅读快速快照，匿名回复并分享你的感受。",

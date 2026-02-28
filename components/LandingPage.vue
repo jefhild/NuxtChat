@@ -56,6 +56,14 @@
         </v-img>
       </v-sheet>
     </div>
+    <!-- Home Mood Question -->
+    <div class="full-bleed">
+      <v-sheet class="home-mood-wrap" elevation="0">
+        <v-container fluid class="py-8 px-4 px-md-8">
+          <MoodFeedHomeQuestionBar :card-theme="homeMoodCardTheme" />
+        </v-container>
+      </v-sheet>
+    </div>
     <!-- CTA Section -->
     <div class="full-bleed">
       <v-sheet class="cta cta-surface" elevation="0">
@@ -284,6 +292,10 @@ const authStatus = computed(() => authStore.authStatus);
 const userProfile = computed(() => authStore.userProfile);
 const isAnonAuthed = computed(() => authStatus.value === "anon_authenticated");
 const isDarkTheme = computed(() => theme.global.current.value.dark);
+const homeMoodCardTheme = computed(() => {
+  const raw = String(userProfile.value?.profile_card_theme || "trading").toLowerCase();
+  return ["trading", "vintage", "holo"].includes(raw) ? raw : "trading";
+});
 
 const linkEmailDialogVisible = ref(false);
 const linkEmailSubmitting = ref(false);
@@ -464,6 +476,18 @@ onMounted(async () => {
 .cta {
   background: linear-gradient(135deg, #e3f2fd, #f1f8e9);
   border-radius: 0;
+}
+
+.home-mood-wrap {
+  background:
+    radial-gradient(700px 260px at 2% 0%, rgba(56, 189, 248, 0.12), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+}
+
+:global(.v-theme--dark .home-mood-wrap) {
+  background:
+    radial-gradient(900px 320px at 2% 0%, rgba(56, 189, 248, 0.14), transparent 60%),
+    linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
 }
 
 .cta-surface {

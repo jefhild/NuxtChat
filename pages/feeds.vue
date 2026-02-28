@@ -9,49 +9,7 @@
       </div>
     </div>
 
-    <v-sheet class="pa-3 pa-md-4 mood-prompt-bar" elevation="0">
-      <div class="d-flex flex-wrap align-center gap-3 prompt-row">
-        <div class="prompt-text">
-          <span v-if="promptLoading">
-            {{ t("pages.feeds.promptLoading", "Loading question...") }}
-          </span>
-          <span v-else class="prompt-text-inline">
-            {{ promptText || t("pages.feeds.promptFallback", "Share what's on your mind.") }}
-            <NuxtLink
-              v-if="promptRelatedHref"
-              :to="promptRelatedHref"
-              class="prompt-related-link"
-            >
-              [Related]
-            </NuxtLink>
-          </span>
-        </div>
-        <v-text-field
-          v-model="promptAnswer"
-          class="prompt-input"
-          variant="outlined"
-          density="comfortable"
-          hide-details
-          :placeholder="t('pages.feeds.promptPlaceholder', 'Your response...')"
-          maxlength="280"
-          @keyup.enter="onSubmitPrompt"
-        />
-        <v-btn
-          color="primary"
-          class="prompt-submit"
-          size="large"
-          :loading="submitBusy"
-          :disabled="promptSubmitDisabled"
-          @click="onSubmitPrompt"
-        >
-          {{ t("pages.feeds.submitButton", "Submit") }}
-        </v-btn>
-      </div>
-      <div v-if="cooldownActive" class="prompt-cooldown text-caption mt-2">
-        {{ cooldownLabel }}
-      </div>
-      <hr class="prompt-divider" />
-    </v-sheet>
+    <MoodFeedHomeQuestionBar variant="feeds" @posted="loadEntries" />
 
     <div class="feeds-list">
       <div v-if="loading" class="feeds-loading mt-4" aria-live="polite" aria-label="Loading..." role="alert">
@@ -90,30 +48,6 @@
       v-model="profileOpen"
       :user-id="profileUserId"
     />
-
-    <v-dialog v-model="refineDialogOpen" max-width="520">
-      <v-card>
-        <v-card-title>
-          {{ t("pages.feeds.refineTitle", "So you're saying...") }}
-        </v-card-title>
-        <v-card-text>
-          <div class="text-body-1 font-weight-medium">
-            {{ refinedPreview }}
-          </div>
-          <div class="text-caption text-medium-emphasis mt-2">
-            {{ t("pages.feeds.refineHelper", "You can edit your response if this misses the mark.") }}
-          </div>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="text" @click="onRefineEdit">
-            {{ t("pages.feeds.refineEdit", "Edit") }}
-          </v-btn>
-          <v-btn color="primary" :loading="submitBusy" @click="onConfirmRefine">
-            {{ t("pages.feeds.refinePost", "Post") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
 
     <v-dialog v-model="consentDialogOpen" max-width="520">
       <v-card>
@@ -222,7 +156,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/authStore1";
 import MoodFeedPromptCard from "@/components/MoodFeed/PromptCard.vue";
@@ -254,18 +188,6 @@ const loginNoticeAction = computed(() =>
     ? t("components.profile-email-link.cta")
     : t("components.navbar.signin")
 );
-const promptText = ref("");
-const promptKey = ref(null);
-const promptRelatedArticleSlug = ref(null);
-const promptLoading = ref(false);
-const promptReqId = ref(0);
-const promptAnswer = ref("");
-const submitBusy = ref(false);
-const refineDialogOpen = ref(false);
-const refinedPreview = ref("");
-const refinedOriginal = ref("");
-const refinedPromptText = ref("");
-const refinedPromptKey = ref(null);
 const consentDialogOpen = ref(false);
 const consentBusy = ref(false);
 const pendingAction = ref(null);
@@ -280,50 +202,6 @@ const limitDialogOpen = ref(false);
 const registerDialogOpen = ref(false);
 const submitNoticeOpen = ref(false);
 const submitNoticeText = ref("");
-const postEligibility = ref({
-  canPost: true,
-  cooldownHours: 24,
-  lastEntryAt: null,
-  nextAllowedAt: null,
-  remainingMs: 0,
-});
-const nowTick = ref(Date.now());
-let cooldownTimerId = null;
-
-const cooldownRemainingMs = computed(() => {
-  const next = postEligibility.value?.nextAllowedAt;
-  if (!next) return 0;
-  const nextAt = new Date(next).getTime();
-  if (!Number.isFinite(nextAt)) return 0;
-  return Math.max(0, nextAt - nowTick.value);
-});
-
-const cooldownActive = computed(() => cooldownRemainingMs.value > 0);
-
-const formatDuration = (ms) => {
-  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  if (minutes > 0) return `${minutes}m ${seconds}s`;
-  return `${seconds}s`;
-};
-
-const cooldownLabel = computed(() =>
-  t("pages.feeds.cooldownActive", {
-    time: formatDuration(cooldownRemainingMs.value),
-  })
-);
-
-const promptSubmitDisabled = computed(
-  () => submitBusy.value || !promptAnswer.value.trim() || cooldownActive.value
-);
-const promptRelatedHref = computed(() => {
-  const slug = String(promptRelatedArticleSlug.value || "").trim();
-  if (!slug) return null;
-  return localPath(`/articles/${slug}`);
-});
 
 async function loadEntries() {
   loading.value = true;
@@ -332,58 +210,10 @@ async function loadEntries() {
       query: { locale: locale.value, limit: 30, offset: 0 },
     });
     threads.value = res?.items || [];
-  } catch (err) {
+  } catch {
     threads.value = [];
   } finally {
     loading.value = false;
-  }
-}
-
-async function loadPrompt() {
-  const reqId = (promptReqId.value += 1);
-  promptLoading.value = true;
-  try {
-    const res = await $fetch("/api/mood-feed/prompts/random", {
-      query: { locale: locale.value },
-    });
-    if (reqId !== promptReqId.value) return;
-    promptText.value = res?.promptText || "";
-    promptKey.value = res?.promptKey || null;
-    promptRelatedArticleSlug.value = res?.relatedArticleSlug || null;
-  } catch {
-    if (reqId !== promptReqId.value) return;
-    promptText.value = "";
-    promptKey.value = null;
-    promptRelatedArticleSlug.value = null;
-  } finally {
-    if (reqId === promptReqId.value) {
-      promptLoading.value = false;
-    }
-  }
-}
-
-async function loadPostEligibility(targetPromptKey = null) {
-  const normalizedPromptKey =
-    String(targetPromptKey || promptKey.value || "").trim() || null;
-  try {
-    const res = await $fetch("/api/mood-feed/post-eligibility", {
-      query: normalizedPromptKey ? { promptKey: normalizedPromptKey } : undefined,
-    });
-    postEligibility.value = {
-      canPost: Boolean(res?.canPost ?? true),
-      cooldownHours: Number(res?.cooldownHours || 24),
-      lastEntryAt: res?.lastEntryAt || null,
-      nextAllowedAt: res?.nextAllowedAt || null,
-      remainingMs: Number(res?.remainingMs || 0),
-    };
-  } catch {
-    postEligibility.value = {
-      canPost: true,
-      cooldownHours: 24,
-      lastEntryAt: null,
-      nextAllowedAt: null,
-      remainingMs: 0,
-    };
   }
 }
 
@@ -435,115 +265,6 @@ function extractFetchError(err) {
     err?.statusMessage || err?.response?._data?.statusMessage || "";
   const data = err?.data || err?.response?._data || {};
   return { statusCode, statusMessage, data };
-}
-
-async function onSubmitPrompt() {
-  const text = String(promptAnswer.value || "").trim().slice(0, 280);
-  if (!text) return;
-  if (cooldownActive.value) {
-    submitNoticeText.value = t("pages.feeds.noticeCooldown", {
-      time: formatDuration(cooldownRemainingMs.value),
-    });
-    submitNoticeOpen.value = true;
-    return;
-  }
-  const proceed = await ensureSessionReady(onSubmitPrompt);
-  if (!proceed) return;
-
-  submitBusy.value = true;
-  try {
-    const res = await $fetch("/api/mood-feed/refine", {
-      method: "POST",
-      body: {
-        prompt: promptText.value || "",
-        response: text,
-        locale: locale.value,
-      },
-    });
-    refinedPreview.value = String(res?.refined || text).trim();
-    refinedOriginal.value = text;
-    refinedPromptText.value = promptText.value || "";
-    refinedPromptKey.value = promptKey.value || null;
-    refineDialogOpen.value = true;
-  } catch (err) {
-    const { statusCode, statusMessage } = extractFetchError(err);
-    if (statusCode === 403 && statusMessage === "captcha_required") {
-      handleCaptchaRequired();
-    }
-  } finally {
-    submitBusy.value = false;
-  }
-}
-
-async function onConfirmRefine() {
-  if (!refinedPreview.value) return;
-  submitBusy.value = true;
-  try {
-    const res = await $fetch("/api/mood-feed/entries", {
-      method: "POST",
-      body: {
-        promptText: refinedPromptText.value || null,
-        promptKey: refinedPromptKey.value || null,
-        originalText: refinedOriginal.value || null,
-        refinedText: refinedPreview.value,
-        locale: locale.value,
-        captchaToken: captchaToken.value || undefined,
-      },
-    });
-    if (res?.status === "pending_validation") {
-      submitNoticeText.value = t(
-        "pages.feeds.noticePendingEntry",
-        "Thanks! Your response is under review before it appears."
-      );
-      submitNoticeOpen.value = true;
-    } else {
-      submitNoticeText.value = t(
-        "pages.feeds.noticePosted",
-        "Posted to the Mood Feed."
-      );
-      submitNoticeOpen.value = true;
-    }
-    rememberCaptchaPassed();
-    captchaToken.value = "";
-    refineDialogOpen.value = false;
-    promptAnswer.value = "";
-    await loadEntries();
-    await loadPrompt();
-    await loadPostEligibility(refinedPromptKey.value || promptKey.value || null);
-  } catch (err) {
-    const { statusCode, statusMessage, data } = extractFetchError(err);
-    if (statusCode === 429 && data?.limitType) {
-      if (data.limitType === "cooldown") {
-        postEligibility.value = {
-          canPost: false,
-          cooldownHours: Number(data?.cooldownHours || 24),
-          lastEntryAt: data?.lastEntryAt || null,
-          nextAllowedAt: data?.nextAllowedAt || null,
-          remainingMs: Number(data?.remainingMs || 0),
-        };
-        submitNoticeText.value = t("pages.feeds.noticeCooldown", {
-          time: formatDuration(cooldownRemainingMs.value),
-        });
-        submitNoticeOpen.value = true;
-      } else {
-        handleAnonLimit();
-      }
-    } else if (statusCode === 403 && statusMessage === "captcha_required") {
-      handleCaptchaRequired();
-    } else if (statusCode === 403 && statusMessage === "captcha_failed") {
-      captchaError.value = t(
-        "pages.feeds.captchaFailed",
-        "CAPTCHA verification failed. Please try again."
-      );
-      consentDialogOpen.value = true;
-    }
-  } finally {
-    submitBusy.value = false;
-  }
-}
-
-function onRefineEdit() {
-  refineDialogOpen.value = false;
 }
 
 function onCaptchaVerified(token) {
@@ -801,31 +522,6 @@ async function deleteReply({ entryId, replyId }) {
 
 onMounted(loadEntries);
 watch(locale, loadEntries);
-onMounted(loadPrompt);
-watch(locale, loadPrompt);
-onMounted(loadPostEligibility);
-watch(promptKey, (nextKey) => {
-  loadPostEligibility(nextKey);
-});
-watch(
-  () => auth.authStatus,
-  () => {
-    loadPostEligibility(promptKey.value || null);
-  }
-);
-
-onMounted(() => {
-  cooldownTimerId = window.setInterval(() => {
-    nowTick.value = Date.now();
-  }, 1000);
-});
-
-onBeforeUnmount(() => {
-  if (cooldownTimerId) {
-    clearInterval(cooldownTimerId);
-    cooldownTimerId = null;
-  }
-});
 
 if (import.meta.client) {
   onMounted(() => {
@@ -871,65 +567,6 @@ if (import.meta.client) {
   margin-bottom: 16px;
 }
 
-.mood-prompt-bar {
-  margin-bottom: 20px;
-  border-radius: 16px;
-  border: 1px solid var(--mf-panel-border);
-  background: var(--mf-panel-bg);
-  backdrop-filter: blur(6px);
-}
-
-.prompt-row {
-  row-gap: 12px;
-  column-gap: 10px;
-}
-
-.prompt-divider {
-  margin-top: 12px;
-  border: 0;
-  border-top: 1px solid var(--mf-divider);
-}
-
-.prompt-cooldown {
-  color: #93c5fd;
-}
-
-.prompt-text {
-  flex: 1 1 360px;
-  font-weight: 600;
-  font-size: clamp(1.05rem, 1.6vw, 1.24rem);
-  color: var(--mf-panel-text);
-  letter-spacing: 0.012em;
-  line-height: 1.35;
-}
-
-.prompt-text-inline {
-  display: inline;
-}
-
-.prompt-related-link {
-  margin-left: 8px;
-  font-size: 0.88em;
-  color: color-mix(in oklab, var(--mf-panel-text) 80%, #93c5fd 20%);
-  text-decoration: underline;
-}
-
-.prompt-related-link:hover {
-  color: #bfdbfe;
-}
-
-.prompt-input {
-  flex: 1 1 420px;
-  min-width: 240px;
-}
-
-.prompt-submit {
-  min-width: 132px;
-  letter-spacing: 0.04em;
-  border-radius: 10px;
-  height: 46px;
-}
-
 .feeds-list {
   margin-top: 10px;
 }
@@ -972,48 +609,10 @@ if (import.meta.client) {
   margin-bottom: 0;
 }
 
-.prompt-input :deep(.v-field) {
-  border-radius: 11px;
-  background: var(--mf-input-bg);
-  border: 1px solid var(--mf-input-border);
-}
-
-.prompt-input :deep(.v-field__input),
-.prompt-input :deep(input) {
-  color: var(--mf-input-text);
-}
-
-.prompt-input :deep(input::placeholder) {
-  color: var(--mf-input-placeholder);
-}
-
-.prompt-input :deep(.v-field--focused) {
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.24);
-}
-
 @media (max-width: 960px) {
   .feeds-shell {
     padding-top: 4px;
     padding-bottom: 8px;
-  }
-
-  .mood-prompt-bar {
-    border-radius: 12px;
-  }
-
-  .prompt-text {
-    flex-basis: 100%;
-    font-size: 1.02rem;
-  }
-
-  .prompt-input {
-    min-width: 100%;
-    flex-basis: 100%;
-  }
-
-  .prompt-submit {
-    width: 100%;
-    min-width: 100%;
   }
 
   .feeds-list > div {

@@ -55,6 +55,9 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "Short, honest snapshots from the community.",
+      "promptTitle": "Daily Mood Question",
+      "promptSubtitle": "Share how you're feeling and connect with people who get it.",
+      "seeAll": "Browse mood feed",
       "meta": {
         "title": "Mood Feed | Anonymous Community Check-ins - ImChatty",
         "description": "Browse short, honest mood updates from the ImChatty community. Read quick snapshots, reply anonymously, and share how you're feeling.",

@@ -54,6 +54,9 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "Des instantanés courts et sincères de la communauté.",
+      "promptTitle": "Question d'humeur du jour",
+      "promptSubtitle": "Partagez ce que vous ressentez et connectez-vous avec des personnes qui vous comprennent.",
+      "seeAll": "Parcourir le Mood Feed",
       "meta": {
         "title": "Mood Feed | Humeurs anonymes de la communauté - ImChatty",
         "description": "Parcourez de courts messages d'humeur de la communauté ImChatty. Lisez des instantanés, répondez anonymement et partagez ce que vous ressentez.",
