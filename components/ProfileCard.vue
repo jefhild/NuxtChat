@@ -6,7 +6,7 @@
   >
     <div class="profile-card-glow" />
     <slot name="overlay" />
-    <div class="profile-card-rarity">Profile Card</div>
+    <div v-if="!hasOverlaySlot" class="profile-card-rarity">Profile Card</div>
     <div class="profile-card-header">
       <div class="profile-card-hero">
         <div class="avatar-wrapper">
@@ -285,7 +285,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, useSlots } from "vue";
 import { getAvatar, getAvatarIcon, getGenderColor } from "@/composables/useUserUtils";
 import { resolveProfileLocalization, normalizeLocale } from "@/composables/useProfileLocalization";
 
@@ -328,6 +328,8 @@ const profileSiteUrl = computed(() => {
 });
 
 const { t, locale } = useI18n();
+const slots = useSlots();
+const hasOverlaySlot = computed(() => Boolean(slots.overlay));
 
 const localized = computed(() =>
   resolveProfileLocalization({

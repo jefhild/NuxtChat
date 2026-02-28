@@ -35,8 +35,10 @@ function resolveAuthStatus({ session, user, profile }) {
 
 const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
 const CJK_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/;
+const CYRILLIC_RE = /[\u0400-\u04ff\u0500-\u052f]/;
 
 const hasCjk = (value) => CJK_RE.test(String(value || ""));
+const hasCyrillic = (value) => CYRILLIC_RE.test(String(value || ""));
 
 function normalizeLocaleCode(value) {
   const code = String(value || "").trim().toLowerCase();
@@ -371,15 +373,27 @@ export const useAuthStore = defineStore("authStore1", {
         });
       }
 
-      if (
-        hasCjk(payload.displayname) ||
-        hasCjk(payload.bio) ||
-        hasCjk(payload.tagline)
-      ) {
-        const targets = new Set(["en"]);
-        if (preferredLocale && preferredLocale !== "zh") {
-          targets.add(preferredLocale);
+      if (payload.displayname || payload.bio || payload.tagline) {
+        let sourceLocale = normalizeLocaleCode(preferredLocale) || "en";
+        if (
+          sourceLocale === "en" &&
+          (hasCjk(payload.displayname) ||
+            hasCjk(payload.bio) ||
+            hasCjk(payload.tagline))
+        ) {
+          sourceLocale = "zh";
+        } else if (
+          sourceLocale === "en" &&
+          (hasCyrillic(payload.displayname) ||
+            hasCyrillic(payload.bio) ||
+            hasCyrillic(payload.tagline))
+        ) {
+          sourceLocale = "ru";
         }
+
+        const targets = ["en", "fr", "ru", "zh"].filter(
+          (locale) => locale !== sourceLocale
+        );
         try {
           await $fetch("/api/profile/translate", {
             method: "POST",
@@ -388,8 +402,8 @@ export const useAuthStore = defineStore("authStore1", {
               displayname: payload.displayname,
               bio: payload.bio,
               tagline: payload.tagline,
-              sourceLocale: "zh",
-              targetLocales: Array.from(targets),
+              sourceLocale,
+              targetLocales: targets,
             },
           });
         } catch (err) {

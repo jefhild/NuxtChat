@@ -453,8 +453,11 @@ onMounted(async () => {
 }
 
 .hero-btn {
-  min-width: 160px;
-  max-width: 200px;
+  min-width: fit-content;
+  max-width: 100%;
+  height: auto;
+  white-space: normal;
+  text-wrap: balance;
 }
 
 /* CTA shared background */

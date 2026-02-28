@@ -50,12 +50,19 @@ export const resolveProfileLocalization = ({
     : [];
   const map = buildTranslationMap(translations);
 
-  const orderedLocales = [
-    normalizeLocale(overrideLocale),
-    normalizeLocale(readerLocale),
-    normalizeLocale(profile?.preferred_locale),
-    ...fallbackLocales.map(normalizeLocale),
-  ].filter(Boolean);
+  const orderedLocales = [];
+  const pushLocale = (value) => {
+    const normalized = normalizeLocale(value);
+    if (!normalized || orderedLocales.includes(normalized)) return;
+    orderedLocales.push(normalized);
+  };
+
+  // Reader locale should always win when a translation exists.
+  pushLocale(overrideLocale);
+  pushLocale(readerLocale);
+  fallbackLocales.forEach(pushLocale);
+  // Only fall back to the profile's preferred locale as a last resort.
+  pushLocale(profile?.preferred_locale);
 
   const displayname = pickField(orderedLocales, map, "displayname");
   const bio = pickField(orderedLocales, map, "bio");
