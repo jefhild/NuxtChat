@@ -18,26 +18,23 @@
 
         <nav class="nav2__links d-none d-md-flex" aria-label="Primary navigation">
           <ul class="nav2__list">
-            <li>
+            <li v-for="item in primaryNavItems" :key="item.id">
               <NuxtLink
-                :to="localPath('/chat')"
-                :class="['nav2__link', { 'nav2__link--chat': hasUnread }]"
+                :to="item.path"
+                :class="[
+                  'nav2__link',
+                  { 'nav2__link--chat': item.id === 'chat' && hasUnread },
+                ]"
                 exact
               >
-                {{ $t("components.navbar.chat") }}
-                <span v-if="hasUnread" class="nav2__badge" aria-hidden="true">
+                {{ item.name }}
+                <span
+                  v-if="item.id === 'chat' && hasUnread"
+                  class="nav2__badge"
+                  aria-hidden="true"
+                >
                   {{ unreadLabel }}
                 </span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink :to="localPath('/articles')" class="nav2__link" exact>
-                {{ $t("components.navbar.blog") }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink :to="localPath('/feeds')" class="nav2__link" exact>
-                {{ $t("components.navbar.feeds") || "Mood Feed" }}
               </NuxtLink>
             </li>
             <li v-if="userProfile?.is_admin && !isImpersonating">
@@ -98,23 +95,23 @@
             </template>
 
             <v-list aria-label="Mobile Navigation">
-              <v-list-item :to="localPath('/chat')" link @click="closeMobileMenu">
+              <v-list-item
+                v-for="item in primaryNavItems"
+                :key="item.id"
+                :to="item.path"
+                link
+                @click="closeMobileMenu"
+              >
                 <v-list-item-title class="nav2__mobile-title">
-                  {{ $t("components.navbar.chat") }}
+                  {{ item.name }}
                   <span
-                    v-if="hasUnread"
+                    v-if="item.id === 'chat' && hasUnread"
                     class="nav2__badge nav2__badge--inline"
                     aria-hidden="true"
                   >
                     {{ unreadLabel }}
                   </span>
                 </v-list-item-title>
-              </v-list-item>
-              <v-list-item :to="localPath('/articles')" link @click="closeMobileMenu">
-                <v-list-item-title>{{ $t("components.navbar.blog") }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item :to="localPath('/feeds')" link @click="closeMobileMenu">
-                <v-list-item-title>{{ $t("components.navbar.feeds") || "Mood Feed" }}</v-list-item-title>
               </v-list-item>
               <v-list-item
                 v-if="userProfile?.is_admin && !isImpersonating"
@@ -235,6 +232,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore1";
 import { useMessagesStore } from "@/stores/messagesStore";
 import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
+import { usePrimaryNavigation } from "@/composables/usePrimaryNavigation";
 
 const authStore = useAuthStore();
 const messages = useMessagesStore();
@@ -243,6 +241,7 @@ const route = useRoute();
 const localPath = useLocalePath();
 const isClient = typeof window !== "undefined";
 const navRef = ref(null);
+const { primaryNavItems } = usePrimaryNavigation();
 
 const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)

@@ -111,8 +111,5 @@ select:focus {
   border-color: #66afe9;
 }
 
-/* Dynamically update flag based on selected option */
-.language-switcher select {
-  background-image: url("/images/flags/icon_us.png"); /* fallback default */
-}
+/* background image is provided by inline style bound to selected locale */
 </style>

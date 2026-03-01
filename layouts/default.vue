@@ -74,6 +74,7 @@ import { useAuthStore } from "@/stores/authStore1";
 import { usePresenceStore2 } from "@/stores/presenceStore2";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useDb } from "@/composables/useDB";
+import { usePrimaryNavigation } from "@/composables/usePrimaryNavigation";
 import { useDisplay } from "vuetify";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
 import { useHead, useRoute, useRuntimeConfig, useSiteConfig } from "#imports";
@@ -82,11 +83,10 @@ import { useFavoriteNotifications } from "@/composables/useFavoriteNotifications
 const auth = useAuthStore();
 const presence = usePresenceStore2();
 const messages = useMessagesStore();
-const { t } = useI18n();
-const localePath = useLocalePath();
 const runtimeConfig = useRuntimeConfig();
 const siteConfig = useSiteConfig();
 const { updateLastActive, touchPresence } = useDb();
+const { primaryNavItems } = usePrimaryNavigation();
 const { smAndDown } = useDisplay();
 const hasMounted = ref(false);
 const route = useRoute();
@@ -192,23 +192,6 @@ const unreadLabel = computed(() =>
 const siteUrl = computed(() =>
   String(siteConfig?.url || runtimeConfig.public.SITE_URL || "").replace(/\/+$/, "")
 );
-const primaryNavItems = computed(() => {
-  const items = [
-    { name: t("components.navbar.chat"), path: localePath("/chat") },
-    { name: t("components.navbar.blog"), path: localePath("/articles") },
-    { name: t("components.navbar.feeds") || "Mood Feed", path: localePath("/feeds") },
-    { name: "Categories", path: localePath("/categories") },
-    { name: "Tags", path: localePath("/tags") },
-    { name: "People", path: localePath("/people") },
-  ];
-
-  const deduped = new Map();
-  items.forEach((item) => {
-    if (!item?.path) return;
-    deduped.set(item.path, item);
-  });
-  return Array.from(deduped.values());
-});
 const ACTIVITY_AUTH_STATUSES = ["anon_authenticated", "authenticated"];
 let lastNavPingAt = 0;
 

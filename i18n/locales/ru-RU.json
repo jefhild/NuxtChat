@@ -54,6 +54,10 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "Короткие и честные заметки от сообщества.",
+      "streamHeading": "Последние записи настроения",
+      "previousPage": "Предыдущая страница",
+      "nextPage": "Следующая страница",
+      "loadingMore": "Загружаем больше записей...",
       "promptTitle": "Вопрос дня о настроении",
       "promptSubtitle": "Поделитесь своими чувствами и найдите людей, которые вас понимают.",
       "seeAll": "Открыть Mood Feed",
@@ -68,7 +72,10 @@
         "twitterCard": "summary_large_image",
         "twitterTitle": "Mood Feed от ImChatty",
         "twitterDescription": "Короткие и честные обновления настроения от сообщества. Читайте, отвечайте и делитесь своим.",
-        "twitterImage": "https://imchatty.com/images/robot.png"
+        "twitterImage": "https://imchatty.com/images/robot.png",
+        "ogImageAlt": "Иллюстрация сообщества ImChatty Mood Feed",
+        "ogImageWidth": "1200",
+        "ogImageHeight": "630"
       },
       "composePlaceholder": "Поделитесь короткой фразой, отражающей ваше настроение…",
       "postButton": "Опубликовать",

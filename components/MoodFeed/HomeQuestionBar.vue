@@ -10,30 +10,32 @@
       <div class="home-mood-card__glow" aria-hidden="true" />
       <div class="home-mood-card__content">
         <div v-if="variant === 'home'" class="home-mood-card__header">
-        <div>
-          <v-chip
-            size="small"
-            color="primary"
-            variant="tonal"
-            class="mb-2 home-mood-card__badge"
-          >
-            {{ t("pages.feeds.heading", "Mood Feed") }}
-          </v-chip>
-          <h2 class="text-h5 font-weight-bold mb-1">
-            {{ t("pages.feeds.promptTitle", "Daily Mood Question") }}
-          </h2>
-          <p class="text-body-2 text-medium-emphasis mb-0">
-            {{ t("pages.feeds.promptSubtitle", "Share how you're feeling and connect with people who get it.") }}
-          </p>
-        </div>
-        <v-btn
-          variant="text"
-          color="primary"
-          :to="localPath('/feeds')"
-          class="home-mood-card__link"
-        >
-          {{ t("pages.feeds.seeAll", "Browse mood feed") }}
-        </v-btn>
+          <div class="home-mood-card__header-main">
+            <div class="home-mood-card__header-top">
+              <v-chip
+                size="small"
+                color="primary"
+                variant="tonal"
+                class="mb-2 home-mood-card__badge"
+              >
+                {{ t("pages.feeds.heading", "Mood Feed") }}
+              </v-chip>
+              <v-btn
+                variant="text"
+                color="primary"
+                :to="localPath('/feeds')"
+                class="home-mood-card__link"
+              >
+                {{ t("pages.feeds.seeAll", "Browse mood feed") }}
+              </v-btn>
+            </div>
+            <h2 class="text-h5 font-weight-bold mb-1">
+              {{ t("pages.feeds.promptTitle", "Daily Mood Question") }}
+            </h2>
+            <p class="text-body-2 text-medium-emphasis mb-0">
+              {{ t("pages.feeds.promptSubtitle", "Share how you're feeling and connect with people who get it.") }}
+            </p>
+          </div>
         </div>
 
         <div class="home-mood-card__prompt" :class="{ 'mb-3': variant === 'home' }">
@@ -681,18 +683,27 @@ if (import.meta.client) {
 }
 
 .home-mood-card__header {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: flex-start;
   margin-bottom: 14px;
+}
+
+.home-mood-card__header-main {
+  width: 100%;
+}
+
+.home-mood-card__header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .home-mood-card__link {
   text-transform: none;
-  margin-top: 2px;
+  margin-top: 0;
   letter-spacing: 0.08em;
   font-weight: 600;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .home-mood-card__badge {
@@ -805,9 +816,19 @@ if (import.meta.client) {
     border-radius: 14px;
   }
 
-  .home-mood-card__header {
-    flex-direction: column;
+  .home-mood-card__header-top {
+    align-items: center;
     gap: 8px;
+  }
+
+  .home-mood-card__badge {
+    margin-bottom: 0 !important;
+  }
+
+  .home-mood-card__link {
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+    padding-inline: 6px;
   }
 
   .home-mood-card__actions {

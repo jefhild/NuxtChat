@@ -55,6 +55,10 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "Short, honest snapshots from the community.",
+      "streamHeading": "Latest mood entries",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "loadingMore": "Loading more entries...",
       "promptTitle": "Daily Mood Question",
       "promptSubtitle": "Share how you're feeling and connect with people who get it.",
       "seeAll": "Browse mood feed",
@@ -69,7 +73,10 @@
         "twitterCard": "summary_large_image",
         "twitterTitle": "ImChatty Mood Feed",
         "twitterDescription": "Short, honest mood updates from the community. Read, reply, and share yours.",
-        "twitterImage": "https://imchatty.com/images/robot.png"
+        "twitterImage": "https://imchatty.com/images/robot.png",
+        "ogImageAlt": "ImChatty Mood Feed community illustration",
+        "ogImageWidth": "1200",
+        "ogImageHeight": "630"
       },
       "composePlaceholder": "Share a short phrase that captures your mood…",
       "postButton": "Post",

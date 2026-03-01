@@ -263,7 +263,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, reactive } from "vue";
+import { ref, computed, watch, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useLocalePath } from "#imports";
@@ -277,16 +277,12 @@ const localPath = useLocalePath();
 const authStore = useAuthStore();
 const theme = useTheme();
 const {
-  getMostPopularAiProfiles,
   getAllPublishedArticlesWithTags,
   hasEmail,
   updateUserEmail,
 } = useDb();
 
-const isLoading = ref(true);
 const logoutDialog = ref(false);
-const articles = ref([]);
-const mostPopularAiProfiles = ref([]);
 
 const authStatus = computed(() => authStore.authStatus);
 const userProfile = computed(() => authStore.userProfile);
@@ -424,16 +420,25 @@ watch(
   { immediate: true }
 );
 
-onMounted(async () => {
-  try {
-    articles.value = await getAllPublishedArticlesWithTags(9);
-    mostPopularAiProfiles.value = await getMostPopularAiProfiles(4);
-  } catch (err) {
-    console.error("[LandingPage] Error:", err);
-  } finally {
-    isLoading.value = false;
+const { data: landingData, pending: isLoading } = await useAsyncData(
+  "landing-home-content",
+  async () => {
+    try {
+      const articles = await getAllPublishedArticlesWithTags(9);
+      return {
+        articles: Array.isArray(articles) ? articles : [],
+      };
+    } catch (err) {
+      console.error("[LandingPage] Error:", err);
+      return { articles: [] };
+    }
+  },
+  {
+    default: () => ({ articles: [] }),
   }
-});
+);
+
+const articles = computed(() => landingData.value?.articles || []);
 </script>
 
 <style scoped>

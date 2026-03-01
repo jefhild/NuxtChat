@@ -11,7 +11,28 @@
 
     <MoodFeedHomeQuestionBar variant="feeds" @posted="loadEntries" />
 
-    <div class="feeds-list">
+    <section class="feeds-list" aria-labelledby="feeds-latest-heading">
+      <h2 id="feeds-latest-heading" class="feeds-section-title">
+        {{ t("pages.feeds.streamHeading", "Latest mood entries") }}
+      </h2>
+      <nav class="feeds-pagination-links" aria-label="Feed pages">
+        <NuxtLink
+          v-if="prevPageHref"
+          :to="prevPageHref"
+          rel="prev"
+          class="feeds-pagination-link"
+        >
+          {{ t("pages.feeds.previousPage", "Previous page") }}
+        </NuxtLink>
+        <NuxtLink
+          v-if="nextPageHref"
+          :to="nextPageHref"
+          rel="next"
+          class="feeds-pagination-link"
+        >
+          {{ t("pages.feeds.nextPage", "Next page") }}
+        </NuxtLink>
+      </nav>
       <div v-if="loading" class="feeds-loading mt-4" aria-live="polite" aria-label="Loading..." role="alert">
         <div v-for="n in 4" :key="`feed-skeleton-${n}`" class="feeds-loading-item">
           <div class="feeds-loading-line feeds-loading-line--title" />
@@ -42,7 +63,15 @@
           @register="showRegisterPrompt"
         />
       </div>
-    </div>
+      <div
+        ref="infiniteSentinel"
+        class="feeds-infinite-sentinel"
+        aria-hidden="true"
+      />
+      <div v-if="loadingMore" class="text-body-2 mt-3">
+        {{ t("pages.feeds.loadingMore", "Loading more entries...") }}
+      </div>
+    </section>
 
     <ProfileDialog
       v-model="profileOpen"
@@ -156,7 +185,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/authStore1";
 import MoodFeedPromptCard from "@/components/MoodFeed/PromptCard.vue";
@@ -166,13 +195,43 @@ import TurnstileWidget from "@/components/TurnstileWidget.vue";
 
 const { locale, t } = useI18n();
 const auth = useAuthStore();
+const route = useRoute();
 const localPath = useLocalePath();
 const config = useRuntimeConfig();
+const siteConfig = useSiteConfig();
+const PAGE_SIZE = 30;
 
-useSeoI18nMeta("feeds");
+const infiniteSentinel = ref(null);
+let infiniteObserver = null;
+
+const parsePage = (value) => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(String(raw || "1"), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+};
+const initialPage = computed(() => parsePage(route.query.page));
+const initialOffset = computed(() => (initialPage.value - 1) * PAGE_SIZE);
+
+const pagePath = (page) => {
+  const basePath = localPath("/feeds");
+  return page > 1 ? `${basePath}?page=${page}` : basePath;
+};
+const toAbsolute = (path) => {
+  const base = String(siteConfig?.url || config.public?.SITE_URL || "").replace(
+    /\/$/,
+    ""
+  );
+  return base ? `${base}${path}` : path;
+};
+const canonicalPageHref = computed(() => toAbsolute(pagePath(initialPage.value)));
+
+useSeoI18nMeta("feeds", { overrideUrl: canonicalPageHref.value });
 
 const threads = ref([]);
-const loading = ref(true);
+const loading = ref(false);
+const loadingMore = ref(false);
+const hasMore = ref(false);
+const loadedPage = ref(1);
 const canPost = computed(() => true);
 const isAdmin = computed(() => Boolean(auth.userProfile?.is_admin));
 const profileOpen = ref(false);
@@ -203,19 +262,183 @@ const registerDialogOpen = ref(false);
 const submitNoticeOpen = ref(false);
 const submitNoticeText = ref("");
 
+async function fetchEntriesPage(page) {
+  return await $fetch("/api/mood-feed/entries", {
+    query: {
+      locale: locale.value,
+      limit: PAGE_SIZE,
+      offset: Math.max(0, (page - 1) * PAGE_SIZE),
+    },
+  });
+}
+
+const { data: entriesData, pending, refresh } = await useAsyncData(
+  () => `mood-feed-entries:${locale.value}:${initialOffset.value}`,
+  () => fetchEntriesPage(initialPage.value),
+  {
+    watch: [locale, initialOffset],
+    default: () => ({ items: [], hasMore: false }),
+  }
+);
+
+watch(
+  entriesData,
+  (value) => {
+    threads.value = value?.items || [];
+    loadedPage.value = initialPage.value;
+    hasMore.value = Boolean(value?.hasMore);
+  },
+  { immediate: true }
+);
+
+watch(
+  pending,
+  (value) => {
+    loading.value = value;
+  },
+  { immediate: true }
+);
+
 async function loadEntries() {
-  loading.value = true;
-  try {
-    const res = await $fetch("/api/mood-feed/entries", {
-      query: { locale: locale.value, limit: 30, offset: 0 },
+  const fresh = await fetchEntriesPage(1).catch(() => ({
+    items: [],
+    hasMore: false,
+  }));
+  threads.value = fresh?.items || [];
+  loadedPage.value = 1;
+  hasMore.value = Boolean(fresh?.hasMore);
+  if (import.meta.client) {
+    window.history.replaceState(window.history.state, "", pagePath(1));
+  }
+  await refresh();
+}
+
+function mergeThreads(existing, incoming) {
+  const byPrompt = new Map();
+  for (const thread of existing || []) {
+    byPrompt.set(thread.promptKey || thread.id || thread.promptText, {
+      ...thread,
+      entries: [...(thread.entries || [])],
     });
-    threads.value = res?.items || [];
+  }
+  for (const thread of incoming || []) {
+    const key = thread.promptKey || thread.id || thread.promptText;
+    if (!byPrompt.has(key)) {
+      byPrompt.set(key, { ...thread, entries: [...(thread.entries || [])] });
+      continue;
+    }
+    const current = byPrompt.get(key);
+    const entryMap = new Map();
+    for (const item of current.entries || []) {
+      entryMap.set(item.id, item);
+    }
+    for (const item of thread.entries || []) {
+      if (!entryMap.has(item.id)) entryMap.set(item.id, item);
+    }
+    current.entries = Array.from(entryMap.values()).sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+  }
+  return Array.from(byPrompt.values());
+}
+
+async function loadMoreEntries() {
+  if (!hasMore.value || loadingMore.value) return;
+  loadingMore.value = true;
+  const nextPage = loadedPage.value + 1;
+  try {
+    const next = await fetchEntriesPage(nextPage);
+    threads.value = mergeThreads(threads.value, next?.items || []);
+    loadedPage.value = nextPage;
+    hasMore.value = Boolean(next?.hasMore);
+    if (import.meta.client) {
+      window.history.pushState(window.history.state, "", pagePath(nextPage));
+    }
   } catch {
-    threads.value = [];
   } finally {
-    loading.value = false;
+    loadingMore.value = false;
   }
 }
+
+const prevPageHref = computed(() =>
+  initialPage.value > 1 ? pagePath(initialPage.value - 1) : ""
+);
+const nextPageHref = computed(() =>
+  hasMore.value ? pagePath(initialPage.value + 1) : ""
+);
+
+const schemaInLanguage = computed(() => {
+  if (locale.value === "fr") return "fr-FR";
+  if (locale.value === "ru") return "ru-RU";
+  if (locale.value === "zh") return "zh-CN";
+  return "en-US";
+});
+
+const itemListSchema = computed(() => {
+  const listItems = (threads.value || []).slice(0, PAGE_SIZE).map((thread, idx) => {
+    const latest = (thread.entries || [])[0] || {};
+    const fallbackName = t("pages.feeds.streamHeading", "Latest mood entries");
+    const name = String(thread.promptText || fallbackName).trim().slice(0, 140);
+    const description = String(latest.displayText || "").replace(/\s+/g, " ").trim().slice(0, 260);
+    const hashId = encodeURIComponent(String(thread.promptKey || thread.id || `thread-${idx + 1}`));
+
+    return {
+      "@type": "ListItem",
+      position: idx + 1,
+      item: {
+        "@type": "CreativeWork",
+        name,
+        ...(description ? { description } : {}),
+        ...(latest.createdAt ? { datePublished: latest.createdAt } : {}),
+        inLanguage: schemaInLanguage.value,
+        url: `${canonicalPageHref.value}#${hashId}`,
+      },
+    };
+  });
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        name: t("pages.feeds.meta.title"),
+        description: t("pages.feeds.meta.description"),
+        url: canonicalPageHref.value,
+        inLanguage: schemaInLanguage.value,
+        isPartOf: {
+          "@type": "WebSite",
+          name: String(siteConfig?.name || "ImChatty"),
+          url: toAbsolute("/"),
+        },
+      },
+      {
+        "@type": "ItemList",
+        name: t("pages.feeds.streamHeading", "Latest mood entries"),
+        itemListOrder: "https://schema.org/ItemListOrderDescending",
+        numberOfItems: listItems.length,
+        itemListElement: listItems,
+      },
+    ],
+  };
+});
+
+useHead(() => ({
+  link: [
+    ...(initialPage.value > 1
+      ? [{ rel: "prev", href: toAbsolute(pagePath(initialPage.value - 1)) }]
+      : []),
+    ...(hasMore.value
+      ? [{ rel: "next", href: toAbsolute(pagePath(initialPage.value + 1)) }]
+      : []),
+  ],
+  script: [
+    {
+      key: "ld-feeds-collection",
+      type: "application/ld+json",
+      children: JSON.stringify(itemListSchema.value),
+    },
+  ],
+}));
 
 function rememberCaptchaPassed() {
   captchaPassed.value = true;
@@ -520,13 +743,39 @@ async function deleteReply({ entryId, replyId }) {
   }
 }
 
-onMounted(loadEntries);
-watch(locale, loadEntries);
+function setupInfiniteScroll() {
+  if (!import.meta.client || !infiniteSentinel.value) return;
+  if (infiniteObserver) infiniteObserver.disconnect();
+  infiniteObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        loadMoreEntries();
+      }
+    },
+    {
+      root: null,
+      rootMargin: "400px 0px",
+      threshold: 0,
+    }
+  );
+  infiniteObserver.observe(infiniteSentinel.value);
+}
+
+function teardownInfiniteScroll() {
+  if (infiniteObserver) {
+    infiniteObserver.disconnect();
+    infiniteObserver = null;
+  }
+}
 
 if (import.meta.client) {
   onMounted(() => {
     const passed = localStorage.getItem("mfCaptchaPassed");
     if (passed === "true") captchaPassed.value = true;
+    setupInfiniteScroll();
+  });
+  onBeforeUnmount(() => {
+    teardownInfiniteScroll();
   });
 }
 </script>
@@ -569,6 +818,36 @@ if (import.meta.client) {
 
 .feeds-list {
   margin-top: 10px;
+}
+
+.feeds-section-title {
+  font-size: 1.05rem;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 0 0 10px;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.feeds-pagination-links {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.feeds-pagination-link {
+  display: inline-block;
+}
+
+.feeds-infinite-sentinel {
+  width: 100%;
+  height: 2px;
 }
 
 .feeds-list > div {

@@ -12,15 +12,19 @@ export function useSeoI18nMeta(
       ogTitle?: string;
       ogDescription?: string;
       ogImage?: string;
+      ogImageAlt?: string;
+      ogImageWidth?: string | number;
+      ogImageHeight?: string | number;
       ogType?: string;
       twitterCard?: string;
+      twitterSite?: string;
       twitterTitle?: string;
       twitterDescription?: string;
       twitterImage?: string;
     };
   }
 ) {
-  const { t, locale, locales, localeCodes } = useI18n();
+  const { t, te, locale, locales, localeCodes } = useI18n();
   const route = useRoute();
   const switchLocalePath = useSwitchLocalePath();
   const config = useRuntimeConfig();
@@ -92,16 +96,50 @@ export function useSeoI18nMeta(
   }
 
   const key = (suffix: string) => `pages.${section}.meta.${suffix}`;
+  const hasKey = (k: string, loc?: string) => {
+    try {
+      return Boolean(loc ? te(k, loc) : te(k));
+    } catch {
+      return false;
+    }
+  };
+  const tm = (suffix: string): string => {
+    const k = key(suffix);
+    if (hasKey(k)) return String(t(k));
+    if (hasKey(k, "en")) return String(t(k, { locale: "en" }));
+    return "";
+  };
   const tf = (suffix: string): string => {
     const k = key(suffix);
-    const translated = t(k);
-    if (translated === k && process.dev) {
+    if (hasKey(k)) return String(t(k));
+    if (hasKey(k, "en")) return String(t(k, { locale: "en" }));
+    if (import.meta.dev) {
       console.warn(`[SEO META] Missing translation for key: "${k}"`);
     }
-    return translated !== k ? translated : t(k, { locale: "en" });
+    return "";
   };
 
   const dynamic = options?.dynamic || {};
+  const ogTypeRaw = String(dynamic.ogType || tf("ogType") || "website").trim();
+  const ogTypeNormalized = ogTypeRaw.toLowerCase();
+  const ogType =
+    ogTypeNormalized === "article" ||
+    ogTypeNormalized === "profile" ||
+    ogTypeNormalized === "website"
+      ? ogTypeNormalized
+      : "website";
+  const ogImage = dynamic.ogImage || tf("ogImage");
+  const ogImageAlt = dynamic.ogImageAlt || tm("ogImageAlt") || tf("ogTitle");
+  const ogImageWidth = String(
+    dynamic.ogImageWidth || tm("ogImageWidth") || "1200"
+  );
+  const ogImageHeight = String(
+    dynamic.ogImageHeight || tm("ogImageHeight") || "630"
+  );
+  const twitterSite =
+    dynamic.twitterSite ||
+    tm("twitterSite") ||
+    String(config.public?.TWITTER_SITE || "@imchatty_news");
 
   useHead(() => ({
     title: dynamic.title || tf("title"),
@@ -129,10 +167,14 @@ export function useSeoI18nMeta(
         property: "og:description",
         content: dynamic.ogDescription || tf("ogDescription"),
       },
-      { property: "og:type", content: dynamic.ogType || tf("ogType") },
+      { property: "og:type", content: ogType },
       { property: "og:url", content: canonicalHref },
-      { property: "og:image", content: dynamic.ogImage || tf("ogImage") },
+      { property: "og:image", content: ogImage },
+      { property: "og:image:alt", content: ogImageAlt },
+      { property: "og:image:width", content: ogImageWidth },
+      { property: "og:image:height", content: ogImageHeight },
       { name: "twitter:card", content: dynamic.twitterCard || tf("twitterCard") },
+      { name: "twitter:site", content: twitterSite },
       {
         name: "twitter:title",
         content: dynamic.twitterTitle || tf("twitterTitle"),

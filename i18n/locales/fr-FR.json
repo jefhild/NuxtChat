@@ -54,6 +54,10 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "Des instantanés courts et sincères de la communauté.",
+      "streamHeading": "Dernières entrées d'humeur",
+      "previousPage": "Page précédente",
+      "nextPage": "Page suivante",
+      "loadingMore": "Chargement de plus d'entrées...",
       "promptTitle": "Question d'humeur du jour",
       "promptSubtitle": "Partagez ce que vous ressentez et connectez-vous avec des personnes qui vous comprennent.",
       "seeAll": "Parcourir le Mood Feed",
@@ -68,7 +72,10 @@
         "twitterCard": "summary_large_image",
         "twitterTitle": "Mood Feed d'ImChatty",
         "twitterDescription": "De courtes mises à jour d'humeur de la communauté. Lisez, répondez et partagez la vôtre.",
-        "twitterImage": "https://imchatty.com/images/robot.png"
+        "twitterImage": "https://imchatty.com/images/robot.png",
+        "ogImageAlt": "Illustration de la communauté Mood Feed ImChatty",
+        "ogImageWidth": "1200",
+        "ogImageHeight": "630"
       },
       "composePlaceholder": "Partage une courte phrase qui capture ton humeur…",
       "postButton": "Publier",

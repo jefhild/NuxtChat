@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
   const locale = normalizeLocale(query.locale || "en");
   const limit = Math.min(Math.max(Number(query.limit || 20), 1), 50);
   const offset = Math.max(Number(query.offset || 0), 0);
+  const page = Math.floor(offset / limit) + 1;
   let user = null;
   try {
     user = await serverSupabaseUser(event);
@@ -50,7 +51,14 @@ export default defineEventHandler(async (event) => {
 
   const entryIds = (entries || []).map((e) => e.id).filter(Boolean);
   if (!entryIds.length) {
-    return { items: [] };
+    return {
+      items: [],
+      page,
+      limit,
+      offset,
+      hasMore: false,
+      nextOffset: null,
+    };
   }
 
   const promptKeys = Array.from(
@@ -396,5 +404,13 @@ export default defineEventHandler(async (event) => {
     return new Date(b.latestCreatedAt) - new Date(a.latestCreatedAt);
   });
 
-  return { items: groupedItems };
+  const hasMore = (entries || []).length >= limit;
+  return {
+    items: groupedItems,
+    page,
+    limit,
+    offset,
+    hasMore,
+    nextOffset: hasMore ? offset + limit : null,
+  };
 });

@@ -31,10 +31,14 @@
         </v-list>
       </v-menu>
     </div>
-    <NuxtLink
-      :to="localPath(`/articles/${article.slug}`)"
+    <div
       class="card-link position-relative"
+      role="link"
+      tabindex="0"
       :aria-label="displayTitle"
+      @click="goToArticle"
+      @keydown.enter.prevent="goToArticle"
+      @keydown.space.prevent="goToArticle"
     >
       <v-img
         v-if="articleImageUrl"
@@ -47,21 +51,16 @@
         <!-- Overlay button -->
         <div class="discuss-btn-container top-left">
           <!-- {{ chatThreadId }} -->
-          <NuxtLink
+          <v-btn
             v-if="chatThreadId"
-            :to="`${localPath(`/articles/${article.slug}`)}#discussion`"
-            class="discuss-link"
-            @click.stop
+            icon
+            variant="flat"
+            class="discuss-icon-btn"
+            aria-label="Discuss"
+            @click.stop.prevent="goToDiscussion"
           >
-            <v-btn
-              icon
-              variant="flat"
-              class="discuss-icon-btn"
-              aria-label="Discuss"
-            >
-              <v-icon size="16">mdi-chat-outline</v-icon>
-            </v-btn>
-          </NuxtLink>
+            <v-icon size="16">mdi-chat-outline</v-icon>
+          </v-btn>
         </div>
 
         <!-- Title -->
@@ -88,7 +87,7 @@
           <span class="date-text">{{ formatDate(article.created_at) }}</span>
         </div>
       </v-img>
-    </NuxtLink>
+    </div>
 
     <v-card-subtitle class="mb-2 text-medium-emphasis">
       <div class="d-flex align-center justify-space-between mt-2 w-100">
@@ -195,7 +194,8 @@ import ProfileDialog from "@/components/ProfileDialog.vue";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 
 const localPath = useLocalePath();
-const { locale } = useI18n();
+const router = useRouter();
+const { locale } = useI18n({ useScope: "global" });
 const { public: pub } = useRuntimeConfig();
 const supabase = useSupabaseClient?.();
 const { voteArticle, canVote } = useVoting();
@@ -362,6 +362,14 @@ const translatedHeader = computed(() => {
   return headerHtml;
 });
 
+const stripHtml = (value = "") =>
+  String(value || "")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 const truncatedSummary = computed(() => {
   const maxLength = 300;
   if (translatedHeader.value) {
@@ -374,7 +382,15 @@ const truncatedSummary = computed(() => {
   if (!translationSnippet.value) {
     const headerMatch = content.match(/<header[\s\S]*?<\/header>/i);
     if (headerMatch) {
-      return headerMatch[0];
+      const headerSummaryMatch = headerMatch[0].match(
+        /<p[^>]*class=["'][^"']*article-summary[^"']*["'][^>]*>[\s\S]*?<\/p>/i
+      );
+      if (headerSummaryMatch) {
+        return headerMatch[0];
+      }
+      const withoutHeader = content.replace(/<header[\s\S]*?<\/header>/i, " ");
+      const plain = truncateText(stripHtml(withoutHeader), 200);
+      return plain ? `<p>${escapeHtml(plain)}</p>` : headerMatch[0];
     }
   }
 
@@ -444,6 +460,19 @@ const formatCount = (value) => {
   if (num < 1000) return String(num);
   if (num < 1000000) return `${(num / 1000).toFixed(1).replace(/\\.0$/, "")}k`;
   return `${(num / 1000000).toFixed(1).replace(/\\.0$/, "")}m`;
+};
+
+const articlePath = computed(() => localPath(`/articles/${props.article.slug}`));
+const discussionPath = computed(() => `${articlePath.value}#discussion`);
+
+const goToArticle = async () => {
+  if (props.disableNavigation) return;
+  await router.push(articlePath.value);
+};
+
+const goToDiscussion = async () => {
+  if (!props.chatThreadId) return;
+  await router.push(discussionPath.value);
 };
 
 const loadVotes = async () => {

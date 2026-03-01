@@ -68,8 +68,8 @@ export default defineNuxtConfig({
       optimizeTranslationDirective: false,
     },
     detectBrowserLanguage: {
-      // Redirect users without a locale cookie when they hit a non-prefixed route.
-      redirectOn: "no prefix",
+      // Restrict language detection redirects to "/" to keep non-root URLs stable for crawl/index.
+      redirectOn: "root",
       useCookie: true,
     },
   },
@@ -197,8 +197,6 @@ export default defineNuxtConfig({
     disallow: [
       "/login",
       "/signin",
-      "/terms",
-      "/privacy",
       "/settings",
       "/*/settings",
       "/admin",
@@ -224,6 +222,7 @@ export default defineNuxtConfig({
     TURNSTILE_SECRET: process.env.TURNSTILE_SECRET,
     INDEXNOW_KEY: process.env.INDEXNOW_KEY,
     INDEXNOW_ENDPOINT: process.env.INDEXNOW_ENDPOINT,
+    SITEMAP_ALERT_WEBHOOK_URL: process.env.SITEMAP_ALERT_WEBHOOK_URL,
 
     public: {
       // Non-sensitive keys (accessible on both server and client)
@@ -246,6 +245,7 @@ export default defineNuxtConfig({
       CLARITY_CONSENT_REGEX:
         process.env.NUXT_PUBLIC_CLARITY_CONSENT_REGEX ?? "",
       ADSENSE_CLIENT: process.env.ADSENSE_CLIENT || "",
+      TWITTER_SITE: process.env.NUXT_PUBLIC_TWITTER_SITE || "@imchatty_news",
       SITE_URL: process.env.SITE_URL || "http://localhost:3000",
       TURNSTILE_SITE_KEY: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || "",
       IMCHATTY_ID:
@@ -256,8 +256,6 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-03-13",
 
   routeRules: {
-    "/feeds": { ssr: false },
-    "/*/feeds": { ssr: false },
     "/settings": {
       headers: { "x-robots-tag": "noindex, nofollow, noarchive" },
     },
@@ -278,10 +276,13 @@ export default defineNuxtConfig({
 
   nitro: {
     prerender: {
-      routes: ["/"],
+      routes: process.env.PRERENDER_HOME === "true" ? ["/"] : [],
       crawlLinks: false, // avoid crawling dynamic lists (profiles, etc.) to keep prerender set bounded
       concurrency: 4,
       ignore: [
+        "/sitemap.xml",
+        "/api/sitemap/urls",
+        "/__sitemap__/**",
         "/settings",
         "/fr/settings",
         "/ru/settings",
@@ -348,6 +349,11 @@ export default defineNuxtConfig({
     },
   },
 
+  linkChecker: {
+    runOnBuild: false,
+    failOnError: false,
+  },
+
   sitemap: {
     sources: ["/api/sitemap/urls"],
     exclude: [
@@ -356,8 +362,6 @@ export default defineNuxtConfig({
       "/logout",
       "/loginemail",
       "/loginfacebook",
-      "/terms",
-      "/privacy",
       "/settings",
       "/**/settings",
       "/admin",

@@ -54,6 +54,10 @@
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "来自社区的简短真诚快照。",
+      "streamHeading": "最新心情动态",
+      "previousPage": "上一页",
+      "nextPage": "下一页",
+      "loadingMore": "正在加载更多内容...",
       "promptTitle": "每日心情提问",
       "promptSubtitle": "分享你的感受，和懂你的人建立连接。",
       "seeAll": "浏览 Mood Feed",
@@ -68,7 +72,10 @@
         "twitterCard": "summary_large_image",
         "twitterTitle": "ImChatty Mood Feed",
         "twitterDescription": "来自社区的简短心情更新。阅读、回复并分享你的心情。",
-        "twitterImage": "https://imchatty.com/images/robot.png"
+        "twitterImage": "https://imchatty.com/images/robot.png",
+        "ogImageAlt": "ImChatty Mood Feed 社区插图",
+        "ogImageWidth": "1200",
+        "ogImageHeight": "630"
       },
       "composePlaceholder": "分享一句能代表你心情的短句…",
       "postButton": "发布",
