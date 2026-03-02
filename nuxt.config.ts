@@ -137,6 +137,8 @@ export default defineNuxtConfig({
         "/*/terms",
         "/people",
         "/*/people",
+        "/*/people/*",
+        "/*/people/**",
         "/people/**",
         "/privacy",
         "/*/privacy",
