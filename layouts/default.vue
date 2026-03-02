@@ -121,6 +121,12 @@ const isFeedsRoute = computed(() => normalizedPath.value.startsWith("/feeds"));
 const isArticlesRoute = computed(() =>
   normalizedPath.value.startsWith("/articles")
 );
+const isTaxonomyRoute = computed(
+  () =>
+    normalizedPath.value.startsWith("/categories") ||
+    normalizedPath.value.startsWith("/tags") ||
+    normalizedPath.value.startsWith("/people")
+);
 const isSettingsRoute = computed(() =>
   normalizedPath.value.startsWith("/settings")
 );
@@ -133,6 +139,7 @@ const footerToggleEnabled = computed(
     isChatRoute.value ||
     isHomeRoute.value ||
     isArticlesRoute.value ||
+    isTaxonomyRoute.value ||
     isFeedsRoute.value ||
     isSettingsRoute.value ||
     isAdminRoute.value
