@@ -4,29 +4,16 @@
       <div class="compact-footer__col text-center">
         <div class="compact-footer__card">
           <div class="compact-footer__content">
-            <!-- Footer Content -->
-            <NuxtLink :to="localPath('/about')" class="compact-footer__link">{{
-              $t("components.footer.about")
-            }}</NuxtLink>
+            <template
+              v-for="(link, index) in footerPrimaryLinks"
+              :key="link.path"
+            >
+              <NuxtLink :to="localPath(link.path)" class="compact-footer__link">{{
+                $t(link.labelKey)
+              }}</NuxtLink>
+              <span v-if="index < footerPrimaryLinks.length - 1">|</span>
+            </template>
             |
-            <NuxtLink :to="localPath('/faq')" class="compact-footer__link">{{
-              $t("components.footer.faq")
-            }}</NuxtLink>
-            |
-
-            <NuxtLink :to="localPath('/terms')" class="compact-footer__link">{{
-              $t("components.footer.terms")
-            }}</NuxtLink>
-            |
-            <NuxtLink :to="localPath('/privacy')" class="compact-footer__link">{{
-              $t("components.footer.privacy")
-            }}</NuxtLink>
-            |
-            <NuxtLink :to="localPath('/cookies')" class="compact-footer__link">{{
-              $t("components.footer.cookies")
-            }}</NuxtLink>
-            |
-
             <button
               type="button"
               class="termly-display-preferences consent-link"
@@ -35,53 +22,25 @@
               {{ $t("components.footer.consent-preferences") }}
             </button>
             |
-            <NuxtLink :to="localPath('/profiles')" class="compact-footer__link">{{
-              $t("components.footer.public-profiles")
-            }}</NuxtLink>
-            |
-            <!-- GitHub Icon -->
-            <a
-              href="https://github.com/jefhild/NuxtChat"
-              target="_blank"
-              rel="noopener"
-              class="compact-footer__icon-link"
-              aria-label="GitHub"
+            <NuxtLink
+              :to="localPath(footerProfilesLink.path)"
+              class="compact-footer__link"
             >
-              <i class="mdi mdi-github" aria-hidden="true" />
-            </a>
+              {{ $t(footerProfilesLink.labelKey) }}
+            </NuxtLink>
             |
-            <!-- Instagram Icon -->
-            <a
-              href="https://www.instagram.com/imchatty_site/"
-              target="_blank"
-              rel="noopener"
-              class="compact-footer__icon-link"
-              aria-label="Instagram"
-            >
-              <i class="mdi mdi-instagram" aria-hidden="true" />
-            </a>
-            |
-            <!-- Facebook Icon -->
-            <a
-              href="https://www.facebook.com/61585988489093/"
-              target="_blank"
-              rel="noopener"
-              class="compact-footer__icon-link"
-              aria-label="Facebook"
-            >
-              <i class="mdi mdi-facebook" aria-hidden="true" />
-            </a>
-            |
-            <!-- Reddit Icon -->
-            <a
-              href="https://www.reddit.com/r/imchatty_news/"
-              target="_blank"
-              rel="noopener"
-              class="compact-footer__icon-link"
-              aria-label="Reddit"
-            >
-              <i class="mdi mdi-reddit" aria-hidden="true" />
-            </a>
+            <template v-for="(social, index) in FOOTER_SOCIAL_LINKS" :key="social.href">
+              <a
+                :href="social.href"
+                target="_blank"
+                rel="noopener"
+                class="compact-footer__icon-link"
+                :aria-label="social.ariaLabel"
+              >
+                <i :class="`mdi ${social.icon}`" aria-hidden="true" />
+              </a>
+              <span v-if="index < FOOTER_SOCIAL_LINKS.length - 1">|</span>
+            </template>
           </div>
         </div>
       </div>
@@ -90,7 +49,18 @@
 </template>
 
 <script setup>
+import {
+  FOOTER_INTERNAL_LINKS,
+  FOOTER_SOCIAL_LINKS,
+} from "@/constants/footerLinks";
+
 const localPath = useLocalePath();
+const footerProfilesLink = FOOTER_INTERNAL_LINKS.find(
+  (link) => link.path === "/profiles"
+) || { path: "/profiles", labelKey: "components.footer.public-profiles" };
+const footerPrimaryLinks = FOOTER_INTERNAL_LINKS.filter(
+  (link) => link.path !== "/profiles"
+);
 </script>
 
 <style scoped>

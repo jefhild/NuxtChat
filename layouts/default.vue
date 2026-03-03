@@ -79,6 +79,7 @@ import { useDisplay } from "vuetify";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
 import { useHead, useRoute, useRuntimeConfig, useSiteConfig } from "#imports";
 import { useFavoriteNotifications } from "@/composables/useFavoriteNotifications";
+import { FOOTER_TOGGLE_ROUTE_PATHS } from "@/constants/footerLinks";
 
 const auth = useAuthStore();
 const presence = usePresenceStore2();
@@ -134,10 +135,14 @@ const isAdminRoute = computed(() => normalizedPath.value.startsWith("/admin"));
 const isHomeRoute = computed(() => {
   return normalizedPath.value === "/";
 });
+const isFooterLinkRoute = computed(() =>
+  FOOTER_TOGGLE_ROUTE_PATHS.includes(normalizedPath.value)
+);
 const footerToggleEnabled = computed(
   () =>
     isChatRoute.value ||
     isHomeRoute.value ||
+    isFooterLinkRoute.value ||
     isArticlesRoute.value ||
     isTaxonomyRoute.value ||
     isFeedsRoute.value ||

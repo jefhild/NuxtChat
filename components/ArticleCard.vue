@@ -3,6 +3,11 @@
     class="article-card d-flex flex-column justify-between"
     elevation="2"
     :style="{ minHeight: props.admin ? '360px' : '280px' }"
+    role="link"
+    tabindex="0"
+    :aria-label="displayTitle"
+    @click="handleCardClick"
+    @keydown="handleCardKeydown"
   >
     <div v-if="showLanguageMenu" class="language-menu-container">
       <v-menu content-class="article-language-menu">
@@ -33,12 +38,6 @@
     </div>
     <div
       class="card-link position-relative"
-      role="link"
-      tabindex="0"
-      :aria-label="displayTitle"
-      @click="goToArticle"
-      @keydown.enter.prevent="goToArticle"
-      @keydown.space.prevent="goToArticle"
     >
       <v-img
         v-if="articleImageUrl"
@@ -465,6 +464,27 @@ const formatCount = (value) => {
 const articlePath = computed(() => localPath(`/articles/${props.article.slug}`));
 const discussionPath = computed(() => `${articlePath.value}#discussion`);
 
+const isInteractiveTarget = (target, cardElement) => {
+  if (!(target instanceof Element)) return false;
+  const interactiveAncestor = target.closest(
+    'a,button,input,select,textarea,label,[role="button"],[role="link"],.v-btn,[data-no-card-nav],[data-persona-slug]'
+  );
+  if (!interactiveAncestor) return false;
+  return interactiveAncestor !== cardElement;
+};
+
+const handleCardClick = async (event) => {
+  if (isInteractiveTarget(event.target, event.currentTarget)) return;
+  await goToArticle();
+};
+
+const handleCardKeydown = async (event) => {
+  if (event.target !== event.currentTarget) return;
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  await goToArticle();
+};
+
 const goToArticle = async () => {
   if (props.disableNavigation) return;
   await router.push(articlePath.value);
@@ -549,6 +569,7 @@ onMounted(() => {
   color: rgb(var(--v-theme-on-surface));
   transition: box-shadow 0.2s ease; /* only subtle shadow change */
   position: relative;
+  cursor: pointer;
 }
 .article-card:hover {
   box-shadow: 0 10px 24px rgba(var(--v-theme-on-surface), 0.14);
