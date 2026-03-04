@@ -10,15 +10,19 @@
       :text="$t('components.loadingContainer.loading')"
     />
 
-    <ChatLayout
-      ref="chatLayoutRef"
-      class="flex-grow-1 min-h-0"
-      v-else
-      :user="authStore.user"
-      :userProfile="authStore.userProfile"
-      :authStatus="authStore.authStatus"
-      :show-mobile-controls="true"
-    />
+    <template v-else>
+      <h1 class="chat-page-h1">
+        {{ $t("pages.chat.index.heading") }}
+      </h1>
+      <ChatLayout
+        ref="chatLayoutRef"
+        class="flex-grow-1 min-h-0"
+        :user="authStore.user"
+        :userProfile="authStore.userProfile"
+        :authStatus="authStore.authStatus"
+        :show-mobile-controls="true"
+      />
+    </template>
   </v-container>
 </template>
 
@@ -113,6 +117,18 @@ onBeforeUnmount(() => {
 
 .chat-route-loader :deep(.text-h6) {
   color: #cbd5e1;
+}
+
+.chat-page-h1 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @media (max-width: 959px) {

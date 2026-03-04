@@ -3188,10 +3188,25 @@ const signInWithOtp = async (
   const options = { shouldCreateUser: true };
   if (emailRedirectTo) options.emailRedirectTo = emailRedirectTo;
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options,
-  });
+  const attemptSignIn = async (requestOptions) =>
+    supabase.auth.signInWithOtp({
+      email,
+      options: requestOptions,
+    });
+
+  let { error } = await attemptSignIn(options);
+
+  // Some GoTrue setups fail with a 500 when redirect_to is not accepted.
+  // Retry once without emailRedirectTo so the mail can still be sent.
+  if (error && options.emailRedirectTo) {
+    console.warn(
+      "[auth] signInWithOtp failed with emailRedirectTo; retrying without redirect_to",
+      { status: error.status, message: error.message }
+    );
+    const fallbackOptions = { shouldCreateUser: true };
+    ({ error } = await attemptSignIn(fallbackOptions));
+  }
+
   if (error) throw error;
 };
 
