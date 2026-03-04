@@ -71,6 +71,24 @@ const isAuthenticated = computed(() =>
 );
 const canViewGallery = computed(() => authStore.authStatus === "authenticated");
 
+const resolveProfileAvatar = async (userId) => {
+  if (!userId || !profile.value) return;
+  try {
+    const result = await $fetch("/api/profile/avatar-resolve", {
+      query: { userId },
+    });
+    const avatarUrl = String(result?.avatarUrl || "");
+    if (avatarUrl) {
+      profile.value = {
+        ...profile.value,
+        avatar_url: avatarUrl,
+      };
+    }
+  } catch (error) {
+    console.warn("[profile-dialog] avatar resolve error:", error);
+  }
+};
+
 const loadStats = async () => {
   const userId = profile.value?.user_id || null;
   if (!userId) {
@@ -103,6 +121,7 @@ const loadProfile = async () => {
       await fetchUserProfile(props.userId);
     }
     const resolvedId = profile.value?.user_id || profile.value?.id;
+    await resolveProfileAvatar(resolvedId);
     avatarDecoration.value = resolvedId
       ? await getAvatarDecorationFromId(resolvedId)
       : "";

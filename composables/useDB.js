@@ -919,26 +919,17 @@ export const useDb = () => {
   };
 
   const getAllAvatarDecorations = async () => {
-    // const config = useRuntimeConfig();
-
-    const config = getConfig();
-    const supabase = getClient();
-    const { data, error } = await supabase.storage
-      .from("avatar-decorations")
-      .list("decorations", {
-        limit: 100,
-        sortBy: { column: "name", order: "asc" },
-      });
-
-    if (error) {
-      console.error("Error loading decorations:", error.message);
+    try {
+      const result = await $fetch("/api/avatar-decorations/list");
+      const items = Array.isArray(result?.items) ? result.items : [];
+      return items.map((item) => ({
+        name: item?.label || item?.name || "",
+        url: item?.url || "",
+      }));
+    } catch (error) {
+      console.error("Error loading decorations:", error);
       return [];
     }
-
-    return data.map((file) => ({
-      name: file.name,
-      url: `${config.public.SUPABASE_URL}/storage/v1/object/public/avatar-decorations/decorations/${file.name}`,
-    }));
   };
 
   const getUserUpvotedMeProfiles = async (userId) => {

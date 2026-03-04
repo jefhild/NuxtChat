@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { createError, defineEventHandler, readBody } from "h3";
+import { serverSupabaseUser } from "#supabase/server";
 
 const AVATAR_BUCKET = "profile-avatars";
 const GENDER_FOLDERS = {
@@ -14,11 +15,20 @@ const resolveGenderFolder = (genderId) => {
 };
 
 export default defineEventHandler(async (event) => {
+  const authUser = await serverSupabaseUser(event);
+  if (!authUser?.id) {
+    throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+  }
+
   const body = await readBody(event);
   const { userId, genderId } = body || {};
 
-  if (!userId) {
+  const resolvedUserId = String(userId || authUser.id);
+  if (!resolvedUserId) {
     throw createError({ statusCode: 400, statusMessage: "Missing userId" });
+  }
+  if (resolvedUserId !== authUser.id) {
+    throw createError({ statusCode: 403, statusMessage: "Forbidden" });
   }
 
   const config = useRuntimeConfig();
@@ -32,7 +42,7 @@ export default defineEventHandler(async (event) => {
     const { data, error } = await supabase
       .from("profiles")
       .select("gender_id")
-      .eq("user_id", userId)
+      .eq("user_id", resolvedUserId)
       .maybeSingle();
 
     if (error) {
@@ -84,7 +94,7 @@ export default defineEventHandler(async (event) => {
   const { error: updateError } = await supabase
     .from("profiles")
     .update({ avatar_url: publicUrl })
-    .eq("user_id", userId);
+    .eq("user_id", resolvedUserId);
 
   if (updateError) {
     throw createError({

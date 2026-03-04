@@ -11,10 +11,16 @@
             alt="Profile Image"
             @load="onHeroImageLoad"
           />
-          <div v-else class="photo-hero-placeholder">
+          <v-img
+            v-if="avatarDecorationUrl"
+            :src="avatarDecorationUrl"
+            class="photo-avatar-decoration"
+            contain
+          />
+          <div v-if="!heroImage" class="photo-hero-placeholder">
             <v-icon size="40" color="grey-lighten-2">mdi-account</v-icon>
           </div>
-          <div v-if="editable" class="photo-hero-controls">
+          <div v-if="editable || showDecorationControl" class="photo-hero-controls">
             <v-tooltip text="Random photo" location="bottom">
               <template #activator="{ props: tooltipProps }">
                 <v-btn
@@ -24,7 +30,7 @@
                   variant="tonal"
                   class="photo-control-btn"
                   :loading="randomLoading"
-                  :disabled="randomLoading"
+                  :disabled="!editable || randomLoading"
                   @click="$emit('randomAvatar')"
                 >
                   <v-icon size="14">mdi-dice-5-outline</v-icon>
@@ -40,40 +46,34 @@
                   variant="tonal"
                   class="photo-control-btn"
                   :loading="uploadLoading"
-                  :disabled="uploadLoading"
+                  :disabled="!editable || uploadLoading"
                   @click="triggerFilePicker"
                 >
                   <v-icon size="14">mdi-upload</v-icon>
                 </v-btn>
               </template>
             </v-tooltip>
-            <v-tooltip text="Move image up" location="bottom">
+            <v-tooltip
+              :text="
+                decorationLocked
+                  ? 'Link your email to unlock avatar decorations'
+                  : 'Avatar decoration'
+              "
+              location="bottom"
+            >
               <template #activator="{ props: tooltipProps }">
                 <v-btn
+                  v-if="showDecorationControl"
                   v-bind="tooltipProps"
                   icon
                   size="x-small"
                   variant="tonal"
                   class="photo-control-btn"
-                  :disabled="heroObjectFit === 'contain'"
-                  @click="nudgeHeroFocalY(-8)"
+                  @click="$emit('openDecorationPicker')"
                 >
-                  <v-icon size="14">mdi-arrow-up</v-icon>
-                </v-btn>
-              </template>
-            </v-tooltip>
-            <v-tooltip text="Move image down" location="bottom">
-              <template #activator="{ props: tooltipProps }">
-                <v-btn
-                  v-bind="tooltipProps"
-                  icon
-                  size="x-small"
-                  variant="tonal"
-                  class="photo-control-btn"
-                  :disabled="heroObjectFit === 'contain'"
-                  @click="nudgeHeroFocalY(8)"
-                >
-                  <v-icon size="14">mdi-arrow-down</v-icon>
+                  <v-icon size="14">
+                    {{ decorationLocked ? "mdi-lock" : "mdi-image-filter-center-focus" }}
+                  </v-icon>
                 </v-btn>
               </template>
             </v-tooltip>
@@ -119,17 +119,17 @@
             <div ref="thumbsRef" class="photo-library-strip">
               <div
                 v-for="(item, idx) in photoSlots"
-                :key="`${item || 'slot'}-${idx}`"
+                :key="`${item?.key || 'slot'}-${idx}`"
                 class="photo-library-slot"
               >
                 <template v-if="item">
                   <v-card
                     variant="outlined"
                     class="photo-library-thumb"
-                    :class="{ 'photo-library-thumb--active': item === heroImage }"
-                    @click="setHeroFromImage(item)"
+                    :class="{ 'photo-library-thumb--active': item.url === heroImage }"
+                    @click="setHeroFromOption(item)"
                   >
-                    <NuxtImg :src="item" class="photo-library-thumb-image" alt="Photo option" />
+                    <NuxtImg :src="item.url" class="photo-library-thumb-image" alt="Photo option" />
                   </v-card>
                 </template>
                 <div v-else class="photo-library-skeleton" />
@@ -191,6 +191,9 @@ const props = defineProps({
   uploadLoading: { type: Boolean, default: false },
   errorMessage: { type: String, default: "" },
   userProfile: { type: Object, default: null },
+  avatarDecorationUrl: { type: String, default: "" },
+  showDecorationControl: { type: Boolean, default: false },
+  decorationLocked: { type: Boolean, default: false },
   refreshLookingForMenu: { type: Boolean, default: false },
   displayKey: { type: Number, default: 0 },
 });
@@ -199,9 +202,16 @@ const emit = defineEmits([
   "updateAvatarUrl",
   "randomAvatar",
   "uploadAvatar",
+  "openDecorationPicker",
   "lookingForUpdated",
 ]);
 const fileInput = ref<HTMLInputElement | null>(null);
+type CarouselOption = {
+  key: string;
+  url: string;
+  source: "current" | "avatar" | "library";
+  photoId?: string;
+};
 
 const previewAvatar = computed(() => {
   return props.avatarUrl || "";
@@ -220,15 +230,43 @@ const normalizedLibraryPhotos = computed(() =>
 const genderAvatarOptions = ref<string[]>([]);
 const loadingGenderOptions = ref(false);
 
-const photoSlots = computed(() => {
-  const list = [];
-  if (previewAvatar.value) list.push(previewAvatar.value);
+const photoSlots = computed<CarouselOption[]>(() => {
+  const list: CarouselOption[] = [];
+  const seen = new Set<string>();
+
+  const pushOption = (option: CarouselOption) => {
+    if (!option?.url || seen.has(option.url)) return;
+    seen.add(option.url);
+    list.push(option);
+  };
+
+  if (previewAvatar.value) {
+    pushOption({
+      key: `current:${previewAvatar.value}`,
+      url: previewAvatar.value,
+      source: "current",
+    });
+  }
+
   for (const url of genderAvatarOptions.value) {
-    if (!list.includes(url)) list.push(url);
+    pushOption({
+      key: `avatar:${url}`,
+      url,
+      source: "avatar",
+    });
   }
-  for (const url of normalizedLibraryPhotos.value) {
-    if (!list.includes(url)) list.push(url);
+
+  const items = Array.isArray(props.photoLibraryPhotos) ? props.photoLibraryPhotos : [];
+  for (const item of items as any[]) {
+    const url = item?.url || item?.public_url || "";
+    pushOption({
+      key: `library:${item?.id || url}`,
+      url,
+      source: "library",
+      photoId: item?.id || undefined,
+    });
   }
+
   return list;
 });
 
@@ -275,11 +313,6 @@ const persistHeroFocalY = () => {
   }
 };
 
-const nudgeHeroFocalY = (delta: number) => {
-  heroFocalY.value = Math.min(90, Math.max(10, heroFocalY.value + delta));
-  persistHeroFocalY();
-};
-
 const onHeroImageLoad = (event: Event) => {
   const image = event.target as HTMLImageElement | null;
   const width = Number(image?.naturalWidth || 0);
@@ -293,9 +326,18 @@ const onHeroImageLoad = (event: Event) => {
 
 const hasCarousel = computed(() => photoSlots.value.some((slot) => !!slot));
 
-const setHeroFromImage = (url: string) => {
+const setHeroFromOption = (option: CarouselOption) => {
+  const url = option?.url || "";
   if (!url) return;
   selectedImage.value = url;
+  if (option?.source === "library" && option.photoId) {
+    emit("updateAvatarUrl", {
+      source: "library",
+      photoId: option.photoId,
+      url,
+    });
+    return;
+  }
   emit("updateAvatarUrl", url);
 };
 
@@ -402,6 +444,17 @@ const onFileChange = async (e: Event) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.photo-avatar-decoration {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .photo-hero-placeholder {

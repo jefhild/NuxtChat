@@ -131,6 +131,12 @@
                       {{ selectedUserInitial }}
                     </span>
                   </v-avatar>
+                  <v-img
+                    v-if="selectedUserAvatarDecorationUrl"
+                    :src="selectedUserAvatarDecorationUrl"
+                    class="selected-avatar-decoration"
+                    contain
+                  />
                   <span
                     v-if="selectedUserFlagEmoji"
                     class="selected-avatar-flag"
@@ -589,6 +595,12 @@
                     {{ selectedUserInitial }}
                   </span>
                 </v-avatar>
+                <v-img
+                  v-if="selectedUserAvatarDecorationUrl"
+                  :src="selectedUserAvatarDecorationUrl"
+                  class="selected-avatar-decoration mobile-avatar-decoration"
+                  contain
+                />
                 <span
                   v-if="selectedUserFlagEmoji"
                   class="selected-avatar-flag"
@@ -1241,6 +1253,7 @@ const {
   getUserProfileFunctionFromId,
   getTranslationPreference,
   upsertTranslationPreference,
+  getAvatarDecorationFromId,
 } = useDb();
 const supabase = getClient();
 
@@ -2366,6 +2379,44 @@ const selectedUser = computed(() => {
   });
   return match || raw;
 });
+
+const selectedUserDecorationFallback = ref("");
+let selectedUserDecorationRequest = 0;
+
+const selectedUserAvatarDecorationUrl = computed(
+  () =>
+    selectedUser.value?.avatar_decoration_url ||
+    selectedUserDecorationFallback.value ||
+    ""
+);
+
+watch(
+  () => ({
+    userId: selectedUser.value?.user_id || selectedUser.value?.id || "",
+    inlineDecoration: selectedUser.value?.avatar_decoration_url || "",
+  }),
+  async ({ userId, inlineDecoration }) => {
+    const requestId = ++selectedUserDecorationRequest;
+    if (inlineDecoration) {
+      selectedUserDecorationFallback.value = "";
+      return;
+    }
+    if (!userId) {
+      selectedUserDecorationFallback.value = "";
+      return;
+    }
+    try {
+      const url = await getAvatarDecorationFromId(userId);
+      if (requestId !== selectedUserDecorationRequest) return;
+      selectedUserDecorationFallback.value = typeof url === "string" ? url : "";
+    } catch (err) {
+      if (requestId !== selectedUserDecorationRequest) return;
+      selectedUserDecorationFallback.value = "";
+      console.warn("[chat] failed to fetch selected-user decoration:", err);
+    }
+  },
+  { immediate: true }
+);
 
 const selectedUserPresence = computed(() => {
   if (isSelfSelected.value) {
@@ -3590,6 +3641,20 @@ function toggleFilters() {
   position: relative;
   display: inline-flex;
 }
+.selected-avatar-decoration {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 62px;
+  height: 62px;
+  pointer-events: none;
+  z-index: 2;
+}
+.mobile-avatar-decoration {
+  width: 56px;
+  height: 56px;
+}
 .selected-avatar-flag {
   position: absolute;
   right: -6px;
@@ -3597,7 +3662,7 @@ function toggleFilters() {
   font-size: 1.22rem;
   line-height: 1;
   text-shadow: 0 1px 3px rgba(2, 6, 23, 0.75);
-  z-index: 2;
+  z-index: 3;
 }
 .selected-avatar-gender {
   position: absolute;
@@ -3607,7 +3672,7 @@ function toggleFilters() {
   border-radius: 999px;
   padding: 4px;
   color: #1d3b58;
-  z-index: 2;
+  z-index: 3;
 }
 .selected-avatar-gender.is-male {
   color: #2563eb;

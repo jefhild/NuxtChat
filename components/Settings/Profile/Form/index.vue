@@ -9,6 +9,9 @@
       v-if="editableProfile?.user_id"
       :userProfile="editableProfile"
       :avatar="localAvatar"
+      :avatarDecorationUrl="editableProfile?.avatar_decoration_url || ''"
+      :showDecorationControl="showDecorationControl"
+      :decorationLocked="decorationLocked"
       :isEditable="isEditable"
       :randomLoading="randomAvatarLoading"
       :uploadLoading="avatarUploadLoading"
@@ -20,6 +23,7 @@
       :photoLibraryPhotos="photoLibraryPreview"
       @openPhotoLibrary="emit('openPhotoLibrary')"
       @openLinkEmail="openLinkEmailDialog"
+      @openDecorationPicker="openDecorationPicker"
       @refreshLookingForDisplay="displayKey++"
       @updateAvatarUrl="updateAvatarUrl"
       @randomAvatar="pickRandomAvatar"
@@ -145,6 +149,36 @@
             @click="submitLinkEmail"
           >
             {{ t("components.profile-email-link.submit") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="decorationDialogVisible" max-width="720">
+      <SelectAvatarDecorationDialog
+        v-if="editableProfile?.user_id"
+        :userId="editableProfile.user_id"
+        :photopath="localAvatar"
+        :currentDecorationUrl="editableProfile?.avatar_decoration_url || ''"
+        @selected="handleDecorationSelected"
+        @closeDialog="decorationDialogVisible = false"
+      />
+    </v-dialog>
+    <v-dialog v-model="decorationLockedDialogVisible" max-width="460">
+      <v-card>
+        <v-card-title class="text-h6">
+          {{ t("components.select-avatar-decoration.title") }}
+        </v-card-title>
+        <v-card-text>
+          <p class="text-body-2 mb-4">
+            Link your email to unlock avatar decorations.
+          </p>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn variant="text" @click="decorationLockedDialogVisible = false">
+            {{ t("components.profile-email-link.cancel") }}
+          </v-btn>
+          <v-btn color="primary" @click="openLinkEmailFromDecorationLock">
+            {{ t("components.profile-email-link.cta") }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -386,6 +420,14 @@ const showPhotoLibrary = computed(() => {
     authStore.authStatus === "authenticated" ||
     authStore.authStatus === "anon_authenticated"
   );
+});
+const showDecorationControl = computed(() => {
+  if (props.adminMode) return false;
+  return ["authenticated", "anon_authenticated"].includes(authStore.authStatus);
+});
+const decorationLocked = computed(() => {
+  if (props.adminMode) return false;
+  return authStore.authStatus === "anon_authenticated";
 });
 
 const presenceDisabled = computed(() => {
@@ -707,6 +749,32 @@ const openLinkEmailDialog = () => {
   linkEmailDialogVisible.value = true;
 };
 
+const decorationDialogVisible = ref(false);
+const decorationLockedDialogVisible = ref(false);
+
+const openDecorationPicker = () => {
+  if (!showDecorationControl.value) return;
+  if (decorationLocked.value) {
+    decorationLockedDialogVisible.value = true;
+    return;
+  }
+  if (!editableProfile.value?.user_id) return;
+  decorationDialogVisible.value = true;
+};
+
+const handleDecorationSelected = (url) => {
+  if (!editableProfile.value) return;
+  editableProfile.value.avatar_decoration_url = url || null;
+  if (!props.adminMode && authStore.userProfile) {
+    authStore.userProfile.avatar_decoration_url = url || null;
+  }
+};
+
+const openLinkEmailFromDecorationLock = () => {
+  decorationLockedDialogVisible.value = false;
+  openLinkEmailDialog();
+};
+
 const closeLinkEmailDialog = () => {
   linkEmailDialogVisible.value = false;
 };
@@ -898,9 +966,36 @@ const applyAvatarUrl = (cleanUrl) => {
   }
 };
 
-const updateAvatarUrl = async (newUrl) => {
-  const cleanUrl = stripAvatarQuery(newUrl);
-  if (!cleanUrl) return;
+const resolveAvatarFromSelection = async (payload) => {
+  if (!payload || typeof payload !== "object") {
+    return typeof payload === "string" ? payload : "";
+  }
+  if (payload.source !== "library" || !payload.photoId) {
+    return typeof payload.url === "string" ? payload.url : "";
+  }
+  try {
+    const result = await $fetch("/api/profile/avatar-from-library", {
+      method: "POST",
+      body: { photoId: payload.photoId },
+    });
+    return result?.avatarUrl || "";
+  } catch (err) {
+    console.error("[settings] avatar from library failed:", err);
+    return "";
+  }
+};
+
+const updateAvatarUrl = async (payload) => {
+  const incomingUrl = await resolveAvatarFromSelection(payload);
+  if (!incomingUrl) {
+    avatarError.value = "Could not save that photo. Please try again.";
+    return;
+  }
+  const cleanUrl = stripAvatarQuery(incomingUrl);
+  if (!cleanUrl) {
+    avatarError.value = "Could not save that photo. Please try again.";
+    return;
+  }
   const prevUrl = stripAvatarQuery(editableProfile.value?.avatar_url);
   applyAvatarUrl(cleanUrl);
 

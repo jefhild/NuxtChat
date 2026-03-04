@@ -10,6 +10,9 @@
         :editable="isEditable"
         :userId="userProfile.user_id"
         :avatarUrl="avatar"
+        :avatarDecorationUrl="avatarDecorationUrl"
+        :showDecorationControl="showDecorationControl"
+        :decorationLocked="decorationLocked"
         :photoLibraryPhotos="photoLibraryPhotos"
         :randomLoading="randomLoading"
         :uploadLoading="uploadLoading"
@@ -20,6 +23,7 @@
         @updateAvatarUrl="$emit('updateAvatarUrl', $event)"
         @randomAvatar="$emit('randomAvatar')"
         @uploadAvatar="$emit('uploadAvatar', $event)"
+        @openDecorationPicker="$emit('openDecorationPicker')"
         @lookingForUpdated="$emit('refreshLookingForDisplay')"
       />
     </v-col>
@@ -154,6 +158,18 @@ const props = defineProps({
   randomLoading: Boolean,
   uploadLoading: Boolean,
   errorMessage: String,
+  avatarDecorationUrl: {
+    type: String,
+    default: "",
+  },
+  showDecorationControl: {
+    type: Boolean,
+    default: false,
+  },
+  decorationLocked: {
+    type: Boolean,
+    default: false,
+  },
   showPhotoLibrary: Boolean,
   photoLibraryDisabled: {
     type: Boolean,
@@ -170,6 +186,7 @@ defineEmits([
   "refreshLookingForDisplay",
   "randomAvatar",
   "uploadAvatar",
+  "openDecorationPicker",
   "openPhotoLibrary",
   "openLinkEmail",
 ]);

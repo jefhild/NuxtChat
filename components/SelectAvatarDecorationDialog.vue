@@ -8,7 +8,7 @@
       <v-row>
         <v-col
           v-for="decoration in allAvatarDecorations"
-          :key="decoration.name"
+          :key="decoration.url || decoration.name"
           cols="4"
           class="d-flex flex-column align-center"
         >
@@ -51,12 +51,10 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
 const allAvatarDecorations = ref<{ name: string; url: string }[]>([]);
 const selectedDecoration = ref<string | null>(null);
 
-const emit = defineEmits(["closeDialog"]);
+const emit = defineEmits(["closeDialog", "selected"]);
 
 const { getAllAvatarDecorations, updateAvatarDecoration } = useDb();
 
@@ -69,7 +67,11 @@ const props = defineProps({
   },
   photopath: {
     type: String,
-    default: true,
+    default: "",
+  },
+  currentDecorationUrl: {
+    type: String,
+    default: "",
   },
 });
 
@@ -83,7 +85,7 @@ const formatName = (name: string) => {
 onMounted(async () => {
   const decorations = await getAllAvatarDecorations();
   allAvatarDecorations.value = [{ name: "None", url: "" }, ...decorations];
-  // console.log(allAvatarDecorations.value);
+  selectedDecoration.value = props.currentDecorationUrl || "";
 });
 
 const handleDecorationClick = (url: string) => {
@@ -97,7 +99,7 @@ const selectDecoration = async () => {
   if (authStore.userProfile) {
     authStore.userProfile.avatar_decoration_url = selectedDecoration.value;
   }
-  // console.log("userprofile", authStore.userProfile);
+  emit("selected", selectedDecoration.value || "");
   closeDialog();
 };
 

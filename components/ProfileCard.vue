@@ -10,19 +10,22 @@
     <div class="profile-card-header">
       <div class="profile-card-hero">
         <div class="avatar-wrapper">
-          <NuxtImg
-            :src="getAvatar(profile.avatar_url, profile.gender_id)"
+          <v-img
+            :src="profileAvatarSrc"
             height="112"
             width="112"
             class="rounded-circle cover-image profile-avatar-image"
             :alt="`${localized.displayname} image`"
+            cover
+            @error="onAvatarError"
           />
 
-          <NuxtImg
+          <v-img
             v-if="avatarDecoration"
             :src="avatarDecoration"
             class="avatar-decoration"
             :alt="`${localized.displayname} image decoration`"
+            contain
           />
         </div>
 
@@ -285,7 +288,7 @@
 </template>
 
 <script setup>
-import { computed, ref, useSlots } from "vue";
+import { computed, ref, useSlots, watch } from "vue";
 import { getAvatar, getAvatarIcon, getGenderColor } from "@/composables/useUserUtils";
 import { resolveProfileLocalization, normalizeLocale } from "@/composables/useProfileLocalization";
 
@@ -302,6 +305,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["likePhoto", "chat-now"]);
+const avatarLoadError = ref(false);
+const resolvedAvatarUrl = ref("");
+const avatarResolveTried = ref(false);
 
 const normalizeCardTheme = (value) => {
   const key = String(value || "").trim().toLowerCase();
@@ -311,6 +317,53 @@ const normalizeCardTheme = (value) => {
 
 const resolvedCardTheme = computed(() =>
   normalizeCardTheme(props.themeOverride || props.profile?.profile_card_theme)
+);
+
+const profileAvatarSrc = computed(() => {
+  if (resolvedAvatarUrl.value) {
+    return resolvedAvatarUrl.value;
+  }
+  if (avatarLoadError.value) {
+    return getAvatar("", props.profile?.gender_id);
+  }
+  return getAvatar(props.profile?.avatar_url, props.profile?.gender_id);
+});
+
+const tryResolveBrokenAvatar = async () => {
+  if (avatarResolveTried.value) return false;
+  const userId = String(props.profile?.user_id || "");
+  const source = String(props.profile?.avatar_url || "");
+  if (!userId || !source) return false;
+
+  avatarResolveTried.value = true;
+  try {
+    const result = await $fetch("/api/profile/avatar-resolve", {
+      query: { userId },
+    });
+    const resolved = String(result?.avatarUrl || "");
+    if (!resolved || resolved === source) return false;
+    resolvedAvatarUrl.value = resolved;
+    avatarLoadError.value = false;
+    return true;
+  } catch (err) {
+    console.warn("[profile-card] avatar resolve failed:", err);
+    return false;
+  }
+};
+
+const onAvatarError = async () => {
+  const resolved = await tryResolveBrokenAvatar();
+  if (resolved) return;
+  avatarLoadError.value = true;
+};
+
+watch(
+  () => props.profile?.avatar_url,
+  () => {
+    avatarLoadError.value = false;
+    resolvedAvatarUrl.value = "";
+    avatarResolveTried.value = false;
+  }
 );
 
 const emptyStats = {
@@ -645,21 +698,25 @@ const galleryDisplayItems = computed(() => {
 .avatar-wrapper {
   position: relative;
   width: 112px;
+  height: 112px;
   min-width: 112px;
 }
 
 .avatar-decoration {
   position: absolute;
-  top: -18px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   width: 180px;
+  height: 180px;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
   object-fit: contain;
 }
 
 .profile-avatar-image {
+  position: relative;
+  z-index: 1;
   display: block;
   box-shadow: 0 10px 20px rgba(2, 6, 23, 0.45);
   border: 2px solid rgba(191, 219, 254, 0.45);
@@ -963,6 +1020,7 @@ const galleryDisplayItems = computed(() => {
 
   .avatar-decoration {
     width: 170px;
+    height: 170px;
   }
 }
 

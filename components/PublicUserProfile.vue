@@ -78,13 +78,33 @@ const avatarDecoration = ref("");
 const photoGalleryPhotos = ref([]);
 const photoGalleryCount = ref(0);
 
+const resolveProfileAvatar = async (userId) => {
+  if (!userId || !profile.value) return;
+  try {
+    const result = await $fetch("/api/profile/avatar-resolve", {
+      query: { userId },
+    });
+    const avatarUrl = String(result?.avatarUrl || "");
+    if (avatarUrl) {
+      profile.value = {
+        ...profile.value,
+        avatar_url: avatarUrl,
+      };
+    }
+  } catch (error) {
+    console.warn("[public-profile] avatar resolve error:", error);
+  }
+};
+
 const loadProfile = async () => {
   if (props.selectedUserSlug) {
     await fetchUserProfileFromSlug(props.selectedUserSlug);
-    return;
-  }
-  if (props.selectedUserId) {
+  } else if (props.selectedUserId) {
     await fetchUserProfile(props.selectedUserId);
+  }
+  const resolvedId = profile.value?.user_id || profile.value?.id;
+  if (resolvedId) {
+    await resolveProfileAvatar(resolvedId);
   }
 };
 
