@@ -127,6 +127,13 @@ export const useAuthStore = defineStore("authStore1", {
         await supabase.auth.getSession();
       if (sessErr) {
         console.warn("[authStore1] getSession error:", sessErr);
+        if (import.meta.client) {
+          // Recover from stale/broken local auth state without manual cookie deletion.
+          await _clearSupabaseTokensSafe();
+          try {
+            await supabase.auth.signOut({ scope: "local" });
+          } catch {}
+        }
         this.clear();
         this.onboardingLocal = false;
         if (import.meta.client) {

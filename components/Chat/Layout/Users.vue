@@ -321,17 +321,22 @@ const emptyStateKey = computed(() => {
   }
 });
 
+const featuredUser = computed(
+  () => displayUsers.value.find((u) => isPinned(u) && !u.hidden) || null
+);
 const aiUsers = computed(() =>
-  displayUsers.value.filter((u) => u.is_ai && !u.hidden)
+  displayUsers.value.filter((u) => u.is_ai && !u.hidden && !isPinned(u))
 );
 const humanUsers = computed(() =>
-  displayUsers.value.filter((u) => !u.is_ai && !u.hidden)
+  displayUsers.value.filter((u) => !u.is_ai && !u.hidden && !isPinned(u))
 );
 
 const openedGroups = ref([]);
 const initializedOpen = ref(false);
 const manualOpened = ref(false);
 const actionMenuById = ref({});
+const defaultOpenedGroups = (groupIds = []) =>
+  groupIds.filter((id) => id === "human-group");
 const translateOrFallback = (key, fallback) => {
   const val = t(key);
   return val && val !== key ? val : fallback;
@@ -372,6 +377,14 @@ const treeItems = computed(() => {
 
 const flatItems = computed(() => {
   const items = [];
+  if (featuredUser.value) {
+    items.push({
+      id: idStr(featuredUser.value),
+      type: "user",
+      user: featuredUser.value,
+      unread: unreadFor(featuredUser.value),
+    });
+  }
   treeItems.value.forEach((group) => {
     items.push({
       id: group.id,
@@ -401,10 +414,10 @@ watch(
     openedGroups.value = openedGroups.value.filter((id) => validSet.has(id));
 
     if (!initializedOpen.value) {
-      openedGroups.value = withUsers;
+      openedGroups.value = defaultOpenedGroups(withUsers);
       initializedOpen.value = true;
     } else if (!manualOpened.value && !openedGroups.value.length) {
-      openedGroups.value = withUsers;
+      openedGroups.value = defaultOpenedGroups(withUsers);
     }
   },
   { immediate: true, deep: true }

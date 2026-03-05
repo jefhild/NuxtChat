@@ -18,6 +18,7 @@ Short, code-level tasks that are easy to execute in one sitting.
 - [x] [P1] [profiles] Verify avatar flag placement on `/profiles` at desktop breakpoints.
 - [x] [P2] [db] Add migration file for `messages_v2_reply_to_message_id_fkey` with `ON DELETE SET 
 - [x] [P2] [db] Profile image change not persisting outside edit mode.
+
 - [x] [P2] [ux] Add empty-state copy for profile tagline when missing.
 - [x] [P2] [ui] Full Profile Display is ugly. make it like a playing card
 - [x] [P2] [ui] When someone tries to logout with an email, insist.
