@@ -1,5 +1,6 @@
 import { buildRulePayload } from "~/server/utils/engagementRules";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
+import { ensureAdmin } from "~/server/utils/adminAuth";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -7,6 +8,7 @@ export default defineEventHandler(async (event) => {
     const payload = buildRulePayload(body);
 
     const supabase = await getServiceRoleClient(event);
+    await ensureAdmin(event, supabase);
 
     if (payload.is_default) {
       await supabase
@@ -27,8 +29,13 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     const err = error as any;
     console.error("[admin/engagement-rules] create error:", err);
-    const message = err?.message || "Unable to create engagement rule";
-    const status = /required|context|name/i.test(message) ? 400 : 500;
+    const message =
+      err?.statusMessage || err?.message || "Unable to create engagement rule";
+    const status = err?.statusCode
+      ? err.statusCode
+      : /required|context|name/i.test(message)
+      ? 400
+      : 500;
     setResponseStatus(event, status);
     return {
       success: false,

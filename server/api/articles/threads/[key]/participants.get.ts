@@ -56,7 +56,8 @@ export default defineEventHandler(async (event) => {
         .from("ai_personas")
         .select("id")
         .eq("category_id", categoryId)
-        .eq("is_active", true);
+        .eq("is_active", true)
+        .eq("counterpoint_enabled", true);
       if (pErr)
         throw createError({ statusCode: 500, statusMessage: pErr.message });
 

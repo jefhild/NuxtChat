@@ -324,11 +324,17 @@ const emptyStateKey = computed(() => {
 const featuredUser = computed(
   () => displayUsers.value.find((u) => isPinned(u) && !u.hidden) || null
 );
+const isHoneySimulatedUser = (u) =>
+  !!u?.is_ai && !!u?.honey_enabled && !!u?.is_simulated;
 const aiUsers = computed(() =>
-  displayUsers.value.filter((u) => u.is_ai && !u.hidden && !isPinned(u))
+  displayUsers.value.filter(
+    (u) => u.is_ai && !isHoneySimulatedUser(u) && !u.hidden && !isPinned(u)
+  )
 );
 const humanUsers = computed(() =>
-  displayUsers.value.filter((u) => !u.is_ai && !u.hidden && !isPinned(u))
+  displayUsers.value.filter(
+    (u) => (!u.is_ai || isHoneySimulatedUser(u)) && !u.hidden && !isPinned(u)
+  )
 );
 
 const openedGroups = ref([]);

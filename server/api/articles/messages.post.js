@@ -150,6 +150,7 @@ async function triggerPersonaFollowUp({
     )
     .eq("persona_key", personaKey)
     .eq("is_active", true)
+    .eq("counterpoint_enabled", true)
     .maybeSingle();
   if (personaLookupErr || !personaRow) return;
 
@@ -186,6 +187,7 @@ async function triggerPersonaFollowUp({
           { sender: "user", content: userContent },
         ],
         extra_system: extraSystem,
+        capability: "counterpoint",
       },
     });
     aiResponse =

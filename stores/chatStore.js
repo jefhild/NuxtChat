@@ -26,6 +26,13 @@ export const useChatStore = defineStore("chatStore", () => {
   const isClient = () => typeof window !== "undefined";
   const getStableId = (u) =>
     u?.user_id || u?.id ? String(u.user_id || u.id) : null;
+  const normalizeId = (v) => String(v ?? "").trim();
+  const isImchatty = (u) => getStableId(u) === IMCHATTY_ID;
+  const canUseHoneyBots = () => auth.authStatus !== "authenticated";
+  const isHiddenHoneyForCurrentAuth = (u) => {
+    if (!u?.is_ai || isImchatty(u)) return false;
+    return !!u?.honey_enabled && !canUseHoneyBots();
+  };
   const isInactiveAiUser = (u) => {
     if (!u?.is_ai) return false;
     // Treat any explicit false flag as inactive; missing flags default to active.
@@ -35,6 +42,32 @@ export const useChatStore = defineStore("chatStore", () => {
   };
   const filterActiveAiUsers = (list = []) =>
     (Array.isArray(list) ? list : []).filter((u) => !isInactiveAiUser(u));
+
+  async function fetchPublicAiPersonaMap() {
+    try {
+      const res = await $fetch("/api/ai-personas");
+      const personas = Array.isArray(res?.data) ? res.data : [];
+      const map = new Map();
+      for (const persona of personas) {
+        const userId = normalizeId(persona?.profile?.user_id);
+        if (!userId) continue;
+        map.set(userId, {
+          persona_key: persona?.persona_key || null,
+          editorial_enabled: !!persona?.editorial_enabled,
+          counterpoint_enabled: !!persona?.counterpoint_enabled,
+          honey_enabled: !!persona?.honey_enabled,
+          list_publicly:
+            typeof persona?.list_publicly === "boolean"
+              ? persona.list_publicly
+              : true,
+        });
+      }
+      return { loaded: true, map };
+    } catch (err) {
+      console.warn("[chatStore] fetchPublicAiPersonaMap failed:", err);
+      return { loaded: false, map: new Map() };
+    }
+  }
 
   function ensureImchattyPresent() {
     const exists = users.value.some((u) => getStableId(u) === IMCHATTY_ID);
@@ -93,6 +126,10 @@ function isAiId(id) {
     const last = localStorage.getItem(LS_KEY);
     if (!last) return false;
     const found = getUserById(last);
+    if (found && isHiddenHoneyForCurrentAuth(found)) {
+      localStorage.removeItem(LS_KEY);
+      return false;
+    }
     if (found) {
       selectedUser.value = found;
       return true;
@@ -114,6 +151,45 @@ function isAiId(id) {
       // console.log('[chatStore] fetchChatUsers: fetched data len =', Array.isArray(data) ? data.length : 'n/a');
       if (dbError) throw dbError;
       let nextUsers = filterActiveAiUsers(data);
+      const canSeeHoneyBots = auth.authStatus === "anon_authenticated";
+      const { loaded: personaLoaded, map: personaMap } =
+        await fetchPublicAiPersonaMap();
+      nextUsers = nextUsers
+        .map((u) => {
+          if (!u?.is_ai) return u;
+          if (isImchatty(u)) {
+            return {
+              ...u,
+              list_publicly: true,
+              counterpoint_enabled:
+                typeof u.counterpoint_enabled === "boolean"
+                  ? u.counterpoint_enabled
+                  : true,
+              honey_enabled:
+                typeof u.honey_enabled === "boolean" ? u.honey_enabled : true,
+              editorial_enabled:
+                typeof u.editorial_enabled === "boolean"
+                  ? u.editorial_enabled
+                  : true,
+            };
+          }
+          const key = normalizeId(getStableId(u));
+          const persona = personaMap.get(key);
+          if (!persona) return { ...u, list_publicly: false };
+          return { ...u, ...persona };
+        })
+        .filter((u) => {
+          if (!u?.is_ai) return true;
+          if (isImchatty(u)) return true;
+          if (!personaLoaded) return true;
+          return u.list_publicly !== false;
+        })
+        .filter((u) => {
+          if (!u?.is_ai) return true;
+          if (isImchatty(u)) return true;
+          if (!u.honey_enabled) return true;
+          return canSeeHoneyBots;
+        });
       const userIds = nextUsers.map((u) => u?.user_id).filter(Boolean);
       if (userIds.length && db.getProfileTranslationsForUsers) {
         try {
@@ -180,6 +256,7 @@ function isAiId(id) {
       if (dbError) throw dbError;
       const ids = normalizeActiveIds(data);
       activeChats.value = ids;
+      cleanupHiddenHoneyState();
     } catch (err) {
       console.error("[chatStore] fetchActiveChats error:", err);
     }
@@ -203,6 +280,8 @@ function isAiId(id) {
   function addActivePeer(peerId) {
     const id = String(peerId || "");
     if (!id) return;
+    const peer = getUserById(id);
+    if (peer && isHiddenHoneyForCurrentAuth(peer)) return;
     if (!activeChats.value.includes(id)) {
       activeChats.value = [id, ...activeChats.value]; // newest first
     }
@@ -232,13 +311,44 @@ function isAiId(id) {
     );
   }
 
+  function cleanupHiddenHoneyState() {
+    if (canUseHoneyBots()) return;
+
+    if (selectedUser.value && isHiddenHoneyForCurrentAuth(selectedUser.value)) {
+      clearSelectedUser();
+    }
+
+    activeChats.value = activeChats.value.filter((peerId) => {
+      const peer = getUserById(peerId);
+      if (!peer) return true;
+      return !isHiddenHoneyForCurrentAuth(peer);
+    });
+
+    if (!selectedUser.value) {
+      const fallback =
+        users.value.find((u) => isImchatty(u)) ||
+        users.value.find((u) => !isHiddenHoneyForCurrentAuth(u));
+      if (fallback) setSelectedUser(fallback);
+    }
+  }
+
   // Optional: if the users list changes later (presence reload, pagination), rebind selectedUser to fresh object
   watch(users, () => {
-    if (!selectedUser.value) return;
-    const id = getStableId(selectedUser.value);
-    const rebound = id ? getUserById(id) : null;
-    if (rebound) selectedUser.value = rebound;
+    if (selectedUser.value) {
+      const id = getStableId(selectedUser.value);
+      const rebound = id ? getUserById(id) : null;
+      if (rebound) selectedUser.value = rebound;
+    }
+    cleanupHiddenHoneyState();
   });
+
+  watch(
+    () => auth.authStatus,
+    () => {
+      cleanupHiddenHoneyState();
+    },
+    { immediate: true }
+  );
 
   // Optional: re-assert selection when tab regains focus
   if (isClient()) {
@@ -247,7 +357,9 @@ function isAiId(id) {
         const last = localStorage.getItem(LS_KEY);
         if (last) {
           const found = getUserById(last);
-          if (found) selectedUser.value = found;
+          if (found && !isHiddenHoneyForCurrentAuth(found)) {
+            selectedUser.value = found;
+          }
         }
       }
     };

@@ -264,7 +264,9 @@ const assessRewriteQuality = (input: {
 };
 
 const buildSystemPrompt = (persona: any) => {
-  const rendered = mustache.render(persona?.system_prompt_template || "", {
+  const basePrompt =
+    persona?.editorial_system_prompt_template || persona?.system_prompt_template || "";
+  const rendered = mustache.render(basePrompt, {
     userName: "Editor",
     userGender: "",
     userAge: "",
@@ -327,6 +329,7 @@ export default defineEventHandler(async (event) => {
       .select(AI_PERSONA_SELECT)
       .eq("persona_key", personaKey)
       .eq("is_active", true)
+      .eq("editorial_enabled", true)
       .maybeSingle();
 
     if (personaError) throw personaError;

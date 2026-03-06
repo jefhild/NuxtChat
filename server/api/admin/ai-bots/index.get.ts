@@ -1,4 +1,5 @@
 import { AI_PERSONA_SELECT, getServiceRoleClient } from "~/server/utils/aiBots";
+import { ensureAdmin } from "~/server/utils/adminAuth";
 
 const BASIC_AI_PERSONA_SELECT = `
   id,
@@ -17,6 +18,7 @@ const BASIC_AI_PERSONA_SELECT = `
 export default defineEventHandler(async (event) => {
   try {
     const supabase = await getServiceRoleClient(event);
+    await ensureAdmin(event, supabase);
     let { data, error } = await supabase
       .from("ai_personas")
       .select(AI_PERSONA_SELECT)
@@ -41,10 +43,10 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     const err = error as any;
     console.error("[admin/ai-bots] list error:", err);
-    setResponseStatus(event, 500);
+    setResponseStatus(event, err?.statusCode || 500);
     return {
       success: false,
-      error: err?.message || "Unable to load AI bots",
+      error: err?.statusMessage || err?.message || "Unable to load AI bots",
     };
   }
 });

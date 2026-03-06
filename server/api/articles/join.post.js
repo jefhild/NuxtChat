@@ -103,7 +103,8 @@ async function ensureCategoryPersonasEnrolled({ supa, threadId }) {
     .from("ai_personas")
     .select("id")
     .eq("category_id", article.category_id)
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .eq("counterpoint_enabled", true);
   if (pErr || !Array.isArray(personas) || !personas.length) return;
 
   const inserts = personas.map((p) => ({
@@ -215,6 +216,7 @@ async function triggerPersonaReactions({ supa, threadId, welcomeText }) {
           history,
           replyTo: replyTo || null,
           extra_system: extraSystem || null,
+          capability: "counterpoint",
         },
       });
       if (!res || res.success === false) {

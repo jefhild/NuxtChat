@@ -440,6 +440,7 @@ export default defineEventHandler(async (event) => {
       .select(AI_PERSONA_SELECT)
       .eq("persona_key", personaKey)
       .eq("is_active", true)
+      .eq("editorial_enabled", true)
       .maybeSingle();
 
     if (personaError) throw personaError;

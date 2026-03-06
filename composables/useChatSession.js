@@ -109,6 +109,8 @@ const sendAIResponse = async (userMessage, aiUserId, userId, isAnon) => {
       userGender: authStore.userProfile?.gender || null,
       userAge: authStore.userProfile?.age || null,
       replyTo: null, // optionally wire in reply message content
+      capability:
+        authStore.authStatus === "anon_authenticated" ? "honey" : "counterpoint",
     };
 
     const res = await fetch("/api/aiChat", {

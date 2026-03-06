@@ -974,10 +974,18 @@ const resolveAvatarFromSelection = async (payload) => {
     return typeof payload.url === "string" ? payload.url : "";
   }
   try {
-    const result = await $fetch("/api/profile/avatar-from-library", {
-      method: "POST",
-      body: { photoId: payload.photoId },
-    });
+    const result = props.adminMode
+      ? await $fetch("/api/admin/profile/avatar-from-library", {
+          method: "POST",
+          body: {
+            photoId: payload.photoId,
+            userId: editableProfile.value?.user_id,
+          },
+        })
+      : await $fetch("/api/profile/avatar-from-library", {
+          method: "POST",
+          body: { photoId: payload.photoId },
+        });
     return result?.avatarUrl || "";
   } catch (err) {
     console.error("[settings] avatar from library failed:", err);
@@ -1027,10 +1035,15 @@ const pickRandomAvatar = async () => {
   let success = false;
 
   try {
-    const result = await $fetch("/api/profile/avatar-random", {
-      method: "POST",
-      body: buildRandomAvatarPayload(),
-    });
+    const result = props.adminMode
+      ? await $fetch("/api/admin/profile/avatar-random", {
+          method: "POST",
+          body: buildRandomAvatarPayload(),
+        })
+      : await $fetch("/api/profile/avatar-random", {
+          method: "POST",
+          body: buildRandomAvatarPayload(),
+        });
     if (result?.avatarUrl) {
       updateAvatarUrl(result.avatarUrl);
       success = true;
@@ -1070,13 +1083,21 @@ const uploadAvatar = async (file) => {
 
   try {
     const dataUrl = await readFileAsDataUrl(file);
-    const result = await $fetch("/api/profile/avatar-upload", {
-      method: "POST",
-      body: {
-        userId: editableProfile.value.user_id,
-        dataUrl,
-      },
-    });
+    const result = props.adminMode
+      ? await $fetch("/api/admin/profile/avatar-upload", {
+          method: "POST",
+          body: {
+            userId: editableProfile.value.user_id,
+            dataUrl,
+          },
+        })
+      : await $fetch("/api/profile/avatar-upload", {
+          method: "POST",
+          body: {
+            userId: editableProfile.value.user_id,
+            dataUrl,
+          },
+        });
     if (result?.avatarUrl) {
       updateAvatarUrl(result.avatarUrl);
     } else {

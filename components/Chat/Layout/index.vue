@@ -2158,6 +2158,7 @@ const MOOD_WORDS = {
 };
 
 const moodLocaleKey = computed(() => normalizeLocale(locale.value) || "en");
+const canSeeHoneyBots = computed(() => auth.authStatus !== "authenticated");
 
 function normalizeText(value) {
   return String(value || "")
@@ -2253,18 +2254,21 @@ const usersWithPresence = computed(() => {
       const isRealtimeOnline = realtimeSet.has(resolvePresenceKey(u));
       const isRecentActive = recentActiveSet.has(resolvePresenceKey(u));
 
+      const isHoneyBot = !!u.is_ai && !!u.honey_enabled;
       let presence = "offline";
       if (manualStatus === "away") {
         presence = "away";
       } else if (manualStatus === "offline" && !forcedOnline) {
         presence = "offline";
-      } else if (u.is_ai) {
+      } else if (u.is_ai && !isHoneyBot) {
+        presence = "online";
+      } else if (forcedOnline) {
+        // Honey bots can be managed via simulated-presence controls.
+        // For these, "force online" should make them appear as online.
         presence = "online";
       } else if (isRealtimeOnline) {
         presence = "online";
       } else if (isRecentActive) {
-        presence = "away";
-      } else if (forcedOnline) {
         presence = "away";
       } else {
         presence = "offline";
@@ -2299,8 +2303,16 @@ const usersWithPresence = computed(() => {
     })
     // don’t show myself (compare using presence key, not UI id)
     .filter((u) => resolvePresenceKey(u) !== meKey)
-    // hide AI if toggled off
-    .filter((u) => (showAIUsers.value ? true : !u.is_ai))
+    .filter((u) => {
+      const isHoneyBot = !!u?.is_ai && !!u?.honey_enabled;
+      return isHoneyBot ? canSeeHoneyBots.value : true;
+    })
+    // hide AI if toggled off; Honey + simulated users are treated as real users
+    .filter((u) => {
+      if (showAIUsers.value) return true;
+      const isHoneySimulated = !!u.is_ai && !!u.honey_enabled && !!u.is_simulated;
+      return !u.is_ai || isHoneySimulated;
+    })
     // gender filter
     .filter((u) =>
       want.gender == null ? true : u.gender_id_norm === want.gender
@@ -2336,11 +2348,19 @@ const usersWithPresence = computed(() => {
     (u) => String(u.id) !== IMCHATTY_ID && String(u.user_id) !== IMCHATTY_ID
   );
 
+  const sortRank = (u) => {
+    if (!u?.is_ai) return 0;
+    if (auth.authStatus === "anon_authenticated") return u.honey_enabled ? 1 : 2;
+    return u.counterpoint_enabled ? 1 : 2;
+  };
+
   return [
     ...(pinned ? [pinned] : []),
-    ...others.sort((a, b) =>
-      (a.displayname || "").localeCompare(b.displayname || "")
-    ),
+    ...others.sort((a, b) => {
+      const rankDiff = sortRank(a) - sortRank(b);
+      if (rankDiff !== 0) return rankDiff;
+      return (a.displayname || "").localeCompare(b.displayname || "");
+    }),
   ];
 });
 
@@ -2947,6 +2967,17 @@ async function onSend(
 
   // BOT path only
   if ((selectedPeer?.is_ai || sendingToBot) && meId.value && toId) {
+    if (
+      selectedPeer?.is_ai &&
+      selectedPeer?.honey_enabled &&
+      auth.authStatus === "authenticated"
+    ) {
+      regRef.value?.appendPeerLocal?.(
+        "This profile is currently unavailable. Please choose another user."
+      );
+      return;
+    }
+
     // ✅ (optional but recommended) show local typing bubble in Regular3
     regRef.value?.setTyping?.(true);
 
@@ -2983,12 +3014,21 @@ async function onSend(
         : text;
 
     try {
+      const requestedCapability =
+        auth.authStatus !== "authenticated" && selectedPeer?.honey_enabled
+          ? "honey"
+          : selectedPeer?.counterpoint_enabled
+          ? "counterpoint"
+          : selectedPeer?.editorial_enabled
+          ? "editorial"
+          : "counterpoint";
       const aiText = await fetchAiResponse(
         aiUserInput,
         selectedPeer,
         userProfile.value,
         history,
-        replyTo
+        replyTo,
+        requestedCapability
       );
       if (aiText) regRef.value?.appendPeerLocal?.(aiText);
       await insertMessage(meId.value, toId, aiText);
@@ -3255,7 +3295,8 @@ async function fetchAiResponse(
   aiUser,
   userProfile,
   historyArr = [],
-  replyToStr = null
+  replyToStr = null,
+  capability = null
 ) {
   try {
     const safeHistory = Array.isArray(unref(historyArr))
@@ -3270,6 +3311,7 @@ async function fetchAiResponse(
       userAge: userProfile?.age ?? null,
       history: safeHistory, // ✅ no .value here
       replyTo: replyToStr ?? null, // ✅ string or null
+      capability: capability ?? null,
     };
 
     const res = await $fetch("/api/aiChat", { method: "POST", body: payload });

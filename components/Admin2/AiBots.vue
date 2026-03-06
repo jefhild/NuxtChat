@@ -40,34 +40,21 @@
           Manage personas, prompts, and OpenAI settings for your chat agents.
         </v-card-subtitle>
 
-        <v-alert
-          v-if="recentCredentials && showCredentialsAlert"
-          v-model="showCredentialsAlert"
-          type="info"
-          variant="tonal"
-          class="mt-4"
-          closable
-        >
-          <div class="font-weight-medium">New bot credentials</div>
-          <div>
-            Email:
-            <code>{{ recentCredentials.email }}</code>
-          </div>
-          <div>
-            Password:
-            <code>{{ recentCredentials.password }}</code>
-          </div>
-          <div class="text-caption mt-2">
-            Save these credentials now — they won't be shown again.
-          </div>
-        </v-alert>
-
         <v-text-field
           v-model="search"
           class="mt-4"
           label="Search by name, key, or model"
           prepend-inner-icon="mdi-magnify"
           clearable
+          hide-details
+        />
+        <v-select
+          v-model="capabilityFilter"
+          class="mt-3"
+          label="Capability filter"
+          :items="capabilityFilterOptions"
+          item-title="label"
+          item-value="value"
           hide-details
         />
 
@@ -146,6 +133,32 @@
                 >
                   {{ bot.is_active ? "Active" : "Inactive" }}
                 </v-chip>
+                <div class="d-flex flex-wrap ga-1 mt-2">
+                  <v-chip
+                    v-if="bot.editorial_enabled"
+                    size="x-small"
+                    color="indigo"
+                    variant="tonal"
+                  >
+                    Editorial
+                  </v-chip>
+                  <v-chip
+                    v-if="bot.counterpoint_enabled"
+                    size="x-small"
+                    color="teal"
+                    variant="tonal"
+                  >
+                    Counterpoint
+                  </v-chip>
+                  <v-chip
+                    v-if="bot.honey_enabled"
+                    size="x-small"
+                    color="amber"
+                    variant="tonal"
+                  >
+                    Honey
+                  </v-chip>
+                </div>
               </td>
               <td class="text-right">
                 <v-btn
@@ -191,142 +204,55 @@
           <v-form ref="formRef">
             <div class="text-subtitle-2 mb-2">Profile</div>
             <v-row dense>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="form.profile.displayname"
-                  label="Display Name"
-                  :rules="[requiredRule]"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="form.profile.slug"
-                  label="Slug"
-                  :rules="[requiredRule, slugRule]"
-                  @input="slugTouched = true"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="form.profile.avatar_url"
-                  label="Avatar URL"
-                  placeholder="https://..."
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="form.profile.tagline"
-                  label="Tagline"
-                />
-              </v-col>
               <v-col cols="12">
-                <v-textarea
-                  v-model="form.profile.bio"
-                  label="Bio"
-                  rows="3"
-                  auto-grow
-                />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field
-                  v-model.number="form.profile.age"
-                  label="Age"
-                  type="number"
-                  min="18"
-                />
-              </v-col>
-              <v-col cols="12" md="4">
                 <v-select
-                  v-model="form.profile.gender_id"
-                  :items="genderOptions"
-                  item-title="name"
-                  item-value="id"
-                  label="Gender"
+                  v-model="form.persona.profile_user_id"
+                  :items="profileOptions"
+                  item-title="label"
+                  item-value="user_id"
+                  label="Attach existing profile"
+                  :rules="[requiredRule]"
                   clearable
+                  :disabled="Boolean(editingId)"
+                  hint="Create/edit photos, bio, age, and gender in Profile Admin first, then attach here."
+                  persistent-hint
                 />
               </v-col>
-              <v-col cols="12" md="4">
-                <v-select
-                  v-model="form.profile.status_id"
-                  :items="statusOptions"
-                  item-title="name"
-                  item-value="id"
-                  label="Status"
-                  clearable
-                />
+              <v-col v-if="selectedProfile" cols="12">
+                <v-alert type="info" variant="tonal" density="comfortable">
+                  <div class="d-flex align-center ga-3">
+                    <v-avatar size="36">
+                      <v-img
+                        v-if="selectedProfile.avatar_url"
+                        :src="selectedProfile.avatar_url"
+                      />
+                      <span v-else class="avatar-fallback">
+                        {{ avatarInitial({ profile: selectedProfile }) }}
+                      </span>
+                    </v-avatar>
+                    <div>
+                      <div class="font-weight-medium">
+                        {{ selectedProfile.displayname || selectedProfile.slug || selectedProfile.user_id }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        {{ selectedProfile.slug || selectedProfile.user_id }}
+                      </div>
+                    </div>
+                  </div>
+                </v-alert>
               </v-col>
             </v-row>
 
             <v-divider class="my-4" />
 
-            <div class="text-subtitle-2 mb-2">Persona</div>
+            <div class="text-subtitle-2 mb-2">Bot Setup</div>
             <v-row dense>
-              <v-col cols="12" md="4">
+              <v-col cols="12" md="6">
                 <v-text-field
                   v-model="form.persona.persona_key"
                   label="Persona Key"
                   :rules="[requiredRule, slugRule]"
                   @input="personaKeyTouched = true"
-                />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-select
-                  v-model="form.persona.role"
-                  :items="personaRoles"
-                  label="Role"
-                />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-switch
-                  v-model="form.persona.is_active"
-                  label="Active"
-                  inset
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="form.persona.category_id"
-                  :items="categoryOptions"
-                  item-title="name"
-                  item-value="id"
-                  label="Category (expertise)"
-                  clearable
-                  hint="Assign this persona to an article category"
-                  persistent-hint
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="form.persona.bias"
-                  label="Bias / stance"
-                  hint="Short descriptor for cards (e.g., Center-right - free-market)"
-                  persistent-hint
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="form.persona.region"
-                  label="Region"
-                  hint="e.g., US, EU, US/EU"
-                  persistent-hint
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="form.persona.angle"
-                  label="Angle / summary"
-                  rows="2"
-                  auto-grow
-                  hint="One-line summary of the persona voice"
-                  persistent-hint
-                />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field
-                  v-model="form.persona.language_code"
-                  label="Language code"
-                  hint="IETF code (e.g., en-US)"
-                  persistent-hint
                 />
               </v-col>
               <v-col cols="12" md="6">
@@ -336,55 +262,61 @@
                   :rules="[requiredRule]"
                 />
               </v-col>
-              <v-col cols="12" md="3">
+              <v-col cols="12" class="pt-0">
+                <div class="d-flex flex-wrap align-center ga-3 capability-toggles">
+                  <v-switch
+                    v-model="form.persona.is_active"
+                    label="Active"
+                    color="success"
+                    density="compact"
+                    hide-details
+                  />
+                  <v-switch
+                    v-model="form.persona.list_publicly"
+                    label="Public listing"
+                    color="primary"
+                    density="compact"
+                    hide-details
+                  />
+                  <v-switch
+                    v-model="form.persona.editorial_enabled"
+                    label="Editorial"
+                    color="indigo"
+                    density="compact"
+                    hide-details
+                  />
+                  <v-switch
+                    v-model="form.persona.counterpoint_enabled"
+                    label="Counterpoint"
+                    color="teal"
+                    density="compact"
+                    hide-details
+                  />
+                  <v-switch
+                    v-model="form.persona.honey_enabled"
+                    label="Honey"
+                    color="amber-darken-2"
+                    density="compact"
+                    hide-details
+                  />
+                </div>
+                <div class="text-caption text-medium-emphasis mt-1">
+                  Role is fixed to <code>assistant</code>.
+                </div>
+              </v-col>
+              <v-col v-if="form.persona.honey_enabled" cols="12" md="4">
                 <v-text-field
-                  v-model.number="form.persona.temperature"
-                  label="Temperature"
+                  v-model.number="form.persona.honey_delay_min_ms"
+                  label="Honey delay min (ms)"
                   type="number"
-                  step="0.1"
-                  :rules="[makeRangeRule(0, 2)]"
+                  min="0"
+                  :rules="[minRule(0)]"
                 />
               </v-col>
-              <v-col cols="12" md="3">
+              <v-col v-if="form.persona.honey_enabled" cols="12" md="4">
                 <v-text-field
-                  v-model.number="form.persona.top_p"
-                  label="Top P"
-                  type="number"
-                  step="0.1"
-                  :rules="[makeRangeRule(0.01, 1)]"
-                />
-              </v-col>
-              <v-col cols="12" md="3">
-                <v-text-field
-                  v-model.number="form.persona.presence_penalty"
-                  label="Presence Penalty"
-                  type="number"
-                  step="0.1"
-                  :rules="[makeRangeRule(-2, 2, true)]"
-                />
-              </v-col>
-              <v-col cols="12" md="3">
-                <v-text-field
-                  v-model.number="form.persona.frequency_penalty"
-                  label="Frequency Penalty"
-                  type="number"
-                  step="0.1"
-                  :rules="[makeRangeRule(-2, 2, true)]"
-                />
-              </v-col>
-              <v-col cols="12" md="3">
-                <v-text-field
-                  v-model.number="form.persona.max_response_tokens"
-                  label="Max tokens"
-                  type="number"
-                  min="1"
-                  :rules="[minRule(1)]"
-                />
-              </v-col>
-              <v-col cols="12" md="3">
-                <v-text-field
-                  v-model.number="form.persona.max_history_messages"
-                  label="Max history messages"
+                  v-model.number="form.persona.honey_delay_max_ms"
+                  label="Honey delay max (ms)"
                   type="number"
                   min="0"
                   :rules="[minRule(0)]"
@@ -393,38 +325,204 @@
               <v-col cols="12">
                 <v-textarea
                   v-model="form.persona.system_prompt_template"
-                  label="System prompt"
+                  label="Base system prompt"
                   :rules="[requiredRule]"
                   rows="5"
                   auto-grow
+                  hint="Fallback prompt when capability-specific override is empty."
+                  persistent-hint
                 />
               </v-col>
               <v-col cols="12">
                 <v-textarea
                   v-model="form.persona.response_style_template"
-                  label="Response style (optional)"
+                  label="Base response style (optional)"
                   rows="3"
                   auto-grow
                 />
+              </v-col>
+              <v-col v-if="enabledCapabilityTabs.length" cols="12">
+                <v-tabs
+                  v-model="selectedCapabilityTab"
+                  density="compact"
+                  color="primary"
+                  class="mb-2"
+                >
+                  <v-tab
+                    v-for="cap in enabledCapabilityTabs"
+                    :key="cap.key"
+                    :value="cap.key"
+                    size="small"
+                  >
+                    {{ cap.label }}
+                  </v-tab>
+                </v-tabs>
+                <v-window v-model="selectedCapabilityTab">
+                  <v-window-item value="editorial">
+                    <v-textarea
+                      v-model="form.persona.editorial_system_prompt_template"
+                      label="Editorial prompt override (optional)"
+                      rows="4"
+                      auto-grow
+                    />
+                    <v-textarea
+                      v-model="form.persona.editorial_response_style_template"
+                      label="Editorial response style override (optional)"
+                      rows="3"
+                      auto-grow
+                    />
+                  </v-window-item>
+                  <v-window-item value="counterpoint">
+                    <v-textarea
+                      v-model="form.persona.counterpoint_system_prompt_template"
+                      label="Counterpoint prompt override (optional)"
+                      rows="4"
+                      auto-grow
+                    />
+                    <v-textarea
+                      v-model="form.persona.counterpoint_response_style_template"
+                      label="Counterpoint response style override (optional)"
+                      rows="3"
+                      auto-grow
+                    />
+                  </v-window-item>
+                  <v-window-item value="honey">
+                    <v-textarea
+                      v-model="form.persona.honey_system_prompt_template"
+                      label="Honey prompt override (optional)"
+                      rows="4"
+                      auto-grow
+                    />
+                    <v-textarea
+                      v-model="form.persona.honey_response_style_template"
+                      label="Honey response style override (optional)"
+                      rows="3"
+                      auto-grow
+                    />
+                  </v-window-item>
+                </v-window>
               </v-col>
             </v-row>
 
             <v-divider class="my-4" />
 
-            <div class="text-subtitle-2 mb-2">Advanced JSON Fields</div>
-            <v-row dense>
-              <v-col cols="12" md="6" v-for="field in jsonFieldList" :key="field.key">
-                <v-textarea
-                  v-model="jsonInputs[field.key]"
-                  :label="field.label"
-                  rows="4"
-                  auto-grow
-                  :hint="field.hint"
-                  persistent-hint
-                  :error-messages="jsonErrors[field.key]"
-                />
-              </v-col>
-            </v-row>
+            <v-expansion-panels variant="accordion">
+              <v-expansion-panel>
+                <v-expansion-panel-title>Advanced Persona Settings</v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-row dense>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="form.persona.category_id"
+                        :items="categoryOptions"
+                        item-title="name"
+                        item-value="id"
+                        label="Category (expertise)"
+                        clearable
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="form.persona.bias"
+                        label="Bias / stance"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="form.persona.region"
+                        label="Region"
+                      />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-textarea
+                        v-model="form.persona.angle"
+                        label="Angle / summary"
+                        rows="2"
+                        auto-grow
+                      />
+                    </v-col>
+                    <v-col cols="12" md="4">
+                      <v-text-field
+                        v-model="form.persona.language_code"
+                        label="Language code"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <v-text-field
+                        v-model.number="form.persona.temperature"
+                        label="Temperature"
+                        type="number"
+                        step="0.1"
+                        :rules="[makeRangeRule(0, 2)]"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <v-text-field
+                        v-model.number="form.persona.top_p"
+                        label="Top P"
+                        type="number"
+                        step="0.1"
+                        :rules="[makeRangeRule(0.01, 1)]"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <v-text-field
+                        v-model.number="form.persona.presence_penalty"
+                        label="Presence Penalty"
+                        type="number"
+                        step="0.1"
+                        :rules="[makeRangeRule(-2, 2, true)]"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <v-text-field
+                        v-model.number="form.persona.frequency_penalty"
+                        label="Frequency Penalty"
+                        type="number"
+                        step="0.1"
+                        :rules="[makeRangeRule(-2, 2, true)]"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <v-text-field
+                        v-model.number="form.persona.max_response_tokens"
+                        label="Max tokens"
+                        type="number"
+                        min="1"
+                        :rules="[minRule(1)]"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <v-text-field
+                        v-model.number="form.persona.max_history_messages"
+                        label="Max history messages"
+                        type="number"
+                        min="0"
+                        :rules="[minRule(0)]"
+                      />
+                    </v-col>
+                  </v-row>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+              <v-expansion-panel>
+                <v-expansion-panel-title>Advanced JSON Fields</v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-row dense>
+                    <v-col cols="12" md="6" v-for="field in jsonFieldList" :key="field.key">
+                      <v-textarea
+                        v-model="jsonInputs[field.key]"
+                        :label="field.label"
+                        rows="4"
+                        auto-grow
+                        :hint="field.hint"
+                        persistent-hint
+                        :error-messages="jsonErrors[field.key]"
+                      />
+                    </v-col>
+                  </v-row>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
           </v-form>
         </v-card-text>
         <v-divider />
@@ -446,7 +544,7 @@
         <v-card-text>
           Are you sure you want to delete
           <strong>{{ deleteTarget?.profile?.displayname }}</strong>? This
-          removes the persona, profile, and its auth user.
+          removes the AI persona behavior only. The profile/user remains.
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -475,16 +573,16 @@
 import { useAdminAiBots } from "@/composables/useAdminAiBots";
 
 const { listBots, createBot, updateBot, deleteBot } = useAdminAiBots();
-const { getGenders, getStatuses, getAllCategories } = useDb();
+const { getAllCategories, getAdminProfiles } = useDb();
 const localPath = useLocalePath();
 
 const loading = ref(true);
 const loadingList = ref(false);
 const loadError = ref("");
 const bots = ref([]);
+const profiles = ref([]);
 const search = ref("");
-const genders = ref([]);
-const statuses = ref([]);
+const capabilityFilter = ref("all");
 const categories = ref([]);
 const dialog = ref(false);
 const deleteDialog = ref(false);
@@ -493,9 +591,6 @@ const editingId = ref(null);
 const formRef = ref(null);
 const saving = ref(false);
 const deleting = ref(false);
-const recentCredentials = ref(null);
-const showCredentialsAlert = ref(true);
-const slugTouched = ref(false);
 const personaKeyTouched = ref(false);
 
 const DEFAULT_MODERATION_CONFIG = {
@@ -521,20 +616,17 @@ const jsonFieldList = [
 ];
 
 const form = reactive({
-  profile: {
-    displayname: "",
-    slug: "",
-    avatar_url: "",
-    tagline: "",
-    bio: "",
-    age: null,
-    gender_id: null,
-    status_id: null,
-  },
   persona: {
+    profile_user_id: "",
     persona_key: "",
     role: "assistant",
     is_active: true,
+    list_publicly: true,
+    editorial_enabled: true,
+    counterpoint_enabled: true,
+    honey_enabled: false,
+    honey_delay_min_ms: 1000,
+    honey_delay_max_ms: 10000,
     bias: "",
     angle: "",
     region: "",
@@ -549,6 +641,12 @@ const form = reactive({
     category_id: null,
     system_prompt_template: "",
     response_style_template: "",
+    editorial_system_prompt_template: "",
+    editorial_response_style_template: "",
+    counterpoint_system_prompt_template: "",
+    counterpoint_response_style_template: "",
+    honey_system_prompt_template: "",
+    honey_response_style_template: "",
   },
 });
 
@@ -572,16 +670,47 @@ const snackbar = reactive({
   color: "primary",
 });
 
-const personaRoles = ["assistant", "system", "tool"];
-
-const genderOptions = computed(() => genders.value || []);
-const statusOptions = computed(() => statuses.value || []);
 const categoryOptions = computed(() => categories.value || []);
+const selectedCapabilityTab = ref("honey");
+const enabledCapabilityTabs = computed(() => {
+  const tabs = [];
+  if (form.persona.honey_enabled) tabs.push({ key: "honey", label: "Honey" });
+  if (form.persona.counterpoint_enabled) {
+    tabs.push({ key: "counterpoint", label: "Counterpoint" });
+  }
+  if (form.persona.editorial_enabled) {
+    tabs.push({ key: "editorial", label: "Editorial" });
+  }
+  return tabs;
+});
+const profileOptions = computed(() =>
+  (profiles.value || [])
+    .map((profile) => ({
+      ...profile,
+      label:
+        `${profile.displayname || "Unnamed"} (${profile.slug || profile.user_id})` +
+        (profile.ai_persona_key ? ` · in use: ${profile.ai_persona_key}` : ""),
+    }))
+    .sort((a, b) => (a.displayname || "").localeCompare(b.displayname || ""))
+);
+const selectedProfile = computed(() =>
+  profileOptions.value.find(
+    (profile) => profile.user_id === form.persona.profile_user_id
+  )
+);
 
 const filteredBots = computed(() => {
-  if (!search.value.trim()) return bots.value;
   const q = search.value.trim().toLowerCase();
-  return bots.value.filter((bot) => {
+  const filteredByCapability = bots.value.filter((bot) => {
+    if (capabilityFilter.value === "honey") return !!bot.honey_enabled;
+    if (capabilityFilter.value === "editorial") return !!bot.editorial_enabled;
+    if (capabilityFilter.value === "counterpoint")
+      return !!bot.counterpoint_enabled;
+    return true;
+  });
+
+  if (!q) return filteredByCapability;
+  return filteredByCapability.filter((bot) => {
     const profile = bot.profile || {};
     return (
       profile.displayname?.toLowerCase().includes(q) ||
@@ -590,6 +719,12 @@ const filteredBots = computed(() => {
     );
   });
 });
+const capabilityFilterOptions = [
+  { label: "All capabilities", value: "all" },
+  { label: "Honey", value: "honey" },
+  { label: "Editorial", value: "editorial" },
+  { label: "Counterpoint", value: "counterpoint" },
+];
 
 const requiredRule = (value) =>
   (!!String(value ?? "").trim() && value !== null && value !== undefined) ||
@@ -628,24 +763,29 @@ const slugifyLocal = (value) =>
     .replace(/^-+|-+$/g, "");
 
 watch(
-  () => form.profile.displayname,
+  () => form.persona.profile_user_id,
   (value) => {
-    if (editingId.value) return;
-    if (!value) return;
-    if (!slugTouched.value) {
-      form.profile.slug = slugifyLocal(value);
-    }
-    if (!personaKeyTouched.value) {
-      form.persona.persona_key = slugifyLocal(value);
-    }
+    if (editingId.value || !value || personaKeyTouched.value) return;
+    const profile = profileOptions.value.find((item) => item.user_id === value);
+    if (!profile) return;
+    form.persona.persona_key = slugifyLocal(profile.slug || profile.displayname);
   }
 );
 
-watch(showCredentialsAlert, (isVisible) => {
-  if (!isVisible) {
-    recentCredentials.value = null;
-  }
-});
+watch(
+  enabledCapabilityTabs,
+  (tabs) => {
+    const current = selectedCapabilityTab.value;
+    if (!tabs.length) {
+      selectedCapabilityTab.value = "honey";
+      return;
+    }
+    if (!tabs.some((tab) => tab.key === current)) {
+      selectedCapabilityTab.value = tabs[0].key;
+    }
+  },
+  { immediate: true }
+);
 
 const formatTimestamp = (value) => {
   if (!value) return "Unknown";
@@ -664,20 +804,17 @@ const truncate = (text, len = 100) => {
 };
 
 const resetForm = () => {
-  Object.assign(form.profile, {
-    displayname: "",
-    slug: "",
-    avatar_url: "",
-    tagline: "",
-    bio: "",
-    age: null,
-    gender_id: null,
-    status_id: null,
-  });
   Object.assign(form.persona, {
+    profile_user_id: "",
     persona_key: "",
     role: "assistant",
     is_active: true,
+    list_publicly: true,
+    editorial_enabled: true,
+    counterpoint_enabled: true,
+    honey_enabled: false,
+    honey_delay_min_ms: 1000,
+    honey_delay_max_ms: 10000,
     bias: "",
     angle: "",
     region: "",
@@ -692,6 +829,12 @@ const resetForm = () => {
     category_id: null,
     system_prompt_template: "",
     response_style_template: "",
+    editorial_system_prompt_template: "",
+    editorial_response_style_template: "",
+    counterpoint_system_prompt_template: "",
+    counterpoint_response_style_template: "",
+    honey_system_prompt_template: "",
+    honey_response_style_template: "",
   });
   jsonInputs.parameters = "{}";
   jsonInputs.metadata = "{}";
@@ -700,7 +843,6 @@ const resetForm = () => {
   Object.keys(jsonErrors).forEach((key) => {
     jsonErrors[key] = "";
   });
-  slugTouched.value = false;
   personaKeyTouched.value = false;
   nextTick(() => formRef.value?.resetValidation());
 };
@@ -726,21 +868,17 @@ const formatJson = (value, fallback) => {
 };
 
 const populateForm = (bot) => {
-  Object.assign(form.profile, {
-    displayname: bot.profile?.displayname || "",
-    slug: bot.profile?.slug || "",
-    avatar_url: bot.profile?.avatar_url || "",
-    tagline: bot.profile?.tagline || "",
-    bio: bot.profile?.bio || "",
-    age: bot.profile?.age ?? null,
-    gender_id: bot.profile?.gender_id ?? null,
-    status_id: bot.profile?.status_id ?? null,
-  });
-
   Object.assign(form.persona, {
+    profile_user_id: bot.profile_user_id || bot.profile?.user_id || "",
     persona_key: bot.persona_key || "",
-    role: bot.role || "assistant",
+    role: "assistant",
     is_active: bot.is_active ?? true,
+    list_publicly: bot.list_publicly ?? true,
+    editorial_enabled: bot.editorial_enabled ?? true,
+    counterpoint_enabled: bot.counterpoint_enabled ?? true,
+    honey_enabled: bot.honey_enabled ?? false,
+    honey_delay_min_ms: bot.honey_delay_min_ms ?? 1000,
+    honey_delay_max_ms: bot.honey_delay_max_ms ?? 10000,
     bias: bot.bias || "",
     angle: bot.angle || "",
     region: bot.region || "",
@@ -755,6 +893,14 @@ const populateForm = (bot) => {
     category_id: bot.category_id ?? bot.category?.id ?? null,
     system_prompt_template: bot.system_prompt_template || "",
     response_style_template: bot.response_style_template || "",
+    editorial_system_prompt_template: bot.editorial_system_prompt_template || "",
+    editorial_response_style_template: bot.editorial_response_style_template || "",
+    counterpoint_system_prompt_template:
+      bot.counterpoint_system_prompt_template || "",
+    counterpoint_response_style_template:
+      bot.counterpoint_response_style_template || "",
+    honey_system_prompt_template: bot.honey_system_prompt_template || "",
+    honey_response_style_template: bot.honey_response_style_template || "",
   });
 
   jsonInputs.parameters = formatJson(bot.parameters, "{}");
@@ -781,7 +927,7 @@ const parseJsonInputs = () => {
     }
     try {
       result[key] = JSON.parse(raw);
-    } catch (error) {
+    } catch {
       jsonErrors[key] = "Invalid JSON";
       invalid = true;
     }
@@ -807,14 +953,17 @@ const loadBots = async () => {
 
 const loadLookups = async () => {
   try {
-    const [genderData, statusData, categoryData] = await Promise.all([
-      getGenders(),
-      getStatuses(),
+    const [categoryData, profileData] = await Promise.all([
       getAllCategories(),
+      getAdminProfiles(null),
     ]);
-    genders.value = genderData || [];
-    statuses.value = statusData || [];
     categories.value = categoryData || [];
+    profiles.value = (profileData?.data || [])
+      .filter((profile) => profile?.user_id)
+      .map((profile) => ({
+        ...profile,
+        user_id: String(profile.user_id),
+      }));
   } catch (error) {
     console.error("[admin][ai-bots] lookup error", error);
   }
@@ -828,7 +977,6 @@ const openCreateDialog = () => {
 
 const openEditDialog = (bot) => {
   editingId.value = bot?.id || null;
-  slugTouched.value = true;
   personaKeyTouched.value = true;
   populateForm(bot);
   dialog.value = true;
@@ -857,14 +1005,34 @@ const handleSubmit = async () => {
 
   saving.value = true;
 
+  const selected = profileOptions.value.find(
+    (profile) => profile.user_id === form.persona.profile_user_id
+  );
+  if (!selected) {
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = "Select a valid profile.";
+    saving.value = false;
+    return;
+  }
+
+  if (
+    !editingId.value &&
+    selected.ai_persona_key &&
+    String(selected.ai_persona_key).trim()
+  ) {
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = "This profile already has an AI persona.";
+    saving.value = false;
+    return;
+  }
+
   const payload = {
-    profile: {
-      ...form.profile,
-      displayname: form.profile.displayname.trim(),
-      slug: slugifyLocal(form.profile.slug),
-    },
     persona: {
       ...form.persona,
+      role: "assistant",
+      profile_user_id: String(form.persona.profile_user_id),
       persona_key: slugifyLocal(form.persona.persona_key),
       temperature: Number(form.persona.temperature),
       top_p: Number(form.persona.top_p),
@@ -877,7 +1045,26 @@ const handleSubmit = async () => {
     },
   };
 
-  if (Number.isNaN(payload.profile.age)) payload.profile.age = null;
+  if (
+    payload.persona.honey_delay_max_ms < payload.persona.honey_delay_min_ms
+  ) {
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = "Honey max delay must be greater than or equal to min delay.";
+    saving.value = false;
+    return;
+  }
+  if (
+    !payload.persona.editorial_enabled &&
+    !payload.persona.counterpoint_enabled &&
+    !payload.persona.honey_enabled
+  ) {
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = "Enable at least one capability (editorial, counterpoint, or honey).";
+    saving.value = false;
+    return;
+  }
 
   try {
     let res;
@@ -898,11 +1085,6 @@ const handleSubmit = async () => {
       }
     } else {
       await loadBots();
-    }
-
-    if (!editingId.value && res?.credentials) {
-      recentCredentials.value = res.credentials;
-      showCredentialsAlert.value = true;
     }
 
     snackbar.show = true;
@@ -964,5 +1146,9 @@ onMounted(async () => {
   justify-content: center;
   text-transform: uppercase;
   font-weight: 600;
+}
+
+.capability-toggles :deep(.v-label) {
+  font-size: 0.85rem;
 }
 </style>

@@ -3,6 +3,24 @@ import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import mustache from "mustache";
 import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const normalizeCapability = (value) => {
+  const v = String(value || "").trim().toLowerCase();
+  return ["editorial", "counterpoint", "honey"].includes(v) ? v : null;
+};
+
+const resolveCapability = (requested, persona, allowHoney = false) => {
+  const req = normalizeCapability(requested);
+  if (req === "honey" && allowHoney && persona?.honey_enabled) return "honey";
+  if (req === "honey" && !allowHoney) return null;
+  if (req === "counterpoint" && persona?.counterpoint_enabled) return "counterpoint";
+  if (req === "editorial" && persona?.editorial_enabled) return "editorial";
+  if (persona?.counterpoint_enabled) return "counterpoint";
+  if (persona?.editorial_enabled) return "editorial";
+  return null;
+};
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const isDev = process.env.NODE_ENV !== "production";
@@ -31,6 +49,7 @@ export default defineEventHandler(async (event) => {
       history, // [{ sender, content }]
       replyTo, // string | null
       extra_system, // string | null
+      capability, // string | null
     } = body || {};
 
     if (!userMessage) return { success: false, error: "Missing userMessage" };
@@ -62,7 +81,7 @@ export default defineEventHandler(async (event) => {
     const { data: personas, error: personaErr } = await supabase
       .from("ai_personas")
       .select(
-        "id, persona_key, profile_user_id, model, temperature, top_p, presence_penalty, frequency_penalty, max_response_tokens, max_history_messages, system_prompt_template, response_style_template, parameters"
+        "id, persona_key, profile_user_id, model, temperature, top_p, presence_penalty, frequency_penalty, max_response_tokens, max_history_messages, system_prompt_template, response_style_template, parameters, editorial_enabled, counterpoint_enabled, honey_enabled, honey_delay_min_ms, honey_delay_max_ms, editorial_system_prompt_template, editorial_response_style_template, counterpoint_system_prompt_template, counterpoint_response_style_template, honey_system_prompt_template, honey_response_style_template"
       )
       .in("persona_key", personaCandidates)
       .eq("is_active", true)
@@ -89,6 +108,47 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // Honey capability is available for anonymous/no-session users,
+    // but blocked for fully authenticated users.
+    const allowHoneyCapability = !caller || !!caller?.is_anonymous;
+    const resolvedCapability = resolveCapability(
+      capability,
+      persona,
+      allowHoneyCapability
+    );
+    const systemTemplate =
+      resolvedCapability === "honey"
+        ? persona.honey_system_prompt_template || persona.system_prompt_template || ""
+        : resolvedCapability === "counterpoint"
+        ? persona.counterpoint_system_prompt_template ||
+          persona.system_prompt_template ||
+          ""
+        : resolvedCapability === "editorial"
+        ? persona.editorial_system_prompt_template ||
+          persona.system_prompt_template ||
+          ""
+        : persona.system_prompt_template || "";
+
+    const styleTemplate =
+      resolvedCapability === "honey"
+        ? persona.honey_response_style_template || persona.response_style_template || ""
+        : resolvedCapability === "counterpoint"
+        ? persona.counterpoint_response_style_template ||
+          persona.response_style_template ||
+          ""
+        : resolvedCapability === "editorial"
+        ? persona.editorial_response_style_template ||
+          persona.response_style_template ||
+          ""
+        : persona.response_style_template || "";
+
+    if (resolvedCapability === "honey") {
+      const minDelay = Math.max(0, Number(persona.honey_delay_min_ms ?? 1000));
+      const maxDelay = Math.max(minDelay, Number(persona.honey_delay_max_ms ?? 10000));
+      const jitter = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+      await sleep(jitter);
+    }
+
     const safeHistory = Array.isArray(history)
       ? history.slice(-(persona.max_history_messages ?? 10))
       : [];
@@ -100,13 +160,13 @@ export default defineEventHandler(async (event) => {
     };
 
     // Render the base system prompt template
-    let promptBase = mustache.render(persona.system_prompt_template || "", vars);
+    let promptBase = mustache.render(systemTemplate, vars);
     if (extra_system && typeof extra_system === "string") {
       promptBase = `${promptBase}\n${extra_system.trim()}`;
     }
-    if (persona.response_style_template) {
+    if (styleTemplate) {
       const style = mustache.render(
-        String(persona.response_style_template),
+        String(styleTemplate),
         vars
       ).trim();
       if (style) {

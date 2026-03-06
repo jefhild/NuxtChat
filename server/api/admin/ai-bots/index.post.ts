@@ -1,85 +1,57 @@
 import {
   buildPersonaPayload,
-  buildProfilePayload,
   fetchPersonaById,
-  generateBotEmail,
-  generateBotPassword,
   getServiceRoleClient,
-  slugify,
 } from "~/server/utils/aiBots";
+import { ensureAdmin } from "~/server/utils/adminAuth";
 
 export default defineEventHandler(async (event) => {
   try {
     const body = (await readBody(event)) || {};
-    const profileInput = body.profile || {};
     const personaInput = body.persona || {};
-    const authInput = body.auth || {};
 
     const supabase = await getServiceRoleClient(event);
-    const profilePayload = buildProfilePayload(profileInput);
-
-    const personaKeySeed =
-      personaInput.persona_key ||
-      profilePayload.slug ||
-      profilePayload.displayname;
-
-    let userId = authInput.user_id || profileInput.user_id || null;
-    let credentials: { email: string; password: string } | null = null;
-
-    if (!userId) {
-      const email =
-        authInput.email ||
-        profileInput.email ||
-        generateBotEmail(personaKeySeed);
-      const password = authInput.password || generateBotPassword();
-
-      const { data: userData, error: userErr } =
-        await supabase.auth.admin.createUser({
-          email,
-          password,
-          email_confirm: true,
-          user_metadata: {
-            is_ai: true,
-            persona_key: slugify(personaKeySeed),
-          },
-        });
-
-      if (userErr) throw userErr;
-      if (!userData?.user?.id) throw new Error("Failed to create auth user.");
-
-      userId = userData.user.id;
-      credentials = { email, password };
-    }
-
-    profilePayload.user_id = userId;
-
-    const personaPayload = buildPersonaPayload(personaInput, userId);
-    if (personaPayload.is_active === false) {
-      profilePayload.is_private = true;
-    } else if (personaPayload.is_active === true) {
-      profilePayload.is_private = false;
+    await ensureAdmin(event, supabase);
+    const profileUserId = String(personaInput.profile_user_id || "").trim();
+    if (!profileUserId) {
+      throw new Error("profile_user_id is required.");
     }
 
     const { data: existingProfile, error: profileLookupError } = await supabase
       .from("profiles")
       .select("user_id")
-      .eq("user_id", userId)
+      .eq("user_id", profileUserId)
       .maybeSingle();
 
     if (profileLookupError) throw profileLookupError;
-
-    if (existingProfile) {
-      const { error: profileUpdateError } = await supabase
-        .from("profiles")
-        .update(profilePayload)
-        .eq("user_id", userId);
-      if (profileUpdateError) throw profileUpdateError;
-    } else {
-      const { error: profileInsertError } = await supabase
-        .from("profiles")
-        .insert(profilePayload);
-      if (profileInsertError) throw profileInsertError;
+    if (!existingProfile?.user_id) {
+      throw new Error("Selected profile was not found.");
     }
+
+    const { data: existingPersona, error: existingPersonaErr } = await supabase
+      .from("ai_personas")
+      .select("id")
+      .eq("profile_user_id", profileUserId)
+      .limit(1)
+      .maybeSingle();
+    if (existingPersonaErr) throw existingPersonaErr;
+    if (existingPersona?.id) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: "This profile is already linked to an AI persona.",
+      });
+    }
+
+    const personaPayload = buildPersonaPayload(personaInput, profileUserId);
+
+    const profilePatch: Record<string, unknown> = { is_ai: true };
+    if (personaPayload.is_active === false) profilePatch.is_private = true;
+    if (personaPayload.is_active === true) profilePatch.is_private = false;
+    const { error: profileUpdateError } = await supabase
+      .from("profiles")
+      .update(profilePatch)
+      .eq("user_id", profileUserId);
+    if (profileUpdateError) throw profileUpdateError;
 
     const { data: personaRow, error: personaError } = await supabase
       .from("ai_personas")
@@ -98,13 +70,15 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       data: persona,
-      credentials,
     };
   } catch (error) {
     const err = error as any;
     console.error("[admin/ai-bots] create error:", err);
-    const message = err?.message || "Unable to create AI bot";
-    const status = /required/i.test(message)
+    const message =
+      err?.statusMessage || err?.message || "Unable to create AI bot";
+    const status = err?.statusCode
+      ? err.statusCode
+      : /required/i.test(message)
       ? 400
       : err?.code === "23505"
       ? 409

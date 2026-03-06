@@ -1,9 +1,9 @@
 import {
   buildPersonaPayload,
-  buildProfilePayload,
   fetchPersonaById,
   getServiceRoleClient,
 } from "~/server/utils/aiBots";
+import { ensureAdmin } from "~/server/utils/adminAuth";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -15,10 +15,10 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = (await readBody(event)) || {};
-    const profileInput = body.profile || {};
     const personaInput = body.persona || {};
 
     const supabase = await getServiceRoleClient(event);
+    await ensureAdmin(event, supabase);
     const { data: persona, error: personaLookupError } = await supabase
       .from("ai_personas")
       .select("profile_user_id")
@@ -30,25 +30,50 @@ export default defineEventHandler(async (event) => {
       throw new Error("Persona is missing a linked profile.");
     }
 
-    const profilePayload = buildProfilePayload({
-      ...profileInput,
-      user_id: persona.profile_user_id,
-    });
+    const requestedProfileUserId = String(
+      personaInput?.profile_user_id || persona.profile_user_id
+    ).trim();
+    if (!requestedProfileUserId) {
+      throw new Error("profile_user_id is required.");
+    }
+
+    const switchingProfile = requestedProfileUserId !== persona.profile_user_id;
+    if (switchingProfile) {
+      const { data: profileRow, error: profileLookupError } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("user_id", requestedProfileUserId)
+        .maybeSingle();
+      if (profileLookupError) throw profileLookupError;
+      if (!profileRow?.user_id) throw new Error("Selected profile was not found.");
+
+      const { data: personaOnProfile, error: personaOnProfileErr } = await supabase
+        .from("ai_personas")
+        .select("id")
+        .eq("profile_user_id", requestedProfileUserId)
+        .neq("id", personaId)
+        .limit(1)
+        .maybeSingle();
+      if (personaOnProfileErr) throw personaOnProfileErr;
+      if (personaOnProfile?.id) {
+        throw createError({
+          statusCode: 409,
+          statusMessage: "Selected profile is already linked to another AI persona.",
+        });
+      }
+    }
 
     const personaPayload = buildPersonaPayload(
       personaInput,
-      persona.profile_user_id
+      requestedProfileUserId
     );
-    if (personaPayload.is_active === false) {
-      profilePayload.is_private = true;
-    } else if (personaPayload.is_active === true) {
-      profilePayload.is_private = false;
-    }
-
+    const profilePatch: Record<string, unknown> = { is_ai: true };
+    if (personaPayload.is_active === false) profilePatch.is_private = true;
+    if (personaPayload.is_active === true) profilePatch.is_private = false;
     const { error: profileUpdateError } = await supabase
       .from("profiles")
-      .update(profilePayload)
-      .eq("user_id", persona.profile_user_id);
+      .update(profilePatch)
+      .eq("user_id", requestedProfileUserId);
     if (profileUpdateError) throw profileUpdateError;
 
     const { error: personaUpdateError } = await supabase
@@ -67,8 +92,11 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     const err = error as any;
     console.error("[admin/ai-bots] update error:", err);
-    const message = err?.message || "Unable to update AI bot";
-    const status = /missing/i.test(message)
+    const message =
+      err?.statusMessage || err?.message || "Unable to update AI bot";
+    const status = err?.statusCode
+      ? err.statusCode
+      : /missing/i.test(message)
       ? 400
       : err?.code === "23505"
       ? 409

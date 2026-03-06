@@ -1,4 +1,5 @@
 import { getServiceRoleClient } from "~/server/utils/aiBots";
+import { ensureAdmin } from "~/server/utils/adminAuth";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -10,6 +11,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const supabase = await getServiceRoleClient(event);
+    await ensureAdmin(event, supabase);
     const { error } = await supabase
       .from("ai_engagement_rules")
       .delete()
@@ -21,10 +23,11 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     const err = error as any;
     console.error("[admin/engagement-rules] delete error:", err);
-    setResponseStatus(event, 500);
+    setResponseStatus(event, err?.statusCode || 500);
     return {
       success: false,
-      error: err?.message || "Unable to delete engagement rule",
+      error:
+        err?.statusMessage || err?.message || "Unable to delete engagement rule",
     };
   }
 });

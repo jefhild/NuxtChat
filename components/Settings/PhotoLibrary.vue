@@ -120,7 +120,7 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import LoadingContainer from "@/components/LoadingContainer.vue";
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted, watch } from "vue";
 
 const { t } = useI18n();
 
@@ -128,6 +128,10 @@ const props = defineProps({
   userId: {
     type: String,
     required: false,
+  },
+  adminMode: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -141,6 +145,7 @@ const successMessage = ref("");
 const deleteDialog = ref(false);
 const deleteTarget = ref(null);
 const deleting = ref(false);
+const isAdminContext = computed(() => props.adminMode && !!props.userId);
 
 const statusLabel = (status) =>
   t(`components.photo-library.status.${status || "pending"}`);
@@ -171,7 +176,11 @@ const loadPhotos = async () => {
   loading.value = true;
   errorMessage.value = "";
   try {
-    const result = await $fetch("/api/profile/photos");
+    const result = isAdminContext.value
+      ? await $fetch("/api/admin/profile-photos/list", {
+          query: { user_id: props.userId, limit: 200 },
+        })
+      : await $fetch("/api/profile/photos");
     photos.value = result?.photos || [];
   } catch (err) {
     console.error("[settings] load photos failed:", err);
@@ -199,10 +208,15 @@ const uploadPhoto = async () => {
 
   try {
     const dataUrl = await readFileAsDataUrl(selectedFile.value);
-    const result = await $fetch("/api/profile/photos", {
-      method: "POST",
-      body: { dataUrl },
-    });
+    const result = isAdminContext.value
+      ? await $fetch("/api/admin/profile-photos/upload", {
+          method: "POST",
+          body: { dataUrl, userId: props.userId },
+        })
+      : await $fetch("/api/profile/photos", {
+          method: "POST",
+          body: { dataUrl },
+        });
 
     if (result?.photo) {
       photos.value = [result.photo, ...photos.value];
@@ -235,9 +249,16 @@ const confirmDelete = async () => {
   deleting.value = true;
   errorMessage.value = "";
   try {
-    await $fetch(`/api/profile/photos/${deleteTarget.value.id}`, {
-      method: "DELETE",
-    });
+    if (isAdminContext.value) {
+      await $fetch("/api/admin/profile-photos/delete", {
+        method: "POST",
+        body: { photoId: deleteTarget.value.id },
+      });
+    } else {
+      await $fetch(`/api/profile/photos/${deleteTarget.value.id}`, {
+        method: "DELETE",
+      });
+    }
     photos.value = photos.value.filter((photo) => photo.id !== deleteTarget.value.id);
     successMessage.value = t("components.photo-library.delete-success");
     closeDeleteDialog();
@@ -250,6 +271,13 @@ const confirmDelete = async () => {
 };
 
 onMounted(loadPhotos);
+
+watch(
+  () => [props.userId, props.adminMode],
+  () => {
+    loadPhotos();
+  }
+);
 </script>
 
 <style scoped>

@@ -32,6 +32,18 @@ export const AI_PERSONA_SELECT = `
   frequency_penalty,
   max_response_tokens,
   max_history_messages,
+  editorial_enabled,
+  counterpoint_enabled,
+  honey_enabled,
+  list_publicly,
+  honey_delay_min_ms,
+  honey_delay_max_ms,
+  editorial_system_prompt_template,
+  editorial_response_style_template,
+  counterpoint_system_prompt_template,
+  counterpoint_response_style_template,
+  honey_system_prompt_template,
+  honey_response_style_template,
   category_id,
   system_prompt_template,
   response_style_template,
@@ -152,6 +164,14 @@ export const buildPersonaPayload = (
   }
 
   const responseStyle = input?.response_style_template ?? null;
+  const honeyDelayMin = Math.max(
+    0,
+    toNumberOrNull(input?.honey_delay_min_ms, 1000) ?? 1000
+  );
+  const honeyDelayMax = Math.max(
+    honeyDelayMin,
+    clamp(toNumberOrNull(input?.honey_delay_max_ms, 10000) ?? 10000, 0, 60000)
+  );
 
   return {
     persona_key: personaKey,
@@ -180,9 +200,33 @@ export const buildPersonaPayload = (
       toNumberOrNull(input?.max_response_tokens, 600) ?? 600,
     max_history_messages:
       toNumberOrNull(input?.max_history_messages, 10) ?? 10,
+    editorial_enabled:
+      typeof input?.editorial_enabled === "boolean"
+        ? input.editorial_enabled
+        : true,
+    counterpoint_enabled:
+      typeof input?.counterpoint_enabled === "boolean"
+        ? input.counterpoint_enabled
+        : true,
+    honey_enabled:
+      typeof input?.honey_enabled === "boolean" ? input.honey_enabled : false,
+    list_publicly:
+      typeof input?.list_publicly === "boolean" ? input.list_publicly : true,
+    honey_delay_min_ms: honeyDelayMin,
+    honey_delay_max_ms: honeyDelayMax,
     system_prompt_template: systemPrompt,
     response_style_template:
       responseStyle === "" ? null : responseStyle ?? null,
+    editorial_system_prompt_template:
+      input?.editorial_system_prompt_template || null,
+    editorial_response_style_template:
+      input?.editorial_response_style_template || null,
+    counterpoint_system_prompt_template:
+      input?.counterpoint_system_prompt_template || null,
+    counterpoint_response_style_template:
+      input?.counterpoint_response_style_template || null,
+    honey_system_prompt_template: input?.honey_system_prompt_template || null,
+    honey_response_style_template: input?.honey_response_style_template || null,
     dynamic_fields: parseJsonField(input?.dynamic_fields, []),
     parameters: parseJsonField(input?.parameters, {}),
     metadata: parseJsonField(input?.metadata, {}),

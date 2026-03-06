@@ -27,7 +27,25 @@
             v-if="userProfile"
             :userProfile="userProfile"
             :adminMode="true"
+            @openPhotoLibrary="photoLibraryDialog = true"
           />
+          <v-dialog v-model="photoLibraryDialog" max-width="980">
+            <v-card>
+              <v-card-title class="d-flex align-center justify-space-between">
+                <span>Photo Library</span>
+                <v-btn icon variant="text" @click="photoLibraryDialog = false">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text>
+                <SettingsPhotoLibrary
+                  v-if="userProfile?.user_id"
+                  :userId="userProfile.user_id"
+                  :adminMode="true"
+                />
+              </v-card-text>
+            </v-card>
+          </v-dialog>
           <v-card
             v-if="userProfile && isAdmin"
             class="mt-4"
@@ -268,6 +286,7 @@ const compose = reactive({
 });
 const sendBusy = ref(false);
 const sendStatus = ref("");
+const photoLibraryDialog = ref(false);
 
 const fetchProfile = async () => {
   const userId = String(route.params.id || "");

@@ -4,6 +4,12 @@ Short, code-level tasks that are easy to execute in one sitting.
 
 ## Now
 
+- [x] [P1] [api] Lock down `/api/admin/ai-bots/*` and `/api/admin/engagement-rules/*` with server-side admin checks. (2026-03-05)
+- [x] [P1] [db] Add multi-capability bot schema for one profile identity with many capabilities (`editorial`, `counterpoint`, `honey`) and per-capability routing/delay settings. (2026-03-05)
+- [x] [P1] [admin] Update AI Bots admin flow to support assigning capabilities to existing profiles plus per-capability prompts and toggles. (2026-03-05)
+- [x] [P1] [chat] Add honey DM trigger path for `anon_authenticated` users with randomized response delay range (default 1-10s). (2026-03-05)
+- [x] [P1] [api] Route bot selection by context/capability (rewrite uses `editorial`, discussion uses `counterpoint`, DM uses `honey`) while keeping ImChatty special-cased. (2026-03-05)
+- [ ] [P1] [profiles] Keep bot-capable profiles fully user-like (photos, bio, age, gender, visibility) and add a public-listing toggle separate from capabilities.
 - [ ] [P2] [ux] Add a Browse Profiles Section
 - [ ] [P2] [ui] Mood Feed UI is ugly
 - [ ] [P3] [ux] Mood Feed Teaser to Home Page
