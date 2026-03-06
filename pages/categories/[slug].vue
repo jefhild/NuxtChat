@@ -268,6 +268,7 @@ const firstImage = computed(() => {
 // SEO setup
 useSeoI18nMeta("categories.index", {
   availableLocaleCodes: availableTaxonomyLocales,
+  canonicalLocaleCode: canonicalLocale.value,
   robots: isCurrentLocaleAvailable.value ? undefined : "noindex,follow",
   overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
   dynamic: {

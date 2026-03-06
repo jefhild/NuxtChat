@@ -809,6 +809,7 @@ watch(renderedMarkdown, () => {
 
 useSeoI18nMeta("articles.index", {
   availableLocaleCodes: availableArticleLocales,
+  canonicalLocaleCode: canonicalLocale.value,
   robots: isCurrentLocaleTranslated.value ? undefined : "noindex,follow",
   overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
   dynamic: {
