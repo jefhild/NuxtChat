@@ -9,6 +9,8 @@ const PUBLIC_PERSONA_SELECT = `
   editorial_enabled,
   counterpoint_enabled,
   honey_enabled,
+  honey_delay_min_ms,
+  honey_delay_max_ms,
   bias,
   angle,
   region,

@@ -1289,6 +1289,15 @@ const openProfileDialog = (user) => {
 };
 
 const IMCHATTY_ID = "a3962087-516b-48df-a3ff-3b070406d832";
+const IMCHATTY_SLUG = "imchatty";
+const isImchattyUser = (u) => {
+  const id = String(u?.id ?? u?.user_id ?? "").trim();
+  if (id && id === IMCHATTY_ID) return true;
+  const slug = String(u?.slug ?? u?.profile_slug ?? u?.username_slug ?? "")
+    .trim()
+    .toLowerCase();
+  return slug === IMCHATTY_SLUG;
+};
 const filters = reactive({
   gender_id: null,
   status_id: null,
@@ -2090,8 +2099,7 @@ const isPreAuth = computed(() =>
 );
 const isBotSelected = computed(() => {
   const sel = chat.selectedUser;
-  const sid = sel?.user_id || sel?.id;
-  return sid === IMCHATTY_ID;
+  return isImchattyUser(sel);
 });
 const canSend = computed(() => {
   if (!auth.isProfileComplete) return false;
@@ -2253,13 +2261,17 @@ const usersWithPresence = computed(() => {
       const manualStatus = String(u.manual_status || "").trim().toLowerCase();
       const isRealtimeOnline = realtimeSet.has(resolvePresenceKey(u));
       const isRecentActive = recentActiveSet.has(resolvePresenceKey(u));
+      const isImchatty = isImchattyUser(u);
 
       const isHoneyBot = !!u.is_ai && !!u.honey_enabled;
       let presence = "offline";
       if (manualStatus === "away") {
         presence = "away";
-      } else if (manualStatus === "offline" && !forcedOnline) {
+      } else if (manualStatus === "offline" && !forcedOnline && !isImchatty) {
         presence = "offline";
+      } else if (isImchatty) {
+        // ImChatty should always be available as the pinned onboarding bot.
+        presence = "online";
       } else if (u.is_ai && !isHoneyBot) {
         presence = "online";
       } else if (forcedOnline) {
@@ -2341,12 +2353,8 @@ const usersWithPresence = computed(() => {
     });
 
   // pin ImChatty first, then alpha
-  const pinned = list.find(
-    (u) => String(u.id) === IMCHATTY_ID || String(u.user_id) === IMCHATTY_ID
-  );
-  const others = list.filter(
-    (u) => String(u.id) !== IMCHATTY_ID && String(u.user_id) !== IMCHATTY_ID
-  );
+  const pinned = list.find((u) => isImchattyUser(u));
+  const others = list.filter((u) => !isImchattyUser(u));
 
   const sortRank = (u) => {
     if (!u?.is_ai) return 0;
@@ -2375,7 +2383,7 @@ watch(
     }
     if (preauthBotDefaultApplied.value) return;
     const bot = usersWithPresence.value.find(
-      (u) => String(u?.user_id ?? u?.id ?? "") === IMCHATTY_ID
+      (u) => isImchattyUser(u)
     );
     if (!bot) return;
     if (String(selectedUserId.value || "") !== IMCHATTY_ID) {
@@ -2978,8 +2986,30 @@ async function onSend(
       return;
     }
 
-    // ✅ (optional but recommended) show local typing bubble in Regular3
-    regRef.value?.setTyping?.(true);
+    const isHoneyCapability =
+      auth.authStatus !== "authenticated" && !!selectedPeer?.honey_enabled;
+    const resolveHoneyTypingDelayMs = () => {
+      if (!isHoneyCapability) return 0;
+      const minMs = Math.max(0, Number(selectedPeer?.honey_delay_min_ms ?? 0));
+      const maxMs = Math.max(minMs, Number(selectedPeer?.honey_delay_max_ms ?? minMs));
+      if (maxMs <= 0) return 0;
+      if (maxMs === minMs) return minMs;
+      return Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+    };
+    const typingStartDelayMs = resolveHoneyTypingDelayMs();
+    let typingDelayTimer = null;
+    let typingShown = false;
+    const startTypingIndicator = () => {
+      regRef.value?.setTyping?.(true);
+      typingShown = true;
+    };
+    if (typingStartDelayMs > 0) {
+      typingDelayTimer = setTimeout(() => {
+        startTypingIndicator();
+      }, typingStartDelayMs);
+    } else {
+      startTypingIndicator();
+    }
 
     const { allowed, used, remaining, limit } = await tryConsume();
     if (!allowed) {
@@ -3002,7 +3032,8 @@ async function onSend(
         }
       } catch (e) {}
 
-      regRef.value?.setTyping?.(false);
+      if (typingDelayTimer) clearTimeout(typingDelayTimer);
+      if (typingShown) regRef.value?.setTyping?.(false);
       return;
     }
 
@@ -3035,8 +3066,9 @@ async function onSend(
     } catch (e) {
       console.error("[AI] fetch/insert failed", e);
     } finally {
+      if (typingDelayTimer) clearTimeout(typingDelayTimer);
       // ✅ always clear local typing bubble for bot
-      regRef.value?.setTyping?.(false);
+      if (typingShown) regRef.value?.setTyping?.(false);
     }
   }
 }

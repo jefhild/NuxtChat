@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/authStore1";
 import { useAiQuota } from "~/composables/useAiQuota";
 
 const IMCHATTY_ID = "a3962087-516b-48df-a3ff-3b070406d832";
+const IMCHATTY_SLUG = "imchatty";
 const LS_KEY = "lastSelectedUserId";
 const PREAUTH_STATUSES = ["anonymous", "unauthenticated", "guest", "onboarding"];
 
@@ -27,7 +28,12 @@ export const useChatStore = defineStore("chatStore", () => {
   const getStableId = (u) =>
     u?.user_id || u?.id ? String(u.user_id || u.id) : null;
   const normalizeId = (v) => String(v ?? "").trim();
-  const isImchatty = (u) => getStableId(u) === IMCHATTY_ID;
+  const getStableSlug = (u) =>
+    String(u?.slug ?? u?.profile_slug ?? u?.username_slug ?? "")
+      .trim()
+      .toLowerCase();
+  const isImchatty = (u) =>
+    getStableId(u) === IMCHATTY_ID || getStableSlug(u) === IMCHATTY_SLUG;
   const canUseHoneyBots = () => auth.authStatus !== "authenticated";
   const isHiddenHoneyForCurrentAuth = (u) => {
     if (!u?.is_ai || isImchatty(u)) return false;
@@ -56,6 +62,8 @@ export const useChatStore = defineStore("chatStore", () => {
           editorial_enabled: !!persona?.editorial_enabled,
           counterpoint_enabled: !!persona?.counterpoint_enabled,
           honey_enabled: !!persona?.honey_enabled,
+          honey_delay_min_ms: Number(persona?.honey_delay_min_ms ?? 0),
+          honey_delay_max_ms: Number(persona?.honey_delay_max_ms ?? 0),
           list_publicly:
             typeof persona?.list_publicly === "boolean"
               ? persona.list_publicly
@@ -151,7 +159,7 @@ function isAiId(id) {
       // console.log('[chatStore] fetchChatUsers: fetched data len =', Array.isArray(data) ? data.length : 'n/a');
       if (dbError) throw dbError;
       let nextUsers = filterActiveAiUsers(data);
-      const canSeeHoneyBots = auth.authStatus === "anon_authenticated";
+      const canSeeHoneyBots = auth.authStatus !== "authenticated";
       const { loaded: personaLoaded, map: personaMap } =
         await fetchPublicAiPersonaMap();
       nextUsers = nextUsers

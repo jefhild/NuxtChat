@@ -178,6 +178,10 @@ const props = defineProps({
     type: String,
     default: "a3962087-516b-48df-a3ff-3b070406d832", // ImChatty
   },
+  pinnedSlug: {
+    type: String,
+    default: "imchatty",
+  },
   listType: {
     type: String,
     default: "online",
@@ -208,7 +212,17 @@ const normalizedListType = computed(() =>
 );
 
 const idStr = (u) => String(u?.id ?? u?.user_id ?? "").trim();
-const isPinned = (u) => props.pinnedId && idStr(u) === props.pinnedId;
+const slugStr = (u) =>
+  String(u?.slug ?? u?.profile_slug ?? u?.username_slug ?? "")
+    .trim()
+    .toLowerCase();
+const isPinned = (u) => {
+  if (props.pinnedId && idStr(u) === props.pinnedId) return true;
+  if (props.pinnedSlug && slugStr(u) === String(props.pinnedSlug).toLowerCase()) {
+    return true;
+  }
+  return false;
+};
 const unreadFor = (u) => msgs.unreadByPeer?.[idStr(u)] || 0;
 const displayNameFor = (u) =>
   resolveProfileLocalization({
