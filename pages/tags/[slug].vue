@@ -147,7 +147,6 @@ const { t, te, locale } = useI18n();
 const route = useRoute();
 const config = useRuntimeConfig();
 const siteConfig = useSiteConfig();
-const switchLocalePath = useSwitchLocalePath();
 const supabaseBucket = config.public.SUPABASE_BUCKET;
 const baseUrl = (siteConfig?.url || config.public.SITE_URL || "").replace(
   /\/+$/,
@@ -261,17 +260,8 @@ const availableTaxonomyLocales = computed(() => {
   return hasLocaleMetadata ? Array.from(locales) : ["en"];
 });
 
-const isCurrentLocaleAvailable = computed(() =>
-  availableTaxonomyLocales.value.includes(baseLocale.value)
-);
-const canonicalLocale = computed(() => {
-  if (isCurrentLocaleAvailable.value) return baseLocale.value;
-  if (availableTaxonomyLocales.value.includes("en")) return "en";
-  return availableTaxonomyLocales.value[0] || "en";
-});
-const canonicalPath = computed(
-  () => switchLocalePath(canonicalLocale.value) || route.path || "/"
-);
+const canonicalLocale = computed(() => baseLocale.value || "en");
+const canonicalPath = computed(() => route.path || "/");
 
 useSeoI18nMeta("tags.index", {
   availableLocaleCodes: availableTaxonomyLocales,
