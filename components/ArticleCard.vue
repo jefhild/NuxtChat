@@ -36,6 +36,14 @@
         </v-list>
       </v-menu>
     </div>
+    <NuxtLink
+      :to="articlePath"
+      class="article-seo-link"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      {{ displayTitle }}
+    </NuxtLink>
     <div
       class="card-link position-relative"
     >
@@ -65,7 +73,9 @@
         <!-- Title -->
         <div class="title-overlay w-100 text-center px-3">
           <h2 class="font-weight-bold text-subtitle-1 text-md-h5 title-text">
-            {{ displayTitle }}
+            <NuxtLink :to="articlePath" class="title-link" @click.stop>
+              {{ displayTitle }}
+            </NuxtLink>
           </h2>
         </div>
 
@@ -629,6 +639,27 @@ onMounted(() => {
   white-space: normal;
   word-break: break-word;
   margin: 0; /* tighter spacing */
+}
+
+.title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.title-link:hover {
+  text-decoration: underline;
+}
+
+.article-seo-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Tags */

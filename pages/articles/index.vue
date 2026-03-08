@@ -131,10 +131,7 @@ const {
   getAllCategories,
   getAllPeople,
 } = useDb();
-const authStore = useAuthStore();
 const { t } = useI18n();
-const userProfile = ref(null);
-const isLoading = ref(true);
 const searchQuery = ref("");
 const searchLabel = computed(() => t("pages.articles.index.search"));
 const articles = ref([]);
@@ -208,11 +205,9 @@ const { data: chatMap } = await useAsyncData("chat-map", () =>
 // Fallback to {} if null
 const threadByArticleId = computed(() => chatMap.value || {});
 
-// Load data
-onMounted(async () => {
-  await authStore.checkAuth();
-  userProfile.value = authStore.userProfile;
-
+const { data: initialData, pending } = await useAsyncData(
+  "articles-index-initial",
+  async () => {
   const [articleData, tagData, categoryData, peopleData] = await Promise.all([
     getPublishedArticlesPage({ limit: perPage, offset: 0 }),
     getAllTags(),
@@ -220,14 +215,30 @@ onMounted(async () => {
     getAllPeople(),
   ]);
 
-  articles.value = articleData || [];
+    return {
+      articles: articleData || [],
+      tags: tagData || [],
+      categories: categoryData || [],
+      people: peopleData || [],
+    };
+  }
+);
+
+const isLoading = computed(
+  () => pending.value && !articles.value.length
+);
+
+watchEffect(() => {
+  if (!initialData.value) return;
+  articles.value = initialData.value.articles || [];
   currentOffset.value = articles.value.length;
   hasMoreArticles.value = articles.value.length === perPage;
-  tags.value = tagData || [];
-  categories.value = categoryData || [];
-  people.value = peopleData || [];
-  isLoading.value = false;
+  tags.value = initialData.value.tags || [];
+  categories.value = initialData.value.categories || [];
+  people.value = initialData.value.people || [];
+});
 
+onMounted(async () => {
   if (!intersectionObserver) {
     intersectionObserver = new IntersectionObserver(
       (entries) => {
