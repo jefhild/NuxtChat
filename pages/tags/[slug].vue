@@ -276,7 +276,6 @@ const canonicalPath = computed(
 useSeoI18nMeta("tags.index", {
   availableLocaleCodes: availableTaxonomyLocales,
   canonicalLocaleCode: canonicalLocale.value,
-  robots: isCurrentLocaleAvailable.value ? undefined : "noindex,follow",
   overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
   dynamic: {
     title: tagHeading,

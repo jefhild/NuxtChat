@@ -1978,12 +1978,8 @@ export const useDb = () => {
   ) => {
     const supabase = getClient();
 
-    const slugUser = displayname
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "")
-      .replace("_", "-");
+    const baseSlug = makeSlug(displayname) || "user";
+    const slugUser = await ensureUniqueSlug(supabase, baseSlug);
 
     const { data, error } = await supabase
       .from("profiles")

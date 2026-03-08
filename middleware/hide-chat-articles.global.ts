@@ -12,6 +12,6 @@ export default defineNuxtRouteMiddleware((to) => {
       query: to.query,
       hash,
     },
-    { redirectCode: 302 }
+    { redirectCode: 301 }
   );
 });

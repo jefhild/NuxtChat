@@ -7,11 +7,27 @@ import { computed } from "vue";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const { locale } = useI18n();
+const localPath = useLocalePath();
 const route = useRoute();
 const slug = route.params.slug;
 
 const { profile, fetchUserProfileFromSlug } = useUserProfile();
 await fetchUserProfileFromSlug(slug);
+
+const requestedSlug = String(slug || "").trim().toLowerCase();
+const canonicalSlug = String(profile.value?.slug || "")
+  .trim()
+  .toLowerCase();
+const canonicalGender = String(profile.value?.gender || "")
+  .trim()
+  .toLowerCase();
+const canonicalRoute =
+  canonicalGender === "male" || canonicalGender === "female" || canonicalGender === "other"
+    ? `/profiles/${canonicalGender}/${canonicalSlug}`
+    : `/profiles/${canonicalSlug}`;
+if (canonicalSlug && canonicalSlug !== requestedSlug) {
+  await navigateTo(localPath(canonicalRoute), { redirectCode: 301 });
+}
 
 const localized = computed(() =>
   resolveProfileLocalization({

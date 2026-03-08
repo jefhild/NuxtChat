@@ -267,7 +267,6 @@ const limitedDescription = computed(() =>
 useSeoI18nMeta("people.index", {
   availableLocaleCodes: availableTaxonomyLocales,
   canonicalLocaleCode: canonicalLocale.value,
-  robots: isCurrentLocaleAvailable.value ? undefined : "noindex,follow",
   overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
   dynamic: {
     title: computed(() => `${pageHeading.value} – ImChatty`),

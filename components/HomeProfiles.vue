@@ -224,8 +224,7 @@ const props = defineProps({
 const emit = defineEmits(["loaded"]);
 const { smAndDown } = useDisplay();
 
-const isLoading = ref(true);
-const profiles = ref([]);
+const INITIAL_VISIBLE_PROFILES = 18;
 const loadedCount = ref(18);
 const batchSize = 12;
 const infiniteScrollTrigger = ref(null);
@@ -290,11 +289,7 @@ const loadMoreProfiles = () => {
 
 const loadProfiles = async () => {
   const genderId = resolveGenderId({ gender: props.gender });
-  return getRecentProfilesByGender(props.limit, genderId ?? null);
-};
-
-onMounted(async () => {
-  const data = await loadProfiles();
+  const data = await getRecentProfilesByGender(props.limit, genderId ?? null);
   let next = Array.isArray(data) ? data : [];
   const userIds = next.map((p) => p?.user_id).filter(Boolean);
   if (userIds.length) {
@@ -315,15 +310,43 @@ onMounted(async () => {
       console.warn("[HomeProfiles] translations failed:", err);
     }
   }
-  profiles.value = next;
-  loadedCount.value = Math.min(loadedCount.value, profiles.value.length || 0);
-  isLoading.value = false;
-  emit("loaded");
+  return next;
+};
 
-  if (!profiles.value.length) return;
+const { data: profilesData, pending } = await useAsyncData(
+  `home-profiles:${props.gender || "all"}:${props.limit}`,
+  loadProfiles,
+  { default: () => [] }
+);
 
+const profiles = computed(() =>
+  Array.isArray(profilesData.value) ? profilesData.value : []
+);
+
+const isLoading = computed(
+  () => pending.value && !profiles.value.length
+);
+
+watch(
+  () => profiles.value.length,
+  (len, prev = 0) => {
+    if (!len) {
+      loadedCount.value = 0;
+      return;
+    }
+    if (prev === 0 || loadedCount.value === 0) {
+      loadedCount.value = Math.min(INITIAL_VISIBLE_PROFILES, len);
+      return;
+    }
+    loadedCount.value = Math.min(loadedCount.value, len);
+  },
+  { immediate: true }
+);
+
+const initObserver = async () => {
+  if (!import.meta.client) return;
+  if (observer || !profiles.value.length) return;
   await nextTick();
-
   observer = new IntersectionObserver(
     (entries) => {
       if (entries[0].isIntersecting) {
@@ -332,11 +355,24 @@ onMounted(async () => {
     },
     { rootMargin: "140px" }
   );
-
   if (infiniteScrollTrigger.value) {
     observer.observe(infiniteScrollTrigger.value);
   }
+};
 
+watch(
+  () => pending.value,
+  (isPending) => {
+    if (!isPending) {
+      emit("loaded");
+      initObserver();
+    }
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  initObserver();
 });
 
 onUnmounted(() => {

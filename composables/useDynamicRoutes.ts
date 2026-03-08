@@ -17,6 +17,7 @@ const defaultLocale = "en";
 const supabaseArticlesBase = (
   process.env.NUXT_PUBLIC_SUPABASE_BUCKET || ""
 ).replace(/\/+$/, "");
+const INDEXABLE_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
 
 function localizePath(path: string, locale: string) {
   return locale === defaultLocale ? path : `/${locale}${path}`;
@@ -34,6 +35,14 @@ function normalizeLocaleCode(value?: string | null) {
     .toLowerCase()
     .split("-")[0];
   return normalized || "";
+}
+
+function normalizeIndexableSlug(value?: string | null) {
+  const slug = String(value || "")
+    .trim()
+    .toLowerCase();
+  if (!slug || !INDEXABLE_SLUG_RE.test(slug)) return null;
+  return slug;
 }
 
 function getArticleAvailableLocales(article: any): string[] {
@@ -62,7 +71,7 @@ function addSlugLocales(
   slug: string | null | undefined,
   locales: string[]
 ) {
-  const key = String(slug || "").trim();
+  const key = normalizeIndexableSlug(slug);
   if (!key || !locales.length) return;
   if (!map.has(key)) {
     map.set(key, new Set<string>());
@@ -72,7 +81,7 @@ function addSlugLocales(
 }
 
 function getSlugLocales(map: Map<string, Set<string>>, slug?: string | null): string[] {
-  const key = String(slug || "").trim();
+  const key = normalizeIndexableSlug(slug);
   if (!key) return [];
   return Array.from(map.get(key) || []);
 }
@@ -147,38 +156,45 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
               profile.slug ||
               (await getUserSlugFromDisplayName(profile.displayname));
 
-            if (!slug) return null;
+            const normalizedSlug = normalizeIndexableSlug(slug);
+            if (!normalizedSlug) return null;
 
             const gender = getGenderFromId(profile.gender_id) || "unknown";
-            return `/profiles/${gender}/${slug}`;
+            return `/profiles/${gender}/${normalizedSlug}`;
           })
       )
     ).filter((route): route is string => Boolean(route));
 
-    const articleRoutes = articleData.map((a) => ({
-      path: `/articles/${a.slug}`,
-      locales: getArticleAvailableLocales(a),
-    }));
+    const articleRoutes = articleData
+      .map((a) => {
+        const slug = normalizeIndexableSlug(a?.slug);
+        if (!slug) return null;
+        return {
+          path: `/articles/${slug}`,
+          locales: getArticleAvailableLocales(a),
+        };
+      })
+      .filter((route): route is { path: string; locales: string[] } => Boolean(route));
     const { categoryLocalesBySlug, tagLocalesBySlug, peopleLocalesBySlug } =
       buildTaxonomyLocalesBySlug(articleData);
     const categoryRoutes = categoryData
       .map((c) => ({
-        path: `/categories/${c.slug}`,
+        path: `/categories/${normalizeIndexableSlug(c?.slug) || ""}`,
         locales: getSlugLocales(categoryLocalesBySlug, c.slug),
       }))
-      .filter((route) => route.locales.length > 0);
+      .filter((route) => route.locales.length > 0 && !route.path.endsWith("/"));
     const tagRoutes = tagData
       .map((t) => ({
-        path: `/tags/${t.slug}`,
+        path: `/tags/${normalizeIndexableSlug(t?.slug) || ""}`,
         locales: getSlugLocales(tagLocalesBySlug, t.slug),
       }))
-      .filter((route) => route.locales.length > 0);
+      .filter((route) => route.locales.length > 0 && !route.path.endsWith("/"));
     const peopleRoutes = peopleData
       .map((p) => ({
-        path: `/people/${p.slug}`,
+        path: `/people/${normalizeIndexableSlug(p?.slug) || ""}`,
         locales: getSlugLocales(peopleLocalesBySlug, p.slug),
       }))
-      .filter((route) => route.locales.length > 0);
+      .filter((route) => route.locales.length > 0 && !route.path.endsWith("/"));
 
     const staticPages = [
       "/about",
@@ -294,10 +310,11 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
               profile.slug ||
               (await getUserSlugFromDisplayName(profile.displayname));
 
-            if (!slug) return null;
+            const normalizedSlug = normalizeIndexableSlug(slug);
+            if (!normalizedSlug) return null;
 
             const gender = getGenderFromId(profile.gender_id) || "unknown";
-            return `/profiles/${gender}/${slug}`;
+            return `/profiles/${gender}/${normalizedSlug}`;
           })
       )
     ).filter((route): route is string => Boolean(route));
@@ -305,8 +322,10 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
     profileRoutes.forEach((route) => addLocalizedRoutes(route));
 
     articleData.forEach((article) => {
+      const articleSlug = normalizeIndexableSlug(article?.slug);
+      if (!articleSlug) return;
       const imageUrl = buildArticleImageUrl(article?.image_path);
-      const localizedArticlePath = `/articles/${article.slug}`;
+      const localizedArticlePath = `/articles/${articleSlug}`;
       const locales = getArticleAvailableLocales(article);
       locales.forEach((locale) => {
         localizedRoutes.push({
@@ -321,28 +340,34 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       buildTaxonomyLocalesBySlug(articleData);
 
     categoryData.forEach((category) => {
+      const categorySlug = normalizeIndexableSlug(category?.slug);
+      if (!categorySlug) return;
       const locales = getSlugLocales(categoryLocalesBySlug, category.slug);
       locales.forEach((locale) => {
         localizedRoutes.push({
-          loc: localizePath(`/categories/${category.slug}`, locale),
+          loc: localizePath(`/categories/${categorySlug}`, locale),
           lastmod: fallbackLastmod,
         });
       });
     });
     tagData.forEach((tag) => {
+      const tagSlug = normalizeIndexableSlug(tag?.slug);
+      if (!tagSlug) return;
       const locales = getSlugLocales(tagLocalesBySlug, tag.slug);
       locales.forEach((locale) => {
         localizedRoutes.push({
-          loc: localizePath(`/tags/${tag.slug}`, locale),
+          loc: localizePath(`/tags/${tagSlug}`, locale),
           lastmod: fallbackLastmod,
         });
       });
     });
     peopleData.forEach((person) => {
+      const personSlug = normalizeIndexableSlug(person?.slug);
+      if (!personSlug) return;
       const locales = getSlugLocales(peopleLocalesBySlug, person.slug);
       locales.forEach((locale) => {
         localizedRoutes.push({
-          loc: localizePath(`/people/${person.slug}`, locale),
+          loc: localizePath(`/people/${personSlug}`, locale),
           lastmod: fallbackLastmod,
         });
       });
