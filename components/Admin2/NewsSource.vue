@@ -13,9 +13,31 @@
         />
       </v-card-title>
       <v-card-subtitle>
-        Provide the article text directly and review the prompt before the AI rewrite.
+        {{
+          manualMode === "ai"
+            ? "Provide the article text directly and review the prompt before the AI rewrite."
+            : "Provide article text directly to create a draft without AI rewrite."
+        }}
       </v-card-subtitle>
       <v-card-text>
+        <v-alert
+          v-if="manualCreatedDraft"
+          type="success"
+          variant="tonal"
+          class="mb-4"
+          closable
+          @click:close="manualCreatedDraft = null"
+        >
+          Draft created:
+          <a
+            :href="`/articles/${manualCreatedDraft.slug}`"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{ manualCreatedDraft.slug }}
+          </a>
+        </v-alert>
+
         <v-alert
           v-if="manualError"
           type="error"
@@ -28,6 +50,18 @@
         </v-alert>
 
         <v-row dense>
+          <v-col cols="12">
+            <v-btn-toggle
+              v-model="manualMode"
+              mandatory
+              color="primary"
+              density="comfortable"
+              rounded="lg"
+            >
+              <v-btn value="ai">AI Rewrite</v-btn>
+              <v-btn value="manual">Direct Create</v-btn>
+            </v-btn-toggle>
+          </v-col>
           <v-col cols="12" md="8">
             <v-text-field
               v-model="manualTitle"
@@ -38,8 +72,14 @@
           <v-col cols="12" md="4">
             <v-text-field
               v-model="manualLink"
-              label="Source URL"
+              :label="manualMode === 'ai' ? 'Source URL' : 'Source URL (optional)'"
               placeholder="https://example.com/article"
+              :hint="
+                manualMode === 'ai'
+                  ? undefined
+                  : 'Leave blank for original content. Source pill is hidden when blank.'
+              "
+              :persistent-hint="manualMode === 'manual'"
               hide-details="auto"
             />
           </v-col>
@@ -67,6 +107,15 @@
               v-model="manualSummary"
               label="Summary (optional)"
               rows="2"
+              auto-grow
+              hide-details="auto"
+            />
+          </v-col>
+          <v-col cols="12">
+            <v-textarea
+              v-model="manualReferences"
+              label="References (optional, one per line: Label | URL)"
+              rows="3"
               auto-grow
               hide-details="auto"
             />
@@ -134,21 +183,25 @@
         <div class="d-flex align-center ga-3 mt-2 flex-wrap">
           <v-btn
             color="primary"
-            :disabled="!canManualRewrite"
-            :loading="manualPromptLoading || manualRewriting"
-            @click="openManualPromptDialog"
+            :disabled="!canPrimaryAction"
+            :loading="primaryActionLoading"
+            @click="handlePrimaryAction"
           >
-            Review Prompt & Rewrite
+            {{ manualMode === "ai" ? "Review Prompt & Rewrite" : "Create Article" }}
           </v-btn>
           <v-btn
             variant="text"
-            :disabled="manualRewriting"
+            :disabled="manualRewriting || manualCreating"
             @click="resetManualForm"
           >
             Clear
           </v-btn>
           <span class="text-caption text-medium-emphasis">
-            Manual entries skip scraping and use your supplied body text.
+            {{
+              manualMode === "ai"
+                ? "Manual entries skip scraping and use your supplied body text for AI rewrite."
+                : "Manual entries skip scraping and AI, then save directly as a draft article."
+            }}
           </span>
         </div>
       </v-card-text>
@@ -458,6 +511,7 @@ const loadingPeople = ref(false);
 const manualTitle = ref("");
 const manualSummary = ref("");
 const manualBody = ref("");
+const manualReferences = ref("");
 const manualLink = ref("");
 const manualSource = ref("");
 const manualCategory = ref("");
@@ -470,11 +524,14 @@ const manualPromptDialog = ref(false);
 const manualPromptLoading = ref(false);
 const manualPromptError = ref("");
 const manualPromptDraft = ref<ManualPromptDraft | null>(null);
+const manualMode = ref<"ai" | "manual">("ai");
 const manualRewriting = ref(false);
+const manualCreating = ref(false);
 const manualResults = ref<UrlRewriteResult[]>([]);
 const manualDraftSaving = reactive<Record<string, boolean>>({});
 const manualDraftError = ref("");
 const manualPromptPayload = ref<ManualRewriteInput | null>(null);
+const manualCreatedDraft = ref<DraftArticle | null>(null);
 
 const SOURCE_TEXT_MIN = 800;
 
@@ -489,14 +546,39 @@ const normalizeListInput = (values: Array<string | Record<string, any>> = []) =>
     })
     .filter((entry) => entry);
 
-const canManualRewrite = computed(
+const hasManualRequiredFields = computed(
   () =>
     !!manualTitle.value.trim() &&
     !!manualBody.value.trim() &&
-    !!manualPersona.value &&
+    !!manualPersona.value
+);
+const hasValidManualLink = computed(
+  () =>
+    !manualLink.value.trim() || /^https?:\/\//i.test(manualLink.value.trim())
+);
+const canManualRewrite = computed(
+  () =>
+    manualMode.value === "ai" &&
+    hasManualRequiredFields.value &&
     !!manualLink.value.trim() &&
-    /^https?:\/\//i.test(manualLink.value.trim()) &&
+    hasValidManualLink.value &&
     !manualRewriting.value
+);
+const canManualCreate = computed(
+  () =>
+    manualMode.value === "manual" &&
+    hasManualRequiredFields.value &&
+    hasValidManualLink.value &&
+    !manualCreating.value
+);
+const canPrimaryAction = computed(() =>
+  manualMode.value === "ai" ? canManualRewrite.value : canManualCreate.value
+);
+const primaryActionLoading = computed(
+  () =>
+    manualPromptLoading.value ||
+    manualRewriting.value ||
+    manualCreating.value
 );
 
 const renderMarkdown = (content?: string | null) => mdRender(content || "");
@@ -564,6 +646,7 @@ const resetManualForm = () => {
   manualTitle.value = "";
   manualSummary.value = "";
   manualBody.value = "";
+  manualReferences.value = "";
   manualLink.value = "";
   manualSource.value = "";
   manualCategory.value = "";
@@ -571,6 +654,26 @@ const resetManualForm = () => {
   manualPeople.value = [];
   manualInstructions.value = "";
   manualError.value = "";
+  manualCreatedDraft.value = null;
+};
+
+const parseManualReferences = (raw: string): RewriteReference[] => {
+  const lines = String(raw || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return lines
+    .map((line) => {
+      const [left, right] = line.split("|").map((part) => part?.trim());
+      if (right) {
+        const url = /^https?:\/\//i.test(right) ? right : undefined;
+        return { label: left || right, url };
+      }
+      const asUrl = /^https?:\/\//i.test(line) ? line : undefined;
+      return { label: line, url: asUrl };
+    })
+    .filter((entry) => entry.label);
 };
 
 const setManualDraftSaving = (id: string, value: boolean) => {
@@ -728,6 +831,58 @@ const confirmManualRewrite = async () => {
   } finally {
     manualRewriting.value = false;
   }
+};
+
+const createManualDraftDirectly = async () => {
+  if (!canManualCreate.value) return;
+  manualError.value = "";
+  manualDraftError.value = "";
+  manualCreatedDraft.value = null;
+  manualCreating.value = true;
+
+  try {
+    const topics = normalizeListInput(manualTopics.value);
+    const people = normalizeListInput(manualPeople.value);
+    const references = parseManualReferences(manualReferences.value);
+    const summary = manualSummary.value.trim();
+
+    const response = await saveUrlDraft({
+      sourceUrl: manualLink.value.trim() || null,
+      personaKey: manualPersona.value,
+      sourceTitle: manualTitle.value.trim(),
+      sourceSummary: summary || null,
+      sourceDomain: manualSource.value.trim() || null,
+      category: manualCategory.value.trim() || null,
+      topics,
+      people,
+      rewrite: {
+        headline: manualTitle.value.trim(),
+        summary,
+        body: manualBody.value.trim(),
+        references,
+        social: null,
+      },
+    });
+
+    if (!response?.success || !response?.data) {
+      throw new Error(response?.error || "Failed to create draft article.");
+    }
+    manualCreatedDraft.value = response.data;
+  } catch (error: any) {
+    console.error("[NewsSource] direct manual create error", error);
+    manualError.value =
+      error?.message || "Unable to create the draft article right now.";
+  } finally {
+    manualCreating.value = false;
+  }
+};
+
+const handlePrimaryAction = async () => {
+  if (manualMode.value === "ai") {
+    await openManualPromptDialog();
+    return;
+  }
+  await createManualDraftDirectly();
 };
 
 onMounted(async () => {

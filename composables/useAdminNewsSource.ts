@@ -5,7 +5,7 @@ export type UrlRewritePayload = {
 };
 
 export type UrlDraftPayload = {
-  sourceUrl: string;
+  sourceUrl?: string | null;
   personaKey: string;
   sourceTitle?: string | null;
   sourceSummary?: string | null;

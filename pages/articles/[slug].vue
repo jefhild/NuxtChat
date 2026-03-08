@@ -539,6 +539,7 @@ const displaySummary = computed(
   () =>
     activeTranslation.value?.summary ||
     newsmeshMeta.value?.summary ||
+    newsmeshMeta.value?.source_summary ||
     rewriteMeta.value?.summary ||
     article.value?.summary ||
     ""

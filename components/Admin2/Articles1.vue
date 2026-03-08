@@ -81,162 +81,6 @@
       </v-col>
     </v-card-text>
   </v-card>
-  <v-card class="pa-6 mt-5" elevation="3">
-    <v-card-title>Create New Article</v-card-title>
-    <v-card-text>
-      <v-form @submit.prevent="handleSubmit" ref="articleForm">
-        <!-- Image Preview -->
-        <NuxtImg
-          v-if="uploadedImagePath"
-          :src="`${config.public.SUPABASE_BUCKET}/articles/${uploadedImagePath}`"
-          width="150"
-          height="auto"
-          class="mt-2 rounded"
-        />
-
-        <!-- Image Upload -->
-        <v-file-input
-          accept="image/*"
-          label="Upload Image"
-          show-size
-          @update:modelValue="handleImageChange"
-        />
-
-        <!-- Photo Credit URL -->
-        <v-text-field
-          v-if="uploadedImagePath"
-          v-model="form.photo_credits_url"
-          label="Photo Credit URL"
-          :rules="[isValidUrl]"
-        />
-        <v-textarea
-          v-if="uploadedImagePath"
-          v-model="form.photo_credits_html"
-          label="Photo Credit HTML (shown on article page)"
-          rows="3"
-          auto-grow
-          hint="Example: &lt;a href='...'>Photographer&lt;/a>, Public domain, via ..."
-          persistent-hint
-        />
-        <v-text-field
-          v-model="form.title"
-          label="Title"
-          required
-          :rules="[(v) => !!v || 'Title is required']"
-        />
-        <v-select
-          v-model="form.original_language_code"
-          :items="languageOptions"
-          item-title="label"
-          item-value="value"
-          label="Original Language"
-          clearable
-          hint="Defaults to blank if unknown."
-          persistent-hint
-        />
-        <v-select
-          v-model="form.category_id"
-          :items="categories"
-          item-title="name"
-          item-value="id"
-          label="Category"
-          :rules="[(v) => !!v || 'Category is required']"
-          required
-        />
-
-        <v-select
-          v-model="form.tag_ids"
-          :items="tags"
-          item-title="name"
-          item-value="id"
-          label="Tags"
-          multiple
-          chips
-          :rules="[(v) => v.length > 0 || 'At least one tag is required']"
-        />
-
-        <v-select
-          v-model="form.type"
-          :items="types"
-          item-title="name"
-          item-value="id"
-          label="Type"
-          :rules="[(v) => v.length > 0 || 'Pick a type']"
-          required
-        />
-
-        <!-- HTML Content Editor -->
-        <v-textarea
-          v-model="form.content"
-          label="HTML Content"
-          rows="10"
-          auto-grow
-          class="mb-4"
-          placeholder="<h2>Hello</h2><p>This is an article</p>"
-          :rules="[(v) => !!v || 'Content is required']"
-        />
-
-        <v-divider class="my-4" />
-        <div class="text-subtitle-1 mb-2">Insert Inline Image</div>
-        <v-row dense>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="inlineImageAlt"
-              label="Image alt text"
-              placeholder="Describe the image"
-            />
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="inlineImageCaption"
-              label="Caption (optional)"
-              placeholder="Photo credit or caption"
-            />
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="inlineImageWidth"
-              label="Width (optional)"
-              placeholder="e.g. 320px or 60%"
-            />
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="inlineImageHeight"
-              label="Height (optional)"
-              placeholder="e.g. 180px"
-            />
-          </v-col>
-          <v-col cols="12">
-            <v-file-input
-              accept="image/*"
-              label="Upload inline image"
-              show-size
-              @update:modelValue="handleInlineImageInsert"
-            />
-          </v-col>
-        </v-row>
-
-        <!-- Live Preview -->
-        <div class="html-preview" v-html="form.content" ref="createPreviewRef"></div>
-
-        <v-switch
-          v-model="form.is_published"
-          label="Published"
-          color="primary"
-        />
-        <v-btn
-          :loading="loading"
-          :disabled="loading"
-          type="submit"
-          color="primary"
-          class="mt-4"
-        >
-          Create Article
-        </v-btn>
-      </v-form>
-    </v-card-text>
-  </v-card>
   <v-snackbar
     v-model="snackbar.show"
     :timeout="3000"
@@ -343,6 +187,15 @@
             multiple
             chips
             clearable
+          />
+
+          <v-textarea
+            v-model="selectedArticle.summary"
+            label="Summary"
+            rows="3"
+            auto-grow
+            hint="Used for article summary display and metadata."
+            persistent-hint
           />
 
           <v-textarea
@@ -511,7 +364,6 @@ const {
   getAllTags,
   getTagsByArticle,
   getTagsByArticleId,
-  insertArticle,
   updateArticle,
   updateArticleTags,
   uploadArticleImage,
@@ -535,18 +387,11 @@ const languageOptions = [
   { label: "Russian (ru)", value: "ru" },
   { label: "Chinese (zh)", value: "zh" },
 ];
-const loading = ref(false);
 const loadingArticles = ref(true);
 
 const currentPage = ref(1);
 const config = useRuntimeConfig();
 const { md, smAndDown, xs } = useDisplay();
-const uploadedImagePath = ref(""); // used to preview image and show URL field before final submit
-const inlineImageAlt = ref("");
-const inlineImageCaption = ref("");
-const inlineImageWidth = ref("");
-const inlineImageHeight = ref("");
-const createPreviewRef = ref(null);
 const editPreviewRef = ref(null);
 const inlineEditImageAlt = ref("");
 const inlineEditImageCaption = ref("");
@@ -559,21 +404,6 @@ const perPage = computed(() => {
   if (md.value) return 2; // Medium and up: 3 per page
   return 3; // Fallback
 });
-
-const articleForm = ref(null); // ref to <v-form>
-const form = useState("articleForm", () => ({
-  title: "",
-  slug: "",
-  category_id: "",
-  tag_ids: [],
-  content: "",
-  is_published: true,
-  type: "",
-  image_path: "",
-  photo_credits_url: "",
-  photo_credits_html: "",
-  original_language_code: "",
-}));
 
 const snackbar = ref({
   show: false,
@@ -830,6 +660,58 @@ const slugify = (text) =>
     .replace(/\s+/g, "-")
     .replace(/[^\w-]+/g, "");
 
+const decodeHtml = (value = "") =>
+  String(value)
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&#039;/gi, "'");
+
+const stripTags = (value = "") =>
+  decodeHtml(String(value).replace(/<[^>]*>/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
+
+const escapeHtmlText = (value = "") =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const extractSummaryFromHtml = (content = "") => {
+  const match = String(content || "").match(
+    /<p[^>]*class=["'][^"']*article-summary[^"']*["'][^>]*>([\s\S]*?)<\/p>/i
+  );
+  return match?.[1] ? stripTags(match[1]) : "";
+};
+
+const upsertSummaryInHtml = (content = "", summary = "") => {
+  const safeSummary = String(summary || "").trim();
+  const safeContent = String(content || "");
+  const escapedSummary = escapeHtmlText(safeSummary);
+  const summaryBlock = safeSummary
+    ? `<p class="article-summary">${escapedSummary}</p>`
+    : "";
+  const summaryRegex =
+    /<p[^>]*class=["'][^"']*article-summary[^"']*["'][^>]*>[\s\S]*?<\/p>/i;
+
+  if (summaryRegex.test(safeContent)) {
+    return safeSummary ? safeContent.replace(summaryRegex, summaryBlock) : safeContent.replace(summaryRegex, "");
+  }
+
+  if (!safeSummary) return safeContent;
+
+  if (/<\/header>/i.test(safeContent)) {
+    return safeContent.replace(/<\/header>/i, `${summaryBlock}</header>`);
+  }
+
+  return safeContent ? `${safeContent}\n${summaryBlock}` : summaryBlock;
+};
+
 const normalizeTopicList = (value) => {
   if (!value) return [];
   if (Array.isArray(value)) {
@@ -903,35 +785,6 @@ const findTagIdFromArticleTag = (tag) => {
   return null;
 };
 
-// const handleImageChange = async (file) => {
-//   if (!file) return;
-
-//   const imagePath = await uploadArticleImage(file);
-//   if (imagePath) {
-//     form.value.image_path = imagePath;
-//   }
-// };
-
-const handleImageChange = async (file) => {
-  // console.log("Selected file:", file);
-
-  if (!file || !file.name) {
-    console.warn("Invalid file:", file);
-    return;
-  }
-
-  const imagePath = await uploadArticleImage(file);
-  // console.log("Returned image path:", imagePath);
-
-  if (imagePath) {
-    uploadedImagePath.value = imagePath;
-    form.value.image_path = imagePath;
-    // console.log("Image path set:", uploadedImagePath.value);
-  } else {
-    console.warn("Upload failed or returned null.");
-  }
-};
-
 const escapeInlineText = (value = "") =>
   String(value)
     .replace(/&/g, "&amp;")
@@ -973,38 +826,6 @@ const appendHtml = (currentValue, htmlToAdd) => {
   const safeCurrent = currentValue || "";
   return safeCurrent ? `${safeCurrent}\n${htmlToAdd}` : htmlToAdd;
 };
-
-const handleInlineImageInsert = async (file) => {
-  if (!file || !file.name) return;
-  const imagePath = await uploadArticleImage(file);
-  if (!imagePath) return;
-  const html = buildInlineImageHtml(
-    imagePath,
-    inlineImageAlt.value,
-    inlineImageCaption.value,
-    inlineImageWidth.value,
-    inlineImageHeight.value
-  );
-  form.value.content = appendHtml(form.value.content, html);
-  inlineImageAlt.value = "";
-  inlineImageCaption.value = "";
-  inlineImageWidth.value = "";
-  inlineImageHeight.value = "";
-};
-
-// Watch create form content and trigger twitter widget load on updates
-watch(
-  () => form.value.content,
-  () => {
-    nextTick(() => {
-      try {
-        if (createPreviewRef?.value) loadTwitterWidgets(createPreviewRef.value);
-      } catch (e) {
-        // ignore
-      }
-    });
-  }
-);
 
 const handleInlineEditImageInsert = async (file) => {
   if (!file || !file.name) return;
@@ -1052,63 +873,6 @@ const handleEditImageChange = async (event) => {
   }
 };
 
-const handleSubmit = async () => {
-  loading.value = true;
-  const { valid } = await articleForm.value.validate();
-  console.log("form validation", valid);
-  if (!valid) {
-    console.error("Form validation failed");
-    snackbar.value.message = "Please fill in all required fields.";
-    snackbar.value.show = true;
-    loading.value = false;
-    return;
-  }
-
-  try {
-    form.value.title = formatName(form.value.title);
-    form.value.slug = slugify(form.value.title);
-    form.value.original_language_code = form.value.original_language_code
-      ? String(form.value.original_language_code).trim()
-      : "";
-
-    // Check for duplicate name or slug
-    const duplicate = articles.value.find(
-      (art) => art.title === form.value.title || art.slug === form.value.slug
-    );
-
-    if (duplicate) {
-      snackbar.value.message = "This article name already exists.";
-      snackbar.value.show = true;
-      loading.value = false;
-      return;
-    }
-
-    const res = await insertArticle(form.value);
-    if (res?.error) throw res.error;
-    if (form.value.is_published && res?.data?.id) {
-      try {
-        await $fetch("/api/indexnow/article", {
-          method: "POST",
-          body: { articleId: res.data.id },
-        });
-      } catch (err) {
-        console.warn("[articles] indexnow submit failed:", err);
-      }
-    }
-
-    // Reset + update
-    articleForm.value.reset();
-    await nextTick();
-    articleForm.value.resetValidation();
-    articles.value = await getAllArticlesWithTags(false);
-  } catch (err) {
-    console.error("Error creating article:", err.message || err);
-    snackbar.value.message = "Failed to create article.";
-    snackbar.value.show = true;
-  } finally {
-    loading.value = false;
-  }
-};
 
 const ensureTagsForArticle = async (article) => {
   if (!article?.tags?.length) return;
@@ -1154,6 +918,11 @@ const toggleEditDialog = async (article) => {
     topicTagNames = getTagNamesFromTopics(newsmeshTopics);
   }
   const existingSocial = article.rewrite_meta?.social || {};
+  const summaryFallback =
+    article.rewrite_meta?.summary ||
+    article.newsmesh_meta?.summary ||
+    article.newsmesh_meta?.source_summary ||
+    extractSummaryFromHtml(article.content || "");
   selectedArticle.value = {
     id: article.id,
     title: article.title,
@@ -1168,6 +937,8 @@ const toggleEditDialog = async (article) => {
     slug: article.slug,
     type: article.type || "",
     rewrite_meta: article.rewrite_meta || {},
+    newsmesh_meta: article.newsmesh_meta || {},
+    summary: summaryFallback || "",
     social_facebook_caption: existingSocial?.facebook?.caption || "",
     social_instagram_caption: existingSocial?.instagram?.caption || "",
 
@@ -1222,10 +993,15 @@ const handleArticleUpdate = async () => {
         caption: selectedArticle.value.social_instagram_caption || "",
       },
     };
+    const summaryText = String(selectedArticle.value.summary || "").trim();
+    const nextContent = upsertSummaryInHtml(
+      selectedArticle.value.content,
+      summaryText
+    );
 
     const payload = {
       title: formatName(selectedArticle.value.title),
-      content: selectedArticle.value.content,
+      content: nextContent,
       image_path: selectedArticle.value.image_path,
       photo_credits_url: selectedArticle.value.photo_credits_url,
       photo_credits_html: selectedArticle.value.photo_credits_html,
@@ -1238,7 +1014,13 @@ const handleArticleUpdate = async () => {
       is_published: selectedArticle.value.is_published,
       rewrite_meta: {
         ...(selectedArticle.value.rewrite_meta || {}),
+        summary: summaryText || null,
         social: nextSocial,
+      },
+      newsmesh_meta: {
+        ...(selectedArticle.value.newsmesh_meta || {}),
+        summary: summaryText || null,
+        source_summary: summaryText || null,
       },
     };
 
@@ -1301,12 +1083,31 @@ const isValidUrl = (value) => {
 }
 
 .html-preview {
-  border: 1px solid #ccc;
+  border: 1px solid rgba(148, 163, 184, 0.35);
   border-radius: 8px;
   padding: 1rem;
   margin-top: 1rem;
-  background-color: #fafafa;
+  background-color: #f8fafc;
+  color: #0f172a;
   font-family: "Segoe UI", sans-serif;
   line-height: 1.6;
+}
+
+.html-preview :deep(*) {
+  color: inherit;
+}
+
+.html-preview :deep(a) {
+  color: #2563eb;
+}
+
+:global(.v-theme--dark) .html-preview {
+  border-color: rgba(148, 163, 184, 0.45);
+  background-color: #0b1220;
+  color: #e2e8f0;
+}
+
+:global(.v-theme--dark) .html-preview :deep(a) {
+  color: #93c5fd;
 }
 </style>

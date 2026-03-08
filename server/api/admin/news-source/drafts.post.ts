@@ -279,7 +279,7 @@ const ensureUniqueSlug = async (
 
 const buildArticleHtml = (
   sourceMeta: {
-    url: string;
+    url: string | null;
     title: string | null;
     summary: string | null;
     domain: string | null;
@@ -301,12 +301,14 @@ const buildArticleHtml = (
         )}</p>`
       : "";
 
-  const sourceLabel = escapeHtml(
-    sourceMeta.domain ||
-      sourceMeta.title ||
-      (sourceMeta.url ? new URL(sourceMeta.url).hostname : "Source unknown")
-  );
-  const link = toSafeUrl(sourceMeta.url);
+  const sourceLabel = sourceMeta.url
+    ? escapeHtml(
+        sourceMeta.domain ||
+          sourceMeta.title ||
+          new URL(sourceMeta.url).hostname
+      )
+    : null;
+  const link = toSafeUrl(sourceMeta.url || undefined);
   const personaLabel = personaMeta?.name
     ? escapeHtml(personaMeta.name)
     : null;
@@ -332,13 +334,18 @@ const buildArticleHtml = (
       </div>`
     : "";
 
-  const sourceBlock = link
-    ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${sourceLabel}</a>`
-    : sourceLabel;
+  const sourceBlock = sourceLabel
+    ? link
+      ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${sourceLabel}</a>`
+      : sourceLabel
+    : "";
+  const sourceLine = sourceBlock
+    ? `<p class="source-line">${sourceBlock}</p>`
+    : "";
 
   const articleHtml = `<article class="manual-source-article">
   <header class="article-header">
-    <p class="source-line">${sourceBlock}</p>
+    ${sourceLine}
     <h1>${escapeHtml(sourceMeta.title || rewrite.headline)}</h1>
     ${personaLine}
     ${summaryHtml}
@@ -411,11 +418,6 @@ export default defineEventHandler(async (event) => {
     const topics = toList(body.topics);
     const people = toList(body.people);
 
-    if (!sourceUrl) {
-      setResponseStatus(event, 400);
-      return { success: false, error: "sourceUrl is required." };
-    }
-
     if (!personaKey) {
       setResponseStatus(event, 400);
       return { success: false, error: "personaKey is required." };
@@ -455,6 +457,8 @@ export default defineEventHandler(async (event) => {
       avatarUrl: persona.profile?.avatar_url || null,
       slug: persona.profile?.slug || null,
     };
+    const effectiveSummary =
+      sourceSummary || normalizeName(rewrite.summary) || null;
 
     const rewriteMeta = {
       persona_key: personaKey,
@@ -462,7 +466,7 @@ export default defineEventHandler(async (event) => {
       persona_display_name: personaMeta.name,
       persona_avatar_url: personaMeta.avatarUrl,
       headline: rewrite.headline,
-      summary: rewrite.summary,
+      summary: effectiveSummary,
       body: rewrite.body,
       references: normalizeReferences(rewrite.references),
       social: rewrite.social || null,
@@ -472,7 +476,7 @@ export default defineEventHandler(async (event) => {
     const sourceMeta = {
       url: sourceUrl,
       title: sourceTitle,
-      summary: sourceSummary,
+      summary: effectiveSummary,
       domain: sourceDomain,
     };
 
@@ -506,9 +510,10 @@ export default defineEventHandler(async (event) => {
       newsmesh_meta: {
         source_url: sourceUrl,
         source_title: sourceTitle,
-        source_summary: sourceSummary,
+        summary: effectiveSummary,
+        source_summary: effectiveSummary,
         source_domain: sourceDomain,
-        source_type: "manual-url",
+        source_type: sourceUrl ? "manual-url" : "manual-direct",
         category,
         topics,
         people,
