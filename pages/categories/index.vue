@@ -160,8 +160,6 @@ const {
   getAllTags,
   getAllPeople,
 } = useDb();
-const isLoading = ref(true);
-const authStore = useAuthStore();
 const searchQuery = ref("");
 const articles = ref([]);
 const tags = ref([]);
@@ -207,8 +205,9 @@ const loadMoreArticles = () => {
   }, 150);
 };
 
-onMounted(async () => {
-  await authStore.checkAuth();
+const { data: initialData, pending } = await useAsyncData(
+  "categories-index-initial",
+  async () => {
   const [articleData, tagData, categoryData, peopleData] = await Promise.all([
     getAllPublishedArticlesWithTags(),
     getAllTags(),
@@ -216,12 +215,28 @@ onMounted(async () => {
     getAllPeople(),
   ]);
 
-  if (articleData) articles.value = articleData;
-  if (tagData) tags.value = tagData;
-  if (categoryData) categories.value = categoryData;
-  if (peopleData) people.value = peopleData;
-  isLoading.value = false;
+    return {
+      articles: articleData || [],
+      tags: tagData || [],
+      categories: categoryData || [],
+      people: peopleData || [],
+    };
+  }
+);
 
+const isLoading = computed(
+  () => pending.value && !articles.value.length
+);
+
+watchEffect(() => {
+  if (!initialData.value) return;
+  articles.value = initialData.value.articles || [];
+  tags.value = initialData.value.tags || [];
+  categories.value = initialData.value.categories || [];
+  people.value = initialData.value.people || [];
+});
+
+onMounted(async () => {
   if (!intersectionObserver) {
     intersectionObserver = new IntersectionObserver(
       (entries) => {

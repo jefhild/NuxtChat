@@ -148,7 +148,6 @@
 
 <script setup>
 const { t } = useI18n();
-const authStore = useAuthStore();
 const {
   getAllPublishedArticlesWithTags,
   getAllCategories,
@@ -156,7 +155,6 @@ const {
   getAllPeople,
 } = useDb();
 
-const isLoading = ref(true);
 const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
@@ -204,9 +202,9 @@ const loadMoreArticles = () => {
 
 useSeoI18nMeta("people.index");
 
-onMounted(async () => {
-  await authStore.checkAuth();
-
+const { data: initialData, pending } = await useAsyncData(
+  "people-index-initial",
+  async () => {
   const [articleData, categoryData, tagData, peopleData] = await Promise.all([
     getAllPublishedArticlesWithTags(),
     getAllCategories(),
@@ -214,13 +212,28 @@ onMounted(async () => {
     getAllPeople(),
   ]);
 
-  articles.value = articleData || [];
-  categories.value = categoryData || [];
-  tags.value = tagData || [];
-  people.value = peopleData || [];
+    return {
+      articles: articleData || [],
+      categories: categoryData || [],
+      tags: tagData || [],
+      people: peopleData || [],
+    };
+  }
+);
 
-  isLoading.value = false;
+const isLoading = computed(
+  () => pending.value && !articles.value.length
+);
 
+watchEffect(() => {
+  if (!initialData.value) return;
+  articles.value = initialData.value.articles || [];
+  categories.value = initialData.value.categories || [];
+  tags.value = initialData.value.tags || [];
+  people.value = initialData.value.people || [];
+});
+
+onMounted(async () => {
   if (!intersectionObserver) {
     intersectionObserver = new IntersectionObserver(
       (entries) => {
