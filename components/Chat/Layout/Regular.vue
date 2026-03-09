@@ -328,6 +328,7 @@ defineExpose({
   appendPeerLocal,
   setTyping, // 🔹 expose so parent/AI controller can toggle typing
   getLastMessages,
+  getAssistantTurnCount,
 });
 
 // 🔹 NEW: toggler to show/hide typing chip (call when you start/stop AI)
@@ -401,6 +402,15 @@ function getLastMessages(limit = 10, peer = props.peer) {
     sender: String(m.sender_id) === meId ? "You" : peerName,
     content: m.content ?? "",
   }));
+}
+
+function getAssistantTurnCount() {
+  const meId = String(props.meId || "");
+  return (messages.value || []).reduce((count, m) => {
+    const senderId = String(m?.sender_id || "");
+    if (!senderId || senderId === meId) return count;
+    return count + 1;
+  }, 0);
 }
 
 watch(

@@ -4,6 +4,95 @@ import mustache from "mustache";
 import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const END_CHAT_TOKEN = "__END_CHAT__";
+
+const normalizeLocale = (value) => {
+  const v = String(value || "").trim().toLowerCase();
+  if (v.startsWith("fr")) return "fr";
+  if (v.startsWith("ru")) return "ru";
+  if (v.startsWith("zh")) return "zh";
+  return "en";
+};
+
+const getCloseLinesForLocale = (locale) => {
+  const l = normalizeLocale(locale);
+  if (l === "fr") {
+    return {
+      default: "Je dois y aller pour le moment. On reprend plus tard.",
+      incoherent:
+        "Je ne suis pas sûr d'avoir compris. Je vais y aller pour l'instant, on reprendra plus tard.",
+    };
+  }
+  if (l === "ru") {
+    return {
+      default: "Мне пора бежать. Давай продолжим позже.",
+      incoherent:
+        "Похоже, я не совсем понял. Я пока выйду, продолжим позже.",
+    };
+  }
+  if (l === "zh") {
+    return {
+      default: "我先去忙啦，我们晚点再聊。",
+      incoherent: "我有点没看懂这条消息，我先撤啦，晚点再聊。",
+    };
+  }
+  return {
+    default: "I've got to run for now. Let's pick this up later.",
+    incoherent:
+      "I'm not sure I caught that. I'll head out for now, we can pick this up later.",
+  };
+};
+
+const isLikelyIncoherentMessage = (value) => {
+  const text = String(value || "").trim().toLowerCase();
+  if (!text) return true;
+
+  const lettersOnly = text.replace(/[^a-z]/g, "");
+  const words = text.split(/\s+/).filter(Boolean);
+  const punctuationOnly = text.replace(/[a-z0-9\s]/gi, "");
+  const alphaWords = words
+    .map((w) => w.replace(/[^a-z]/g, ""))
+    .filter(Boolean);
+  const keyboardMashPattern = /(asdf|sdf|qwer|wer|zxcv|xcv|hjkl|jkl|lkj)/i;
+  const isLikelyGibberishWord = (w) => {
+    if (w.length < 4) return false;
+    const vowels = (w.match(/[aeiouy]/g) || []).length;
+    const vowelRatio = vowels / Math.max(1, w.length);
+    const hasLongConsonantRun = /[bcdfghjklmnpqrstvwxyz]{4,}/i.test(w);
+    const hasWeirdRepetition = /(..+)\1/.test(w);
+    const hasKeyboardMash = keyboardMashPattern.test(w);
+    return (
+      hasKeyboardMash ||
+      hasLongConsonantRun ||
+      (w.length >= 7 && vowelRatio < 0.28) ||
+      (w.length >= 8 && hasWeirdRepetition)
+    );
+  };
+  const hasLongRepeatedChar = /(.)\1{4,}/.test(text);
+  const singleWordNoVowels =
+    words.length === 1 &&
+    lettersOnly.length >= 7 &&
+    !/[aeiouy]/.test(lettersOnly);
+  const mostlyPunctuation =
+    punctuationOnly.length >= 4 && lettersOnly.length <= 2;
+  const tooFewLetters = lettersOnly.length <= 1 && text.length >= 3;
+  const gibberishWordCount = alphaWords.filter(isLikelyGibberishWord).length;
+  const gibberishRatio =
+    alphaWords.length > 0 ? gibberishWordCount / alphaWords.length : 0;
+  const multiWordMostlyGibberish =
+    alphaWords.length >= 2 && gibberishRatio >= 0.6;
+  const singleLongGibberish =
+    alphaWords.length === 1 && isLikelyGibberishWord(alphaWords[0]);
+
+  return (
+    hasLongRepeatedChar ||
+    singleWordNoVowels ||
+    mostlyPunctuation ||
+    tooFewLetters ||
+    multiWordMostlyGibberish ||
+    singleLongGibberish
+  );
+};
 
 const normalizeCapability = (value) => {
   const v = String(value || "").trim().toLowerCase();
@@ -44,6 +133,8 @@ export default defineEventHandler(async (event) => {
       userMessage, // string (required)
       userGender, // string | null
       userName, // string | null
+      assistantTurn, // number | null
+      locale, // string | null
       aiUser, // string (persona key or display name, required)
       userAge, // number | null
       history, // [{ sender, content }]
@@ -81,7 +172,7 @@ export default defineEventHandler(async (event) => {
     const { data: personas, error: personaErr } = await supabase
       .from("ai_personas")
       .select(
-        "id, persona_key, profile_user_id, model, temperature, top_p, presence_penalty, frequency_penalty, max_response_tokens, max_history_messages, system_prompt_template, response_style_template, parameters, editorial_enabled, counterpoint_enabled, honey_enabled, honey_delay_min_ms, honey_delay_max_ms, editorial_system_prompt_template, editorial_response_style_template, counterpoint_system_prompt_template, counterpoint_response_style_template, honey_system_prompt_template, honey_response_style_template"
+        "id, persona_key, profile_user_id, model, temperature, top_p, presence_penalty, frequency_penalty, max_response_tokens, max_history_messages, system_prompt_template, response_style_template, parameters, editorial_enabled, counterpoint_enabled, honey_enabled, honey_delay_min_ms, honey_delay_max_ms, editorial_system_prompt_template, editorial_response_style_template, counterpoint_system_prompt_template, counterpoint_response_style_template, honey_system_prompt_template, honey_response_style_template, profile:profiles!ai_personas_profile_user_id_fkey(displayname)"
       )
       .in("persona_key", personaCandidates)
       .eq("is_active", true)
@@ -111,11 +202,18 @@ export default defineEventHandler(async (event) => {
     // Honey capability is available for anonymous/no-session users,
     // but blocked for fully authenticated users.
     const allowHoneyCapability = !caller || !!caller?.is_anonymous;
+    const localeFromHeader = event.node?.req?.headers?.["accept-language"] || "";
+    const closeLines = getCloseLinesForLocale(locale || localeFromHeader);
     const resolvedCapability = resolveCapability(
       capability,
       persona,
       allowHoneyCapability
     );
+    const requestedCapability = normalizeCapability(capability);
+    const isHoneyMode =
+      resolvedCapability === "honey" ||
+      requestedCapability === "honey" ||
+      !!persona?.honey_enabled;
     const systemTemplate =
       resolvedCapability === "honey"
         ? persona.honey_system_prompt_template || persona.system_prompt_template || ""
@@ -153,10 +251,43 @@ export default defineEventHandler(async (event) => {
       ? history.slice(-(persona.max_history_messages ?? 10))
       : [];
 
+    const personaName =
+      persona?.profile?.displayname ||
+      persona?.persona_key ||
+      String(aiUser || "").trim() ||
+      "Assistant";
+    const parsedAssistantTurn = Number(assistantTurn);
+    const assistantTurnsFromHistory = safeHistory.reduce((count, h) => {
+      const sender = String(h?.sender ?? "").trim().toLowerCase();
+      if (!sender) return count;
+      if (["you", "user", "me", "human"].includes(sender)) return count;
+      return count + 1;
+    }, 0);
+    const resolvedAssistantTurn =
+      Number.isFinite(parsedAssistantTurn) && parsedAssistantTurn > 0
+        ? Math.floor(parsedAssistantTurn)
+        : assistantTurnsFromHistory + 1;
+    const mustClose = resolvedAssistantTurn >= 7;
+    const incoherentUserMessage = isLikelyIncoherentMessage(userMessage);
+
+    if (isHoneyMode && mustClose) {
+      return { success: true, aiResponse: closeLines.default, chatEnded: true };
+    }
+    if (isHoneyMode && incoherentUserMessage) {
+      return {
+        success: true,
+        aiResponse: closeLines.incoherent,
+        chatEnded: true,
+      };
+    }
+
     const vars = {
+      personaName,
       userName: userName ?? "",
       userGender: userGender ?? "",
       userAge: userAge ?? "",
+      assistantTurn: resolvedAssistantTurn,
+      mustClose,
     };
 
     // Render the base system prompt template
@@ -172,6 +303,12 @@ export default defineEventHandler(async (event) => {
       if (style) {
         promptBase = `${promptBase}\nResponse style: ${style}`;
       }
+    }
+    if (isHoneyMode) {
+      promptBase = `${promptBase}\nIncoherence handling policy: If the user's latest message is nonsense OR the user has gone off-topic/incoherent for 2 or more recent turns, end the chat immediately by replying with exactly ${END_CHAT_TOKEN} and nothing else.`;
+    }
+    if (mustClose) {
+      promptBase = `${promptBase}\nConversation control: mustClose=true. Send one short, warm closing line now. Do not ask a question. End the conversation in this reply.`;
     }
 
     // Keep your original “append history to system” approach
@@ -204,7 +341,11 @@ export default defineEventHandler(async (event) => {
         : {}),
     });
 
-    const aiResponse = response?.choices?.[0]?.message?.content ?? "";
+    const aiResponseRaw = response?.choices?.[0]?.message?.content ?? "";
+    const aiResponse = String(aiResponseRaw).trim();
+    if (isHoneyMode && aiResponse === END_CHAT_TOKEN) {
+      return { success: true, aiResponse: closeLines.default, chatEnded: true };
+    }
     if (debug) {
       // console.log("[aiChat] AI response preview:", aiResponse.slice(0, 300));
     }

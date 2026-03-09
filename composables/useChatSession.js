@@ -13,6 +13,7 @@ export function useChatSession() {
   const messages = ref([]);
   const fakeUserId = ref(LOCAL_USER_ID);
   const isTyping = ref(false);
+  const endedAiPeers = ref(new Set());
 
 
   const sortMessagesChronologically = () => {
@@ -86,6 +87,7 @@ export function useChatSession() {
 
 const sendAIResponse = async (userMessage, aiUserId, userId, isAnon) => {
   try {
+    if (endedAiPeers.value.has(String(aiUserId))) return;
     isTyping.value = true;
 
     const typingMessage = {
@@ -105,12 +107,26 @@ const sendAIResponse = async (userMessage, aiUserId, userId, isAnon) => {
       aiUser: "imchatty",
       userName: authStore.userProfile?.displayname || "Guest",
       userMessage,
-      messages: messages.value.filter((m) => !m.isTypingPlaceholder).slice(-10),
+      history: messages.value
+        .filter((m) => !m.isTypingPlaceholder)
+        .slice(-10)
+        .map((m) => ({
+          sender: String(m.sender_id) === String(userId) ? "You" : "ImChatty",
+          content: m.content ?? "",
+        })),
       userGender: authStore.userProfile?.gender || null,
       userAge: authStore.userProfile?.age || null,
       replyTo: null, // optionally wire in reply message content
       capability:
         authStore.authStatus === "anon_authenticated" ? "honey" : "counterpoint",
+      assistantTurn:
+        messages.value.reduce((count, m) => {
+          const senderId = String(m?.sender_id || "");
+          if (!senderId || senderId === String(userId) || m?.isTypingPlaceholder) {
+            return count;
+          }
+          return count + 1;
+        }, 0) + 1,
     };
 
     const res = await fetch("/api/aiChat", {
@@ -120,6 +136,9 @@ const sendAIResponse = async (userMessage, aiUserId, userId, isAnon) => {
     });
 
     const data = await res.json();
+    if (data?.chatEnded) {
+      endedAiPeers.value.add(String(aiUserId));
+    }
 
     await new Promise((resolve) => setTimeout(resolve, 600));
 

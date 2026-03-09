@@ -1495,6 +1495,7 @@ const isLoading = ref(false);
 const isTabVisible = ref(true);
 const showAIUsers = ref(true);
 const activeChats = ref([]);
+const endedAiPeers = ref(new Set());
 const replyingToMessage = ref(null); // { id, content } | null
 const deleteDialog = ref(false);
 const deleteTarget = ref(null);
@@ -3054,6 +3055,7 @@ async function onSend(
     }
 
     const history = regRef.value?.getLastMessages?.(10, selectedPeer) || [];
+    const assistantTurn = (regRef.value?.getAssistantTurnCount?.() || 0) + 1;
     const replyTo = replyingToMessage.value?.content ?? null;
     const aiUserInput =
       sendingToBot && aiFollowupContext
@@ -3069,16 +3071,26 @@ async function onSend(
           : selectedPeer?.editorial_enabled
           ? "editorial"
           : "counterpoint";
-      const aiText = await fetchAiResponse(
+      if (endedAiPeers.value.has(String(toId))) {
+        return;
+      }
+      const aiResult = await fetchAiResponse(
         aiUserInput,
         selectedPeer,
         userProfile.value,
         history,
         replyTo,
-        requestedCapability
+        requestedCapability,
+        assistantTurn
       );
-      if (aiText) regRef.value?.appendPeerLocal?.(aiText);
-      await insertMessage(meId.value, toId, aiText);
+      const aiText = aiResult?.text ?? null;
+      if (aiResult?.chatEnded) {
+        endedAiPeers.value.add(String(toId));
+      }
+      if (aiText) {
+        regRef.value?.appendPeerLocal?.(aiText);
+        await insertMessage(meId.value, toId, aiText);
+      }
     } catch (e) {
       console.error("[AI] fetch/insert failed", e);
     } finally {
@@ -3344,7 +3356,8 @@ async function fetchAiResponse(
   userProfile,
   historyArr = [],
   replyToStr = null,
-  capability = null
+  capability = null,
+  assistantTurn = null
 ) {
   try {
     const safeHistory = Array.isArray(unref(historyArr))
@@ -3360,13 +3373,21 @@ async function fetchAiResponse(
       history: safeHistory, // ✅ no .value here
       replyTo: replyToStr ?? null, // ✅ string or null
       capability: capability ?? null,
+      assistantTurn:
+        Number.isFinite(Number(assistantTurn)) && Number(assistantTurn) > 0
+          ? Math.floor(Number(assistantTurn))
+          : null,
     };
 
     const res = await $fetch("/api/aiChat", { method: "POST", body: payload });
-    return res?.success ? res.aiResponse : null;
+    if (!res?.success) return { text: null, chatEnded: false };
+    return {
+      text: res?.aiResponse ?? null,
+      chatEnded: !!res?.chatEnded,
+    };
   } catch (e) {
     console.error("[AI] fetchAiResponse error", e);
-    return null;
+    return { text: null, chatEnded: false };
   }
 }
 
