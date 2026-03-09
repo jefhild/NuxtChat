@@ -2316,11 +2316,13 @@ const usersWithPresence = computed(() => {
     // don’t show myself (compare using presence key, not UI id)
     .filter((u) => resolvePresenceKey(u) !== meKey)
     .filter((u) => {
+      if (isImchattyUser(u)) return true;
       const isHoneyBot = !!u?.is_ai && !!u?.honey_enabled;
       return isHoneyBot ? canSeeHoneyBots.value : true;
     })
     // hide AI if toggled off; Honey + simulated users are treated as real users
     .filter((u) => {
+      if (isImchattyUser(u)) return true;
       if (showAIUsers.value) return true;
       const isHoneySimulated = !!u.is_ai && !!u.honey_enabled && !!u.is_simulated;
       return !u.is_ai || isHoneySimulated;
@@ -2400,10 +2402,21 @@ const selectedUser = computed(() => {
   const raw = selectedUserRaw.value;
   if (!raw) return null;
   const rawId = raw.user_id ?? raw.id;
-  if (!rawId) return raw;
+  const rawSlug = String(
+    raw.slug ?? raw.profile_slug ?? raw.username_slug ?? ""
+  )
+    .trim()
+    .toLowerCase();
+  if (!rawId && !rawSlug) return raw;
   const match = usersWithPresence.value.find((u) => {
     const uid = u.user_id ?? u.id;
-    return String(uid) === String(rawId);
+    if (rawId && String(uid) === String(rawId)) return true;
+    const slug = String(
+      u.slug ?? u.profile_slug ?? u.username_slug ?? ""
+    )
+      .trim()
+      .toLowerCase();
+    return !!(rawSlug && slug && rawSlug === slug);
   });
   return match || raw;
 });
@@ -2447,6 +2460,9 @@ watch(
 );
 
 const selectedUserPresence = computed(() => {
+  if (isImchattyUser(selectedUser.value)) {
+    return "online";
+  }
   if (isSelfSelected.value) {
     const selfKey = String(meId.value ?? "")
       .trim()
