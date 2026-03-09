@@ -654,6 +654,15 @@ const rewriteReferences = computed(
     rewriteMeta.value?.references ||
     []
 );
+const sanitizeTemplateCss = (value = "") =>
+  String(value || "")
+    .replace(/<style\b[^>]*>/gi, "")
+    .replace(/<\/style>/gi, "")
+    .replace(/@import[\s\S]*?;/gi, "")
+    .trim();
+const articleTemplateCss = computed(() =>
+  sanitizeTemplateCss(rewriteMeta.value?.template_css || "")
+);
 const keywordList = computed(() =>
   displayTags.value.map((tag) => tag.name).filter(Boolean)
 );
@@ -892,6 +901,17 @@ useHead(() => ({
         {
           type: "application/ld+json",
           children: JSON.stringify(newsArticleSchema.value),
+        },
+      ]
+    : [],
+}));
+
+useHead(() => ({
+  style: articleTemplateCss.value
+    ? [
+        {
+          key: `article-template-css-${article.value?.id || slug}`,
+          children: articleTemplateCss.value,
         },
       ]
     : [],

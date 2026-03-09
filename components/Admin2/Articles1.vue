@@ -223,6 +223,15 @@
             :rules="[(v) => !!v || 'Content is required']"
           />
 
+          <v-textarea
+            v-model="selectedArticle.template_css"
+            label="Template CSS (article slug page)"
+            rows="8"
+            auto-grow
+            hint="Stored in rewrite_meta.template_css. Example: .newsmesh-article .article-header { border-color: #0ea5e9; }"
+            persistent-hint
+          />
+
           <v-divider class="my-4" />
           <div class="text-subtitle-2 mb-2">Insert Inline Image</div>
           <v-row dense>
@@ -682,6 +691,13 @@ const escapeHtmlText = (value = "") =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+const sanitizeTemplateCss = (value = "") =>
+  String(value || "")
+    .replace(/<style\b[^>]*>/gi, "")
+    .replace(/<\/style>/gi, "")
+    .replace(/@import[\s\S]*?;/gi, "")
+    .trim();
+
 const extractSummaryFromHtml = (content = "") => {
   const match = String(content || "").match(
     /<p[^>]*class=["'][^"']*article-summary[^"']*["'][^>]*>([\s\S]*?)<\/p>/i
@@ -938,6 +954,7 @@ const toggleEditDialog = async (article) => {
     type: article.type || "",
     rewrite_meta: article.rewrite_meta || {},
     newsmesh_meta: article.newsmesh_meta || {},
+    template_css: article.rewrite_meta?.template_css || "",
     summary: summaryFallback || "",
     social_facebook_caption: existingSocial?.facebook?.caption || "",
     social_instagram_caption: existingSocial?.instagram?.caption || "",
@@ -1014,6 +1031,7 @@ const handleArticleUpdate = async () => {
       is_published: selectedArticle.value.is_published,
       rewrite_meta: {
         ...(selectedArticle.value.rewrite_meta || {}),
+        template_css: sanitizeTemplateCss(selectedArticle.value.template_css),
         summary: summaryText || null,
         social: nextSocial,
       },
