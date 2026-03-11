@@ -144,12 +144,11 @@ export function useSeoI18nMeta(
     }
   }
 
-  // Add x-default fallback (point to English)
+  // Add x-default fallback and keep it stable across every locale variant.
   const defaultLocale = "en";
-  const defaultPath =
-    switchLocalePath(canonicalLocaleCode) || switchLocalePath(defaultLocale);
+  const defaultPath = switchLocalePath(defaultLocale);
   const defaultHref =
-    canonicalLocaleCode === "en" && canonicalHref
+    currentLocale === defaultLocale && canonicalHref
       ? canonicalHref
       : toAbsoluteUrl(defaultPath);
   const hreflangLinks = Array.from(hreflangByCode.values());
