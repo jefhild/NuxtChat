@@ -60,7 +60,35 @@
     <div class="full-bleed">
       <v-sheet class="home-mood-wrap" elevation="0">
         <v-container fluid class="py-8 px-4 px-md-8">
-          <MoodFeedHomeQuestionBar :card-theme="homeMoodCardTheme" />
+          <ClientOnly>
+            <MoodFeedHomeQuestionBar :card-theme="homeMoodCardTheme" />
+            <template #fallback>
+              <v-sheet class="home-mood-fallback pa-4 pa-md-5" elevation="0">
+                <v-chip
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                  class="mb-2"
+                >
+                  {{ $t("pages.feeds.heading", "Mood Feed") }}
+                </v-chip>
+                <h2 class="text-h5 font-weight-bold mb-1">
+                  {{ $t("pages.feeds.promptTitle", "Daily Mood Question") }}
+                </h2>
+                <p class="text-body-2 text-medium-emphasis mb-4">
+                  {{
+                    $t(
+                      "pages.feeds.promptSubtitle",
+                      "Share how you're feeling and connect with people who get it."
+                    )
+                  }}
+                </p>
+                <v-btn variant="text" color="primary" :to="localPath('/feeds')">
+                  {{ $t("pages.feeds.seeAll", "Browse mood feed") }}
+                </v-btn>
+              </v-sheet>
+            </template>
+          </ClientOnly>
         </v-container>
       </v-sheet>
     </div>
@@ -187,7 +215,7 @@
     </div>
 
     <!-- Logout Dialog -->
-    <v-dialog v-model="logoutDialog" width="auto">
+    <v-dialog v-if="logoutDialog" v-model="logoutDialog" width="auto">
       <v-card max-width="400" prepend-icon="mdi-account-remove">
         <v-card-title>{{
           $t("pages.home.landing_page.logout_title")
@@ -209,6 +237,7 @@
 
     <!-- Link Email Dialog -->
     <v-dialog
+      v-if="linkEmailDialogVisible"
       v-model="linkEmailDialogVisible"
       max-width="480"
       :retain-focus="false"
@@ -485,10 +514,25 @@ const articles = computed(() => landingData.value?.articles || []);
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
 }
 
+.home-mood-fallback {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.98));
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
 :global(.v-theme--dark .home-mood-wrap) {
   background:
     radial-gradient(900px 320px at 2% 0%, rgba(56, 189, 248, 0.14), transparent 60%),
     linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+}
+
+:global(.v-theme--dark .home-mood-fallback) {
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(11, 18, 32, 0.98));
+  border-color: rgba(148, 163, 184, 0.22);
 }
 
 .cta-surface {
