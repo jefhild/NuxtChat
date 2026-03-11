@@ -207,7 +207,7 @@ export default defineNuxtConfig({
       "/cdn-cgi",
     ],
     allow: ["/", "/_nuxt/"],
-    sitemap: "https://imchatty.com/sitemap.xml",
+    sitemap: "https://imchatty.com/sitemap_index.xml",
   },
 
   runtimeConfig: {
