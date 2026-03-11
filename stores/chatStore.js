@@ -9,6 +9,7 @@ const IMCHATTY_ID = "a3962087-516b-48df-a3ff-3b070406d832";
 const IMCHATTY_SLUG = "imchatty";
 const LS_KEY = "lastSelectedUserId";
 const PREAUTH_STATUSES = ["anonymous", "unauthenticated", "guest", "onboarding"];
+const RESUME_CHAT_STATUSES = ["authenticated", "anon_authenticated"];
 
 export const useChatStore = defineStore("chatStore", () => {
   const users = ref([]); // directory (real + AI)
@@ -150,6 +151,22 @@ function isAiId(id) {
     if (bot) setSelectedUser(bot);
   }
 
+  function selectMostRecentActiveChat() {
+    const recentPeerId = (Array.isArray(activeChats.value) ? activeChats.value : []).find(
+      (peerId) => {
+        const peer = getUserById(peerId);
+        return peer && !isHiddenHoneyForCurrentAuth(peer);
+      }
+    );
+    if (!recentPeerId) return false;
+
+    const recentPeer = getUserById(recentPeerId);
+    if (!recentPeer) return false;
+
+    setSelectedUser(recentPeer);
+    return true;
+  }
+
   // ——— actions ———
   async function fetchChatUsers() {
     loading.value = true;
@@ -280,8 +297,16 @@ function isAiId(id) {
       selectImchatty();
       return;
     }
+
+    if (RESUME_CHAT_STATUSES.includes(authStatus)) {
+      const resumed = selectMostRecentActiveChat();
+      if (resumed) return;
+    }
+
     const restored = restoreSelectedUser();
-    if (!restored) selectImchatty();
+    if (restored) return;
+
+    selectImchatty();
   }
 
   //  addActivePeer API (can be used by callers too)

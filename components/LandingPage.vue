@@ -309,11 +309,7 @@ const showLinkEmailCta = computed(
 );
 const showPrimaryHeroCta = computed(() => !isAnonAuthed.value);
 const showLearnMoreCta = computed(() => !isAnonAuthed.value);
-const heroCtaTo = computed(() =>
-  authStatus.value === "authenticated" || authStatus.value === "anon_authenticated"
-    ? localPath("/chat")
-    : localPath("/chat?userslug=imchatty")
-);
+const heroCtaTo = computed(() => localPath("/chat"));
 const heroCtaLabel = computed(() =>
   authStatus.value === "authenticated" || authStatus.value === "anon_authenticated"
     ? t("pages.home.landing_page.get_chatting")
