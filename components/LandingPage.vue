@@ -14,10 +14,10 @@
           <div class="fill-height w-100 d-flex align-center justify-center">
             <!-- Constrain and center the content -->
             <div class="hero-content text-center mx-auto">
-              <h1 class="text-h4 text-md-h2 font-weight-bold mb-4 text-white">
+              <h1 class="hero-title text-h4 text-md-h2 mb-4 text-white">
                 {{ getAuthHeading }}
               </h1>
-              <p class="text-body-1 text-md-subtitle-1 mb-6 text-white">
+              <p class="hero-subtitle text-body-1 text-md-subtitle-1 mb-6 text-white">
                 {{ $t("pages.home.landing_page.title-text2") }}
               </p>
 
@@ -494,12 +494,46 @@ const articles = computed(() => landingData.value?.articles || []);
   padding: 0 16px;
 }
 
+.hero-title {
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  max-width: 14ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-subtitle {
+  line-height: 1.45;
+  max-width: 34ch;
+  margin-left: auto;
+  margin-right: auto;
+  text-wrap: balance;
+}
+
 .hero-btn {
   min-width: fit-content;
   max-width: 100%;
   height: auto;
   white-space: normal;
   text-wrap: balance;
+}
+
+@media (min-width: 960px) {
+  .hero-title {
+    font-size: clamp(3.6rem, 5.5vw, 5.6rem) !important;
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.35rem, 2vw, 1.9rem) !important;
+    line-height: 1.55;
+    max-width: 30ch;
+  }
 }
 
 /* CTA shared background */
