@@ -3,7 +3,7 @@ import { unref } from "vue";
 export function useSeoI18nMeta(
   section: string,
   options?: {
-    overrideUrl?: string;
+    overrideUrl?: string | { value: string };
     canonicalLocaleCode?: string;
     availableLocaleCodes?: string[] | { value: string[] };
     robots?: string | { value: string };
@@ -79,7 +79,7 @@ export function useSeoI18nMeta(
   // Canonical URL (current locale)
   const canonicalPath = switchLocalePath(currentLocale) || route.path || "/";
   const canonicalHref =
-    normalizeUrl(options?.overrideUrl) ||
+    normalizeUrl(unref(options?.overrideUrl as any)) ||
     toAbsoluteUrl(canonicalPath) ||
     normalizeUrl(canonicalPath);
 

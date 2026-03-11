@@ -22,7 +22,7 @@ const rawNext = route.query.next
 const nextPath =
   typeof rawNext === 'string' && rawNext.startsWith('/') && !rawNext.startsWith('//')
     ? rawNext
-    : '/chat?userslug=imchatty'
+    : '/chat'
 
 onMounted(async () => {
   // Facebook sometimes adds "#_=_"

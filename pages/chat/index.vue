@@ -28,7 +28,7 @@
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore1";
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useTheme } from "vuetify";
 
 const authStore = useAuthStore();
@@ -40,6 +40,17 @@ const localPath = useLocalePath();
 const vuetifyTheme = useTheme();
 const previousThemeName = ref(null);
 const previousColorScheme = ref("");
+const chatSeoQueryKeys = ["userslug", "slug", "userId", "id", "imchatty"];
+const hasEntryQuery = computed(() =>
+  chatSeoQueryKeys.some((key) => {
+    const value = route.query?.[key];
+    return Array.isArray(value) ? value.length > 0 : value != null && `${value}` !== "";
+  })
+);
+const chatCanonicalPath = computed(() => localPath("/chat"));
+const chatRobots = computed(() =>
+  hasEntryQuery.value ? "noindex,follow" : undefined
+);
 
 function setThemeNameSafe(nextThemeName) {
   if (!nextThemeName) return;
@@ -52,7 +63,10 @@ function setThemeNameSafe(nextThemeName) {
   }
 }
 
-useSeoI18nMeta("chat.index");
+useSeoI18nMeta("chat.index", {
+  overrideUrl: chatCanonicalPath,
+  robots: chatRobots,
+});
 onMounted(async () => {
   try {
     if (vuetifyTheme?.global?.name?.value) {
