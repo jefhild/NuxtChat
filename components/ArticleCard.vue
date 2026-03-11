@@ -333,7 +333,7 @@ const truncateText = (value, limit = 180) => {
 
 const translationSnippet = computed(() => {
   if (translatedHeader.value) return "";
-  const text = translation.value?.summary || "";
+  const text = translation.value?.summary || props.article?.summary || "";
   const trimmed = truncateText(stripLeadingMarkdown(text), 180);
   return trimmed ? `<p>${escapeHtml(trimmed)}</p>` : "";
 });

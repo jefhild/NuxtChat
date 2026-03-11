@@ -1019,6 +1019,50 @@ export const useDb = () => {
       )
       .filter(Boolean);
 
+  const stripArticleMarkup = (value = "") =>
+    String(value || "")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<header[\s\S]*?<\/header>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const truncateArticleText = (value = "", limit = 220) => {
+    const text = String(value || "").trim();
+    if (!text) return "";
+    if (text.length <= limit) return text;
+    return `${text.slice(0, limit).trim()}…`;
+  };
+
+  const normalizeArticleTranslations = (translations) =>
+    (translations || [])
+      .map((entry) => ({
+        locale: entry?.locale || "",
+        headline: entry?.headline || "",
+        summary: truncateArticleText(entry?.summary || "", 220),
+      }))
+      .filter((entry) => entry.locale || entry.headline || entry.summary);
+
+  const toArticleCardPayload = (article) => ({
+    id: article.id,
+    title: article.title,
+    slug: article.slug,
+    image_path: article.image_path,
+    photo_credits_url: article.photo_credits_url,
+    original_language_code: article.original_language_code,
+    is_published: article.is_published,
+    created_at: article.created_at,
+    category_name: article.category?.name ?? "Uncategorized",
+    tags: normalizeArticleTags(article.article_tags),
+    summary: truncateArticleText(stripArticleMarkup(article.content), 220),
+    article_translations: normalizeArticleTranslations(article.article_translations),
+    threadSlug:
+      Array.isArray(article.threads) && article.threads.length > 0
+        ? article.threads[0].slug
+        : null,
+  });
+
   const getAllArticlesWithTags = async () => {
     const supabase = getClient();
 
@@ -1102,6 +1146,40 @@ export const useDb = () => {
           ? article.threads[0].slug // use first slug if multiple threads
           : null,
     }));
+  };
+
+  const getPublishedArticleCards = async (limit = 50) => {
+    const supabase = getClient();
+
+    const { data, error } = await supabase
+      .from("articles")
+      .select(
+        `
+      id,
+      title,
+      slug,
+      content,
+      image_path,
+      photo_credits_url,
+      original_language_code,
+      is_published,
+      created_at,
+      category:category_id ( id, name, slug ),
+      article_tags(tag:tag_id(id, name, slug)),
+      article_translations(locale, headline, summary),
+      threads(slug)
+    `
+      )
+      .eq("is_published", true)
+      .limit(limit)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching article cards:", error.message);
+      return [];
+    }
+
+    return data.map(toArticleCardPayload);
   };
 
   const getPublishedArticlesPage = async ({ limit = 12, offset = 0 } = {}) => {
@@ -3724,6 +3802,7 @@ const verifyEmailOtp = async (email, token) => {
     getAllPeople,
     getAllArticlesWithTags,
     getAllPublishedArticlesWithTags,
+    getPublishedArticleCards,
     getPublishedArticlesPage,
     getArticleBySlug,
     getThreadIdByArticleId,

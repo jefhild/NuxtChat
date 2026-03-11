@@ -277,7 +277,7 @@ const localPath = useLocalePath();
 const authStore = useAuthStore();
 const theme = useTheme();
 const {
-  getAllPublishedArticlesWithTags,
+  getPublishedArticleCards,
   hasEmail,
   updateUserEmail,
 } = useDb();
@@ -424,7 +424,7 @@ const { data: landingData, pending: isLoading } = await useAsyncData(
   "landing-home-content",
   async () => {
     try {
-      const articles = await getAllPublishedArticlesWithTags(9);
+      const articles = await getPublishedArticleCards(6);
       return {
         articles: Array.isArray(articles) ? articles : [],
       };
