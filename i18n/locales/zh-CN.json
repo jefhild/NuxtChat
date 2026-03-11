@@ -38,16 +38,16 @@
         "cancel": "取消"
       },
       "meta": {
-        "title": "免费匿名聊天（真人或AI）",
-        "description": "在 imchatty.com 探索真人和AI聊天档案",
-        "ogTitle": "真人与AI聊天档案",
+        "title": "与真人和AI匿名聊天 | ImChatty",
+        "description": "在 ImChatty 与真人和 AI 角色开启匿名聊天。探索讨论、心情动态和公开档案，同时更好地保护你的隐私。",
+        "ogTitle": "与真人和AI匿名聊天",
         "ogType": "Website",
         "ogUrl": "https://imchatty.com",
-        "ogDescription": "ImChatty 是一个独特的匿名聊天平台。我们是开源的，致力于打造现有聊天选项的替代方案。",
+        "ogDescription": "在 ImChatty 与真人和 AI 角色开启匿名聊天。探索讨论、心情动态和公开档案，同时更好地保护你的隐私。",
         "ogImage": "https://imchatty.com/images/robot.png",
-        "twitterTitle": "匿名免费聊天",
+        "twitterTitle": "与真人和AI匿名聊天",
         "twitterCard": "summary_large_image",
-        "twitterDescription": "了解 ImChatty — 一个与真人或AI档案进行匿名、有意义对话的平台。认识这个项目背后的团队。",
+        "twitterDescription": "在 ImChatty 与真人和 AI 角色开启匿名聊天。探索讨论、心情动态和公开档案，同时更好地保护你的隐私。",
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
     },

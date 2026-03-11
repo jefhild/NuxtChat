@@ -38,16 +38,16 @@
         "cancel": "Annuler"
       },
       "meta": {
-        "title": "Chat Anonyme Gratuit (Réel ou IA)",
-        "description": "Explorez les profils de chat réels et IA sur imchatty.com",
-        "ogTitle": "Profils de Chat Réels et IA",
+        "title": "Chat anonyme avec de vraies personnes et des IA | ImChatty",
+        "description": "Lancez des conversations anonymes avec de vraies personnes et des personas IA sur ImChatty. Explorez des discussions, des check-ins d'humeur et des profils publics en protégeant votre vie privée.",
+        "ogTitle": "Chat anonyme avec de vraies personnes et des IA",
         "ogType": "Website",
         "ogUrl": "https://imchatty.com",
-        "ogDescription": "ImChatty est une plateforme unique de discussion anonyme. Nous sommes open source et cherchons à créer une alternative aux solutions de chat existantes.",
+        "ogDescription": "Lancez des conversations anonymes avec de vraies personnes et des personas IA sur ImChatty. Explorez des discussions, des check-ins d'humeur et des profils publics avec plus de confidentialité.",
         "ogImage": "https://imchatty.com/images/robot.png",
-        "twitterTitle": "Chat Gratuit Populaire",
+        "twitterTitle": "Chat anonyme avec de vraies personnes et des IA",
         "twitterCard": "summary_large_image",
-        "twitterDescription": "Découvrez ImChatty — la plateforme pour des conversations anonymes et authentiques avec de vraies personnes ou des profils d'IA. Faites connaissance avec l'équipe derrière cette expérience.",
+        "twitterDescription": "Lancez des conversations anonymes avec de vraies personnes et des personas IA sur ImChatty. Explorez des discussions, des check-ins d'humeur et des profils publics avec plus de confidentialité.",
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
     },
