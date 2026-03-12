@@ -1,35 +1,5 @@
 // server/api/admin/articles/publish.post.js
-import { createMoltbookPost } from "~/server/utils/moltbook";
-
-const asObject = (value) =>
-  value && typeof value === "object" && !Array.isArray(value) ? value : {};
-
-const trimText = (value, max = 500) =>
-  String(value || "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, max);
-
-const buildMoltbookArticleContent = ({ summary, points = [], url }) => {
-  const cleanSummary = trimText(summary, 500);
-  const cleanPoints = Array.isArray(points)
-    ? points
-        .map((point) => trimText(point, 140))
-        .filter(Boolean)
-        .slice(0, 3)
-    : [];
-
-  const lines = [];
-  if (cleanSummary) lines.push(cleanSummary);
-  if (cleanPoints.length) {
-    lines.push("");
-    cleanPoints.forEach((point) => lines.push(`- ${point}`));
-  }
-  lines.push("");
-  lines.push(`Read more: ${url}`);
-  lines.push("What do you think?");
-  return lines.join("\n").trim().slice(0, 40000);
-};
+import { publishArticleToMoltbook } from "~/server/utils/articleMoltbook";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -78,17 +48,16 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    const rewriteMeta = asObject(article.rewrite_meta);
-    const existingMoltbook = asObject(rewriteMeta.moltbook);
     const canonicalUrl = article.slug
       ? `${cfg.public.SITE_URL}/articles/${article.slug}`
       : null;
     const resolvedTitle = String(title || article.title || "").trim();
+    const publishSummary = String(summary || "").trim();
     const resolvedSummary =
-      trimText(summary, 500) ||
-      trimText(rewriteMeta.summary, 500) ||
-      trimText(article.newsmesh_meta?.summary, 500) ||
-      trimText(article.newsmesh_meta?.description, 500);
+      publishSummary ||
+      String(article?.rewrite_meta?.summary || "").trim() ||
+      String(article?.newsmesh_meta?.summary || "").trim() ||
+      String(article?.newsmesh_meta?.description || "").trim();
 
     // 3) Insert or upsert thread
     const bot_context = {
@@ -122,90 +91,27 @@ export default defineEventHandler(async (event) => {
       return { success: false, error: tErr.message };
     }
 
-    const moltbook = {
-      attempted: false,
-      posted: false,
-      skipped: false,
-      reason: null,
-      postId: existingMoltbook.post_id || null,
-    };
-
-    const shouldAutopost =
-      String(cfg.MOLTBOOK_ARTICLE_AUTOPUBLISH || "").toLowerCase() === "true";
-
-    if (!shouldAutopost) {
-      moltbook.skipped = true;
-      moltbook.reason = "disabled";
-    } else if (!canonicalUrl) {
-      moltbook.skipped = true;
-      moltbook.reason = "missing_slug";
-    } else if (existingMoltbook.post_id) {
-      moltbook.skipped = true;
-      moltbook.reason = "already_posted";
-    } else {
-      moltbook.attempted = true;
-      try {
-        const agentName = String(
-          cfg.MOLTBOOK_ARTICLE_AGENT_NAME || "imchatty"
-        ).trim();
-        const submoltName = String(
-          cfg.MOLTBOOK_ARTICLE_SUBMOLT || "general"
-        ).trim();
-
-        const postResponse = await createMoltbookPost({
-          event,
-          personaKey: agentName,
-          agentName,
-          payload: {
-            submolt_name: submoltName,
-            title: resolvedTitle,
-            url: canonicalUrl,
-            type: "link",
-            content: buildMoltbookArticleContent({
-              summary: resolvedSummary,
-              points,
-              url: canonicalUrl,
-            }),
-          },
-        });
-
-        const postId =
-          postResponse?.post?.id ||
-          postResponse?.data?.id ||
-          postResponse?.data?.post_id ||
-          null;
-
-        const nextRewriteMeta = {
-          ...rewriteMeta,
-          moltbook: {
-            post_id: postId,
-            posted_at: new Date().toISOString(),
-            submolt_name: submoltName,
-            url: canonicalUrl,
-            title: resolvedTitle,
-            agent_name: agentName,
-          },
-        };
-
-        const { error: articleUpdateError } = await supa
-          .from("articles")
-          .update({ rewrite_meta: nextRewriteMeta })
-          .eq("id", article.id);
-
-        if (articleUpdateError) {
-          console.error(
-            "[publish] article rewrite_meta Moltbook update error:",
-            articleUpdateError
-          );
-        }
-
-        moltbook.posted = true;
-        moltbook.postId = postId;
-      } catch (moltbookError) {
-        console.error("[publish] Moltbook autopost failed:", moltbookError);
-        moltbook.reason =
-          moltbookError?.statusMessage || moltbookError?.message || "post_failed";
-      }
+    let moltbook = null;
+    try {
+      const moltbookResult = await publishArticleToMoltbook({
+        event,
+        supabase: supa,
+        article,
+        title: resolvedTitle,
+        summary: publishSummary,
+        points,
+      });
+      moltbook = moltbookResult.moltbook;
+    } catch (moltbookError) {
+      console.error("[publish] Moltbook autopost failed:", moltbookError);
+      moltbook = {
+        attempted: true,
+        posted: false,
+        skipped: false,
+        reason:
+          moltbookError?.statusMessage || moltbookError?.message || "post_failed",
+        postId: null,
+      };
     }
 
     return { success: true, threadId: thread.id, moltbook };

@@ -158,6 +158,17 @@
             >
               Translate
             </v-btn>
+            <v-btn
+              color="deep-orange-darken-1"
+              variant="outlined"
+              size="small"
+              class="ml-2"
+              :disabled="!selectedArticle.id"
+              :loading="moltbookLoading"
+              @click="postSelectedArticleToMoltbook"
+            >
+              {{ selectedArticleMoltbookButtonLabel }}
+            </v-btn>
           </div>
           <v-row>
             <v-col cols="12" md="6">
@@ -365,7 +376,7 @@
 import { useI18n } from "vue-i18n";
 const { t, locale } = useI18n();
 import { useDisplay } from "vuetify";
-import { nextTick, watch } from "vue";
+import { nextTick, onBeforeUnmount, watch } from "vue";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 const {
   getAllArticlesWithTags,
@@ -429,11 +440,77 @@ const translationOptions = computed(() => {
 });
 const translationDialog = ref(false);
 const translationLoading = ref(false);
+const moltbookLoading = ref(false);
+const translationJob = ref(null);
+let translationPollTimer = null;
 const translationForm = ref({
   locales: [],
   translateAll: false,
   overwrite: false,
 });
+const selectedArticleMoltbookPostId = computed(
+  () => selectedArticle.value?.rewrite_meta?.moltbook?.post_id || ""
+);
+const selectedArticleMoltbookButtonLabel = computed(() =>
+  selectedArticleMoltbookPostId.value ? "Repost to Moltbook" : "Post to Moltbook"
+);
+
+const stopTranslationPolling = () => {
+  if (translationPollTimer) {
+    clearInterval(translationPollTimer);
+    translationPollTimer = null;
+  }
+};
+
+const applyTranslationJob = (job) => {
+  translationJob.value = job || null;
+  if (!job) return;
+
+  if (job.status === "completed") {
+    stopTranslationPolling();
+    translationLoading.value = false;
+    const parts = [];
+    if (job.translated?.length) parts.push(`Translated: ${job.translated.join(", ")}`);
+    if (job.skipped?.length) parts.push(`Skipped: ${job.skipped.join(", ")}`);
+    snackbar.value = {
+      show: true,
+      message: parts.length ? parts.join(" · ") : "Translation complete.",
+    };
+    translationDialog.value = false;
+  } else if (job.status === "failed") {
+    stopTranslationPolling();
+    translationLoading.value = false;
+    snackbar.value = {
+      show: true,
+      message: job.error || "Failed to translate article.",
+    };
+  }
+};
+
+const pollTranslationJob = async (jobId) => {
+  if (!jobId) return;
+  try {
+    const response = await $fetch("/api/admin/articles/translate-status", {
+      query: {
+        jobId,
+        articleId: selectedArticle.value?.id || "",
+      },
+    });
+    if (response?.success) {
+      applyTranslationJob(response.job || null);
+    }
+  } catch (error) {
+    console.error("[admin] translation status", error);
+  }
+};
+
+const startTranslationPolling = (jobId) => {
+  stopTranslationPolling();
+  pollTranslationJob(jobId);
+  translationPollTimer = setInterval(() => {
+    pollTranslationJob(jobId);
+  }, 2000);
+};
 
 
 const publishToChat = async (article) => {
@@ -512,6 +589,7 @@ const runTranslation = async () => {
         sourceLocale:
           selectedArticle.value.original_language_code || "en",
         overwrite: translationForm.value.overwrite,
+        background: true,
       },
     });
 
@@ -519,17 +597,18 @@ const runTranslation = async () => {
       throw new Error(response?.error || "Translation failed.");
     }
 
-    const translated = response?.translated || [];
-    const skipped = response?.skipped || [];
-    const parts = [];
-    if (translated.length) parts.push(`Translated: ${translated.join(", ")}`);
-    if (skipped.length) parts.push(`Skipped: ${skipped.join(", ")}`);
+    translationJob.value = response?.job || null;
     snackbar.value = {
       show: true,
-      message: parts.length ? parts.join(" · ") : "Translation complete.",
+      message: "Translation job started.",
     };
-    translationDialog.value = false;
+    if (response?.job?.id) {
+      startTranslationPolling(response.job.id);
+    } else {
+      translationLoading.value = false;
+    }
   } catch (err) {
+    stopTranslationPolling();
     console.error("[admin] translate article", err);
     snackbar.value = {
       show: true,
@@ -537,6 +616,50 @@ const runTranslation = async () => {
     };
   } finally {
     translationLoading.value = false;
+  }
+};
+
+const postSelectedArticleToMoltbook = async () => {
+  if (!selectedArticle.value?.id) return;
+  moltbookLoading.value = true;
+  try {
+    const force = Boolean(selectedArticleMoltbookPostId.value);
+    const response = await $fetch("/api/admin/articles/moltbook", {
+      method: "POST",
+      body: {
+        articleId: selectedArticle.value.id,
+        force,
+      },
+    });
+
+    if (!response?.success) {
+      throw new Error(response?.error || "Moltbook publish failed.");
+    }
+
+    if (response?.rewrite_meta) {
+      selectedArticle.value.rewrite_meta = response.rewrite_meta;
+    }
+
+    const note = response?.moltbook?.posted
+      ? force
+        ? "Article reposted to Moltbook."
+        : "Article posted to Moltbook."
+      : response?.moltbook?.reason === "already_posted"
+      ? "Article already has a Moltbook post."
+      : `Moltbook skipped: ${response?.moltbook?.reason || "unknown"}`;
+
+    snackbar.value = {
+      show: true,
+      message: note,
+    };
+  } catch (error) {
+    console.error("[admin] article moltbook post", error);
+    snackbar.value = {
+      show: true,
+      message: error?.message || "Failed to post article to Moltbook.",
+    };
+  } finally {
+    moltbookLoading.value = false;
   }
 };
 
@@ -651,6 +774,10 @@ onMounted(async () => {
 
 
   loadingArticles.value = false;
+});
+
+onBeforeUnmount(() => {
+  stopTranslationPolling();
 });
 
 const filteredArticles = computed(() => {
