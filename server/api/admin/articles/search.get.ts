@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
           slug,
           is_published,
           created_at,
+          category:category_id(id, name, slug),
           article_tags(tag:tag_id(id, name, slug)),
           article_people(person:person_id(id, name, slug))
         `
@@ -37,6 +38,7 @@ export default defineEventHandler(async (event) => {
       slug: article.slug,
       is_published: article.is_published,
       created_at: article.created_at,
+      category: article.category || null,
       tags: Array.isArray(article.article_tags)
         ? article.article_tags.map((row: any) => row.tag).filter(Boolean)
         : [],

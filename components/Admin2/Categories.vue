@@ -116,42 +116,77 @@
   </v-card>
 
   <v-card class="pa-6 mt-5" elevation="3">
-    <v-card-title>Assign Categories to Articles</v-card-title>
+    <v-card-title>Edit Article Category</v-card-title>
     <v-card-text>
+      <div class="d-flex flex-wrap ga-3 align-end">
+        <v-text-field
+          v-model="articleSearchQuery"
+          label="Search articles by title"
+          class="article-search-field"
+          hide-details
+          @keydown.enter.prevent="searchArticles"
+        />
+        <v-btn
+          color="primary"
+          :loading="loadingArticleSearch"
+          @click="searchArticles"
+        >
+          Search
+        </v-btn>
+      </div>
+
+      <div class="text-caption text-medium-emphasis mt-2">
+        Search only when you need to edit an article. This avoids loading the full article catalog.
+      </div>
+
       <LoadingContainer
-        v-if="loadingArticles"
-        text="Loading articles..."
+        v-if="loadingArticleSearch"
+        text="Searching articles..."
+        class="mt-4"
       />
-      <template v-else>
-        <v-list lines="two" class="article-list">
-          <v-list-item
-            v-for="article in articles"
-            :key="article.id"
-            class="article-item"
-          >
-            <v-list-item-title class="text-subtitle-1">
-              {{ article.title }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-caption">
-              Current: {{ article.category?.name || 'Uncategorized' }}
-            </v-list-item-subtitle>
-            <template #append>
-              <v-select
-                :items="categoryOptions"
-                item-title="name"
-                item-value="id"
-                density="compact"
-                hide-details
-                class="category-select"
-                label="Assign Category"
-                :model-value="article.category?.id || null"
-                :loading="updatingArticleId === article.id"
-                @update:model-value="(val) => handleArticleCategoryChange(article.id, val)"
-              />
-            </template>
-          </v-list-item>
-        </v-list>
-      </template>
+
+      <v-table
+        v-else-if="articleSearchResults.length"
+        density="comfortable"
+        class="taxonomy-table mt-4"
+      >
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Current Category</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="article in articleSearchResults" :key="article.id">
+            <td class="font-weight-medium">{{ article.title }}</td>
+            <td>{{ article.is_published ? "Published" : "Draft" }}</td>
+            <td class="text-medium-emphasis">
+              {{ article.category?.name || "Uncategorized" }}
+            </td>
+            <td>
+              <div class="d-flex justify-end">
+                <v-btn
+                  size="small"
+                  variant="tonal"
+                  color="primary"
+                  @click="openArticleCategoryDialog(article)"
+                >
+                  Edit Category
+                </v-btn>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
+
+      <div
+        v-else-if="hasSearchedArticles"
+        class="text-medium-emphasis mt-4"
+      >
+        No articles found.
+      </div>
     </v-card-text>
   </v-card>
 
@@ -238,14 +273,44 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog v-model="articleCategoryDialog" max-width="620px">
+    <v-card>
+      <v-card-title>Edit Article Category</v-card-title>
+      <v-card-text>
+        <div class="text-subtitle-1 font-weight-medium mb-2">
+          {{ selectedArticle?.title || "Article" }}
+        </div>
+        <v-select
+          v-model="selectedArticleCategoryId"
+          :items="categoryOptions"
+          item-title="name"
+          item-value="id"
+          label="Category"
+          clearable
+          :loading="savingArticleCategory"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn @click="closeArticleCategoryDialog">Cancel</v-btn>
+        <v-btn
+          color="primary"
+          :loading="savingArticleCategory"
+          @click="saveArticleCategory"
+        >
+          Save
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
-import { buildTaxonomyPath, normalizeTaxonomySlug } from "@/utils/taxonomySlug";
+import { buildTaxonomyPath, normalizeTaxonomySlug, slugifyTaxonomyName } from "@/utils/taxonomySlug";
 
 const {
   getAllCategories,
-  getAllArticlesWithTags,
   getTaxonomyCounts,
   insertCategory,
   updateCategory,
@@ -256,20 +321,25 @@ const {
 const localPath = useLocalePath();
 
 const editDialog = ref(false);
+const articleCategoryDialog = ref(false);
 const selectedCategory = ref({ id: null, name: "", slug: "" });
+const selectedArticle = ref(null);
+const selectedArticleCategoryId = ref(null);
 const editForm = ref(null);
 
 const categories = ref([]);
-const articles = ref([]);
 const loadingCategories = ref(true);
-const loadingArticles = ref(true);
 const loading = ref(false);
 const loadingUpdate = ref(false);
 const loadingDelete = ref(false);
-const updatingArticleId = ref(null);
 const fallbackCategoryId = ref(null);
 const sortMode = ref("alphabetical");
 const categoryCounts = ref({});
+const articleSearchQuery = ref("");
+const articleSearchResults = ref([]);
+const hasSearchedArticles = ref(false);
+const loadingArticleSearch = ref(false);
+const savingArticleCategory = ref(false);
 
 const categoryForm = ref(null); // ref to <v-form>
 const form = useState("categoryForm", () => ({
@@ -288,12 +358,9 @@ onMounted(async () => {
 
 const refreshData = async () => {
   loadingCategories.value = true;
-  loadingArticles.value = true;
   categories.value = (await getAllCategories()) || [];
-  articles.value = (await getAllArticlesWithTags()) || [];
   categoryCounts.value = await getTaxonomyCounts("categories");
   loadingCategories.value = false;
-  loadingArticles.value = false;
 };
 
 const formatName = (name) =>
@@ -301,13 +368,6 @@ const formatName = (name) =>
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-
-const slugify = (text) =>
-  text
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "");
 
 const handleSubmit = async () => {
   loading.value = true;
@@ -328,7 +388,7 @@ const handleSubmit = async () => {
 
   try {
     const formattedName = formatName(form.value.name);
-    const generatedSlug = slugify(form.value.name);
+    const generatedSlug = slugifyTaxonomyName(form.value.name);
 
     // Check for duplicate name or slug
     const duplicate = categories.value.find(
@@ -384,7 +444,7 @@ const handleUpdate = async () => {
 
   const category = {
     name: formatName(selectedCategory.value.name),
-    slug: slugify(selectedCategory.value.name),
+    slug: slugifyTaxonomyName(selectedCategory.value.name),
   };
 
   await updateCategory(selectedCategory.value.slug, category);
@@ -417,17 +477,74 @@ const handleDeleteCategory = async () => {
   loadingDelete.value = false;
 };
 
-const handleArticleCategoryChange = async (articleId, categoryId) => {
-  if (!categoryId || !articleId) return;
-  updatingArticleId.value = articleId;
-  const { error } = await updateArticleCategory(articleId, categoryId);
-  if (error) {
-    snackbar.value.message = "Failed to update article category.";
+const searchArticles = async () => {
+  loadingArticleSearch.value = true;
+  hasSearchedArticles.value = true;
+  try {
+    const response = await $fetch("/api/admin/articles/search", {
+      method: "GET",
+      query: {
+        q: articleSearchQuery.value,
+        limit: 20,
+      },
+    });
+    if (!response?.success) {
+      throw new Error(response?.error || "Unable to search articles.");
+    }
+    articleSearchResults.value = response.articles || [];
+  } catch (error) {
+    console.error("Error searching articles:", error);
+    snackbar.value.message = "Failed to search articles.";
     snackbar.value.show = true;
-  } else {
-    articles.value = (await getAllArticlesWithTags()) || [];
+  } finally {
+    loadingArticleSearch.value = false;
   }
-  updatingArticleId.value = null;
+};
+
+const openArticleCategoryDialog = (article) => {
+  if (!article?.id) return;
+  selectedArticle.value = article;
+  selectedArticleCategoryId.value = article.category?.id || null;
+  articleCategoryDialog.value = true;
+};
+
+const closeArticleCategoryDialog = () => {
+  articleCategoryDialog.value = false;
+  selectedArticle.value = null;
+  selectedArticleCategoryId.value = null;
+};
+
+const saveArticleCategory = async () => {
+  if (!selectedArticle.value?.id) return;
+  savingArticleCategory.value = true;
+  try {
+    const { error } = await updateArticleCategory(
+      selectedArticle.value.id,
+      selectedArticleCategoryId.value || null
+    );
+    if (error) {
+      throw error;
+    }
+
+    const nextCategory =
+      categoryOptions.value.find(
+        (category) => category.id === selectedArticleCategoryId.value
+      ) || null;
+
+    articleSearchResults.value = articleSearchResults.value.map((article) =>
+      article.id === selectedArticle.value.id
+        ? { ...article, category: nextCategory }
+        : article
+    );
+    categoryCounts.value = await getTaxonomyCounts("categories");
+    closeArticleCategoryDialog();
+  } catch (error) {
+    console.error("Error saving article category:", error);
+    snackbar.value.message = "Failed to save article category.";
+    snackbar.value.show = true;
+  } finally {
+    savingArticleCategory.value = false;
+  }
 };
 
 const categoryOptions = computed(() => categories.value || []);
@@ -478,16 +595,7 @@ const selectedCategoryRoute = computed(() => {
   vertical-align: middle;
 }
 
-.article-list {
-  max-height: 520px;
-  overflow-y: auto;
-}
-
-.article-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.category-select {
-  min-width: 220px;
+.article-search-field {
+  min-width: 320px;
 }
 </style>
