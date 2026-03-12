@@ -160,7 +160,7 @@
             <NuxtLink
               v-for="tag in article.tags"
               :key="tag?.slug || tag"
-              :to="localPath(`/tags/${formatTagSlug(tag)}`)"
+              :to="tagPath(tag)"
               class="tag-link"
             >
               #{{ tag?.name || tag }}
@@ -201,6 +201,7 @@ import { computed, onMounted, ref, nextTick, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import ProfileDialog from "@/components/ProfileDialog.vue";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
+import { buildTaxonomyPath, normalizeTaxonomySlug } from "@/utils/taxonomySlug";
 
 const localPath = useLocalePath();
 const router = useRouter();
@@ -453,15 +454,10 @@ const formatDate = (isoDate) =>
     day: "numeric",
   });
 
-const formatTagSlug = (tag) => {
-  const value = tag?.slug || tag;
-  if (typeof value !== "string") return "";
-
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-_]/g, "");
+const tagPath = (tag) => {
+  const raw = typeof tag === "string" ? tag : tag?.slug || tag?.name || "";
+  const slug = normalizeTaxonomySlug(raw);
+  return slug ? localPath(buildTaxonomyPath("/tags", slug)) : localPath("/tags");
 };
 
 const formatCount = (value) => {

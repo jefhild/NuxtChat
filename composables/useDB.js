@@ -1006,6 +1006,27 @@ export const useDb = () => {
     return data;
   };
 
+  const getTaxonomyCounts = async (kind, options = {}) => {
+    try {
+      const response = await $fetch("/api/admin/taxonomy/counts", {
+        method: "GET",
+        query: {
+          kind,
+          publishedOnly: options?.publishedOnly ? "1" : "0",
+        },
+      });
+
+      if (!response?.success) {
+        throw new Error(response?.error || `Unable to load ${kind} counts.`);
+      }
+
+      return response?.counts || {};
+    } catch (error) {
+      console.error(`Error fetching ${kind} counts:`, error?.message || error);
+      return {};
+    }
+  };
+
   const normalizeArticleTags = (articleTags) =>
     (articleTags || [])
       .map(({ tag }) =>
@@ -1014,6 +1035,19 @@ export const useDb = () => {
               id: tag.id,
               name: tag.name,
               slug: tag.slug,
+            }
+          : null
+      )
+      .filter(Boolean);
+
+  const normalizeArticlePeople = (articlePeople) =>
+    (articlePeople || [])
+      .map(({ person }) =>
+        person
+          ? {
+              id: person.id,
+              name: person.name,
+              slug: person.slug,
             }
           : null
       )
@@ -1085,7 +1119,8 @@ export const useDb = () => {
       newsmesh_meta,
       article_translations(locale, headline, summary, body, references_jsonb, social),
       category:category_id ( id, name, slug ),
-      article_tags(tag:tag_id(id, name, slug))
+      article_tags(tag:tag_id(id, name, slug)),
+      article_people(person:person_id(id, name, slug))
     `
       )
       .order("created_at", { ascending: false });
@@ -1100,6 +1135,7 @@ export const useDb = () => {
       ...article,
       category_name: article.category?.name ?? "Uncategorized",
       tags: normalizeArticleTags(article.article_tags),
+      people: normalizeArticlePeople(article.article_people),
     }));
   };
 
@@ -1334,6 +1370,22 @@ export const useDb = () => {
 
     if (error) {
       console.error("Error fetching article count by category:", error);
+      return 0;
+    }
+
+    return count || 0;
+  };
+
+  const getCountArticleByPerson = async (personId) => {
+    const supabase = getClient();
+
+    const { error, count } = await supabase
+      .from("article_people")
+      .select("*", { count: "exact", head: true })
+      .eq("person_id", personId);
+
+    if (error) {
+      console.error("Error fetching article count for person:", error.message);
       return 0;
     }
 
@@ -1941,6 +1993,16 @@ export const useDb = () => {
     }
   };
 
+  const updatePerson = async (slug, data) => {
+    const supabase = getClient();
+
+    const { error } = await supabase.from("people").update(data).eq("slug", slug);
+
+    if (error && error.status !== 204) {
+      console.error("Error udpating person:", error);
+    }
+  };
+
   const updateArticle = async (id, payload) => {
     const supabase = getClient();
 
@@ -1992,6 +2054,26 @@ export const useDb = () => {
       }
     } catch (error) {
       console.error("Error updating article tags:", error);
+    }
+  };
+
+  const updateArticlePeople = async (articleId, personIdsOrPayload) => {
+    try {
+      const payload = Array.isArray(personIdsOrPayload)
+        ? { personIds: personIdsOrPayload || [] }
+        : {
+            personIds: personIdsOrPayload?.personIds || [],
+            personNames: personIdsOrPayload?.personNames || [],
+          };
+      const response = await $fetch("/api/admin/articles/people", {
+        method: "POST",
+        body: { articleId, ...payload },
+      });
+      if (!response?.success) {
+        throw new Error(response?.error || "Unable to update article people.");
+      }
+    } catch (error) {
+      console.error("Error updating article people:", error);
     }
   };
 
@@ -2425,6 +2507,104 @@ export const useDb = () => {
     return { error: null };
   };
 
+  const deleteTag = async (tagId) => {
+    const supabase = getClient();
+
+    if (!tagId) {
+      return { error: new Error("Tag is required") };
+    }
+
+    const { error } = await supabase.from("tags").delete().eq("id", tagId);
+
+    if (error) {
+      console.error("Error deleting tag:", error);
+      return { error };
+    }
+
+    return { error: null };
+  };
+
+  const deleteTagAndReassign = async (tagId, fallbackTagId) => {
+    const supabase = getClient();
+
+    if (!tagId || !fallbackTagId) {
+      return { error: new Error("Tag and fallback are required") };
+    }
+    if (tagId === fallbackTagId) {
+      return { error: new Error("Fallback tag must be different") };
+    }
+
+    const { data: sourceRows, error: sourceError } = await supabase
+      .from("article_tags")
+      .select("article_id")
+      .eq("tag_id", tagId);
+
+    if (sourceError) {
+      console.error("Error fetching source tag articles:", sourceError);
+      return { error: sourceError };
+    }
+
+    const articleIds = Array.from(
+      new Set((sourceRows || []).map((row) => row.article_id).filter(Boolean))
+    );
+
+    if (articleIds.length) {
+      const { data: fallbackRows, error: fallbackError } = await supabase
+        .from("article_tags")
+        .select("article_id")
+        .eq("tag_id", fallbackTagId)
+        .in("article_id", articleIds);
+
+      if (fallbackError) {
+        console.error("Error fetching fallback tag articles:", fallbackError);
+        return { error: fallbackError };
+      }
+
+      const fallbackSet = new Set(
+        (fallbackRows || []).map((row) => row.article_id).filter(Boolean)
+      );
+      const rowsToInsert = articleIds
+        .filter((articleId) => !fallbackSet.has(articleId))
+        .map((articleId) => ({
+          article_id: articleId,
+          tag_id: fallbackTagId,
+        }));
+
+      if (rowsToInsert.length) {
+        const { error: insertError } = await supabase
+          .from("article_tags")
+          .insert(rowsToInsert);
+
+        if (insertError) {
+          console.error("Error reassigning tag articles:", insertError);
+          return { error: insertError };
+        }
+      }
+    }
+
+    const { error: deleteLinksError } = await supabase
+      .from("article_tags")
+      .delete()
+      .eq("tag_id", tagId);
+
+    if (deleteLinksError) {
+      console.error("Error deleting old tag links:", deleteLinksError);
+      return { error: deleteLinksError };
+    }
+
+    const { error: deleteTagError } = await supabase
+      .from("tags")
+      .delete()
+      .eq("id", tagId);
+
+    if (deleteTagError) {
+      console.error("Error deleting tag:", deleteTagError);
+      return { error: deleteTagError };
+    }
+
+    return { error: null };
+  };
+
   const insertCategory = async (category) => {
     const supabase = getClient();
 
@@ -2435,6 +2615,20 @@ export const useDb = () => {
 
     if (error) {
       console.error("Error inserting category:", error);
+    }
+    return error;
+  };
+
+  const insertPerson = async (person) => {
+    const supabase = getClient();
+
+    const { error } = await supabase.from("people").insert({
+      name: person.name,
+      slug: person.slug,
+    });
+
+    if (error) {
+      console.error("Error inserting person:", error);
     }
     return error;
   };
@@ -2741,6 +2935,87 @@ export const useDb = () => {
       console.error("Error inserting tag:", error);
     }
     return error;
+  };
+
+  const deletePersonAndReassign = async (personId, fallbackPersonId) => {
+    const supabase = getClient();
+
+    if (!personId || !fallbackPersonId) {
+      return { error: new Error("Person and fallback are required") };
+    }
+    if (personId === fallbackPersonId) {
+      return { error: new Error("Fallback person must be different") };
+    }
+
+    const { data: sourceRows, error: sourceError } = await supabase
+      .from("article_people")
+      .select("article_id")
+      .eq("person_id", personId);
+
+    if (sourceError) {
+      console.error("Error fetching source person articles:", sourceError);
+      return { error: sourceError };
+    }
+
+    const articleIds = Array.from(
+      new Set((sourceRows || []).map((row) => row.article_id).filter(Boolean))
+    );
+
+    if (articleIds.length) {
+      const { data: fallbackRows, error: fallbackError } = await supabase
+        .from("article_people")
+        .select("article_id")
+        .eq("person_id", fallbackPersonId)
+        .in("article_id", articleIds);
+
+      if (fallbackError) {
+        console.error("Error fetching fallback person articles:", fallbackError);
+        return { error: fallbackError };
+      }
+
+      const fallbackSet = new Set(
+        (fallbackRows || []).map((row) => row.article_id).filter(Boolean)
+      );
+      const rowsToInsert = articleIds
+        .filter((articleId) => !fallbackSet.has(articleId))
+        .map((articleId) => ({
+          article_id: articleId,
+          person_id: fallbackPersonId,
+        }));
+
+      if (rowsToInsert.length) {
+        const { error: insertError } = await supabase
+          .from("article_people")
+          .insert(rowsToInsert);
+
+        if (insertError) {
+          console.error("Error reassigning person articles:", insertError);
+          return { error: insertError };
+        }
+      }
+    }
+
+    const { error: deleteLinksError } = await supabase
+      .from("article_people")
+      .delete()
+      .eq("person_id", personId);
+
+    if (deleteLinksError) {
+      console.error("Error deleting old person links:", deleteLinksError);
+      return { error: deleteLinksError };
+    }
+
+    const { error: deletePersonError } = await supabase
+      .from("people")
+      .delete()
+      .eq("id", personId);
+
+    if (deletePersonError) {
+      console.error("Error deleting person:", deletePersonError);
+      return { error: deletePersonError };
+    }
+
+    return { error: null };
   };
 
   const insertReport = async (
@@ -3800,6 +4075,7 @@ const verifyEmailOtp = async (email, token) => {
     getAllTags,
     getAllCategories,
     getAllPeople,
+    getTaxonomyCounts,
     getAllArticlesWithTags,
     getAllPublishedArticlesWithTags,
     getPublishedArticleCards,
@@ -3809,6 +4085,7 @@ const verifyEmailOtp = async (email, token) => {
     getThreadKeyByArticleId,
     getCountArticleByTag,
     getCountArticleByCategory,
+    getCountArticleByPerson,
     getArticlesByTagSlug,
     getArticlesByPersonSlug,
     getTagsByArticle,
@@ -3841,9 +4118,11 @@ const verifyEmailOtp = async (email, token) => {
     updateAvatarDecoration,
     updateCategory,
     updateTag,
+    updatePerson,
     updateArticle,
     updateArticleCategory,
     updateArticleTags,
+    updateArticlePeople,
     updateLastActive,
     updateSoundSetting,
     saveAvatar,
@@ -3865,7 +4144,11 @@ const verifyEmailOtp = async (email, token) => {
     insertArticle,
     insertCategory,
     insertTag,
+    insertPerson,
     deleteCategoryAndReassign,
+    deleteTag,
+    deleteTagAndReassign,
+    deletePersonAndReassign,
     insertReport,
     getFaqGroups,
     getFaqGroupTranslations,

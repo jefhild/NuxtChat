@@ -52,6 +52,8 @@
 </template>
 
 <script setup>
+import { buildTaxonomyPath, normalizeTaxonomySlug } from "@/utils/taxonomySlug";
+
 const props = defineProps({
   title: { type: String, required: true },
   selectedName: { type: String, default: '' },
@@ -94,12 +96,16 @@ const panelBinding = computed({
   },
 })
 
-const linkFor = (slug) =>
-  slug === props.allSlug ? localPath(props.basePath) : localPath(`${props.basePath}/${slug}`)
+const linkFor = (slug) => {
+  if (slug === props.allSlug) return localPath(props.basePath);
+  const normalizedSlug = normalizeTaxonomySlug(slug);
+  if (!normalizedSlug) return localPath(props.basePath);
+  return localPath(buildTaxonomyPath(props.basePath, normalizedSlug));
+};
 
 const isActive = (slug) =>
-  props.activeSlugs.includes(slug) ||
-  props.selectedSlug === slug ||
+  props.activeSlugs.includes(normalizeTaxonomySlug(slug)) ||
+  props.selectedSlug === normalizeTaxonomySlug(slug) ||
   (!props.selectedSlug && slug === props.allSlug)
 
 const navigate = (slug) => {

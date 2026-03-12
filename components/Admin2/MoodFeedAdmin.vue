@@ -18,7 +18,24 @@
           hide-details
           class="tone-select"
         />
-        <v-btn color="primary" @click="saveDefaultTone">Save</v-btn>
+        <v-btn color="primary" :loading="settingsSaving" @click="saveSettings">
+          Save
+        </v-btn>
+      </div>
+
+      <v-textarea
+        v-model="refinePromptTemplate"
+        class="mt-4"
+        label="Refine prompt"
+        auto-grow
+        rows="8"
+        hint="Used by the AI rewrite step after a user answers a mood prompt. You can use {{locale}} and {{tone}} tokens."
+        persistent-hint
+      />
+
+      <div class="text-caption text-medium-emphasis mt-2">
+        This controls how user answers are rewritten before they are saved to
+        the mood feed.
       </div>
     </v-card>
 
@@ -279,8 +296,10 @@ const { locale } = useI18n();
 
 const prompts = ref([]);
 const defaultTone = ref("funny");
+const refinePromptTemplate = ref("");
 const isLoading = ref(true);
 const saving = ref(false);
+const settingsSaving = ref(false);
 const moderationLoading = ref(true);
 const pendingEntries = ref([]);
 const pendingReplies = ref([]);
@@ -326,6 +345,7 @@ const loadSettings = async () => {
   try {
     const res = await $fetch("/api/admin/mood-feed/settings");
     defaultTone.value = res?.item?.default_tone || "funny";
+    refinePromptTemplate.value = res?.item?.refine_prompt_template || "";
   } catch (error) {
     console.error("[admin][mood-feed] settings load error", error);
   }
@@ -512,15 +532,23 @@ const deletePrompt = async (prompt) => {
   }
 };
 
-const saveDefaultTone = async () => {
+const saveSettings = async () => {
+  settingsSaving.value = true;
   try {
     const res = await $fetch("/api/admin/mood-feed/settings", {
       method: "PATCH",
-      body: { default_tone: defaultTone.value },
+      body: {
+        default_tone: defaultTone.value,
+        refine_prompt_template: refinePromptTemplate.value,
+      },
     });
     defaultTone.value = res?.item?.default_tone || defaultTone.value;
+    refinePromptTemplate.value =
+      res?.item?.refine_prompt_template || refinePromptTemplate.value;
   } catch (error) {
     console.error("[admin][mood-feed] settings save error", error);
+  } finally {
+    settingsSaving.value = false;
   }
 };
 </script>

@@ -183,11 +183,11 @@
               color="indigo"
               variant="tonal"
               :to="
-                displayCategory.slug
-                  ? localPath(`/categories/${displayCategory.slug}`)
+                normalizeTaxonomySlug(displayCategory.slug)
+                  ? localPath(buildTaxonomyPath('/categories', displayCategory.slug))
                   : undefined
               "
-              :class="{ 'chip-link': displayCategory.slug }"
+              :class="{ 'chip-link': normalizeTaxonomySlug(displayCategory.slug) }"
             >
               Category: {{ displayCategory.name }}
             </v-chip>
@@ -197,8 +197,12 @@
               size="small"
               color="deep-purple"
               variant="tonal"
-              :to="tag.slug ? localPath(`/tags/${tag.slug}`) : undefined"
-              :class="{ 'chip-link': tag.slug }"
+              :to="
+                normalizeTaxonomySlug(tag.slug)
+                  ? localPath(buildTaxonomyPath('/tags', tag.slug))
+                  : undefined
+              "
+              :class="{ 'chip-link': normalizeTaxonomySlug(tag.slug) }"
             >
               #{{ tag.name }}
             </v-chip>
@@ -207,8 +211,8 @@
               :key="`person-${person.slug || person.name}`"
             >
               <NuxtLink
-                v-if="person.slug"
-                :to="localPath(`/people/${person.slug}`)"
+                v-if="normalizeTaxonomySlug(person.slug)"
+                :to="localPath(buildTaxonomyPath('/people', person.slug))"
                 class="unstyled-link"
               >
                 <v-chip
@@ -359,6 +363,7 @@ import ProfileDialog from "@/components/ProfileDialog.vue";
 import { nextTick } from "vue";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 import { loadInstagramEmbeds } from "@/composables/useInstagramEmbeds.js";
+import { buildTaxonomyPath, normalizeTaxonomySlug } from "@/utils/taxonomySlug";
 const { locale } = useI18n();
 const localPath = useLocalePath();
 const switchLocalePath = useSwitchLocalePath();

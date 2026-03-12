@@ -6,6 +6,16 @@
         {{ categories.length }}/10
       </v-chip>
       <v-spacer></v-spacer>
+      <v-select
+        v-model="sortMode"
+        :items="sortOptions"
+        item-title="label"
+        item-value="value"
+        density="compact"
+        hide-details
+        label="Sort"
+        class="taxonomy-sort-select mr-2"
+      />
       <v-btn
         size="small"
         variant="text"
@@ -20,26 +30,56 @@
         v-if="loadingCategories"
         :text="$t('pages.categories.index.loading')"
       />
-      <div v-else class="d-flex flex-wrap ga-2">
-        <v-chip
-          v-for="cat in categories"
-          :key="cat.slug"
-          class="ma-1"
-          color="primary"
-          variant="outlined"
-          @click="toggleEditDialog(cat)">
-          {{ cat.name }}
-          <v-chip
-            v-if="categoryArticleCount[cat.id]"
-            size="x-small"
-            class="ml-2"
-            color="primary"
-            variant="tonal"
-          >
-            {{ categoryArticleCount[cat.id] }}
-          </v-chip>
-        </v-chip>
-      </div>
+      <v-table v-else density="comfortable" class="taxonomy-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th class="text-right">Articles</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="category in sortedCategories" :key="category.id || category.slug">
+            <td class="font-weight-medium">{{ category.name }}</td>
+            <td class="text-medium-emphasis">{{ category.slug || "-" }}</td>
+            <td class="text-right">{{ categoryArticleCount[category.id] || 0 }}</td>
+            <td>
+              <div class="d-flex justify-end ga-2">
+                <v-btn
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  :to="categoryRoute(category) || undefined"
+                  :disabled="!categoryRoute(category)"
+                >
+                  View
+                </v-btn>
+                <v-btn
+                  size="small"
+                  variant="tonal"
+                  color="primary"
+                  @click="openEditDialog(category)"
+                >
+                  Edit
+                </v-btn>
+                <v-btn
+                  icon="mdi-trash-can-outline"
+                  size="small"
+                  variant="text"
+                  color="red"
+                  @click="openEditDialog(category)"
+                />
+              </div>
+            </td>
+          </tr>
+          <tr v-if="!sortedCategories.length">
+            <td colspan="4" class="text-center text-medium-emphasis py-6">
+              No categories found.
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
     </v-card-text>
   </v-card>
 
@@ -174,9 +214,9 @@
       </v-card-text>
       <v-card-actions>
         <v-btn
-          :disabled="loadingUpdate"
+          :disabled="loadingUpdate || !selectedCategoryRoute"
           color="primary"
-          :to="`/categories/${selectedCategory.slug}`"
+          :to="selectedCategoryRoute || undefined"
           align-content-start
         >
           Go to Category Page
@@ -192,7 +232,7 @@
         <v-btn
           color="red"
           :disabled="loadingUpdate"
-          @click="toggleEditDialog(null)"
+          @click="closeEditDialog"
           >Cancel</v-btn
         >
       </v-card-actions>
@@ -201,14 +241,19 @@
 </template>
 
 <script setup>
+import { buildTaxonomyPath, normalizeTaxonomySlug } from "@/utils/taxonomySlug";
+
 const {
   getAllCategories,
   getAllArticlesWithTags,
+  getTaxonomyCounts,
   insertCategory,
   updateCategory,
   updateArticleCategory,
   deleteCategoryAndReassign,
 } = useDb();
+
+const localPath = useLocalePath();
 
 const editDialog = ref(false);
 const selectedCategory = ref({ id: null, name: "", slug: "" });
@@ -223,6 +268,8 @@ const loadingUpdate = ref(false);
 const loadingDelete = ref(false);
 const updatingArticleId = ref(null);
 const fallbackCategoryId = ref(null);
+const sortMode = ref("alphabetical");
+const categoryCounts = ref({});
 
 const categoryForm = ref(null); // ref to <v-form>
 const form = useState("categoryForm", () => ({
@@ -244,6 +291,7 @@ const refreshData = async () => {
   loadingArticles.value = true;
   categories.value = (await getAllCategories()) || [];
   articles.value = (await getAllArticlesWithTags()) || [];
+  categoryCounts.value = await getTaxonomyCounts("categories");
   loadingCategories.value = false;
   loadingArticles.value = false;
 };
@@ -317,10 +365,16 @@ const handleSubmit = async () => {
   }
 };
 
-const toggleEditDialog = (category) => {
-  selectedCategory.value = { ...category };
+const openEditDialog = (category) => {
+  selectedCategory.value = { ...(category || { id: null, name: "", slug: "" }) };
   fallbackCategoryId.value = null;
-  editDialog.value = !editDialog.value;
+  editDialog.value = true;
+};
+
+const closeEditDialog = () => {
+  editDialog.value = false;
+  selectedCategory.value = { id: null, name: "", slug: "" };
+  fallbackCategoryId.value = null;
 };
 
 const handleUpdate = async () => {
@@ -336,7 +390,7 @@ const handleUpdate = async () => {
   await updateCategory(selectedCategory.value.slug, category);
 
   await refreshData();
-  toggleEditDialog(null);
+  closeEditDialog();
   loadingUpdate.value = false;
 };
 
@@ -358,7 +412,7 @@ const handleDeleteCategory = async () => {
     snackbar.value.show = true;
   } else {
     await refreshData();
-    toggleEditDialog(null);
+    closeEditDialog();
   }
   loadingDelete.value = false;
 };
@@ -377,21 +431,53 @@ const handleArticleCategoryChange = async (articleId, categoryId) => {
 };
 
 const categoryOptions = computed(() => categories.value || []);
+const sortOptions = [
+  { label: "Alphabetical", value: "alphabetical" },
+  { label: "Article Count", value: "article-count" },
+];
 const fallbackOptions = computed(() =>
   (categories.value || []).filter((c) => c.id !== selectedCategory.value.id)
 );
-const categoryArticleCount = computed(() => {
-  const counts = {};
-  (articles.value || []).forEach((article) => {
-    const id = article.category?.id;
-    if (!id) return;
-    counts[id] = (counts[id] || 0) + 1;
-  });
-  return counts;
+const categoryArticleCount = computed(() => categoryCounts.value || {});
+const sortedCategories = computed(() => {
+  const items = [...(categories.value || [])];
+  if (sortMode.value === "article-count") {
+    return items.sort((a, b) => {
+      const countDiff =
+        (categoryArticleCount.value[b.id] || 0) - (categoryArticleCount.value[a.id] || 0);
+      if (countDiff !== 0) return countDiff;
+      return String(a.name || "").localeCompare(String(b.name || ""));
+    });
+  }
+
+  return items.sort((a, b) =>
+    String(a.name || "").localeCompare(String(b.name || ""))
+  );
+});
+
+const categoryRoute = (category) => {
+  const slug = normalizeTaxonomySlug(category?.slug || category?.name);
+  return slug ? localPath(buildTaxonomyPath("/categories", slug)) : "";
+};
+
+const selectedCategoryRoute = computed(() => {
+  const slug = normalizeTaxonomySlug(
+    selectedCategory.value?.slug || selectedCategory.value?.name
+  );
+  return slug ? localPath(buildTaxonomyPath("/categories", slug)) : "";
 });
 </script>
 
 <style scoped>
+.taxonomy-sort-select {
+  max-width: 190px;
+}
+
+.taxonomy-table :deep(th),
+.taxonomy-table :deep(td) {
+  vertical-align: middle;
+}
+
 .article-list {
   max-height: 520px;
   overflow-y: auto;

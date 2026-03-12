@@ -53,6 +53,7 @@ import AdminDashboard from "~/components/Admin2/Dashboard.vue";
 import AdminArticles from "~/components/Admin2/Articles1.vue";
 import AdminCategories from "~/components/Admin2/Categories.vue";
 import AdminTags from "~/components/Admin2/Tags.vue";
+import AdminPeople from "~/components/Admin2/People.vue";
 import AdminReports from "~/components/Admin2/Reports.vue";
 import AdminAiBots from "~/components/Admin2/AiBots.vue";
 import AdminNewsSource from "~/components/Admin2/NewsSource.vue";
@@ -95,6 +96,11 @@ const items = computed(() => [
     value: "categories",
   },
   { text: t("pages.admin.sections.tags"), icon: "mdi-tag", value: "tags" },
+  {
+    text: "People",
+    icon: "mdi-account-multiple",
+    value: "people",
+  },
   {
     text: t("pages.admin.sections.reports"),
     icon: "mdi-alert-octagon",
@@ -171,6 +177,8 @@ const getSectionComponent = (section) => {
       return AdminCategories;
     case "tags":
       return AdminTags;
+    case "people":
+      return AdminPeople;
     case "reports":
       return AdminReports;
     case "aiBots":

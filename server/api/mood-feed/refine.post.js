@@ -1,6 +1,11 @@
 import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import { serverSupabaseUser } from "#supabase/server";
-import { getServiceRoleClient } from "~/server/utils/aiBots";
+import {
+  DEFAULT_MOOD_FEED_REFINE_PROMPT,
+  DEFAULT_MOOD_FEED_TONE,
+  fillMoodFeedRefinePromptTemplate,
+  loadMoodFeedSettings,
+} from "~/server/utils/moodFeedSettings";
 
 const normalizeLocale = (value) => {
   const code = String(value || "").trim().toLowerCase();
@@ -21,27 +26,32 @@ export default defineEventHandler(async (event) => {
   const response = String(body.response || "").trim();
   const locale = normalizeLocale(body.locale || "en");
   let tone = String(body.tone || "").trim().toLowerCase();
+  let refinePromptTemplate = "";
 
   if (!response) {
     throw createError({ statusCode: 400, statusMessage: "Response required" });
   }
 
-  if (!tone) {
+  if (!tone || !refinePromptTemplate) {
     try {
-      const supabase = await getServiceRoleClient(event);
-      const { data } = await supabase
-        .from("mood_feed_settings")
-        .select("default_tone")
-        .eq("id", 1)
-        .maybeSingle();
-      if (data?.default_tone) {
-        tone = String(data.default_tone).trim().toLowerCase();
+      const settings = await loadMoodFeedSettings(event);
+      if (!tone) {
+        tone = String(settings?.default_tone || "").trim().toLowerCase();
+      }
+      if (!refinePromptTemplate) {
+        refinePromptTemplate = settings?.refine_prompt_template || "";
       }
     } catch (err) {
-      console.warn("[mood-feed.refine] tone lookup failed:", err?.message || err);
+      console.warn(
+        "[mood-feed.refine] settings lookup failed:",
+        err?.message || err
+      );
     }
   }
-  if (!tone) tone = "funny";
+  if (!tone) tone = DEFAULT_MOOD_FEED_TONE;
+  if (!refinePromptTemplate) {
+    refinePromptTemplate = DEFAULT_MOOD_FEED_REFINE_PROMPT;
+  }
 
   const config = useRuntimeConfig(event);
   const { client: openai, apiKey, model } = getOpenAIClient({
@@ -52,19 +62,11 @@ export default defineEventHandler(async (event) => {
     return { refined: response.slice(0, 140), tone };
   }
 
-  const sys = [
-    "Rewrite the user's response into a very short, direct, interesting mood phrase.",
-    "Preserve the core meaning and target; do not soften or change intent.",
-    "Avoid cutesy metaphors, puns, or playful framing unless the tone explicitly calls for it.",
-    "It must clearly answer the prompt but should not repeat the user's words.",
-    "4-10 words max. Plain text only.",
-    "Sound human and natural. Avoid AI-ish phrasing, formulaic patterns, or over-clever slogans.",
-    "Prefer simple, specific, conversational wording over abstract or ornate phrasing.",
-    "Avoid quotes, hashtags, emojis, and punctuation spam.",
-    "If tone is 'serious', be blunt, plain, and literal (no jokes or whimsy).",
-    `Language: ${locale}.`,
-    `Tone: ${tone}.`,
-  ].join("\n");
+  const sys = fillMoodFeedRefinePromptTemplate({
+    template: refinePromptTemplate,
+    locale,
+    tone,
+  });
 
   const userPrompt = [
     prompt ? `Prompt: ${prompt}` : "",
