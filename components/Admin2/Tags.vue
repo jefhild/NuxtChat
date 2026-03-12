@@ -31,7 +31,14 @@
         </thead>
         <tbody>
           <tr v-for="tag in sortedTags" :key="tag.id || tag.slug">
-            <td class="font-weight-medium">{{ tag.name }}</td>
+            <td class="font-weight-medium">
+              <NuxtLink
+                :to="tagRoute(tag) || undefined"
+                class="taxonomy-name-link"
+              >
+                {{ tag.name }}
+              </NuxtLink>
+            </td>
             <td class="text-medium-emphasis">{{ tag.slug || "-" }}</td>
             <td class="text-right">{{ tagArticleCount[tag.id] || 0 }}</td>
             <td>
@@ -98,43 +105,77 @@
   </v-card>
 
   <v-card class="pa-6 mt-5" elevation="3">
-    <v-card-title>Assign Tags to Articles</v-card-title>
+    <v-card-title>Edit Article Tags</v-card-title>
     <v-card-text>
-      <LoadingContainer v-if="loadingArticles" text="Loading articles..." />
-      <template v-else>
-        <v-list lines="two" class="article-list">
-          <v-list-item
-            v-for="article in articles"
-            :key="article.id"
-            class="article-item"
-          >
-            <v-list-item-title class="text-subtitle-1">
-              {{ article.title }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-caption">
-              Current:
+      <div class="d-flex flex-wrap ga-3 align-end">
+        <v-text-field
+          v-model="articleSearchQuery"
+          label="Search articles by title"
+          class="article-search-field"
+          hide-details
+          @keydown.enter.prevent="searchArticles"
+        />
+        <v-btn
+          color="primary"
+          :loading="loadingArticleSearch"
+          @click="searchArticles"
+        >
+          Search
+        </v-btn>
+      </div>
+
+      <div class="text-caption text-medium-emphasis mt-2">
+        Search only when you need to edit an article. This avoids loading the full article catalog.
+      </div>
+
+      <LoadingContainer
+        v-if="loadingArticleSearch"
+        text="Searching articles..."
+        class="mt-4"
+      />
+
+      <v-table
+        v-else-if="articleSearchResults.length"
+        density="comfortable"
+        class="tag-table mt-4"
+      >
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Current Tags</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="article in articleSearchResults" :key="article.id">
+            <td class="font-weight-medium">{{ article.title }}</td>
+            <td>{{ article.is_published ? "Published" : "Draft" }}</td>
+            <td class="text-medium-emphasis">
               {{ article.tags?.map((tag) => tag.name).join(", ") || "No tags" }}
-            </v-list-item-subtitle>
-            <template #append>
-              <v-select
-                :items="tagOptions"
-                item-title="name"
-                item-value="id"
-                density="compact"
-                hide-details
-                class="taxonomy-select"
-                label="Assign Tags"
-                multiple
-                chips
-                closable-chips
-                :model-value="articleTagIds(article)"
-                :loading="updatingArticleId === article.id"
-                @update:model-value="(val) => handleArticleTagChange(article.id, val)"
-              />
-            </template>
-          </v-list-item>
-        </v-list>
-      </template>
+            </td>
+            <td>
+              <div class="d-flex justify-end">
+                <v-btn
+                  size="small"
+                  variant="tonal"
+                  color="primary"
+                  @click="openArticleTagDialog(article)"
+                >
+                  Edit Tags
+                </v-btn>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
+
+      <div
+        v-else-if="hasSearchedArticles"
+        class="text-medium-emphasis mt-4"
+      >
+        No articles found.
+      </div>
     </v-card-text>
   </v-card>
 
@@ -213,6 +254,39 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog v-model="articleTagDialog" max-width="720px">
+    <v-card>
+      <v-card-title>Edit Article Tags</v-card-title>
+      <v-card-text>
+        <div class="text-subtitle-1 font-weight-medium mb-2">
+          {{ selectedArticle?.title || "Article" }}
+        </div>
+        <v-select
+          v-model="selectedArticleTagIds"
+          :items="tagOptions"
+          item-title="name"
+          item-value="id"
+          label="Tags"
+          multiple
+          chips
+          closable-chips
+          :loading="loadingArticleTags"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn @click="closeArticleTagDialog">Cancel</v-btn>
+        <v-btn
+          color="primary"
+          :loading="savingArticleTags"
+          @click="saveArticleTags"
+        >
+          Save
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -222,7 +296,7 @@ import { buildTaxonomyPath, normalizeTaxonomySlug, slugifyTaxonomyName } from "@
 const localPath = useLocalePath();
 const {
   getAllTags,
-  getAllArticlesWithTags,
+  getTagsByArticleId,
   getTaxonomyCounts,
   insertTag,
   updateTag,
@@ -232,21 +306,27 @@ const {
 } = useDb();
 
 const editDialog = ref(false);
+const articleTagDialog = ref(false);
 const selectedTag = ref({ id: null, name: "", slug: "" });
+const selectedArticle = ref(null);
+const selectedArticleTagIds = ref([]);
 const editForm = ref(null);
 const tagForm = ref(null);
 
 const tags = ref([]);
-const articles = ref([]);
 const loadingTags = ref(true);
-const loadingArticles = ref(true);
 const loading = ref(false);
 const loadingUpdate = ref(false);
 const loadingDelete = ref(false);
-const updatingArticleId = ref(null);
 const fallbackTagId = ref(null);
 const sortMode = ref("alphabetical");
 const tagCounts = ref({});
+const articleSearchQuery = ref("");
+const articleSearchResults = ref([]);
+const hasSearchedArticles = ref(false);
+const loadingArticleSearch = ref(false);
+const loadingArticleTags = ref(false);
+const savingArticleTags = ref(false);
 
 const form = useState("tagForm", () => ({
   name: "",
@@ -270,12 +350,9 @@ const formatName = (name) =>
 
 const refreshData = async () => {
   loadingTags.value = true;
-  loadingArticles.value = true;
   tags.value = (await getAllTags()) || [];
-  articles.value = (await getAllArticlesWithTags()) || [];
   tagCounts.value = await getTaxonomyCounts("tags");
   loadingTags.value = false;
-  loadingArticles.value = false;
 };
 
 const openEditDialog = (tag) => {
@@ -311,9 +388,6 @@ const handleRowDelete = async (tag) => {
   closeEditDialog();
   loadingDelete.value = false;
 };
-
-const articleTagIds = (article) =>
-  (article?.tags || []).map((tag) => tag.id).filter(Boolean);
 
 const handleSubmit = async () => {
   loading.value = true;
@@ -419,18 +493,76 @@ const handleDeleteTag = async () => {
   loadingDelete.value = false;
 };
 
-const handleArticleTagChange = async (articleId, tagIds) => {
-  if (!articleId) return;
-  updatingArticleId.value = articleId;
+const searchArticles = async () => {
+  loadingArticleSearch.value = true;
+  hasSearchedArticles.value = true;
   try {
-    await updateArticleTags(articleId, tagIds || []);
-    articles.value = (await getAllArticlesWithTags()) || [];
+    const response = await $fetch("/api/admin/articles/search", {
+      method: "GET",
+      query: {
+        q: articleSearchQuery.value,
+        limit: 20,
+      },
+    });
+    if (!response?.success) {
+      throw new Error(response?.error || "Unable to search articles.");
+    }
+    articleSearchResults.value = response.articles || [];
   } catch (error) {
-    console.error("Error updating article tags:", error);
-    snackbar.value.message = "Failed to update article tags.";
+    console.error("Error searching articles:", error);
+    snackbar.value.message = "Failed to search articles.";
     snackbar.value.show = true;
   } finally {
-    updatingArticleId.value = null;
+    loadingArticleSearch.value = false;
+  }
+};
+
+const openArticleTagDialog = async (article) => {
+  if (!article?.id) return;
+  selectedArticle.value = article;
+  selectedArticleTagIds.value = [];
+  articleTagDialog.value = true;
+  loadingArticleTags.value = true;
+
+  try {
+    const currentTags = await getTagsByArticleId(article.id);
+    selectedArticleTagIds.value = (currentTags || [])
+      .map((tag) => tag?.id)
+      .filter(Boolean);
+  } catch (error) {
+    console.error("Error loading article tags:", error);
+    snackbar.value.message = "Failed to load article tags.";
+    snackbar.value.show = true;
+  } finally {
+    loadingArticleTags.value = false;
+  }
+};
+
+const closeArticleTagDialog = () => {
+  articleTagDialog.value = false;
+  selectedArticle.value = null;
+  selectedArticleTagIds.value = [];
+};
+
+const saveArticleTags = async () => {
+  if (!selectedArticle.value?.id) return;
+  savingArticleTags.value = true;
+  try {
+    await updateArticleTags(selectedArticle.value.id, selectedArticleTagIds.value);
+    const currentTags = await getTagsByArticleId(selectedArticle.value.id);
+    articleSearchResults.value = articleSearchResults.value.map((article) =>
+      article.id === selectedArticle.value.id
+        ? { ...article, tags: currentTags || [] }
+        : article
+    );
+    tagCounts.value = await getTaxonomyCounts("tags");
+    closeArticleTagDialog();
+  } catch (error) {
+    console.error("Error saving article tags:", error);
+    snackbar.value.message = "Failed to save article tags.";
+    snackbar.value.show = true;
+  } finally {
+    savingArticleTags.value = false;
   }
 };
 
@@ -477,16 +609,16 @@ const selectedTagRoute = computed(() => {
   vertical-align: middle;
 }
 
-.article-list {
-  max-height: 520px;
-  overflow-y: auto;
+.taxonomy-name-link {
+  color: inherit;
+  text-decoration: none;
 }
 
-.article-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+.taxonomy-name-link:hover {
+  text-decoration: underline;
 }
 
-.taxonomy-select {
-  min-width: 260px;
+.article-search-field {
+  min-width: 320px;
 }
 </style>

@@ -31,7 +31,14 @@
         </thead>
         <tbody>
           <tr v-for="person in sortedPeople" :key="person.id || person.slug">
-            <td class="font-weight-medium">{{ person.name }}</td>
+            <td class="font-weight-medium">
+              <NuxtLink
+                :to="personRoute(person) || undefined"
+                class="taxonomy-name-link"
+              >
+                {{ person.name }}
+              </NuxtLink>
+            </td>
             <td class="text-medium-emphasis">{{ person.slug || "-" }}</td>
             <td class="text-right">{{ personArticleCount[person.id] || 0 }}</td>
             <td>
@@ -97,46 +104,77 @@
   </v-card>
 
   <v-card class="pa-6 mt-5" elevation="3">
-    <v-card-title>Assign People to Articles</v-card-title>
+    <v-card-title>Edit Article People</v-card-title>
     <v-card-text>
-      <LoadingContainer v-if="loadingArticles" text="Loading articles..." />
-      <template v-else>
-        <v-list lines="two" class="article-list">
-          <v-list-item
-            v-for="article in articles"
-            :key="article.id"
-            class="article-item"
-          >
-            <v-list-item-title class="text-subtitle-1">
-              {{ article.title }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-caption">
-              Current:
-              {{
-                article.people?.map((person) => person.name).join(", ") ||
-                "No people"
-              }}
-            </v-list-item-subtitle>
-            <template #append>
-              <v-select
-                :items="peopleOptions"
-                item-title="name"
-                item-value="id"
-                density="compact"
-                hide-details
-                class="taxonomy-select"
-                label="Assign People"
-                multiple
-                chips
-                closable-chips
-                :model-value="articlePersonIds(article)"
-                :loading="updatingArticleId === article.id"
-                @update:model-value="(val) => handleArticlePeopleChange(article.id, val)"
-              />
-            </template>
-          </v-list-item>
-        </v-list>
-      </template>
+      <div class="d-flex flex-wrap ga-3 align-end">
+        <v-text-field
+          v-model="articleSearchQuery"
+          label="Search articles by title"
+          class="article-search-field"
+          hide-details
+          @keydown.enter.prevent="searchArticles"
+        />
+        <v-btn
+          color="primary"
+          :loading="loadingArticleSearch"
+          @click="searchArticles"
+        >
+          Search
+        </v-btn>
+      </div>
+
+      <div class="text-caption text-medium-emphasis mt-2">
+        Search only when you need to edit an article. This avoids loading the full article catalog.
+      </div>
+
+      <LoadingContainer
+        v-if="loadingArticleSearch"
+        text="Searching articles..."
+        class="mt-4"
+      />
+
+      <v-table
+        v-else-if="articleSearchResults.length"
+        density="comfortable"
+        class="taxonomy-table mt-4"
+      >
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Current People</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="article in articleSearchResults" :key="article.id">
+            <td class="font-weight-medium">{{ article.title }}</td>
+            <td>{{ article.is_published ? "Published" : "Draft" }}</td>
+            <td class="text-medium-emphasis">
+              {{ article.people?.map((person) => person.name).join(", ") || "No people" }}
+            </td>
+            <td>
+              <div class="d-flex justify-end">
+                <v-btn
+                  size="small"
+                  variant="tonal"
+                  color="primary"
+                  @click="openArticlePeopleDialog(article)"
+                >
+                  Edit People
+                </v-btn>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
+
+      <div
+        v-else-if="hasSearchedArticles"
+        class="text-medium-emphasis mt-4"
+      >
+        No articles found.
+      </div>
     </v-card-text>
   </v-card>
 
@@ -215,6 +253,39 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog v-model="articlePeopleDialog" max-width="720px">
+    <v-card>
+      <v-card-title>Edit Article People</v-card-title>
+      <v-card-text>
+        <div class="text-subtitle-1 font-weight-medium mb-2">
+          {{ selectedArticle?.title || "Article" }}
+        </div>
+        <v-select
+          v-model="selectedArticlePersonIds"
+          :items="peopleOptions"
+          item-title="name"
+          item-value="id"
+          label="People"
+          multiple
+          chips
+          closable-chips
+          :loading="loadingArticlePeople"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn @click="closeArticlePeopleDialog">Cancel</v-btn>
+        <v-btn
+          color="primary"
+          :loading="savingArticlePeople"
+          @click="saveArticlePeople"
+        >
+          Save
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -224,9 +295,8 @@ import { buildTaxonomyPath, normalizeTaxonomySlug, slugifyTaxonomyName } from "@
 const localPath = useLocalePath();
 const {
   getAllPeople,
-  getAllArticlesWithTags,
   getTaxonomyCounts,
-  getCountArticleByPerson,
+  getPeopleByArticleId,
   insertPerson,
   updatePerson,
   updateArticlePeople,
@@ -234,21 +304,27 @@ const {
 } = useDb();
 
 const editDialog = ref(false);
+const articlePeopleDialog = ref(false);
 const selectedPerson = ref({ id: null, name: "", slug: "" });
+const selectedArticle = ref(null);
+const selectedArticlePersonIds = ref([]);
 const editForm = ref(null);
 const personForm = ref(null);
 
 const people = ref([]);
-const articles = ref([]);
 const loadingPeople = ref(true);
-const loadingArticles = ref(true);
 const loading = ref(false);
 const loadingUpdate = ref(false);
 const loadingDelete = ref(false);
-const updatingArticleId = ref(null);
 const fallbackPersonId = ref(null);
 const sortMode = ref("alphabetical");
 const personCounts = ref({});
+const articleSearchQuery = ref("");
+const articleSearchResults = ref([]);
+const hasSearchedArticles = ref(false);
+const loadingArticleSearch = ref(false);
+const loadingArticlePeople = ref(false);
+const savingArticlePeople = ref(false);
 
 const form = useState("personForm", () => ({
   name: "",
@@ -272,24 +348,9 @@ const formatName = (name) =>
 
 const refreshData = async () => {
   loadingPeople.value = true;
-  loadingArticles.value = true;
   people.value = (await getAllPeople()) || [];
-  articles.value = (await getAllArticlesWithTags()) || [];
-  const groupedCounts = await getTaxonomyCounts("people");
-  if (Object.keys(groupedCounts || {}).length > 0) {
-    personCounts.value = groupedCounts;
-  } else {
-    personCounts.value = Object.fromEntries(
-      await Promise.all(
-        (people.value || []).map(async (person) => [
-          person.id,
-          await getCountArticleByPerson(person.id),
-        ])
-      )
-    );
-  }
+  personCounts.value = await getTaxonomyCounts("people");
   loadingPeople.value = false;
-  loadingArticles.value = false;
 };
 
 const openEditDialog = (person) => {
@@ -303,9 +364,6 @@ const closeEditDialog = () => {
   selectedPerson.value = { id: null, name: "", slug: "" };
   fallbackPersonId.value = null;
 };
-
-const articlePersonIds = (article) =>
-  (article?.people || []).map((person) => person.id).filter(Boolean);
 
 const handleSubmit = async () => {
   loading.value = true;
@@ -411,18 +469,79 @@ const handleDeletePerson = async () => {
   loadingDelete.value = false;
 };
 
-const handleArticlePeopleChange = async (articleId, personIds) => {
-  if (!articleId) return;
-  updatingArticleId.value = articleId;
+const searchArticles = async () => {
+  loadingArticleSearch.value = true;
+  hasSearchedArticles.value = true;
   try {
-    await updateArticlePeople(articleId, personIds || []);
-    articles.value = (await getAllArticlesWithTags()) || [];
+    const response = await $fetch("/api/admin/articles/search", {
+      method: "GET",
+      query: {
+        q: articleSearchQuery.value,
+        limit: 20,
+      },
+    });
+    if (!response?.success) {
+      throw new Error(response?.error || "Unable to search articles.");
+    }
+    articleSearchResults.value = response.articles || [];
   } catch (error) {
-    console.error("Error updating article people:", error);
-    snackbar.value.message = "Failed to update article people.";
+    console.error("Error searching articles:", error);
+    snackbar.value.message = "Failed to search articles.";
     snackbar.value.show = true;
   } finally {
-    updatingArticleId.value = null;
+    loadingArticleSearch.value = false;
+  }
+};
+
+const openArticlePeopleDialog = async (article) => {
+  if (!article?.id) return;
+  selectedArticle.value = article;
+  selectedArticlePersonIds.value = [];
+  articlePeopleDialog.value = true;
+  loadingArticlePeople.value = true;
+
+  try {
+    const currentPeople = await getPeopleByArticleId(article.id);
+    selectedArticlePersonIds.value = (currentPeople || [])
+      .map((person) => person?.id)
+      .filter(Boolean);
+  } catch (error) {
+    console.error("Error loading article people:", error);
+    snackbar.value.message = "Failed to load article people.";
+    snackbar.value.show = true;
+  } finally {
+    loadingArticlePeople.value = false;
+  }
+};
+
+const closeArticlePeopleDialog = () => {
+  articlePeopleDialog.value = false;
+  selectedArticle.value = null;
+  selectedArticlePersonIds.value = [];
+};
+
+const saveArticlePeople = async () => {
+  if (!selectedArticle.value?.id) return;
+  savingArticlePeople.value = true;
+  try {
+    await updateArticlePeople(
+      selectedArticle.value.id,
+      selectedArticlePersonIds.value
+    );
+    const currentPeople = await getPeopleByArticleId(selectedArticle.value.id);
+    articleSearchResults.value = articleSearchResults.value.map((article) =>
+      article.id === selectedArticle.value.id
+        ? { ...article, people: currentPeople || [] }
+        : article
+    );
+    personCounts.value = await getTaxonomyCounts("people");
+    closeArticlePeopleDialog();
+  } catch (error) {
+    console.error("Error saving article people:", error);
+    snackbar.value.message = "Failed to save article people.";
+    snackbar.value.show = true;
+  } finally {
+    savingArticlePeople.value = false;
   }
 };
 
@@ -472,16 +591,16 @@ const selectedPersonRoute = computed(() => {
   vertical-align: middle;
 }
 
-.article-list {
-  max-height: 520px;
-  overflow-y: auto;
+.taxonomy-name-link {
+  color: inherit;
+  text-decoration: none;
 }
 
-.article-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+.taxonomy-name-link:hover {
+  text-decoration: underline;
 }
 
-.taxonomy-select {
-  min-width: 260px;
+.article-search-field {
+  min-width: 320px;
 }
 </style>

@@ -1394,17 +1394,60 @@ export const useDb = () => {
 
   const getArticlesByTagSlug = async (slug) => {
     const supabase = getClient();
+    const { data: tag, error: tagError } = await supabase
+      .from("tags")
+      .select("id, name, slug")
+      .eq("slug", slug)
+      .maybeSingle();
 
-    const { data, error } = await supabase.rpc("get_articles_by_tag_slug1", {
-      tag_slug: slug,
-    });
+    if (tagError) {
+      console.error("Error fetching tag:", tagError);
+      return [];
+    }
+
+    if (!tag?.id) {
+      return [];
+    }
+
+    const selectColumns = `
+      id,
+      title,
+      slug,
+      content,
+      image_path,
+      photo_credits_url,
+      photo_credits_html,
+      original_language_code,
+      article_translations(locale, headline, summary, body, references_jsonb, social),
+      created_at,
+      is_published,
+      category:category_id ( id, name, slug ),
+      threads(slug),
+      article_tags!inner(tag_id)
+    `;
+
+    const { data, error } = await supabase
+      .from("articles")
+      .select(selectColumns)
+      .eq("article_tags.tag_id", tag.id)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching articles by tag slug:", error);
       return [];
     }
 
-    return data;
+    return (
+      data?.map((article) => ({
+        ...article,
+        category_name: article.category?.name ?? "Uncategorized",
+        thread_slug:
+          Array.isArray(article.threads) && article.threads.length > 0
+            ? article.threads[0].slug
+            : null,
+      })) || []
+    );
   };
 
   const getArticlesByPersonSlug = async (slug) => {
@@ -1541,6 +1584,23 @@ export const useDb = () => {
     }
 
     return (data || []).map((row) => row.tag).filter(Boolean);
+  };
+
+  const getPeopleByArticleId = async (articleId) => {
+    if (!articleId) return [];
+    const supabase = getClient();
+
+    const { data, error } = await supabase
+      .from("article_people")
+      .select("person:person_id(id, name, slug)")
+      .eq("article_id", articleId);
+
+    if (error) {
+      console.error("Error fetching people for article id:", error);
+      return [];
+    }
+
+    return (data || []).map((row) => row.person).filter(Boolean);
   };
 
   const getArticlesbyCategorySlug = async (slug) => {
@@ -4090,6 +4150,7 @@ const verifyEmailOtp = async (email, token) => {
     getArticlesByPersonSlug,
     getTagsByArticle,
     getTagsByArticleId,
+    getPeopleByArticleId,
     getArticlesbyCategorySlug,
     getArticlesByType,
     getAllReports,

@@ -2,6 +2,16 @@ import { getServiceRoleClient } from "~/server/utils/aiBots";
 
 type TaxonomyKind = "categories" | "tags" | "people";
 
+const PAGE_SIZE = 1000;
+
+const reduceCounts = (rows: any[], key: string) =>
+  (rows || []).reduce((acc: Record<string, number>, row: any) => {
+    const id = String(row?.[key] || "").trim();
+    if (!id) return acc;
+    acc[id] = (acc[id] || 0) + 1;
+    return acc;
+  }, {});
+
 export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event);
@@ -18,67 +28,101 @@ export default defineEventHandler(async (event) => {
     const supabase = await getServiceRoleClient(event);
     let counts: Record<string, number> = {};
 
-    if (kind === "categories") {
-      let request = supabase
-        .from("articles")
-        .select("category_id")
-        .not("category_id", "is", null);
-
-      if (publishedOnly) {
-        request = request.eq("is_published", true);
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      "get_taxonomy_counts",
+      {
+        p_kind: kind,
+        p_published_only: publishedOnly,
       }
+    );
 
-      const { data, error } = await request;
-      if (error) throw error;
+    if (!rpcError) {
+      counts = Object.fromEntries(
+        (rpcData || [])
+          .filter((row: any) => row?.taxonomy_id)
+          .map((row: any) => [
+            String(row.taxonomy_id),
+            Number(row.article_count || 0),
+          ])
+      );
+      return { success: true, counts };
+    }
 
-      counts = (data || []).reduce((acc: Record<string, number>, row: any) => {
-        const id = String(row?.category_id || "").trim();
-        if (!id) return acc;
-        acc[id] = (acc[id] || 0) + 1;
-        return acc;
-      }, {});
+    console.warn("[admin/taxonomy/counts] rpc fallback:", rpcError);
+
+    if (kind === "categories") {
+      let from = 0;
+      let batch: any[] = [];
+      do {
+        let request = supabase
+          .from("articles")
+          .select("category_id")
+          .not("category_id", "is", null)
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (publishedOnly) {
+          request = request.eq("is_published", true);
+        }
+
+        const { data, error } = await request;
+        if (error) throw error;
+        batch = data || [];
+        const batchCounts = reduceCounts(batch, "category_id");
+        Object.entries(batchCounts).forEach(([id, count]) => {
+          counts[id] = (counts[id] || 0) + count;
+        });
+        from += PAGE_SIZE;
+      } while (batch.length === PAGE_SIZE);
     }
 
     if (kind === "tags") {
-      let request = supabase.from("article_tags").select("tag_id");
-
-      if (publishedOnly) {
-        request = supabase
+      let from = 0;
+      let batch: any[] = [];
+      do {
+        let request = supabase
           .from("article_tags")
-          .select("tag_id, articles!inner(is_published)")
-          .eq("articles.is_published", true);
-      }
+          .select(publishedOnly ? "tag_id, articles!inner(is_published)" : "tag_id")
+          .range(from, from + PAGE_SIZE - 1);
 
-      const { data, error } = await request;
-      if (error) throw error;
+        if (publishedOnly) {
+          request = request.eq("articles.is_published", true);
+        }
 
-      counts = (data || []).reduce((acc: Record<string, number>, row: any) => {
-        const id = String(row?.tag_id || "").trim();
-        if (!id) return acc;
-        acc[id] = (acc[id] || 0) + 1;
-        return acc;
-      }, {});
+        const { data, error } = await request;
+        if (error) throw error;
+        batch = data || [];
+        const batchCounts = reduceCounts(batch, "tag_id");
+        Object.entries(batchCounts).forEach(([id, count]) => {
+          counts[id] = (counts[id] || 0) + count;
+        });
+        from += PAGE_SIZE;
+      } while (batch.length === PAGE_SIZE);
     }
 
     if (kind === "people") {
-      let request = supabase.from("article_people").select("person_id");
-
-      if (publishedOnly) {
-        request = supabase
+      let from = 0;
+      let batch: any[] = [];
+      do {
+        let request = supabase
           .from("article_people")
-          .select("person_id, articles!inner(is_published)")
-          .eq("articles.is_published", true);
-      }
+          .select(
+            publishedOnly ? "person_id, articles!inner(is_published)" : "person_id"
+          )
+          .range(from, from + PAGE_SIZE - 1);
 
-      const { data, error } = await request;
-      if (error) throw error;
+        if (publishedOnly) {
+          request = request.eq("articles.is_published", true);
+        }
 
-      counts = (data || []).reduce((acc: Record<string, number>, row: any) => {
-        const id = String(row?.person_id || "").trim();
-        if (!id) return acc;
-        acc[id] = (acc[id] || 0) + 1;
-        return acc;
-      }, {});
+        const { data, error } = await request;
+        if (error) throw error;
+        batch = data || [];
+        const batchCounts = reduceCounts(batch, "person_id");
+        Object.entries(batchCounts).forEach(([id, count]) => {
+          counts[id] = (counts[id] || 0) + count;
+        });
+        from += PAGE_SIZE;
+      } while (batch.length === PAGE_SIZE);
     }
 
     return { success: true, counts };
