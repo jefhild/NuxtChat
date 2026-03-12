@@ -4,6 +4,10 @@ import {
   getServiceRoleClient,
 } from "~/server/utils/aiBots";
 import { ensureAdmin } from "~/server/utils/adminAuth";
+import {
+  decoratePersonaWithMoltbook,
+  mergeMoltbookPersonaConfig,
+} from "~/server/utils/moltbook";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -43,6 +47,12 @@ export default defineEventHandler(async (event) => {
     }
 
     const personaPayload = buildPersonaPayload(personaInput, profileUserId);
+    personaPayload.metadata = mergeMoltbookPersonaConfig({
+      metadata: personaPayload.metadata,
+      personaKey: personaPayload.persona_key,
+      moltbookInput: personaInput?.moltbook_config,
+      config: useRuntimeConfig(event),
+    });
 
     const profilePatch: Record<string, unknown> = { is_ai: true };
     if (personaPayload.is_active === false) profilePatch.is_private = true;
@@ -69,7 +79,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      data: persona,
+      data: decoratePersonaWithMoltbook({ persona, event }),
     };
   } catch (error) {
     const err = error as any;

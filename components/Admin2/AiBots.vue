@@ -158,9 +158,27 @@
                   >
                     Honey
                   </v-chip>
+                  <v-chip
+                    size="x-small"
+                    :color="moltbookStatusColor(bot)"
+                    variant="tonal"
+                  >
+                    Moltbook {{ bot.moltbook?.enabled ? "On" : "Off" }}
+                  </v-chip>
+                </div>
+                <div class="text-caption text-medium-emphasis mt-2">
+                  {{ moltbookUsageLabel(bot) }}
                 </div>
               </td>
               <td class="text-right">
+                <v-btn
+                  icon="mdi-post-outline"
+                  variant="text"
+                  color="indigo"
+                  @click="openPostDialog(bot)"
+                  :disabled="!canPostToMoltbook(bot)"
+                  size="small"
+                ></v-btn>
                 <v-btn
                   icon="mdi-account-edit"
                   variant="text"
@@ -505,6 +523,68 @@
                 </v-expansion-panel-text>
               </v-expansion-panel>
               <v-expansion-panel>
+                <v-expansion-panel-title>Moltbook Posting</v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-row dense>
+                    <v-col cols="12">
+                      <div class="d-flex flex-wrap align-center ga-3">
+                        <v-switch
+                          v-model="moltbookForm.enabled"
+                          label="Enable Moltbook posting"
+                          color="indigo"
+                          density="compact"
+                          hide-details
+                        />
+                      </div>
+                      <div class="text-caption text-medium-emphasis mt-1">
+                        Agent API keys stay server-side in <code>MOLTBOOK_AGENT_KEYS_JSON</code>. Match by agent name or persona key.
+                      </div>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="moltbookForm.agent_name"
+                        label="Credential key / agent name"
+                        hint="Optional override. If blank, the persona key is used to find the API key in MOLTBOOK_AGENT_KEYS_JSON."
+                        persistent-hint
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="moltbookForm.default_submolt"
+                        label="Default submolt"
+                        hint="Used as the default target when posting from admin."
+                        persistent-hint
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model.number="moltbookForm.daily_posts"
+                        label="Daily post limit"
+                        type="number"
+                        min="0"
+                        :rules="[minRule(0)]"
+                        hint="0 disables admin posting for that day entirely."
+                        persistent-hint
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model.number="moltbookForm.cooldown_minutes"
+                        label="Cooldown between posts (minutes)"
+                        type="number"
+                        min="0"
+                        :rules="[minRule(0)]"
+                      />
+                    </v-col>
+                    <v-col cols="12" v-if="editingId">
+                      <v-alert type="info" variant="tonal" density="comfortable">
+                        {{ moltbookEditSummary }}
+                      </v-alert>
+                    </v-col>
+                  </v-row>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+              <v-expansion-panel>
                 <v-expansion-panel-title>Advanced JSON Fields</v-expansion-panel-title>
                 <v-expansion-panel-text>
                   <v-row dense>
@@ -558,6 +638,79 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="postDialog" max-width="720px" scrollable>
+      <v-card>
+        <v-card-title class="text-h6">
+          Post To Moltbook
+        </v-card-title>
+        <v-card-text>
+          <v-alert
+            v-if="postTarget"
+            type="info"
+            variant="tonal"
+            density="comfortable"
+            class="mb-4"
+          >
+            Posting as <strong>{{ postTarget.profile?.displayname || postTarget.persona_key }}</strong>
+            using key <code>{{ postTarget.moltbook?.credential_key_label || postTarget.persona_key }}</code>.
+          </v-alert>
+          <v-row dense>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="postForm.submolt_name"
+                label="Submolt"
+                :rules="[requiredRule]"
+              />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="postForm.type"
+                :items="postTypeOptions"
+                label="Post type"
+                item-title="label"
+                item-value="value"
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
+                v-model="postForm.title"
+                label="Title"
+                :rules="[requiredRule]"
+                counter="300"
+              />
+            </v-col>
+            <v-col cols="12" v-if="postForm.type === 'link'">
+              <v-text-field
+                v-model="postForm.url"
+                label="Link URL"
+                :rules="[requiredRule]"
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-textarea
+                v-model="postForm.content"
+                label="Content"
+                rows="6"
+                auto-grow
+                :hint="postForm.type === 'link' ? 'Optional body for a link post.' : 'Body text for the Moltbook post.'"
+                persistent-hint
+              />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="postDialog = false" :disabled="posting">
+            Cancel
+          </v-btn>
+          <v-btn color="indigo" :loading="posting" @click="submitMoltbookPost">
+            Publish
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar
       v-model="snackbar.show"
       :color="snackbar.color"
@@ -572,7 +725,8 @@
 <script setup>
 import { useAdminAiBots } from "@/composables/useAdminAiBots";
 
-const { listBots, createBot, updateBot, deleteBot } = useAdminAiBots();
+const { listBots, createBot, updateBot, deleteBot, postToMoltbook } =
+  useAdminAiBots();
 const { getAllCategories, getAdminProfiles } = useDb();
 const localPath = useLocalePath();
 
@@ -586,11 +740,14 @@ const capabilityFilter = ref("all");
 const categories = ref([]);
 const dialog = ref(false);
 const deleteDialog = ref(false);
+const postDialog = ref(false);
 const deleteTarget = ref(null);
+const postTarget = ref(null);
 const editingId = ref(null);
 const formRef = ref(null);
 const saving = ref(false);
 const deleting = ref(false);
+const posting = ref(false);
 const personaKeyTouched = ref(false);
 
 const DEFAULT_MODERATION_CONFIG = {
@@ -650,6 +807,14 @@ const form = reactive({
   },
 });
 
+const moltbookForm = reactive({
+  enabled: false,
+  agent_name: "",
+  default_submolt: "",
+  daily_posts: 3,
+  cooldown_minutes: 30,
+});
+
 const jsonInputs = reactive({
   parameters: "{}",
   metadata: "{}",
@@ -670,7 +835,20 @@ const snackbar = reactive({
   color: "primary",
 });
 
+const postForm = reactive({
+  submolt_name: "",
+  title: "",
+  content: "",
+  url: "",
+  type: "text",
+});
+
 const categoryOptions = computed(() => categories.value || []);
+const postTypeOptions = [
+  { label: "Text", value: "text" },
+  { label: "Link", value: "link" },
+  { label: "Image", value: "image" },
+];
 const selectedCapabilityTab = ref("honey");
 const enabledCapabilityTabs = computed(() => {
   const tabs = [];
@@ -698,6 +876,18 @@ const selectedProfile = computed(() =>
     (profile) => profile.user_id === form.persona.profile_user_id
   )
 );
+const editingBot = computed(() =>
+  bots.value.find((bot) => bot.id === editingId.value) || null
+);
+const moltbookEditSummary = computed(() => {
+  const config = editingBot.value?.moltbook || {};
+  const usage = config.usage || {};
+  return `Credential configured: ${
+    config.credential_configured ? "yes" : "no"
+  } · Posts today: ${usage.posts_today || 0} · Last post: ${
+    usage.last_post_at ? formatTimestamp(usage.last_post_at) : "never"
+  }`;
+});
 
 const filteredBots = computed(() => {
   const q = search.value.trim().toLowerCase();
@@ -803,6 +993,24 @@ const truncate = (text, len = 100) => {
   return `${normalized.slice(0, len)}…`;
 };
 
+const moltbookStatusColor = (bot) => {
+  if (!bot?.moltbook?.enabled) return "grey";
+  return bot?.moltbook?.credential_configured ? "indigo" : "amber";
+};
+
+const moltbookUsageLabel = (bot) => {
+  const config = bot?.moltbook || {};
+  const limits = config.limits || {};
+  const usage = config.usage || {};
+  const credentialLabel = config.credential_configured
+    ? `key ${config.credential_key_label || bot.persona_key}`
+    : "no key";
+  return `${credentialLabel} · ${usage.posts_today || 0}/${limits.daily_posts ?? 0} posts today`;
+};
+
+const canPostToMoltbook = (bot) =>
+  Boolean(bot?.moltbook?.enabled && bot?.moltbook?.credential_configured);
+
 const resetForm = () => {
   Object.assign(form.persona, {
     profile_user_id: "",
@@ -840,6 +1048,13 @@ const resetForm = () => {
   jsonInputs.metadata = "{}";
   jsonInputs.dynamic_fields = "[]";
   jsonInputs.moderation_config = JSON.stringify(DEFAULT_MODERATION_CONFIG, null, 2);
+  Object.assign(moltbookForm, {
+    enabled: false,
+    agent_name: "",
+    default_submolt: "",
+    daily_posts: 3,
+    cooldown_minutes: 30,
+  });
   Object.keys(jsonErrors).forEach((key) => {
     jsonErrors[key] = "";
   });
@@ -910,6 +1125,13 @@ const populateForm = (bot) => {
     bot.moderation_config,
     JSON.stringify(DEFAULT_MODERATION_CONFIG, null, 2)
   );
+  Object.assign(moltbookForm, {
+    enabled: bot.moltbook?.enabled ?? false,
+    agent_name: bot.moltbook?.agent_name || "",
+    default_submolt: bot.moltbook?.default_submolt || "",
+    daily_posts: bot.moltbook?.limits?.daily_posts ?? 3,
+    cooldown_minutes: bot.moltbook?.limits?.cooldown_minutes ?? 30,
+  });
   Object.keys(jsonErrors).forEach((key) => {
     jsonErrors[key] = "";
   });
@@ -991,6 +1213,25 @@ const openDeleteDialog = (bot) => {
   deleteDialog.value = true;
 };
 
+const openPostDialog = (bot) => {
+  if (!canPostToMoltbook(bot)) {
+    snackbar.show = true;
+    snackbar.color = "amber-darken-2";
+    snackbar.message =
+      "This bot needs Moltbook posting enabled and a matching API key in MOLTBOOK_AGENT_KEYS_JSON.";
+    return;
+  }
+  postTarget.value = bot;
+  Object.assign(postForm, {
+    submolt_name: bot.moltbook?.default_submolt || "",
+    title: "",
+    content: "",
+    url: "",
+    type: "text",
+  });
+  postDialog.value = true;
+};
+
 const handleSubmit = async () => {
   const validation = await formRef.value?.validate?.();
   if (validation && !validation.valid) return;
@@ -1041,6 +1282,16 @@ const handleSubmit = async () => {
       max_response_tokens: Number(form.persona.max_response_tokens),
       max_history_messages: Number(form.persona.max_history_messages),
       category_id: form.persona.category_id || null,
+      moltbook_config: {
+        enabled: Boolean(moltbookForm.enabled),
+        agent_name: String(moltbookForm.agent_name || "").trim() || null,
+        default_submolt:
+          String(moltbookForm.default_submolt || "").trim() || null,
+        limits: {
+          daily_posts: Number(moltbookForm.daily_posts),
+          cooldown_minutes: Number(moltbookForm.cooldown_minutes),
+        },
+      },
       ...jsonPayload,
     },
   };
@@ -1104,6 +1355,62 @@ const handleSubmit = async () => {
   }
 };
 
+const submitMoltbookPost = async () => {
+  if (!postTarget.value) return;
+  if (!String(postForm.submolt_name || "").trim()) {
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = "Submolt is required.";
+    return;
+  }
+  if (!String(postForm.title || "").trim()) {
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = "Title is required.";
+    return;
+  }
+  if (postForm.type === "link" && !String(postForm.url || "").trim()) {
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = "Link posts require a URL.";
+    return;
+  }
+
+  posting.value = true;
+  try {
+    const res = await postToMoltbook(postTarget.value.id, {
+      submolt_name: String(postForm.submolt_name || "").trim(),
+      title: String(postForm.title || "").trim(),
+      content: String(postForm.content || "").trim(),
+      url: String(postForm.url || "").trim(),
+      type: postForm.type,
+    });
+
+    if (res?.success === false) throw new Error(res.error);
+
+    if (res?.data?.persona?.id) {
+      const idx = bots.value.findIndex((bot) => bot.id === res.data.persona.id);
+      if (idx >= 0) bots.value[idx] = res.data.persona;
+    } else {
+      await loadBots();
+    }
+
+    snackbar.show = true;
+    snackbar.color = "primary";
+    snackbar.message = "Moltbook post published.";
+    postDialog.value = false;
+    postTarget.value = null;
+  } catch (error) {
+    console.error("[admin][ai-bots] moltbook post error", error);
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message =
+      error?.data?.error || error?.message || "Failed to publish Moltbook post.";
+  } finally {
+    posting.value = false;
+  }
+};
+
 const confirmDelete = async () => {
   if (!deleteTarget.value) return;
   deleting.value = true;
@@ -1129,6 +1436,12 @@ const confirmDelete = async () => {
 watch(dialog, (isOpen) => {
   if (!isOpen) {
     editingId.value = null;
+  }
+});
+
+watch(postDialog, (isOpen) => {
+  if (!isOpen) {
+    postTarget.value = null;
   }
 });
 

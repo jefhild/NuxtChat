@@ -215,6 +215,20 @@ export default defineNuxtConfig({
     SUPABASE_KEY: process.env.SUPABASE_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     openaiApiKey: process.env.OPENAI_API_KEY,
+    MOLTBOOK_APP_KEY: process.env.MOLTBOOK_APP_KEY,
+    MOLTBOOK_AGENT_API_KEY: process.env.MOLTBOOK_AGENT_API_KEY,
+    MOLTBOOK_AGENT_KEYS_JSON: process.env.MOLTBOOK_AGENT_KEYS_JSON || "{}",
+    MOLTBOOK_ARTICLE_AUTOPUBLISH:
+      process.env.MOLTBOOK_ARTICLE_AUTOPUBLISH || "false",
+    MOLTBOOK_ARTICLE_AGENT_NAME:
+      process.env.MOLTBOOK_ARTICLE_AGENT_NAME || "imchatty",
+    MOLTBOOK_ARTICLE_SUBMOLT:
+      process.env.MOLTBOOK_ARTICLE_SUBMOLT || "general",
+    MOLTBOOK_AGENT_NAME: process.env.MOLTBOOK_AGENT_NAME || "imchatty",
+    MOLTBOOK_AGENT_DESCRIPTION:
+      process.env.MOLTBOOK_AGENT_DESCRIPTION ||
+      "AI chat companion for anonymous conversation, onboarding, and social discovery.",
+    MOLTBOOK_AUDIENCE: process.env.MOLTBOOK_AUDIENCE || "",
     OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4.1-mini",
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     META_PAGE_ID: process.env.META_PAGE_ID,

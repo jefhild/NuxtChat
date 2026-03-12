@@ -1,5 +1,6 @@
 import { AI_PERSONA_SELECT, getServiceRoleClient } from "~/server/utils/aiBots";
 import { ensureAdmin } from "~/server/utils/adminAuth";
+import { decoratePersonaWithMoltbook } from "~/server/utils/moltbook";
 
 const BASIC_AI_PERSONA_SELECT = `
   id,
@@ -39,7 +40,12 @@ export default defineEventHandler(async (event) => {
 
     if (error) throw error;
 
-    return { success: true, data };
+    return {
+      success: true,
+      data: (data || []).map((persona) =>
+        decoratePersonaWithMoltbook({ persona, event })
+      ),
+    };
   } catch (error) {
     const err = error as any;
     console.error("[admin/ai-bots] list error:", err);

@@ -459,7 +459,14 @@ const publishToChat = async (article) => {
     })
 
     if (!res?.success) throw new Error(res?.error || 'Publish failed')
-    snackbar.value = { show: true, message: 'Published to chat ✅' }
+    const moltbookNote = res?.moltbook?.posted
+      ? ' + posted to Moltbook'
+      : res?.moltbook?.reason === 'already_posted'
+      ? ' · Moltbook already posted'
+      : res?.moltbook?.attempted
+      ? ` · Moltbook skipped: ${res?.moltbook?.reason || 'unknown'}`
+      : ''
+    snackbar.value = { show: true, message: `Published to chat ✅${moltbookNote}` }
   } catch (e) {
     console.error('[admin] publishToChat', e)
     snackbar.value = { show: true, message: `Publish failed: ${e.message || e}` }
@@ -563,7 +570,14 @@ const togglePublish = async (article) => {
       })
       if (!res?.success) throw new Error(res?.error)
       article.isPublishedToChat = true
-      snackbar.value = { show: true, message: 'Published to chat ✅' }
+      const moltbookNote = res?.moltbook?.posted
+        ? ' + posted to Moltbook'
+        : res?.moltbook?.reason === 'already_posted'
+        ? ' · Moltbook already posted'
+        : res?.moltbook?.attempted
+        ? ` · Moltbook skipped: ${res?.moltbook?.reason || 'unknown'}`
+        : ''
+      snackbar.value = { show: true, message: `Published to chat ✅${moltbookNote}` }
     }
   } catch (e) {
     console.error('[admin] togglePublish', e)

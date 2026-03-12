@@ -25,10 +25,19 @@ export const useAdminAiBots = () => {
     return await $fetch(`${basePath}/${id}`, { method: "DELETE" });
   };
 
+  const postToMoltbook = async (id, payload) => {
+    if (!id) throw new Error("Missing bot id");
+    return await $fetch(`${basePath}/${id}/moltbook/post`, {
+      method: "POST",
+      body: payload,
+    });
+  };
+
   return {
     listBots,
     createBot,
     updateBot,
     deleteBot,
+    postToMoltbook,
   };
 };

@@ -4,6 +4,10 @@ import {
   getServiceRoleClient,
 } from "~/server/utils/aiBots";
 import { ensureAdmin } from "~/server/utils/adminAuth";
+import {
+  decoratePersonaWithMoltbook,
+  mergeMoltbookPersonaConfig,
+} from "~/server/utils/moltbook";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -21,7 +25,7 @@ export default defineEventHandler(async (event) => {
     await ensureAdmin(event, supabase);
     const { data: persona, error: personaLookupError } = await supabase
       .from("ai_personas")
-      .select("profile_user_id")
+      .select("profile_user_id, persona_key, metadata")
       .eq("id", personaId)
       .single();
 
@@ -67,6 +71,13 @@ export default defineEventHandler(async (event) => {
       personaInput,
       requestedProfileUserId
     );
+    personaPayload.metadata = mergeMoltbookPersonaConfig({
+      metadata:
+        personaInput?.metadata !== undefined ? personaInput.metadata : persona.metadata,
+      personaKey: personaPayload.persona_key || persona.persona_key,
+      moltbookInput: personaInput?.moltbook_config,
+      config: useRuntimeConfig(event),
+    });
     const profilePatch: Record<string, unknown> = { is_ai: true };
     if (personaPayload.is_active === false) profilePatch.is_private = true;
     if (personaPayload.is_active === true) profilePatch.is_private = false;
@@ -88,7 +99,10 @@ export default defineEventHandler(async (event) => {
     );
     if (fetchError) throw fetchError;
 
-    return { success: true, data: updatedPersona };
+    return {
+      success: true,
+      data: decoratePersonaWithMoltbook({ persona: updatedPersona, event }),
+    };
   } catch (error) {
     const err = error as any;
     console.error("[admin/ai-bots] update error:", err);
