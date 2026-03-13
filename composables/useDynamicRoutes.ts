@@ -4,6 +4,7 @@ import {
   getAllCategories,
   getAllTags,
   getAllPeopleSlugs,
+  getPublishedSeoPageRoutes,
   getUserSlugFromDisplayName,
 } from "../lib/supabaseHelpers";
 import { getGenderFromId } from "../lib/dbUtils";
@@ -127,6 +128,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       categoryData,
       tagData,
       peopleData,
+      seoPageData,
     ] =
       await Promise.all([
         getRegisteredUsersDisplaynames(),
@@ -134,6 +136,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
         getAllCategories(),
         getAllTags(),
         getAllPeopleSlugs(),
+        getPublishedSeoPageRoutes(),
       ]);
 
     if (
@@ -142,6 +145,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       !categoryData ||
       !tagData ||
       !peopleData ||
+      !seoPageData ||
       error
     ) {
       console.error("One or more data fetches failed.", { error });
@@ -201,10 +205,13 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       "/faq",
       "/cookies",
       "/articles",
+      "/compare",
       "/categories",
+      "/guides",
       "/tags",
       "/people",
       "/profiles",
+      "/topics",
     ];
     const homeRoutes = ["/"];
 
@@ -225,7 +232,32 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       route.locales.map((locale) => localizePath(route.path, locale))
     );
 
-    return [...new Set([...localizedRoutes, ...localizedTaxonomyRoutes, ...localizedArticleRoutes])];
+    const localizedSeoPageRoutes = (seoPageData || [])
+      .map((page: any) => {
+        const slug = normalizeIndexableSlug(page?.slug);
+        const locale = normalizeLocaleCode(page?.locale);
+        const pageType = String(page?.page_type || "").trim().toLowerCase();
+        if (!slug || !locale || !SUPPORTED_LOCALES.includes(locale)) return null;
+        const basePath =
+          pageType === "compare"
+            ? `/compare/${slug}`
+            : pageType === "guide"
+            ? `/guides/${slug}`
+            : pageType === "topic"
+            ? `/topics/${slug}`
+            : null;
+        return basePath ? localizePath(basePath, locale) : null;
+      })
+      .filter((route): route is string => Boolean(route));
+
+    return [
+      ...new Set([
+        ...localizedRoutes,
+        ...localizedTaxonomyRoutes,
+        ...localizedArticleRoutes,
+        ...localizedSeoPageRoutes,
+      ]),
+    ];
   } catch (error) {
     console.error("Error fetching dynamic routes:", error);
     return [];
@@ -246,12 +278,14 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       categoryData,
       tagData,
       peopleData,
+      seoPageData,
     ] = await Promise.all([
       getRegisteredUsersDisplaynames(),
       getAllPublishedArticlesWithTags(),
       getAllCategories(),
       getAllTags(),
       getAllPeopleSlugs(),
+      getPublishedSeoPageRoutes(),
     ]);
 
     if (
@@ -260,6 +294,7 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       !categoryData ||
       !tagData ||
       !peopleData ||
+      !seoPageData ||
       error
     ) {
       console.error("One or more data fetches failed.", { error });
@@ -271,10 +306,13 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       "/faq",
       "/cookies",
       "/articles",
+      "/compare",
       "/categories",
+      "/guides",
       "/tags",
       "/people",
       "/profiles",
+      "/topics",
     ];
     const homeRoutes = ["/"];
     const fallbackLastmod = new Date().toISOString();
@@ -370,6 +408,28 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
           loc: localizePath(`/people/${personSlug}`, locale),
           lastmod: fallbackLastmod,
         });
+      });
+    });
+
+    (seoPageData || []).forEach((page: any) => {
+      const slug = normalizeIndexableSlug(page?.slug);
+      const locale = normalizeLocaleCode(page?.locale);
+      const pageType = String(page?.page_type || "").trim().toLowerCase();
+      if (!slug || !locale || !SUPPORTED_LOCALES.includes(locale)) return;
+
+      const path =
+        pageType === "compare"
+          ? `/compare/${slug}`
+          : pageType === "guide"
+          ? `/guides/${slug}`
+          : pageType === "topic"
+          ? `/topics/${slug}`
+          : null;
+      if (!path) return;
+
+      localizedRoutes.push({
+        loc: localizePath(path, locale),
+        lastmod: page?.updated_at || fallbackLastmod,
       });
     });
 

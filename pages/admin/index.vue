@@ -62,6 +62,7 @@ import AdminFaqs from "~/components/Admin2/Faqs.vue";
 import AdminProfileAvatars from "~/components/Admin2/ProfileAvatars.vue";
 import AdminProfilePhotos from "~/components/Admin2/ProfilePhotos.vue";
 import AdminMoodFeedAdmin from "~/components/Admin2/MoodFeedAdmin.vue";
+import AdminSeoPages from "~/components/Admin2/SeoPages.vue";
 import PageHeader from "~/components/PageHeader.vue";
 import { useAuthStore } from "@/stores/authStore1";
 
@@ -84,6 +85,11 @@ const items = computed(() => [
     text: t("pages.admin.sections.articles"),
     icon: "mdi-post",
     value: "articles",
+  },
+  {
+    text: "SEO Pages",
+    icon: "mdi-file-search-outline",
+    value: "seoPages",
   },
   {
     text: t("pages.admin.sections.newsSource"),
@@ -173,6 +179,8 @@ const getSectionComponent = (section) => {
   switch (section) {
     case "articles":
       return AdminArticles;
+    case "seoPages":
+      return AdminSeoPages;
     case "categories":
       return AdminCategories;
     case "tags":

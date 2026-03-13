@@ -1,0 +1,73 @@
+import { createError } from "h3";
+import { getServiceRoleClient } from "~/server/utils/aiBots";
+import { fetchFaqEntriesByIds } from "~/server/utils/faqContent";
+import {
+  normalizeLocaleCode,
+  normalizeSeoPageRecord,
+  type SeoPageRow,
+  normalizeSeoPageType,
+  SEO_PAGE_SELECT,
+} from "~/server/utils/seoPages";
+
+export default defineEventHandler(async (event) => {
+  try {
+    const params = event.context.params || {};
+    const pageType = normalizeSeoPageType(params.type);
+    const slug = String(params.slug || "")
+      .trim()
+      .toLowerCase();
+    const locale = normalizeLocaleCode(getQuery(event).locale || "en");
+
+    if (!slug) {
+      throw createError({ statusCode: 400, statusMessage: "Slug is required" });
+    }
+
+    const supabase = await getServiceRoleClient(event);
+
+    const { data, error } = await supabase
+      .from("seo_pages")
+      .select(SEO_PAGE_SELECT)
+      .eq("page_type", pageType)
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .in("locale", [locale, "en"])
+      .order("updated_at", { ascending: false });
+
+    if (error) throw error;
+    if (!data?.length) {
+      throw createError({ statusCode: 404, statusMessage: "SEO page not found" });
+    }
+
+    const rows = (data || []) as SeoPageRow[];
+    const preferred =
+      rows.find((row) => normalizeLocaleCode(row.locale) === locale) || rows[0];
+    const availableLocales = Array.from(
+      new Set(
+        rows.map((row) => normalizeLocaleCode(row.locale)).filter(Boolean)
+      )
+    );
+
+    const normalizedPage = normalizeSeoPageRecord(preferred);
+    const faqs = await fetchFaqEntriesByIds(
+      supabase,
+      Array.isArray(normalizedPage.faqEntryIds) ? normalizedPage.faqEntryIds : [],
+      locale
+    );
+
+    return {
+      success: true,
+      page: {
+        ...normalizedPage,
+        faqs,
+      },
+      availableLocales,
+    };
+  } catch (error: unknown) {
+    const err = error as { statusCode?: number; statusMessage?: string; message?: string };
+    setResponseStatus(event, err?.statusCode || 500);
+    return {
+      success: false,
+      error: err?.statusMessage || err?.message || "Unable to load SEO page.",
+    };
+  }
+});

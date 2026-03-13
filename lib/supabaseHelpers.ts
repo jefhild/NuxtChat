@@ -85,6 +85,21 @@ export async function getAllPeopleSlugs() {
   return data;
 }
 
+export async function getPublishedSeoPageRoutes() {
+  const { data, error } = await supabase
+    .from("seo_pages")
+    .select("page_type, locale, slug, updated_at")
+    .eq("is_published", true)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching SEO page routes:", error.message);
+    return [];
+  }
+
+  return data;
+}
+
 export async function getUserSlugFromDisplayName(displayName: string){
   const { data, error } = await supabase
     .from("profiles")
