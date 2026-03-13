@@ -154,7 +154,7 @@
 
 <script setup lang="ts">
 import MarkdownIt from "markdown-it";
-import { sanitize } from "isomorphic-dompurify";
+import DOMPurify from "isomorphic-dompurify";
 import { useTheme } from "vuetify";
 
 type SeoLink = {
@@ -200,7 +200,7 @@ const md = new MarkdownIt({
 });
 
 const renderMarkdown = (value?: string) =>
-  sanitize(md.render(String(value || "")), {
+  DOMPurify.sanitize(md.render(String(value || "")), {
     ALLOWED_TAGS: [
       "p",
       "br",

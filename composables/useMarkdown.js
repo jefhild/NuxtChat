@@ -18,7 +18,7 @@ export function useMarkdown() {
     if (_md && _sanitize) return;
 
     // client-lazy load the libs
-    const [{ default: MarkdownIt }, { sanitize }] = await Promise.all([
+    const [{ default: MarkdownIt }, { default: DOMPurify }] = await Promise.all([
       import("markdown-it"),
       import("isomorphic-dompurify"),
     ]);
@@ -50,7 +50,7 @@ export function useMarkdown() {
     };
 
     _md = md;
-    _sanitize = sanitize; // ready-to-use sanitizer from isomorphic-dompurify
+    _sanitize = DOMPurify.sanitize.bind(DOMPurify);
   };
 
   const render = (text) => {
