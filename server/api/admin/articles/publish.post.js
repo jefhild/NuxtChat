@@ -5,6 +5,20 @@ import { publishArticleToMoltbook } from "~/server/utils/articleMoltbook";
 
 const toTrimmedString = (value) => String(value || "").trim();
 const toArray = (value) => (Array.isArray(value) ? value : []);
+const toTagStrings = (value) =>
+  toArray(value)
+    .map((tag) => {
+      if (typeof tag === "string") return toTrimmedString(tag);
+      if (tag && typeof tag === "object") {
+        return (
+          toTrimmedString(tag.name) ||
+          toTrimmedString(tag.slug) ||
+          toTrimmedString(tag.id)
+        );
+      }
+      return "";
+    })
+    .filter(Boolean);
 
 export default defineEventHandler(async (event) => {
   try {
@@ -15,7 +29,7 @@ export default defineEventHandler(async (event) => {
     const botAvatarUrl = toTrimmedString(body.botAvatarUrl) || null;
     const summary = toTrimmedString(body.summary);
     const points = toArray(body.points);
-    const tags = toArray(body.tags);
+    const tags = toTagStrings(body.tags);
     const rules = toArray(body.rules).length
       ? toArray(body.rules)
       : ["be respectful", "stay on topic"];
@@ -37,7 +51,7 @@ export default defineEventHandler(async (event) => {
     const cfg = useRuntimeConfig(event);
     const { data: article, error: articleError } = await supabase
       .from("articles")
-      .select("id, title, slug, image_path, tags, rewrite_meta, newsmesh_meta")
+      .select("id, title, slug, image_path, rewrite_meta, newsmesh_meta")
       .eq("id", articleId)
       .maybeSingle();
 
@@ -59,7 +73,7 @@ export default defineEventHandler(async (event) => {
       toTrimmedString(article?.newsmesh_meta?.summary) ||
       toTrimmedString(article?.newsmesh_meta?.description);
 
-    const threadInsert = {
+    const threadPayload = {
       kind: "article",
       article_id: articleId,
       title: resolvedTitle,
@@ -72,7 +86,7 @@ export default defineEventHandler(async (event) => {
       bot_context: {
         summary: resolvedSummary,
         points,
-        tags: tags.length ? tags : toArray(article.tags),
+        tags,
         canonical_url: canonicalUrl,
         rules,
       },
@@ -80,13 +94,50 @@ export default defineEventHandler(async (event) => {
       published: true,
     };
 
-    const { data: thread, error: threadError } = await supabase
+    const { data: existingThread, error: existingThreadError } = await supabase
       .from("threads")
-      .upsert(threadInsert, { onConflict: "article_id" })
       .select("id")
-      .single();
+      .eq("kind", "article")
+      .eq("article_id", articleId)
+      .limit(1)
+      .maybeSingle();
 
-    if (threadError) throw threadError;
+    if (existingThreadError) throw existingThreadError;
+
+    let thread = null;
+    let threadError = null;
+
+    if (existingThread?.id) {
+      const updateResult = await supabase
+        .from("threads")
+        .update(threadPayload)
+        .eq("id", existingThread.id)
+        .eq("kind", "article")
+        .select("id")
+        .single();
+      thread = updateResult.data;
+      threadError = updateResult.error;
+    } else {
+      const insertResult = await supabase
+        .from("threads")
+        .insert(threadPayload)
+        .select("id")
+        .single();
+      thread = insertResult.data;
+      threadError = insertResult.error;
+    }
+
+    if (!threadError && !thread?.id) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Thread publish returned no row",
+      });
+    }
+
+    if (threadError) {
+      console.error("[admin/articles][publish] thread write error:", threadError);
+      throw threadError;
+    }
 
     let moltbook = null;
     try {
