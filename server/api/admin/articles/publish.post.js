@@ -1,104 +1,101 @@
-// server/api/admin/articles/publish.post.js
+import { createError, readBody, setResponseStatus } from "h3";
+import { ensureAdmin } from "~/server/utils/adminAuth";
+import { getServiceRoleClient } from "~/server/utils/aiBots";
 import { publishArticleToMoltbook } from "~/server/utils/articleMoltbook";
+
+const toTrimmedString = (value) => String(value || "").trim();
+const toArray = (value) => (Array.isArray(value) ? value : []);
 
 export default defineEventHandler(async (event) => {
   try {
-    // 1) Read body first
-    const body = await readBody(event);
-    const {
-      articleId,
-      title,
-      botLabel,
-      botAvatarUrl,
-      summary = "",
-      points = [],
-      tags = [],
-      rules = ["be respectful", "stay on topic"],
-      overrides = {},
-    } = body || {};
+    const body = (await readBody(event)) || {};
+    const articleId = toTrimmedString(body.articleId);
+    const title = body.title;
+    const botLabel = toTrimmedString(body.botLabel) || "Topic Agent";
+    const botAvatarUrl = toTrimmedString(body.botAvatarUrl) || null;
+    const summary = toTrimmedString(body.summary);
+    const points = toArray(body.points);
+    const tags = toArray(body.tags);
+    const rules = toArray(body.rules).length
+      ? toArray(body.rules)
+      : ["be respectful", "stay on topic"];
+    const overrides =
+      body.overrides && typeof body.overrides === "object" && !Array.isArray(body.overrides)
+        ? body.overrides
+        : {};
 
     if (!articleId) {
-      setResponseStatus(event, 400);
-      return { success: false, error: "Missing articleId" };
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Missing articleId",
+      });
     }
 
-    // 2) Build Supabase server client lazily INSIDE the handler
-    //    (avoid any top-level imports that might evaluate Nuxt composables)
-    const { useDb } = await import("@/composables/useDB");
-    const { getServerClientFrom } = useDb();
+    const supabase = await getServiceRoleClient(event);
+    await ensureAdmin(event, supabase);
 
-    // Read runtime config INSIDE the handler
     const cfg = useRuntimeConfig(event);
-    const supa = getServerClientFrom(
-      cfg.public.SUPABASE_URL,
-      cfg.SUPABASE_SERVICE_ROLE_KEY
-    );
-
-    const { data: article, error: articleError } = await supa
+    const { data: article, error: articleError } = await supabase
       .from("articles")
       .select("id, title, slug, image_path, tags, rewrite_meta, newsmesh_meta")
       .eq("id", articleId)
-      .single();
+      .maybeSingle();
 
-    if (articleError || !article) {
-      setResponseStatus(event, 404);
-      return {
-        success: false,
-        error: articleError?.message || "Article not found",
-      };
+    if (articleError) throw articleError;
+    if (!article) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Article not found",
+      });
     }
 
     const canonicalUrl = article.slug
       ? `${cfg.public.SITE_URL}/articles/${article.slug}`
       : null;
-    const resolvedTitle = String(title || article.title || "").trim();
-    const publishSummary = String(summary || "").trim();
+    const resolvedTitle = toTrimmedString(title || article.title);
     const resolvedSummary =
-      publishSummary ||
-      String(article?.rewrite_meta?.summary || "").trim() ||
-      String(article?.newsmesh_meta?.summary || "").trim() ||
-      String(article?.newsmesh_meta?.description || "").trim();
-
-    // 3) Insert or upsert thread
-    const bot_context = {
-      summary: resolvedSummary,
-      points,
-      tags,
-      canonical_url: canonicalUrl,
-      rules,
-    };
+      summary ||
+      toTrimmedString(article?.rewrite_meta?.summary) ||
+      toTrimmedString(article?.newsmesh_meta?.summary) ||
+      toTrimmedString(article?.newsmesh_meta?.description);
 
     const threadInsert = {
       kind: "article",
       article_id: articleId,
       title: resolvedTitle,
-      bot_label: botLabel || "Topic Agent",
-      bot_avatar_url: botAvatarUrl || null,
-      bot_context,
-      // you can add agent_preset_id/version if you use them
+      bot_label: botLabel,
+      bot_avatar_url:
+        botAvatarUrl ||
+        (article.image_path
+          ? `${cfg.public.SUPABASE_BUCKET}/articles/${article.image_path}`
+          : null),
+      bot_context: {
+        summary: resolvedSummary,
+        points,
+        tags: tags.length ? tags : toArray(article.tags),
+        canonical_url: canonicalUrl,
+        rules,
+      },
       agent_overrides: overrides,
+      published: true,
     };
 
-    const { data: thread, error: tErr } = await supa
+    const { data: thread, error: threadError } = await supabase
       .from("threads")
       .upsert(threadInsert, { onConflict: "article_id" })
       .select("id")
       .single();
 
-    if (tErr) {
-      console.error("[publish] insert thread error:", tErr);
-      setResponseStatus(event, 500);
-      return { success: false, error: tErr.message };
-    }
+    if (threadError) throw threadError;
 
     let moltbook = null;
     try {
       const moltbookResult = await publishArticleToMoltbook({
         event,
-        supabase: supa,
+        supabase,
         article,
         title: resolvedTitle,
-        summary: publishSummary,
+        summary,
         points,
       });
       moltbook = moltbookResult.moltbook;
@@ -115,10 +112,13 @@ export default defineEventHandler(async (event) => {
     }
 
     return { success: true, threadId: thread.id, moltbook };
-  } catch (e) {
-    // If anything throws, return 500 (so you see the error) instead of letting Nitro drop the route.
-    console.error("[publish] handler error:", e);
-    setResponseStatus(event, 500);
-    return { success: false, error: String(e?.message || e) };
+  } catch (error) {
+    console.error("[admin/articles][publish] post error:", error);
+    setResponseStatus(event, error?.statusCode || 500);
+    return {
+      success: false,
+      error: error?.statusMessage || error?.message || "Unable to publish article",
+      ...(error?.data ? { details: error.data } : {}),
+    };
   }
 });
