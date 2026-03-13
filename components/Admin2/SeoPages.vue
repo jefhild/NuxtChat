@@ -188,14 +188,38 @@
                 Upload image
               </v-btn>
             </div>
-            <v-img
-              v-if="form.heroImageUrl"
-              :src="form.heroImageUrl"
-              max-width="320"
-              aspect-ratio="16/10"
-              cover
-              class="mb-4 rounded-lg"
-            />
+            <v-row v-if="form.heroImageUrl" class="mb-2">
+              <v-col cols="12" md="5">
+                <div class="seo-admin-hero-preview">
+                  <v-img
+                    :src="form.heroImageUrl"
+                    aspect-ratio="16/10"
+                    cover
+                    class="rounded-lg"
+                  />
+                  <div
+                    v-if="form.photoCreditsHtml"
+                    class="seo-admin-hero-credit"
+                    v-html="form.photoCreditsHtml"
+                  />
+                </div>
+              </v-col>
+              <v-col cols="12" md="7">
+                <v-text-field
+                  v-model="form.photoCreditsUrl"
+                  label="Photo Credit URL"
+                  :rules="[isValidUrl]"
+                />
+                <v-textarea
+                  v-model="form.photoCreditsHtml"
+                  label="Photo Credit HTML"
+                  rows="3"
+                  auto-grow
+                  hint="Example: &lt;a href='...'>Photo: Jane Doe&lt;/a>"
+                  persistent-hint
+                />
+              </v-col>
+            </v-row>
 
             <v-textarea
               v-model="form.body"
@@ -405,6 +429,8 @@ const emptyForm = () => ({
   heroBody: "",
   heroImagePath: "",
   heroImageUrl: "",
+  photoCreditsUrl: "",
+  photoCreditsHtml: "",
   body: "",
   highlights: [""],
   faqEntryIds: [],
@@ -527,6 +553,8 @@ const openEditDialog = (page) => {
     heroBody: page.heroBody || "",
     heroImagePath: page.heroImagePath || "",
     heroImageUrl: page.heroImageUrl || "",
+    photoCreditsUrl: page.photoCreditsUrl || "",
+    photoCreditsHtml: page.photoCreditsHtml || "",
     body: page.body || "",
     highlights: Array.isArray(page.highlights) && page.highlights.length
       ? [...page.highlights]
@@ -564,6 +592,12 @@ const applyImportedPayload = (payload) => {
     heroBody: normalizeString(payload?.heroBody || payload?.hero_body || form.value.heroBody),
     heroImageUrl: normalizeString(
       payload?.heroImageUrl || payload?.hero_image_url || form.value.heroImageUrl
+    ),
+    photoCreditsUrl: normalizeString(
+      payload?.photoCreditsUrl || payload?.photo_credits_url || form.value.photoCreditsUrl
+    ),
+    photoCreditsHtml: normalizeString(
+      payload?.photoCreditsHtml || payload?.photo_credits_html || form.value.photoCreditsHtml
     ),
     body: String(payload?.body || form.value.body || "").trim(),
     highlights: normalizeStringArray(payload?.highlights).length
@@ -741,6 +775,8 @@ const savePage = async () => {
         heroBody: form.value.heroBody,
         heroImagePath: form.value.heroImagePath,
         heroImageUrl: form.value.heroImageUrl,
+        photoCreditsUrl: form.value.photoCreditsUrl,
+        photoCreditsHtml: form.value.photoCreditsHtml,
         body: form.value.body,
         highlights: form.value.highlights,
         faqEntryIds: form.value.faqEntryIds,
@@ -849,6 +885,16 @@ const uploadHeroImage = async () => {
   }
 };
 
+const isValidUrl = (value) => {
+  if (!value) return true;
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return "Must be a valid URL";
+  }
+};
+
 onMounted(async () => {
   await Promise.all([loadPages(), loadFaqs()]);
 });
@@ -857,3 +903,30 @@ onBeforeUnmount(() => {
   stopTranslationPolling();
 });
 </script>
+
+<style scoped>
+.seo-admin-hero-preview {
+  position: relative;
+  max-width: 320px;
+}
+
+.seo-admin-hero-credit {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  max-width: calc(100% - 24px);
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seo-admin-hero-credit :deep(a) {
+  color: inherit;
+}
+</style>

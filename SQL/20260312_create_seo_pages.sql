@@ -13,6 +13,8 @@ create table if not exists public.seo_pages (
   hero_body text,
   hero_image_path text,
   hero_image_url text,
+  photo_credits_url text,
+  photo_credits_html text,
   body text,
   highlights_json jsonb not null default '[]'::jsonb,
   faq_entry_ids_json jsonb not null default '[]'::jsonb,

@@ -52,6 +52,19 @@
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
     },
+    "seo": {
+      "ctaCard": {
+        "eyebrow": "Try ImChatty",
+        "title": "Start chatting now",
+        "body": "Jump straight into text chat. No video required.",
+        "button": "Open chat",
+        "points": [
+          "Text-first chat",
+          "Quick entry",
+          "No video required"
+        ]
+      }
+    },
     "feeds": {
       "heading": "Mood Feed",
       "subtitle": "Short, honest snapshots from the community.",

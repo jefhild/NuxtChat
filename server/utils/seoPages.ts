@@ -19,6 +19,8 @@ export type SeoPageRow = {
   hero_body: string | null;
   hero_image_path: string | null;
   hero_image_url: string | null;
+  photo_credits_url: string | null;
+  photo_credits_html: string | null;
   body: string | null;
   highlights_json: unknown[];
   faq_entry_ids_json: unknown[];
@@ -43,6 +45,8 @@ export const SEO_PAGE_SELECT = `
   hero_body,
   hero_image_path,
   hero_image_url,
+  photo_credits_url,
+  photo_credits_html,
   body,
   highlights_json,
   faq_entry_ids_json,
@@ -156,6 +160,12 @@ export const sanitizeSeoPagePayload = (input: Record<string, unknown>) => {
     hero_body: sanitizeString(input.hero_body ?? input.heroBody),
     hero_image_path: sanitizeString(input.hero_image_path ?? input.heroImagePath),
     hero_image_url: sanitizeString(input.hero_image_url ?? input.heroImageUrl),
+    photo_credits_url: sanitizeString(
+      input.photo_credits_url ?? input.photoCreditsUrl
+    ),
+    photo_credits_html: sanitizeString(
+      input.photo_credits_html ?? input.photoCreditsHtml
+    ),
     body: sanitizeString(input.body),
     highlights_json: sanitizeStringList(
       input.highlights_json ?? input.highlights ?? []
@@ -186,6 +196,8 @@ export const normalizeSeoPageRecord = (row: SeoPageRow) => ({
   heroBody: row.hero_body || row.subtitle || "",
   heroImagePath: row.hero_image_path || "",
   heroImageUrl: row.hero_image_url || "",
+  photoCreditsUrl: row.photo_credits_url || "",
+  photoCreditsHtml: row.photo_credits_html || "",
   body: row.body || "",
   highlights: Array.isArray(row.highlights_json) ? row.highlights_json : [],
   faqEntryIds: Array.isArray(row.faq_entry_ids_json)

@@ -51,6 +51,19 @@
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
     },
+    "seo": {
+      "ctaCard": {
+        "eyebrow": "试试 ImChatty",
+        "title": "现在开始聊天",
+        "body": "直接进入文字聊天，不需要开启视频。",
+        "button": "打开聊天",
+        "points": [
+          "文字聊天",
+          "快速进入",
+          "无需视频"
+        ]
+      }
+    },
     "feeds": {
       "heading": "心情动态",
       "subtitle": "来自社区的简短真诚快照。",

@@ -192,6 +192,8 @@ export const translateSeoPage = async ({
       hero_body: cleanText((parsed as any).heroBody) || page.hero_body || null,
       hero_image_path: page.hero_image_path || null,
       hero_image_url: page.hero_image_url || null,
+      photo_credits_url: page.photo_credits_url || null,
+      photo_credits_html: page.photo_credits_html || null,
       body: String((parsed as any).body || page.body || "").trim() || null,
       highlights_json: Array.isArray((parsed as any).highlights)
         ? (parsed as any).highlights.map((item: unknown) => cleanText(item)).filter(Boolean)

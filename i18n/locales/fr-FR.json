@@ -51,6 +51,19 @@
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
     },
+    "seo": {
+      "ctaCard": {
+        "eyebrow": "Essayer ImChatty",
+        "title": "Commencez à discuter maintenant",
+        "body": "Passez directement au chat textuel. Aucune vidéo n'est nécessaire.",
+        "button": "Ouvrir le chat",
+        "points": [
+          "Chat textuel",
+          "Accès rapide",
+          "Sans vidéo obligatoire"
+        ]
+      }
+    },
     "feeds": {
       "heading": "Fil d'humeur",
       "subtitle": "Des instantanés courts et sincères de la communauté.",

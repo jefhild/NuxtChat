@@ -3,79 +3,28 @@
     fluid
     :class="['seo-page-shell', { 'seo-page-shell--dark': isDarkTheme }]"
   >
-    <div class="seo-hero">
-      <div class="seo-hero__copy">
-        <v-chip size="small" variant="tonal" color="primary" class="mb-4">
-          {{ sectionLabel }}
-        </v-chip>
-        <h1 class="text-h3 font-weight-bold mb-3">
-          {{ page.heroTitle || page.title }}
-        </h1>
-        <p v-if="page.heroBody || page.subtitle" class="text-body-1 text-medium-emphasis mb-6">
-          {{ page.heroBody || page.subtitle }}
-        </p>
-        <div class="d-flex flex-wrap ga-3">
-          <v-btn color="primary" size="large" :to="localPath(page.ctaHref || '/chat')">
-            {{ page.ctaLabel || "Start chatting" }}
-          </v-btn>
-          <v-btn variant="outlined" size="large" :to="localPath('/faq')">
-            Learn more
-          </v-btn>
-        </div>
-      </div>
-
-      <v-sheet
-        v-if="page.heroImageUrl || page.highlights?.length"
-        class="seo-hero__panel pa-4 pa-md-5"
-        rounded="xl"
-        elevation="0"
-      >
-        <div v-if="page.heroImageUrl" class="seo-hero__image-wrap mb-4">
-          <v-img
-            :src="page.heroImageUrl"
-            :alt="page.heroTitle || page.title"
-            class="seo-hero__image"
-            aspect-ratio="16/10"
-            cover
-          />
-          <div v-if="showLanguageMenu" class="seo-hero__overlay">
-            <v-menu content-class="article-language-menu">
-              <template #activator="{ props: menuProps }">
-                <v-btn
-                  v-bind="menuProps"
-                  size="x-small"
-                  variant="flat"
-                  class="language-menu-btn"
-                  :title="originalLanguageTitle"
-                >
-                  <v-icon size="16">mdi-translate</v-icon>
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item
-                  v-for="localeOption in availableLocales"
-                  :key="localeOption"
-                  @click="selectLocale(localeOption)"
-                >
-                  <v-list-item-title>
-                    {{ formatLocaleLabel(localeOption) }}
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
+    <div class="seo-layout">
+      <div class="seo-main-stack">
+        <div class="seo-hero__copy">
+          <v-chip size="small" variant="tonal" color="primary" class="mb-4">
+            {{ sectionLabel }}
+          </v-chip>
+          <h1 class="text-h3 font-weight-bold mb-3">
+            {{ page.heroTitle || page.title }}
+          </h1>
+          <p v-if="page.heroBody || page.subtitle" class="text-body-1 text-medium-emphasis mb-6">
+            {{ page.heroBody || page.subtitle }}
+          </p>
+          <div class="d-flex flex-wrap ga-3">
+            <v-btn color="primary" size="large" :to="localPath(page.ctaHref || '/chat')">
+              {{ page.ctaLabel || "Start chatting" }}
+            </v-btn>
+            <v-btn variant="outlined" size="large" :to="localPath('/faq')">
+              Learn more
+            </v-btn>
           </div>
         </div>
-        <div class="text-overline mb-3">Why this page exists</div>
-        <ul v-if="page.highlights?.length" class="seo-highlights">
-          <li v-for="highlight in page.highlights" :key="highlight">
-            {{ highlight }}
-          </li>
-        </ul>
-      </v-sheet>
-    </div>
 
-    <v-row class="mt-2">
-      <v-col cols="12" md="8">
         <v-card
           :class="['pa-5 pa-md-8', { 'seo-card--dark': isDarkTheme }]"
           rounded="xl"
@@ -88,9 +37,63 @@
           />
           <!-- eslint-enable vue/no-v-html -->
         </v-card>
-      </v-col>
+      </div>
 
-      <v-col cols="12" md="4" class="d-flex flex-column ga-4">
+      <div class="seo-side-stack">
+        <v-sheet
+          v-if="page.heroImageUrl || page.highlights?.length"
+          class="seo-hero__panel pa-4 pa-md-5"
+          rounded="xl"
+          elevation="0"
+        >
+          <div v-if="page.heroImageUrl" class="seo-hero__image-wrap mb-4">
+            <v-img
+              :src="page.heroImageUrl"
+              :alt="page.heroTitle || page.title"
+              class="seo-hero__image"
+              aspect-ratio="16/10"
+              cover
+            />
+            <div
+              v-if="renderedPhotoCredits"
+              class="seo-hero__photo-credit"
+              v-html="renderedPhotoCredits"
+            />
+            <div v-if="showLanguageMenu" class="seo-hero__overlay">
+              <v-menu content-class="article-language-menu">
+                <template #activator="{ props: menuProps }">
+                  <v-btn
+                    v-bind="menuProps"
+                    size="x-small"
+                    variant="flat"
+                    class="language-menu-btn"
+                    :title="originalLanguageTitle"
+                  >
+                    <v-icon size="16">mdi-translate</v-icon>
+                  </v-btn>
+                </template>
+                <v-list density="compact">
+                  <v-list-item
+                    v-for="localeOption in availableLocales"
+                    :key="localeOption"
+                    @click="selectLocale(localeOption)"
+                  >
+                    <v-list-item-title>
+                      {{ formatLocaleLabel(localeOption) }}
+                    </v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </div>
+          </div>
+          <div class="text-overline mb-3">Why this page exists</div>
+          <ul v-if="page.highlights?.length" class="seo-highlights">
+            <li v-for="highlight in page.highlights" :key="highlight">
+              {{ highlight }}
+            </li>
+          </ul>
+        </v-sheet>
+
         <v-card
           v-if="page.relatedLinks?.length"
           :class="['pa-4', { 'seo-card--dark': isDarkTheme }]"
@@ -115,16 +118,27 @@
           rounded="xl"
           elevation="0"
         >
-          <div class="text-h6 mb-3">Go to chat</div>
+          <div class="text-overline mb-2">{{ ctaCardCopy.eyebrow }}</div>
+          <div class="text-h6 mb-3">{{ ctaCardCopy.title }}</div>
           <p class="text-body-2 text-medium-emphasis mb-4">
-            These pages explain the option. The product action still happens inside ImChatty chat.
+            {{ ctaCardCopy.body }}
           </p>
+          <div class="seo-cta-points mb-4">
+            <div
+              v-for="point in ctaCardCopy.points"
+              :key="point"
+              class="seo-cta-point"
+            >
+              <v-icon size="16" color="primary">mdi-check-circle-outline</v-icon>
+              <span>{{ point }}</span>
+            </div>
+          </div>
           <v-btn block color="primary" size="large" :to="localPath(page.ctaHref || '/chat')">
-            {{ page.ctaLabel || "Start chatting" }}
+            {{ page.ctaLabel || ctaCardCopy.button }}
           </v-btn>
         </v-card>
-      </v-col>
-    </v-row>
+      </div>
+    </div>
 
     <v-card
       v-if="page.faqs?.length"
@@ -173,6 +187,8 @@ type SeoPage = {
   heroTitle?: string;
   heroBody?: string;
   heroImageUrl?: string;
+  photoCreditsUrl?: string;
+  photoCreditsHtml?: string;
   body?: string;
   ctaHref?: string;
   ctaLabel?: string;
@@ -188,6 +204,7 @@ const props = defineProps<{
   currentLocale?: string;
 }>();
 
+const { t } = useI18n();
 const localPath = useLocalePath();
 const switchLocalePath = useSwitchLocalePath();
 const theme = useTheme();
@@ -222,6 +239,12 @@ const renderMarkdown = (value?: string) =>
   });
 
 const renderedBody = computed(() => renderMarkdown(props.page.body || ""));
+const renderedPhotoCredits = computed(() =>
+  DOMPurify.sanitize(String(props.page.photoCreditsHtml || ""), {
+    ALLOWED_TAGS: ["a", "span", "em", "strong", "br"],
+    ALLOWED_ATTR: ["href", "target", "rel"],
+  })
+);
 const normalizedCurrentLocale = computed(() =>
   String(props.currentLocale || "en")
     .split("-")[0]
@@ -243,6 +266,17 @@ const availableLocales = computed(() => {
       return true;
     });
 });
+const ctaCardCopy = computed(() => ({
+  eyebrow: t("pages.seo.ctaCard.eyebrow"),
+  title: t("pages.seo.ctaCard.title"),
+  body: t("pages.seo.ctaCard.body"),
+  button: t("pages.seo.ctaCard.button"),
+  points: [
+    t("pages.seo.ctaCard.points.0"),
+    t("pages.seo.ctaCard.points.1"),
+    t("pages.seo.ctaCard.points.2"),
+  ],
+}));
 const showLanguageMenu = computed(() => availableLocales.value.length > 1);
 const originalLanguageTitle = computed(() =>
   `Available languages: ${availableLocales.value.map(formatLocaleLabel).join(", ")}`
@@ -286,12 +320,18 @@ const selectLocale = (localeCode: string) => {
   color: #e2e8f0;
 }
 
-.seo-hero {
+.seo-layout {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
   gap: 20px;
-  align-items: stretch;
   margin-bottom: 12px;
+}
+
+.seo-main-stack,
+.seo-side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .seo-hero__copy,
@@ -326,6 +366,19 @@ const selectLocale = (localeCode: string) => {
   color: #e2e8f0;
 }
 
+.seo-cta-points {
+  display: grid;
+  gap: 10px;
+}
+
+.seo-cta-point {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+}
+
 .seo-highlights {
   margin: 0;
   padding-left: 18px;
@@ -347,6 +400,27 @@ const selectLocale = (localeCode: string) => {
 .seo-hero__image {
   border-radius: 20px;
   overflow: hidden;
+}
+
+.seo-hero__photo-credit {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  max-width: calc(100% - 24px);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #fff;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seo-hero__photo-credit :deep(a) {
+  color: inherit;
 }
 
 .seo-richtext :deep(h2) {
@@ -375,7 +449,7 @@ const selectLocale = (localeCode: string) => {
 }
 
 @media (max-width: 959px) {
-  .seo-hero {
+  .seo-layout {
     grid-template-columns: 1fr;
   }
 
