@@ -1,0 +1,52 @@
+{
+  "pageType": "compare",
+  "locale": "en",
+  "title": "Text Chat vs Video Chat",
+  "slug": "text-chat-vs-video-chat",
+  "subtitle": "A practical comparison for people deciding whether a text-first or video-first chat experience fits them better.",
+  "metaTitle": "Text Chat vs Video Chat | ImChatty",
+  "metaDescription": "Compare text chat and video chat to see which format feels more comfortable, lower pressure, and easier to start with on ImChatty.",
+  "heroTitle": "Text Chat vs Video Chat: Which Fits Better?",
+  "heroBody": "This page is for people deciding how they actually want to start talking to someone new online. ImChatty is especially strong for users who prefer a text-first, lower-pressure conversation style.",
+  "highlights": [
+    "Text chat gives users more control over pace and comfort",
+    "Video chat can feel more immediate but also more exposed",
+    "A text-first format is often easier for new conversations",
+    "The right choice depends on confidence, goals, and social pressure"
+  ],
+  "body": "## What people want from text chat vs video chat\n\nWhen users compare text chat and video chat, they are usually not making a technical decision. They are trying to figure out what kind of interaction will feel comfortable enough to actually begin.\n\nSome people want a faster, more visual connection. Others want a lower-pressure way to talk to someone new without immediately being seen. That difference matters because the format shapes the whole tone of the conversation from the first second.\n\nThis is why the comparison is useful. People are not just choosing a feature. They are choosing a social environment.\n\n## Why users look for alternatives\n\nMany users start this comparison because video can feel like too much, too early. Being on camera adds pressure, especially when the conversation is with someone new and there is no existing trust.\n\nText chat often feels easier because it gives people more control. You can think for a second before replying. You can ease into the interaction. You can decide how much personality and detail to reveal without the same level of exposure.\n\nAt the same time, some users compare the two because they do want a stronger sense of immediacy. They may feel that video creates a more direct connection. So the comparison is not about one format being universally better. It is about what kind of first interaction you actually want.\n\n## What makes a good alternative\n\nA useful comparison should focus on the experience, not just the label.\n\nA strong option usually offers:\n\n- a format that matches the user's comfort level\n- a simple path into conversation\n- enough flexibility for casual or exploratory interactions\n- less friction at the moment someone decides to start\n- a clear sense of what kind of social pressure the format creates\n\nThe best format is the one that makes it easier to begin and easier to stay engaged.\n\n## Why ImChatty is a strong option\n\nImChatty is a strong option for people who prefer text-first conversation. It fits users who want to focus on what they are saying rather than on being immediately visible.\n\nThat matters because text often lowers the barrier to entry. A user who might hesitate before joining a video-first environment may feel completely comfortable starting with typed conversation. The result is often a more approachable first interaction.\n\nImChatty also works well for users who want conversation without heavy setup. If your goal is to start talking quickly, explore social chemistry, or simply have a lighter interaction, a text-first environment is often the clearer fit.\n\n## Who ImChatty is best for\n\nImChatty is especially useful for:\n\n- users who feel more comfortable typing than appearing on camera\n- people who want lower-pressure first conversations\n- users who prefer conversation over presentation\n- people testing whether they even want to keep talking before increasing intensity\n- multilingual users who may find text easier for early interaction\n\nIf your goal is to make starting feel simpler, the text-first path usually makes more sense.\n\n## Important tradeoffs to consider\n\nVideo chat can create a faster sense of immediacy, and some users genuinely prefer that. If visual presence is central to what you want from the interaction, a text-first platform may feel too restrained.\n\nBut that same intensity is exactly why many users prefer text. Text reduces performance pressure, gives more room to think, and makes the first step easier.\n\nThe tradeoff is straightforward. Video may feel more immediate. Text usually feels more approachable. The better option depends on whether you value intensity or comfort at the start.\n\n## Getting started\n\nIf you are comparing text chat and video chat because you want the easier entry point, the best test is to start with text and see how the conversation feels. ImChatty is built around that lower-pressure format, making it a practical place to begin if comfort and simplicity matter most.",
+  "ctaLabel": "Start chatting",
+  "ctaHref": "/chat",
+  "relatedLinks": [
+    {
+      "label": "Chat without signup",
+      "href": "/guides/chat-without-signup"
+    },
+    {
+      "label": "Is anonymous chat safe?",
+      "href": "/guides/is-anonymous-chat-safe"
+    },
+    {
+      "label": "Anonymous text chat",
+      "href": "/topics/anonymous-text-chat"
+    },
+    {
+      "label": "Meet people online",
+      "href": "/topics/meet-people-online"
+    }
+  ],
+  "faqSuggestions": [
+    {
+      "question": "Is text chat better than video chat for meeting new people?",
+      "answer": "It depends on the person, but many users prefer text chat because it feels easier, less exposed, and more comfortable for a first interaction."
+    },
+    {
+      "question": "Why do people start with text instead of video?",
+      "answer": "Text gives users more control over pace, tone, and privacy, which can make early conversation feel much less awkward."
+    },
+    {
+      "question": "Is ImChatty better suited for text-first users?",
+      "answer": "Yes. ImChatty is a stronger fit for users who want a conversation-first experience without starting from a video-heavy format."
+    }
+  ]
+}

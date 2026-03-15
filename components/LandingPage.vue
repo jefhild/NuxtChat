@@ -141,6 +141,10 @@
       </v-sheet>
     </div>
 
+    <v-container fluid class="mt-6">
+      <HomeSeoDiscovery />
+    </v-container>
+
     <!-- Article Sections -->
     <v-container fluid class="mt-10">
       <h2

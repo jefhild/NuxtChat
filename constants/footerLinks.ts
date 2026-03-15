@@ -1,6 +1,9 @@
 export const FOOTER_INTERNAL_LINKS = Object.freeze([
   { path: "/about", labelKey: "components.footer.about" },
   { path: "/faq", labelKey: "components.footer.faq" },
+  { path: "/compare", labelKey: "components.footer.compare" },
+  { path: "/guides", labelKey: "components.footer.guides" },
+  { path: "/topics", labelKey: "components.footer.topics" },
   { path: "/terms", labelKey: "components.footer.terms" },
   { path: "/privacy", labelKey: "components.footer.privacy" },
   { path: "/cookies", labelKey: "components.footer.cookies" },

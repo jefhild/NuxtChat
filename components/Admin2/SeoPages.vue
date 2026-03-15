@@ -36,7 +36,7 @@
         <tr>
           <th>Title</th>
           <th>Type</th>
-          <th>Locale</th>
+          <th>Locales</th>
           <th>Slug</th>
           <th>Status</th>
           <th class="text-right">Actions</th>
@@ -53,7 +53,7 @@
           <td>
             <v-chip size="small" variant="tonal">{{ page.pageType }}</v-chip>
           </td>
-          <td>{{ page.locale }}</td>
+          <td>{{ page.localeSummary }}</td>
           <td>{{ buildAdminPath(page) }}</td>
           <td>
             <v-chip
@@ -463,8 +463,56 @@ const normalizeRelatedLinks = (value) =>
         .filter((item) => item.label && item.href)
     : [];
 
+const localePriority = ["en", "fr", "ru", "zh"];
+
+const sortLocales = (locales) =>
+  [...locales].sort((a, b) => {
+    const aIndex = localePriority.indexOf(a);
+    const bIndex = localePriority.indexOf(b);
+    const safeA = aIndex === -1 ? localePriority.length : aIndex;
+    const safeB = bIndex === -1 ? localePriority.length : bIndex;
+    if (safeA !== safeB) return safeA - safeB;
+    return String(a).localeCompare(String(b));
+  });
+
+const pickPrimaryPage = (group) => {
+  const englishPage = group.find((page) => page.locale === "en");
+  if (englishPage) return englishPage;
+  return [...group].sort((a, b) => {
+    if (Boolean(b.isPublished) !== Boolean(a.isPublished)) {
+      return Number(Boolean(b.isPublished)) - Number(Boolean(a.isPublished));
+    }
+    return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
+  })[0];
+};
+
 const filteredPages = computed(() =>
-  pages.value.filter((page) => page.pageType === selectedType.value)
+  Object.values(
+    pages.value.reduce((groups, page) => {
+      if (page.pageType !== selectedType.value) return groups;
+      const key = `${page.pageType}:${page.slug}`;
+      groups[key] = groups[key] || [];
+      groups[key].push(page);
+      return groups;
+    }, {})
+  )
+    .map((group) => {
+      const primaryPage = pickPrimaryPage(group);
+      const locales = sortLocales(
+        group.map((page) => String(page.locale || "").trim().toLowerCase()).filter(Boolean)
+      );
+
+      return {
+        ...primaryPage,
+        localeSummary: locales.join(", "),
+        availableLocales: locales,
+        translationCount: locales.length,
+      };
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+    )
 );
 
 const translationOptions = computed(() => {

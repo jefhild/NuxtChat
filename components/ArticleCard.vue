@@ -143,15 +143,16 @@
 
     <template v-if="hasTags">
       <div class="tags-toggle d-flex justify-center">
-        <v-btn
-          :icon="tagsExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-          variant="text"
-          density="compact"
-          size="small"
-          color="grey-darken-2"
+        <button
+          type="button"
+          class="tags-toggle-btn"
           :aria-label="tagsExpanded ? 'Hide tags' : 'Show tags'"
           @click.stop="tagsExpanded = !tagsExpanded"
-        />
+        >
+          <v-icon size="20" color="grey-darken-2">
+            {{ tagsExpanded ? "mdi-chevron-up" : "mdi-chevron-down" }}
+          </v-icon>
+        </button>
       </div>
 
       <v-expand-transition>
@@ -684,6 +685,27 @@ onMounted(() => {
 .tags-toggle {
   margin-top: -6px;
   padding: 0 0 6px;
+}
+
+.tags-toggle-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  appearance: none;
+  cursor: pointer;
+}
+
+.tags-toggle-btn:focus-visible {
+  outline: 1px solid rgba(var(--v-theme-primary), 0.7);
+  outline-offset: 3px;
 }
 
 .card-link {
