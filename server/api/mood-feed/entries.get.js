@@ -1,5 +1,6 @@
 import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
+import { buildMoodPromptSlug } from "@/utils/moodPromptSlug";
 
 const normalizeLocale = (value) => {
   const code = String(value || "").trim().toLowerCase();
@@ -15,6 +16,7 @@ export default defineEventHandler(async (event) => {
   const locale = normalizeLocale(query.locale || "en");
   const limit = Math.min(Math.max(Number(query.limit || 20), 1), 50);
   const offset = Math.max(Number(query.offset || 0), 0);
+  const filterPromptKey = String(query.promptKey || query.prompt_key || "").trim() || null;
   const page = Math.floor(offset / limit) + 1;
   let user = null;
   try {
@@ -25,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
   const supabase = await getServiceRoleClient(event);
 
-  const { data: entries, error } = await supabase
+  let entriesQuery = supabase
     .from("mood_feed_entries")
     .select(
       [
@@ -42,8 +44,13 @@ export default defineEventHandler(async (event) => {
       ].join(",")
     )
     .eq("status", "published")
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
+    .order("created_at", { ascending: false });
+
+  if (filterPromptKey) {
+    entriesQuery = entriesQuery.eq("prompt_key", filterPromptKey);
+  }
+
+  const { data: entries, error } = await entriesQuery.range(offset, offset + limit - 1);
 
   if (error) {
     throw createError({ statusCode: 500, statusMessage: error.message });
@@ -382,6 +389,10 @@ export default defineEventHandler(async (event) => {
         id: groupKey,
         promptKey: entry.promptKey || null,
         promptText,
+        promptSlug: buildMoodPromptSlug({
+          promptText,
+          promptKey: entry.promptKey || null,
+        }),
         relatedArticleSlug,
         entries: [],
       });

@@ -352,6 +352,7 @@ function onProfileClick() {
 .menu-btn {
   --v-btn-bg: transparent !important;
   background: transparent !important;
+  background-color: transparent !important;
   box-shadow: none !important;
   color: rgba(226, 232, 240, 0.82) !important;
 }
@@ -361,6 +362,16 @@ function onProfileClick() {
 .menu-btn :deep(.v-btn__overlay),
 .menu-btn :deep(.v-btn__underlay) {
   background: transparent !important;
+}
+
+.cmt .actions :deep(.v-btn--icon),
+.cmt .actions :deep(.v-btn--variant-plain),
+.cmt .actions :deep(.v-btn--disabled),
+.menu-btn:deep(.v-btn--icon),
+.menu-btn:deep(.v-btn--variant-plain),
+.menu-btn:deep(.v-btn--disabled) {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .content-row {

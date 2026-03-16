@@ -86,7 +86,7 @@
               </v-menu>
             </div>
           </div>
-          <div class="text-overline mb-3">Why this page exists</div>
+          <div class="text-overline mb-3">{{ t("pages.seo.highlightsTitle") }}</div>
           <ul v-if="page.highlights?.length" class="seo-highlights">
             <li v-for="highlight in page.highlights" :key="highlight">
               {{ highlight }}
@@ -111,6 +111,30 @@
               {{ link.label }}
             </NuxtLink>
           </div>
+        </v-card>
+
+        <v-card
+          v-if="page.faqs?.length"
+          :class="['pa-4 pa-md-5', { 'seo-card--dark': isDarkTheme }]"
+          rounded="xl"
+          elevation="0"
+        >
+          <div class="text-h5 mb-4">FAQ</div>
+          <v-expansion-panels variant="accordion">
+            <v-expansion-panel
+              v-for="faq in page.faqs"
+              :key="faq.question"
+              rounded="lg"
+            >
+              <v-expansion-panel-title>
+                {{ faq.question }}
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <!-- eslint-disable-next-line vue/no-v-html -->
+                <div class="seo-faq-answer" v-html="renderMarkdown(faq.answer)" />
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
         </v-card>
 
         <v-card
@@ -139,30 +163,6 @@
         </v-card>
       </div>
     </div>
-
-    <v-card
-      v-if="page.faqs?.length"
-      :class="['pa-5 pa-md-8 mt-6', { 'seo-card--dark': isDarkTheme }]"
-      rounded="xl"
-      elevation="0"
-    >
-      <div class="text-h5 mb-4">FAQ</div>
-      <v-expansion-panels variant="accordion">
-        <v-expansion-panel
-          v-for="faq in page.faqs"
-          :key="faq.question"
-          rounded="lg"
-        >
-          <v-expansion-panel-title>
-            {{ faq.question }}
-          </v-expansion-panel-title>
-          <v-expansion-panel-text>
-            <!-- eslint-disable-next-line vue/no-v-html -->
-            <div class="seo-faq-answer" v-html="renderMarkdown(faq.answer)" />
-          </v-expansion-panel-text>
-        </v-expansion-panel>
-      </v-expansion-panels>
-    </v-card>
   </v-container>
 </template>
 

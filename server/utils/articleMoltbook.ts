@@ -1,5 +1,10 @@
 import type { H3Event } from "h3";
-import { createMoltbookPost } from "~/server/utils/moltbook";
+import {
+  applyMoltbookPostUsage,
+  assertMoltbookPostAllowed,
+  createMoltbookPost,
+  getMoltbookPersonaConfig,
+} from "~/server/utils/moltbook";
 
 const asObject = (value: unknown): Record<string, any> =>
   value && typeof value === "object" && !Array.isArray(value)
@@ -108,6 +113,25 @@ export const publishArticleToMoltbook = async ({
   const agentName = String(cfg.MOLTBOOK_ARTICLE_AGENT_NAME || "imchatty").trim();
   const submoltName = String(cfg.MOLTBOOK_ARTICLE_SUBMOLT || "general").trim();
 
+  const { data: articlePersona, error: articlePersonaError } = await supabase
+    .from("ai_personas")
+    .select("id, persona_key, metadata")
+    .eq("persona_key", agentName)
+    .maybeSingle();
+
+  if (articlePersonaError) {
+    throw articlePersonaError;
+  }
+
+  if (articlePersona?.persona_key) {
+    const personaConfig = getMoltbookPersonaConfig({
+      metadata: articlePersona.metadata,
+      personaKey: articlePersona.persona_key,
+      config: cfg,
+    });
+    assertMoltbookPostAllowed(personaConfig);
+  }
+
   const postResponse = await createMoltbookPost({
     event,
     personaKey: agentName,
@@ -154,6 +178,24 @@ export const publishArticleToMoltbook = async ({
 
   if (articleUpdateError) {
     throw articleUpdateError;
+  }
+
+  if (articlePersona?.id && articlePersona?.persona_key) {
+    const updatedMetadata = applyMoltbookPostUsage({
+      metadata: articlePersona.metadata,
+      personaKey: articlePersona.persona_key,
+      config: cfg,
+      postId,
+    });
+
+    const { error: personaUpdateError } = await supabase
+      .from("ai_personas")
+      .update({ metadata: updatedMetadata })
+      .eq("id", articlePersona.id);
+
+    if (personaUpdateError) {
+      throw personaUpdateError;
+    }
   }
 
   moltbook.posted = true;

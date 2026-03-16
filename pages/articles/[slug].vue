@@ -92,12 +92,26 @@
       >
         <div
           v-if="personaName || personaAvatar"
-          class="hero-persona-card d-flex align-center ga-4"
+          :class="[
+            'hero-persona-card',
+            { 'hero-persona-card--collapsed': !personaCardExpanded },
+          ]"
         >
-          <v-avatar v-if="personaAvatar" size="52">
-            <v-img :src="personaAvatar" :alt="personaName" />
-          </v-avatar>
-          <div class="d-flex flex-column">
+          <button
+            type="button"
+            class="hero-persona-toggle"
+            :aria-expanded="String(personaCardExpanded)"
+            :aria-label="personaCardExpanded ? 'Collapse perspective card' : 'Expand perspective card'"
+            @click="togglePersonaCard"
+          >
+            <v-avatar size="52">
+              <v-img v-if="personaAvatar" :src="personaAvatar" :alt="personaName" />
+              <span v-else class="hero-persona-fallback">
+                {{ personaFallbackInitial }}
+              </span>
+            </v-avatar>
+          </button>
+          <div v-if="personaCardExpanded" class="hero-persona-copy d-flex flex-column">
             <span class="text-caption text-medium-emphasis">Perspective</span>
             <span class="text-subtitle-1 font-weight-medium">
               {{ personaName }}
@@ -153,6 +167,15 @@
         <v-alert type="info" variant="tonal" border="start" class="mb-2">
           {{ displaySummary }}
         </v-alert>
+      </v-col>
+    </v-row>
+
+    <v-row v-if="articleMoodPlacement === 'after_summary'">
+      <v-col cols="12">
+        <ArticleMoodPromptInline
+          :prompt-key="articleMoodPromptKey"
+          :article-slug="article.slug"
+        />
       </v-col>
     </v-row>
 
@@ -244,6 +267,13 @@
           @click="handlePersonaLinkClick"
           @keydown="handlePersonaLinkKeydown"
         ></div>
+
+        <ArticleMoodPromptInline
+          v-if="articleMoodPlacement === 'before_references'"
+          class="mt-6"
+          :prompt-key="articleMoodPromptKey"
+          :article-slug="article.slug"
+        />
 
         <div v-if="rewriteReferences.length" class="mt-6">
           <h3 class="text-subtitle-1 mb-2">References</h3>
@@ -364,10 +394,12 @@ import { nextTick } from "vue";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 import { loadInstagramEmbeds } from "@/composables/useInstagramEmbeds.js";
 import { buildTaxonomyPath, normalizeTaxonomySlug } from "@/utils/taxonomySlug";
+import { useDisplay } from "vuetify";
 const { locale } = useI18n();
 const localPath = useLocalePath();
 const switchLocalePath = useSwitchLocalePath();
 const config = useRuntimeConfig();
+const { mdAndUp } = useDisplay();
 const supabase = useSupabaseClient?.();
 const route = useRoute();
 const slug = route.params.slug;
@@ -486,6 +518,11 @@ const personaAvatar = computed(
     rewriteMeta.value?.persona_avatar_url ||
     null
 );
+const personaFallbackInitial = computed(() =>
+  String(personaName.value || "?").trim().charAt(0).toUpperCase() || "?"
+);
+const personaCardExpanded = ref(false);
+const personaCardTouched = ref(false);
 
 const newsmeshTopics = computed(() => newsmeshMeta.value?.topics || []);
 const newsmeshPeople = computed(() => newsmeshMeta.value?.people || []);
@@ -659,6 +696,15 @@ const rewriteReferences = computed(
     rewriteMeta.value?.references ||
     []
 );
+const articleMoodConfig = computed(() => rewriteMeta.value?.articleMoodPrompt || null);
+const articleMoodPromptKey = computed(() =>
+  String(articleMoodConfig.value?.promptKey || "").trim()
+);
+const articleMoodPlacement = computed(() => {
+  const configured = String(articleMoodConfig.value?.placement || "").trim();
+  if (configured === "after_summary") return "after_summary";
+  return "before_references";
+});
 const sanitizeTemplateCss = (value = "") =>
   String(value || "")
     .replace(/<style\b[^>]*>/gi, "")
@@ -687,6 +733,21 @@ const articleBodyRef = ref(null);
 
 const renderedMarkdown = ref("");
 const htmlContent = ref("");
+
+watch(
+  mdAndUp,
+  (isWide) => {
+    if (!personaCardTouched.value) {
+      personaCardExpanded.value = Boolean(isWide);
+    }
+  },
+  { immediate: true }
+);
+
+const togglePersonaCard = () => {
+  personaCardTouched.value = true;
+  personaCardExpanded.value = !personaCardExpanded.value;
+};
 
 const YOUTUBE_URL_PATTERN =
   /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtube-nocookie\.com|youtu\.be)\//i;
@@ -1089,18 +1150,79 @@ const formatDate = (date) =>
   position: absolute;
   top: 18px;
   left: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: auto;
+  max-width: min(720px, calc(100% - 36px));
+  overflow: hidden;
   background: rgba(15, 23, 42, 0.82);
   border-radius: 999px;
   padding: 0.65rem 1.6rem 0.65rem 0.65rem;
   color: #fff;
   box-shadow: 0 15px 35px rgba(15, 23, 42, 0.35);
   backdrop-filter: blur(6px);
+  transition:
+    max-width 0.24s ease,
+    padding 0.24s ease,
+    border-radius 0.24s ease,
+    background-color 0.24s ease;
+}
+
+.hero-persona-card--collapsed {
+  gap: 0;
+  max-width: 64px;
+  padding: 0.2rem;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.hero-persona-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.hero-persona-toggle:focus-visible {
+  outline: 2px solid rgba(191, 219, 254, 0.95);
+  outline-offset: 3px;
+}
+
+.hero-persona-copy {
+  min-width: 0;
+  max-width: min(560px, calc(100vw - 150px));
+  flex: 1 1 auto;
+}
+
+.hero-persona-card--collapsed .hero-persona-copy {
+  display: none;
+}
+
+.hero-persona-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(37, 99, 235, 0.88);
+  color: #eff6ff;
+  font-weight: 700;
 }
 
 .hero-persona-card .text-caption,
 .hero-persona-card .text-subtitle-1,
 .hero-persona-card .text-body-2 {
   color: inherit !important;
+}
+
+.hero-persona-card .text-body-2 {
+  line-height: 1.35;
 }
 
 .hero-image-footer {
@@ -1134,6 +1256,12 @@ const formatDate = (date) =>
 }
 
 @media (max-width: 960px) {
+  .hero-persona-card {
+    top: 14px;
+    left: 14px;
+    max-width: calc(100% - 36px);
+  }
+
   .hero-photo-credit {
     max-width: 70%;
   }

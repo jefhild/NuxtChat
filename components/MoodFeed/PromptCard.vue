@@ -4,6 +4,13 @@
       <div class="mood-thread__question">
         {{ promptText }}
         <NuxtLink
+          v-if="promptThreadHref"
+          :to="promptThreadHref"
+          class="mood-thread__thread-link"
+        >
+          [Responses]
+        </NuxtLink>
+        <NuxtLink
           v-if="promptRelatedHref"
           :to="promptRelatedHref"
           class="mood-thread__related"
@@ -86,6 +93,7 @@ import MoodFeedCommentList from "@/components/MoodFeed/CommentList.vue";
 import { computed, ref, reactive, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
+import { buildMoodPromptSlug } from "@/utils/moodPromptSlug";
 
 const props = defineProps({
   thread: { type: Object, required: true },
@@ -119,6 +127,13 @@ const promptRelatedHref = computed(() => {
   const slug = String(props.thread?.relatedArticleSlug || "").trim();
   if (!slug) return null;
   return localPath(`/articles/${slug}`);
+});
+const promptThreadHref = computed(() => {
+  const slug = buildMoodPromptSlug({
+    promptText: props.thread?.promptText,
+    promptKey: props.thread?.promptKey,
+  });
+  return props.thread?.promptKey ? localPath(`/mood/${slug}`) : null;
 });
 
 const entryMessages = computed(() =>
@@ -356,7 +371,16 @@ function handleVote(payload) {
   text-decoration: underline;
 }
 
-.mood-thread__related:hover {
+.mood-thread__thread-link {
+  margin-left: 8px;
+  font-size: 0.8em;
+  font-weight: 600;
+  color: color-mix(in oklab, var(--mf-thread-question) 88%, #dbeafe 12%);
+  text-decoration: underline;
+}
+
+.mood-thread__related:hover,
+.mood-thread__thread-link:hover {
   color: #bfdbfe;
 }
 

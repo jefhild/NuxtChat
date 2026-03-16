@@ -208,6 +208,30 @@
             hint="Used for article summary display and metadata."
             persistent-hint
           />
+          <v-row>
+            <v-col cols="12" md="7">
+              <v-select
+                v-model="selectedArticle.mood_prompt_key"
+                :items="articleMoodPromptOptions"
+                item-title="label"
+                item-value="value"
+                label="Mood question"
+                clearable
+                hint="Optional inline Mood Feed prompt for this article."
+                persistent-hint
+              />
+            </v-col>
+            <v-col cols="12" md="5">
+              <v-select
+                v-model="selectedArticle.mood_prompt_placement"
+                :items="articleMoodPlacementOptions"
+                item-title="label"
+                item-value="value"
+                label="Prompt placement"
+                :disabled="!selectedArticle.mood_prompt_key"
+              />
+            </v-col>
+          </v-row>
 
           <v-textarea
             v-model="selectedArticle.social_facebook_caption"
@@ -399,6 +423,7 @@ const searchQuery = ref("");
 const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
+const moodPromptOptions = ref([]);
 const types = ref(["blog", "guide"]);
 const languageOptions = [
   { label: "English (en)", value: "en" },
@@ -429,6 +454,32 @@ const snackbar = ref({
   show: false,
   message: "",
 });
+const articleMoodPlacementOptions = [
+  { label: "After summary", value: "after_summary" },
+  { label: "Before references", value: "before_references" },
+];
+const articleMoodPromptOptions = computed(() => {
+  const items = [{ label: "None", value: "" }];
+  const existingKey = String(selectedArticle.value?.mood_prompt_key || "").trim();
+  const seen = new Set([""]);
+
+  for (const prompt of moodPromptOptions.value || []) {
+    const key = String(prompt?.prompt_key || "").trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    const promptText = String(prompt?.prompt_text || "").trim();
+    items.push({
+      label: promptText ? `${promptText} (${key})` : key,
+      value: key,
+    });
+  }
+
+  if (existingKey && !seen.has(existingKey)) {
+    items.push({ label: existingKey, value: existingKey });
+  }
+
+  return items;
+});
 const translationOptions = computed(() => {
   const original = String(selectedArticle.value?.original_language_code || "")
     .trim()
@@ -454,6 +505,19 @@ const selectedArticleMoltbookPostId = computed(
 const selectedArticleMoltbookButtonLabel = computed(() =>
   selectedArticleMoltbookPostId.value ? "Repost to Moltbook" : "Post to Moltbook"
 );
+const loadMoodPromptOptions = async () => {
+  try {
+    const response = await $fetch("/api/admin/mood-feed/prompts", {
+      query: { locale: locale.value },
+    });
+    moodPromptOptions.value = (response?.items || []).filter(
+      (item) => item?.is_active
+    );
+  } catch (error) {
+    console.error("[admin] mood prompt options", error);
+    moodPromptOptions.value = [];
+  }
+};
 
 const stopTranslationPolling = () => {
   if (translationPollTimer) {
@@ -693,6 +757,12 @@ const togglePublish = async (article) => {
       })
       if (!res?.success) throw new Error(res?.error)
       article.isPublishedToChat = true
+      if (res?.rewrite_meta) {
+        article.rewrite_meta = res.rewrite_meta
+        if (selectedArticle.value?.id === article.id) {
+          selectedArticle.value.rewrite_meta = res.rewrite_meta
+        }
+      }
       const moltbookNote = res?.moltbook?.posted
         ? ' + posted to Moltbook'
         : res?.moltbook?.reason === 'already_posted'
@@ -759,6 +829,7 @@ onMounted(async () => {
   // console.log("articles", articles.value);
   categories.value = (await getAllCategories()) || [];
   tags.value = (await getAllTags()) || [];
+  await loadMoodPromptOptions();
 
 
   try {
@@ -1075,6 +1146,7 @@ const toggleEditDialog = async (article) => {
     topicTagNames = getTagNamesFromTopics(newsmeshTopics);
   }
   const existingSocial = article.rewrite_meta?.social || {};
+  const articleMoodPrompt = article.rewrite_meta?.articleMoodPrompt || {};
   const summaryFallback =
     article.rewrite_meta?.summary ||
     article.newsmesh_meta?.summary ||
@@ -1097,6 +1169,11 @@ const toggleEditDialog = async (article) => {
     newsmesh_meta: article.newsmesh_meta || {},
     template_css: article.rewrite_meta?.template_css || "",
     summary: summaryFallback || "",
+    mood_prompt_key: articleMoodPrompt.promptKey || "",
+    mood_prompt_placement:
+      articleMoodPrompt.promptKey || articleMoodPrompt.placement
+        ? articleMoodPrompt.placement || "before_references"
+        : "before_references",
     social_facebook_caption: existingSocial?.facebook?.caption || "",
     social_instagram_caption: existingSocial?.instagram?.caption || "",
 
@@ -1152,6 +1229,15 @@ const handleArticleUpdate = async () => {
       },
     };
     const summaryText = String(selectedArticle.value.summary || "").trim();
+    const moodPromptKey = String(selectedArticle.value.mood_prompt_key || "").trim();
+    const nextArticleMoodPrompt = moodPromptKey
+      ? {
+          promptKey: moodPromptKey,
+          placement:
+            String(selectedArticle.value.mood_prompt_placement || "").trim() ||
+            "before_references",
+        }
+      : null;
     const nextContent = upsertSummaryInHtml(
       selectedArticle.value.content,
       summaryText
@@ -1174,6 +1260,7 @@ const handleArticleUpdate = async () => {
         ...(selectedArticle.value.rewrite_meta || {}),
         template_css: sanitizeTemplateCss(selectedArticle.value.template_css),
         summary: summaryText || null,
+        articleMoodPrompt: nextArticleMoodPrompt,
         social: nextSocial,
       },
       newsmesh_meta: {

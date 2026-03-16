@@ -140,6 +140,7 @@ export default defineEventHandler(async (event) => {
     }
 
     let moltbook = null;
+    let rewriteMeta = article.rewrite_meta || {};
     try {
       const moltbookResult = await publishArticleToMoltbook({
         event,
@@ -150,6 +151,7 @@ export default defineEventHandler(async (event) => {
         points,
       });
       moltbook = moltbookResult.moltbook;
+      rewriteMeta = moltbookResult.rewriteMeta || rewriteMeta;
     } catch (moltbookError) {
       console.error("[publish] Moltbook autopost failed:", moltbookError);
       moltbook = {
@@ -162,7 +164,12 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    return { success: true, threadId: thread.id, moltbook };
+    return {
+      success: true,
+      threadId: thread.id,
+      moltbook,
+      rewrite_meta: rewriteMeta,
+    };
   } catch (error) {
     console.error("[admin/articles][publish] post error:", error);
     setResponseStatus(event, error?.statusCode || 500);

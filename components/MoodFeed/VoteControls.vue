@@ -111,7 +111,15 @@ async function handleVote(value) {
 
 .vote-controls :deep(.vote-btn) {
   --v-btn-bg: transparent !important;
+  background-color: transparent !important;
   color: rgba(226, 232, 240, 0.82) !important;
+}
+
+.vote-controls :deep(.vote-btn.v-btn--icon),
+.vote-controls :deep(.vote-btn.v-btn--variant-plain),
+.vote-controls :deep(.vote-btn.v-btn--disabled) {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .vote-controls :deep(.vote-btn:hover) {
