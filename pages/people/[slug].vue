@@ -138,6 +138,8 @@
 </template>
 
 <script setup>
+import { shouldIndexTaxonomyPage } from "@/composables/useIndexability";
+
 const route = useRoute();
 const { t, locale } = useI18n();
 const config = useRuntimeConfig();
@@ -228,6 +230,10 @@ const availableTaxonomyLocales = computed(() => {
 
 const canonicalLocale = computed(() => baseLocale.value || "en");
 const canonicalPath = computed(() => route.path || "/");
+const shouldIndexPage = computed(() => shouldIndexTaxonomyPage(articles.value.length));
+const taxonomyRobots = computed(() =>
+  shouldIndexPage.value ? undefined : "noindex,follow"
+);
 
 const searchLabel = computed(() => t("pages.articles.index.search"));
 
@@ -258,6 +264,7 @@ useSeoI18nMeta("people.index", {
   availableLocaleCodes: availableTaxonomyLocales,
   canonicalLocaleCode: canonicalLocale.value,
   overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
+  robots: taxonomyRobots,
   dynamic: {
     title: computed(() => `${pageHeading.value} – ImChatty`),
     description: limitedDescription,
@@ -352,6 +359,10 @@ const { data: initialData, pending } = await useAsyncData(
   },
   { watch: [slug], server: true }
 );
+
+if (!initialData.value?.person) {
+  throw createError({ statusCode: 404, statusMessage: "Person not found" });
+}
 
 watchEffect(() => {
   if (!initialData.value) return;

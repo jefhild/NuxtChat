@@ -133,6 +133,7 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
+import { shouldIndexTaxonomyPage } from "@/composables/useIndexability";
 import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta"; // adjust path as needed
 
 const {
@@ -262,11 +263,16 @@ const availableTaxonomyLocales = computed(() => {
 
 const canonicalLocale = computed(() => baseLocale.value || "en");
 const canonicalPath = computed(() => route.path || "/");
+const shouldIndexPage = computed(() => shouldIndexTaxonomyPage(articles.value.length));
+const taxonomyRobots = computed(() =>
+  shouldIndexPage.value ? undefined : "noindex,follow"
+);
 
 useSeoI18nMeta("tags.index", {
   availableLocaleCodes: availableTaxonomyLocales,
   canonicalLocaleCode: canonicalLocale.value,
   overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
+  robots: taxonomyRobots,
   dynamic: {
     title: tagHeading,
     description: computed(() =>
@@ -307,6 +313,11 @@ const { data: initialData, pending } = await useAsyncData(
       );
     }
 
+    const normalizedSlug = String(tagSlug.value || "").trim().toLowerCase();
+    const matchedTag = (tagData || []).find(
+      (tag) => String(tag?.slug || "").trim().toLowerCase() === normalizedSlug
+    );
+
     const tagMap = new Map();
     for (const article of articlesWithTags) {
       (article.tags || []).forEach((tag) => tagMap.set(tag.slug, tag));
@@ -318,10 +329,15 @@ const { data: initialData, pending } = await useAsyncData(
       tags: flattenedTags.length ? flattenedTags : tagData || [],
       people: peopleData || [],
       articles: articlesWithTags,
+      matchedTag: matchedTag || null,
     };
   },
   { watch: [tagSlug], server: true }
 );
+
+if (!initialData.value?.matchedTag) {
+  throw createError({ statusCode: 404, statusMessage: "Tag not found" });
+}
 
 watchEffect(() => {
   if (!initialData.value) return;

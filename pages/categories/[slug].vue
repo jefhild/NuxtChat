@@ -134,6 +134,7 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
+import { shouldIndexTaxonomyPage } from "@/composables/useIndexability";
 import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta";
 
 const {
@@ -216,6 +217,10 @@ const availableTaxonomyLocales = computed(() => {
 
 const canonicalLocale = computed(() => baseLocale.value || "en");
 const canonicalPath = computed(() => route.path || "/");
+const shouldIndexPage = computed(() => shouldIndexTaxonomyPage(articles.value.length));
+const taxonomyRobots = computed(() =>
+  shouldIndexPage.value ? undefined : "noindex,follow"
+);
 
 const searchLabel = computed(() => t("pages.articles.index.search"));
 
@@ -260,6 +265,7 @@ useSeoI18nMeta("categories.index", {
   availableLocaleCodes: availableTaxonomyLocales,
   canonicalLocaleCode: canonicalLocale.value,
   overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
+  robots: taxonomyRobots,
   dynamic: {
     title: computed(
       () =>
@@ -323,6 +329,12 @@ const { data: initialData, pending } = await useAsyncData(
       );
     }
 
+    const normalizedSlug = String(slug.value || "").trim().toLowerCase();
+    const matchedCategory = (categoryData || []).find(
+      (category) =>
+        String(category?.slug || "").trim().toLowerCase() === normalizedSlug
+    );
+
     const tagMap = new Map();
     for (const article of articlesWithTags) {
       (article.tags || []).forEach((tag) => tagMap.set(tag.slug, tag));
@@ -334,10 +346,15 @@ const { data: initialData, pending } = await useAsyncData(
       tags: flattenedTags.length ? flattenedTags : tagData || [],
       people: peopleData || [],
       articles: articlesWithTags,
+      matchedCategory: matchedCategory || null,
     };
   },
   { watch: [slug], server: true }
 );
+
+if (!initialData.value?.matchedCategory) {
+  throw createError({ statusCode: 404, statusMessage: "Category not found" });
+}
 
 watchEffect(() => {
   if (!initialData.value) return;

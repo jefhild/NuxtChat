@@ -27,7 +27,7 @@
             </v-col>
           </v-row>
           <v-row class="mt-2" justify="center" v-else>
-                        <v-col cols="auto">
+            <v-col cols="auto">
               <NuxtLink :to="localPath('/chat')">{{
                 $t("components.public-user-profile.back-home")
               }}</NuxtLink>
@@ -36,12 +36,6 @@
               <NuxtLink :to="localPath('/chat')">{{
                 $t("components.public-user-profile.back-chat")
               }}</NuxtLink>
-            </v-col>
-            <v-col cols="auto">
-              <NuxtLink :to="localPath('/chat?userslug=imchatty')">
-                {{ $t("components.public-user-profile.chat") }}
-                {{ localized.displayname }}
-              </NuxtLink>
             </v-col>
           </v-row>
         </v-container>

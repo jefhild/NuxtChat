@@ -11,7 +11,9 @@ export async function getRegisteredUsersDisplaynames(options?: {
 }) {
   const query = supabase
     .from("profiles")
-    .select("displayname, gender_id, slug, is_ai, is_private");
+    .select(
+      "displayname, gender_id, slug, is_ai, is_private, bio, tagline, avatar_url"
+    );
 
   if (options?.onlyAI) {
     query.eq("is_ai", true);

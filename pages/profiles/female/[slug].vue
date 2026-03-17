@@ -4,6 +4,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { shouldIndexProfile } from "@/composables/useIndexability";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const { locale } = useI18n();
@@ -13,6 +14,10 @@ const slug = route.params.slug;
 
 const { profile, fetchUserProfileFromSlug } = useUserProfile();
 await fetchUserProfileFromSlug(slug);
+
+if (!profile.value) {
+  throw createError({ statusCode: 404, statusMessage: "Profile not found" });
+}
 
 const requestedSlug = String(slug || "").trim().toLowerCase();
 const canonicalSlug = String(profile.value?.slug || "")
@@ -34,6 +39,7 @@ const localized = computed(() =>
 // ✅ Define before it's used
 const getLimitedDescription = (text) =>
   text && text.length > 160 ? text.slice(0, 157) + "..." : text;
+const shouldIndex = computed(() => shouldIndexProfile(profile.value));
 
 // ✅ Call composable AFTER the function is declared
 useSeoI18nMeta("profiles.female", {
@@ -50,8 +56,6 @@ useSeoI18nMeta("profiles.female", {
 });
 
 useHead(() => ({
-  meta: profile.value?.is_private
-    ? [{ name: "robots", content: "noindex, nofollow" }]
-    : [],
+  meta: shouldIndex.value ? [] : [{ name: "robots", content: "noindex, nofollow" }],
 }));
 </script>
