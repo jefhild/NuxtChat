@@ -5,14 +5,16 @@
     rounded="lg"
     elevation="0"
   >
-    <div class="article-mood-prompt__eyebrow">
-      {{ t("pages.feeds.heading", "Mood Feed") }}
+    <div class="article-mood-prompt__header">
+      <div class="article-mood-prompt__eyebrow">
+        {{ t("pages.feeds.heading", "Mood Feed") }}
+      </div>
+      <div v-if="promptPageHref" class="article-mood-prompt__thread-link">
+        <NuxtLink :to="promptPageHref">See all responses</NuxtLink>
+      </div>
     </div>
     <div class="article-mood-prompt__question">
       {{ prompt.text }}
-    </div>
-    <div v-if="promptPageHref" class="article-mood-prompt__thread-link">
-      <NuxtLink :to="promptPageHref">See all responses</NuxtLink>
     </div>
 
     <div v-if="viewerEntry" class="article-mood-prompt__answered">
@@ -550,22 +552,31 @@ onBeforeUnmount(() => {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(var(--v-theme-primary-rgb, 59, 130, 246), 0.92);
+}
+
+.article-mood-prompt__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 8px;
 }
 
 .article-mood-prompt__question {
   font-size: 1rem;
   line-height: 1.5;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
 }
 
 .article-mood-prompt__thread-link {
-  margin-bottom: 12px;
+  margin-left: auto;
+  flex: 0 0 auto;
 }
 
 .article-mood-prompt__thread-link a {
   color: rgb(var(--v-theme-primary));
   text-decoration: underline;
+  white-space: nowrap;
 }
 
 .article-mood-prompt__actions {
@@ -618,9 +629,10 @@ onBeforeUnmount(() => {
 }
 
 .article-mood-prompt__answer-mark {
-  font-size: 1.35rem;
-  line-height: 1;
-  color: rgba(var(--v-theme-primary-rgb, 59, 130, 246), 0.72);
+  font-size: 2rem;
+  line-height: 0.9;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface-rgb, 148, 163, 184), 0.55);
 }
 
 .article-mood-prompt__answer-text {
@@ -629,6 +641,19 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 640px) {
+  .article-mood-prompt__header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .article-mood-prompt__thread-link {
+    margin-left: 0;
+  }
+
+  .article-mood-prompt__thread-link a {
+    white-space: normal;
+  }
+
   .article-mood-prompt__actions {
     flex-direction: column;
     align-items: stretch;

@@ -292,7 +292,19 @@ const buildArticleHtml = (
   }
 ) => {
   const cleanedBody = stripSocialCaptions(rewrite.body || "");
-  const bodyHtml = marked.parse(cleanedBody);
+  const bodyHtml = String(marked.parse(cleanedBody)).replace(
+    /<p(\b[^>]*)>/gi,
+    (match, attrs) => {
+      if (/\bclass\s*=/i.test(attrs)) {
+        return match.replace(
+          /\bclass=(['"])([^'"]*)\1/i,
+          (_classMatch, quote, classNames) =>
+            `class=${quote}${classNames} article-body-paragraph${quote}`
+        );
+      }
+      return `<p class="article-body-paragraph"${attrs}>`;
+    }
+  );
 
   const summaryHtml =
     sourceMeta.summary || rewrite.summary
@@ -301,14 +313,6 @@ const buildArticleHtml = (
         )}</p>`
       : "";
 
-  const sourceLabel = sourceMeta.url
-    ? escapeHtml(
-        sourceMeta.domain ||
-          sourceMeta.title ||
-          new URL(sourceMeta.url).hostname
-      )
-    : null;
-  const link = toSafeUrl(sourceMeta.url || undefined);
   const personaLabel = personaMeta?.name
     ? escapeHtml(personaMeta.name)
     : null;
@@ -334,19 +338,9 @@ const buildArticleHtml = (
       </div>`
     : "";
 
-  const sourceBlock = sourceLabel
-    ? link
-      ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${sourceLabel}</a>`
-      : sourceLabel
-    : "";
-  const sourceLine = sourceBlock
-    ? `<p class="source-line">${sourceBlock}</p>`
-    : "";
-
   const articleHtml = `<article class="manual-source-article">
   <header class="article-header">
-    ${sourceLine}
-    <h1>${escapeHtml(sourceMeta.title || rewrite.headline)}</h1>
+    <h2>${escapeHtml(sourceMeta.title || rewrite.headline)}</h2>
     ${personaLine}
     ${summaryHtml}
   </header>

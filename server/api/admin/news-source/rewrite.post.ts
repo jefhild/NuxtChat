@@ -283,6 +283,7 @@ The rewrite must:
 - Introduce a new angle or deeper context that was absent from the source text.
 - Cite at least two references, including the source URL and any relevant background material.
 - Produce a body made of 3-5 short paragraphs formatted in Markdown.
+- Keep the body to plain paragraphs only; do not include a title, heading markers, or a source-attribution line inside the body.
 - Include a short summary (2 sentences) and a fresh headline.
 - Provide social captions as JSON: social.facebook.caption (1-2 sentences + URL), social.instagram.caption (1-2 sentences, 3-6 hashtags, no link).
 - Write the rewrite in the same language as the source text.

@@ -1368,14 +1368,16 @@ const formatDate = (date) =>
   border-radius: 8px;
 }
 
-.prose :deep(.newsmesh-article .rewrite-body p) {
+.prose :deep(.newsmesh-article .rewrite-body .article-body-paragraph),
+.prose :deep(.manual-source-article .rewrite-body .article-body-paragraph) {
   line-height: 1.8;
-  margin-bottom: 1.1rem;
+  margin: 0;
   font-size: 1.03rem;
 }
 
-.prose :deep(.newsmesh-article .rewrite-body p:last-child) {
-  margin-bottom: 0;
+.prose :deep(.newsmesh-article .rewrite-body .article-body-paragraph + .article-body-paragraph),
+.prose :deep(.manual-source-article .rewrite-body .article-body-paragraph + .article-body-paragraph) {
+  margin-top: 1.5rem;
 }
 
 .prose :deep(.article-embed) {

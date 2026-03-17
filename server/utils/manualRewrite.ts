@@ -6,6 +6,7 @@ The rewrite must:
 - Cite at least two references, either the original source link or well-known, relevant background material.
 - Highlight why this story matters for the audience represented by your persona.
 - Produce a body made of 3-5 short paragraphs formatted in Markdown.
+- Keep the body to plain paragraphs only; do not include a title, heading markers, or a source-attribution line inside the body.
 - Include a short summary (2 sentences) and a fresh headline.
 - Provide social captions as JSON: social.facebook.caption (1-2 sentences + URL), social.instagram.caption (1-2 sentences, 3-6 hashtags, no link).
 - Write the rewrite in the same language as the original record (title/summary). If the source is not English, keep that language for the headline, summary, body, and social captions.
