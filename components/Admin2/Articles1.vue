@@ -1252,7 +1252,7 @@ const handleArticleUpdate = async () => {
       original_language_code: selectedArticle.value.original_language_code
         ? String(selectedArticle.value.original_language_code).trim()
         : null,
-      slug: slugify(selectedArticle.value.title),
+      slug: selectedArticle.value.slug || slugify(selectedArticle.value.title),
       category_id: selectedArticle.value.category_id || null,
       type: selectedArticle.value.type || null,
       is_published: selectedArticle.value.is_published,

@@ -423,6 +423,17 @@ const { data: article, error } = await useAsyncData(`article-${slug}`, () =>
   getArticleBySlug(slug)
 );
 
+const isMissingArticle = computed(() => !article.value?.id);
+
+if (import.meta.server) {
+  const event = useRequestEvent();
+  if (error.value && event) {
+    setResponseStatus(event, 500, "Failed to load article");
+  } else if (isMissingArticle.value && event) {
+    setResponseStatus(event, 404, "Article not found");
+  }
+}
+
 const categories = ref([]);
 const tags = ref([]);
 const people = ref([]);
@@ -835,8 +846,11 @@ const localizedPath = computed(() => {
 const localizedShareUrl = computed(() =>
   baseUrl ? `${baseUrl}${localizedPath.value}` : localizedPath.value
 );
-const seoTitle = computed(() => displayTitle.value || "Article");
+const seoTitle = computed(() =>
+  isMissingArticle.value ? "Article not found" : displayTitle.value || "Article"
+);
 const safeDescription = computed(() => {
+  if (isMissingArticle.value) return "";
   const source =
     htmlContent.value || displaySummary.value || displayTitle.value || "";
   const condensed = String(source)
@@ -887,6 +901,9 @@ useSeoI18nMeta("articles.index", {
   availableLocaleCodes: availableArticleLocales,
   canonicalLocaleCode: canonicalLocale.value,
   overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
+  robots: computed(() =>
+    isMissingArticle.value ? "noindex,follow" : "index,follow"
+  ),
   dynamic: {
     title: seoTitle,
     description: safeDescription,
