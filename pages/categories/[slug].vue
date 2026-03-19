@@ -91,7 +91,7 @@
     <template v-else>
       <v-row>
         <v-col
-          v-for="article in visibleArticles"
+          v-for="article in articles"
           :key="article.id"
           cols="12"
           sm="6"
@@ -107,7 +107,7 @@
         </v-col>
       </v-row>
 
-      <v-row v-if="!filteredArticles.length">
+      <v-row v-if="!articles.length">
         <v-col class="text-center">
           <p>{{ $t("pages.categories.slug.no-articles") }}</p>
         </v-col>
@@ -123,11 +123,17 @@
         </v-col>
       </v-row>
 
+      <TaxonomyPagination
+        :base-path="buildTaxonomyPath('/categories', slug)"
+        :current-page="activePage"
+        :total-pages="totalPages"
+      />
+
       <div
         ref="infiniteScrollTrigger"
         class="infinite-scroll-trigger"
         aria-hidden="true"
-      ></div>
+      />
     </template>
   </v-container>
 </template>
@@ -136,13 +142,21 @@
 import { useI18n } from "vue-i18n";
 import { shouldIndexTaxonomyPage } from "@/composables/useIndexability";
 import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta";
+import { buildTaxonomyPath } from "@/utils/taxonomySlug";
+
+const PAGE_SIZE = 24;
+
+const parsePage = (value) => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(String(raw || "1"), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+};
 
 const {
-  getArticlesbyCategorySlug,
-  getTagsByArticle,
   getAllCategories,
   getAllTags,
   getAllPeople,
+  getCategoryArticleCardsPage,
 } = useDb();
 
 const { t, locale } = useI18n();
@@ -150,6 +164,8 @@ const route = useRoute();
 const config = useRuntimeConfig();
 const siteConfig = useSiteConfig();
 const slug = computed(() => route.params.slug);
+const currentPage = computed(() => parsePage(route.query.page));
+const currentOffset = computed(() => (currentPage.value - 1) * PAGE_SIZE);
 const currentLocale = computed(() => locale.value || "en");
 const baseLocale = computed(() =>
   String(currentLocale.value || "en").split("-")[0].toLowerCase()
@@ -162,12 +178,13 @@ const articles = ref([]);
 const categories = ref([]);
 const tags = ref([]);
 const people = ref([]);
-const searchQuery = ref("");
+const matchedCategory = ref(null);
+const totalArticles = ref(0);
+const activePage = ref(currentPage.value);
 const openFilterPanel = ref(null);
 const filtersOpen = ref(false);
 const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
-const perPage = 12;
-const visibleCount = ref(perPage);
+const hasMoreArticles = ref(false);
 const isFetchingMore = ref(false);
 const infiniteScrollTrigger = ref(null);
 let intersectionObserver = null;
@@ -180,7 +197,10 @@ const formattedSlug = computed(() => {
 });
 
 const categoryHeading = computed(
-  () => formattedSlug.value || t("pages.articles.categories.heading")
+  () =>
+    matchedCategory.value?.name ||
+    formattedSlug.value ||
+    t("pages.articles.categories.heading")
 );
 const categorySubtitle = computed(() => t("pages.articles.categories.subtitle"));
 
@@ -216,48 +236,57 @@ const availableTaxonomyLocales = computed(() => {
 });
 
 const canonicalLocale = computed(() => baseLocale.value || "en");
-const canonicalPath = computed(() => route.path || "/");
-const shouldIndexPage = computed(() => shouldIndexTaxonomyPage(articles.value.length));
+const canonicalPath = computed(() => {
+  const path = route.path || "/";
+  return currentPage.value > 1 ? `${path}?page=${currentPage.value}` : path;
+});
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(totalArticles.value / PAGE_SIZE))
+);
+const shouldIndexPage = computed(() =>
+  shouldIndexTaxonomyPage(totalArticles.value)
+);
 const taxonomyRobots = computed(() =>
   shouldIndexPage.value ? undefined : "noindex,follow"
 );
-
-const searchLabel = computed(() => t("pages.articles.index.search"));
-
-const filteredArticles = computed(() => {
-  if (!searchQuery.value) return articles.value;
-
-  return articles.value.filter((article) =>
-    article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-});
-
-const visibleArticles = computed(() =>
-  filteredArticles.value.slice(0, visibleCount.value)
-);
-const hasMoreArticles = computed(
-  () => visibleCount.value < filteredArticles.value.length
-);
-
-const loadMoreArticles = () => {
-  if (!hasMoreArticles.value || isFetchingMore.value || isLoading.value) {
-    return;
-  }
-  isFetchingMore.value = true;
-  setTimeout(() => {
-    visibleCount.value = Math.min(
-      visibleCount.value + perPage,
-      filteredArticles.value.length
-    );
-    isFetchingMore.value = false;
-  }, 150);
-};
 
 const supabaseBucket = config.public.SUPABASE_BUCKET;
 const firstImage = computed(() => {
   const filename = articles.value[0]?.image_path;
   if (!filename) return "/default-og-image.jpg";
   return `${supabaseBucket}/articles/${filename.replace(/^articles\//, "")}`;
+});
+
+const toAbsolute = (path) => {
+  const normalizedBase = baseUrl.replace(/\/$/, "");
+  return normalizedBase ? `${normalizedBase}${path}` : path;
+};
+
+const pagePath = (page) => {
+  const path = route.path || "/";
+  return page > 1 ? `${path}?page=${page}` : path;
+};
+
+const pageSuffix = computed(() => {
+  if (currentPage.value <= 1) return "";
+  const formattedPage = new Intl.NumberFormat(currentLocale.value || "en").format(
+    currentPage.value
+  );
+  if (baseLocale.value === "fr") return ` | Page ${formattedPage}`;
+  if (baseLocale.value === "ru") return ` | Страница ${formattedPage}`;
+  if (baseLocale.value === "zh") return ` | 第${formattedPage}页`;
+  return ` | Page ${formattedPage}`;
+});
+
+const pagedDescriptionSuffix = computed(() => {
+  if (currentPage.value <= 1) return "";
+  const formattedPage = new Intl.NumberFormat(currentLocale.value || "en").format(
+    currentPage.value
+  );
+  if (baseLocale.value === "fr") return ` Page ${formattedPage}.`;
+  if (baseLocale.value === "ru") return ` Страница ${formattedPage}.`;
+  if (baseLocale.value === "zh") return ` 第${formattedPage}页。`;
+  return ` Page ${formattedPage}.`;
 });
 
 // SEO setup
@@ -271,7 +300,7 @@ useSeoI18nMeta("categories.index", {
       () =>
         `${formattedSlug.value} ${t(
           "pages.categories.slug.meta.articles"
-        )} – ImChatty`
+        )} – ImChatty${pageSuffix.value}`
     ),
     description: computed(
       () =>
@@ -279,13 +308,13 @@ useSeoI18nMeta("categories.index", {
           "pages.categories.slug.meta.description1"
         )}"${formattedSlug.value.toLowerCase()}"${t(
           "pages.categories.slug.meta.description2"
-        )}`
+        )}${pagedDescriptionSuffix.value}`
     ),
     ogTitle: computed(
       () =>
         `${formattedSlug.value} ${t(
           "pages.categories.slug.meta.articles"
-        )} – ImChatty`
+        )} – ImChatty${pageSuffix.value}`
     ),
     ogDescription: computed(
       () =>
@@ -293,67 +322,69 @@ useSeoI18nMeta("categories.index", {
           "pages.categories.slug.meta.ogDescription1"
         )}"${formattedSlug.value.toLowerCase()}"${t(
           "pages.categories.slug.meta.ogDescription2"
-        )}`
+        )}${pagedDescriptionSuffix.value}`
     ),
     ogImage: firstImage,
-    twitterTitle: computed(() => `${formattedSlug.value} Articles`),
+    twitterTitle: computed(() => `${formattedSlug.value} Articles${pageSuffix.value}`),
     twitterDescription: computed(
       () =>
         `${t(
           "pages.categories.slug.meta.twitterDescription1"
         )}"${formattedSlug.value.toLowerCase()}"${t(
           "pages.categories.slug.meta.twitterDescription2"
-        )}`
+        )}${pagedDescriptionSuffix.value}`
     ),
     twitterImage: firstImage,
   },
 });
 
+useHead(() => ({
+  link: [
+    ...(currentPage.value > 1
+      ? [{ rel: "prev", href: toAbsolute(pagePath(currentPage.value - 1)) }]
+      : []),
+    ...(currentPage.value < totalPages.value
+      ? [{ rel: "next", href: toAbsolute(pagePath(currentPage.value + 1)) }]
+      : []),
+  ],
+}));
+
 const { data: initialData, pending } = await useAsyncData(
-  () => `category-page-${slug.value}`,
+  () => `category-page-${slug.value}-${currentPage.value}`,
   async () => {
-    const [categoryData, tagData, peopleData, articleData] = await Promise.all([
+    const [categoryData, tagData, peopleData, pageData] = await Promise.all([
       getAllCategories(),
       getAllTags(),
       getAllPeople(),
-      getArticlesbyCategorySlug(slug.value),
+      getCategoryArticleCardsPage({
+        slug: slug.value,
+        limit: PAGE_SIZE,
+        offset: currentOffset.value,
+      }),
     ]);
-
-    let articlesWithTags = [];
-    if (articleData) {
-      articlesWithTags = await Promise.all(
-        articleData.map(async (article) => ({
-          ...article,
-          tags: await getTagsByArticle(article.slug),
-        }))
-      );
-    }
-
-    const normalizedSlug = String(slug.value || "").trim().toLowerCase();
-    const matchedCategory = (categoryData || []).find(
-      (category) =>
-        String(category?.slug || "").trim().toLowerCase() === normalizedSlug
-    );
-
-    const tagMap = new Map();
-    for (const article of articlesWithTags) {
-      (article.tags || []).forEach((tag) => tagMap.set(tag.slug, tag));
-    }
-    const flattenedTags = Array.from(tagMap.values());
 
     return {
       categories: categoryData || [],
-      tags: flattenedTags.length ? flattenedTags : tagData || [],
+      tags: tagData || [],
       people: peopleData || [],
-      articles: articlesWithTags,
-      matchedCategory: matchedCategory || null,
+      articles: pageData?.articles || [],
+      matchedCategory: pageData?.category || null,
+      totalCount: Number(pageData?.totalCount || 0),
     };
   },
-  { watch: [slug], server: true }
+  { watch: [slug, currentPage], server: true }
 );
 
 if (!initialData.value?.matchedCategory) {
   throw createError({ statusCode: 404, statusMessage: "Category not found" });
+}
+
+const initialTotalPages = Math.max(
+  1,
+  Math.ceil(Number(initialData.value?.totalCount || 0) / PAGE_SIZE)
+);
+if (currentPage.value > initialTotalPages && Number(initialData.value?.totalCount || 0) > 0) {
+  throw createError({ statusCode: 404, statusMessage: "Category page not found" });
 }
 
 watchEffect(() => {
@@ -362,9 +393,47 @@ watchEffect(() => {
   tags.value = initialData.value.tags || [];
   people.value = initialData.value.people || [];
   articles.value = initialData.value.articles || [];
+  matchedCategory.value = initialData.value.matchedCategory || null;
+  totalArticles.value = Number(initialData.value.totalCount || 0);
+  activePage.value = currentPage.value;
+  hasMoreArticles.value = currentPage.value < totalPages.value;
 });
 
 const isLoading = computed(() => pending.value);
+
+const loadMoreArticles = async () => {
+  if (!hasMoreArticles.value || isFetchingMore.value || isLoading.value) {
+    return;
+  }
+
+  isFetchingMore.value = true;
+  const nextPage = activePage.value + 1;
+
+  try {
+    const nextPageData = await getCategoryArticleCardsPage({
+      slug: slug.value,
+      limit: PAGE_SIZE,
+      offset: (nextPage - 1) * PAGE_SIZE,
+    });
+    const existingIds = new Set(articles.value.map((article) => article.id));
+    const uniqueNextArticles = (nextPageData?.articles || []).filter(
+      (article) => !existingIds.has(article.id)
+    );
+
+    if (uniqueNextArticles.length) {
+      articles.value = [...articles.value, ...uniqueNextArticles];
+    }
+
+    activePage.value = nextPage;
+    hasMoreArticles.value = nextPage < totalPages.value;
+
+    if (import.meta.client) {
+      window.history.replaceState(window.history.state, "", pagePath(nextPage));
+    }
+  } finally {
+    isFetchingMore.value = false;
+  }
+};
 
 onMounted(() => {
   if (!intersectionObserver) {
@@ -382,11 +451,6 @@ onMounted(() => {
   if (infiniteScrollTrigger.value) {
     intersectionObserver.observe(infiniteScrollTrigger.value);
   }
-});
-
-watch(filteredArticles, () => {
-  visibleCount.value = perPage;
-  isFetchingMore.value = false;
 });
 
 watch(

@@ -19,57 +19,55 @@
       />
     </div>
 
-    <ClientOnly>
-      <v-navigation-drawer
-        v-model="filtersOpen"
-        location="left"
-        temporary
-        width="280"
-        class="articles-drawer"
-        aria-label="Article filters"
-      >
-        <v-list density="compact" class="articles-drawer-list">
-          <v-list-subheader>{{ $t("pages.articles.index.filters") }}</v-list-subheader>
-          <div class="px-3 py-2 d-flex flex-column ga-3">
-            <FilterExpansion
-              v-model="openFilterPanel"
-              panel-key="categories"
-              :title="$t('pages.categories.index.title')"
-              :selected-name="selectedCategoriesName"
-              :items="categories"
-              base-path="/categories"
-              :selected-slug="route.params?.slug || null"
-              panels-class="compact-panel"
-              :scrolling-list="true"
-            />
+    <v-navigation-drawer
+      v-model="filtersOpen"
+      location="left"
+      temporary
+      width="280"
+      class="articles-drawer"
+      aria-label="Article filters"
+    >
+      <v-list density="compact" class="articles-drawer-list">
+        <v-list-subheader>{{ $t("pages.articles.index.filters") }}</v-list-subheader>
+        <div class="px-3 py-2 d-flex flex-column ga-3">
+          <FilterExpansion
+            v-model="openFilterPanel"
+            panel-key="categories"
+            :title="$t('pages.categories.index.title')"
+            :selected-name="selectedCategoriesName"
+            :items="categories"
+            base-path="/categories"
+            :selected-slug="null"
+            panels-class="compact-panel"
+            :scrolling-list="true"
+          />
 
-            <FilterExpansion
-              v-model="openFilterPanel"
-              panel-key="tags"
-              :title="$t('pages.tags.index.title')"
-              :selected-name="selectedTagName"
-              :items="tags"
-              base-path="/tags"
-              :selected-slug="route.params?.slug || null"
-              panels-class="compact-panel"
-              :scrolling-list="true"
-            />
+          <FilterExpansion
+            v-model="openFilterPanel"
+            panel-key="tags"
+            :title="$t('pages.tags.index.title')"
+            :selected-name="selectedTagName"
+            :items="tags"
+            base-path="/tags"
+            :selected-slug="null"
+            panels-class="compact-panel"
+            :scrolling-list="true"
+          />
 
-            <FilterExpansion
-              v-model="openFilterPanel"
-              panel-key="people"
-              :title="$t('pages.people.index.title')"
-              :selected-name="selectedPeopleName"
-              :items="people"
-              base-path="/people"
-              :selected-slug="route.params?.slug || null"
-              panels-class="compact-panel"
-              :scrolling-list="true"
-            />
-          </div>
-        </v-list>
-      </v-navigation-drawer>
-    </ClientOnly>
+          <FilterExpansion
+            v-model="openFilterPanel"
+            panel-key="people"
+            :title="$t('pages.people.index.title')"
+            :selected-name="selectedPeopleName"
+            :items="people"
+            base-path="/people"
+            :selected-slug="null"
+            panels-class="compact-panel"
+            :scrolling-list="true"
+          />
+        </div>
+      </v-list>
+    </v-navigation-drawer>
 
     <LoadingContainer
       v-if="isLoading"
@@ -77,21 +75,22 @@
     />
 
     <template v-else>
-      <!-- <HomeRow1 /> -->
-      <!-- Articles List -->
       <v-row dense>
-        <v-col v-for="article in filteredArticles" :key="article.id" cols="12" sm="6" md="4">
+        <v-col
+          v-for="article in articles"
+          :key="article.id"
+          cols="12"
+          sm="6"
+          md="4"
+        >
           <ArticleCard
             :article="article"
-            :chat-thread-id="
-              threadByArticleId[article.id] || article.thread_id || null
-            "
+            :chat-thread-id="threadByArticleId[article.id] || article.thread_slug || null"
           />
         </v-col>
       </v-row>
 
-      <!-- No Articles Found -->
-      <v-row v-if="!filteredArticles.length" justify="center">
+      <v-row v-if="!articles.length" justify="center">
         <v-col cols="12" class="text-center">
           <v-alert
             type="info"
@@ -99,24 +98,32 @@
             border="top"
             border-color="primary"
           >
-            {{ $t("pages.articles.index.no-articles") }} "{{ searchQuery }}".
+            {{ $t("pages.articles.index.no-articles") }}
           </v-alert>
         </v-col>
       </v-row>
 
-      <v-row v-if="isFetchingMore && hasMoreArticles" justify="center" class="my-6">
+      <v-row
+        v-if="isFetchingMore && hasMoreArticles"
+        justify="center"
+        class="my-6"
+      >
         <v-col cols="auto">
           <v-progress-circular indeterminate color="primary" />
         </v-col>
       </v-row>
 
+      <TaxonomyPagination
+        base-path="/articles"
+        :current-page="activePage"
+        :total-pages="totalPages"
+      />
+
       <div
         ref="infiniteScrollTrigger"
         class="infinite-scroll-trigger"
         aria-hidden="true"
-      ></div>
-
-      <!-- Admin Button -->
+      />
     </template>
   </v-container>
 </template>
@@ -124,121 +131,170 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 
+const PAGE_SIZE = 24;
+
+const parsePage = (value) => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(String(raw || "1"), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+};
+
 const route = useRoute();
+const config = useRuntimeConfig();
+const siteConfig = useSiteConfig();
 const {
-  getPublishedArticlesPage,
+  getPublishedArticleCardsPageData,
   getAllTags,
   getAllCategories,
   getAllPeople,
 } = useDb();
-const { t } = useI18n();
-const searchQuery = ref("");
-const searchLabel = computed(() => t("pages.articles.index.search"));
+const { t, locale } = useI18n();
+const baseUrl = (siteConfig?.url || config.public.SITE_URL || "").replace(
+  /\/+$/,
+  ""
+);
+const currentPage = computed(() => parsePage(route.query.page));
+const currentOffset = computed(() => (currentPage.value - 1) * PAGE_SIZE);
 const articles = ref([]);
 const filtersOpen = ref(false);
 const openFilterPanel = ref(null);
 const tags = ref([]);
 const categories = ref([]);
 const people = ref([]);
-const perPage = 12;
-const currentOffset = ref(0);
-const hasMoreArticles = ref(true);
+const totalArticles = ref(0);
+const activePage = ref(currentPage.value);
+const hasMoreArticles = ref(false);
 const isFetchingMore = ref(false);
 const infiniteScrollTrigger = ref(null);
 let intersectionObserver = null;
 
-// Filter and paginate articles
-const filteredArticles = computed(() => {
-  if (!searchQuery.value) return articles.value;
-  return articles.value.filter((article) =>
-    article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(totalArticles.value / PAGE_SIZE))
+);
+const baseLocale = computed(() =>
+  String(locale.value || "en").split("-")[0].toLowerCase()
+);
+
+const pageSuffix = computed(() => {
+  if (currentPage.value <= 1) return "";
+  const formattedPage = new Intl.NumberFormat(locale.value || "en").format(
+    currentPage.value
   );
+  if (baseLocale.value === "fr") return ` | Page ${formattedPage}`;
+  if (baseLocale.value === "ru") return ` | Страница ${formattedPage}`;
+  if (baseLocale.value === "zh") return ` | 第${formattedPage}页`;
+  return ` | Page ${formattedPage}`;
 });
 
-const fetchNextPage = async () => {
-  if (!hasMoreArticles.value || isFetchingMore.value) return;
-  isFetchingMore.value = true;
-
-  const nextPage = await getPublishedArticlesPage({
-    limit: perPage,
-    offset: currentOffset.value,
-  });
-
-  if (nextPage.length < perPage) {
-    hasMoreArticles.value = false;
-  }
-
-  if (nextPage.length) {
-    const existingIds = new Set(articles.value.map((article) => article.id));
-    const uniqueNext = nextPage.filter((article) => !existingIds.has(article.id));
-    articles.value = [...articles.value, ...uniqueNext];
-    currentOffset.value += nextPage.length;
-  }
-
-  isFetchingMore.value = false;
-};
-
-const loadMoreArticles = () => {
-  if (isLoading.value) return;
-  fetchNextPage();
-};
-
-// Selected display names for UI
-const selectedTagName = computed(() => {
-  const slug = route.params?.slug;
-  return tags.value.find((t) => t.slug === slug)?.name || null;
+const pagedDescriptionSuffix = computed(() => {
+  if (currentPage.value <= 1) return "";
+  const formattedPage = new Intl.NumberFormat(locale.value || "en").format(
+    currentPage.value
+  );
+  if (baseLocale.value === "fr") return ` Page ${formattedPage}.`;
+  if (baseLocale.value === "ru") return ` Страница ${formattedPage}.`;
+  if (baseLocale.value === "zh") return ` 第${formattedPage}页。`;
+  return ` Page ${formattedPage}.`;
 });
 
-const selectedCategoriesName = computed(() => {
-  const slug = route.params?.slug;
-  return categories.value.find((c) => c.slug === slug)?.name || null;
-});
-
-const selectedPeopleName = computed(() => {
-  const slug = route.params?.slug;
-  return people.value.find((p) => p.slug === slug)?.name || null;
-});
+const selectedTagName = computed(() => null);
+const selectedCategoriesName = computed(() => null);
+const selectedPeopleName = computed(() => null);
 
 const { data: chatMap } = await useAsyncData("chat-map", () =>
   $fetch("/api/articles/chat-map")
 );
-// Fallback to {} if null
 const threadByArticleId = computed(() => chatMap.value || {});
 
+const pagePath = (page) => {
+  const basePath = "/articles";
+  return page > 1 ? `${basePath}?page=${page}` : basePath;
+};
+
+const toAbsolute = (path) => {
+  const normalizedBase = baseUrl.replace(/\/$/, "");
+  return normalizedBase ? `${normalizedBase}${path}` : path;
+};
+
 const { data: initialData, pending } = await useAsyncData(
-  "articles-index-initial",
+  () => `articles-index-initial-${currentPage.value}`,
   async () => {
-  const [articleData, tagData, categoryData, peopleData] = await Promise.all([
-    getPublishedArticlesPage({ limit: perPage, offset: 0 }),
-    getAllTags(),
-    getAllCategories(),
-    getAllPeople(),
-  ]);
+    const [articlePageData, tagData, categoryData, peopleData] = await Promise.all([
+      getPublishedArticleCardsPageData({
+        limit: PAGE_SIZE,
+        offset: currentOffset.value,
+      }),
+      getAllTags(),
+      getAllCategories(),
+      getAllPeople(),
+    ]);
 
     return {
-      articles: articleData || [],
+      articles: articlePageData?.articles || [],
+      totalCount: Number(articlePageData?.totalCount || 0),
       tags: tagData || [],
       categories: categoryData || [],
       people: peopleData || [],
     };
-  }
+  },
+  { watch: [currentPage], server: true }
 );
 
-const isLoading = computed(
-  () => pending.value && !articles.value.length
+const initialTotalPages = Math.max(
+  1,
+  Math.ceil(Number(initialData.value?.totalCount || 0) / PAGE_SIZE)
 );
+if (currentPage.value > initialTotalPages && Number(initialData.value?.totalCount || 0) > 0) {
+  throw createError({ statusCode: 404, statusMessage: "Articles page not found" });
+}
 
 watchEffect(() => {
   if (!initialData.value) return;
   articles.value = initialData.value.articles || [];
-  currentOffset.value = articles.value.length;
-  hasMoreArticles.value = articles.value.length === perPage;
+  totalArticles.value = Number(initialData.value.totalCount || 0);
+  activePage.value = currentPage.value;
+  hasMoreArticles.value = currentPage.value < totalPages.value;
   tags.value = initialData.value.tags || [];
   categories.value = initialData.value.categories || [];
   people.value = initialData.value.people || [];
 });
 
-onMounted(async () => {
+const isLoading = computed(() => pending.value);
+
+const loadMoreArticles = async () => {
+  if (!hasMoreArticles.value || isFetchingMore.value || isLoading.value) {
+    return;
+  }
+
+  isFetchingMore.value = true;
+  const nextPage = activePage.value + 1;
+
+  try {
+    const nextPageData = await getPublishedArticleCardsPageData({
+      limit: PAGE_SIZE,
+      offset: (nextPage - 1) * PAGE_SIZE,
+    });
+    const existingIds = new Set(articles.value.map((article) => article.id));
+    const uniqueNextArticles = (nextPageData?.articles || []).filter(
+      (article) => !existingIds.has(article.id)
+    );
+
+    if (uniqueNextArticles.length) {
+      articles.value = [...articles.value, ...uniqueNextArticles];
+    }
+
+    activePage.value = nextPage;
+    hasMoreArticles.value = nextPage < totalPages.value;
+
+    if (import.meta.client) {
+      window.history.replaceState(window.history.state, "", pagePath(nextPage));
+    }
+  } finally {
+    isFetchingMore.value = false;
+  }
+};
+
+onMounted(() => {
   if (!intersectionObserver) {
     intersectionObserver = new IntersectionObserver(
       (entries) => {
@@ -269,20 +325,40 @@ onBeforeUnmount(() => {
   intersectionObserver?.disconnect();
 });
 
-useSeoI18nMeta("articles.index");
+useSeoI18nMeta("articles.index", {
+  overrideUrl: `${baseUrl}${currentPage.value > 1 ? pagePath(currentPage.value) : "/articles"}`,
+  dynamic: {
+    title: computed(() => `${t("pages.articles.index.meta.title")}${pageSuffix.value}`),
+    description: computed(
+      () => `${t("pages.articles.index.meta.description")}${pagedDescriptionSuffix.value}`
+    ),
+    ogTitle: computed(() => `${t("pages.articles.index.meta.ogTitle")}${pageSuffix.value}`),
+    ogDescription: computed(
+      () => `${t("pages.articles.index.meta.ogDescription")}${pagedDescriptionSuffix.value}`
+    ),
+    twitterTitle: computed(
+      () => `${t("pages.articles.index.meta.twitterTitle")}${pageSuffix.value}`
+    ),
+    twitterDescription: computed(
+      () =>
+        `${t("pages.articles.index.meta.twitterDescription")}${pagedDescriptionSuffix.value}`
+    ),
+  },
+});
+
+useHead(() => ({
+  link: [
+    ...(currentPage.value > 1
+      ? [{ rel: "prev", href: toAbsolute(pagePath(currentPage.value - 1)) }]
+      : []),
+    ...(currentPage.value < totalPages.value
+      ? [{ rel: "next", href: toAbsolute(pagePath(currentPage.value + 1)) }]
+      : []),
+  ],
+}));
 </script>
 
 <style scoped>
-h1 {
-  font-size: 1.6rem;
-}
-.section-title {
-  font-family: "Poppins", sans-serif;
-  font-weight: 600;
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-}
-
 .articles-shell {
   padding-top: 6px;
 }
@@ -314,22 +390,6 @@ h1 {
 
 .articles-drawer :deep(.v-navigation-drawer__content) {
   overflow-y: auto;
-}
-
-.search-bar {
-  max-width: 400px;
-  width: 100%;
-}
-
-.compact-panel .v-expansion-panel-title {
-  padding-top: 4px !important;
-  padding-bottom: 4px !important;
-  min-height: 32px !important; /* optional */
-}
-
-.compact-panel .v-expansion-panel-text__wrapper {
-  padding-top: 4px !important;
-  padding-bottom: 4px !important;
 }
 
 .infinite-scroll-trigger {

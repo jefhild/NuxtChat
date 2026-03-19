@@ -88,11 +88,11 @@
       :text="$t('pages.articles.index.loading')"
     />
 
-    <v-container fluid v-else>
+    <v-container v-else fluid>
 
       <v-row>
         <v-col
-          v-for="article in visibleArticles"
+          v-for="article in articles"
           :key="article.id"
           cols="12"
           sm="6"
@@ -106,7 +106,7 @@
         </v-col>
       </v-row>
 
-      <v-row v-if="!filteredArticles.length" justify="center">
+      <v-row v-if="!articles.length" justify="center">
         <v-col class="text-center">
           <p>
             {{
@@ -128,17 +128,33 @@
         </v-col>
       </v-row>
 
+      <TaxonomyPagination
+        :base-path="buildTaxonomyPath('/people', slug)"
+        :current-page="activePage"
+        :total-pages="totalPages"
+      />
+
       <div
         ref="infiniteScrollTrigger"
         class="infinite-scroll-trigger"
         aria-hidden="true"
-      ></div>
+      />
     </v-container>
   </v-container>
 </template>
 
 <script setup>
 import { shouldIndexTaxonomyPage } from "@/composables/useIndexability";
+import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta";
+import { buildTaxonomyPath } from "@/utils/taxonomySlug";
+
+const PAGE_SIZE = 24;
+
+const parsePage = (value) => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(String(raw || "1"), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+};
 
 const route = useRoute();
 const { t, locale } = useI18n();
@@ -151,11 +167,10 @@ const baseUrl = (siteConfig?.url || config.public.SITE_URL || "").replace(
 );
 
 const {
-  getArticlesByPersonSlug,
-  getTagsByArticle,
   getAllCategories,
   getAllTags,
   getAllPeople,
+  getPersonArticleCardsPage,
 } = useDb();
 
 const person = ref(null);
@@ -167,13 +182,14 @@ const openFilterPanel = ref(null);
 const filtersOpen = ref(false);
 const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
 const slug = computed(() => route.params.slug);
+const currentPage = computed(() => parsePage(route.query.page));
 const currentLocale = computed(() => locale.value || "en");
 const baseLocale = computed(() =>
   String(currentLocale.value || "en").split("-")[0].toLowerCase()
 );
-const searchQuery = ref("");
-const perPage = 12;
-const visibleCount = ref(perPage);
+const totalArticles = ref(0);
+const activePage = ref(currentPage.value);
+const hasMoreArticles = ref(false);
 const isFetchingMore = ref(false);
 const infiniteScrollTrigger = ref(null);
 let intersectionObserver = null;
@@ -229,25 +245,18 @@ const availableTaxonomyLocales = computed(() => {
 });
 
 const canonicalLocale = computed(() => baseLocale.value || "en");
-const canonicalPath = computed(() => route.path || "/");
-const shouldIndexPage = computed(() => shouldIndexTaxonomyPage(articles.value.length));
+const canonicalPath = computed(() => {
+  const path = route.path || "/";
+  return currentPage.value > 1 ? `${path}?page=${currentPage.value}` : path;
+});
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(totalArticles.value / PAGE_SIZE))
+);
+const shouldIndexPage = computed(() =>
+  shouldIndexTaxonomyPage(totalArticles.value)
+);
 const taxonomyRobots = computed(() =>
   shouldIndexPage.value ? undefined : "noindex,follow"
-);
-
-const searchLabel = computed(() => t("pages.articles.index.search"));
-
-const filteredArticles = computed(() => {
-  if (!searchQuery.value) return articles.value;
-  return articles.value.filter((article) =>
-    article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-});
-const visibleArticles = computed(() =>
-  filteredArticles.value.slice(0, visibleCount.value)
-);
-const hasMoreArticles = computed(
-  () => visibleCount.value < filteredArticles.value.length
 );
 
 const firstImage = computed(() => {
@@ -260,35 +269,100 @@ const limitedDescription = computed(() =>
   t("pages.people.slug.metaDescription", { name: displayName.value })
 );
 
+const pagePath = (page) => {
+  const path = route.path || "/";
+  return page > 1 ? `${path}?page=${page}` : path;
+};
+
+const pageSuffix = computed(() => {
+  if (currentPage.value <= 1) return "";
+  const formattedPage = new Intl.NumberFormat(currentLocale.value || "en").format(
+    currentPage.value
+  );
+  if (baseLocale.value === "fr") return ` | Page ${formattedPage}`;
+  if (baseLocale.value === "ru") return ` | Страница ${formattedPage}`;
+  if (baseLocale.value === "zh") return ` | 第${formattedPage}页`;
+  return ` | Page ${formattedPage}`;
+});
+
+const pagedDescriptionSuffix = computed(() => {
+  if (currentPage.value <= 1) return "";
+  const formattedPage = new Intl.NumberFormat(currentLocale.value || "en").format(
+    currentPage.value
+  );
+  if (baseLocale.value === "fr") return ` Page ${formattedPage}.`;
+  if (baseLocale.value === "ru") return ` Страница ${formattedPage}.`;
+  if (baseLocale.value === "zh") return ` 第${formattedPage}页。`;
+  return ` Page ${formattedPage}.`;
+});
+
+const toAbsolute = (path) => {
+  const normalizedBase = baseUrl.replace(/\/$/, "");
+  return normalizedBase ? `${normalizedBase}${path}` : path;
+};
+
 useSeoI18nMeta("people.index", {
   availableLocaleCodes: availableTaxonomyLocales,
   canonicalLocaleCode: canonicalLocale.value,
   overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
   robots: taxonomyRobots,
   dynamic: {
-    title: computed(() => `${pageHeading.value} – ImChatty`),
-    description: limitedDescription,
-    ogTitle: computed(() => `${pageHeading.value} – ImChatty`),
-    ogDescription: limitedDescription,
+    title: computed(() => `${pageHeading.value} – ImChatty${pageSuffix.value}`),
+    description: computed(() => `${limitedDescription.value}${pagedDescriptionSuffix.value}`),
+    ogTitle: computed(() => `${pageHeading.value} – ImChatty${pageSuffix.value}`),
+    ogDescription: computed(
+      () => `${limitedDescription.value}${pagedDescriptionSuffix.value}`
+    ),
     ogImage: firstImage,
-    twitterTitle: computed(() => `${pageHeading.value} – ImChatty`),
-    twitterDescription: limitedDescription,
+    twitterTitle: computed(() => `${pageHeading.value} – ImChatty${pageSuffix.value}`),
+    twitterDescription: computed(
+      () => `${limitedDescription.value}${pagedDescriptionSuffix.value}`
+    ),
     twitterImage: firstImage,
   },
 });
 
+useHead(() => ({
+  link: [
+    ...(currentPage.value > 1
+      ? [{ rel: "prev", href: toAbsolute(pagePath(currentPage.value - 1)) }]
+      : []),
+    ...(currentPage.value < totalPages.value
+      ? [{ rel: "next", href: toAbsolute(pagePath(currentPage.value + 1)) }]
+      : []),
+  ],
+}));
+
 const loadMoreArticles = () => {
-  if (!hasMoreArticles.value || isFetchingMore.value || isLoading.value) {
-    return;
-  }
+  if (!hasMoreArticles.value || isFetchingMore.value || isLoading.value) return;
   isFetchingMore.value = true;
-  setTimeout(() => {
-    visibleCount.value = Math.min(
-      visibleCount.value + perPage,
-      filteredArticles.value.length
-    );
-    isFetchingMore.value = false;
-  }, 150);
+  const nextPage = activePage.value + 1;
+
+  getPersonArticleCardsPage({
+    slug: slug.value,
+    limit: PAGE_SIZE,
+    offset: (nextPage - 1) * PAGE_SIZE,
+  })
+    .then((nextPageData) => {
+      const existingIds = new Set(articles.value.map((article) => article.id));
+      const uniqueNextArticles = (nextPageData?.articles || []).filter(
+        (article) => !existingIds.has(article.id)
+      );
+
+      if (uniqueNextArticles.length) {
+        articles.value = [...articles.value, ...uniqueNextArticles];
+      }
+
+      activePage.value = nextPage;
+      hasMoreArticles.value = nextPage < totalPages.value;
+
+      if (import.meta.client) {
+        window.history.replaceState(window.history.state, "", pagePath(nextPage));
+      }
+    })
+    .finally(() => {
+      isFetchingMore.value = false;
+    });
 };
 
 onMounted(async () => {
@@ -309,11 +383,6 @@ onMounted(async () => {
   }
 });
 
-watch(filteredArticles, () => {
-  visibleCount.value = perPage;
-  isFetchingMore.value = false;
-});
-
 watch(
   () => infiniteScrollTrigger.value,
   (el) => {
@@ -327,41 +396,46 @@ onBeforeUnmount(() => {
   intersectionObserver?.disconnect();
 });
 
+const currentOffset = computed(() => (currentPage.value - 1) * PAGE_SIZE);
+
 const { data: initialData, pending } = await useAsyncData(
-  () => `person-page-${slug.value}`,
+  () => `person-page-${slug.value}-${currentPage.value}`,
   async () => {
     const [categoryData, tagData, peopleData, personResult] = await Promise.all(
       [
         getAllCategories(),
         getAllTags(),
         getAllPeople(),
-        getArticlesByPersonSlug(slug.value),
+        getPersonArticleCardsPage({
+          slug: slug.value,
+          limit: PAGE_SIZE,
+          offset: currentOffset.value,
+        }),
       ]
     );
-
-    let articlesWithTags = [];
-    if (personResult?.articles?.length) {
-      articlesWithTags = await Promise.all(
-        personResult.articles.map(async (article) => ({
-          ...article,
-          tags: await getTagsByArticle(article.slug),
-        }))
-      );
-    }
 
     return {
       categories: categoryData || [],
       tags: tagData || [],
       people: peopleData || [],
       person: personResult?.person || null,
-      articles: articlesWithTags,
+      articles: personResult?.articles || [],
+      totalCount: Number(personResult?.totalCount || 0),
     };
   },
-  { watch: [slug], server: true }
+  { watch: [slug, currentPage], server: true }
 );
 
 if (!initialData.value?.person) {
   throw createError({ statusCode: 404, statusMessage: "Person not found" });
+}
+
+const initialTotalPages = Math.max(
+  1,
+  Math.ceil(Number(initialData.value?.totalCount || 0) / PAGE_SIZE)
+);
+if (currentPage.value > initialTotalPages && Number(initialData.value?.totalCount || 0) > 0) {
+  throw createError({ statusCode: 404, statusMessage: "Person page not found" });
 }
 
 watchEffect(() => {
@@ -371,6 +445,9 @@ watchEffect(() => {
   people.value = initialData.value.people || [];
   person.value = initialData.value.person || null;
   articles.value = initialData.value.articles || [];
+  totalArticles.value = Number(initialData.value.totalCount || 0);
+  activePage.value = currentPage.value;
+  hasMoreArticles.value = currentPage.value < totalPages.value;
 });
 
 const isLoading = computed(() => pending.value);

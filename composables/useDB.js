@@ -1078,24 +1078,87 @@ export const useDb = () => {
       }))
       .filter((entry) => entry.locale || entry.headline || entry.summary);
 
-  const toArticleCardPayload = (article) => ({
-    id: article.id,
-    title: article.title,
-    slug: article.slug,
-    image_path: article.image_path,
-    photo_credits_url: article.photo_credits_url,
-    original_language_code: article.original_language_code,
-    is_published: article.is_published,
-    created_at: article.created_at,
-    category_name: article.category?.name ?? "Uncategorized",
-    tags: normalizeArticleTags(article.article_tags),
-    summary: truncateArticleText(stripArticleMarkup(article.content), 220),
-    article_translations: normalizeArticleTranslations(article.article_translations),
-    threadSlug:
+  const ARTICLE_CARD_SELECT = `
+      id,
+      title,
+      slug,
+      image_path,
+      photo_credits_url,
+      original_language_code,
+      is_published,
+      created_at,
+      rewrite_meta,
+      newsmesh_meta,
+      category:category_id ( id, name, slug ),
+      article_tags(tag:tag_id(id, name, slug)),
+      article_translations(locale, headline, summary),
+      threads(slug)
+    `;
+
+  const TAG_ARTICLE_CARD_SELECT = `
+      id,
+      title,
+      slug,
+      image_path,
+      photo_credits_url,
+      original_language_code,
+      is_published,
+      created_at,
+      rewrite_meta,
+      newsmesh_meta,
+      category:category_id ( id, name, slug ),
+      article_tags!inner(tag:tag_id(id, name, slug)),
+      article_translations(locale, headline, summary),
+      threads(slug)
+    `;
+
+  const PERSON_ARTICLE_CARD_SELECT = `
+      id,
+      title,
+      slug,
+      image_path,
+      photo_credits_url,
+      original_language_code,
+      is_published,
+      created_at,
+      rewrite_meta,
+      newsmesh_meta,
+      category:category_id ( id, name, slug ),
+      article_tags(tag:tag_id(id, name, slug)),
+      article_people!inner(person_id),
+      article_translations(locale, headline, summary),
+      threads(slug)
+    `;
+
+  const toArticleCardPayload = (article) => {
+    const threadSlug =
       Array.isArray(article.threads) && article.threads.length > 0
         ? article.threads[0].slug
-        : null,
-  });
+        : null;
+
+    return {
+      id: article.id,
+      title: article.title,
+      slug: article.slug,
+      image_path: article.image_path,
+      photo_credits_url: article.photo_credits_url,
+      original_language_code: article.original_language_code,
+      is_published: article.is_published,
+      created_at: article.created_at,
+      category_name: article.category?.name ?? "Uncategorized",
+      tags: normalizeArticleTags(article.article_tags),
+      summary: truncateArticleText(
+        article.rewrite_meta?.summary ||
+          article.newsmesh_meta?.summary ||
+          article.newsmesh_meta?.description ||
+          stripArticleMarkup(article.content),
+        220
+      ),
+      article_translations: normalizeArticleTranslations(article.article_translations),
+      threadSlug,
+      thread_slug: threadSlug,
+    };
+  };
 
   const getAllArticlesWithTags = async () => {
     const supabase = getClient();
@@ -1189,23 +1252,7 @@ export const useDb = () => {
 
     const { data, error } = await supabase
       .from("articles")
-      .select(
-        `
-      id,
-      title,
-      slug,
-      content,
-      image_path,
-      photo_credits_url,
-      original_language_code,
-      is_published,
-      created_at,
-      category:category_id ( id, name, slug ),
-      article_tags(tag:tag_id(id, name, slug)),
-      article_translations(locale, headline, summary),
-      threads(slug)
-    `
-      )
+      .select(ARTICLE_CARD_SELECT)
       .eq("is_published", true)
       .limit(limit)
       .order("created_at", { ascending: false });
@@ -1223,25 +1270,7 @@ export const useDb = () => {
 
     const { data, error } = await supabase
       .from("articles")
-      .select(
-        `
-      id,
-      title,
-      type,
-      slug,
-      content,
-      image_path,
-      photo_credits_url,
-      photo_credits_html,
-      original_language_code,
-      is_published,
-      created_at,
-      category:category_id ( id, name, slug ),
-      article_tags(tag:tag_id(id, name, slug)),
-      article_translations(locale, headline, summary, body, references_jsonb, social),
-      threads(slug)
-    `
-      )
+      .select(ARTICLE_CARD_SELECT)
       .eq("is_published", true)
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
@@ -1252,15 +1281,260 @@ export const useDb = () => {
       return [];
     }
 
-    return data.map((article) => ({
-      ...article,
-      category_name: article.category?.name ?? "Uncategorized",
-      tags: normalizeArticleTags(article.article_tags),
-      threadSlug:
-        Array.isArray(article.threads) && article.threads.length > 0
-          ? article.threads[0].slug
-          : null,
-    }));
+    return data.map(toArticleCardPayload);
+  };
+
+  const getPublishedArticleCardsPageData = async ({
+    limit = 24,
+    offset = 0,
+  } = {}) => {
+    const supabase = getClient();
+
+    const [{ count, error: countError }, { data, error }] = await Promise.all([
+      supabase
+        .from("articles")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true),
+      supabase
+        .from("articles")
+        .select(ARTICLE_CARD_SELECT)
+        .eq("is_published", true)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .range(offset, offset + limit - 1),
+    ]);
+
+    if (countError) {
+      console.error("Error counting published articles:", countError);
+    }
+
+    if (error) {
+      console.error("Error fetching published article cards:", error.message);
+      return { articles: [], totalCount: count || 0 };
+    }
+
+    return {
+      articles: (data || []).map(toArticleCardPayload),
+      totalCount: count || 0,
+    };
+  };
+
+  const getCategoryBySlug = async (slug) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("categories")
+      .select("id, name, slug")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching category:", error);
+      return null;
+    }
+
+    return data || null;
+  };
+
+  const getTagBySlug = async (slug) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("tags")
+      .select("id, name, slug")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching tag:", error);
+      return null;
+    }
+
+    return data || null;
+  };
+
+  const getPersonBySlug = async (slug) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("people")
+      .select("id, name, slug")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching person:", error);
+      return null;
+    }
+
+    return data || null;
+  };
+
+  const getCategoryArticleCardsPage = async ({
+    slug,
+    limit = 24,
+    offset = 0,
+  } = {}) => {
+    const supabase = getClient();
+    const category = await getCategoryBySlug(slug);
+
+    if (!category?.id) {
+      return { category: null, articles: [], totalCount: 0 };
+    }
+
+    const [{ count, error: countError }, { data, error }] = await Promise.all([
+      supabase
+        .from("articles")
+        .select("id", { count: "exact", head: true })
+        .eq("category_id", category.id)
+        .eq("is_published", true),
+      supabase
+        .from("articles")
+        .select(ARTICLE_CARD_SELECT)
+        .eq("category_id", category.id)
+        .eq("is_published", true)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .range(offset, offset + limit - 1),
+    ]);
+
+    if (countError) {
+      console.error("Error counting category articles:", countError);
+    }
+
+    if (error) {
+      console.error("Error fetching category article cards:", error);
+      return { category, articles: [], totalCount: count || 0 };
+    }
+
+    return {
+      category,
+      articles: (data || []).map(toArticleCardPayload),
+      totalCount: count || 0,
+    };
+  };
+
+  const getTagArticleCardsPage = async ({
+    slug,
+    limit = 24,
+    offset = 0,
+  } = {}) => {
+    const supabase = getClient();
+    const tag = await getTagBySlug(slug);
+
+    if (!tag?.id) {
+      return { tag: null, articles: [], totalCount: 0 };
+    }
+
+    const [{ count, error: countError }] = await Promise.all([
+      supabase
+        .from("articles")
+        .select("id, article_tags!inner(tag_id)", { count: "exact", head: true })
+        .eq("article_tags.tag_id", tag.id)
+        .eq("is_published", true),
+    ]);
+
+    if (countError) {
+      console.error("Error counting tag articles:", countError);
+    }
+
+    const tagArticlesQuery = supabase
+      .from("articles")
+      .select(TAG_ARTICLE_CARD_SELECT)
+      .eq("article_tags.tag_id", tag.id)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const { data: tagArticles, error: tagArticlesError } = await tagArticlesQuery;
+
+    if (tagArticlesError) {
+      console.error("Error fetching tag article cards:", tagArticlesError);
+      return { tag, articles: [], totalCount: count || 0 };
+    }
+
+    return {
+      tag,
+      articles: (tagArticles || []).map(toArticleCardPayload),
+      totalCount: count || 0,
+    };
+  };
+
+  const getPersonArticleCardsPage = async ({
+    slug,
+    limit = 24,
+    offset = 0,
+  } = {}) => {
+    const supabase = getClient();
+    const person = await getPersonBySlug(slug);
+
+    if (!person?.id) {
+      return { person: null, articles: [], totalCount: 0 };
+    }
+
+    const personCountQuery = supabase
+      .from("articles")
+      .select("id, article_people!inner(person_id)", { count: "exact", head: true })
+      .eq("article_people.person_id", person.id)
+      .eq("is_published", true);
+    const personArticlesQuery = supabase
+      .from("articles")
+      .select(PERSON_ARTICLE_CARD_SELECT)
+      .eq("article_people.person_id", person.id)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const [{ count, error: countError }, { data, error }] = await Promise.all([
+      personCountQuery,
+      personArticlesQuery,
+    ]);
+
+    if (countError) {
+      console.error("Error counting person articles:", countError);
+    }
+
+    let articles = data || [];
+    let totalCount = count || 0;
+
+    if (error) {
+      console.error("Error fetching person article cards:", error);
+      articles = [];
+    }
+
+    if (!articles.length && totalCount === 0) {
+      const [{ count: fallbackCount, error: fallbackCountError }, { data: fallbackData, error: fallbackError }] =
+        await Promise.all([
+          supabase
+            .from("articles")
+            .select("id", { count: "exact", head: true })
+            .contains("newsmesh_meta", { people: [person.name] })
+            .eq("is_published", true),
+          supabase
+            .from("articles")
+            .select(ARTICLE_CARD_SELECT)
+            .contains("newsmesh_meta", { people: [person.name] })
+            .eq("is_published", true)
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: false })
+            .range(offset, offset + limit - 1),
+        ]);
+
+      if (fallbackCountError) {
+        console.error("Fallback count error for person articles:", fallbackCountError);
+      }
+      if (fallbackError) {
+        console.error("Fallback fetch error for person articles:", fallbackError);
+      } else {
+        articles = fallbackData || [];
+        totalCount = fallbackCount || 0;
+      }
+    }
+
+    return {
+      person,
+      articles: articles.map(toArticleCardPayload),
+      totalCount,
+    };
   };
  
  
@@ -4140,12 +4414,16 @@ const verifyEmailOtp = async (email, token) => {
     getAllPublishedArticlesWithTags,
     getPublishedArticleCards,
     getPublishedArticlesPage,
+    getPublishedArticleCardsPageData,
     getArticleBySlug,
     getThreadIdByArticleId,
     getThreadKeyByArticleId,
     getCountArticleByTag,
     getCountArticleByCategory,
     getCountArticleByPerson,
+    getCategoryArticleCardsPage,
+    getTagArticleCardsPage,
+    getPersonArticleCardsPage,
     getArticlesByTagSlug,
     getArticlesByPersonSlug,
     getTagsByArticle,
