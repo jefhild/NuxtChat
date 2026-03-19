@@ -23,6 +23,7 @@ logs
 # Local mock chat scripts
 scripts/mock-chat.mjs
 scripts/mock-chat*.json
+seo-page-drafts/
 
 # Local env files
 .env

@@ -104,14 +104,20 @@ async function handleVote(value) {
 
 .vote-controls :deep(.v-btn),
 .vote-controls :deep(.v-btn__overlay),
-.vote-controls :deep(.v-btn__underlay) {
+.vote-controls :deep(.v-btn__underlay),
+.vote-controls :deep(.v-btn__content),
+.vote-controls :deep(.v-icon) {
   background: transparent !important;
   box-shadow: none !important;
 }
 
-.vote-controls :deep(.vote-btn) {
+.vote-controls :deep(.vote-btn),
+.vote-controls :deep(.vote-btn.v-btn) {
   --v-btn-bg: transparent !important;
+  --v-theme-overlay-multiplier: 0 !important;
   background-color: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
   color: rgba(226, 232, 240, 0.82) !important;
 }
 
@@ -119,6 +125,7 @@ async function handleVote(value) {
 .vote-controls :deep(.vote-btn.v-btn--variant-plain),
 .vote-controls :deep(.vote-btn.v-btn--disabled) {
   background-color: transparent !important;
+  background-image: none !important;
   box-shadow: none !important;
 }
 

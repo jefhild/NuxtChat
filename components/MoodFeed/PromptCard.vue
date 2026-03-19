@@ -385,13 +385,25 @@ function handleVote(payload) {
 }
 
 .thread-toggle {
+  --v-btn-bg: transparent !important;
+  --v-theme-overlay-multiplier: 0 !important;
   border: 1px solid var(--mf-thread-toggle-border);
-  background: var(--mf-thread-toggle-bg);
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
   color: var(--mf-thread-toggle-fg);
+  box-shadow: none !important;
 }
 
 .thread-toggle:hover {
-  background: var(--mf-thread-toggle-hover);
+  background: transparent !important;
+}
+
+.thread-toggle :deep(.v-btn__overlay),
+.thread-toggle :deep(.v-btn__underlay),
+.thread-toggle :deep(.v-btn__content),
+.thread-toggle :deep(.v-icon) {
+  background: transparent !important;
 }
 
 .mood-thread :deep(.cmt + .cmt) {

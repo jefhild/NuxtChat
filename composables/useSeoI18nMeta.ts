@@ -129,7 +129,7 @@ export function useSeoI18nMeta(
   }
 
   const currentHreflang = hreflangMap[currentLocale] || currentLocale;
-  if (localeCodeSet.has(currentLocale) && !hreflangByCode.has(currentHreflang)) {
+  if (!hreflangByCode.has(currentHreflang)) {
     const currentPath = switchLocalePath(currentLocale) || route.path || "/";
     const currentHref =
       currentLocale === canonicalLocaleCode && canonicalHref
