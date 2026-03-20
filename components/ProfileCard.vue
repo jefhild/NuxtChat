@@ -103,7 +103,12 @@
             {{ localized.tagline }}
           </p>
 
-          <NuxtLink :to="chatLink" class="profile-chat-cta" @click="emit('chat-now')">
+          <NuxtLink
+            :to="chatLink"
+            rel="nofollow"
+            class="profile-chat-cta"
+            @click="emit('chat-now')"
+          >
             {{ $t("components.profile-details.chat-cta", { name: localized.displayname }) }}
           </NuxtLink>
         </div>

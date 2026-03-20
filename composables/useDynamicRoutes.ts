@@ -9,6 +9,7 @@ import {
 } from "../lib/supabaseHelpers";
 import { getGenderFromId } from "../lib/dbUtils";
 import {
+  shouldIndexArticle,
   shouldIndexProfile,
   shouldIndexTaxonomyPage,
 } from "./useIndexability";
@@ -190,6 +191,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
 
     const articleRoutes = articleData
       .map((a) => {
+        if (!shouldIndexArticle(a)) return null;
         const slug = normalizeIndexableSlug(a?.slug);
         if (!slug) return null;
         return {
@@ -218,7 +220,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
         (route) =>
           route.locales.length > 0 &&
           !route.path.endsWith("/") &&
-          shouldIndexTaxonomyPage(route.articleCount)
+          shouldIndexTaxonomyPage(route.articleCount, "category")
       );
     const tagRoutes = tagData
       .map((t) => ({
@@ -231,7 +233,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
         (route) =>
           route.locales.length > 0 &&
           !route.path.endsWith("/") &&
-          shouldIndexTaxonomyPage(route.articleCount)
+          shouldIndexTaxonomyPage(route.articleCount, "tag")
       );
     const peopleRoutes = peopleData
       .map((p) => ({
@@ -244,7 +246,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
         (route) =>
           route.locales.length > 0 &&
           !route.path.endsWith("/") &&
-          shouldIndexTaxonomyPage(route.articleCount)
+          shouldIndexTaxonomyPage(route.articleCount, "person")
       );
 
     const staticPages = [
@@ -408,6 +410,7 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
     profileRoutes.forEach((route) => addLocalizedRoutes(route));
 
     articleData.forEach((article) => {
+      if (!shouldIndexArticle(article)) return;
       const articleSlug = normalizeIndexableSlug(article?.slug);
       if (!articleSlug) return;
       const imageUrl = buildArticleImageUrl(article?.image_path);
@@ -435,7 +438,7 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
     categoryData.forEach((category) => {
       const categorySlug = normalizeIndexableSlug(category?.slug);
       if (!categorySlug) return;
-      if (!shouldIndexTaxonomyPage(categoryCountsBySlug.get(categorySlug) || 0)) return;
+      if (!shouldIndexTaxonomyPage(categoryCountsBySlug.get(categorySlug) || 0, "category")) return;
       const locales = getSlugLocales(categoryLocalesBySlug, category.slug);
       locales.forEach((locale) => {
         localizedRoutes.push({
@@ -447,7 +450,7 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
     tagData.forEach((tag) => {
       const tagSlug = normalizeIndexableSlug(tag?.slug);
       if (!tagSlug) return;
-      if (!shouldIndexTaxonomyPage(tagCountsBySlug.get(tagSlug) || 0)) return;
+      if (!shouldIndexTaxonomyPage(tagCountsBySlug.get(tagSlug) || 0, "tag")) return;
       const locales = getSlugLocales(tagLocalesBySlug, tag.slug);
       locales.forEach((locale) => {
         localizedRoutes.push({
@@ -459,7 +462,7 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
     peopleData.forEach((person) => {
       const personSlug = normalizeIndexableSlug(person?.slug);
       if (!personSlug) return;
-      if (!shouldIndexTaxonomyPage(peopleCountsBySlug.get(personSlug) || 0)) return;
+      if (!shouldIndexTaxonomyPage(peopleCountsBySlug.get(personSlug) || 0, "person")) return;
       const locales = getSlugLocales(peopleLocalesBySlug, person.slug);
       locales.forEach((locale) => {
         localizedRoutes.push({

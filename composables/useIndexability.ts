@@ -1,7 +1,23 @@
 const NUMERIC_HANDLE_RE = /^\d+$/;
 
-export function shouldIndexTaxonomyPage(articleCount: number, minimumCount = 3) {
-  return Number(articleCount || 0) >= minimumCount;
+const TAXONOMY_MINIMUM_COUNTS = {
+  category: 3,
+  tag: 5,
+  person: 5,
+} as const;
+
+type TaxonomyIndexType = keyof typeof TAXONOMY_MINIMUM_COUNTS;
+
+export function shouldIndexTaxonomyPage(
+  articleCount: number,
+  taxonomyType: TaxonomyIndexType = "category",
+  minimumCount?: number
+) {
+  const threshold =
+    typeof minimumCount === "number"
+      ? minimumCount
+      : TAXONOMY_MINIMUM_COUNTS[taxonomyType];
+  return Number(articleCount || 0) >= threshold;
 }
 
 type IndexableArticle = {

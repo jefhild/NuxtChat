@@ -253,7 +253,7 @@ const totalPages = computed(() =>
   Math.max(1, Math.ceil(totalArticles.value / PAGE_SIZE))
 );
 const shouldIndexPage = computed(() =>
-  shouldIndexTaxonomyPage(totalArticles.value)
+  shouldIndexTaxonomyPage(totalArticles.value, "person")
 );
 const taxonomyRobots = computed(() =>
   shouldIndexPage.value ? undefined : "noindex,follow"

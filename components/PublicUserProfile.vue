@@ -20,7 +20,10 @@
               }}</NuxtLink>
             </v-col>
             <v-col cols="auto">
-              <NuxtLink :to="localPath(`/chat?userslug=${profile?.slug}`)">
+              <NuxtLink
+                :to="localPath(`/chat?userslug=${profile?.slug}`)"
+                rel="nofollow"
+              >
                 {{ $t("components.public-user-profile.chat") }}
                 {{ localized.displayname }}
               </NuxtLink>

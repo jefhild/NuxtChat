@@ -27,17 +27,22 @@ export async function getRegisteredUsersDisplaynames(options?: {
 }
 
 export async function getAllPublishedArticlesWithTags() {
-  // Keep this query minimal while including taxonomy relations needed for locale-aware route generation.
+  // Include the fields needed for article indexability and locale-aware route generation.
   const { data, error } = await supabase
     .from("articles")
     .select(
       `
       slug,
+      title,
+      summary,
+      content,
       created_at,
       image_path,
+      newsmesh_meta,
+      rewrite_meta,
       original_language_code,
-      article_translations(locale),
-      category:category_id(slug),
+      article_translations(locale, headline, summary, body),
+      category:category_id(name, slug),
       article_tags(tag:tag_id(slug)),
       article_people(person:person_id(slug))
     `

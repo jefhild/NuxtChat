@@ -83,6 +83,7 @@ export const slugify = (value = "") =>
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "");
 
 export const ensureSlug = (value: string, fallback = "bot") => {
