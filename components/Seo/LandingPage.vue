@@ -20,7 +20,7 @@
               {{ page.ctaLabel || "Start chatting" }}
             </v-btn>
             <v-btn variant="outlined" size="large" :to="localPath('/faq')">
-              Learn more
+              {{ t("pages.home.landing_page.learn_more") }}
             </v-btn>
           </div>
         </div>
