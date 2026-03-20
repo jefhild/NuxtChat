@@ -9,7 +9,6 @@ import {
 } from "../lib/supabaseHelpers";
 import { getGenderFromId } from "../lib/dbUtils";
 import {
-  shouldIndexArticle,
   shouldIndexProfile,
   shouldIndexTaxonomyPage,
 } from "./useIndexability";
@@ -191,7 +190,6 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
 
     const articleRoutes = articleData
       .map((a) => {
-        if (!shouldIndexArticle(a)) return null;
         const slug = normalizeIndexableSlug(a?.slug);
         if (!slug) return null;
         return {
@@ -410,7 +408,6 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
     profileRoutes.forEach((route) => addLocalizedRoutes(route));
 
     articleData.forEach((article) => {
-      if (!shouldIndexArticle(article)) return;
       const articleSlug = normalizeIndexableSlug(article?.slug);
       if (!articleSlug) return;
       const imageUrl = buildArticleImageUrl(article?.image_path);
