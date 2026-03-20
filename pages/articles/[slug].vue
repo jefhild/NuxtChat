@@ -391,6 +391,7 @@
 import { marked } from "marked";
 import ProfileDialog from "@/components/ProfileDialog.vue";
 import { nextTick } from "vue";
+import { shouldIndexArticle } from "@/composables/useIndexability";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 import { loadInstagramEmbeds } from "@/composables/useInstagramEmbeds.js";
 import { buildTaxonomyPath, normalizeTaxonomySlug } from "@/utils/taxonomySlug";
@@ -860,6 +861,13 @@ const safeDescription = computed(() => {
   if (!condensed) return displayTitle.value || "";
   return condensed.length > 160 ? `${condensed.slice(0, 160)}…` : condensed;
 });
+const shouldIndexArticlePage = computed(() =>
+  shouldIndexArticle(article.value)
+);
+const articleRobots = computed(() => {
+  if (isMissingArticle.value) return "noindex,follow";
+  return shouldIndexArticlePage.value ? "index,follow" : "noindex,follow";
+});
 
 onMounted(async () => {
   if (article.value?.id) {
@@ -901,9 +909,7 @@ useSeoI18nMeta("articles.index", {
   availableLocaleCodes: availableArticleLocales,
   canonicalLocaleCode: canonicalLocale.value,
   overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
-  robots: computed(() =>
-    isMissingArticle.value ? "noindex,follow" : "index,follow"
-  ),
+  robots: articleRobots,
   dynamic: {
     title: seoTitle,
     description: safeDescription,

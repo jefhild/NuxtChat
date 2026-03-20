@@ -997,8 +997,7 @@ const ogLocale = computed(() => {
 
 useHead({
   link: [{ rel: "canonical", href: canonicalUrl.value }],
-  // Optional: preload OG image for speed (tiny win)
-  meta: [{ name: "robots", content: "index,follow" }],
+  meta: [{ name: "robots", content: "noindex,follow" }],
   // JSON-LD Article
   script: [
     {

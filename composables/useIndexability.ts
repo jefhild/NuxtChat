@@ -4,6 +4,97 @@ export function shouldIndexTaxonomyPage(articleCount: number, minimumCount = 3) 
   return Number(articleCount || 0) >= minimumCount;
 }
 
+type IndexableArticle = {
+  title?: string;
+  summary?: string;
+  content?: string;
+  category?: { name?: string; slug?: string } | null;
+  tags?: Array<{ name?: string; slug?: string }> | null;
+  people?: Array<{ name?: string; slug?: string }> | null;
+  newsmesh_meta?: {
+    summary?: string;
+    description?: string;
+  } | null;
+  rewrite_meta?: {
+    headline?: string;
+    summary?: string;
+    body?: string;
+  } | null;
+  article_translations?: Array<{
+    headline?: string;
+    summary?: string;
+    body?: string;
+  }> | null;
+};
+
+const stripHtml = (value?: string | null) =>
+  String(value || "")
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+export function shouldIndexArticle(
+  article: IndexableArticle | null | undefined,
+  options?: {
+    minContentLength?: number;
+    minSummaryLength?: number;
+    minTaxonomySignals?: number;
+  }
+) {
+  if (!article) return false;
+
+  // Keep evergreen/manual content indexable by default and only gate thin news-driven pages.
+  if (!article.newsmesh_meta) return true;
+
+  const minContentLength = Number(options?.minContentLength || 900);
+  const minSummaryLength = Number(options?.minSummaryLength || 140);
+  const minTaxonomySignals = Number(options?.minTaxonomySignals || 2);
+
+  const categorySignals = article.category?.name || article.category?.slug ? 1 : 0;
+  const tagSignals = Array.isArray(article.tags) ? article.tags.length : 0;
+  const peopleSignals = Array.isArray(article.people) ? article.people.length : 0;
+  const taxonomySignals = categorySignals + tagSignals + peopleSignals;
+
+  if (stripHtml(article.content).length >= minContentLength) return true;
+  if (taxonomySignals >= minTaxonomySignals) return true;
+
+  const rewriteText = [
+    article.rewrite_meta?.headline,
+    article.rewrite_meta?.summary,
+    article.rewrite_meta?.body,
+  ]
+    .map((value) => stripHtml(value))
+    .join(" ")
+    .trim();
+  if (rewriteText.length >= minContentLength) return true;
+
+  const hasSubstantiveTranslation = Array.isArray(article.article_translations)
+    ? article.article_translations.some((entry) => {
+        const translatedText = [
+          entry?.headline,
+          entry?.summary,
+          entry?.body,
+        ]
+          .map((value) => stripHtml(value))
+          .join(" ")
+          .trim();
+        return translatedText.length >= minSummaryLength;
+      })
+    : false;
+  if (hasSubstantiveTranslation) return true;
+
+  const summaryText = stripHtml(
+    article.rewrite_meta?.summary ||
+      article.summary ||
+      article.newsmesh_meta?.summary ||
+      article.newsmesh_meta?.description
+  );
+
+  return summaryText.length >= minSummaryLength && taxonomySignals >= 1;
+}
+
 type IndexableProfile = {
   is_private?: boolean;
   displayname?: string;

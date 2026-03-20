@@ -31,6 +31,9 @@ const availableLocales = computed(() => data.value?.availableLocales || ["en"]);
 const baseLocale = computed(() =>
   String(locale.value || "en").split("-")[0].trim().toLowerCase()
 );
+const resolvedPageLocale = computed(() =>
+  String(page.value?.locale || "en").split("-")[0].trim().toLowerCase()
+);
 const canonicalLocale = computed(() => {
   if (availableLocales.value.includes(baseLocale.value)) return baseLocale.value;
   if (availableLocales.value.includes("en")) return "en";
@@ -40,6 +43,14 @@ const canonicalPath = computed(
   () => switchLocalePath(canonicalLocale.value) || route.path || "/"
 );
 const baseUrl = String(config.public.SITE_URL || "").replace(/\/+$/, "");
+
+if (
+  resolvedPageLocale.value &&
+  resolvedPageLocale.value !== baseLocale.value &&
+  canonicalPath.value !== route.path
+) {
+  await navigateTo(canonicalPath.value, { redirectCode: 302 });
+}
 
 useSeoI18nMeta("home", {
   canonicalLocaleCode: canonicalLocale.value,
