@@ -44,13 +44,6 @@
         </span>
         <span v-else>
           {{ promptText || t("pages.feeds.promptFallback", "Share what's on your mind.") }}
-          <NuxtLink
-            v-if="promptRelatedHref"
-            :to="promptRelatedHref"
-            class="home-mood-card__related"
-          >
-            [Related]
-          </NuxtLink>
         </span>
         </div>
 
@@ -235,7 +228,6 @@ const config = useRuntimeConfig();
 
 const promptText = ref("");
 const promptKey = ref(null);
-const promptRelatedArticleSlug = ref(null);
 const promptLoading = ref(false);
 const promptReqId = ref(0);
 const promptAnswer = ref("");
@@ -270,12 +262,6 @@ let cooldownTimerId = null;
 const promptSubmitDisabled = computed(
   () => submitBusy.value || !promptAnswer.value.trim() || cooldownActive.value
 );
-
-const promptRelatedHref = computed(() => {
-  const slug = String(promptRelatedArticleSlug.value || "").trim();
-  if (!slug) return null;
-  return localPath(`/articles/${slug}`);
-});
 
 const cooldownRemainingMs = computed(() => {
   const next = postEligibility.value?.nextAllowedAt;
@@ -313,12 +299,10 @@ async function loadPrompt() {
     if (reqId !== promptReqId.value) return;
     promptText.value = res?.promptText || "";
     promptKey.value = res?.promptKey || null;
-    promptRelatedArticleSlug.value = res?.relatedArticleSlug || null;
   } catch {
     if (reqId !== promptReqId.value) return;
     promptText.value = "";
     promptKey.value = null;
-    promptRelatedArticleSlug.value = null;
   } finally {
     if (reqId === promptReqId.value) {
       promptLoading.value = false;

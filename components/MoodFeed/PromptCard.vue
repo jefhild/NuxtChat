@@ -3,20 +3,6 @@
     <div class="mood-thread__header" v-if="promptText || hasExtras">
       <div class="mood-thread__question">
         {{ promptText }}
-        <NuxtLink
-          v-if="promptThreadHref"
-          :to="promptThreadHref"
-          class="mood-thread__thread-link"
-        >
-          [Responses]
-        </NuxtLink>
-        <NuxtLink
-          v-if="promptRelatedHref"
-          :to="promptRelatedHref"
-          class="mood-thread__related"
-        >
-          [Related]
-        </NuxtLink>
       </div>
       <v-spacer />
       <v-btn
@@ -93,7 +79,6 @@ import MoodFeedCommentList from "@/components/MoodFeed/CommentList.vue";
 import { computed, ref, reactive, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
-import { buildMoodPromptSlug } from "@/utils/moodPromptSlug";
 
 const props = defineProps({
   thread: { type: Object, required: true },
@@ -117,24 +102,11 @@ const emit = defineEmits([
 ]);
 
 const { locale, t } = useI18n();
-const localPath = useLocalePath();
 const emptyText = computed(
   () => props.emptyText || t("pages.feeds.emptyReplies", "No replies yet.")
 );
 
 const promptText = computed(() => props.thread.promptText || "");
-const promptRelatedHref = computed(() => {
-  const slug = String(props.thread?.relatedArticleSlug || "").trim();
-  if (!slug) return null;
-  return localPath(`/articles/${slug}`);
-});
-const promptThreadHref = computed(() => {
-  const slug = buildMoodPromptSlug({
-    promptText: props.thread?.promptText,
-    promptKey: props.thread?.promptKey,
-  });
-  return props.thread?.promptKey ? localPath(`/mood/${slug}`) : null;
-});
 
 const entryMessages = computed(() =>
   (props.thread.entries || []).map((entry) => {

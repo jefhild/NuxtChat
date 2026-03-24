@@ -314,6 +314,22 @@ export default defineNuxtConfig({
     "/*/callback": {
       headers: { "x-robots-tag": "noindex, nofollow, noarchive" },
     },
+    "/mood": {
+      robots: "noindex, follow",
+    },
+    "/*/mood": {
+      robots: "noindex, follow",
+    },
+    "/mood/**": {
+      robots: "noindex, follow",
+      prerender: false,
+      swr: 3600,
+    },
+    "/*/mood/**": {
+      robots: "noindex, follow",
+      prerender: false,
+      swr: 3600,
+    },
     "/people/**": { prerender: false, swr: 3600 },
     "/profiles/**": { prerender: false },
     "/articles/**": { prerender: false, swr: 3600 },

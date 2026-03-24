@@ -4,10 +4,6 @@
       <PageHeader :text="promptTitle" :subtitle="pageSubtitle" />
     </div>
 
-    <div v-if="relatedArticleHref" class="mood-prompt-page__related">
-      <NuxtLink :to="relatedArticleHref">Related article</NuxtLink>
-    </div>
-
     <section class="feeds-list" aria-labelledby="feeds-prompt-heading">
       <h2 id="feeds-prompt-heading" class="feeds-section-title">
         {{ t("pages.feeds.streamHeading", "Latest mood entries") }}
@@ -136,7 +132,6 @@ import TurnstileWidget from "@/components/TurnstileWidget.vue";
 const { locale, t } = useI18n();
 const auth = useAuthStore();
 const route = useRoute();
-const localPath = useLocalePath();
 const config = useRuntimeConfig();
 const slug = computed(() => String(route.params.slug || "").trim());
 
@@ -153,10 +148,6 @@ if (promptError.value || !promptData.value?.promptKey) {
 }
 
 const promptTitle = computed(() => promptData.value?.promptText || "Mood Feed");
-const relatedArticleSlug = computed(() => promptData.value?.relatedArticleSlug || "");
-const relatedArticleHref = computed(() =>
-  relatedArticleSlug.value ? localPath(`/articles/${relatedArticleSlug.value}`) : ""
-);
 const pageSubtitle = computed(() => "Responses to this question");
 
 useHead(() => ({
