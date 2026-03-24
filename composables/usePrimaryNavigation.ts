@@ -11,14 +11,19 @@ export function usePrimaryNavigation() {
       path: localePath("/chat"),
     },
     {
-      id: "blog",
-      name: t("components.navbar.blog"),
-      path: localePath("/articles"),
+      id: "topics",
+      name: t("components.footer.topics") || "Topics",
+      path: localePath("/topics"),
     },
     {
-      id: "feeds",
-      name: t("components.navbar.feeds") || "Mood Feed",
-      path: localePath("/feeds"),
+      id: "guides",
+      name: t("components.footer.guides") || "Guides",
+      path: localePath("/guides"),
+    },
+    {
+      id: "compare",
+      name: t("components.footer.compare") || "Compare",
+      path: localePath("/compare"),
     },
   ]);
 

@@ -385,9 +385,12 @@
 </template>
 
 <script setup>
+import { buildSeoPagePath } from "@/utils/seoPagePaths";
+
 const localePath = useLocalePath();
 
 const typeOptions = [
+  { label: "Landing", value: "landing" },
   { label: "Compare", value: "compare" },
   { label: "Guide", value: "guide" },
   { label: "Topic", value: "topic" },
@@ -400,7 +403,7 @@ const saving = ref(false);
 const dialog = ref(false);
 const translationDialog = ref(false);
 const importDialog = ref(false);
-const selectedType = ref("compare");
+const selectedType = ref("landing");
 const pages = ref([]);
 const availableFaqs = ref([]);
 const heroImageDataUrl = ref("");
@@ -418,7 +421,7 @@ const snackbar = ref({
 
 const emptyForm = () => ({
   id: null,
-  pageType: "compare",
+  pageType: "landing",
   locale: "en",
   slug: "",
   title: "",
@@ -619,11 +622,11 @@ const openEditDialog = (page) => {
 };
 
 const applyImportedPayload = (payload) => {
-  const nextPageType = ["compare", "guide", "topic"].includes(
+  const nextPageType = ["compare", "guide", "topic", "landing"].includes(
     normalizeString(payload?.pageType || payload?.type).toLowerCase()
   )
     ? normalizeString(payload?.pageType || payload?.type).toLowerCase()
-    : form.value.pageType || selectedType.value || "compare";
+    : form.value.pageType || selectedType.value || "landing";
 
   form.value = {
     ...form.value,
@@ -881,9 +884,7 @@ const openPage = (page) => {
 };
 
 const buildAdminPath = (page) => {
-  if (page.pageType === "guide") return `/guides/${page.slug}`;
-  if (page.pageType === "topic") return `/topics/${page.slug}`;
-  return `/compare/${page.slug}`;
+  return buildSeoPagePath(page.pageType, page.slug);
 };
 
 const addHighlight = () => form.value.highlights.push("");

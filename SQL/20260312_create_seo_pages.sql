@@ -2,7 +2,7 @@ create extension if not exists pgcrypto;
 
 create table if not exists public.seo_pages (
   id uuid primary key default gen_random_uuid(),
-  page_type text not null check (page_type in ('compare', 'guide', 'topic')),
+  page_type text not null check (page_type in ('compare', 'guide', 'topic', 'landing')),
   locale text not null default 'en',
   slug text not null,
   title text not null,

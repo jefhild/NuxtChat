@@ -12,7 +12,6 @@
 const route = useRoute();
 const { locale } = useI18n();
 const switchLocalePath = useSwitchLocalePath();
-const config = useRuntimeConfig();
 
 const { data, error } = await useAsyncData(
   () => `seo-page-compare-${route.params.slug}-${locale.value}`,
@@ -42,27 +41,23 @@ const canonicalLocale = computed(() => {
 const canonicalPath = computed(
   () => switchLocalePath(canonicalLocale.value) || route.path || "/"
 );
-const baseUrl = String(config.public.SITE_URL || "").replace(/\/+$/, "");
-
-if (
-  resolvedPageLocale.value &&
-  resolvedPageLocale.value !== baseLocale.value &&
-  canonicalPath.value !== route.path
-) {
-  await navigateTo(canonicalPath.value, { redirectCode: 302 });
-}
+const robots = computed(() =>
+  resolvedPageLocale.value !== baseLocale.value
+    ? "noindex,follow"
+    : undefined
+);
 
 useSeoI18nMeta("home", {
-  canonicalLocaleCode: canonicalLocale.value,
+  canonicalLocaleCode: canonicalLocale,
   availableLocaleCodes: availableLocales,
-  overrideUrl: `${baseUrl}${canonicalPath.value === "/" ? "" : canonicalPath.value}`,
+  robots,
   dynamic: {
-    title: page.value?.metaTitle || page.value?.title,
-    description: page.value?.metaDescription || page.value?.subtitle || "",
-    ogTitle: page.value?.metaTitle || page.value?.title,
-    ogDescription: page.value?.metaDescription || page.value?.subtitle || "",
-    ogImage: page.value?.heroImageUrl || undefined,
-    twitterImage: page.value?.heroImageUrl || undefined,
+    title: computed(() => page.value?.metaTitle || page.value?.title || ""),
+    description: computed(() => page.value?.metaDescription || page.value?.subtitle || ""),
+    ogTitle: computed(() => page.value?.metaTitle || page.value?.title || ""),
+    ogDescription: computed(() => page.value?.metaDescription || page.value?.subtitle || ""),
+    ogImage: computed(() => page.value?.heroImageUrl || ""),
+    twitterImage: computed(() => page.value?.heroImageUrl || ""),
   },
 });
 </script>

@@ -37,18 +37,134 @@
         "logout_confirm_button": "Confirmer la Déconnexion",
         "cancel": "Annuler"
       },
+      "page": {
+        "hero": {
+          "title": "Chat anonyme avec de vraies personnes.",
+          "subtitle": "Un chat centré sur le texte, sans inscription, sans vidéo, sans publicité et sans distractions.",
+          "primaryCta": "Commencer le chat",
+          "primaryCtaReturning": "Reprendre le chat",
+          "secondaryCta": "Explorer le chat anonyme",
+          "trustPoints": [
+            "Texte d'abord",
+            "Sans pression",
+            "Aucune vidéo requise",
+            "Pensé pour de vraies conversations"
+          ]
+        },
+        "entry": {
+          "kicker": "Choisissez votre point d'entrée",
+          "title": "Commencez la conversation à votre façon.",
+          "subtitle": "Que vous cherchiez plus de confidentialité, plus de simplicité ou simplement quelqu'un de nouveau à qui parler, commencez ici.",
+          "cards": [
+            {
+              "href": "/anonymous-chat",
+              "eyebrow": "Anonyme",
+              "title": "Discuter anonymement",
+              "body": "Gardez votre identité privée au départ, puis partagez-en davantage seulement si cela vous semble naturel.",
+              "cta": "Explorer le chat anonyme"
+            },
+            {
+              "href": "/chat-without-signup",
+              "eyebrow": "Sans inscription",
+              "title": "Commencer sans inscription",
+              "body": "Essayez ImChatty facilement et voyez comment le service rapproche les gens avant d'aller plus loin.",
+              "cta": "Voir comment ça marche"
+            },
+            {
+              "href": "/mood-based-chat",
+              "eyebrow": "Sans pression",
+              "title": "Suivre votre humeur",
+              "body": "Choisissez ce qui correspond à votre état d'esprit du moment pour entrer dans une conversation plus naturellement.",
+              "cta": "Parcourir les entrées par humeur"
+            },
+            {
+              "href": "/meet-new-people-online",
+              "eyebrow": "Rencontrer du monde",
+              "title": "Parler à quelqu'un de nouveau",
+              "body": "Lancez une nouvelle conversation simplement, sans surpenser chaque étape.",
+              "cta": "Rencontrer de nouvelles personnes"
+            }
+          ]
+        },
+        "proof": {
+          "kicker": "Pourquoi cette approche",
+          "title": "Nous rendons la conversation plus simple.",
+          "subtitle": "Notre objectif est simple : aider les gens à commencer à parler, réduire les frictions, et éviter les publicités, le désordre et le marketing qui encombrent l'expérience.",
+          "points": [
+            {
+              "title": "Clair dès le départ",
+              "body": "ImChatty sert à démarrer de vraies conversations, sans bruit inutile."
+            },
+            {
+              "title": "Moins de configuration, plus d'échange",
+              "body": "Commencez à parler plus vite, avec moins d'étapes entre vous et la conversation."
+            },
+            {
+              "title": "Conçu pour converser",
+              "body": "Humeur, langue, modération et matching travaillent ensemble pour créer un meilleur espace d'échange."
+            },
+            {
+              "title": "Plusieurs façons de commencer",
+              "body": "Humeur, sujets et entrées guidées facilitent le bon démarrage."
+            }
+          ],
+          "flowEyebrow": "Entrée dans le chat",
+          "flowTitle": "Une façon plus simple d'entrer dans le chat",
+          "flowSteps": [
+            {
+              "number": "1",
+              "title": "Savoir à quoi s'attendre",
+              "body": "Vous pouvez commencer rapidement, rester anonyme et entrer dans la discussion en douceur."
+            },
+            {
+              "number": "2",
+              "title": "Choisir comment démarrer",
+              "body": "Passez l'inscription, restez en mode texte, ou créez un compte pour un meilleur matching et des entrées par humeur."
+            },
+            {
+              "number": "3",
+              "title": "Entrer dans la conversation",
+              "body": "Tout est pensé pour vous aider à parler sans rester bloqué dans l'installation."
+            }
+          ],
+          "flowCta": "Aller au chat"
+        },
+        "mood": {
+          "kicker": "De meilleurs débuts",
+          "title": "Commencez selon ce qui vous ressemble",
+          "subtitle": "Toutes les conversations ne commencent pas de la même manière. Humeur, sujet et entrée guidée peuvent rendre le premier pas plus naturel.",
+          "chips": [
+            "Je m'ennuie",
+            "Je n'arrive pas à dormir",
+            "J'ai besoin d'un conseil",
+            "J'ai envie d'un échange léger"
+          ],
+          "cta": "Parcourir le fil d'humeur"
+        },
+        "finalCta": {
+          "kicker": "Commencez ici",
+          "title": "Prêt à commencer à parler ?",
+          "subtitle": "Commencez par le texte, gardez les choses simples, et voyez où la conversation vous mène.",
+          "primaryCta": "Commencer le chat",
+          "secondaryCta": "Chat sans inscription",
+          "mockupAlt": "Aperçu de l'interface de chat sur ordinateur"
+        }
+      },
       "meta": {
-        "title": "Chat anonyme pour des conversations globales | ImChatty",
-        "description": "Commencez un chat anonyme avec de vraies personnes et des personas IA sur ImChatty. Rejoignez des conversations globales lancées par des articles, des humeurs et des centres d'intérêt communs sans renoncer à votre vie privée.",
-        "ogTitle": "Chat anonyme pour des conversations globales",
-        "ogType": "Website",
+        "title": "Chat anonyme avec de vraies personnes | ImChatty",
+        "description": "Commencez un chat textuel anonyme avec de vraies personnes sur ImChatty. Évitez la vidéo, réduisez la friction de l'inscription, et explorez des sujets, des humeurs et des entrées guidées dans votre langue.",
+        "ogTitle": "Chat anonyme avec de vraies personnes",
+        "ogType": "website",
         "ogUrl": "https://imchatty.com",
-        "ogDescription": "Commencez un chat anonyme avec de vraies personnes et des personas IA sur ImChatty. Rejoignez des conversations globales lancées par des articles, des humeurs et des centres d'intérêt communs avec plus de confidentialité.",
+        "ogDescription": "Commencez un chat textuel anonyme avec de vraies personnes sur ImChatty. Explorez des façons privées et sans pression d'entrer dans une conversation.",
         "ogImage": "https://imchatty.com/images/robot.png",
-        "twitterTitle": "Chat anonyme pour des conversations globales",
+        "ogImageAlt": "Aperçu du chat anonyme ImChatty",
+        "ogImageWidth": "1200",
+        "ogImageHeight": "630",
+        "twitterTitle": "Chat anonyme avec de vraies personnes",
         "twitterCard": "summary_large_image",
-        "twitterDescription": "Commencez un chat anonyme avec de vraies personnes et des personas IA sur ImChatty. Rejoignez des conversations globales lancées par des articles, des humeurs et des centres d'intérêt communs avec plus de confidentialité.",
-        "twitterImage": "https://imchatty.com/images/article-image.webp"
+        "twitterDescription": "Commencez un chat textuel anonyme avec de vraies personnes sur ImChatty. Explorez des façons privées et sans pression d'entrer dans une conversation.",
+        "twitterImage": "https://imchatty.com/images/robot.png"
       }
     },
     "seo": {

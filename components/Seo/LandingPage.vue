@@ -6,9 +6,6 @@
     <div class="seo-layout">
       <div class="seo-main-stack">
         <div class="seo-hero__copy">
-          <v-chip size="small" variant="tonal" color="primary" class="mb-4">
-            {{ sectionLabel }}
-          </v-chip>
           <h1 class="text-h3 font-weight-bold mb-3">
             {{ page.heroTitle || page.title }}
           </h1>
@@ -115,12 +112,12 @@
 
         <v-card
           v-if="page.faqs?.length"
-          :class="['pa-4 pa-md-5', { 'seo-card--dark': isDarkTheme }]"
+          :class="['seo-faq-card pa-3 pa-md-4', { 'seo-card--dark': isDarkTheme }]"
           rounded="xl"
           elevation="0"
         >
-          <div class="text-h5 mb-4">FAQ</div>
-          <v-expansion-panels variant="accordion">
+          <div class="text-h5 mb-3">FAQ</div>
+          <v-expansion-panels variant="accordion" class="seo-faq-panels">
             <v-expansion-panel
               v-for="faq in page.faqs"
               :key="faq.question"
@@ -364,6 +361,24 @@ const selectLocale = (localeCode: string) => {
 .seo-page-shell--dark :deep(.v-expansion-panel) {
   background: rgba(15, 23, 42, 0.72);
   color: #e2e8f0;
+}
+
+.seo-faq-card {
+  overflow: hidden;
+}
+
+.seo-faq-panels {
+  width: 100%;
+}
+
+.seo-faq-panels :deep(.v-expansion-panel) {
+  margin-inline: 0;
+}
+
+.seo-faq-panels :deep(.v-expansion-panel-title),
+.seo-faq-panels :deep(.v-expansion-panel-text__wrapper) {
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .seo-cta-points {

@@ -12,6 +12,7 @@ import {
   shouldIndexProfile,
   shouldIndexTaxonomyPage,
 } from "./useIndexability";
+import { buildSeoPagePath } from "../utils/seoPagePaths";
 
 /**
  * Returns an array of dynamic route strings.
@@ -285,14 +286,9 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
         const locale = normalizeLocaleCode(page?.locale);
         const pageType = String(page?.page_type || "").trim().toLowerCase();
         if (!slug || !locale || !SUPPORTED_LOCALES.includes(locale)) return null;
-        const basePath =
-          pageType === "compare"
-            ? `/compare/${slug}`
-            : pageType === "guide"
-            ? `/guides/${slug}`
-            : pageType === "topic"
-            ? `/topics/${slug}`
-            : null;
+        const basePath = ["compare", "guide", "topic", "landing"].includes(pageType)
+          ? buildSeoPagePath(pageType, slug)
+          : null;
         return basePath ? localizePath(basePath, locale) : null;
       })
       .filter((route): route is string => Boolean(route));
@@ -475,14 +471,9 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       const pageType = String(page?.page_type || "").trim().toLowerCase();
       if (!slug || !locale || !SUPPORTED_LOCALES.includes(locale)) return;
 
-      const path =
-        pageType === "compare"
-          ? `/compare/${slug}`
-          : pageType === "guide"
-          ? `/guides/${slug}`
-          : pageType === "topic"
-          ? `/topics/${slug}`
-          : null;
+      const path = ["compare", "guide", "topic", "landing"].includes(pageType)
+        ? buildSeoPagePath(pageType, slug)
+        : null;
       if (!path) return;
 
       localizedRoutes.push({

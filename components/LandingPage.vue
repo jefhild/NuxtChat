@@ -1,224 +1,229 @@
 <template>
-  <v-container fluid class="pa-0">
-    <!-- Hero Section -->
-    <div class="full-bleed">
-      <v-sheet class="hero w-100" height="85vh">
+  <v-container fluid class="landing-page pa-0">
+    <section class="full-bleed hero-shell">
+      <v-sheet class="hero-surface" elevation="0">
         <v-img
           src="/images/background2.webp"
           cover
-          class="hero-img w-100"
-          height="100%"
-          gradient="to bottom, rgba(0,0,0,.35), rgba(0,0,0,.65)"
+          class="hero-media"
+          gradient="to bottom, rgba(6, 11, 23, 0.28), rgba(6, 11, 23, 0.82)"
         >
-          <!-- Make *this* the flex container that fills the image area -->
-          <div class="fill-height w-100 d-flex align-center justify-center">
-            <!-- Constrain and center the content -->
-            <div class="hero-content text-center mx-auto">
-              <h1 class="hero-title text-h4 text-md-h2 mb-4 text-white">
-                {{ getAuthHeading }}
+          <div class="hero-overlay">
+            <div class="hero-copy">
+              <h1 class="hero-title text-white">
+                {{ heroCopy.title }}
               </h1>
-              <p class="hero-subtitle text-body-1 text-md-subtitle-1 mb-6 text-white">
-                {{ $t("pages.home.landing_page.title-text2") }}
+              <p class="hero-subtitle text-white">
+                {{ heroCopy.subtitle }}
               </p>
-
-              <div
-                class="d-flex flex-column flex-sm-row ga-2 justify-center align-center"
-              >
+              <div class="hero-actions">
                 <v-btn
-                  v-if="showPrimaryHeroCta"
                   color="primary"
-                  :to="heroCtaTo"
+                  size="x-large"
                   class="hero-btn"
+                  :to="localPath('/chat')"
                 >
-                  {{ heroCtaLabel }}
+                  {{ heroCopy.primaryCta }}
                 </v-btn>
                 <v-btn
-                  v-if="showLearnMoreCta"
-                  color="white"
                   variant="outlined"
-                  @click="$router.push(localPath('/about'))"
+                  color="white"
+                  size="x-large"
                   class="hero-btn"
+                  :to="localPath('/anonymous-chat')"
                 >
-                  {{ $t("pages.home.landing_page.learn_more") }}
+                  {{ heroCopy.secondaryCta }}
                 </v-btn>
                 <v-btn
                   v-if="showLinkEmailCta"
                   color="amber-darken-2"
                   variant="flat"
+                  size="x-large"
                   class="hero-btn"
                   @click="openLinkEmailDialog"
                 >
-                  {{ $t("components.profile-email-link.cta") || "Link email" }}
+                  {{ t("components.profile-email-link.cta") || "Link email" }}
                 </v-btn>
+              </div>
+              <div class="hero-trust">
+                <span v-for="item in heroCopy.trustPoints" :key="item">
+                  {{ item }}
+                </span>
               </div>
             </div>
           </div>
         </v-img>
       </v-sheet>
-    </div>
-    <!-- Home Mood Question -->
-    <div class="full-bleed">
-      <v-sheet class="home-mood-wrap" elevation="0">
-        <v-container fluid class="py-8 px-4 px-md-8">
-          <ClientOnly>
-            <MoodFeedHomeQuestionBar :card-theme="homeMoodCardTheme" />
-            <template #fallback>
-              <v-sheet class="home-mood-fallback pa-4 pa-md-5" elevation="0">
-                <v-chip
-                  size="small"
-                  color="primary"
-                  variant="tonal"
-                  class="mb-2"
-                >
-                  {{ $t("pages.feeds.heading", "Mood Feed") }}
+    </section>
+
+    <section class="entry-section full-bleed">
+      <v-sheet class="entry-surface" elevation="0">
+        <v-container class="py-10 py-md-14">
+          <div class="section-copy text-center">
+            <v-chip color="primary" variant="tonal" class="mb-4">
+              {{ entryCopy.kicker }}
+            </v-chip>
+            <h2 class="text-h4 font-weight-bold mb-3">
+              {{ entryCopy.title }}
+            </h2>
+            <p class="text-body-1 text-medium-emphasis entry-intro">
+              {{ entryCopy.subtitle }}
+            </p>
+          </div>
+
+          <v-row class="mt-6" dense>
+            <v-col v-for="card in entryCards" :key="card.href" cols="12" md="6" lg="3">
+              <NuxtLink :to="localPath(card.href)" class="entry-card-link">
+                <v-card class="entry-card h-100" rounded="xl" elevation="0">
+                  <div class="entry-card__eyebrow">
+                    {{ card.eyebrow }}
+                  </div>
+                  <div class="text-h6 font-weight-bold mb-2">
+                    {{ card.title }}
+                  </div>
+                  <p class="text-body-2 text-medium-emphasis mb-4">
+                    {{ card.body }}
+                  </p>
+                  <span class="entry-card__cta">
+                    {{ card.cta }}
+                  </span>
+                </v-card>
+              </NuxtLink>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-sheet>
+    </section>
+
+    <section class="full-bleed proof-section">
+      <v-sheet class="proof-surface" elevation="0">
+        <v-container class="py-10 py-md-14">
+          <v-row align="stretch">
+            <v-col cols="12" md="7">
+              <div class="section-copy">
+                <v-chip color="primary" variant="tonal" class="mb-4">
+                  {{ proofCopy.kicker }}
                 </v-chip>
-                <h2 class="text-h5 font-weight-bold mb-1">
-                  {{ $t("pages.feeds.promptTitle", "Daily Mood Question") }}
+                <h2 class="text-h4 font-weight-bold mb-3">
+                  {{ proofCopy.title }}
                 </h2>
-                <p class="text-body-2 text-medium-emphasis mb-4">
-                  {{
-                    $t(
-                      "pages.feeds.promptSubtitle",
-                      "Share how you're feeling and connect with people who get it."
-                    )
-                  }}
+                <p class="text-body-1 text-medium-emphasis mb-6">
+                  {{ proofCopy.subtitle }}
                 </p>
-                <v-btn variant="text" color="primary" :to="localPath('/feeds')">
-                  {{ $t("pages.feeds.seeAll", "Browse mood feed") }}
+              </div>
+
+              <div class="proof-grid">
+                <div v-for="point in proofCopy.points" :key="point.title" class="proof-point">
+                  <div class="proof-point__title">{{ point.title }}</div>
+                  <div class="proof-point__body">{{ point.body }}</div>
+                </div>
+              </div>
+            </v-col>
+
+            <v-col cols="12" md="5">
+              <v-card class="entry-flow-card h-100" rounded="xl" elevation="0">
+                <div class="text-overline mb-2">{{ proofCopy.flowEyebrow }}</div>
+                <div class="text-h5 font-weight-bold mb-3">{{ proofCopy.flowTitle }}</div>
+                <div class="entry-flow-list">
+                  <div v-for="step in proofCopy.flowSteps" :key="step.title" class="entry-flow-step">
+                    <div class="entry-flow-step__number">{{ step.number }}</div>
+                    <div>
+                      <div class="entry-flow-step__title">{{ step.title }}</div>
+                      <div class="entry-flow-step__body">{{ step.body }}</div>
+                    </div>
+                  </div>
+                </div>
+                <v-btn color="primary" size="large" block class="mt-6" :to="localPath('/chat')">
+                  {{ proofCopy.flowCta }}
                 </v-btn>
-              </v-sheet>
-            </template>
-          </ClientOnly>
+              </v-card>
+            </v-col>
+          </v-row>
         </v-container>
       </v-sheet>
-    </div>
-    <!-- CTA Section -->
-    <div class="full-bleed">
-      <v-sheet class="cta cta-surface" elevation="0">
-        <v-container fluid class="text-center py-8 cta-content">
-          <v-chip color="primary" variant="tonal" class="mb-4">
-            {{ $t("pages.home.landing_page.meet_people") }}
-          </v-chip>
+    </section>
 
-          <div class="text-h5 font-weight-medium mb-2">
-            {{ $t("pages.home.landing_page.discover_connections") }}
+    <section class="full-bleed mood-teaser-section">
+      <v-sheet class="mood-teaser-surface" elevation="0">
+        <v-container class="py-10 py-md-14">
+          <div class="section-copy text-center">
+            <v-chip color="primary" variant="tonal" class="mb-4">
+              {{ moodCopy.kicker }}
+            </v-chip>
+            <h2 class="text-h4 font-weight-bold mb-3">
+              {{ moodCopy.title }}
+            </h2>
+            <p class="text-body-1 text-medium-emphasis mood-teaser-intro">
+              {{ moodCopy.subtitle }}
+            </p>
           </div>
-          <div class="text-body-1 mt-6">
-            {{ $t("pages.home.landing_page.realtime_conversations") }}
+
+          <div class="mood-chips">
+            <v-chip
+              v-for="chip in moodCopy.chips"
+              :key="chip"
+              size="large"
+              variant="outlined"
+            >
+              {{ chip }}
+            </v-chip>
           </div>
 
-          <i18n-t
-            keypath="pages.home.landing_page.profile_links"
-            tag="div"
-            class="text-body-2 mt-4"
-          >
-            <template #male>
-              <NuxtLink :to="localPath('/profiles/male')" class="cta-link">
-                {{ $t("components.profile-container.gender-male") }}
-              </NuxtLink>
-            </template>
-            <template #female>
-              <NuxtLink :to="localPath('/profiles/female')" class="cta-link">
-                {{ $t("components.profile-container.gender-female") }}
-              </NuxtLink>
-            </template>
-            <template #other>
-              <NuxtLink :to="localPath('/profiles/other')" class="cta-link">
-                {{ $t("components.profile-container.gender-other") }}
-              </NuxtLink>
-            </template>
-          </i18n-t>
-
-          <v-btn
-            color="primary"
-            class="mr-4 mt-5"
-            size="large"
-            :to="localPath('/chat')"
-          >
-            {{ $t("pages.home.landing_page.get_chatting") }}
-          </v-btn>
+          <div class="text-center mt-6">
+            <v-btn color="primary" size="large" :to="localPath('/feeds')">
+              {{ moodCopy.cta }}
+            </v-btn>
+          </div>
         </v-container>
       </v-sheet>
-    </div>
+    </section>
 
     <v-container fluid class="mt-6">
       <HomeSeoDiscovery />
     </v-container>
 
-    <!-- Article Sections -->
-    <v-container fluid class="mt-10">
-      <h2
-        :class="[
-          'text-h4 text-center font-weight-medium mb-8 home-articles-heading',
-          { 'home-articles-heading--dark': isDarkTheme },
-        ]"
-        :style="{ color: isDarkTheme ? '#f8fafc' : '#0f172a' }"
-      >
-        {{ $t("pages.home.landing_page.check_articles") }}
-      </h2>
+    <section class="full-bleed final-cta-section mt-10">
+      <v-sheet class="final-cta-surface" elevation="0">
+        <v-container class="py-12 py-md-16">
+          <v-row align="center" class="final-cta-grid">
+            <v-col cols="12" md="5">
+              <div class="final-cta-copy-wrap">
+                <v-chip color="primary" variant="tonal" class="mb-4">
+                  {{ finalCtaCopy.kicker }}
+                </v-chip>
+                <h2 class="text-h4 font-weight-bold mb-3">
+                  {{ finalCtaCopy.title }}
+                </h2>
+                <p class="text-body-1 final-cta-copy final-cta-subtitle">
+                  {{ finalCtaCopy.subtitle }}
+                </p>
+                <div class="hero-actions mt-6">
+                  <v-btn color="primary" size="x-large" class="hero-btn" :to="localPath('/chat')">
+                    {{ finalCtaCopy.primaryCta }}
+                  </v-btn>
+                  <v-btn variant="outlined" size="x-large" class="hero-btn" :to="localPath('/chat-without-signup')">
+                    {{ finalCtaCopy.secondaryCta }}
+                  </v-btn>
+                </div>
+              </div>
+            </v-col>
 
-      <template v-if="isLoading">
-        <v-row>
-          <v-col v-for="n in 6" :key="n" class="pa-3" cols="12" sm="6" md="4">
-            <v-skeleton-loader type="image, article" />
-          </v-col>
-        </v-row>
-      </template>
-
-      <template v-else>
-        <v-row>
-          <v-col
-            v-for="article in articles"
-            :key="article.id"
-            class="pa-3"
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <ArticleCard :article="article" :chatThreadId="article.threadSlug ?? undefined"/>
-          </v-col>
-        </v-row>
-
-        <div class="text-center mt-6">
-          <v-btn variant="outlined" color="primary" :to="localPath('/articles')">
-            {{ $t("pages.home.landing_page.see_more_articles") }}
-          </v-btn>
-        </div>
-      </template>
-    </v-container>
-
-    <!-- Final CTA Banner -->
-    <div class="full-bleed mt-10">
-      <v-sheet class="final-cta w-100" elevation="0">
-        <v-img
-          src="/images/heromale.webp"
-          cover
-          class="final-cta-img w-100"
-          gradient="to bottom, rgba(0,0,0,.35), rgba(0,0,0,.75)"
-        >
-          <div class="fill-height w-100 d-flex align-center justify-center">
-            <div class="hero-content text-center mx-auto py-16">
-              <h2 class="text-h4 font-weight-bold mb-2 text-white">
-                {{ $t("pages.home.landing_page.final_cta_title") }}
-              </h2>
-              <p class="text-body-1 mb-5 text-white">
-                {{ $t("pages.home.landing_page.final_cta_description") }}
-              </p>
-              <v-btn
-                color="primary"
-                class="hero-btn"
-                size="large"
-                :to="localPath('/chat')"
-              >
-                {{ $t("pages.home.landing_page.get_chatting_now") }}
-              </v-btn>
-            </div>
-          </div>
-        </v-img>
+            <v-col cols="12" md="7" class="d-none d-md-flex">
+              <div class="final-cta-mockup">
+                <div class="final-cta-mockup__frame">
+                  <img
+                    :src="finalCtaCopy.mockupSrc"
+                    :alt="finalCtaCopy.mockupAlt"
+                    class="final-cta-mockup__image"
+                  >
+                </div>
+              </div>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-sheet>
-    </div>
+    </section>
 
-    <!-- Logout Dialog -->
     <v-dialog v-if="logoutDialog" v-model="logoutDialog" width="auto">
       <v-card max-width="400" prepend-icon="mdi-account-remove">
         <v-card-title>{{
@@ -239,7 +244,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- Link Email Dialog -->
     <v-dialog
       v-if="linkEmailDialogVisible"
       v-model="linkEmailDialogVisible"
@@ -296,35 +300,96 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, reactive } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useLocalePath } from "#imports";
-import { useTheme } from "vuetify";
 import { useAuthStore } from "@/stores/authStore1";
 import { useDb } from "@/composables/useDB";
 
-const { t } = useI18n();
+const { t, tm, rt } = useI18n();
 const router = useRouter();
 const localPath = useLocalePath();
 const authStore = useAuthStore();
-const theme = useTheme();
-const {
-  getPublishedArticleCards,
-  hasEmail,
-  updateUserEmail,
-} = useDb();
+const { hasEmail, updateUserEmail } = useDb();
 
 const logoutDialog = ref(false);
-
 const authStatus = computed(() => authStore.authStatus);
-const userProfile = computed(() => authStore.userProfile);
 const isAnonAuthed = computed(() => authStatus.value === "anon_authenticated");
-const isDarkTheme = computed(() => theme.global.current.value.dark);
-const homeMoodCardTheme = computed(() => {
-  const raw = String(userProfile.value?.profile_card_theme || "trading").toLowerCase();
-  return ["trading", "vintage", "holo"].includes(raw) ? raw : "trading";
-});
+
+const homePageKey = (suffix) => `pages.home.page.${suffix}`;
+const resolveMessage = (value) => {
+  if (value == null) return "";
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value);
+  }
+  return String(rt(value));
+};
+
+const translatedStringList = (suffix) => {
+  const value = tm(homePageKey(suffix));
+  return Array.isArray(value) ? value.map((item) => resolveMessage(item)) : [];
+};
+const translatedObjectList = (suffix) => {
+  const value = tm(homePageKey(suffix));
+  return Array.isArray(value)
+    ? value.map((item) =>
+        Object.fromEntries(
+          Object.entries(item || {}).map(([key, entry]) => [
+            key,
+            resolveMessage(entry),
+          ])
+        )
+      )
+    : [];
+};
+
+const heroCopy = computed(() => ({
+  title: t(homePageKey("hero.title")),
+  subtitle: t(homePageKey("hero.subtitle")),
+  primaryCta: isAnonAuthed.value
+    ? t(homePageKey("hero.primaryCtaReturning"))
+    : t(homePageKey("hero.primaryCta")),
+  secondaryCta: t(homePageKey("hero.secondaryCta")),
+  trustPoints: translatedStringList("hero.trustPoints"),
+}));
+
+const entryCopy = computed(() => ({
+  kicker: t(homePageKey("entry.kicker")),
+  title: t(homePageKey("entry.title")),
+  subtitle: t(homePageKey("entry.subtitle")),
+}));
+
+const entryCards = computed(() => translatedObjectList("entry.cards"));
+
+const proofCopy = computed(() => ({
+  kicker: t(homePageKey("proof.kicker")),
+  title: t(homePageKey("proof.title")),
+  subtitle: t(homePageKey("proof.subtitle")),
+  points: translatedObjectList("proof.points"),
+  flowEyebrow: t(homePageKey("proof.flowEyebrow")),
+  flowTitle: t(homePageKey("proof.flowTitle")),
+  flowSteps: translatedObjectList("proof.flowSteps"),
+  flowCta: t(homePageKey("proof.flowCta")),
+}));
+
+const moodCopy = computed(() => ({
+  kicker: t(homePageKey("mood.kicker")),
+  title: t(homePageKey("mood.title")),
+  subtitle: t(homePageKey("mood.subtitle")),
+  chips: translatedStringList("mood.chips"),
+  cta: t(homePageKey("mood.cta")),
+}));
+
+const finalCtaCopy = computed(() => ({
+  kicker: t(homePageKey("finalCta.kicker")),
+  title: t(homePageKey("finalCta.title")),
+  subtitle: t(homePageKey("finalCta.subtitle")),
+  primaryCta: t(homePageKey("finalCta.primaryCta")),
+  secondaryCta: t(homePageKey("finalCta.secondaryCta")),
+  mockupSrc: "/screenshots/chatexampledesk.webp",
+  mockupAlt: t(homePageKey("finalCta.mockupAlt")),
+}));
 
 const linkEmailDialogVisible = ref(false);
 const linkEmailSubmitting = ref(false);
@@ -340,31 +405,6 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const showLinkEmailCta = computed(
   () => authStatus.value === "anon_authenticated" && !hasLinkedEmail.value
 );
-const showPrimaryHeroCta = computed(() => !isAnonAuthed.value);
-const showLearnMoreCta = computed(() => !isAnonAuthed.value);
-const heroCtaTo = computed(() => localPath("/chat"));
-const heroCtaLabel = computed(() =>
-  authStatus.value === "authenticated" || authStatus.value === "anon_authenticated"
-    ? t("pages.home.landing_page.get_chatting")
-    : t("pages.home.landing_page.cta_button")
-);
-
-const getAuthHeading = computed(() => {
-  switch (authStatus.value) {
-    case "unauthenticated":
-      return t("pages.home.landing_page.heading_unauthenticated");
-    case "guest":
-      return t("pages.home.landing_page.heading_guest");
-    case "onboarding":
-      return t("pages.home.landing_page.heading_onboarding");
-    case "anon_authenticated":
-      return t("pages.home.landing_page.heading_anon_authenticated");
-    case "authenticated":
-      return t("pages.home.landing_page.heading_authenticated");
-    default:
-      return t("pages.home.landing_page.title-text");
-  }
-});
 
 async function confirmLogout() {
   logoutDialog.value = false;
@@ -448,34 +488,12 @@ watch(
   },
   { immediate: true }
 );
-
-const { data: landingData, pending: isLoading } = await useAsyncData(
-  "landing-home-content",
-  async () => {
-    try {
-      const articles = await getPublishedArticleCards(6);
-      return {
-        articles: Array.isArray(articles) ? articles : [],
-      };
-    } catch (err) {
-      console.error("[LandingPage] Error:", err);
-      return { articles: [] };
-    }
-  },
-  {
-    default: () => ({ articles: [] }),
-  }
-);
-
-const articles = computed(() => landingData.value?.articles || []);
 </script>
 
 <style scoped>
 * {
-  font-family: "poppins", sans-serif;
+  font-family: "Poppins", sans-serif;
 }
-
-/* HERO */
 
 .full-bleed {
   width: 100vw;
@@ -483,188 +501,359 @@ const articles = computed(() => landingData.value?.articles || []);
   margin-right: calc(50% - 50vw);
 }
 
-.hero {
-  position: relative;
-  overflow: hidden;
+.hero-surface,
+.entry-surface,
+.proof-surface,
+.mood-teaser-surface,
+.final-cta-surface {
+  border-radius: 0;
 }
 
-.hero-img {
-  /* Make sure the content uses full height of the hero */
-  width: 100%;
+.hero-media {
+  min-height: clamp(520px, 82vh, 760px);
 }
 
-.hero-content {
-  width: min(92vw, 1280px);
-  max-width: 1280px;
-  padding: 0 16px;
+.hero-overlay {
+  min-height: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 20px;
+}
+
+.hero-copy {
+  width: min(92vw, 900px);
+  text-align: center;
+  padding-top: clamp(56px, 10vh, 110px);
 }
 
 .hero-title {
-  font-weight: 700;
+  font-size: clamp(2.5rem, 5.6vw, 4.4rem);
+  font-weight: 600;
   line-height: 1.08;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   text-wrap: balance;
-  max-width: min(88vw, 18ch);
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 14ch;
+  margin: 0 auto 18px;
 }
 
 .hero-subtitle {
-  line-height: 1.45;
-  max-width: min(82vw, 44ch);
-  margin-left: auto;
-  margin-right: auto;
-  text-wrap: balance;
+  max-width: 52ch;
+  margin: 0 auto;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  line-height: 1.55;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 28px;
 }
 
 .hero-btn {
   min-width: fit-content;
-  max-width: 100%;
-  height: auto;
   white-space: normal;
-  text-wrap: balance;
 }
 
-@media (max-width: 959px) {
-  .hero-content {
-    width: min(98vw, 760px);
-    padding: 0 10px;
-  }
-
-  .hero-title {
-    max-width: min(96vw, 18ch);
-    line-height: 1.04;
-  }
-
-  .hero-subtitle {
-    max-width: min(94vw, 34ch);
-    line-height: 1.35;
-  }
+.hero-trust {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.95rem;
 }
 
-@media (min-width: 960px) {
-  .hero-content {
-    width: min(90vw, 1400px);
-  }
-
-  .hero-title {
-    font-size: clamp(2.8rem, 4.4vw, 4.6rem) !important;
-    font-weight: 600;
-    line-height: 1.12;
-    letter-spacing: -0.03em;
-    margin-bottom: 1.5rem !important;
-    max-width: min(78vw, 20ch);
-  }
-
-  .hero-subtitle {
-    font-size: clamp(1.2rem, 1.7vw, 1.65rem) !important;
-    line-height: 1.5;
-    max-width: min(74vw, 52ch);
-  }
-}
-
-/* CTA shared background */
-.cta {
-  background: linear-gradient(135deg, #e3f2fd, #f1f8e9);
-  border-radius: 0;
-}
-
-.home-mood-wrap {
-  background:
-    radial-gradient(700px 260px at 2% 0%, rgba(56, 189, 248, 0.12), transparent 60%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
-}
-
-.home-mood-fallback {
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.98));
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 24px;
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-:global(.v-theme--dark .home-mood-wrap) {
-  background:
-    radial-gradient(900px 320px at 2% 0%, rgba(56, 189, 248, 0.14), transparent 60%),
-    linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
-}
-
-:global(.v-theme--dark .home-mood-fallback) {
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(11, 18, 32, 0.98));
-  border-color: rgba(148, 163, 184, 0.22);
-}
-
-.cta-surface {
-  width: 100%;
-}
-
-.cta.v-sheet {
-  /* Override Vuetify sheet inline background color in both themes. */
-  background: linear-gradient(135deg, #e3f2fd, #f1f8e9) !important;
-}
-
-.cta-content {
-  max-width: 1100px;
-  color: #0f172a;
-}
-
-.cta-link {
-  color: #1e88e5;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.cta-link:hover {
-  text-decoration: underline;
-}
-
-:global(.v-theme--dark .cta.v-sheet) {
-  background:
-    radial-gradient(1000px 360px at 10% 0%, rgba(37, 99, 235, 0.2), transparent 60%),
-    linear-gradient(180deg, #0b1220 0%, #0f172a 100%) !important;
-}
-
-:global(.v-theme--dark .cta-content) {
-  color: #e2e8f0;
-}
-
-:global(.v-theme--dark .cta-content) :deep(.v-chip) {
-  border-color: rgba(148, 163, 184, 0.28);
-}
-
-:global(.v-theme--dark .cta-link) {
+.hero-trust span::before {
+  content: "•";
+  margin-right: 8px;
   color: #93c5fd;
 }
 
-.home-articles-heading {
-  color: rgba(var(--v-theme-on-surface), 0.95);
+.entry-surface {
+  background:
+    radial-gradient(900px 320px at 4% 0%, rgba(14, 165, 233, 0.14), transparent 62%),
+    linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
 }
 
-.home-articles-heading--dark {
-  color: #f8fafc !important;
+.proof-surface {
+  background:
+    radial-gradient(720px 220px at 96% 0%, rgba(30, 64, 175, 0.08), transparent 60%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  .home-articles-heading {
-    color: #f8fafc !important;
+.mood-teaser-surface {
+  background:
+    radial-gradient(780px 280px at 50% 0%, rgba(34, 197, 94, 0.1), transparent 60%),
+    linear-gradient(180deg, #f8fafc 0%, #edf7f3 100%);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.final-cta-surface {
+  background:
+    radial-gradient(820px 260px at 12% 0%, rgba(59, 130, 246, 0.16), transparent 60%),
+    radial-gradient(640px 220px at 88% 100%, rgba(14, 165, 233, 0.1), transparent 55%),
+    linear-gradient(180deg, #f8fbff 0%, #eaf3ff 100%);
+  color: #0f172a;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.section-copy {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.entry-intro,
+.mood-teaser-intro,
+.final-cta-copy {
+  max-width: 56ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.final-cta-subtitle {
+  color: rgba(51, 65, 85, 0.86);
+}
+
+.final-cta-copy-wrap {
+  max-width: 34rem;
+}
+
+.entry-card-link {
+  text-decoration: none;
+  display: block;
+  height: 100%;
+}
+
+.entry-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.94) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  padding: 22px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 12px 30px rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(8px);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.entry-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(37, 99, 235, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 20px 44px rgba(15, 23, 42, 0.1);
+}
+
+.entry-card__eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 10px;
+}
+
+.entry-card__cta {
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.proof-point {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.92) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 10px 26px rgba(15, 23, 42, 0.04);
+}
+
+.proof-point__title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #0f172a;
+}
+
+.proof-point__body {
+  color: #475569;
+  line-height: 1.55;
+}
+
+.entry-flow-card {
+  background:
+    radial-gradient(420px 200px at 100% 0%, rgba(59, 130, 246, 0.16), transparent 60%),
+    linear-gradient(180deg, #0f172a 0%, #172554 100%);
+  color: #e2e8f0;
+  padding: 24px;
+  border: 1px solid rgba(96, 165, 250, 0.12);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.24);
+}
+
+.entry-flow-list {
+  display: grid;
+  gap: 18px;
+}
+
+.entry-flow-step {
+  display: flex;
+  gap: 14px;
+}
+
+.entry-flow-step__number {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(96, 165, 250, 0.16);
+  color: #bfdbfe;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+
+.entry-flow-step__title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.entry-flow-step__body {
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.mood-chips {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.final-cta-grid {
+  row-gap: 28px;
+}
+
+.final-cta-surface .hero-btn {
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+}
+
+.final-cta-section {
+  position: relative;
+}
+
+.final-cta-mockup {
+  display: flex;
+  justify-content: center;
+}
+
+.final-cta-mockup__frame {
+  width: min(100%, 760px);
+  border-radius: 26px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.72);
+  box-shadow:
+    0 28px 70px rgba(2, 6, 23, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.final-cta-mockup__image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 959px) {
+  .hero-copy {
+    padding-top: clamp(72px, 14vh, 120px);
+  }
+
+  .proof-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-trust {
+    gap: 8px 14px;
+  }
+
+  .final-cta-copy-wrap {
+    max-width: none;
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  .final-cta-copy {
+    max-width: 100%;
+  }
+
+  .final-cta-copy-wrap .hero-actions {
+    justify-content: center;
   }
 }
 
-.final-cta {
-  border-radius: 0;
+:global(.v-theme--dark .entry-surface) {
+  background:
+    radial-gradient(900px 340px at 4% 0%, rgba(14, 165, 233, 0.16), transparent 62%),
+    linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
 }
 
-.final-cta-img {
-  height: clamp(420px, 60vh, 680px);
+:global(.v-theme--dark .proof-surface) {
+  background:
+    radial-gradient(720px 220px at 96% 0%, rgba(30, 64, 175, 0.12), transparent 60%),
+    linear-gradient(180deg, #0b1220 0%, #111827 100%);
 }
 
-/* Utilities kept from your original styles (trimmed) */
-.text-white {
-  color: white !important;
+:global(.v-theme--dark .mood-teaser-surface) {
+  background:
+    radial-gradient(780px 280px at 50% 0%, rgba(34, 197, 94, 0.12), transparent 60%),
+    linear-gradient(180deg, #111827 0%, #0f172a 100%);
 }
-.text-dec-none {
-  text-decoration: none !important;
+
+:global(.v-theme--dark .final-cta-surface) {
+  background:
+    radial-gradient(820px 260px at 12% 0%, rgba(59, 130, 246, 0.24), transparent 60%),
+    radial-gradient(640px 220px at 88% 100%, rgba(14, 165, 233, 0.16), transparent 55%),
+    linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  color: #e5eefc;
+  border-top: 1px solid rgba(147, 197, 253, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+:global(.v-theme--dark .entry-card),
+:global(.v-theme--dark .proof-point) {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(17, 24, 39, 0.92) 100%);
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+:global(.v-theme--dark .final-cta-mockup__frame) {
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+:global(.v-theme--dark .final-cta-subtitle) {
+  color: rgba(226, 232, 240, 0.9);
+}
+
+:global(.v-theme--dark .proof-point__title) {
+  color: #f8fafc;
+}
+
+:global(.v-theme--dark .proof-point__body) {
+  color: #cbd5e1;
 }
 </style>

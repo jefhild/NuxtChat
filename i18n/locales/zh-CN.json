@@ -37,18 +37,134 @@
         "logout_confirm_button": "确认退出",
         "cancel": "取消"
       },
+      "page": {
+        "hero": {
+          "title": "与真人聊天，保持匿名。",
+          "subtitle": "以文字为主，无需注册、无需视频、没有广告，也没有多余干扰。",
+          "primaryCta": "开始聊天",
+          "primaryCtaReturning": "继续聊天",
+          "secondaryCta": "探索匿名聊天",
+          "trustPoints": [
+            "文字优先",
+            "低压力",
+            "无需视频",
+            "为真实对话而设计"
+          ]
+        },
+        "entry": {
+          "kicker": "选择你的开始方式",
+          "title": "按你自己的方式开始对话。",
+          "subtitle": "如果你更看重隐私、简单，或者只是想找个人聊聊，就从这里开始。",
+          "cards": [
+            {
+              "href": "/anonymous-chat",
+              "eyebrow": "匿名",
+              "title": "匿名聊天",
+              "body": "一开始先保留你的身份，只有在你觉得自然的时候再分享更多。",
+              "cta": "探索匿名聊天"
+            },
+            {
+              "href": "/chat-without-signup",
+              "eyebrow": "免注册",
+              "title": "无需注册即可开始",
+              "body": "轻松体验 ImChatty，先看看它如何帮助人们建立对话，再决定是否继续。",
+              "cta": "查看使用方式"
+            },
+            {
+              "href": "/mood-based-chat",
+              "eyebrow": "低压力",
+              "title": "跟着当下情绪开始",
+              "body": "选择最符合你当前状态的入口，更自然地进入一段对话。",
+              "cta": "浏览情绪入口"
+            },
+            {
+              "href": "/meet-new-people-online",
+              "eyebrow": "认识新人",
+              "title": "和新朋友开聊",
+              "body": "轻松开启一段新的对话，看看它会带你去哪里，不必想得太复杂。",
+              "cta": "认识新朋友"
+            }
+          ]
+        },
+        "proof": {
+          "kicker": "为什么这样做",
+          "title": "我们让对话更容易开始。",
+          "subtitle": "目标很简单：帮助人们开口交流，减少门槛，避开广告、杂乱信息和营销噪音。",
+          "points": [
+            {
+              "title": "从一开始就很清楚",
+              "body": "ImChatty 的重点是帮助人们展开真实对话，而不是制造干扰。"
+            },
+            {
+              "title": "更少设置，更多交流",
+              "body": "减少前置步骤，让你更快进入对话。"
+            },
+            {
+              "title": "为交流而设计",
+              "body": "情绪、语言、 moderation 和匹配机制协同工作，打造更好的交流空间。"
+            },
+            {
+              "title": "更多开始方式",
+              "body": "情绪、主题和引导式入口让你更容易找到适合自己的开始方式。"
+            }
+          ],
+          "flowEyebrow": "聊天入口",
+          "flowTitle": "更简单的进入聊天方式",
+          "flowSteps": [
+            {
+              "number": "1",
+              "title": "先知道会发生什么",
+              "body": "你可以快速开始、保持匿名，并自然地进入对话。"
+            },
+            {
+              "number": "2",
+              "title": "选择你想怎样开始",
+              "body": "可以跳过注册，坚持文字聊天，或注册以获得更好的匹配和情绪入口。"
+            },
+            {
+              "number": "3",
+              "title": "进入对话",
+              "body": "整个体验都围绕着帮你开口，而不是把时间耗在设置上。"
+            }
+          ],
+          "flowCta": "进入聊天"
+        },
+        "mood": {
+          "kicker": "更好的开始",
+          "title": "从最适合你的状态开始",
+          "subtitle": "不是每段对话都要以同样的方式开始。情绪、主题和引导式入口可以让开场更自然。",
+          "chips": [
+            "我有点无聊",
+            "我睡不着",
+            "我想听建议",
+            "我想轻松聊聊"
+          ],
+          "cta": "浏览心情动态"
+        },
+        "finalCta": {
+          "kicker": "从这里开始",
+          "title": "准备开始聊天了吗？",
+          "subtitle": "先从文字开始，保持简单，然后看看对话会把你带到哪里。",
+          "primaryCta": "开始聊天",
+          "secondaryCta": "无需注册聊天",
+          "mockupAlt": "桌面聊天界面预览"
+        }
+      },
       "meta": {
-        "title": "面向全球对话的匿名聊天 | ImChatty",
-        "description": "在 ImChatty 与真人和 AI 角色开始匿名聊天。在不牺牲隐私的前提下，加入由文章、情绪动态和共同兴趣引发的全球对话。",
-        "ogTitle": "面向全球对话的匿名聊天",
-        "ogType": "Website",
+        "title": "与真人匿名聊天 | ImChatty",
+        "description": "在 ImChatty 与真人开启匿名文字聊天。无需视频，降低注册门槛，并可按你的语言浏览主题、情绪入口和引导式开始方式。",
+        "ogTitle": "与真人匿名聊天",
+        "ogType": "website",
         "ogUrl": "https://imchatty.com",
-        "ogDescription": "在 ImChatty 与真人和 AI 角色开始匿名聊天。在不牺牲隐私的前提下，加入由文章、情绪动态和共同兴趣引发的全球对话。",
+        "ogDescription": "在 ImChatty 与真人开启匿名文字聊天，用更私密、低压力的方式开始一段对话。",
         "ogImage": "https://imchatty.com/images/robot.png",
-        "twitterTitle": "面向全球对话的匿名聊天",
+        "ogImageAlt": "ImChatty 匿名聊天预览",
+        "ogImageWidth": "1200",
+        "ogImageHeight": "630",
+        "twitterTitle": "与真人匿名聊天",
         "twitterCard": "summary_large_image",
-        "twitterDescription": "在 ImChatty 与真人和 AI 角色开始匿名聊天。在不牺牲隐私的前提下，加入由文章、情绪动态和共同兴趣引发的全球对话。",
-        "twitterImage": "https://imchatty.com/images/article-image.webp"
+        "twitterDescription": "在 ImChatty 与真人开启匿名文字聊天，用更私密、低压力的方式开始一段对话。",
+        "twitterImage": "https://imchatty.com/images/robot.png"
       }
     },
     "seo": {

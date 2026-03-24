@@ -13,6 +13,14 @@
         </p>
       </div>
       <div class="d-flex ga-2">
+        <v-btn
+          color="secondary"
+          variant="tonal"
+          prepend-icon="mdi-code-json"
+          @click="openImportFaqDialog"
+        >
+          Import JSON
+        </v-btn>
         <v-btn color="primary" prepend-icon="mdi-plus" @click="openNewFaq">
           {{ $t("pages.admin.faq.newFaq") }}
         </v-btn>
@@ -267,6 +275,53 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="importFaqDialog" max-width="760">
+      <v-card>
+        <v-card-title>Import FAQs</v-card-title>
+        <v-card-text>
+          <v-form ref="importFaqFormRef" @submit.prevent="importFaqs">
+            <v-select
+              v-model="importFaq.topicId"
+              :items="topicOptions"
+              item-title="title"
+              item-value="id"
+              label="Topic"
+              density="comfortable"
+              :rules="[(v) => !!v || 'Topic is required']"
+            />
+            <v-select
+              v-model="importFaq.locale"
+              :items="localeOptions"
+              label="Locale"
+              density="comfortable"
+            />
+            <v-switch
+              v-model="importFaq.isActive"
+              label="Published"
+            />
+            <div class="text-caption text-medium-emphasis mb-2">
+              Paste a JSON array like
+              <code>[{"question":"...","answer":"..."}]</code>
+            </div>
+            <v-textarea
+              v-model="importFaq.payload"
+              label="FAQ JSON"
+              :rows="10"
+              auto-grow
+              :rules="[(v) => !!String(v || '').trim() || 'JSON is required']"
+            />
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="importFaqDialog = false">Cancel</v-btn>
+          <v-btn color="primary" :loading="saving" @click="importFaqs">
+            Import
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-dialog v-model="editFaqDialog" max-width="640">
       <v-card>
         <v-card-title>Edit FAQ</v-card-title>
@@ -406,10 +461,12 @@ const entryTranslations = ref([]);
 
 const newTopicDialog = ref(false);
 const newFaqDialog = ref(false);
+const importFaqDialog = ref(false);
 const editFaqDialog = ref(false);
 const translationDialog = ref(false);
 const topicFormRef = ref(null);
 const faqFormRef = ref(null);
+const importFaqFormRef = ref(null);
 const editFaqFormRef = ref(null);
 const translationFormRef = ref(null);
 
@@ -427,6 +484,13 @@ const newFaq = ref({
   answer: "",
   locale: "en-US",
   isActive: true,
+});
+
+const importFaq = ref({
+  topicId: null,
+  locale: "en-US",
+  isActive: true,
+  payload: "",
 });
 
 const editFaq = ref({
@@ -690,6 +754,16 @@ const openNewFaq = () => {
   newFaqDialog.value = true;
 };
 
+const openImportFaqDialog = () => {
+  importFaq.value = {
+    topicId: topics.value[0]?.id || null,
+    locale: "en-US",
+    isActive: true,
+    payload: "",
+  };
+  importFaqDialog.value = true;
+};
+
 const createTopic = async () => {
   const { valid } = await topicFormRef.value.validate();
   if (!valid) return;
@@ -755,6 +829,77 @@ const createFaq = async () => {
     await refreshData();
   } catch (err) {
     snackbar.value.message = err?.message || "Failed to create FAQ.";
+    snackbar.value.show = true;
+  } finally {
+    saving.value = false;
+  }
+};
+
+const parseFaqImportPayload = (value) => {
+  const parsed = JSON.parse(String(value || "").trim());
+  const rawItems = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray(parsed?.faqs)
+      ? parsed.faqs
+      : null;
+
+  if (!rawItems) {
+    throw new Error("JSON must be an array or an object with a faqs array.");
+  }
+
+  const items = rawItems
+    .map((item) => ({
+      question: String(item?.question || "").trim(),
+      answer: String(item?.answer || "").trim(),
+    }))
+    .filter((item) => item.question && item.answer);
+
+  if (!items.length) {
+    throw new Error("No valid FAQ items were found in the JSON payload.");
+  }
+
+  return items;
+};
+
+const importFaqs = async () => {
+  const { valid } = await importFaqFormRef.value.validate();
+  if (!valid) return;
+
+  saving.value = true;
+  try {
+    const items = parseFaqImportPayload(importFaq.value.payload);
+    const topicEntries = entries.value.filter(
+      (entry) => entry.topic_id === importFaq.value.topicId
+    );
+    let nextSort =
+      Math.max(0, ...topicEntries.map((entry) => entry.sort_order || 0)) + 1;
+
+    for (const item of items) {
+      const { data, error } = await insertFaqEntry({
+        topic_id: importFaq.value.topicId,
+        sort_order: nextSort,
+        is_active: importFaq.value.isActive,
+      });
+
+      if (error) throw error;
+
+      const translationError = await insertFaqTranslation({
+        entry_id: data.id,
+        locale: importFaq.value.locale || "en-US",
+        question: item.question,
+        answer: item.answer,
+      });
+
+      if (translationError?.error) throw translationError.error;
+      nextSort += 1;
+    }
+
+    importFaqDialog.value = false;
+    snackbar.value.message = `Imported ${items.length} FAQ${items.length === 1 ? "" : "s"}.`;
+    snackbar.value.show = true;
+    await refreshData();
+  } catch (err) {
+    snackbar.value.message = err?.message || "Failed to import FAQs.";
     snackbar.value.show = true;
   } finally {
     saving.value = false;

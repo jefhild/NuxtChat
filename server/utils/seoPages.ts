@@ -1,6 +1,7 @@
 import { createError } from "h3";
+import { buildSeoPagePath } from "../../utils/seoPagePaths";
 
-export const SEO_PAGE_TYPES = ["compare", "guide", "topic"] as const;
+export const SEO_PAGE_TYPES = ["compare", "guide", "topic", "landing"] as const;
 export const SEO_PAGE_IMAGE_BUCKET = "profile-avatars";
 export const SEO_PAGE_IMAGE_FOLDER = "seo-pages/heroes";
 
@@ -65,6 +66,8 @@ const TYPE_ALIASES: Record<string, SeoPageType> = {
   guides: "guide",
   topic: "topic",
   topics: "topic",
+  landing: "landing",
+  landings: "landing",
 };
 
 export const normalizeSeoPageType = (value: unknown): SeoPageType => {
@@ -210,12 +213,7 @@ export const normalizeSeoPageRecord = (row: SeoPageRow) => ({
   isPublished: Boolean(row.is_published),
   createdAt: row.created_at || null,
   updatedAt: row.updated_at || null,
-  path:
-    row.page_type === "compare"
-      ? `/compare/${row.slug}`
-      : row.page_type === "guide"
-      ? `/guides/${row.slug}`
-      : `/topics/${row.slug}`,
+  path: buildSeoPagePath(row.page_type, row.slug),
 });
 
 export const buildSeoHeroImageUrl = (

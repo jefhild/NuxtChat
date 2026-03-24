@@ -14,15 +14,34 @@
 </template>
 
 <script setup>
-import { useI18n } from "vue-i18n";
-const { locale, availableLocales: rawLocales, setLocale } = useI18n();
+const {
+  locale,
+  locales,
+  setLocale,
+  setLocaleCookie,
+} = useI18n();
 
 const normalizeLocale = (code = "") => code.toLowerCase().split("-")[0];
 const resolveLocale = (code = "") => {
-  if (rawLocales.includes(code)) return code;
+  const availableLocaleCodes = locales.value.map((entry) =>
+    normalizeLocale(typeof entry === "string" ? entry : entry?.code || "")
+  );
+  const uniqueLocaleCodes = [...new Set(availableLocaleCodes)];
+
+  if (uniqueLocaleCodes.includes(normalizeLocale(code))) {
+    return normalizeLocale(code);
+  }
   const normalized = normalizeLocale(code);
-  return rawLocales.includes(normalized) ? normalized : "en";
+  return uniqueLocaleCodes.includes(normalized) ? normalized : "en";
 };
+
+const availableLocaleCodes = computed(() => [
+  ...new Set(
+    locales.value.map((entry) =>
+      normalizeLocale(typeof entry === "string" ? entry : entry?.code || "")
+    )
+  ),
+]);
 
 const currentLocale = ref(resolveLocale(locale.value));
 
@@ -34,7 +53,7 @@ const flagPaths = {
 };
 
 const selectedFlag = computed(() => {
-  const match = localesWithFlags.find((l) => l.code === currentLocale.value);
+  const match = localesWithFlags.value.find((l) => l.code === currentLocale.value);
   return match?.flag || "/images/flags/default.png";
 });
 
@@ -45,14 +64,20 @@ const localeLabels = {
   ru: "Русский",
 };
 
-const localesWithFlags = rawLocales.map((code) => ({
-  code,
-  label: `${localeLabels[code] || code}`,
-  flag: flagPaths[code] || "/images/flags/default.png",
-}));
+const localesWithFlags = computed(() =>
+  availableLocaleCodes.value.map((code) => ({
+    code,
+    label: `${localeLabels[code] || code}`,
+    flag: flagPaths[code] || "/images/flags/default.png",
+  }))
+);
 
-const switchLanguage = () => {
-  setLocale(currentLocale.value);
+const switchLanguage = async (nextLocale) => {
+  const resolved = resolveLocale(nextLocale);
+  if (!resolved) return;
+
+  setLocaleCookie(resolved);
+  await setLocale(resolved);
 };
 
 // Keep the select in sync with the resolved locale.
@@ -72,7 +97,7 @@ watch(currentLocale, async (val, old) => {
   }
   if (!val || val === old) return;
   try {
-    await setLocale(val); // This navigates to the localized route
+    await switchLanguage(resolved);
   } catch (e) {
     console.warn("[i18n] setLocale failed:", e);
   }

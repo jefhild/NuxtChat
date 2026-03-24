@@ -30,7 +30,6 @@ export default defineEventHandler(async (event) => {
       .eq("page_type", pageType)
       .eq("slug", slug)
       .eq("is_published", true)
-      .in("locale", [locale, "en"])
       .order("updated_at", { ascending: false });
 
     if (error) throw error;
@@ -40,7 +39,9 @@ export default defineEventHandler(async (event) => {
 
     const rows = (data || []) as SeoPageRow[];
     const preferred =
-      rows.find((row) => normalizeLocaleCode(row.locale) === locale) || rows[0];
+      rows.find((row) => normalizeLocaleCode(row.locale) === locale) ||
+      rows.find((row) => normalizeLocaleCode(row.locale) === "en") ||
+      rows[0];
     const availableLocales = Array.from(
       new Set(
         rows.map((row) => normalizeLocaleCode(row.locale)).filter(Boolean)
@@ -64,6 +65,14 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error: unknown) {
     const err = error as { statusCode?: number; statusMessage?: string; message?: string };
+    console.error("[seo-pages] failed to load page", {
+      params: event.context.params || null,
+      query: getQuery(event),
+      statusCode: err?.statusCode || 500,
+      statusMessage: err?.statusMessage || null,
+      message: err?.message || null,
+      error,
+    });
     setResponseStatus(event, err?.statusCode || 500);
     return {
       success: false,

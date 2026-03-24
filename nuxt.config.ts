@@ -5,6 +5,13 @@ import { getAllDynamicRoutes } from "./composables/useDynamicRoutes";
 export default defineNuxtConfig({
   devtools: { enabled: false },
   ssr: true,
+  experimental: {
+    // Avoid Vite trying to resolve the generated `#app-manifest` alias during dev startup.
+    appManifest: false,
+    // Keep Nuxt on the legacy Vite build path. The newer environment API path is
+    // causing a second client-manifest read after the file has already been removed.
+    viteEnvironmentApi: false,
+  },
 
   css: ["@/assets/css/util.css"],
 
@@ -51,9 +58,8 @@ export default defineNuxtConfig({
   i18n: {
     // Define available locales
     defaultLocale: "en",
+    vueI18n: "./i18n.config.ts",
     langDir: "./locales/",
-    // langDir: "i18n/locales",
-    // langDir: "locales",
     lazy: true,
     // strategy: "prefix_and_default",
     strategy: "prefix_except_default",
@@ -125,6 +131,12 @@ export default defineNuxtConfig({
         "/chat",
         "/*/about",
         "/about",
+        "/*/anonymous-chat",
+        "/anonymous-chat",
+        "/*/mood-based-chat",
+        "/mood-based-chat",
+        "/*/chat-without-signup",
+        "/chat-without-signup",
         "/*/compare",
         "/*/compare/**",
         "/compare",
@@ -141,6 +153,8 @@ export default defineNuxtConfig({
         "/*/guides/**",
         "/guides",
         "/guides/**",
+        "/*/meet-new-people-online",
+        "/meet-new-people-online",
         "/logout",
         "/*/logout",
         "/signin",

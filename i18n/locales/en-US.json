@@ -38,18 +38,134 @@
         "logout_confirm_button": "Confirm Logout",
         "cancel": "Cancel"
       },
+      "page": {
+        "hero": {
+          "title": "Anonymous chat with real people.",
+          "subtitle": "Text-first chat without signup, video, ads, or distractions.",
+          "primaryCta": "Start Chat",
+          "primaryCtaReturning": "Keep Chatting",
+          "secondaryCta": "Explore Anonymous Chat",
+          "trustPoints": [
+            "Text-first",
+            "Low pressure",
+            "No video required",
+            "Built for real conversations"
+          ]
+        },
+        "entry": {
+          "kicker": "Choose how to start",
+          "title": "Start the conversation your way.",
+          "subtitle": "Whether you want privacy, simplicity, or someone new to talk to, start here.",
+          "cards": [
+            {
+              "href": "/anonymous-chat",
+              "eyebrow": "Anonymous",
+              "title": "Chat anonymously",
+              "body": "Keep your identity to yourself at first, and share more later only if it feels right.",
+              "cta": "Explore anonymous chat"
+            },
+            {
+              "href": "/chat-without-signup",
+              "eyebrow": "No signup",
+              "title": "Start without signup",
+              "body": "Try ImChatty easily and see how it brings people together before committing to anything more.",
+              "cta": "See how it works"
+            },
+            {
+              "href": "/mood-based-chat",
+              "eyebrow": "Low pressure",
+              "title": "Trust your mood",
+              "body": "Choose what fits how you feel right now and get into a conversation more naturally.",
+              "cta": "Browse mood starts"
+            },
+            {
+              "href": "/meet-new-people-online",
+              "eyebrow": "Meet people",
+              "title": "Meet someone new",
+              "body": "Start a fun new conversation and see where it leads. Simple and straightforward, no overthinking.",
+              "cta": "Meet new people"
+            }
+          ]
+        },
+        "proof": {
+          "kicker": "Why this direction",
+          "title": "We make conversation easy.",
+          "subtitle": "Our goal is simple: help people start talking, reduce barriers, and avoid the ads, clutter, and marketing junk that get in the way.",
+          "points": [
+            {
+              "title": "Clear from the start",
+              "body": "ImChatty is for starting real conversations, without the clutter."
+            },
+            {
+              "title": "Less setup, more talking",
+              "body": "Start talking sooner, with less setup in the way."
+            },
+            {
+              "title": "Made for conversation",
+              "body": "Mood, language, moderation, and matching work together to create a better conversation space."
+            },
+            {
+              "title": "More ways to start",
+              "body": "Mood, topics, and guided entry make it easier to find the right way into a conversation."
+            }
+          ],
+          "flowEyebrow": "Chat entry",
+          "flowTitle": "A simpler way to get into chat",
+          "flowSteps": [
+            {
+              "number": "1",
+              "title": "Know what to expect",
+              "body": "You can start quickly, stay anonymous, and ease into the conversation."
+            },
+            {
+              "number": "2",
+              "title": "Choose how you want to begin",
+              "body": "Skip signup, keep it text-first, or register for better matching and mood placements."
+            },
+            {
+              "number": "3",
+              "title": "Get into the conversation",
+              "body": "Everything is designed to help you start talking without getting stuck in setup."
+            }
+          ],
+          "flowCta": "Go To Chat"
+        },
+        "mood": {
+          "kicker": "Better starts",
+          "title": "Start with what feels right",
+          "subtitle": "Not every conversation starts the same way. Mood, topic, and guided entry can make chat feel more natural from the start.",
+          "chips": [
+            "I'm bored",
+            "I can't sleep",
+            "I want advice",
+            "I want a light chat"
+          ],
+          "cta": "Browse Mood Feed"
+        },
+        "finalCta": {
+          "kicker": "Start here",
+          "title": "Ready to start talking?",
+          "subtitle": "Start with text, keep things simple, and see where the conversation goes.",
+          "primaryCta": "Start Chat",
+          "secondaryCta": "Chat Without Signup",
+          "mockupAlt": "Desktop chat interface preview"
+        }
+      },
       "meta": {
-        "title": "Anonymous Chat for Global Conversations | ImChatty",
-        "description": "Start anonymous chat with real people and AI personas on ImChatty. Join global conversations sparked by articles, mood check-ins, and shared interests without giving up your privacy.",
-        "ogTitle": "Anonymous Chat for Global Conversations",
-        "ogType": "Website",
+        "title": "Anonymous chat with real people | ImChatty",
+        "description": "Start anonymous text chat with real people on ImChatty. Skip video, reduce signup friction, and explore topics, moods, and guided entry points in your own language.",
+        "ogTitle": "Anonymous chat with real people",
+        "ogType": "website",
         "ogUrl": "https://imchatty.com",
-        "ogDescription": "Start anonymous chat with real people and AI personas on ImChatty. Join global conversations sparked by articles, mood check-ins, and shared interests with more privacy.",
+        "ogDescription": "Start anonymous text chat with real people on ImChatty. Explore private, low-pressure ways to begin a conversation.",
         "ogImage": "https://imchatty.com/images/robot.png",
-        "twitterTitle": "Anonymous Chat for Global Conversations",
+        "ogImageAlt": "ImChatty anonymous chat preview",
+        "ogImageWidth": "1200",
+        "ogImageHeight": "630",
+        "twitterTitle": "Anonymous chat with real people",
         "twitterCard": "summary_large_image",
-        "twitterDescription": "Start anonymous chat with real people and AI personas on ImChatty. Join global conversations sparked by articles, mood check-ins, and shared interests with more privacy.",
-        "twitterImage": "https://imchatty.com/images/article-image.webp"
+        "twitterDescription": "Start anonymous text chat with real people on ImChatty. Explore private, low-pressure ways to begin a conversation.",
+        "twitterImage": "https://imchatty.com/images/robot.png"
       }
     },
     "seo": {
