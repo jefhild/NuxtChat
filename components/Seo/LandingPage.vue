@@ -213,8 +213,11 @@ const md = new MarkdownIt({
   breaks: true,
 });
 
+const normalizeMarkdown = (value?: string) =>
+  String(value || "").replace(/^(#{1,6})(\S)/gm, "$1 $2");
+
 const renderMarkdown = (value?: string) =>
-  DOMPurify.sanitize(md.render(String(value || "")), {
+  DOMPurify.sanitize(md.render(normalizeMarkdown(value)), {
     ALLOWED_TAGS: [
       "p",
       "br",
