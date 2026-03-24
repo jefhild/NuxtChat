@@ -194,7 +194,7 @@ const copyByLocale: Record<
     sectionOverview: "Section overview",
     publishedPages: (count) => `${count} published pages`,
     supportText:
-      "Each page should answer a different question so visitors can compare options, go deeper, and choose a clearer next step.",
+      "Here we answer different questions so you can compare options, go deeper, and choose a step that works for you.",
     browsePages: "Browse pages",
     openPage: "Open page",
     explorePage: "Explore this page.",

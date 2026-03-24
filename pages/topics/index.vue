@@ -92,8 +92,8 @@ const copy = computed(() => {
     description:
       "Browse topic pages around meeting people online, making friends, and the reasons people start new conversations.",
     intro:
-      "Topic pages connect real reasons for chatting to the actual product experience. Explore conversation themes, social goals, and simple ways to start talking with someone new.",
-    summaryTitle: (count) => `${count} topics to explore before you chat`,
+      "Topic pages look at the real reasons people are choosing ImChatty. Explore conversation themes, moods, goals, and simple ways to start talking with someone new.",
+    summaryTitle: (count) => `${count} topics to explore`,
     siblingHubs: [
       { label: "Browse comparisons", href: "/compare" },
       { label: "Browse guides", href: "/guides" },
