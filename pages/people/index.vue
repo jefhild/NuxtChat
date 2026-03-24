@@ -200,7 +200,9 @@ const loadMoreArticles = () => {
   }, 150);
 };
 
-useSeoI18nMeta("people.index");
+useSeoI18nMeta("people.index", {
+  robots: "noindex,follow",
+});
 
 const { data: initialData, pending } = await useAsyncData(
   "people-index-initial",

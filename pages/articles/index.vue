@@ -29,42 +29,10 @@
     >
       <v-list density="compact" class="articles-drawer-list">
         <v-list-subheader>{{ $t("pages.articles.index.filters") }}</v-list-subheader>
-        <div class="px-3 py-2 d-flex flex-column ga-3">
-          <FilterExpansion
-            v-model="openFilterPanel"
-            panel-key="categories"
-            :title="$t('pages.categories.index.title')"
-            :selected-name="selectedCategoriesName"
-            :items="categories"
-            base-path="/categories"
-            :selected-slug="null"
-            panels-class="compact-panel"
-            :scrolling-list="true"
-          />
-
-          <FilterExpansion
-            v-model="openFilterPanel"
-            panel-key="tags"
-            :title="$t('pages.tags.index.title')"
-            :selected-name="selectedTagName"
-            :items="tags"
-            base-path="/tags"
-            :selected-slug="null"
-            panels-class="compact-panel"
-            :scrolling-list="true"
-          />
-
-          <FilterExpansion
-            v-model="openFilterPanel"
-            panel-key="people"
-            :title="$t('pages.people.index.title')"
-            :selected-name="selectedPeopleName"
-            :items="people"
-            base-path="/people"
-            :selected-slug="null"
-            panels-class="compact-panel"
-            :scrolling-list="true"
-          />
+        <div class="px-3 py-2">
+          <v-alert type="info" variant="tonal" density="comfortable">
+            {{ $t("pages.articles.index.filters") }}
+          </v-alert>
         </div>
       </v-list>
     </v-navigation-drawer>
@@ -142,12 +110,7 @@ const parsePage = (value) => {
 const route = useRoute();
 const config = useRuntimeConfig();
 const siteConfig = useSiteConfig();
-const {
-  getPublishedArticleCardsPageData,
-  getAllTags,
-  getAllCategories,
-  getAllPeople,
-} = useDb();
+const { getPublishedArticleCardsPageData } = useDb();
 const { t, locale } = useI18n();
 const baseUrl = (siteConfig?.url || config.public.SITE_URL || "").replace(
   /\/+$/,
@@ -157,10 +120,6 @@ const currentPage = computed(() => parsePage(route.query.page));
 const currentOffset = computed(() => (currentPage.value - 1) * PAGE_SIZE);
 const articles = ref([]);
 const filtersOpen = ref(false);
-const openFilterPanel = ref(null);
-const tags = ref([]);
-const categories = ref([]);
-const people = ref([]);
 const totalArticles = ref(0);
 const activePage = ref(currentPage.value);
 const hasMoreArticles = ref(false);
@@ -197,10 +156,6 @@ const pagedDescriptionSuffix = computed(() => {
   return ` Page ${formattedPage}.`;
 });
 
-const selectedTagName = computed(() => null);
-const selectedCategoriesName = computed(() => null);
-const selectedPeopleName = computed(() => null);
-
 const { data: chatMap } = await useAsyncData("chat-map", () =>
   $fetch("/api/articles/chat-map")
 );
@@ -219,22 +174,14 @@ const toAbsolute = (path) => {
 const { data: initialData, pending } = await useAsyncData(
   () => `articles-index-initial-${currentPage.value}`,
   async () => {
-    const [articlePageData, tagData, categoryData, peopleData] = await Promise.all([
-      getPublishedArticleCardsPageData({
-        limit: PAGE_SIZE,
-        offset: currentOffset.value,
-      }),
-      getAllTags(),
-      getAllCategories(),
-      getAllPeople(),
-    ]);
+    const articlePageData = await getPublishedArticleCardsPageData({
+      limit: PAGE_SIZE,
+      offset: currentOffset.value,
+    });
 
     return {
       articles: articlePageData?.articles || [],
       totalCount: Number(articlePageData?.totalCount || 0),
-      tags: tagData || [],
-      categories: categoryData || [],
-      people: peopleData || [],
     };
   },
   { watch: [currentPage], server: true }
@@ -254,9 +201,6 @@ watchEffect(() => {
   totalArticles.value = Number(initialData.value.totalCount || 0);
   activePage.value = currentPage.value;
   hasMoreArticles.value = currentPage.value < totalPages.value;
-  tags.value = initialData.value.tags || [];
-  categories.value = initialData.value.categories || [];
-  people.value = initialData.value.people || [];
 });
 
 const isLoading = computed(() => pending.value);

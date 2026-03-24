@@ -158,14 +158,13 @@
       <v-expand-transition>
         <v-card-text v-if="tagsExpanded" class="pt-0">
           <div class="tags-links">
-            <NuxtLink
+            <span
               v-for="tag in article.tags"
               :key="tag?.slug || tag"
-              :to="tagPath(tag)"
               class="tag-link"
             >
               #{{ tag?.name || tag }}
-            </NuxtLink>
+            </span>
           </div>
         </v-card-text>
       </v-expand-transition>
@@ -202,7 +201,6 @@ import { computed, onMounted, ref, nextTick, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import ProfileDialog from "@/components/ProfileDialog.vue";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
-import { buildTaxonomyPath, normalizeTaxonomySlug } from "@/utils/taxonomySlug";
 
 const localPath = useLocalePath();
 const router = useRouter();
@@ -454,12 +452,6 @@ const formatDate = (isoDate) =>
     month: "short",
     day: "numeric",
   });
-
-const tagPath = (tag) => {
-  const raw = typeof tag === "string" ? tag : tag?.slug || tag?.name || "";
-  const slug = normalizeTaxonomySlug(raw);
-  return slug ? localPath(buildTaxonomyPath("/tags", slug)) : localPath("/tags");
-};
 
 const formatCount = (value) => {
   const num = Number(value || 0);

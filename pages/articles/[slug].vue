@@ -31,54 +31,10 @@
           {{ displayTitle }}
         </div>
         <v-divider />
-        <div class="px-3 py-2 d-flex flex-column ga-3">
-          <FilterExpansion
-            v-model="openFilterPanel"
-            panel-key="categories"
-            :title="$t('pages.categories.index.title')"
-            :items="categories"
-            base-path="/categories"
-            :active-slugs="categorySlugs"
-            panels-class="compact-panel"
-            variant="inset"
-            :scrolling-list="true"
-          >
-            <template #title="{ selectedName, title }">
-              <span>Categories: {{ selectedName || title }}</span>
-            </template>
-          </FilterExpansion>
-
-          <FilterExpansion
-            v-model="openFilterPanel"
-            panel-key="tags"
-            :title="$t('pages.tags.index.title')"
-            :items="tags"
-            base-path="/tags"
-            :active-slugs="tagSlugs"
-            panels-class="compact-panel"
-            variant="inset"
-            :scrolling-list="true"
-          >
-            <template #title="{ selectedName, title }">
-              <span>Tags: {{ selectedName || title }}</span>
-            </template>
-          </FilterExpansion>
-
-          <FilterExpansion
-            v-model="openFilterPanel"
-            panel-key="people"
-            :title="$t('pages.people.index.title')"
-            :items="people"
-            base-path="/people"
-            :active-slugs="peopleSlugs"
-            panels-class="compact-panel"
-            variant="inset"
-            :scrolling-list="true"
-          >
-            <template #title="{ selectedName, title }">
-              <span>People: {{ selectedName || title }}</span>
-            </template>
-          </FilterExpansion>
+        <div class="px-3 py-2">
+          <v-alert type="info" variant="tonal" density="comfortable">
+            {{ $t("pages.articles.index.filters") }}
+          </v-alert>
         </div>
       </v-list>
     </v-navigation-drawer>
@@ -205,12 +161,6 @@
               size="small"
               color="indigo"
               variant="tonal"
-              :to="
-                normalizeTaxonomySlug(displayCategory.slug)
-                  ? localPath(buildTaxonomyPath('/categories', displayCategory.slug))
-                  : undefined
-              "
-              :class="{ 'chip-link': normalizeTaxonomySlug(displayCategory.slug) }"
             >
               Category: {{ displayCategory.name }}
             </v-chip>
@@ -220,12 +170,6 @@
               size="small"
               color="deep-purple"
               variant="tonal"
-              :to="
-                normalizeTaxonomySlug(tag.slug)
-                  ? localPath(buildTaxonomyPath('/tags', tag.slug))
-                  : undefined
-              "
-              :class="{ 'chip-link': normalizeTaxonomySlug(tag.slug) }"
             >
               #{{ tag.name }}
             </v-chip>
@@ -233,21 +177,7 @@
               v-for="person in resolvedDisplayPeople"
               :key="`person-${person.slug || person.name}`"
             >
-              <NuxtLink
-                v-if="normalizeTaxonomySlug(person.slug)"
-                :to="localPath(buildTaxonomyPath('/people', person.slug))"
-                class="unstyled-link"
-              >
-                <v-chip
-                  size="small"
-                  color="teal"
-                  variant="tonal"
-                  class="chip-link"
-                >
-                  {{ person.name }}
-                </v-chip>
-              </NuxtLink>
-              <v-chip v-else size="small" color="teal" variant="tonal">
+              <v-chip size="small" color="teal" variant="tonal">
                 {{ person.name }}
               </v-chip>
             </template>
@@ -394,7 +324,6 @@ import { nextTick } from "vue";
 import { shouldIndexArticle } from "@/composables/useIndexability";
 import { loadTwitterWidgets } from "@/composables/useTwitterWidgets.js";
 import { loadInstagramEmbeds } from "@/composables/useInstagramEmbeds.js";
-import { buildTaxonomyPath, normalizeTaxonomySlug } from "@/utils/taxonomySlug";
 import { useDisplay } from "vuetify";
 const { locale } = useI18n();
 const localPath = useLocalePath();
@@ -412,13 +341,7 @@ const baseLocale = computed(() =>
 const chatThreadKey = ref(null);
 
 const articleLanguage = computed(() => baseLocale.value || "en");
-const {
-  getArticleBySlug,
-  getAllCategories,
-  getAllTags,
-  getAllPeople,
-  getThreadKeyByArticleId,
-} = useDb();
+const { getArticleBySlug, getThreadKeyByArticleId } = useDb();
 
 const { data: article, error } = await useAsyncData(`article-${slug}`, () =>
   getArticleBySlug(slug)
@@ -435,40 +358,8 @@ if (import.meta.server) {
   }
 }
 
-const categories = ref([]);
-const tags = ref([]);
-const people = ref([]);
-const openFilterPanel = ref(null);
 const filtersOpen = ref(false);
 const filtersDrawerStyle = { zIndex: 1004, transition: "none !important" };
-
-const categorySlugs = computed(() => {
-  const a = article.value;
-  if (!a) return [];
-  // support single category or an array
-  const single = a.category?.slug ? [a.category.slug] : [];
-  const many = Array.isArray(a.categories)
-    ? a.categories.map((c) => c?.slug).filter(Boolean)
-    : [];
-  return [...new Set([...single, ...many])];
-});
-
-const tagSlugs = computed(() => {
-  const a = article.value;
-  if (!a) return [];
-  const list = Array.isArray(a.tags)
-    ? a.tags
-    : Array.isArray(a.article_tags)
-    ? a.article_tags
-    : [];
-  return [...new Set(list.map((t) => t?.slug).filter(Boolean))];
-});
-const peopleSlugs = computed(() => {
-  const a = article.value;
-  if (!a) return [];
-  const list = Array.isArray(a.people) ? a.people : [];
-  return [...new Set(list.map((p) => p?.slug).filter(Boolean))];
-});
 
 const newsmeshMeta = computed(() => article.value?.newsmesh_meta || null);
 const rewriteMeta = computed(() => article.value?.rewrite_meta || null);
@@ -564,24 +455,7 @@ const displayPeople = computed(() => {
     slug: null,
   }));
 });
-const peopleSlugByName = computed(() => {
-  const map = new Map();
-  (people.value || []).forEach((p) => {
-    if (p?.name && p?.slug) {
-      map.set(p.name.toLowerCase(), p.slug);
-    }
-  });
-  return map;
-});
-const resolvedDisplayPeople = computed(() =>
-  displayPeople.value.map((person) => {
-    if (person.slug) return person;
-    const normalizedName = person.name?.toLowerCase();
-    if (!normalizedName) return person;
-    const matchedSlug = peopleSlugByName.value.get(normalizedName);
-    return matchedSlug ? { ...person, slug: matchedSlug } : person;
-  })
-);
+const resolvedDisplayPeople = computed(() => displayPeople.value);
 const displayTitle = computed(
   () =>
     activeTranslation.value?.headline ||
@@ -873,15 +747,6 @@ onMounted(async () => {
   if (article.value?.id) {
     chatThreadKey.value = (await getThreadKeyByArticleId(article.value.id)) || "";
   }
-  const [categoryData, tagData, peopleData] = await Promise.all([
-    getAllCategories(),
-    getAllTags(),
-    getAllPeople(),
-  ]);
-
-  categories.value = categoryData || [];
-  tags.value = tagData || [];
-  people.value = peopleData || [];
   nextTick(() => {
     try {
       if (!articleBodyRef?.value) return;

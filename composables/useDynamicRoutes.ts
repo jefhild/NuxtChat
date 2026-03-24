@@ -1,17 +1,11 @@
 import {
   getRegisteredUsersDisplaynames,
   getAllPublishedArticlesWithTags,
-  getAllCategories,
-  getAllTags,
-  getAllPeopleSlugs,
   getPublishedSeoPageRoutes,
   getUserSlugFromDisplayName,
 } from "../lib/supabaseHelpers";
 import { getGenderFromId } from "../lib/dbUtils";
-import {
-  shouldIndexProfile,
-  shouldIndexTaxonomyPage,
-} from "./useIndexability";
+import { shouldIndexProfile } from "./useIndexability";
 import { buildSeoPagePath } from "../utils/seoPagePaths";
 
 /**
@@ -72,98 +66,22 @@ function getArticleAvailableLocales(article: any): string[] {
   return SUPPORTED_LOCALES.filter((locale) => available.has(locale));
 }
 
-function addSlugLocales(
-  map: Map<string, Set<string>>,
-  slug: string | null | undefined,
-  locales: string[]
-) {
-  const key = normalizeIndexableSlug(slug);
-  if (!key || !locales.length) return;
-  if (!map.has(key)) {
-    map.set(key, new Set<string>());
-  }
-  const target = map.get(key)!;
-  locales.forEach((locale) => target.add(locale));
-}
-
-function getSlugLocales(map: Map<string, Set<string>>, slug?: string | null): string[] {
-  const key = normalizeIndexableSlug(slug);
-  if (!key) return [];
-  return Array.from(map.get(key) || []);
-}
-
-function buildTaxonomyLocalesBySlug(articleData: any[] = []) {
-  const categoryLocalesBySlug = new Map<string, Set<string>>();
-  const tagLocalesBySlug = new Map<string, Set<string>>();
-  const peopleLocalesBySlug = new Map<string, Set<string>>();
-  const categoryCountsBySlug = new Map<string, number>();
-  const tagCountsBySlug = new Map<string, number>();
-  const peopleCountsBySlug = new Map<string, number>();
-  const incrementCount = (map: Map<string, number>, slug: string | null | undefined) => {
-    const key = normalizeIndexableSlug(slug);
-    if (!key) return;
-    map.set(key, (map.get(key) || 0) + 1);
-  };
-
-  articleData.forEach((article) => {
-    const locales = getArticleAvailableLocales(article);
-    if (!locales.length) return;
-
-    addSlugLocales(categoryLocalesBySlug, article?.category?.slug, locales);
-    incrementCount(categoryCountsBySlug, article?.category?.slug);
-
-    const articleTags = Array.isArray(article?.article_tags)
-      ? article.article_tags
-      : [];
-    articleTags.forEach((entry: any) => {
-      addSlugLocales(tagLocalesBySlug, entry?.tag?.slug, locales);
-      incrementCount(tagCountsBySlug, entry?.tag?.slug);
-    });
-
-    const articlePeople = Array.isArray(article?.article_people)
-      ? article.article_people
-      : [];
-    articlePeople.forEach((entry: any) => {
-      addSlugLocales(peopleLocalesBySlug, entry?.person?.slug, locales);
-      incrementCount(peopleCountsBySlug, entry?.person?.slug);
-    });
-  });
-
-  return {
-    categoryLocalesBySlug,
-    categoryCountsBySlug,
-    tagLocalesBySlug,
-    tagCountsBySlug,
-    peopleLocalesBySlug,
-    peopleCountsBySlug,
-  };
-}
-
 export async function getAllDynamicRoutes(): Promise<string[]> {
   try {
     const [
       { data: profiles, error },
       articleData,
-      categoryData,
-      tagData,
-      peopleData,
       seoPageData,
     ] =
       await Promise.all([
         getRegisteredUsersDisplaynames(),
         getAllPublishedArticlesWithTags(),
-        getAllCategories(),
-        getAllTags(),
-        getAllPeopleSlugs(),
         getPublishedSeoPageRoutes(),
       ]);
 
     if (
       !profiles ||
       !articleData ||
-      !categoryData ||
-      !tagData ||
-      !peopleData ||
       !seoPageData ||
       error
     ) {
@@ -199,65 +117,13 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
         };
       })
       .filter((route): route is { path: string; locales: string[] } => Boolean(route));
-    const {
-      categoryLocalesBySlug,
-      categoryCountsBySlug,
-      tagLocalesBySlug,
-      tagCountsBySlug,
-      peopleLocalesBySlug,
-      peopleCountsBySlug,
-    } =
-      buildTaxonomyLocalesBySlug(articleData);
-    const categoryRoutes = categoryData
-      .map((c) => ({
-        path: `/categories/${normalizeIndexableSlug(c?.slug) || ""}`,
-        locales: getSlugLocales(categoryLocalesBySlug, c.slug),
-        articleCount:
-          categoryCountsBySlug.get(normalizeIndexableSlug(c?.slug) || "") || 0,
-      }))
-      .filter(
-        (route) =>
-          route.locales.length > 0 &&
-          !route.path.endsWith("/") &&
-          shouldIndexTaxonomyPage(route.articleCount, "category")
-      );
-    const tagRoutes = tagData
-      .map((t) => ({
-        path: `/tags/${normalizeIndexableSlug(t?.slug) || ""}`,
-        locales: getSlugLocales(tagLocalesBySlug, t.slug),
-        articleCount:
-          tagCountsBySlug.get(normalizeIndexableSlug(t?.slug) || "") || 0,
-      }))
-      .filter(
-        (route) =>
-          route.locales.length > 0 &&
-          !route.path.endsWith("/") &&
-          shouldIndexTaxonomyPage(route.articleCount, "tag")
-      );
-    const peopleRoutes = peopleData
-      .map((p) => ({
-        path: `/people/${normalizeIndexableSlug(p?.slug) || ""}`,
-        locales: getSlugLocales(peopleLocalesBySlug, p.slug),
-        articleCount:
-          peopleCountsBySlug.get(normalizeIndexableSlug(p?.slug) || "") || 0,
-      }))
-      .filter(
-        (route) =>
-          route.locales.length > 0 &&
-          !route.path.endsWith("/") &&
-          shouldIndexTaxonomyPage(route.articleCount, "person")
-      );
-
     const staticPages = [
       "/about",
       "/faq",
       "/cookies",
       "/articles",
       "/compare",
-      "/categories",
       "/guides",
-      "/tags",
-      "/people",
       "/profiles",
       "/topics",
     ];
@@ -272,9 +138,6 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
     const localizedRoutes = allRoutes.flatMap((route) =>
       SUPPORTED_LOCALES.map((locale) => localizePath(route, locale))
     );
-
-    const localizedTaxonomyRoutes = [...categoryRoutes, ...tagRoutes, ...peopleRoutes]
-      .flatMap((route) => route.locales.map((locale) => localizePath(route.path, locale)));
 
     const localizedArticleRoutes = articleRoutes.flatMap((route) =>
       route.locales.map((locale) => localizePath(route.path, locale))
@@ -296,7 +159,6 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
     return [
       ...new Set([
         ...localizedRoutes,
-        ...localizedTaxonomyRoutes,
         ...localizedArticleRoutes,
         ...localizedSeoPageRoutes,
       ]),
@@ -318,25 +180,16 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
     const [
       { data: profiles, error },
       articleData,
-      categoryData,
-      tagData,
-      peopleData,
       seoPageData,
     ] = await Promise.all([
       getRegisteredUsersDisplaynames(),
       getAllPublishedArticlesWithTags(),
-      getAllCategories(),
-      getAllTags(),
-      getAllPeopleSlugs(),
       getPublishedSeoPageRoutes(),
     ]);
 
     if (
       !profiles ||
       !articleData ||
-      !categoryData ||
-      !tagData ||
-      !peopleData ||
       !seoPageData ||
       error
     ) {
@@ -350,10 +203,7 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       "/cookies",
       "/articles",
       "/compare",
-      "/categories",
       "/guides",
-      "/tags",
-      "/people",
       "/profiles",
       "/topics",
     ];
@@ -414,53 +264,6 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
           loc: localizePath(localizedArticlePath, locale),
           lastmod: article?.created_at || fallbackLastmod,
           images: imageUrl ? [{ loc: imageUrl }] : undefined,
-        });
-      });
-    });
-
-    const {
-      categoryLocalesBySlug,
-      categoryCountsBySlug,
-      tagLocalesBySlug,
-      tagCountsBySlug,
-      peopleLocalesBySlug,
-      peopleCountsBySlug,
-    } =
-      buildTaxonomyLocalesBySlug(articleData);
-
-    categoryData.forEach((category) => {
-      const categorySlug = normalizeIndexableSlug(category?.slug);
-      if (!categorySlug) return;
-      if (!shouldIndexTaxonomyPage(categoryCountsBySlug.get(categorySlug) || 0, "category")) return;
-      const locales = getSlugLocales(categoryLocalesBySlug, category.slug);
-      locales.forEach((locale) => {
-        localizedRoutes.push({
-          loc: localizePath(`/categories/${categorySlug}`, locale),
-          lastmod: fallbackLastmod,
-        });
-      });
-    });
-    tagData.forEach((tag) => {
-      const tagSlug = normalizeIndexableSlug(tag?.slug);
-      if (!tagSlug) return;
-      if (!shouldIndexTaxonomyPage(tagCountsBySlug.get(tagSlug) || 0, "tag")) return;
-      const locales = getSlugLocales(tagLocalesBySlug, tag.slug);
-      locales.forEach((locale) => {
-        localizedRoutes.push({
-          loc: localizePath(`/tags/${tagSlug}`, locale),
-          lastmod: fallbackLastmod,
-        });
-      });
-    });
-    peopleData.forEach((person) => {
-      const personSlug = normalizeIndexableSlug(person?.slug);
-      if (!personSlug) return;
-      if (!shouldIndexTaxonomyPage(peopleCountsBySlug.get(personSlug) || 0, "person")) return;
-      const locales = getSlugLocales(peopleLocalesBySlug, person.slug);
-      locales.forEach((locale) => {
-        localizedRoutes.push({
-          loc: localizePath(`/people/${personSlug}`, locale),
-          lastmod: fallbackLastmod,
         });
       });
     });

@@ -139,7 +139,6 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
-import { shouldIndexTaxonomyPage } from "@/composables/useIndexability";
 import { useSeoI18nMeta } from "@/composables/useSeoI18nMeta";
 import { buildTaxonomyPath } from "@/utils/taxonomySlug";
 
@@ -249,12 +248,7 @@ const canonicalPath = computed(() => {
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(totalArticles.value / PAGE_SIZE))
 );
-const shouldIndexPage = computed(() =>
-  shouldIndexTaxonomyPage(totalArticles.value, "tag")
-);
-const taxonomyRobots = computed(() =>
-  shouldIndexPage.value ? undefined : "noindex,follow"
-);
+const taxonomyRobots = computed(() => "noindex,follow");
 
 const pagePath = (page) => {
   const path = route.path || "/";

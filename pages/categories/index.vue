@@ -174,7 +174,9 @@ let intersectionObserver = null;
 
 const searchLabel = computed(() => t("pages.articles.index.search"));
 
-useSeoI18nMeta("categories.index");
+useSeoI18nMeta("categories.index", {
+  robots: "noindex,follow",
+});
 
 const filteredArticles = computed(() => {
   if (!searchQuery.value) return articles.value;
