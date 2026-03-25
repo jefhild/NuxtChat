@@ -39,7 +39,6 @@ export default defineEventHandler(async (event) => {
       [
         "id",
         "prompt_key",
-        "related_article_slug",
         "is_active",
         "updated_at",
         "mood_feed_prompt_translations (locale, prompt_text, source_locale)",
@@ -48,26 +47,6 @@ export default defineEventHandler(async (event) => {
     .eq("is_active", true)
     .order("updated_at", { ascending: false, nullsFirst: false })
     .limit(250);
-
-  if (
-    result?.error &&
-    String(result.error?.message || "").includes("related_article_slug")
-  ) {
-    result = await supabase
-      .from("mood_feed_prompts")
-      .select(
-        [
-          "id",
-          "prompt_key",
-          "is_active",
-          "updated_at",
-          "mood_feed_prompt_translations (locale, prompt_text, source_locale)",
-        ].join(",")
-      )
-      .eq("is_active", true)
-      .order("updated_at", { ascending: false, nullsFirst: false })
-      .limit(250);
-  }
 
   if (result?.error) {
     throw createError({ statusCode: 500, statusMessage: result.error.message });
@@ -95,6 +74,5 @@ export default defineEventHandler(async (event) => {
       promptText: pickCanonicalPromptText(matched.mood_feed_prompt_translations || []),
       promptKey: matched.prompt_key,
     }),
-    relatedArticleSlug: matched.related_article_slug || null,
   };
 });

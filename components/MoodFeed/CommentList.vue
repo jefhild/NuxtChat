@@ -57,7 +57,7 @@
 import { computed, ref, reactive, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import MoodFeedCommentItem from "./CommentItem.vue";
-import ReplyInline from "../Articles/ReplyInline.vue";
+import ReplyInline from "./ReplyInline.vue";
 
 const props = defineProps({
   messages: { type: Array, required: true },

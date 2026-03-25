@@ -50,14 +50,8 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import AdminDashboard from "~/components/Admin2/Dashboard.vue";
-import AdminArticles from "~/components/Admin2/Articles1.vue";
-import AdminCategories from "~/components/Admin2/Categories.vue";
-import AdminTags from "~/components/Admin2/Tags.vue";
-import AdminPeople from "~/components/Admin2/People.vue";
 import AdminReports from "~/components/Admin2/Reports.vue";
 import AdminAiBots from "~/components/Admin2/AiBots.vue";
-import AdminNewsSource from "~/components/Admin2/NewsSource.vue";
-import AdminEngagementRules from "~/components/Admin2/EngagementRules.vue";
 import AdminFaqs from "~/components/Admin2/Faqs.vue";
 import AdminProfileAvatars from "~/components/Admin2/ProfileAvatars.vue";
 import AdminProfilePhotos from "~/components/Admin2/ProfilePhotos.vue";
@@ -83,11 +77,6 @@ const items = computed(() => [
     value: "dashboard",
   },
   {
-    text: t("pages.admin.sections.articles"),
-    icon: "mdi-post",
-    value: "articles",
-  },
-  {
     text: "SEO Pages",
     icon: "mdi-file-search-outline",
     value: "seoPages",
@@ -98,22 +87,6 @@ const items = computed(() => [
     value: "aboutContent",
   },
   {
-    text: t("pages.admin.sections.newsSource"),
-    icon: "mdi-link-plus",
-    value: "newsSource",
-  },
-  {
-    text: t("pages.admin.sections.categories"),
-    icon: "mdi-folder",
-    value: "categories",
-  },
-  { text: t("pages.admin.sections.tags"), icon: "mdi-tag", value: "tags" },
-  {
-    text: "People",
-    icon: "mdi-account-multiple",
-    value: "people",
-  },
-  {
     text: t("pages.admin.sections.reports"),
     icon: "mdi-alert-octagon",
     value: "reports",
@@ -122,11 +95,6 @@ const items = computed(() => [
     text: t("pages.admin.sections.faqs"),
     icon: "mdi-help-circle-outline",
     value: "faqs",
-  },
-  {
-    text: "Engagement Rules",
-    icon: "mdi-shield-account",
-    value: "engagementRules",
   },
   {
     text: t("pages.admin.sections.aiBots"),
@@ -183,26 +151,14 @@ watch(
 
 const getSectionComponent = (section) => {
   switch (section) {
-    case "articles":
-      return AdminArticles;
     case "seoPages":
       return AdminSeoPages;
     case "aboutContent":
       return AdminAboutContent;
-    case "categories":
-      return AdminCategories;
-    case "tags":
-      return AdminTags;
-    case "people":
-      return AdminPeople;
     case "reports":
       return AdminReports;
     case "aiBots":
       return AdminAiBots;
-    case "newsSource":
-      return AdminNewsSource;
-    case "engagementRules":
-      return AdminEngagementRules;
     case "faqs":
       return AdminFaqs;
     case "profileAvatars":

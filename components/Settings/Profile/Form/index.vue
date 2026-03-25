@@ -580,8 +580,16 @@ const generateAiBio = async () => {
 
 const cancelEditing = () => {
   editableProfile.value = { ...props.userProfile };
-  syncEditableState();
+  localAvatar.value = buildAvatarDisplayUrl(props.userProfile?.avatar_url);
+  ensurePreferredLocale();
+  if (needsProfileCompletion.value) {
+    isEditable.value = true;
+  } else {
+    isEditable.value = false;
+  }
   avatarError.value = "";
+  taglineError.value = "";
+  bioTouched.value = false;
 };
 
 const startEditing = () => {

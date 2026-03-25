@@ -122,6 +122,9 @@ export default defineNuxtPlugin((app) => {
     const themeName =
       normalizedMode === "system" ? resolveSystemTheme() : normalizedMode;
 
+    if (vuetify.theme?.global?.name?.value !== themeName) {
+      vuetify.theme.global.name.value = themeName;
+    }
     if (typeof vuetify.theme.change === "function") {
       vuetify.theme.change(themeName);
     } else if (typeof vuetify.theme.global.change === "function") {
@@ -135,14 +138,20 @@ export default defineNuxtPlugin((app) => {
 
   if (import.meta.client) {
     onNuxtReady(() => {
+      const syncActiveTheme = () => {
+        applyThemeMode(themeCookie.value || "system");
+      };
+
       // Apply persisted/system theme only when Nuxt is fully ready so
       // async component hydration has already settled.
-      applyThemeMode(initialMode);
+      syncActiveTheme();
 
       // First visit: no cookie yet. Persist "system" mode by default.
       if (!themeCookie.value) {
         themeCookie.value = "system";
       }
+
+      app.hook("page:finish", syncActiveTheme);
 
       const media = window.matchMedia("(prefers-color-scheme: dark)");
       const handleSystemChange = () => {

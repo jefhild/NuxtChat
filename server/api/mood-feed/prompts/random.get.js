@@ -28,21 +28,14 @@ export default defineEventHandler(async (event) => {
   const supabase = await getServiceRoleClient(event);
 
   const fetchByLocale = async (loc) => {
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from("mood_feed_prompt_translations")
       .select(
-        "prompt_id, prompt_text, mood_feed_prompts(prompt_key,is_active,related_article_slug)"
+        "prompt_id, prompt_text, mood_feed_prompts(prompt_key,is_active)"
       )
       .eq("locale", loc)
       .limit(200);
-    if (error && String(error?.message || "").includes("related_article_slug")) {
-      const fallback = await supabase
-        .from("mood_feed_prompt_translations")
-        .select("prompt_id, prompt_text, mood_feed_prompts(prompt_key,is_active)")
-        .eq("locale", loc)
-        .limit(200);
-      data = fallback.data;
-    }
+    if (error) throw error;
     return (data || []).filter((row) => row?.mood_feed_prompts?.is_active);
   };
 
@@ -81,6 +74,5 @@ export default defineEventHandler(async (event) => {
   return {
     promptText: pick.prompt_text,
     promptKey: pick.mood_feed_prompts?.prompt_key || null,
-    relatedArticleSlug: pick.mood_feed_prompts?.related_article_slug || null,
   };
 });

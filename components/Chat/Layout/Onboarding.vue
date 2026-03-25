@@ -451,7 +451,7 @@ async function onConsentYes() {
 }
 
 function onConsentNo() {
-  router.push("/articles");
+  router.push("/");
 }
 
 function onLogin() {

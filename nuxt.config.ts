@@ -172,10 +172,6 @@ export default defineNuxtConfig({
         "/*/profiles/**",
         "/profiles",
         "/profiles/**",
-        "/articles",
-        "/*/articles/*",
-        "/*/articles",
-        "/articles/*",
         "/*/tags/*",
         "/*/tags",
         "/tags/*",
@@ -332,7 +328,6 @@ export default defineNuxtConfig({
     },
     "/people/**": { prerender: false, swr: 3600 },
     "/profiles/**": { prerender: false },
-    "/articles/**": { prerender: false, swr: 3600 },
     "/tags/**": { prerender: false, swr: 3600 },
   },
 
@@ -385,28 +380,9 @@ export default defineNuxtConfig({
       let dynamicRoutes = await getAllDynamicRoutes().catch(() => []);
       dynamicRoutes = dynamicRoutes.filter((r) => !/\/settings$/.test(r));
 
-      // Keep prerender route set small and stable; dynamic non-article pages are SSR.
-      const articleRoutes = dynamicRoutes.filter((r) => r.includes("/articles/"));
-      const MAX_DYNAMIC_PRERENDER_ROUTES = Number(
-        process.env.MAX_DYNAMIC_PRERENDER_ROUTES || 1200,
-      );
-      const cappedArticleRoutes = articleRoutes.slice(
-        0,
-        MAX_DYNAMIC_PRERENDER_ROUTES,
-      );
-
-      nitroConfig.prerender.routes?.push(...cappedArticleRoutes);
-
-      // Log useful counts for build diagnostics.
       console.info("prerender totals", {
         discovered: dynamicRoutes.length,
-        articles: articleRoutes.length,
-        injected: cappedArticleRoutes.length,
-        capped:
-          articleRoutes.length > cappedArticleRoutes.length
-            ? articleRoutes.length - cappedArticleRoutes.length
-            : 0,
-        cap: MAX_DYNAMIC_PRERENDER_ROUTES,
+        injected: 0,
       });
     },
   },
@@ -429,6 +405,12 @@ export default defineNuxtConfig({
       "/admin",
       "/callback",
       "/**/callback",
+      "/articles",
+      "/**/articles",
+      "/**/articles/**",
+      "/chat/articles",
+      "/**/chat/articles",
+      "/**/chat/articles/**",
       "/tags",
       "/**/tags",
       "/**/tags/**",

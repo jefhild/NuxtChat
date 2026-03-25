@@ -199,49 +199,11 @@
         </v-expansion-panel-title>
         <v-expansion-panel-text class="profile-stats">
           <v-list class="profile-stats-tree" density="compact" nav>
-        <v-list-item
-          prepend-icon="mdi-clock-outline"
-          :title="$t('components.profile-stats.last-connection')"
-          :subtitle="lastConnectionLabel"
-        />
-            <v-list-group value="comments">
-              <template #activator="{ props: activatorProps }">
-                <v-list-item
-                  v-bind="activatorProps"
-                  prepend-icon="mdi-comment-multiple-outline"
-                  :title="$t('components.profile-stats.comments-count', { count: statsData.comments.count })"
-                />
-              </template>
-              <v-list-item
-                v-for="item in statsData.comments.items"
-                :key="item.id"
-                class="profile-stats-child"
-                prepend-icon="mdi-chat-outline"
-                :title="item.title"
-                :subtitle="formatStatSubtitle(item, discussionLabel)"
-                :to="statLink(item)"
-                :link="Boolean(statLink(item))"
-              />
-            </v-list-group>
-            <v-list-group value="upvotes">
-              <template #activator="{ props: activatorProps }">
-                <v-list-item
-                  v-bind="activatorProps"
-                  prepend-icon="mdi-thumb-up-outline"
-                  :title="$t('components.profile-stats.upvotes-count', { count: statsData.upvotes.count })"
-                />
-              </template>
-              <v-list-item
-                v-for="item in statsData.upvotes.items"
-                :key="item.id"
-                class="profile-stats-child"
-                prepend-icon="mdi-newspaper-variant-outline"
-                :title="item.title"
-                :subtitle="formatStatSubtitle(item, item.type === 'thread' ? discussionLabel : articleLabel)"
-                :to="statLink(item)"
-                :link="Boolean(statLink(item))"
-              />
-            </v-list-group>
+            <v-list-item
+              prepend-icon="mdi-clock-outline"
+              :title="$t('components.profile-stats.last-connection')"
+              :subtitle="lastConnectionLabel"
+            />
           </v-list>
         </v-expansion-panel-text>
       </v-expansion-panel>
@@ -421,13 +383,6 @@ const chatLink = computed(() => {
 const expandedSections = ref([]);
 
 const statsData = computed(() => props.stats || emptyStats);
-const discussionLabel = computed(() =>
-  String(t("components.profile-stats.discussion-label"))
-);
-const articleLabel = computed(() =>
-  String(t("components.profile-stats.article-label"))
-);
-
 const dateFmt = new Intl.DateTimeFormat(undefined, {
   year: "numeric",
   month: "short",
@@ -450,21 +405,6 @@ const lastConnectionLabel = computed(() => {
     return String(value);
   }
 });
-
-const formatStatSubtitle = (item, label) => {
-  if (!item?.createdAt) return label;
-  try {
-    return `${label} · ${dateFmt.format(new Date(item.createdAt))}`;
-  } catch {
-    return label;
-  }
-};
-
-const statLink = (item) => {
-  const slug = item?.articleSlug ?? item?.article?.slug ?? item?.slug;
-  if (!slug) return undefined;
-  return `${localPath(`/articles/${slug}`)}#discussion`;
-};
 
 const galleryItems = computed(() => {
   const items = Array.isArray(props.photoGalleryPhotos)

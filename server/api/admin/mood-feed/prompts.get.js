@@ -65,7 +65,6 @@ export default defineEventHandler(async (event) => {
         `
         id,
         prompt_key,
-        related_article_slug,
         is_active,
         created_at,
         updated_at,
@@ -73,24 +72,6 @@ export default defineEventHandler(async (event) => {
       `
       )
       .order("updated_at", { ascending: false });
-
-    if (error && String(error?.message || "").includes("related_article_slug")) {
-      const fallback = await supa
-        .from("mood_feed_prompts")
-        .select(
-          `
-          id,
-          prompt_key,
-          is_active,
-          created_at,
-          updated_at,
-          mood_feed_prompt_translations (locale, prompt_text, source_locale, updated_at)
-        `
-        )
-        .order("updated_at", { ascending: false });
-      data = fallback.data;
-      error = fallback.error;
-    }
 
     if (error) {
       console.error("[admin/mood-feed.prompts] load error:", error);
@@ -106,7 +87,6 @@ export default defineEventHandler(async (event) => {
       return {
         id: prompt.id,
         prompt_key: prompt.prompt_key,
-        related_article_slug: prompt.related_article_slug || null,
         is_active: prompt.is_active,
         created_at: prompt.created_at,
         updated_at: prompt.updated_at,

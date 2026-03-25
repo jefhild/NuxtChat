@@ -1,17 +1,28 @@
+const SUPPORTED_LOCALE_RE = /^\/(en|fr|ru|zh)(?=\/|$)/;
+
 export default defineNuxtRouteMiddleware((to) => {
   const path = String(to.path || "");
-  if (!/\/chat\/articles(?:\/|$)/.test(path)) return;
+  const localePrefix = path.match(SUPPORTED_LOCALE_RE)?.[0] || "";
+  const normalizedPath = localePrefix
+    ? path.slice(localePrefix.length) || "/"
+    : path || "/";
 
-  const targetPath = path.replace("/chat/articles", "/articles");
-  const hasArticleSlug = /\/articles\/[^/]+$/.test(targetPath);
-  const hash = to.hash || (hasArticleSlug ? "#discussion" : "");
+  const shouldRedirect =
+    /^\/articles(?:\/|$)/.test(normalizedPath) ||
+    /^\/chat\/articles(?:\/|$)/.test(normalizedPath) ||
+    /^\/categories(?:\/|$)/.test(normalizedPath) ||
+    /^\/tags(?:\/|$)/.test(normalizedPath) ||
+    /^\/people(?:\/|$)/.test(normalizedPath);
+
+  if (!shouldRedirect) return;
+
+  const targetPath = `${localePrefix}/chat` || "/chat";
 
   return navigateTo(
     {
       path: targetPath,
       query: to.query,
-      hash,
     },
-    { redirectCode: 301 }
+    { redirectCode: 302 }
   );
 });

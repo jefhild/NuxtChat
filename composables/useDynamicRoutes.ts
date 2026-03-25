@@ -1,6 +1,5 @@
 import {
   getRegisteredUsersDisplaynames,
-  getAllPublishedArticlesWithTags,
   getPublishedSeoPageRoutes,
   getUserSlugFromDisplayName,
 } from "../lib/supabaseHelpers";
@@ -14,19 +13,10 @@ import { buildSeoPagePath } from "../utils/seoPagePaths";
  */
 const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
 const defaultLocale = "en";
-const supabaseArticlesBase = (
-  process.env.NUXT_PUBLIC_SUPABASE_BUCKET || ""
-).replace(/\/+$/, "");
 const INDEXABLE_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
 
 function localizePath(path: string, locale: string) {
   return locale === defaultLocale ? path : `/${locale}${path}`;
-}
-
-function buildArticleImageUrl(imagePath?: string | null) {
-  if (!imagePath || !supabaseArticlesBase) return null;
-  const cleanPath = String(imagePath).replace(/^\/+/, "");
-  return cleanPath ? `${supabaseArticlesBase}/articles/${cleanPath}` : null;
 }
 
 function normalizeLocaleCode(value?: string | null) {
@@ -45,46 +35,14 @@ function normalizeIndexableSlug(value?: string | null) {
   return slug;
 }
 
-function getArticleAvailableLocales(article: any): string[] {
-  const available = new Set<string>();
-  const originalLocale = normalizeLocaleCode(article?.original_language_code);
-  if (originalLocale) {
-    available.add(originalLocale);
-  } else {
-    available.add(defaultLocale);
-  }
-
-  const translations = Array.isArray(article?.article_translations)
-    ? article.article_translations
-    : [];
-
-  translations.forEach((entry: any) => {
-    const locale = normalizeLocaleCode(entry?.locale);
-    if (locale) available.add(locale);
-  });
-
-  return SUPPORTED_LOCALES.filter((locale) => available.has(locale));
-}
-
 export async function getAllDynamicRoutes(): Promise<string[]> {
   try {
-    const [
-      { data: profiles, error },
-      articleData,
-      seoPageData,
-    ] =
-      await Promise.all([
-        getRegisteredUsersDisplaynames(),
-        getAllPublishedArticlesWithTags(),
-        getPublishedSeoPageRoutes(),
-      ]);
+    const [{ data: profiles, error }, seoPageData] = await Promise.all([
+      getRegisteredUsersDisplaynames(),
+      getPublishedSeoPageRoutes(),
+    ]);
 
-    if (
-      !profiles ||
-      !articleData ||
-      !seoPageData ||
-      error
-    ) {
+    if (!profiles || !seoPageData || error) {
       console.error("One or more data fetches failed.", { error });
       return [];
     }
@@ -107,21 +65,10 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       )
     ).filter((route): route is string => Boolean(route));
 
-    const articleRoutes = articleData
-      .map((a) => {
-        const slug = normalizeIndexableSlug(a?.slug);
-        if (!slug) return null;
-        return {
-          path: `/articles/${slug}`,
-          locales: getArticleAvailableLocales(a),
-        };
-      })
-      .filter((route): route is { path: string; locales: string[] } => Boolean(route));
     const staticPages = [
       "/about",
       "/faq",
       "/cookies",
-      "/articles",
       "/compare",
       "/guides",
       "/profiles",
@@ -137,10 +84,6 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
 
     const localizedRoutes = allRoutes.flatMap((route) =>
       SUPPORTED_LOCALES.map((locale) => localizePath(route, locale))
-    );
-
-    const localizedArticleRoutes = articleRoutes.flatMap((route) =>
-      route.locales.map((locale) => localizePath(route.path, locale))
     );
 
     const localizedSeoPageRoutes = (seoPageData || [])
@@ -159,7 +102,6 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
     return [
       ...new Set([
         ...localizedRoutes,
-        ...localizedArticleRoutes,
         ...localizedSeoPageRoutes,
       ]),
     ];
@@ -177,22 +119,12 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
   { loc: string; lastmod: string; images?: { loc: string }[] }[]
 > {
   try {
-    const [
-      { data: profiles, error },
-      articleData,
-      seoPageData,
-    ] = await Promise.all([
+    const [{ data: profiles, error }, seoPageData] = await Promise.all([
       getRegisteredUsersDisplaynames(),
-      getAllPublishedArticlesWithTags(),
       getPublishedSeoPageRoutes(),
     ]);
 
-    if (
-      !profiles ||
-      !articleData ||
-      !seoPageData ||
-      error
-    ) {
+    if (!profiles || !seoPageData || error) {
       console.error("One or more data fetches failed.", { error });
       return [];
     }
@@ -201,7 +133,6 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       "/about",
       "/faq",
       "/cookies",
-      "/articles",
       "/compare",
       "/guides",
       "/profiles",
@@ -252,21 +183,6 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
     ).filter((route): route is string => Boolean(route));
 
     profileRoutes.forEach((route) => addLocalizedRoutes(route));
-
-    articleData.forEach((article) => {
-      const articleSlug = normalizeIndexableSlug(article?.slug);
-      if (!articleSlug) return;
-      const imageUrl = buildArticleImageUrl(article?.image_path);
-      const localizedArticlePath = `/articles/${articleSlug}`;
-      const locales = getArticleAvailableLocales(article);
-      locales.forEach((locale) => {
-        localizedRoutes.push({
-          loc: localizePath(localizedArticlePath, locale),
-          lastmod: article?.created_at || fallbackLastmod,
-          images: imageUrl ? [{ loc: imageUrl }] : undefined,
-        });
-      });
-    });
 
     (seoPageData || []).forEach((page: any) => {
       const slug = normalizeIndexableSlug(page?.slug);

@@ -838,12 +838,23 @@ const savePage = async () => {
       },
     });
 
-    const saved = response?.page;
-    if (saved) {
-      const next = pages.value.filter((page) => page.id !== saved.id);
-      next.unshift(saved);
-      pages.value = next;
+    if (!response?.success) {
+      throw new Error(
+        response?.error ||
+          response?.details?.message ||
+          response?.details?.statusMessage ||
+          "Failed to save SEO page."
+      );
     }
+
+    const saved = response?.page;
+    if (!saved) {
+      throw new Error("SEO page save returned no page payload.");
+    }
+
+    const next = pages.value.filter((page) => page.id !== saved.id);
+    next.unshift(saved);
+    pages.value = next;
 
     dialog.value = false;
     showMessage("SEO page saved.");
@@ -853,6 +864,9 @@ const savePage = async () => {
       error?.data?.error ||
         error?.data?.details?.message ||
         error?.data?.details?.statusMessage ||
+        (error?.message === "Failed to fetch"
+          ? "Request failed before the server returned a response."
+          : null) ||
         error?.message ||
         "Failed to save SEO page.",
       "error"

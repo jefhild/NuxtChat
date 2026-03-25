@@ -80,26 +80,10 @@ export default defineEventHandler(async (event) => {
             [
               "id",
               "prompt_key",
-              "related_article_slug",
               "mood_feed_prompt_translations (locale, prompt_text, source_locale)",
             ].join(",")
           )
           .in("prompt_key", promptKeys);
-        if (
-          result?.error &&
-          String(result.error?.message || "").includes("related_article_slug")
-        ) {
-          result = await supabase
-            .from("mood_feed_prompts")
-            .select(
-              [
-                "id",
-                "prompt_key",
-                "mood_feed_prompt_translations (locale, prompt_text, source_locale)",
-              ].join(",")
-            )
-            .in("prompt_key", promptKeys);
-        }
         return result;
       })()
     : { data: [] };
@@ -297,7 +281,6 @@ export default defineEventHandler(async (event) => {
     if (!rows.length) {
       promptMetaMap.set(prompt.prompt_key, {
         promptText: prompt.prompt_key,
-        relatedArticleSlug: prompt.related_article_slug || null,
       });
       continue;
     }
@@ -305,7 +288,6 @@ export default defineEventHandler(async (event) => {
     if (exact) {
       promptMetaMap.set(prompt.prompt_key, {
         promptText: exact.prompt_text,
-        relatedArticleSlug: prompt.related_article_slug || null,
       });
       continue;
     }
@@ -313,13 +295,11 @@ export default defineEventHandler(async (event) => {
     if (fallback) {
       promptMetaMap.set(prompt.prompt_key, {
         promptText: fallback.prompt_text,
-        relatedArticleSlug: prompt.related_article_slug || null,
       });
       continue;
     }
     promptMetaMap.set(prompt.prompt_key, {
       promptText: rows[0]?.prompt_text || "",
-      relatedArticleSlug: prompt.related_article_slug || null,
     });
   }
 
@@ -381,10 +361,6 @@ export default defineEventHandler(async (event) => {
         entry.promptKey && promptMetaMap.get(entry.promptKey)?.promptText
           ? promptMetaMap.get(entry.promptKey).promptText
           : entry.promptText || "Mood Feed";
-      const relatedArticleSlug =
-        entry.promptKey && promptMetaMap.get(entry.promptKey)?.relatedArticleSlug
-          ? promptMetaMap.get(entry.promptKey).relatedArticleSlug
-          : null;
       groups.set(groupKey, {
         id: groupKey,
         promptKey: entry.promptKey || null,
@@ -393,7 +369,6 @@ export default defineEventHandler(async (event) => {
           promptText,
           promptKey: entry.promptKey || null,
         }),
-        relatedArticleSlug,
         entries: [],
       });
     }

@@ -26,33 +26,6 @@ export async function getRegisteredUsersDisplaynames(options?: {
   return await query;
 }
 
-export async function getAllPublishedArticlesWithTags() {
-  // Keep this query minimal while including taxonomy relations needed for locale-aware route generation.
-  const { data, error } = await supabase
-    .from("articles")
-    .select(
-      `
-      slug,
-      created_at,
-      image_path,
-      original_language_code,
-      article_translations(locale),
-      category:category_id(slug),
-      article_tags(tag:tag_id(slug)),
-      article_people(person:person_id(slug))
-    `
-    )
-    .eq("is_published", true)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching article slugs:", error.message);
-    return [];
-  }
-
-  return data;
-}
-
 export async function getAllCategories()
 {
   const {data} = await supabase
