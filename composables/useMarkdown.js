@@ -12,6 +12,26 @@ function escapeHtml(str = "") {
     .replaceAll("'", "&#039;");
 }
 
+function normalizeMarkdown(text = "") {
+  return String(text)
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\u00A0/g, " ")
+    .replace(/^((?:#\s+){1,5}#)(?=\s)/gm, (match) => match.replace(/\s+/g, ""))
+    .replace(/^[ \t]+(?=#{1,6}\s)/gm, "")
+    .replace(/^(#{1,6})([^\s#])/gm, "$1 $2");
+}
+
+function normalizeRenderedMarkdownHtml(html = "") {
+  return String(html).replace(
+    /(^|\n)(#{1,6})\s+([^\n<][^\n]*)(?=\n<(?:p|ul|ol|blockquote|pre|hr|h[1-6])|$)/g,
+    (_match, prefix, hashes, text) => {
+      const level = Math.min(Math.max(String(hashes || "").length + 1, 2), 4);
+      return `${prefix}<h${level}>${String(text || "").trim()}</h${level}>`;
+    }
+  );
+}
+
 export function useMarkdown() {
   const init = async () => {
     // already initialized?
@@ -54,10 +74,10 @@ export function useMarkdown() {
   };
 
   const render = (text) => {
-    const raw = String(text ?? "");
+    const raw = normalizeMarkdown(text ?? "");
     // before init (SSR/early mount): escape + keep line breaks readable
     if (!_md || !_sanitize) return escapeHtml(raw).replace(/\n/g, "<br>");
-    let html = _md.render(raw);
+    let html = normalizeRenderedMarkdownHtml(_md.render(raw));
     html = html
       .replace(/\[\[br\]\]/g, "<br><br>")
       .replace(/\[\[divider\]\]/g, "<hr>");

@@ -214,10 +214,25 @@ const md = new MarkdownIt({
 });
 
 const normalizeMarkdown = (value?: string) =>
-  String(value || "").replace(/^(#{1,6})(\S)/gm, "$1 $2");
+  String(value || "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\u00A0/g, " ")
+    .replace(/^((?:#\s+){1,5}#)(?=\s)/gm, (match) => match.replace(/\s+/g, ""))
+    .replace(/^[ \t]+(?=#{1,6}\s)/gm, "")
+    .replace(/^(#{1,6})([^\s#])/gm, "$1 $2");
+
+const normalizeRenderedMarkdownHtml = (value: string) =>
+  String(value || "").replace(
+    /(^|\n)(#{1,6})\s+([^\n<][^\n]*)(?=\n<(?:p|ul|ol|blockquote|pre|hr|h[1-6])|$)/g,
+    (_match, prefix, hashes, text) => {
+      const level = Math.min(Math.max(String(hashes || "").length + 1, 2), 4);
+      return `${prefix}<h${level}>${String(text || "").trim()}</h${level}>`;
+    }
+  );
 
 const renderMarkdown = (value?: string) =>
-  DOMPurify.sanitize(md.render(normalizeMarkdown(value)), {
+  DOMPurify.sanitize(normalizeRenderedMarkdownHtml(md.render(normalizeMarkdown(value))), {
     ALLOWED_TAGS: [
       "p",
       "br",
