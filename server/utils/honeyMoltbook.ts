@@ -392,12 +392,33 @@ export const runHoneyMoltbookAutopost = async ({
       });
       posted += 1;
     } catch (error: any) {
+      const errorStatus =
+        Number(
+          error?.statusCode ||
+            error?.response?.status ||
+            error?.cause?.statusCode ||
+            0
+        ) || null;
+      const errorMessage =
+        String(
+          error?.statusMessage ||
+            error?.message ||
+            error?.data?.error ||
+            error?.response?._data?.error ||
+            error?.response?._data?.message ||
+            "unknown_error"
+        ).trim() || "unknown_error";
+
       results.push({
         persona_id: persona.id,
         persona_key: persona.persona_key,
         display_name: displayName,
         status: "skipped",
-        reason: error?.statusMessage || error?.message || "unknown_error",
+        reason: errorMessage,
+        error_status: errorStatus,
+        error_name: String(error?.name || "").trim() || null,
+        ...(error?.data ? { error_data: error.data } : {}),
+        ...(error?.response?._data ? { error_response: error.response._data } : {}),
       });
     }
   }
