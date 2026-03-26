@@ -104,6 +104,10 @@ export default defineEventHandler(async (event) => {
       personaKey: persona.persona_key,
       config: runtimeConfig,
       postId,
+      snapshot: {
+        title,
+        content,
+      },
     });
 
     const { error: updateError } = await supabase

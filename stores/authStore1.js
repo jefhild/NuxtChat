@@ -150,8 +150,21 @@ export const useAuthStore = defineStore("authStore1", {
       }
 
       const session = sessionData?.session || null;
-      const user = session?.user || null;
+      let user = session?.user || null;
       let profile = null;
+
+      if (session?.user?.id) {
+        try {
+          const { data: userData, error: userErr } = await supabase.auth.getUser();
+          if (userErr) {
+            console.warn("[authStore1] getUser error:", userErr);
+          } else if (userData?.user) {
+            user = userData.user;
+          }
+        } catch (e) {
+          console.warn("[authStore1] fresh getUser failed:", e);
+        }
+      }
 
       if (user) {
         try {

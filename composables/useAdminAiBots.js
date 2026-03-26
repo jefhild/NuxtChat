@@ -33,11 +33,28 @@ export const useAdminAiBots = () => {
     });
   };
 
+  const generateMoltbookDraft = async (id, payload = {}) => {
+    if (!id) throw new Error("Missing bot id");
+    return await $fetch(`${basePath}/${id}/moltbook/generate`, {
+      method: "POST",
+      body: payload,
+    });
+  };
+
+  const runHoneyMoltbook = async (payload = {}) => {
+    return await $fetch(`${basePath}/moltbook/run`, {
+      method: "POST",
+      body: payload,
+    });
+  };
+
   return {
     listBots,
     createBot,
     updateBot,
     deleteBot,
     postToMoltbook,
+    generateMoltbookDraft,
+    runHoneyMoltbook,
   };
 };

@@ -4,6 +4,7 @@
 
 <script setup>
 import { useOnboardingDraftStore } from '@/stores/onboardingDraftStore'
+import { useAuthStore } from "@/stores/authStore1";
 
 definePageMeta({ ssr: false })
 
@@ -12,6 +13,7 @@ const route = useRoute()
 const localPath = useLocalePath()
 const supabase = useSupabaseClient()
 const draft = useOnboardingDraftStore()
+const authStore = useAuthStore();
 
 useHead({
   meta: [{ name: "robots", content: "noindex, nofollow" }],
@@ -50,6 +52,12 @@ onMounted(async () => {
   // Ensure a profile exists (idempotent)
   try { await $fetch('/api/profile/ensure', { method: 'POST' }) } catch (e) {
     console.warn('[callback] /api/profile/ensure failed (non-fatal)', e)
+  }
+
+  try {
+    await authStore.checkAuth()
+  } catch (e) {
+    console.warn("[callback] authStore.checkAuth failed (non-fatal)", e)
   }
 
   // If profile is incomplete, route to onboarding (skip consent).

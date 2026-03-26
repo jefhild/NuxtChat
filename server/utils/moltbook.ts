@@ -43,6 +43,19 @@ export type MoltbookPersonaUsage = {
   posts_today: number;
   last_post_at: string | null;
   last_post_id: string | null;
+  recent_posts: Array<{
+    title: string;
+    content: string;
+    emotional_theme: string | null;
+    posted_at: string | null;
+  }>;
+};
+
+export type MoltbookHoneyPostingConfig = {
+  enabled: boolean;
+  prompt_template: string | null;
+  emotional_themes: string[];
+  cta_variants: string[];
 };
 
 export type MoltbookPersonaConfig = {
@@ -54,6 +67,7 @@ export type MoltbookPersonaConfig = {
     cooldown_minutes: number;
   };
   usage: MoltbookPersonaUsage;
+  honey_posting: MoltbookHoneyPostingConfig;
   credential_configured: boolean;
   credential_key_label: string | null;
 };
@@ -91,6 +105,29 @@ const clampInt = (value: unknown, fallback: number, min: number, max: number) =>
   const parsed = Number.parseInt(String(value ?? ""), 10);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(Math.max(parsed, min), max);
+};
+
+const normalizeStringList = (
+  value: unknown,
+  fallback: string[],
+  maxItems = 12,
+  maxLength = 120
+) => {
+  const rawItems = Array.isArray(value)
+    ? value
+    : String(value || "")
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean);
+
+  const normalized = rawItems
+    .map((entry) => String(entry || "").replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .map((entry) => entry.slice(0, maxLength))
+    .filter((entry, index, arr) => arr.indexOf(entry) === index)
+    .slice(0, maxItems);
+
+  return normalized.length ? normalized : fallback;
 };
 
 const toIsoDay = (date = new Date()) => date.toISOString().slice(0, 10);
@@ -137,6 +174,7 @@ export const getMoltbookPersonaConfig = ({
   const moltbook = asObject(meta.moltbook);
   const limits = asObject(moltbook.limits);
   const usage = asObject(moltbook.usage);
+  const honeyPosting = asObject(moltbook.honey_posting);
   const keyMap = getMoltbookAgentKeyMap(config);
   const agentName = String(moltbook.agent_name || "").trim() || null;
   const keyLabel = agentName || String(personaKey || "").trim() || null;
@@ -155,6 +193,36 @@ export const getMoltbookPersonaConfig = ({
       posts_today: clampInt(usage.posts_today, 0, 0, 10000),
       last_post_at: String(usage.last_post_at || "").trim() || null,
       last_post_id: String(usage.last_post_id || "").trim() || null,
+      recent_posts: Array.isArray(usage.recent_posts)
+        ? usage.recent_posts
+            .map((item) => asObject(item))
+            .map((item) => ({
+              title: String(item.title || "").trim().slice(0, 200),
+              content: String(item.content || "").trim().slice(0, 2000),
+              emotional_theme:
+                String(item.emotional_theme || "").trim().slice(0, 120) || null,
+              posted_at: String(item.posted_at || "").trim() || null,
+            }))
+            .filter((item) => item.title || item.content)
+            .slice(0, 5)
+        : [],
+    },
+    honey_posting: {
+      enabled: Boolean(honeyPosting.enabled),
+      prompt_template:
+        String(honeyPosting.prompt_template || "").trim().slice(0, 4000) || null,
+      emotional_themes: normalizeStringList(honeyPosting.emotional_themes, [
+        "late-night loneliness",
+        "mixed signals",
+        "overthinking",
+        "missing someone",
+        "wanting reassurance",
+      ]),
+      cta_variants: normalizeStringList(honeyPosting.cta_variants, [
+        "Want to talk about it?",
+        "Do you want to talk about it?",
+        "Would you open up about it?",
+      ], 8, 140),
     },
     credential_configured: credentialConfigured,
     credential_key_label: keyLabel,
@@ -176,6 +244,7 @@ export const mergeMoltbookPersonaConfig = ({
   const current = getMoltbookPersonaConfig({ metadata, personaKey, config });
   const input = asObject(moltbookInput);
   const inputLimits = asObject(input.limits);
+  const inputHoneyPosting = asObject(input.honey_posting);
 
   const mergedCore = {
     enabled:
@@ -198,6 +267,25 @@ export const mergeMoltbookPersonaConfig = ({
       ),
     },
     usage: current.usage,
+    honey_posting: {
+      enabled:
+        typeof inputHoneyPosting.enabled === "boolean"
+          ? inputHoneyPosting.enabled
+          : current.honey_posting.enabled,
+      prompt_template:
+        String(inputHoneyPosting.prompt_template || "").trim().slice(0, 4000) ||
+        current.honey_posting.prompt_template,
+      emotional_themes: normalizeStringList(
+        inputHoneyPosting.emotional_themes,
+        current.honey_posting.emotional_themes
+      ),
+      cta_variants: normalizeStringList(
+        inputHoneyPosting.cta_variants,
+        current.honey_posting.cta_variants,
+        8,
+        140
+      ),
+    },
   };
 
   return {
@@ -277,11 +365,17 @@ export const applyMoltbookPostUsage = ({
   personaKey,
   config,
   postId,
+  snapshot,
 }: {
   metadata: unknown;
   personaKey?: string | null;
   config: ReturnType<typeof useRuntimeConfig>;
   postId?: string | null;
+  snapshot?: {
+    title?: string | null;
+    content?: string | null;
+    emotional_theme?: string | null;
+  } | null;
 }) => {
   const merged = mergeMoltbookPersonaConfig({
     metadata,
@@ -292,10 +386,42 @@ export const applyMoltbookPostUsage = ({
   const day = toIsoDay(now);
   const moltbook = asObject(merged.moltbook);
   const usage = asObject(moltbook.usage);
+  const priorRecentPosts = Array.isArray(usage.recent_posts)
+    ? usage.recent_posts.map((item) => asObject(item))
+    : [];
   const nextCount =
     String(usage.day || "") === day
       ? clampInt(usage.posts_today, 0, 0, 10000) + 1
       : 1;
+  const nextRecentPosts = snapshot?.title || snapshot?.content
+    ? [
+        {
+          title: String(snapshot?.title || "").trim().slice(0, 200),
+          content: String(snapshot?.content || "").trim().slice(0, 2000),
+          emotional_theme:
+            String(snapshot?.emotional_theme || "").trim().slice(0, 120) || null,
+          posted_at: now.toISOString(),
+        },
+        ...priorRecentPosts
+          .map((item) => ({
+            title: String(item.title || "").trim().slice(0, 200),
+            content: String(item.content || "").trim().slice(0, 2000),
+            emotional_theme:
+              String(item.emotional_theme || "").trim().slice(0, 120) || null,
+            posted_at: String(item.posted_at || "").trim() || null,
+          }))
+          .filter((item) => item.title || item.content),
+      ].slice(0, 5)
+    : priorRecentPosts
+        .map((item) => ({
+          title: String(item.title || "").trim().slice(0, 200),
+          content: String(item.content || "").trim().slice(0, 2000),
+          emotional_theme:
+            String(item.emotional_theme || "").trim().slice(0, 120) || null,
+          posted_at: String(item.posted_at || "").trim() || null,
+        }))
+        .filter((item) => item.title || item.content)
+        .slice(0, 5);
 
   return {
     ...merged,
@@ -306,6 +432,7 @@ export const applyMoltbookPostUsage = ({
         posts_today: nextCount,
         last_post_at: now.toISOString(),
         last_post_id: String(postId || "").trim() || null,
+        recent_posts: nextRecentPosts,
       },
     },
   };

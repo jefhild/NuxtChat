@@ -31,6 +31,15 @@
             :disabled="loadingList"
             @click="loadBots"
           ></v-btn>
+          <v-btn
+            color="indigo"
+            variant="tonal"
+            :loading="runningHoneyMoltbook"
+            @click="runHoneyMoltbookNow"
+          >
+            <v-icon start icon="mdi-post"></v-icon>
+            Run Honey Moltbook
+          </v-btn>
           <v-btn color="primary" @click="openCreateDialog">
             <v-icon start icon="mdi-robot-happy-outline"></v-icon>
             Add Bot
@@ -576,6 +585,56 @@
                         :rules="[minRule(0)]"
                       />
                     </v-col>
+                    <v-col cols="12">
+                      <v-divider class="my-2" />
+                      <div class="text-subtitle-2 mb-2">Honey Autopost Voice</div>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-switch
+                        v-model="moltbookForm.honey_posting_enabled"
+                        label="Enable autonomous honey Moltbook posts"
+                        color="pink"
+                        density="compact"
+                        hide-details
+                      />
+                      <div class="text-caption text-medium-emphasis mt-1">
+                        When enabled, this honey bot can generate short emotional question posts ending with a soft invitation to talk.
+                      </div>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-textarea
+                        v-model="moltbookForm.honey_prompt_template"
+                        label="Bot-specific posting prompt"
+                        rows="4"
+                        auto-grow
+                        hint="Describe this bot's unique Moltbook voice, angle, and what emotional territory it should explore."
+                        persistent-hint
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-combobox
+                        v-model="moltbookForm.honey_emotional_themes"
+                        label="Emotional themes"
+                        multiple
+                        chips
+                        closable-chips
+                        clearable
+                        hint="Examples: mixed signals, lonely nights, wanting reassurance."
+                        persistent-hint
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-combobox
+                        v-model="moltbookForm.honey_cta_variants"
+                        label="CTA variants"
+                        multiple
+                        chips
+                        closable-chips
+                        clearable
+                        hint="Short ending questions the post can close with."
+                        persistent-hint
+                      />
+                    </v-col>
                     <v-col cols="12" v-if="editingId">
                       <v-alert type="info" variant="tonal" density="comfortable">
                         {{ moltbookEditSummary }}
@@ -654,6 +713,15 @@
             Posting as <strong>{{ postTarget.profile?.displayname || postTarget.persona_key }}</strong>
             using key <code>{{ postTarget.moltbook?.credential_key_label || postTarget.persona_key }}</code>.
           </v-alert>
+          <v-alert
+            v-if="postTarget?.moltbook?.honey_posting?.enabled"
+            type="info"
+            variant="tonal"
+            density="comfortable"
+            class="mb-4"
+          >
+            This bot has honey autoposting enabled. Use Generate Honey Preview to draft a unique emotional post in its voice.
+          </v-alert>
           <v-row dense>
             <v-col cols="12" md="6">
               <v-text-field
@@ -700,6 +768,15 @@
         </v-card-text>
         <v-divider />
         <v-card-actions>
+          <v-btn
+            v-if="postTarget?.moltbook?.honey_posting?.enabled"
+            variant="tonal"
+            color="pink"
+            :loading="previewingPost"
+            @click="generateHoneyPreview"
+          >
+            Generate Honey Preview
+          </v-btn>
           <v-spacer />
           <v-btn variant="text" @click="postDialog = false" :disabled="posting">
             Cancel
@@ -725,8 +802,15 @@
 <script setup>
 import { useAdminAiBots } from "@/composables/useAdminAiBots";
 
-const { listBots, createBot, updateBot, deleteBot, postToMoltbook } =
-  useAdminAiBots();
+const {
+  listBots,
+  createBot,
+  updateBot,
+  deleteBot,
+  postToMoltbook,
+  generateMoltbookDraft,
+  runHoneyMoltbook,
+} = useAdminAiBots();
 const { getAllCategories, getAdminProfiles } = useDb();
 const localPath = useLocalePath();
 
@@ -748,6 +832,8 @@ const formRef = ref(null);
 const saving = ref(false);
 const deleting = ref(false);
 const posting = ref(false);
+const previewingPost = ref(false);
+const runningHoneyMoltbook = ref(false);
 const personaKeyTouched = ref(false);
 
 const DEFAULT_MODERATION_CONFIG = {
@@ -813,6 +899,10 @@ const moltbookForm = reactive({
   default_submolt: "",
   daily_posts: 3,
   cooldown_minutes: 30,
+  honey_posting_enabled: false,
+  honey_prompt_template: "",
+  honey_emotional_themes: [],
+  honey_cta_variants: [],
 });
 
 const jsonInputs = reactive({
@@ -886,7 +976,7 @@ const moltbookEditSummary = computed(() => {
     config.credential_configured ? "yes" : "no"
   } · Posts today: ${usage.posts_today || 0} · Last post: ${
     usage.last_post_at ? formatTimestamp(usage.last_post_at) : "never"
-  }`;
+  } · Honey autopost: ${config.honey_posting?.enabled ? "on" : "off"}`;
 });
 
 const filteredBots = computed(() => {
@@ -1054,6 +1144,10 @@ const resetForm = () => {
     default_submolt: "",
     daily_posts: 3,
     cooldown_minutes: 30,
+    honey_posting_enabled: false,
+    honey_prompt_template: "",
+    honey_emotional_themes: [],
+    honey_cta_variants: [],
   });
   Object.keys(jsonErrors).forEach((key) => {
     jsonErrors[key] = "";
@@ -1131,6 +1225,14 @@ const populateForm = (bot) => {
     default_submolt: bot.moltbook?.default_submolt || "",
     daily_posts: bot.moltbook?.limits?.daily_posts ?? 3,
     cooldown_minutes: bot.moltbook?.limits?.cooldown_minutes ?? 30,
+    honey_posting_enabled: bot.moltbook?.honey_posting?.enabled ?? false,
+    honey_prompt_template: bot.moltbook?.honey_posting?.prompt_template || "",
+    honey_emotional_themes: Array.isArray(bot.moltbook?.honey_posting?.emotional_themes)
+      ? [...bot.moltbook.honey_posting.emotional_themes]
+      : [],
+    honey_cta_variants: Array.isArray(bot.moltbook?.honey_posting?.cta_variants)
+      ? [...bot.moltbook.honey_posting.cta_variants]
+      : [],
   });
   Object.keys(jsonErrors).forEach((key) => {
     jsonErrors[key] = "";
@@ -1291,6 +1393,21 @@ const handleSubmit = async () => {
           daily_posts: Number(moltbookForm.daily_posts),
           cooldown_minutes: Number(moltbookForm.cooldown_minutes),
         },
+        honey_posting: {
+          enabled: Boolean(moltbookForm.honey_posting_enabled),
+          prompt_template:
+            String(moltbookForm.honey_prompt_template || "").trim() || null,
+          emotional_themes: Array.isArray(moltbookForm.honey_emotional_themes)
+            ? moltbookForm.honey_emotional_themes
+                .map((item) => String(item || "").trim())
+                .filter(Boolean)
+            : [],
+          cta_variants: Array.isArray(moltbookForm.honey_cta_variants)
+            ? moltbookForm.honey_cta_variants
+                .map((item) => String(item || "").trim())
+                .filter(Boolean)
+            : [],
+        },
       },
       ...jsonPayload,
     },
@@ -1411,6 +1528,73 @@ const submitMoltbookPost = async () => {
   }
 };
 
+const generateHoneyPreview = async () => {
+  if (!postTarget.value?.id) return;
+  previewingPost.value = true;
+  try {
+    const res = await generateMoltbookDraft(postTarget.value.id);
+    if (res?.success === false) throw new Error(res.error);
+    const draft = res?.data?.draft || {};
+    postForm.type = "text";
+    postForm.url = "";
+    postForm.title = String(draft.title || "").trim();
+    postForm.content = String(draft.content || "").trim();
+    postForm.submolt_name =
+      String(postForm.submolt_name || "").trim() ||
+      postTarget.value?.moltbook?.default_submolt ||
+      "";
+
+    snackbar.show = true;
+    snackbar.color = "pink";
+    snackbar.message = "Honey Moltbook preview generated.";
+  } catch (error) {
+    console.error("[admin][ai-bots] moltbook draft error", error);
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message =
+      error?.data?.error || error?.message || "Failed to generate honey preview.";
+  } finally {
+    previewingPost.value = false;
+  }
+};
+
+const runHoneyMoltbookNow = async () => {
+  runningHoneyMoltbook.value = true;
+  try {
+    const res = await runHoneyMoltbook({ limit: 5 });
+    if (res?.success === false) throw new Error(res.error);
+
+    const updatedPersonas = Array.isArray(res?.data?.results)
+      ? res.data.results
+          .map((item) => item?.persona)
+          .filter((item) => item?.id)
+      : [];
+
+    updatedPersonas.forEach((persona) => {
+      const idx = bots.value.findIndex((bot) => bot.id === persona.id);
+      if (idx >= 0) bots.value[idx] = persona;
+    });
+
+    const postedCount = Number(res?.data?.posted_count || 0);
+    const skippedCount = Number(res?.data?.skipped_count || 0);
+
+    snackbar.show = true;
+    snackbar.color = postedCount > 0 ? "indigo" : "amber-darken-2";
+    snackbar.message =
+      postedCount > 0
+        ? `Published ${postedCount} honey Moltbook post${postedCount === 1 ? "" : "s"}${skippedCount ? ` · ${skippedCount} skipped` : ""}.`
+        : `No honey Moltbook posts published${skippedCount ? ` · ${skippedCount} skipped` : ""}.`;
+  } catch (error) {
+    console.error("[admin][ai-bots] moltbook run error", error);
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message =
+      error?.data?.error || error?.message || "Failed to run honey Moltbook posting.";
+  } finally {
+    runningHoneyMoltbook.value = false;
+  }
+};
+
 const confirmDelete = async () => {
   if (!deleteTarget.value) return;
   deleting.value = true;
@@ -1442,6 +1626,7 @@ watch(dialog, (isOpen) => {
 watch(postDialog, (isOpen) => {
   if (!isOpen) {
     postTarget.value = null;
+    previewingPost.value = false;
   }
 });
 
