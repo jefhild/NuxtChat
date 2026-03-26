@@ -36,6 +36,8 @@ jobs:
       - name: Trigger honey Moltbook automation
         shell: bash
         run: |
+          set -euo pipefail
+
           LIMIT="${DEFAULT_LIMIT}"
           DRY_RUN="${DEFAULT_DRY_RUN}"
 
@@ -46,8 +48,19 @@ jobs:
 
           echo "Triggering honey Moltbook automation with limit=${LIMIT} dry_run=${DRY_RUN}"
 
-          curl --fail --show-error --silent \
+          STATUS=$(curl --show-error --silent \
+            --output response.json \
+            --write-out "%{http_code}" \
             --request POST \
             --header "x-automation-secret: ${AUTOMATION_SECRET}" \
             --header "content-type: application/json" \
-            "${SITE_URL}/api/internal/moltbook/honey-run?limit=${LIMIT}&dry_run=${DRY_RUN}"
+            "${SITE_URL}/api/internal/moltbook/honey-run?limit=${LIMIT}&dry_run=${DRY_RUN}")
+
+          echo "HTTP status: ${STATUS}"
+          cat response.json
+          echo
+
+          if [ "${STATUS}" -lt 200 ] || [ "${STATUS}" -ge 300 ]; then
+            echo "Honey Moltbook automation request failed."
+            exit 1
+          fi
