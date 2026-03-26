@@ -255,6 +255,11 @@ export default defineNuxtConfig({
       process.env.MOLTBOOK_AGENT_DESCRIPTION ||
       "AI chat companion for anonymous conversation, onboarding, and social discovery.",
     MOLTBOOK_AUDIENCE: process.env.MOLTBOOK_AUDIENCE || "",
+    MOLTBOOK_AUTOMATION_SECRET:
+      process.env.MOLTBOOK_AUTOMATION_SECRET ||
+      process.env.AUTOMATION_SECRET ||
+      "",
+    AUTOMATION_SECRET: process.env.AUTOMATION_SECRET || "",
     OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4.1-mini",
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     META_PAGE_ID: process.env.META_PAGE_ID,
