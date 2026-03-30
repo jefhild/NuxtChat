@@ -1,19 +1,19 @@
 <template>
-  <div class="d-flex align-center">
-    <div v-for="icon in lookingForIcons" :key="icon.id" class="pa-1">
-      <v-tooltip
-        :text="icon.tooltip"
-        location="top"
-        :scrim="false"
-        :open-on-click="false"
-      >
-        <template #activator="{ props: tooltipProps }">
-          <v-icon :size="iconSize" :color="icon.color" v-bind="tooltipProps">
-            {{ icon.icon }}
-          </v-icon>
-        </template>
-      </v-tooltip>
-    </div>
+  <div class="d-flex align-center" style="gap: 6px;">
+    <v-tooltip
+      v-for="icon in lookingForIcons"
+      :key="icon.id"
+      :text="icon.tooltip"
+      location="top"
+      :scrim="false"
+      :open-on-click="false"
+    >
+      <template #activator="{ props: tooltipProps }">
+        <v-icon :size="iconSize" :color="icon.color" v-bind="tooltipProps">
+          {{ icon.icon }}
+        </v-icon>
+      </template>
+    </v-tooltip>
   </div>
 </template>
 

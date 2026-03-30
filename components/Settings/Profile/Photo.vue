@@ -612,14 +612,22 @@ const onFileChange = async (e: Event) => {
 .lookingfor-disabled :deep(.v-btn.v-btn--disabled) {
   opacity: 1 !important;
   color: rgba(var(--v-theme-primary), 0.86) !important;
+  background: transparent !important;
 }
 
 .lookingfor-disabled :deep(.v-btn.v-btn--disabled .v-btn__append) {
   opacity: 1 !important;
 }
 
+.lookingfor-disabled :deep(.v-btn.v-btn--disabled .v-btn__overlay),
+.lookingfor-disabled :deep(.v-btn.v-btn--disabled .v-btn__underlay) {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
 .lookingfor-disabled :deep(.v-icon) {
   opacity: 1 !important;
+  background: transparent !important;
 }
 
 .lookingfor-icons {
