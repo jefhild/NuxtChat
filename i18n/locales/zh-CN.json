@@ -156,7 +156,7 @@
         "ogTitle": "与真人匿名聊天",
         "ogType": "website",
         "ogUrl": "https://imchatty.com",
-        "ogDescription": "在 ImChatty 与真人开启匿名文字聊天，用更私密、低压力的方式开始一段对话。",
+        "ogDescription": "在 ImChatty 与真人开启匿名文字聊天。无需视频，降低注册门槛，并可按你的语言浏览主题、情绪入口和引导式开始方式。",
         "ogImage": "https://imchatty.com/images/robot.png",
         "ogImageAlt": "ImChatty 匿名聊天预览",
         "ogImageWidth": "1200",
@@ -935,7 +935,7 @@
         "subtitle": "来自真实成员的最新和热门资料",
         "filters": "浏览档案",
         "meta": {
-          "title": "浏览会员档案，结识聊天对象",
+          "title": "浏览会员档案，结识聊天对象 | ImChatty",
           "description": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
           "ogTitle": "浏览会员档案，结识聊天对象",
           "ogType": "Website",

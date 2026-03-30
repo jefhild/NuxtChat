@@ -52,6 +52,7 @@ useSeoI18nMeta("profiles.female", {
     twitterTitle: localized.value?.displayname,
     twitterDescription: getLimitedDescription(localized.value?.bio),
     twitterImage: profile.value?.avatar_url,
+    ogType: "profile",
   },
 });
 

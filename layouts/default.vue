@@ -305,6 +305,19 @@ useHead(() => {
               name: siteConfig?.name || "ImChatty",
             },
             {
+              "@type": "Organization",
+              "@id": base ? `${base}/#organization` : undefined,
+              name: "ImChatty",
+              url: base || "https://imchatty.com",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://imchatty.com/images/robot.png",
+              },
+              sameAs: [
+                "https://twitter.com/imchatty_news",
+              ],
+            },
+            {
               "@type": "SiteNavigationElement",
               name: "Primary Navigation",
               hasPart: navEntries.map((entry) => ({

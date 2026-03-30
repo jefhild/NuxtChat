@@ -104,6 +104,7 @@ export default defineNuxtConfig({
   },
 
   googleFonts: {
+    display: "swap",
     families: {
       "Amatic+SC": [400, 700],
       Poppins: {

@@ -156,7 +156,7 @@
         "ogTitle": "Chat anonyme avec de vraies personnes",
         "ogType": "website",
         "ogUrl": "https://imchatty.com",
-        "ogDescription": "Commencez un chat textuel anonyme avec de vraies personnes sur ImChatty. Explorez des façons privées et sans pression d'entrer dans une conversation.",
+        "ogDescription": "Commencez un chat textuel anonyme avec de vraies personnes sur ImChatty. Évitez la vidéo, réduisez la friction de l'inscription, et explorez des sujets, des humeurs et des entrées guidées dans votre langue.",
         "ogImage": "https://imchatty.com/images/robot.png",
         "ogImageAlt": "Aperçu du chat anonyme ImChatty",
         "ogImageWidth": "1200",
@@ -935,7 +935,7 @@
         "subtitle": "Profils récents et populaires de vrais membres",
         "filters": "Parcourir les profils",
         "meta": {
-          "title": "Parcourez les profils des membres et rencontrez des personnes pour discuter",
+          "title": "Parcourez les profils des membres et rencontrez des personnes pour discuter | ImChatty",
           "description": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
           "ogTitle": "Parcourez les profils des membres et rencontrez des personnes pour discuter",
           "ogType": "Website",

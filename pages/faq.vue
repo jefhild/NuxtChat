@@ -30,4 +30,37 @@
 import AboutFaq from "~/components/AboutFaq.vue";
 
 useSeoI18nMeta("faq");
+
+const { locale } = useI18n();
+
+const { data: faqResponse } = await useFetch("/api/faqs", {
+  query: computed(() => ({ locale: locale.value })),
+  default: () => ({ success: true, data: { groups: [], entries: [] } }),
+});
+
+const faqEntries = computed(() => faqResponse.value?.data?.entries || []);
+
+useHead(() => {
+  if (!faqEntries.value.length) return {};
+  return {
+    script: [
+      {
+        type: "application/ld+json",
+        key: "faq-schema",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqEntries.value.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer,
+            },
+          })),
+        }),
+      },
+    ],
+  };
+});
 </script>

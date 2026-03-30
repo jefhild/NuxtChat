@@ -58,6 +58,7 @@ useSeoI18nMeta("home", {
     ogDescription: computed(() => page.value?.metaDescription || page.value?.subtitle || ""),
     ogImage: computed(() => page.value?.heroImageUrl || ""),
     twitterImage: computed(() => page.value?.heroImageUrl || ""),
+    ogType: computed(() => "article"),
   },
 });
 </script>

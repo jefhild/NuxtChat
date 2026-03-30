@@ -181,6 +181,8 @@ type SeoFaq = {
 type SeoPage = {
   title: string;
   subtitle?: string;
+  metaTitle?: string;
+  metaDescription?: string;
   heroTitle?: string;
   heroBody?: string;
   heroImageUrl?: string;
@@ -192,6 +194,9 @@ type SeoPage = {
   highlights?: string[];
   faqs?: SeoFaq[];
   relatedLinks?: SeoLink[];
+  createdAt?: string;
+  updatedAt?: string;
+  path?: string;
 };
 
 const props = defineProps<{
@@ -259,6 +264,42 @@ const renderedPhotoCredits = computed(() =>
     ALLOWED_TAGS: ["a", "span", "em", "strong", "br"],
     ALLOWED_ATTR: ["href", "target", "rel"],
   })
+);
+
+const route = useRoute();
+const articleSchema = computed(() => {
+  const canonicalUrl = `https://imchatty.com${props.page.path || route.path}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: props.page.metaTitle || props.page.title,
+    description: props.page.metaDescription || props.page.subtitle || "",
+    url: canonicalUrl,
+    ...(props.page.heroImageUrl ? { image: props.page.heroImageUrl } : {}),
+    ...(props.page.createdAt ? { datePublished: props.page.createdAt } : {}),
+    ...(props.page.updatedAt ? { dateModified: props.page.updatedAt } : {}),
+    author: {
+      "@type": "Organization",
+      name: "ImChatty",
+      url: "https://imchatty.com",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "ImChatty",
+      url: "https://imchatty.com",
+    },
+  };
+});
+useHead(
+  computed(() => ({
+    script: [
+      {
+        type: "application/ld+json",
+        innerHTML: JSON.stringify(articleSchema.value),
+        key: "article-schema",
+      },
+    ],
+  }))
 );
 const normalizedCurrentLocale = computed(() =>
   String(props.currentLocale || "en")

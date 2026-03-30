@@ -57,6 +57,7 @@ useSeoI18nMeta("profiles.index", {
     twitterTitle: localized.value?.displayname,
     twitterDescription: getLimitedDescription(localized.value?.bio),
     twitterImage: profile.value?.avatar_url,
+    ogType: "profile",
   },
 });
 
