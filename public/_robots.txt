@@ -2,6 +2,4 @@ User-agent: *
 Disallow: /admin
 Disallow: /loginemail
 Disallow: /login
-Disallow: /privacy
-Disallow: /terms
 Disallow: /cdn-cgi
