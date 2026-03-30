@@ -44,8 +44,10 @@ const ADJACENT_ENERGY: Record<string, string[]> = {
 };
 
 function scoreIntake(mine: any, theirs: any): number {
-  // No intake data for either party — return a base score so they still appear
-  if (!mine || !theirs) return 0.30;
+  // User hasn't set a mood yet — base score so all bots still appear for discovery
+  if (!mine) return 0.30;
+  // User has a mood but this bot has no intake configured — not a match
+  if (!theirs) return 0;
 
   let score = 0;
 
@@ -244,6 +246,7 @@ export default defineEventHandler(async (event) => {
         score:       scoreIntake(myIntakeRow, intake),
       };
     })
+    .filter((a: any) => a.score > 0)
     .sort((a: any, b: any) => b.score - a.score);
 
   const aiSliced = ai.slice(0, 50);

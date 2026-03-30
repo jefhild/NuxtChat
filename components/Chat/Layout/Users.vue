@@ -439,11 +439,27 @@ const featuredUser = computed(
 );
 const isHoneySimulatedUser = (u) =>
   !!u?.is_ai && !!u?.honey_enabled && !!u?.is_simulated;
-const aiUsers = computed(() =>
-  displayUsers.value.filter(
+const aiUsers = computed(() => {
+  // Only show mood-matched AI personas when a filter pill is active
+  if (matchFilter.value && matchData.value?.ai?.length) {
+    // Build a lookup from the full props.users list to preserve gender/country/etc.
+    const fullById = new Map((props.users || []).map((u) => [idStr(u), u]));
+    return matchData.value.ai
+      .map((c) => ({
+        ...(fullById.get(c.user_id) || {}),
+        ...c,
+        id: c.user_id,
+        is_ai: true,
+        online: true,
+        presence: "online",
+      }))
+      .filter((u) => !isHoneySimulatedUser(u) && !u.hidden && !isPinned(u));
+  }
+  // No filter active (or no matches) — show all online AI personas
+  return displayUsers.value.filter(
     (u) => u.is_ai && !isHoneySimulatedUser(u) && !u.hidden && !isPinned(u)
-  )
-);
+  );
+});
 const humanUsers = computed(() =>
   displayUsers.value.filter(
     (u) => (!u.is_ai || isHoneySimulatedUser(u)) && !u.hidden && !isPinned(u)

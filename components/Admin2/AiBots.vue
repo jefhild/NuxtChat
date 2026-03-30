@@ -220,6 +220,118 @@
           </tbody>
         </v-table>
       </v-card>
+
+      <v-card class="pa-4 mt-4" elevation="3">
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon icon="mdi-thermometer" color="deep-orange" />
+          Match Mood Tester
+        </v-card-title>
+        <v-card-subtitle class="text-body-2">
+          Set a bot's <code>live_mood_states</code> and create a <code>match_intakes</code> snapshot to test the matching pipeline.
+        </v-card-subtitle>
+
+        <v-row dense class="mt-4">
+          <v-col cols="12" md="6">
+            <v-select
+              v-model="moodForm.botUserId"
+              :items="botOptions"
+              item-title="label"
+              item-value="user_id"
+              label="Bot"
+              clearable
+              hide-details
+            />
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-select
+              v-model="moodForm.emotion"
+              :items="MOOD_EMOTIONS"
+              label="Emotion"
+              clearable
+              hide-details
+            />
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-select
+              v-model="moodForm.intent"
+              :items="MOOD_INTENT_OPTIONS"
+              item-title="label"
+              item-value="value"
+              label="Intent"
+              clearable
+              hide-details
+            />
+          </v-col>
+          <v-col cols="12" md="2">
+            <v-select
+              v-model="moodForm.energy"
+              :items="MOOD_ENERGY"
+              label="Energy"
+              clearable
+              hide-details
+            />
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="moodForm.privacy"
+              :items="MOOD_PRIVACY_OPTIONS"
+              item-title="label"
+              item-value="value"
+              label="Privacy"
+              hide-details
+            />
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-select
+              v-model="moodForm.timeHorizon"
+              :items="MOOD_TIME_HORIZON_OPTIONS"
+              item-title="label"
+              item-value="value"
+              label="Time horizon"
+              hide-details
+            />
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-text-field
+              v-model="moodForm.freeText"
+              label="Free text (optional)"
+              hide-details
+            />
+          </v-col>
+        </v-row>
+
+        <div class="d-flex ga-2 mt-4">
+          <v-btn
+            color="deep-orange"
+            variant="tonal"
+            :loading="settingMood"
+            :disabled="!moodForm.botUserId"
+            @click="submitBotMood"
+          >
+            <v-icon start icon="mdi-check-circle-outline" />
+            Set Mood
+          </v-btn>
+          <v-btn
+            color="grey"
+            variant="text"
+            :loading="clearingMood"
+            :disabled="!moodForm.botUserId"
+            @click="clearBotMood"
+          >
+            Clear Mood
+          </v-btn>
+          <v-spacer />
+          <v-btn
+            color="red"
+            variant="outlined"
+            :loading="clearingAllIntakes"
+            @click="clearAllBotIntakes"
+          >
+            <v-icon start icon="mdi-delete-sweep-outline" />
+            Clear All Bot Intakes
+          </v-btn>
+        </div>
+      </v-card>
     </template>
 
     <v-dialog v-model="dialog" max-width="960px" scrollable>
@@ -1647,6 +1759,122 @@ watch(postDialog, (isOpen) => {
 onMounted(async () => {
   await Promise.all([loadBots(), loadLookups()]);
 });
+
+// ─── Match Mood Tester ───────────────────────────────────────────────────────
+
+const MOOD_EMOTIONS = ["lonely", "calm", "annoyed", "overwhelmed", "playful", "curious", "hopeful", "sad"];
+const MOOD_ENERGY = ["drained", "normal", "wired"];
+const MOOD_INTENT_OPTIONS = [
+  { label: "Be heard", value: "be_heard" },
+  { label: "Listen", value: "listen" },
+  { label: "Distract me", value: "distract_me" },
+  { label: "Deep talk", value: "deep_talk" },
+  { label: "Casual chat", value: "casual_chat" },
+  { label: "Meet someone similar", value: "meet_someone_similar" },
+];
+const MOOD_PRIVACY_OPTIONS = [
+  { label: "Private (matching only)", value: "private_matching_only" },
+  { label: "Public mood post", value: "public_mood_post" },
+];
+const MOOD_TIME_HORIZON_OPTIONS = [
+  { label: "Right now", value: "right_now" },
+  { label: "Today", value: "today" },
+  { label: "Generally lately", value: "generally_lately" },
+];
+
+const moodForm = reactive({
+  botUserId: null,
+  emotion: null,
+  intent: null,
+  energy: null,
+  privacy: "private_matching_only",
+  timeHorizon: "right_now",
+  freeText: "",
+});
+
+const settingMood = ref(false);
+const clearingMood = ref(false);
+
+const botOptions = computed(() =>
+  bots.value
+    .filter((bot) => bot.profile_user_id)
+    .map((bot) => ({
+      user_id: bot.profile_user_id,
+      label: `${bot.profile?.displayname || "Unnamed"} (${bot.persona_key})`,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+);
+
+const submitBotMood = async () => {
+  if (!moodForm.botUserId) return;
+  settingMood.value = true;
+  try {
+    await $fetch("/api/admin/bot-mood", {
+      method: "POST",
+      body: {
+        botUserId: moodForm.botUserId,
+        emotion: moodForm.emotion || null,
+        intent: moodForm.intent || null,
+        energy: moodForm.energy || null,
+        privacy: moodForm.privacy,
+        timeHorizon: moodForm.timeHorizon,
+        freeText: moodForm.freeText || null,
+      },
+    });
+    snackbar.show = true;
+    snackbar.color = "deep-orange";
+    snackbar.message = "Mood state set and match intake created.";
+  } catch (error) {
+    console.error("[admin][bot-mood] set error", error);
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = error?.data?.statusMessage || error?.message || "Failed to set mood.";
+  } finally {
+    settingMood.value = false;
+  }
+};
+
+const clearBotMood = async () => {
+  if (!moodForm.botUserId) return;
+  clearingMood.value = true;
+  try {
+    await $fetch("/api/admin/bot-mood", {
+      method: "POST",
+      body: { botUserId: moodForm.botUserId, clear: true },
+    });
+    snackbar.show = true;
+    snackbar.color = "primary";
+    snackbar.message = "Bot mood state cleared.";
+  } catch (error) {
+    console.error("[admin][bot-mood] clear error", error);
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = error?.data?.statusMessage || error?.message || "Failed to clear mood.";
+  } finally {
+    clearingMood.value = false;
+  }
+};
+
+const clearingAllIntakes = ref(false);
+const clearAllBotIntakes = async () => {
+  clearingAllIntakes.value = true;
+  try {
+    const result = await $fetch("/api/admin/bot-mood", {
+      method: "POST",
+      body: { clearAll: true },
+    });
+    snackbar.show = true;
+    snackbar.color = "primary";
+    snackbar.message = `Cleared all intakes for ${result?.count ?? 0} bots.`;
+  } catch (error) {
+    console.error("[admin][bot-mood] clearAll error", error);
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = error?.data?.statusMessage || error?.message || "Failed to clear all intakes.";
+  } finally {
+    clearingAllIntakes.value = false;
+  }
+};
 </script>
 
 <style scoped>
