@@ -1,7 +1,47 @@
 <template>
   <!-- Regular3.vue template -->
   <div ref="wrapRef" class="d-flex flex-column h-100 overflow-hidden">
+    <div
+      v-if="showQuickReplyInline"
+      class="flex-grow-1 overflow-auto"
+      :style="{ height: `${listHeight}px` }"
+    >
+      <div v-for="item in items" :key="item.id || item._peerTempKey || item._tempKey || 'typing'">
+        <template v-if="item._typing">
+          <ChatLayoutTypingBubble />
+        </template>
+        <template v-else>
+          <div>
+            <ChatLayoutChatBubble
+              :from-me="item.sender_id === meId"
+              :html="render(item._displayContent)"
+              :time="formatDisplayTime(item.created_at)"
+              :name="item._name"
+              :avatar="item._avatar"
+              :status="item._status"
+              :show-meta="Boolean(item._name || item._avatar || item.created_at)"
+            />
+            <div
+              v-if="isLastBotMessage(item)"
+              class="chat-quick-replies chat-quick-replies--inline"
+            >
+              <v-chip
+                v-for="q in quickReplies"
+                :key="q"
+                color="primary"
+                variant="outlined"
+                size="small"
+                @click="$emit('quick-reply', q)"
+              >
+                {{ q }}
+              </v-chip>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
     <v-virtual-scroll
+      v-else
       ref="vsRef"
       :items="items"
       :item-height="itemHeight"
@@ -22,26 +62,10 @@
               :status="item._status"
               :show-meta="Boolean(item._name || item._avatar || item.created_at)"
             />
-            <div
-              v-if="showQuickReplies && isLastBotMessage(item)"
-              class="chat-quick-replies"
-            >
-              <v-chip
-                v-for="q in quickReplies"
-                :key="q"
-                color="primary"
-                variant="outlined"
-                size="small"
-                @click="$emit('quick-reply', q)"
-              >
-                {{ q }}
-              </v-chip>
-            </div>
           </div>
         </template>
       </template>
     </v-virtual-scroll>
-
   </div>
 </template>
 
@@ -154,6 +178,14 @@ const lastBotMessageId = computed(() => {
   }
   return null;
 });
+
+const showQuickReplyBar = computed(
+  () =>
+    props.showQuickReplies &&
+    Boolean(lastBotMessageId.value) &&
+    props.quickReplies.length > 0
+);
+const showQuickReplyInline = computed(() => showQuickReplyBar.value);
 
 function isLastBotMessage(item) {
   if (!item) return false;

@@ -110,6 +110,11 @@ const resolveCapability = (requested, persona, allowHoney = false) => {
   return null;
 };
 
+const supportsMaxCompletionTokens = (model) => {
+  const normalized = String(model || "").trim().toLowerCase();
+  return normalized.startsWith("gpt-5");
+};
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const isDev = process.env.NODE_ENV !== "production";
@@ -324,9 +329,14 @@ export default defineEventHandler(async (event) => {
       )}"\n`;
     }
 
+    const model = persona.model || "gpt-4o-mini";
+    const maxResponseTokens = persona.max_response_tokens ?? 600;
+    const tokenLimitField = supportsMaxCompletionTokens(model)
+      ? { max_completion_tokens: maxResponseTokens }
+      : { max_tokens: maxResponseTokens };
 
     const response = await openai.chat.completions.create({
-      model: persona.model || "gpt-4o-mini",
+      model,
       messages: [
         { role: "system", content: fullPrompt },
       { role: "user", content: userMessage },
@@ -335,7 +345,7 @@ export default defineEventHandler(async (event) => {
       top_p: persona.top_p ?? 1,
       presence_penalty: persona.presence_penalty ?? 0,
       frequency_penalty: persona.frequency_penalty ?? 0,
-      max_tokens: persona.max_response_tokens ?? 600,
+      ...tokenLimitField,
       ...(persona.parameters && typeof persona.parameters === "object"
         ? persona.parameters
         : {}),

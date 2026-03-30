@@ -5,7 +5,7 @@ import { useDb } from "@/composables/useDB";
 import { usePresenceStore2 } from "@/stores/presenceStore2";
 import { useGeoLocationDefaults } from "@/composables/useGeoLocationDefaults";
 import { getAiDailyLimitByStatus } from "~/constants/aiLimits";
-// import { useSupabaseClient } from "#imports"; // adjust if your import path differs
+import { setMatchFilter, bustMatchCache } from "@/composables/useMatchCandidates";
 
 function resolveAuthStatus({ session, user, profile }) {
   if (!session || !user) return "unauthenticated";
@@ -494,7 +494,13 @@ export const useAuthStore = defineStore("authStore1", {
             this.onboardingLocal = false;
           } catch {}
 
-          // 5) Reset auth store
+          // 5) Reset match filter so AI personas aren't hidden on re-entry
+          try {
+            setMatchFilter(null);
+            bustMatchCache();
+          } catch {}
+
+          // 6) Reset auth store
           this.clear();
 
           console.log("[authStore1] logout complete");

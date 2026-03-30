@@ -21,6 +21,16 @@
       </span>
     </div>
 
+    <ChatMatchSummaryStrip
+      v-if="showMatchStrip"
+      :data="matchData"
+      :loading="matchLoading"
+      :active-filter="matchFilter"
+      @refresh="handleRefresh"
+      @filter-change="setMatchFilter($event)"
+      @random-pick="handleRandomPick"
+    />
+
     <div class="users-section flex-grow-1 overflow-hidden min-h-0">
       <template v-if="isLoading">
         <v-skeleton-loader type="list-item@6" class="pa-2" />
@@ -166,6 +176,7 @@
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useMessagesStore } from "@/stores/messagesStore";
+import { useMatchCandidates, setMatchFilter } from "@/composables/useMatchCandidates";
 import ChatLayoutFilterMenu from "./FilterMenu.vue";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
@@ -193,6 +204,7 @@ const props = defineProps({
   disableFilterToggle: { type: Boolean, default: false },
   showFilters: { type: Boolean, default: true },
   showAi: { type: Boolean, default: true },
+  suppressMatchStrip: { type: Boolean, default: false },
 });
 const emit = defineEmits([
   "user-selected",
@@ -204,6 +216,57 @@ const emit = defineEmits([
 
 const msgs = useMessagesStore();
 const { t, locale } = useI18n();
+
+// ── Match candidates ──────────────────────────────────────────────────────────
+const { data: matchData, loading: matchLoading, refreshPending: matchRefreshPending, matchFilter, fetchCandidates } = useMatchCandidates();
+
+const shouldFetchMatches = computed(() =>
+  props.listType === "online" &&
+  ["anon_authenticated", "authenticated"].includes(props.authStatus)
+);
+// Show the strip if intake data is available, OR while a bust+refresh is in
+// flight (keeps it visible while the new candidate fetch resolves)
+const showMatchStrip = computed(
+  () => shouldFetchMatches.value &&
+    !props.suppressMatchStrip &&
+    (!!matchData.value?.intake || matchRefreshPending.value)
+);
+
+watch(shouldFetchMatches, (val) => { if (val) fetchCandidates(); }, { immediate: true });
+
+// When index.vue sets matchFilter to "random" via setMatchFilter(), trigger a random pick
+// When set to "ai", auto-expand the AI PERSONAS group
+watch(matchFilter, (val) => {
+  if (val === "random") handleRandomPick();
+  if (val === "ai" && !openedGroups.value.includes("ai-group")) {
+    openedGroups.value = [...openedGroups.value, "ai-group"];
+  }
+});
+
+// Clear the match filter when the strip gets suppressed (Ezra flow starts)
+// so a hidden filter can't silently warp the user list
+watch(() => props.suppressMatchStrip, (suppressed) => {
+  if (suppressed && matchFilter.value) setMatchFilter(null);
+});
+
+function handleRefresh() {
+  setMatchFilter(null);
+  fetchCandidates(true);
+}
+
+function handleRandomPick() {
+  const pool = [
+    ...(matchData.value?.online || []),
+    ...(matchData.value?.ai || []),
+  ];
+  if (!pool.length) return;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  const user =
+    (props.users || []).find((u) => idStr(u) === pick.user_id) ||
+    { ...pick, id: pick.user_id };
+  emit("user-selected", user);
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 const normalizedListType = computed(() =>
   ["online", "offline", "active"].includes(props.listType)
@@ -248,9 +311,43 @@ const isInactiveAi = (u) => {
   return flags.some((flag) => flag === false);
 };
 
-const filteredUsers = computed(() =>
-  (props.users || []).filter((u) => !isInactiveAi(u))
-);
+// Source list: override with API candidates when offline or ai pill is active
+const sourceUsers = computed(() => {
+  if (matchFilter.value === "offline") {
+    return (matchData.value?.offline || []).map((c) => ({
+      ...c,
+      id: c.user_id,
+      online: false,
+      presence: "offline",
+    }));
+  }
+  if (matchFilter.value === "ai") {
+    return (matchData.value?.ai || []).map((c) => ({
+      ...c,
+      id: c.user_id,
+      is_ai: true,
+      online: true,
+      presence: "online",
+    }));
+  }
+  return props.users || [];
+});
+
+const filteredUsers = computed(() => {
+  const src = sourceUsers.value.filter((u) => !isInactiveAi(u));
+
+  // Offline and AI filters source directly from API data — no secondary ID filter needed
+  if (!matchFilter.value || matchFilter.value === "offline" || matchFilter.value === "ai") return src;
+
+  const ids = new Set();
+  if (matchFilter.value === "online") {
+    (matchData.value?.online || []).forEach((c) => ids.add(c.user_id));
+  }
+  // If match data hasn't loaded yet, don't fall back to all users — show empty
+  if (!matchData.value) return src;
+  if (!ids.size) return [];
+  return src.filter((u) => ids.has(idStr(u)));
+});
 
 const sortWithPin = (arr = []) =>
   [...arr].sort((a, b) => {
@@ -300,6 +397,8 @@ const activeUsers = computed(() =>
 );
 
 const displayUsers = computed(() => {
+  // Offline/AI match filter: bypass presence split — show API candidates directly
+  if (matchFilter.value === "offline" || matchFilter.value === "ai") return sortWithPin(filteredUsers.value);
   switch (normalizedListType.value) {
     case "active":
       return activeUsers.value;

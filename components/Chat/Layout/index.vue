@@ -56,6 +56,7 @@
                 :auth-status="auth.authStatus"
                 :disable-filter-toggle="shouldDisableToggle"
                 :show-ai="showAIUsers"
+                :suppress-match-strip="suppressMatchStrip"
                 @user-selected="selectUser"
                 @filter-changed="updateFilters"
                 @update:showAi="showAIUsers = $event"
@@ -483,9 +484,9 @@
               :me-id="meId"
               :peer="chat.selectedUser"
               :blocked-user-ids="blockedUsers"
-              :quick-replies="moodQuickReplies"
-              :show-quick-replies="showMoodQuickReplies"
-              @quick-reply="onMoodQuickReply"
+              :quick-replies="threadQuickReplies"
+              :show-quick-replies="showThreadQuickReplies"
+              @quick-reply="onThreadQuickReply"
             />
             <v-alert
               v-else
@@ -943,6 +944,9 @@
               :me-id="meId"
               :peer="chat.selectedUser"
               :blocked-user-ids="blockedUsers"
+              :quick-replies="threadQuickReplies"
+              :show-quick-replies="showThreadQuickReplies"
+              @quick-reply="onThreadQuickReply"
             />
             <v-alert
               v-else
@@ -1014,6 +1018,7 @@
               :auth-status="auth.authStatus"
               :disable-filter-toggle="shouldDisableToggle"
               :show-ai="showAIUsers"
+              :suppress-match-strip="suppressMatchStrip"
               @user-selected="selectUser"
               @filter-changed="updateFilters"
               @update:showAi="showAIUsers = $event"
@@ -1207,6 +1212,7 @@ import { useAiQuota } from "~/composables/useAiQuota";
 import { useTabFilters } from "@/composables/useTabFilters";
 import { useI18n } from "vue-i18n";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
+import { bustMatchCache, setMatchFilter, useMatchCandidates } from "@/composables/useMatchCandidates";
 import ProfileDialog from "@/components/ProfileDialog.vue";
 import {
   resolveProfileLocalization,
@@ -1232,6 +1238,15 @@ const route = useRoute();
 const router = useRouter();
 const { t, locale } = useI18n();
 const PREAUTH_STATUSES = ["anonymous", "unauthenticated", "guest", "onboarding"];
+
+// Suppress the match strip while the Ezra mood-capture or next-step flow is active
+// (prevents a brief flash of stale match data before Ezra's first message)
+// "matched" stage is excluded — that's when we *want* the strip to appear
+const suppressMatchStrip = computed(() => {
+  const captureActive = ["prompt", "confirm", "clarify"].includes(draft.liveMoodStage || "");
+  const nextStepActive = ["choose", "dormant"].includes(draft.liveMoodNextStepStage || "");
+  return captureActive || nextStepActive;
+});
 
 const { smAndDown } = useDisplay();
 const hasMounted = ref(false);
@@ -1308,6 +1323,7 @@ const filters = reactive({
 
 // ---- Onboarding AI helpers
 const { sendUserMessage } = useOnboardingAi();
+const { fetchCandidates: refreshMatchCandidates } = useMatchCandidates();
 
 const { tabFilters, canShow, setMany } = useTabFilters();
 
@@ -1518,6 +1534,26 @@ const showMobileActiveAlert = computed(
 );
 const showMobileUnreadAlert = computed(
   () => unreadCount.value > 0 && !leftOpen.value
+);
+
+function mergeActiveChatIds(ids = []) {
+  const incoming = (Array.isArray(ids) ? ids : [])
+    .map((id) => String(id || "").trim())
+    .filter(Boolean);
+  if (!incoming.length) return;
+  const seen = new Set(activeChats.value.map((id) => String(id)));
+  activeChats.value = [
+    ...incoming.filter((id) => !seen.has(id)),
+    ...activeChats.value,
+  ];
+}
+
+watch(
+  () => chat.activeChats,
+  (ids) => {
+    mergeActiveChatIds(ids);
+  },
+  { immediate: true, deep: true }
 );
 const openLeftDrawer = () => {
   leftOpen.value = true;
@@ -2112,7 +2148,6 @@ const MOOD_MAX_ATTEMPTS = 3;
 const moodPromptBusy = ref(false);
 const moodPromptDeferTimer = ref(null);
 const lastBotSubmission = ref({ text: "", at: 0 });
-
 const moodQuickReplies = computed(() => {
   if (draftStore.moodFeedStage === "confirm") {
     return [t("onboarding.yes"), t("onboarding.no")];
@@ -2128,6 +2163,89 @@ const showMoodQuickReplies = computed(
     ["authenticated", "anon_authenticated"].includes(auth.authStatus) &&
     isBotSelected.value &&
     ["prompt", "confirm"].includes(draftStore.moodFeedStage)
+);
+
+const liveMoodConfirmQuickReplies = computed(() => {
+  if (
+    draftStore.liveMoodStage === "confirm" &&
+    String(selectedUserId.value || "") ===
+      String(draftStore.liveMoodPersonaUserId || "")
+  ) {
+    return [
+      t("onboarding.yes"),
+      t("onboarding.close"),
+      t("onboarding.notReally"),
+    ];
+  }
+  return [];
+});
+
+const liveMoodClarifierQuickReplies = computed(() => {
+  if (
+    draftStore.liveMoodStage === "clarify" &&
+    String(selectedUserId.value || "") ===
+      String(draftStore.liveMoodPersonaUserId || "")
+  ) {
+    return Array.isArray(draftStore.liveMoodClarifierOptions)
+      ? draftStore.liveMoodClarifierOptions
+      : [];
+  }
+  return [];
+});
+
+const showLiveMoodConfirmQuickReplies = computed(
+  () =>
+    ["authenticated", "anon_authenticated"].includes(auth.authStatus) &&
+    liveMoodConfirmQuickReplies.value.length > 0
+);
+
+const showLiveMoodClarifierQuickReplies = computed(
+  () =>
+    ["authenticated", "anon_authenticated"].includes(auth.authStatus) &&
+    liveMoodClarifierQuickReplies.value.length > 0
+);
+
+const MATCH_FILTER_PILLS = ["🟢 Online", "⭕ Offline", "🤖 AI", "🎲 Random"];
+
+const liveMoodNextStepQuickReplies = computed(() => {
+  if (
+    ["choose", "dormant", "matched"].includes(draftStore.liveMoodNextStepStage) &&
+    String(selectedUserId.value || "") ===
+      String(draftStore.liveMoodPersonaUserId || "")
+  ) {
+    if (draftStore.liveMoodNextStepStage === "dormant") {
+      return ["Find a match"];
+    }
+    if (draftStore.liveMoodNextStepStage === "matched") {
+      return MATCH_FILTER_PILLS;
+    }
+    return getLiveMoodNextStepChoices(draftStore.liveMoodCandidate);
+  }
+  return [];
+});
+
+const showLiveMoodNextStepQuickReplies = computed(
+  () =>
+    ["authenticated", "anon_authenticated"].includes(auth.authStatus) &&
+    liveMoodNextStepQuickReplies.value.length > 0
+);
+
+const threadQuickReplies = computed(() =>
+  showLiveMoodClarifierQuickReplies.value
+    ? liveMoodClarifierQuickReplies.value
+    : showLiveMoodConfirmQuickReplies.value
+    ? liveMoodConfirmQuickReplies.value
+    : showLiveMoodNextStepQuickReplies.value
+    ? liveMoodNextStepQuickReplies.value
+    : moodQuickReplies.value
+);
+
+const showThreadQuickReplies = computed(
+  () =>
+    showLiveMoodClarifierQuickReplies.value ||
+    showLiveMoodConfirmQuickReplies.value ||
+    showLiveMoodNextStepQuickReplies.value ||
+    showMoodQuickReplies.value
 );
 
 watch(
@@ -2163,6 +2281,170 @@ const MOOD_WORDS = {
     fr: ["passer", "plus tard", "pas maintenant"],
     ru: ["пропустить", "позже", "не сейчас"],
     zh: ["跳过", "稍后", "现在不"],
+  },
+};
+
+const SOFT_MOOD_YES_WORDS = {
+  en: [
+    "mostly",
+    "pretty much",
+    "thats right",
+    "that's right",
+    "sounds right",
+    "kind of",
+    "sort of",
+    "that is better",
+    "thats better",
+    "that's better",
+    "better",
+    "yeah that is better",
+    "yeah thats better",
+    "yeah that's better",
+    "yes thats better",
+    "yes that's better",
+  ],
+  fr: [
+    "c est mieux",
+    "cest mieux",
+    "c est bien",
+    "oui c est mieux",
+    "oui cest mieux",
+    "mieux",
+    "ca va",
+    "ça va",
+    "ca me va",
+    "ça me va",
+  ],
+  ru: [
+    "так лучше",
+    "это лучше",
+    "да так лучше",
+    "вроде да",
+    "пожалуй",
+  ],
+  zh: [
+    "这样更对",
+    "这样更好",
+    "这更像",
+    "是这样",
+  ],
+};
+
+const MOOD_CLOSE_WORDS = {
+  en: ["close", "pretty close", "close enough", "kind of", "sort of"],
+  fr: ["plutot", "plutôt", "presque", "assez proche"],
+  ru: ["почти", "близко", "скорее да"],
+  zh: ["接近", "差不多", "比较接近"],
+};
+
+const LIVE_MOOD_DIRECT_HINTS = {
+  emotion: {
+    lonely: {
+      en: ["lonely", "alone"],
+      fr: ["seul", "seule", "solitaire"],
+      ru: ["одиноко", "одинок", "одинока"],
+      zh: ["孤独", "寂寞"],
+    },
+    calm: {
+      en: ["calm", "chill", "relaxed"],
+      fr: ["calme", "tranquille", "posé"],
+      ru: ["спокойно", "спокойный", "спокойная"],
+      zh: ["平静", "轻松", "冷静"],
+    },
+    annoyed: {
+      en: ["annoyed", "irritated"],
+      fr: ["agacé", "agace", "énervé", "enerve"],
+      ru: ["раздражен", "раздражена", "раздражает"],
+      zh: ["烦", "烦躁"],
+    },
+    overwhelmed: {
+      en: ["overwhelmed", "stressed", "exhausted"],
+      fr: ["submergé", "submerge", "stressé", "stresse", "débordé", "deborde"],
+      ru: ["перегружен", "перегружена", "устал", "устала"],
+      zh: ["不堪重负", "压力大", "累坏了"],
+    },
+    playful: {
+      en: ["playful", "fun", "flirty"],
+      fr: ["joueur", "taquin", "drague"],
+      ru: ["игриво", "игривый", "флирт"],
+      zh: ["俏皮", "调情", "好玩"],
+    },
+    curious: {
+      en: ["curious", "wondering", "thinking"],
+      fr: ["curieux", "curieuse", "je pense", "réfléchis", "reflechis"],
+      ru: ["любопытно", "интересно", "думаю"],
+      zh: ["好奇", "在想", "思考"],
+    },
+    hopeful: {
+      en: ["hopeful", "optimistic", "romantic"],
+      fr: ["plein d espoir", "pleine d espoir", "optimiste", "romantique"],
+      ru: ["надеюсь", "надежда", "романтично"],
+      zh: ["有希望", "期待", "浪漫"],
+    },
+    sad: {
+      en: ["sad", "down", "upset"],
+      fr: ["triste", "abattu"],
+      ru: ["грустно", "печально"],
+      zh: ["难过", "伤心"],
+    },
+  },
+  intent: {
+    be_heard: {
+      en: ["be heard", "listen to me", "hear me out", "vent"],
+      fr: ["m ecouter", "écouter", "ecouter", "vider mon sac"],
+      ru: ["выслушай", "выговориться", "хочу чтобы меня выслушали"],
+      zh: ["听我说", "倾诉", "想被听见"],
+    },
+    listen: {
+      en: ["listen", "listener", "someone to listen"],
+      fr: ["écouter", "ecouter", "quelqu un pour écouter", "oreille attentive"],
+      ru: ["послушать", "слушать", "кто то чтобы выслушал"],
+      zh: ["听", "倾听", "有人听我说"],
+    },
+    distract_me: {
+      en: ["distract me", "take my mind off", "light"],
+      fr: ["distrais moi", "me changer les idées", "leger", "légère", "legere"],
+      ru: ["отвлеки", "отвлечься"],
+      zh: ["分散注意力", "让我转移一下", "轻松点"],
+    },
+    deep_talk: {
+      en: ["deep", "deep talk", "serious", "real talk"],
+      fr: ["profond", "discussion profonde", "parler sérieusement", "parler serieusement"],
+      ru: ["глубоко", "глубокий разговор", "серьезно", "серьезный разговор"],
+      zh: ["深入", "深聊", "认真聊"],
+    },
+    casual_chat: {
+      en: ["casual", "casual chat", "light chat", "chill chat"],
+      fr: ["discussion légère", "discussion legere", "léger", "leger", "tranquille"],
+      ru: ["просто поболтать", "легкий разговор", "спокойно поболтать"],
+      zh: ["随便聊", "轻松聊", "闲聊"],
+    },
+    meet_someone_similar: {
+      en: ["someone similar", "same mood", "like me"],
+      fr: ["quelqu un comme moi", "meme humeur", "même humeur"],
+      ru: ["кто то похожий", "в таком же настроении", "как я"],
+      zh: ["类似的人", "一样心情的人", "和我一样"],
+    },
+  },
+  energy: {
+    drained: {
+      en: ["drained", "tired", "low energy", "exhausted"],
+      fr: ["fatigué", "fatigue", "fatiguée", "épuisé", "epuise"],
+      ru: ["устал", "устала", "без сил"],
+      zh: ["累", "疲惫", "没劲"],
+    },
+    normal: {
+      en: ["normal", "fine", "steady"],
+      fr: ["normal", "ça va", "ca va"],
+      ru: ["нормально", "обычно"],
+      zh: ["还好", "正常", "一般"],
+    },
+    wired: {
+      en: ["wired", "energized", "hyped"],
+      fr: ["énergique", "energetique", "à fond", "a fond"],
+      ru: ["энергично", "заряжен", "заряжена"],
+      zh: ["兴奋", "有劲", "精力很足"],
+    },
   },
 };
 
@@ -2209,7 +2491,7 @@ function isDuplicateBotSubmission(text) {
   return isDuplicate;
 }
 
-function onMoodQuickReply(label) {
+function onThreadQuickReply(label) {
   if (!label) return;
   onSend(label, { bypassTranslationPrompt: true });
 }
@@ -2915,6 +3197,38 @@ async function onSend(
     return;
   }
 
+  const liveMoodCaptureActive =
+    ["prompt", "confirm", "clarify"].includes(draftStore.liveMoodStage || "idle") &&
+    String(toId || "") === String(draftStore.liveMoodPersonaUserId || "");
+  if (liveMoodCaptureActive) {
+    regRef.value?.setTyping?.(true);
+    try {
+      const handled = await handleLiveMoodCaptureMessage(text, {
+        peerId: toId,
+        peer: selectedPeer,
+      });
+      if (handled) return;
+    } finally {
+      regRef.value?.setTyping?.(false);
+    }
+  }
+
+  const liveMoodNextStepActive =
+    ["choose", "dormant", "matched"].includes(draftStore.liveMoodNextStepStage || "idle") &&
+    String(toId || "") === String(draftStore.liveMoodPersonaUserId || "");
+  if (liveMoodNextStepActive) {
+    regRef.value?.setTyping?.(true);
+    try {
+      const handled = await handleLiveMoodNextStepMessage(text, {
+        peerId: toId,
+        peer: selectedPeer,
+      });
+      if (handled) return;
+    } finally {
+      regRef.value?.setTyping?.(false);
+    }
+  }
+
   if (sendingToBot) {
     const stageBeforeMood = draftStore.moodFeedStage || "idle";
     if (isDuplicateBotSubmission(text)) return;
@@ -2994,6 +3308,7 @@ async function onSend(
   if ((selectedPeer?.is_ai || sendingToBot) && meId.value && toId) {
     if (
       selectedPeer?.is_ai &&
+      String(selectedPeer?.user_id || selectedPeer?.id || "") !== IMCHATTY_ID &&
       selectedPeer?.honey_enabled &&
       auth.authStatus === "authenticated"
     ) {
@@ -3133,6 +3448,852 @@ async function pushMoodBotMessage(text) {
   }
 }
 
+function formatChoiceLabel(value) {
+  return String(value || "")
+    .trim()
+    .replace(/_/g, " ");
+}
+
+function capitalizeFirstLetter(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function describeLiveMoodCandidate(candidate = {}) {
+  const intent = formatChoiceLabel(candidate.intent || "");
+  const emotion = formatChoiceLabel(candidate.emotion || "");
+  const energy = String(candidate.energy || "").trim().toLowerCase();
+
+  if (intent === "casual chat" && emotion === "calm") {
+    return "a calm, casual chat";
+  }
+  if (intent === "be heard" && emotion === "calm") {
+    return energy === "drained"
+      ? "someone calm to listen while you keep it low-key"
+      : "someone calm to listen";
+  }
+  if (intent === "be heard" && emotion) {
+    return `someone to listen while you feel ${emotion}`;
+  }
+  if (intent === "distract me") {
+    return "something light to take your mind off things";
+  }
+  if (intent === "deep talk") {
+    return emotion ? `a deeper ${emotion} kind of chat` : "a deeper kind of chat";
+  }
+  if (intent === "meet someone similar") {
+    return emotion ? `someone in a similar ${emotion} mood` : "someone in a similar mood";
+  }
+  if (intent === "casual chat") {
+    return emotion ? `a ${emotion} casual chat` : "a casual chat";
+  }
+  if (emotion === "calm") return "a calm chat";
+  if (emotion) return `a ${emotion} kind of chat`;
+  return "this kind of chat";
+}
+
+function getLiveMoodAcknowledgment(candidate = {}) {
+  const intent = formatChoiceLabel(candidate.intent || "").toLowerCase();
+  const emotion = formatChoiceLabel(candidate.emotion || "").toLowerCase();
+
+  if (intent === "deep talk") {
+    return "Got it. You want something a little deeper.";
+  }
+  if (intent === "be heard") {
+    return "Got it. You want someone who can really listen.";
+  }
+  if (intent === "distract me") {
+    return "Got it. You want something lighter right now.";
+  }
+  if (intent === "meet someone similar") {
+    return "Got it. You want someone in a similar mood.";
+  }
+  if (intent === "casual chat" && emotion === "calm") {
+    return "Got it. You want something calm and easy.";
+  }
+  if (intent === "casual chat") {
+    return "Got it. You want something easy and low-pressure.";
+  }
+  if (emotion === "calm") {
+    return "Got it. You want something calm.";
+  }
+  return `Got it. ${capitalizeFirstLetter(describeLiveMoodCandidate(candidate))}.`;
+}
+
+function nextLiveMoodRefinementCount() {
+  const next = Number(draftStore.liveMoodRefinementCount || 0) + 1;
+  draftStore.setField?.("liveMoodRefinementCount", next);
+  return next;
+}
+
+function resetLiveMoodRefinementCount() {
+  draftStore.setField?.("liveMoodRefinementCount", 0);
+}
+
+async function pushLiveMoodDirectChoicePrompt(peer = null) {
+  draftStore.setField?.("liveMoodStage", "clarify");
+  draftStore.setField?.("liveMoodClarifierOptions", [
+    getClarifierLabel("lightChat"),
+    getClarifierLabel("someoneToListen"),
+    getClarifierLabel("quietCompany"),
+    getClarifierLabel("deepChat"),
+  ]);
+  await pushLiveMoodBotMessage(
+    "No problem. Pick what sounds best right now.",
+    peer
+  );
+}
+
+function sameLiveMoodCandidate(a = null, b = null) {
+  if (!a || !b) return false;
+  return (
+    String(a.emotion || "") === String(b.emotion || "") &&
+    String(a.intent || "") === String(b.intent || "") &&
+    String(a.energy || "") === String(b.energy || "") &&
+    String(a.privacy || "") === String(b.privacy || "") &&
+    String(a.time_horizon || "") === String(b.time_horizon || "")
+  );
+}
+
+function isSoftMoodYes(text) {
+  const normalized = normalizeText(text);
+  if (!normalized) return false;
+  const lang = moodLocaleKey.value || "en";
+  return (
+    (MOOD_WORDS.yes?.[lang] || []).includes(normalized) ||
+    (SOFT_MOOD_YES_WORDS[lang] || []).map(normalizeText).includes(normalized)
+  );
+}
+
+function isMoodClose(text) {
+  const normalized = normalizeText(text);
+  if (!normalized) return false;
+  const lang = moodLocaleKey.value || "en";
+  const words = (MOOD_CLOSE_WORDS[lang] || []).map(normalizeText);
+  const label = normalizeText(t("onboarding.close"));
+  return words.includes(normalized) || (!!label && normalized === label);
+}
+
+function getClarifierLabel(key) {
+  return t(`onboarding.clarifier.${key}`);
+}
+
+function buildLiveMoodClarifierOptions(text, candidate = null) {
+  const normalized = normalizeText(text);
+  const intent = String(candidate?.intent || "").trim().toLowerCase();
+
+  const looksTired =
+    normalized.includes("tired") ||
+    normalized.includes("drained") ||
+    normalized.includes("fatigue") ||
+    normalized.includes("устал") ||
+    normalized.includes("累");
+
+  if (looksTired) {
+    return ["quietCompany", "justTired", "someoneToListen", "lightChat"].map(getClarifierLabel);
+  }
+
+  // Intent-specific adjacent refinements — each set is a fine-tuning of the confirmed suggestion
+  if (intent === "casual_chat") {
+    // Close to "calm, casual chat" — offer a spectrum around it
+    return ["evenQuieter", "aLittleLivelier", "someoneToListen", "deepChat"].map(getClarifierLabel);
+  }
+  if (intent === "be_heard") {
+    // Close to "someone to listen" — lighter, deeper, or different energy
+    return ["lighterThanThat", "deeperThanThat", "moreOfAConversation", "justChill"].map(getClarifierLabel);
+  }
+  if (intent === "distract_me") {
+    // Close to "light/fun chat" — calmer, even lighter, or more substance
+    return ["evenQuieter", "lightChat", "moreOfAConversation", "someoneToListen"].map(getClarifierLabel);
+  }
+  if (intent === "deep_talk") {
+    // Close to "deep conversation" — lighter, needs listener first, or reconfirm depth
+    return ["lighterThanThat", "someoneToListen", "deepChat", "justChill"].map(getClarifierLabel);
+  }
+  if (intent === "meet_someone_similar") {
+    // Close to "similar vibe" — spectrum from casual to deep
+    return ["aLittleLivelier", "moreOfAConversation", "someoneToListen", "deepChat"].map(getClarifierLabel);
+  }
+
+  // Fallback: a clean spectrum without emotion labels
+  return ["quietCompany", "lightChat", "someoneToListen", "deepChat"].map(getClarifierLabel);
+}
+
+function applyClarifierChoice(text, candidate = null) {
+  const normalized = normalizeText(text);
+  const matches = (key) => normalized === normalizeText(getClarifierLabel(key));
+  const next = { ...(candidate || {}) };
+
+  if (matches("quietCompany")) {
+    next.emotion = next.emotion || "calm";
+    next.intent = "casual_chat";
+    next.energy = "drained";
+    return next;
+  }
+  if (matches("evenQuieter")) {
+    next.intent = "casual_chat";
+    next.energy = "drained";
+    next.emotion = "calm";
+    return next;
+  }
+  if (matches("aLittleLivelier")) {
+    next.intent = "distract_me";
+    next.energy = "normal";
+    next.emotion = next.emotion === "sad" ? "curious" : next.emotion || "playful";
+    return next;
+  }
+  if (matches("moreOfAConversation")) {
+    next.intent = "casual_chat";
+    next.energy = "normal";
+    return next;
+  }
+  if (matches("lighterThanThat")) {
+    next.intent = "casual_chat";
+    next.energy = "normal";
+    next.emotion = next.emotion === "sad" ? "curious" : next.emotion || "calm";
+    return next;
+  }
+  if (matches("deeperThanThat")) {
+    next.intent = "deep_talk";
+    next.energy = next.energy || "normal";
+    next.emotion = next.emotion || "curious";
+    return next;
+  }
+  if (matches("justChill")) {
+    next.intent = "casual_chat";
+    next.energy = "drained";
+    next.emotion = "calm";
+    return next;
+  }
+  if (matches("frustrated")) {
+    next.emotion = "annoyed";
+    next.intent = "be_heard";
+    next.energy = next.energy || "normal";
+    return next;
+  }
+  if (matches("lightChat")) {
+    next.intent = "casual_chat";
+    next.energy = next.energy || "normal";
+    next.emotion = next.emotion === "sad" ? "curious" : next.emotion || "calm";
+    return next;
+  }
+  if (matches("justTired")) {
+    next.energy = "drained";
+    next.intent = "casual_chat";
+    next.emotion = "calm";
+    return next;
+  }
+  if (matches("deepChat")) {
+    next.intent = "deep_talk";
+    next.energy = next.energy || "normal";
+    next.emotion = next.emotion || "curious";
+    return next;
+  }
+  if (matches("someoneToListen")) {
+    next.intent = "be_heard";
+    next.energy = next.energy || "normal";
+    next.emotion = next.emotion || "sad";
+    return next;
+  }
+
+  return null;
+}
+
+function findDirectMoodHint(text, group) {
+  const normalized = normalizeText(text);
+  if (!normalized) return null;
+  const lang = moodLocaleKey.value || "en";
+  const entries = LIVE_MOOD_DIRECT_HINTS[group] || {};
+  for (const [key, variants] of Object.entries(entries)) {
+    const phrases = variants?.[lang] || [];
+    const match = phrases
+      .map(normalizeText)
+      .find((phrase) => phrase && normalized.includes(phrase));
+    if (match) return key;
+  }
+  return null;
+}
+
+function mergeDirectMoodHints(text, candidate = null) {
+  const base = candidate ? { ...candidate } : null;
+  const emotion = findDirectMoodHint(text, "emotion");
+  const intent = findDirectMoodHint(text, "intent");
+  const energy = findDirectMoodHint(text, "energy");
+  if (!emotion && !intent && !energy) return null;
+  return {
+    emotion: emotion || base?.emotion || null,
+    intent: intent || base?.intent || null,
+    energy: energy || base?.energy || null,
+    privacy: base?.privacy || "private_matching_only",
+    time_horizon: base?.time_horizon || "right_now",
+    confidence: base?.confidence ?? 0.85,
+    free_text_refined: String(text || "").trim(),
+  };
+}
+
+function normalizeLiveMoodNextStepChoice(text) {
+  const normalized = String(text || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!normalized) return null;
+  if (
+    normalized === "find a match" ||
+    normalized === "find match" ||
+    normalized === "match me"
+  ) {
+    return "resume_matching";
+  }
+  if (
+    normalized.includes("light") ||
+    normalized.includes("fun") ||
+    normalized.includes("banter")
+  ) {
+    return "light_chat";
+  }
+  if (
+    normalized.includes("deep") ||
+    normalized.includes("deeper")
+  ) {
+    return "deep_chat";
+  }
+  if (
+    normalized.includes("similar") ||
+    normalized.includes("same mood")
+  ) {
+    return "similar";
+  }
+  if (
+    normalized.includes("quiet") ||
+    normalized.includes("low pressure") ||
+    normalized.includes("low-pressure")
+  ) {
+    return "quiet_company";
+  }
+  if (normalized.includes("calm")) return "calm_chat";
+  if (
+    normalized.includes("listen") ||
+    normalized.includes("listener") ||
+    normalized.includes("heard")
+  ) {
+    return "listener";
+  }
+  if (
+    normalized === "keep chatting" ||
+    normalized === "chat" ||
+    normalized === "keep talking"
+  ) {
+    return "keep_chatting";
+  }
+  if (
+    normalized === "not now" ||
+    normalized === "later" ||
+    normalized === "no" ||
+    normalized === "no thanks" ||
+    normalized === "skip"
+  ) {
+    return "not_now";
+  }
+  return null;
+}
+
+function getLiveMoodNextStepChoices(candidate = null) {
+  const intent = String(candidate?.intent || "").trim().toLowerCase();
+  const emotion = String(candidate?.emotion || "").trim().toLowerCase();
+  const base = ["Keep chatting", "Not now"];
+
+  if (intent === "distract_me") {
+    return ["Find light chat", "Find quiet company", ...base];
+  }
+  if (intent === "be_heard") {
+    return ["Find someone to listen", "Find a calm chat", ...base];
+  }
+  if (intent === "deep_talk") {
+    return ["Find deep chat", "Find someone to listen", ...base];
+  }
+  if (intent === "meet_someone_similar") {
+    return ["Find someone similar", "Keep chatting", "Not now"];
+  }
+  if (emotion === "bored" || emotion === "playful") {
+    return ["Find light chat", "Keep chatting", "Not now"];
+  }
+  if (emotion === "sad" || emotion === "lonely" || emotion === "annoyed") {
+    return ["Find someone to listen", "Find a calm chat", ...base];
+  }
+  return ["Find a calm chat", "Find someone to listen", ...base];
+}
+
+function getAutoMatchMessage(candidate = null) {
+  const intent = String(candidate?.intent || "").trim().toLowerCase();
+  const emotion = String(candidate?.emotion || "").trim().toLowerCase();
+
+  if (intent === "be_heard") return "Done. I've found some good listeners for you. Pick a filter to browse:";
+  if (intent === "distract_me" || emotion === "bored" || emotion === "playful") return "Done. I've lined up some lighter options for you. Pick a filter to browse:";
+  if (intent === "deep_talk") return "Done. I've found some people up for a deeper conversation. Pick a filter to browse:";
+  if (intent === "meet_someone_similar") return "Done. I've found some people with a similar vibe right now. Pick a filter to browse:";
+  if (emotion === "sad" || emotion === "lonely" || emotion === "annoyed") return "Done. I've found some good listeners for you. Pick a filter to browse:";
+  return "Done. I've found some calm chats that fit your mood. Pick a filter to browse:";
+}
+
+function getLiveMoodNextStepPrompt(candidate = null) {
+  const intent = String(candidate?.intent || "").trim().toLowerCase();
+  const emotion = String(candidate?.emotion || "").trim().toLowerCase();
+
+  if (intent === "distract_me") {
+    return "Want me to find something light, some quiet company, or just keep chatting with me?";
+  }
+  if (intent === "be_heard") {
+    return "Want me to find someone to listen, a calm chat, or just keep chatting with me?";
+  }
+  if (intent === "deep_talk") {
+    return "Want me to find a deeper chat, someone to listen, or just keep chatting with me?";
+  }
+  if (intent === "meet_someone_similar") {
+    return "Want me to find someone in a similar mood, or just keep chatting with me?";
+  }
+  if (emotion === "bored" || emotion === "playful") {
+    return "Want me to find something light, or just keep chatting with me?";
+  }
+  return "Want me to find a calm chat, someone who'll listen, or just keep chatting with me?";
+}
+
+function consumeLiveMoodNudge() {
+  const nudges =
+    draftStore.liveMoodNudges && typeof draftStore.liveMoodNudges === "object"
+      ? { ...draftStore.liveMoodNudges }
+      : null;
+  if (!nudges) return null;
+
+  const settingsUrl = localePath("/settings");
+  const linkEmailUrl = localePath({
+    path: "/settings",
+    query: { linkEmail: "1" },
+  });
+
+  if (nudges.nudge_add_photo) {
+    nudges.nudge_add_photo = false;
+    draftStore.setField?.("liveMoodNudges", nudges);
+    return `When you want, add a photo in [settings](${settingsUrl}). It helps people trust the profile faster.`;
+  }
+
+  if (nudges.nudge_set_looking_for) {
+    nudges.nudge_set_looking_for = false;
+    draftStore.setField?.("liveMoodNudges", nudges);
+    return `You can also set what you're looking for in [settings](${settingsUrl}) so I can guide you better.`;
+  }
+
+  if (nudges.nudge_link_email) {
+    nudges.nudge_link_email = false;
+    draftStore.setField?.("liveMoodNudges", nudges);
+    return `And when you're ready, [link your email](${linkEmailUrl}) so you can keep the account.`;
+  }
+
+  if (nudges.nudge_open_settings) {
+    nudges.nudge_open_settings = false;
+    draftStore.setField?.("liveMoodNudges", nudges);
+    return `You can tweak the rest anytime in [settings](${settingsUrl}).`;
+  }
+
+  return null;
+}
+
+async function pushLiveMoodBotMessage(text, persona = null) {
+  const peerId =
+    String(persona?.user_id || persona?.id || draftStore.liveMoodPersonaUserId || "").trim();
+  const peerName =
+    String(persona?.displayname || selectedUser.value?.displayname || draftStore.liveMoodPersonaKey || "Bot").trim();
+  if (!text || !meId.value || !peerId) return;
+  if (String(selectedUserId.value || "") === peerId) {
+    regRef.value?.appendPeerLocal?.(text, {
+      senderId: peerId,
+      senderName: peerName,
+      senderAvatar: persona?.avatar_url || selectedUser.value?.avatar_url || null,
+    });
+  }
+  try {
+    await insertMessage(meId.value, peerId, text);
+    chat.addActivePeer?.(peerId);
+  } catch (err) {
+    console.warn("[live-mood] bot message insert failed:", err?.message || err);
+  }
+}
+
+async function inferLiveMoodCandidate(text) {
+  const res = await $fetch("/api/live-mood/infer", {
+    method: "POST",
+    body: {
+      text,
+      locale: locale.value,
+    },
+  });
+  return res?.state || null;
+}
+
+async function saveLiveMoodCandidate(candidate) {
+  if (!candidate) return false;
+  try {
+    await $fetch("/api/live-mood/state", {
+      method: "POST",
+      body: {
+        actorPersona: draftStore.liveMoodPersonaKey,
+        emotion: candidate.emotion,
+        intent: candidate.intent,
+        energy: candidate.energy,
+        privacy: candidate.privacy,
+        timeHorizon: candidate.time_horizon,
+        freeTextRaw: draftStore.liveMoodInput || null,
+        freeTextRefined: candidate.free_text_refined || draftStore.liveMoodInput || null,
+        sourceType: "mixed",
+        confidence: candidate.confidence ?? null,
+      },
+    });
+    return true;
+  } catch (err) {
+    console.warn("[live-mood] save failed:", err?.message || err);
+    return false;
+  }
+}
+
+async function finalizeLiveMoodChoice(candidate, peer = null, acknowledgment = null) {
+  const ok = await saveLiveMoodCandidate(candidate);
+  draftStore.setField?.("liveMoodCandidate", candidate);
+  draftStore.setField?.("liveMoodStage", "done");
+  draftStore.setField?.("liveMoodClarifierOptions", []);
+  resetLiveMoodRefinementCount();
+
+  await pushLiveMoodBotMessage(
+    acknowledgment ||
+      (ok
+        ? "Perfect. I can help from here."
+        : "I couldn't save that just yet, but we can keep chatting."),
+    peer
+  );
+
+  if (ok) {
+    draftStore.setField?.("liveMoodNextStepStage", "matched");
+    await pushLiveMoodBotMessage(getAutoMatchMessage(candidate), peer);
+    // Bust the shared match cache so Users.vue's strip refreshes reactively
+    bustMatchCache();
+    refreshMatchCandidates(true).catch(() => {});
+  } else {
+    draftStore.setField?.("liveMoodNextStepStage", "done");
+    const nudge = consumeLiveMoodNudge();
+    if (nudge) {
+      await pushLiveMoodBotMessage(nudge, peer);
+    }
+  }
+
+  return ok;
+}
+
+async function handleLiveMoodCaptureMessage(text, { peerId = null, peer = null } = {}) {
+  if (!["authenticated", "anon_authenticated"].includes(auth.authStatus)) return false;
+  if (!peerId || String(peerId) !== String(draftStore.liveMoodPersonaUserId || "")) {
+    return false;
+  }
+  if (!["prompt", "confirm", "clarify"].includes(draftStore.liveMoodStage || "idle")) {
+    return false;
+  }
+
+  await regRef.value?.appendLocalAndSend?.(text);
+
+  if (isMoodSkip(text)) {
+    draftStore.setField?.("liveMoodStage", "done");
+    draftStore.setField?.("liveMoodCandidate", null);
+    draftStore.setField?.("liveMoodClarifierOptions", []);
+    resetLiveMoodRefinementCount();
+    draftStore.setField?.("liveMoodNextStepStage", "done");
+    await pushLiveMoodBotMessage(
+      "No problem. We can figure out your vibe later.",
+      peer
+    );
+    return true;
+  }
+
+  if ((draftStore.liveMoodStage || "idle") === "prompt") {
+    const candidate = await inferLiveMoodCandidate(text);
+    draftStore.setField?.("liveMoodInput", String(text || "").trim());
+    draftStore.setField?.("liveMoodCandidate", candidate);
+    draftStore.setField?.("liveMoodStage", "confirm");
+    resetLiveMoodRefinementCount();
+    await pushLiveMoodBotMessage(
+      `It sounds like you want ${describeLiveMoodCandidate(candidate)}. Is that right?`,
+      peer
+    );
+    return true;
+  }
+
+  if ((draftStore.liveMoodStage || "idle") === "confirm") {
+    if (isMoodYes(text) || isSoftMoodYes(text)) {
+      await finalizeLiveMoodChoice(draftStore.liveMoodCandidate, peer);
+      return true;
+    }
+    if (isMoodClose(text)) {
+      const count = nextLiveMoodRefinementCount();
+      if (count >= 2) {
+        await pushLiveMoodDirectChoicePrompt(peer);
+        return true;
+      }
+      draftStore.setField?.("liveMoodInput", String(text || "").trim());
+      draftStore.setField?.(
+        "liveMoodClarifierOptions",
+        buildLiveMoodClarifierOptions(draftStore.liveMoodInput || text, draftStore.liveMoodCandidate)
+      );
+      draftStore.setField?.("liveMoodStage", "clarify");
+      await pushLiveMoodBotMessage(
+        t("onboarding.clarifier.prompt"),
+        peer
+      );
+      return true;
+    }
+    if (isMoodNo(text)) {
+      const count = nextLiveMoodRefinementCount();
+      if (count >= 2) {
+        await pushLiveMoodDirectChoicePrompt(peer);
+        return true;
+      }
+      draftStore.setField?.("liveMoodInput", String(text || "").trim());
+      draftStore.setField?.(
+        "liveMoodClarifierOptions",
+        buildLiveMoodClarifierOptions(draftStore.liveMoodInput || text, draftStore.liveMoodCandidate)
+      );
+      draftStore.setField?.("liveMoodStage", "clarify");
+      await pushLiveMoodBotMessage(
+        t("onboarding.clarifier.prompt"),
+        peer
+      );
+      return true;
+    }
+
+    const previous = draftStore.liveMoodCandidate;
+    const directCandidate = mergeDirectMoodHints(text, previous);
+    if (directCandidate && !sameLiveMoodCandidate(previous, directCandidate)) {
+      const count = nextLiveMoodRefinementCount();
+      if (count >= 3) {
+        await pushLiveMoodDirectChoicePrompt(peer);
+        return true;
+      }
+      draftStore.setField?.("liveMoodInput", String(text || "").trim());
+      draftStore.setField?.("liveMoodCandidate", directCandidate);
+      await pushLiveMoodBotMessage(
+        `Maybe this is closer: ${describeLiveMoodCandidate(directCandidate)}. Does that fit better?`,
+        peer
+      );
+      return true;
+    }
+
+    const candidate = await inferLiveMoodCandidate(text);
+    draftStore.setField?.("liveMoodInput", String(text || "").trim());
+    if (sameLiveMoodCandidate(previous, candidate)) {
+      await pushLiveMoodDirectChoicePrompt(peer);
+      return true;
+    }
+    const count = nextLiveMoodRefinementCount();
+    if (count >= 3) {
+      await pushLiveMoodDirectChoicePrompt(peer);
+      return true;
+    }
+    draftStore.setField?.("liveMoodCandidate", candidate);
+    await pushLiveMoodBotMessage(
+      `Maybe this is closer: ${describeLiveMoodCandidate(candidate)}. Does that fit better?`,
+      peer
+    );
+    return true;
+  }
+
+  if ((draftStore.liveMoodStage || "idle") === "clarify") {
+    const previous = draftStore.liveMoodCandidate;
+    const clarified = applyClarifierChoice(text, previous);
+    draftStore.setField?.("liveMoodInput", String(text || "").trim());
+
+    if (clarified && !sameLiveMoodCandidate(previous, clarified)) {
+      await finalizeLiveMoodChoice(
+        clarified,
+        peer,
+        getLiveMoodAcknowledgment(clarified)
+      );
+      return true;
+    }
+
+    const directCandidate = mergeDirectMoodHints(text, previous);
+    if (directCandidate && !sameLiveMoodCandidate(previous, directCandidate)) {
+      const count = nextLiveMoodRefinementCount();
+      if (count >= 3) {
+        draftStore.setField?.("liveMoodCandidate", directCandidate);
+        draftStore.setField?.("liveMoodClarifierOptions", []);
+        draftStore.setField?.("liveMoodStage", "confirm");
+        await pushLiveMoodBotMessage(
+          `Does ${describeLiveMoodCandidate(directCandidate)} sound right?`,
+          peer
+        );
+        return true;
+      }
+      draftStore.setField?.("liveMoodCandidate", directCandidate);
+      draftStore.setField?.("liveMoodClarifierOptions", []);
+      draftStore.setField?.("liveMoodStage", "confirm");
+      await pushLiveMoodBotMessage(
+        `Maybe this is closer: ${describeLiveMoodCandidate(directCandidate)}. Does that fit better?`,
+        peer
+      );
+      return true;
+    }
+
+    draftStore.setField?.("liveMoodClarifierOptions", []);
+    draftStore.setField?.("liveMoodStage", "prompt");
+    draftStore.setField?.("liveMoodCandidate", null);
+    resetLiveMoodRefinementCount();
+    await pushLiveMoodBotMessage(
+      "Okay, give me your vibe again in your own words.",
+      peer
+    );
+    return true;
+  }
+
+  return false;
+}
+
+async function handleLiveMoodNextStepMessage(text, { peerId = null, peer = null } = {}) {
+  if (!["authenticated", "anon_authenticated"].includes(auth.authStatus)) return false;
+  if (!["choose", "dormant", "matched"].includes(draftStore.liveMoodNextStepStage || "idle")) {
+    return false;
+  }
+  if (!peerId || String(peerId) !== String(draftStore.liveMoodPersonaUserId || "")) {
+    return false;
+  }
+
+  // Handle filter pill taps when in "matched" stage
+  if (draftStore.liveMoodNextStepStage === "matched") {
+    const pill = String(text || "").trim();
+    await regRef.value?.appendLocalAndSend?.(pill);
+    draftStore.setField?.("liveMoodNextStepStage", "done");
+
+    const isAnon = auth.authStatus === "anon_authenticated";
+    const emailLink = isAnon
+      ? ` [Add your email](${localePath({ path: "/settings", query: { linkEmail: "1" } })}) so you never miss a reply.`
+      : "";
+
+    if (pill === "🟢 Online") {
+      setMatchFilter("online");
+      await pushLiveMoodBotMessage(
+        `Showing online matches in your chat list — tap any name to start chatting. You can switch filters at the top of the list anytime.${emailLink}`,
+        peer
+      );
+    } else if (pill === "⭕ Offline") {
+      setMatchFilter("offline");
+      await pushLiveMoodBotMessage(
+        `Showing offline matches — they may take a little longer to reply, but sometimes that's a better fit. Tap any name to reach out. You can switch filters at the top of your list anytime.${emailLink}`,
+        peer
+      );
+    } else if (pill === "🤖 AI") {
+      setMatchFilter("ai");
+      await pushLiveMoodBotMessage(
+        "Showing AI chat options — available anytime, no waiting. Tap any name to start. Switch filters at the top of your list anytime.",
+        peer
+      );
+    } else if (pill === "🎲 Random") {
+      setMatchFilter("random");
+      await new Promise((r) => setTimeout(r, 50));
+      setMatchFilter(null);
+      await pushLiveMoodBotMessage(
+        `Picked someone for you — check the top of your chat list and tap their name to say hi.${emailLink}`,
+        peer
+      );
+    }
+    return true;
+  }
+
+  const choice = normalizeLiveMoodNextStepChoice(text);
+  if (!choice) {
+    draftStore.setField?.("liveMoodNextStepStage", "done");
+    return false;
+  }
+
+  await regRef.value?.appendLocalAndSend?.(text);
+
+  if (choice === "resume_matching") {
+    draftStore.setField?.("liveMoodNextStepStage", "choose");
+    await pushLiveMoodBotMessage(
+      getLiveMoodNextStepPrompt(draftStore.liveMoodCandidate),
+      peer
+    );
+    return true;
+  }
+
+  draftStore.setField?.("liveMoodNextStepStage", "matched");
+
+  // Concise confirmation for all "find someone" choices — pill quick replies appear automatically
+  if (choice === "calm_chat") {
+    await pushLiveMoodBotMessage(
+      "Done. I've pulled up calmer chats that fit your mood. Pick a filter to browse:",
+      peer
+    );
+    return true;
+  }
+
+  if (choice === "light_chat") {
+    await pushLiveMoodBotMessage(
+      "Done. I've lined up some lighter options for you. Pick a filter to browse:",
+      peer
+    );
+    return true;
+  }
+
+  if (choice === "quiet_company") {
+    await pushLiveMoodBotMessage(
+      "Done. I've found some quiet company that suits where you're at. Pick a filter to browse:",
+      peer
+    );
+    return true;
+  }
+
+  if (choice === "listener") {
+    await pushLiveMoodBotMessage(
+      "Done. I've found some good listeners for you. Pick a filter to browse:",
+      peer
+    );
+    return true;
+  }
+
+  if (choice === "deep_chat") {
+    await pushLiveMoodBotMessage(
+      "Done. I've found some people up for a deeper conversation. Pick a filter to browse:",
+      peer
+    );
+    return true;
+  }
+
+  if (choice === "similar") {
+    await pushLiveMoodBotMessage(
+      "Done. I've found some people with a similar vibe right now. Pick a filter to browse:",
+      peer
+    );
+    return true;
+  }
+
+  if (choice === "not_now") {
+    await pushLiveMoodBotMessage(
+      "No pressure. We can come back to matching whenever you want.",
+      peer
+    );
+    draftStore.setField?.("liveMoodNextStepStage", "dormant");
+    const nudge = consumeLiveMoodNudge();
+    if (nudge) {
+      await pushLiveMoodBotMessage(nudge, peer);
+    }
+    return true;
+  }
+
+  await pushLiveMoodBotMessage(
+    "Works for me. Stay here with me and tell me what kind of chat would feel good right now.",
+    peer
+  );
+  return true;
+}
+
 async function fetchMoodPrompt() {
   try {
     const res = await $fetch("/api/mood-feed/prompts/random", {
@@ -3156,6 +4317,7 @@ function formatMoodPrompt(text) {
 }
 
 async function maybeTriggerMoodPrompt() {
+  if (draftStore.handoffPending) return;
   const deferUntil = Number(draftStore.moodFeedDeferUntil || 0);
   if (deferUntil > Date.now()) {
     const waitMs = Math.max(50, deferUntil - Date.now() + 50);
@@ -3171,6 +4333,8 @@ async function maybeTriggerMoodPrompt() {
   if (!["authenticated", "anon_authenticated"].includes(auth.authStatus)) return;
   if (!meId.value) return;
   if (draftStore.moodFeedStage === "prompt" || draftStore.moodFeedStage === "confirm")
+    return;
+  if (draftStore.liveMoodPersonaUserId)
     return;
   moodPromptBusy.value = true;
   try {
@@ -3343,10 +4507,15 @@ async function refreshActiveChats() {
   );
   if (error) return console.error("[activeChats] rpc error", error);
 
-  // normalize to array of IDs
-  activeChats.value = (data || [])
+  // normalize to array of IDs, but preserve locally promoted active peers
+  const fetchedIds = (data || [])
     .map((r) => String(r.peer_id ?? r.user_id ?? r.id ?? ""))
     .filter(Boolean);
+  const localIds = (Array.isArray(chat.activeChats) ? chat.activeChats : [])
+    .map((id) => String(id || "").trim())
+    .filter(Boolean);
+  const seen = new Set(fetchedIds);
+  activeChats.value = [...fetchedIds, ...localIds.filter((id) => !seen.has(id))];
 }
 
 // 🔹 helper to call your /api/aiChat endpoint

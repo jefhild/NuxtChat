@@ -330,6 +330,13 @@
                 <div class="text-caption text-medium-emphasis mt-1">
                   Role is fixed to <code>assistant</code>.
                 </div>
+                <div
+                  v-if="isStarterPersona"
+                  class="text-caption text-info mt-1"
+                >
+                  Starter bots are onboarding guides. They can keep Editorial,
+                  Counterpoint, and Honey turned off.
+                </div>
               </v-col>
               <v-col v-if="form.persona.honey_enabled" cols="12" md="4">
                 <v-text-field
@@ -966,6 +973,12 @@ const selectedProfile = computed(() =>
     (profile) => profile.user_id === form.persona.profile_user_id
   )
 );
+const isStarterPersona = computed(() =>
+  String(form.persona.persona_key || "")
+    .trim()
+    .toLowerCase()
+    .startsWith("starter-")
+);
 const editingBot = computed(() =>
   bots.value.find((bot) => bot.id === editingId.value) || null
 );
@@ -1423,6 +1436,7 @@ const handleSubmit = async () => {
     return;
   }
   if (
+    !isStarterPersona.value &&
     !payload.persona.editorial_enabled &&
     !payload.persona.counterpoint_enabled &&
     !payload.persona.honey_enabled

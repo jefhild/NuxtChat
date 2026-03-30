@@ -1543,6 +1543,14 @@
       "translated": "Traduit",
       "someone": "Cet utilisateur",
       "theirLanguage": "sa langue"
+    },
+    "matchStrip": {
+      "label": "correspondances",
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "ai": "IA",
+      "random": "Aléatoire",
+      "refresh": "Rafraîchir"
     }
   },
   "composables": {
@@ -1560,7 +1568,31 @@
     "guestStart": "Super, on commence ! Quel pseudo veux-tu afficher ?",
     "resume": "On reprend là où on s’était arrêtés ✨",
     "yes": "Oui",
+    "close": "Presque",
     "no": "Non",
+    "notReally": "Pas vraiment",
+    "liveMoodOpeners": [
+      "Comment tu te sens en ce moment ?",
+      "Qu'est-ce que tu ressens là, tout de suite ?",
+      "Dans quel mood tu es ?",
+      "Comment est ton humeur là, maintenant ?",
+      "Qu'est-ce qui se rapproche le plus de ton humeur du moment ?"
+    ],
+    "clarifier": {
+      "quietCompany": "Présence calme",
+      "frustrated": "Frustré",
+      "lightChat": "Discussion légère",
+      "justTired": "Juste fatigué",
+      "deepChat": "Discussion profonde",
+      "someoneToListen": "Quelqu’un pour écouter",
+      "prompt": "D’accord. Qu’est-ce qui s’en approche le plus ?",
+      "evenQuieter": "Encore plus calme",
+      "aLittleLivelier": "Un peu plus animé",
+      "moreOfAConversation": "Plus de conversation",
+      "lighterThanThat": "Quelque chose de plus léger",
+      "deeperThanThat": "Quelque chose de plus profond",
+      "justChill": "Juste décompresser"
+    },
     "askName": "Quel nom d'affichage souhaitez-vous utiliser ?",
     "askAge": "Quel âge avez-vous ? (18–120)",
     "askGender": "Quel est votre genre ?",
@@ -1594,8 +1626,9 @@
     "resumeDraftIntro": "Tu as déjà commencé un profil. Voici ce que j’ai :",
     "startOver": "Recommencer",
     "continue": "Continuer",
-    "finalizingTitle": "Création de votre profil…",
-    "finalizingBody": "Patientez pendant que nous enregistrons vos informations.",
+    "finalizingTitle": "Création de votre profil temporaire…",
+    "finalizingBody": "Pendant que nous créons votre profil temporaire, nous cherchons aussi quelqu’un pour vous aider à démarrer le chat. Un instant…",
+    "handoffFallbackMessage": "Hé {display}, bienvenue ! N’hésitez pas à commencer à discuter.",
     "typing": "Saisie en cours…",
     "finishProfileNotice": "Terminez votre profil pour pouvoir envoyer des messages.",
     "consentNotice": "Veuillez accepter nos conditions pour commencer à discuter.",

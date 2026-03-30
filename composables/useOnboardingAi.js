@@ -208,6 +208,8 @@ export function useOnboardingAi() {
     __finalizeInFlight = true;
     if (typeof draft.setStage === "function") draft.setStage("finalizing");
     else draft.stage = "finalizing";
+    draft.setField?.("handoffPending", true);
+    draft.setField?.("moodFeedStage", "done");
     // Block any parallel mood-prompt auto-trigger while finalize + welcome
     // sequencing is still in progress.
     draft.setField?.("moodFeedDeferUntil", Date.now() + 7000);
@@ -245,34 +247,31 @@ export function useOnboardingAi() {
             .trim()
             .replace(/\s+/g, " ")
             .slice(0, 40) || "there";
-
-        const settingsUrl = "/settings";
-        const needsEmailLink = auth.authStatus === "anon_authenticated";
-        const moodDeferMs = needsEmailLink ? 2800 : 1400;
-        draft.setField?.("moodFeedDeferUntil", Date.now() + moodDeferMs);
-        const linkEmailUrl = localePath({
-          path: "/settings",
-          query: { linkEmail: "1" },
+        const handoffOk = await startPostOnboardingHandoff(receiverId, {
+          display,
+          rawBio,
         });
-        const welcome =
-          `${t("onboarding.welcomeHeadline", { name: display })} ` +
-          `[[br]] ` +
-          `${t("onboarding.welcomeBioIntro")} ` +
-          `[[divider]] ` +
-          `_${rawBio}_ ` +
-          `[[divider]] ` +
-          `${t("onboarding.welcomeSettings", { settingsUrl })}`;
 
-        await insertMessage(receiverId, IMCHATTY_ID, welcome);
-        await wait(1000);
-        if (needsEmailLink) {
-          const urgentLinkEmailMessage =
-            `${t("onboarding.urgentLinkEmail")} ` +
-            `[${t("components.profile-email-link.cta")}](${linkEmailUrl})`;
-          await insertMessage(receiverId, IMCHATTY_ID, urgentLinkEmailMessage);
-          await wait(1000);
+        if (!handoffOk) {
+          // Persona selection failed — fall back to ImChatty so the user
+          // at least lands in an active conversation.
+          try {
+            typingStore.set(IMCHATTY_ID, true);
+            await new Promise((resolve) => setTimeout(resolve, 900));
+            await insertMessage(
+              receiverId,
+              IMCHATTY_ID,
+              t("onboarding.handoffFallbackMessage", { display })
+            );
+            chat.addActivePeer?.(IMCHATTY_ID);
+            await chat.fetchChatUsers?.();
+            chat.setSelectedUser?.(IMCHATTY_ID);
+          } catch (fallbackErr) {
+            console.warn("[bot-handoff] fallback to ImChatty failed:", fallbackErr?.message || fallbackErr);
+          } finally {
+            typingStore.clear(IMCHATTY_ID);
+          }
         }
-        await maybeStartMoodFeedAfterWelcome(receiverId);
       }
 
       if (typeof draft.setStage === "function") draft.setStage("done");
@@ -292,6 +291,7 @@ export function useOnboardingAi() {
         );
       }
     } finally {
+      draft.setField?.("handoffPending", false);
       __finalizeInFlight = false;
     }
   }
@@ -301,6 +301,28 @@ export function useOnboardingAi() {
   }
   function getNoLabel() {
     return t("onboarding.no", "No");
+  }
+
+  function getLiveMoodOpener() {
+    const fallbacks = [
+      "How are you feeling right now?",
+      "What are you feeling right now?",
+      "What kind of mood are you in?",
+      "How's your mood right now?",
+      "What feels closest to your mood right now?",
+    ];
+    const translated = t("onboarding.liveMoodOpeners", fallbacks);
+    const options = Array.isArray(translated)
+      ? translated
+      : Array.isArray(fallbacks)
+      ? fallbacks
+      : [fallbacks];
+    const cleaned = options
+      .map((entry) => String(entry || "").trim())
+      .filter(Boolean);
+    if (!cleaned.length) return fallbacks[0];
+    const index = Math.floor(Math.random() * cleaned.length);
+    return cleaned[index] || fallbacks[0];
   }
 
   function isYes(text) {
@@ -697,52 +719,90 @@ if (!allowed) {
 
   
 
-  return { resume, sendUserMessage };
-}
-  async function maybeStartMoodFeedAfterWelcome(receiverId) {
-    if (!shouldCollectMoodFeed()) return false;
+  async function startPostOnboardingHandoff(
+    receiverId,
+    { display = "", rawBio = "" } = {}
+  ) {
     if (!receiverId) return false;
-    const stage = draft.moodFeedStage || "idle";
-    if (stage !== "idle" && stage !== "done") return false;
-    if (stage === "done") return false;
-
-    try {
-      const needs = await $fetch("/api/mood-feed/needs-prompt");
-      if (needs && needs.needsPrompt === false) return false;
-    } catch {
-      // ignore and continue to prompt
-    }
-
-    const prompt = await ensureMoodFeedPrompt();
-    if (!prompt) return false;
-    draft.setField?.("moodFeedStage", "prompt");
-    draft.setField?.("moodFeedAttempts", 0);
-    draft.setField?.("moodFeedAnswer", "");
-    draft.setField?.("moodFeedRefined", "");
-    draft.setField?.("moodFeedDeferUntil", 0);
+    if ((draft.liveMoodStage || "idle") !== "idle") return false;
 
     const { insertMessage } = useDb();
+    const currentProfile = auth.userProfile || {};
+    const currentUser = auth.user || auth.session?.user || {};
+    const lookingFor = Array.isArray(currentProfile?.looking_for)
+      ? currentProfile.looking_for.filter(Boolean)
+      : [];
+    const nudges = {
+      nudge_add_photo: !currentProfile?.avatar_url,
+      nudge_link_email: !(currentUser?.email && currentUser?.email_confirmed_at),
+      nudge_set_looking_for: lookingFor.length === 0,
+      nudge_open_settings:
+        !currentProfile?.avatar_url ||
+        lookingFor.length === 0 ||
+        !(currentUser?.email && currentUser?.email_confirmed_at),
+    };
+    let handoff = null;
+    try {
+      const res = await $fetch("/api/bot/handoff", {
+        method: "POST",
+        body: {
+          displayname: display || null,
+          bio: rawBio || null,
+          locale: locale?.value || "en",
+          nudges,
+        },
+      });
+      handoff = res?.handoff || null;
+    } catch (err) {
+      console.warn("[bot-handoff] create failed:", err?.message || err);
+      return false;
+    }
+
+    const personaKey = String(handoff?.personaKey || "").trim();
+    const personaProfile = handoff?.profile || null;
+    const personaUserId = String(personaProfile?.user_id || "").trim();
+    const personaName =
+      String(personaProfile?.displayname || personaKey || "Someone").trim() ||
+      "Someone";
+    const personaAvatarUrl = String(personaProfile?.avatar_url || "").trim();
+    if (!personaKey || !personaUserId) return false;
+
+    const moodPrompt = getLiveMoodOpener();
+    const opener =
+      `Hey ${display || "there"}, I'm ${personaName}. Your profile is live — you can start browsing and chatting right now. Or if you want, answer one quick question and I'll find people who actually match your vibe. ${moodPrompt}`;
+
+    draft.setField?.("moodFeedStage", "done");
+    draft.setField?.("liveMoodStage", "prompt");
+    draft.setField?.("liveMoodPersonaKey", personaKey);
+    draft.setField?.("liveMoodPersonaUserId", personaUserId);
+    draft.setField?.("liveMoodPersonaDisplayName", personaName);
+    draft.setField?.("liveMoodPersonaAvatarUrl", personaAvatarUrl || "");
+    draft.setField?.("liveMoodPrompt", moodPrompt);
+    draft.setField?.("liveMoodInput", "");
+    draft.setField?.("liveMoodCandidate", null);
+    draft.setField?.("liveMoodNudges", nudges);
+    draft.setField?.("handoffPending", false);
+
     let typingTimer = null;
     try {
-      typingStore.set(IMCHATTY_ID, true);
+      typingStore.set(personaUserId, true);
       await new Promise((resolve) => {
         typingTimer = setTimeout(resolve, 900);
       });
-      await insertMessage(receiverId, IMCHATTY_ID, formatMoodPrompt(prompt));
-      chat.addActivePeer?.(IMCHATTY_ID);
-      try {
-        await $fetch("/api/mood-feed/prompted", { method: "POST" });
-      } catch (err) {
-        console.warn(
-          "[mood-feed] prompt acknowledge failed:",
-          err?.message || err
-        );
-      }
+      await insertMessage(receiverId, personaUserId, opener);
+      chat.addActivePeer?.(personaUserId);
+      await chat.fetchChatUsers?.();
+      chat.setSelectedUser?.(personaUserId);
     } catch (err) {
-      console.warn("[mood-feed] prompt insert failed:", err?.message || err);
+      console.warn("[bot-handoff] message insert failed:", err?.message || err);
+      return false;
     } finally {
       if (typingTimer) clearTimeout(typingTimer);
-      typingStore.clear(IMCHATTY_ID);
+      typingStore.clear(personaUserId);
     }
+
     return true;
   }
+
+  return { resume, sendUserMessage };
+}

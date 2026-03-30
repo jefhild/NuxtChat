@@ -1565,6 +1565,14 @@
       "translated": "Translated",
       "someone": "This user",
       "theirLanguage": "their language"
+    },
+    "matchStrip": {
+      "label": "matches",
+      "online": "Online matches",
+      "offline": "Offline matches",
+      "ai": "AI matches",
+      "random": "Random match",
+      "refresh": "Refresh matches"
     }
   },
   "composables": {
@@ -1582,7 +1590,31 @@
     "guestStart": "Great, let's start! What display name do you want?",
     "resume": "Let's pick up where we left off ✨",
     "yes": "Yes",
+    "close": "Close",
     "no": "No",
+    "notReally": "Not really",
+    "liveMoodOpeners": [
+      "How are you feeling right now?",
+      "What are you feeling right now?",
+      "What kind of mood are you in?",
+      "How's your mood right now?",
+      "What feels closest to your mood right now?"
+    ],
+    "clarifier": {
+      "quietCompany": "Quiet company",
+      "frustrated": "Frustrated",
+      "lightChat": "Light chat",
+      "justTired": "Just tired",
+      "deepChat": "Deep chat",
+      "someoneToListen": "Someone to listen",
+      "prompt": "Got it. Which sounds closer?",
+      "evenQuieter": "Even quieter",
+      "aLittleLivelier": "A little livelier",
+      "moreOfAConversation": "More of a conversation",
+      "lighterThanThat": "Something a bit lighter",
+      "deeperThanThat": "Something a bit deeper",
+      "justChill": "Just chill"
+    },
     "askName": "What display name do you want?",
     "askAge": "How old are you? (18–120)",
     "askGender": "What is your gender?",
@@ -1616,8 +1648,9 @@
     "resumeDraftIntro": "You already started a profile. Here’s what I have:",
     "startOver": "Start over",
     "continue": "Continue",
-    "finalizingTitle": "Creating your profile…",
-    "finalizingBody": "Hang tight while we save your details.",
+    "finalizingTitle": "Creating your temporary profile…",
+    "finalizingBody": "While we create your temporary profile, we're also finding someone to help you get started with chat. Hold on…",
+    "handoffFallbackMessage": "Hey {display}, welcome! Feel free to start chatting.",
     "typing": "Typing…",
     "finishProfileNotice": "Finish your profile to message people.",
     "consentNotice": "Please consent to our terms, and start chatting.",

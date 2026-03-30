@@ -191,7 +191,7 @@ function isAiId(id) {
                   ? u.counterpoint_enabled
                   : true,
               honey_enabled:
-                typeof u.honey_enabled === "boolean" ? u.honey_enabled : true,
+                typeof u.honey_enabled === "boolean" ? u.honey_enabled : false,
               editorial_enabled:
                 typeof u.editorial_enabled === "boolean"
                   ? u.editorial_enabled

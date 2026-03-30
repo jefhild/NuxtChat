@@ -16,6 +16,29 @@
           <div class="text-body-2 text-medium-emphasis mt-1">
             {{ $t("onboarding.finalizingBody") }}
           </div>
+          <div
+            v-if="handoffRevealName"
+            class="handoff-reveal mt-5"
+          >
+            <div class="handoff-reveal__label text-caption text-medium-emphasis mb-2">
+              {{ $t("onboarding.handoffLabel", "Getting your first chat ready") }}
+            </div>
+            <div class="handoff-reveal__card">
+              <v-avatar size="72" class="handoff-reveal__avatar">
+                <v-img
+                  v-if="handoffRevealAvatar"
+                  :src="handoffRevealAvatar"
+                  cover
+                />
+                <span v-else class="handoff-reveal__fallback">
+                  {{ handoffInitial }}
+                </span>
+              </v-avatar>
+              <div class="text-body-1 font-weight-medium mt-3">
+                {{ handoffRevealName }}
+              </div>
+            </div>
+          </div>
         </div>
         <template v-else>
           <div
@@ -188,6 +211,16 @@ const lastBotMessageId = computed(() => {
     if (list[i]?.from !== "me") return list[i]?.id || null;
   }
   return null;
+});
+const handoffRevealName = computed(() =>
+  String(draft.liveMoodPersonaDisplayName || "").trim()
+);
+const handoffRevealAvatar = computed(() =>
+  String(draft.liveMoodPersonaAvatarUrl || "").trim()
+);
+const handoffInitial = computed(() => {
+  const name = handoffRevealName.value;
+  return name ? name.charAt(0).toUpperCase() : "?";
 });
 
 // let parent toggle it while awaiting the bot
@@ -586,6 +619,39 @@ function onCaptchaError() {
   color: rgba(226, 232, 240, 0.95);
   margin-left: 4px;
 }
+
+.handoff-reveal {
+  width: 100%;
+  max-width: 280px;
+}
+
+.handoff-reveal__card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  border-radius: 20px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+}
+
+.handoff-reveal__avatar {
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.3);
+}
+
+.handoff-reveal__fallback {
+  align-items: center;
+  background: rgba(59, 130, 246, 0.2);
+  color: #e2e8f0;
+  display: inline-flex;
+  font-size: 1.4rem;
+  font-weight: 700;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}
+
 @keyframes blink {
   0%,
   80%,

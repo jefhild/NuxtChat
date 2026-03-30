@@ -1542,6 +1542,14 @@
       "translated": "已翻译",
       "someone": "该用户",
       "theirLanguage": "对方的语言"
+    },
+    "matchStrip": {
+      "label": "匹配",
+      "online": "在线匹配",
+      "offline": "离线匹配",
+      "ai": "AI匹配",
+      "random": "随机",
+      "refresh": "刷新匹配"
     }
   },
   "composables": {
@@ -1559,7 +1567,31 @@
     "guestStart": "太好了，我们开始吧！你想使用什么昵称？",
     "resume": "让我们从上次停下的地方继续 ✨",
     "yes": "是",
+    "close": "接近",
     "no": "否",
+    "notReally": "不太对",
+    "liveMoodOpeners": [
+      "你现在感觉怎么样？",
+      "你现在是什么感觉？",
+      "你现在是什么心情？",
+      "你现在的情绪怎么样？",
+      "哪一种最接近你现在的心情？"
+    ],
+    "clarifier": {
+      "quietCompany": "安静陪伴",
+      "frustrated": "烦躁",
+      "lightChat": "轻松聊",
+      "justTired": "只是累了",
+      "deepChat": "深入聊",
+      "someoneToListen": "想找个人听我说",
+      "prompt": "明白了。哪个更接近？",
+      "evenQuieter": "更安静一些",
+      "aLittleLivelier": "活跃一点",
+      "moreOfAConversation": "更多交流",
+      "lighterThanThat": "轻松一点",
+      "deeperThanThat": "深入一点",
+      "justChill": "随便聊聊"
+    },
     "askName": "你想使用什么显示名称？",
     "askAge": "你多大了？（18–120）",
     "askGender": "你的性别是？",
@@ -1593,8 +1625,9 @@
     "resumeDraftIntro": "你已经开始填写资料了。这是目前的信息：",
     "startOver": "重新开始",
     "continue": "继续",
-    "finalizingTitle": "正在创建你的个人资料…",
-    "finalizingBody": "请稍候，我们正在保存你的信息。",
+    "finalizingTitle": "正在创建你的临时资料…",
+    "finalizingBody": "在创建你的临时资料的同时，我们也在寻找一位能帮你开始聊天的人。请稍等…",
+    "handoffFallbackMessage": "嗨 {display}，欢迎！随时可以开始聊天。",
     "typing": "正在输入…",
     "finishProfileNotice": "完成资料后即可发送消息。",
     "consentNotice": "请同意条款，然后开始聊天。",

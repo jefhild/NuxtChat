@@ -25,6 +25,19 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
     moodFeedAttempts: 0,
     moodFeedStatus: "", // 'published' | 'pending_validation'
     moodFeedDeferUntil: 0,
+    liveMoodStage: "idle", // 'idle' | 'prompt' | 'confirm' | 'clarify' | 'done'
+    liveMoodPersonaKey: "",
+    liveMoodPersonaUserId: "",
+    liveMoodPersonaDisplayName: "",
+    liveMoodPersonaAvatarUrl: "",
+    liveMoodPrompt: "",
+    liveMoodInput: "",
+    liveMoodCandidate: null,
+    liveMoodClarifierOptions: [],
+    liveMoodRefinementCount: 0,
+    liveMoodNudges: null,
+    liveMoodNextStepStage: "idle", // 'idle' | 'choose' | 'dormant' | 'done'
+    handoffPending: false,
   }),
 
   getters: {
@@ -97,6 +110,19 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
         "moodFeedAttempts",
         "moodFeedStatus",
         "moodFeedDeferUntil",
+        "liveMoodStage",
+        "liveMoodPersonaKey",
+        "liveMoodPersonaUserId",
+        "liveMoodPersonaDisplayName",
+        "liveMoodPersonaAvatarUrl",
+        "liveMoodPrompt",
+        "liveMoodInput",
+        "liveMoodCandidate",
+        "liveMoodClarifierOptions",
+        "liveMoodRefinementCount",
+        "liveMoodNudges",
+        "liveMoodNextStepStage",
+        "handoffPending",
       ]);
 
       if (!allowed.has(key)) return;
@@ -137,6 +163,19 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
       this.moodFeedAttempts = 0;
       this.moodFeedStatus = "";
       this.moodFeedDeferUntil = 0;
+      this.liveMoodStage = "idle";
+      this.liveMoodPersonaKey = "";
+      this.liveMoodPersonaUserId = "";
+      this.liveMoodPersonaDisplayName = "";
+      this.liveMoodPersonaAvatarUrl = "";
+      this.liveMoodPrompt = "";
+      this.liveMoodInput = "";
+      this.liveMoodCandidate = null;
+      this.liveMoodClarifierOptions = [];
+      this.liveMoodRefinementCount = 0;
+      this.liveMoodNudges = null;
+      this.liveMoodNextStepStage = "idle";
+      this.handoffPending = false;
       this.stage = "idle";
       this.updatedAt = null;
       try {
@@ -171,6 +210,19 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           "moodFeedAttempts",
           "moodFeedStatus",
           "moodFeedDeferUntil",
+          "liveMoodStage",
+          "liveMoodPersonaKey",
+          "liveMoodPersonaUserId",
+          "liveMoodPersonaDisplayName",
+          "liveMoodPersonaAvatarUrl",
+          "liveMoodPrompt",
+          "liveMoodInput",
+          "liveMoodCandidate",
+          "liveMoodClarifierOptions",
+          "liveMoodRefinementCount",
+          "liveMoodNudges",
+          "liveMoodNextStepStage",
+          "handoffPending",
         ]) {
           if (k in data) this[k] = data[k];
         }
@@ -207,6 +259,19 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           moodFeedAttempts,
           moodFeedStatus,
           moodFeedDeferUntil,
+          liveMoodStage,
+          liveMoodPersonaKey,
+          liveMoodPersonaUserId,
+          liveMoodPersonaDisplayName,
+          liveMoodPersonaAvatarUrl,
+          liveMoodPrompt,
+          liveMoodInput,
+          liveMoodCandidate,
+          liveMoodClarifierOptions,
+          liveMoodRefinementCount,
+          liveMoodNudges,
+          liveMoodNextStepStage,
+          handoffPending,
         } = this;
         localStorage.setItem("onboardingDraft", JSON.stringify({
           displayName,
@@ -230,6 +295,19 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           moodFeedAttempts,
           moodFeedStatus,
           moodFeedDeferUntil,
+          liveMoodStage,
+          liveMoodPersonaKey,
+          liveMoodPersonaUserId,
+          liveMoodPersonaDisplayName,
+          liveMoodPersonaAvatarUrl,
+          liveMoodPrompt,
+          liveMoodInput,
+          liveMoodCandidate,
+          liveMoodClarifierOptions,
+          liveMoodRefinementCount,
+          liveMoodNudges,
+          liveMoodNextStepStage,
+          handoffPending,
         }));
       } catch {
         /* ignore */
