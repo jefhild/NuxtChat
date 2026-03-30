@@ -151,7 +151,7 @@
         }
       },
       "meta": {
-        "title": "Chat anonyme avec de vraies personnes | ImChatty",
+        "title": "Chat anonyme avec de vraies personnes",
         "description": "Commencez un chat textuel anonyme avec de vraies personnes sur ImChatty. Évitez la vidéo, réduisez la friction de l'inscription, et explorez des sujets, des humeurs et des entrées guidées dans votre langue.",
         "ogTitle": "Chat anonyme avec de vraies personnes",
         "ogType": "website",
@@ -567,7 +567,7 @@
       "rights-contact-text1": "Si vous souhaitez exercer votre droit de voir, corriger, compléter ou supprimer vos Données Personnelles, veuillez nous contacter à ",
       "rights-contact-text2": "Après vérification de votre identité, nous tenterons de répondre rapidement à votre demande, à condition que nous n'agissions pas contrairement à la législation applicable en répondant à votre demande.",
       "meta": {
-        "title": "Politique de confidentialité | ImChatty",
+        "title": "Politique de confidentialité",
         "description": "Découvrez comment ImChatty gère vos données, votre vie privée et l’expérience de chat anonyme.",
         "ogTitle": "Politique de confidentialité ImChatty",
         "ogType": "Website",
@@ -659,7 +659,7 @@
         "heading": "Discutez en tête-à-tête avec de vraies personnes",
         "subtitle": "Rejoignez des milliers d’utilisateurs qui discutent avec de vraies personnes, échangent sur leurs centres d’intérêt et créent des liens.",
         "meta": {
-          "title": "Profils de Chat et Discussions Tendance | ImChatty",
+          "title": "Profils de Chat et Discussions Tendance",
           "description": "Découvrez les meilleures discussions et profils de chat — explorez les conversations les plus populaires avec des échanges intelligents et des centres d’intérêt qui vous ressemblent.",
           "ogTitle": "Meilleurs Profils de Chat sur ImChatty",
           "ogType": "website",
@@ -744,7 +744,7 @@
       "index": {
         "title": "Étiquettes",
         "meta": {
-          "title": "Parcourir les tags | ImChatty",
+          "title": "Parcourir les tags",
           "description": "Découvrez les tags populaires sur ImChatty et explorez des contenus adaptés à vos centres d’intérêt réels et conversations authentiques.",
           "ogTitle": "Explorer les tags sur ImChatty",
           "ogType": "website",
@@ -800,7 +800,7 @@
         "subtitle": "Explore notable voices featured across recent coverage.",
         "metaDescription": "Browse Newsmesh articles grouped by the people mentioned inside.",
         "meta": {
-          "title": "Browse People | ImChatty",
+          "title": "Browse People",
           "description": "Browse Newsmesh articles grouped by the people mentioned inside.",
           "ogTitle": "Browse by People | ImChatty",
           "ogDescription": "Explore notable voices featured across recent coverage.",
@@ -852,7 +852,7 @@
       "ai": {
         "title": "Profils IA Populaires",
         "meta": {
-          "title": "Profils IA populaires | ImChatty",
+          "title": "Profils IA populaires",
           "description": "Découvrez les profils de chatbots les plus populaires sur ImChatty. Des personnalités uniques, des réponses adaptées et des centres d’intérêt variés.",
           "ogTitle": "Profils IA en vogue sur ImChatty",
           "ogType": "website",
@@ -900,7 +900,7 @@
       "popular": {
         "title": "Profils les Plus Populaires",
         "meta": {
-          "title": "Profils populaires | ImChatty",
+          "title": "Profils populaires",
           "description": "Explorez les profils les plus populaires sur ImChatty. Parcourez des membres authentiques avec des centres d’intérêt personnalisés et des conversations de qualité.",
           "ogTitle": "Profils populaires sur ImChatty",
           "ogType": "website",
@@ -935,7 +935,7 @@
         "subtitle": "Profils récents et populaires de vrais membres",
         "filters": "Parcourir les profils",
         "meta": {
-          "title": "Parcourez les profils des membres et rencontrez des personnes pour discuter | ImChatty",
+          "title": "Parcourez les profils des membres et rencontrez des personnes pour discuter",
           "description": "Découvrez nos profils ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",
           "ogTitle": "Parcourez les profils des membres et rencontrez des personnes pour discuter",
           "ogType": "Website",

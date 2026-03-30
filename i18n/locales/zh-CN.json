@@ -151,7 +151,7 @@
         }
       },
       "meta": {
-        "title": "与真人匿名聊天 | ImChatty",
+        "title": "与真人匿名聊天",
         "description": "在 ImChatty 与真人开启匿名文字聊天。无需视频，降低注册门槛，并可按你的语言浏览主题、情绪入口和引导式开始方式。",
         "ogTitle": "与真人匿名聊天",
         "ogType": "website",
@@ -567,7 +567,7 @@
       "rights-contact-text1": "如果您想行使查看、更正、完善或删除您个人数据的权利，请通过以下方式联系我们",
       "rights-contact-text2": "在验证您的身份后，我们将尝试快速满足您的请求，前提是我们不会通过满足您的请求而违反适用立法。",
       "meta": {
-        "title": "隐私政策 | ImChatty",
+        "title": "隐私政策",
         "description": "了解 ImChatty 如何处理您的数据、保护隐私并提供匿名聊天体验。",
         "ogTitle": "ImChatty 隐私政策",
         "ogType": "Website",
@@ -659,7 +659,7 @@
         "heading": "与真人一对一聊天",
         "subtitle": "加入成千上万的用户，与真人聊天、讨论兴趣并建立联系。",
         "meta": {
-          "title": "热门聊天档案与流行讨论 | ImChatty",
+          "title": "热门聊天档案与流行讨论",
           "description": "探索最精彩的聊天话题与热门档案 —— 发现智能对话、个性鲜明的聊天者，以及与你兴趣相投的交流体验。",
           "ogTitle": "ImChatty 上的热门聊天档案",
           "ogType": "website",
@@ -744,7 +744,7 @@
       "index": {
         "title": "所有不同的标签",
         "meta": {
-          "title": "浏览标签 | ImChatty",
+          "title": "浏览标签",
           "description": "探索 ImChatty 上的热门标签，发现与你兴趣匹配的内容和真实讨论。",
           "ogTitle": "探索 ImChatty 上的标签",
           "ogType": "website",
@@ -800,7 +800,7 @@
         "subtitle": "Explore notable voices featured across recent coverage.",
         "metaDescription": "Browse Newsmesh articles grouped by the people mentioned inside.",
         "meta": {
-          "title": "Browse People | ImChatty",
+          "title": "Browse People",
           "description": "Browse Newsmesh articles grouped by the people mentioned inside.",
           "ogTitle": "Browse by People | ImChatty",
           "ogDescription": "Explore notable voices featured across recent coverage.",
@@ -852,7 +852,7 @@
       "ai": {
         "title": "热门AI档案",
         "meta": {
-          "title": "热门AI资料 | ImChatty",
+          "title": "热门AI资料",
           "description": "探索 ImChatty 上最受欢迎的 AI 聊天资料。浏览具有个性化特点、智能回复和兴趣标签的聊天机器人。",
           "ogTitle": "ImChatty 热门AI档案",
           "ogType": "website",
@@ -900,7 +900,7 @@
       "popular": {
         "title": "最受欢迎的档案",
         "meta": {
-          "title": "热门用户资料 | ImChatty",
+          "title": "热门用户资料",
           "description": "探索 ImChatty 上最受欢迎的用户资料。查看真实成员的详细介绍、兴趣爱好和优质对话。",
           "ogTitle": "ImChatty 热门资料页面",
           "ogType": "website",
@@ -935,7 +935,7 @@
         "subtitle": "来自真实成员的最新和热门资料",
         "filters": "浏览档案",
         "meta": {
-          "title": "浏览会员档案，结识聊天对象 | ImChatty",
+          "title": "浏览会员档案，结识聊天对象",
           "description": "查看我们的档案！浏览具有真实档案、个性化详细信息和真正兴趣的高评分成员。",
           "ogTitle": "浏览会员档案，结识聊天对象",
           "ogType": "Website",

@@ -267,9 +267,10 @@ onMounted(() => {
 
 useHead(() => ({
   titleTemplate: (titleChunk) => {
-    const base = titleChunk || "ImChatty";
+    const stripped = (titleChunk || "").replace(/ ?\| ?ImChatty$/i, "").trim();
+    const base = stripped || "ImChatty";
     const prefix = unreadCount.value > 0 ? `(${unreadLabel.value}) ` : "";
-    return `${prefix}${base}`;
+    return stripped ? `${prefix}${base} | ImChatty` : "ImChatty";
   },
 }));
 
