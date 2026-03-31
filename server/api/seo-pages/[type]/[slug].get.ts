@@ -29,22 +29,27 @@ export default defineEventHandler(async (event) => {
       .select(SEO_PAGE_SELECT)
       .eq("page_type", pageType)
       .eq("slug", slug)
-      .eq("is_published", true)
       .order("updated_at", { ascending: false });
 
     if (error) throw error;
-    if (!data?.length) {
+
+    const allRows = (data || []) as SeoPageRow[];
+    const publishedRows = allRows.filter((row) => row.is_published);
+
+    // 404 only if the page has no published version at all
+    if (!publishedRows.length) {
       throw createError({ statusCode: 404, statusMessage: "SEO page not found" });
     }
 
-    const rows = (data || []) as SeoPageRow[];
+    // Serve translation variants even if only the English row is published
+    const rows = allRows;
     const preferred =
       rows.find((row) => normalizeLocaleCode(row.locale) === locale) ||
       rows.find((row) => normalizeLocaleCode(row.locale) === "en") ||
       rows[0];
     const availableLocales = Array.from(
       new Set(
-        rows.map((row) => normalizeLocaleCode(row.locale)).filter(Boolean)
+        allRows.map((row) => normalizeLocaleCode(row.locale)).filter(Boolean)
       )
     );
 
