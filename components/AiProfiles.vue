@@ -144,9 +144,9 @@ import { resolveProfileLocalization } from "@/composables/useProfileLocalization
 const { t, te, locale } = useI18n();
 const localPath = useLocalePath();
 
-const defaultSection = "AI Voices";
+const defaultSection = "Mood";
 const defaultDescription =
-  "Active newsroom personas grouped by category so you can see who shapes each rewrite.";
+  "Chat companions matched to how you're feeling right now.";
 
 const translateFirst = (paths, fallback) => {
   for (const key of paths) {
@@ -154,17 +154,11 @@ const translateFirst = (paths, fallback) => {
   }
   return fallback;
 };
-const slugify = (value = "") =>
-  String(value)
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 
 const categoryCopy = (slug) => {
   const basePaths = [
-    `pages.about.page.aiProfiles.categories.${slug}`,
-    `pages.about.aiProfiles.categories.${slug}`,
+    `pages.about.page.aiProfiles.moodGroups.${slug}`,
+    `pages.about.aiProfiles.moodGroups.${slug}`,
   ];
   const defaultPaths = [
     "pages.about.page.aiProfiles.default",
@@ -178,6 +172,11 @@ const categoryCopy = (slug) => {
     defaultSection
   );
 
+  const title = translateFirst(
+    basePaths.map((p) => `${p}.title`),
+    slug
+  );
+
   const description = translateFirst(
     basePaths.map((p) => `${p}.description`).concat(
       defaultPaths.map((p) => `${p}.description`)
@@ -188,73 +187,7 @@ const categoryCopy = (slug) => {
   const orderKey = basePaths.map((p) => `${p}.order`).find((k) => te(k));
   const order = orderKey ? Number(t(orderKey)) : 99;
 
-  return { section, description, order };
-};
-
-const personaCopy = {
-  "civic-sentinel": {
-    bias: "Center-left - institutionalist",
-    angle:
-      "Prioritizes rule-of-law, coalition building, and social protections when weighing geopolitical moves.",
-    region: "US/EU",
-    categorySlug: "world-politics",
-  },
-  "liberty-ledger": {
-    bias: "Center-right - free-market",
-    angle:
-      "Scrutinizes government spending, champions decentralization, and spotlights individual liberties.",
-    region: "US",
-    categorySlug: "world-politics",
-  },
-  "market-maven": {
-    bias: "Pro-growth - investor-forward",
-    angle:
-      "Frames stories around innovation, capital flows, and how policy shifts ripple through markets.",
-    region: "Global",
-    categorySlug: "business-economy",
-  },
-  "workers-wire": {
-    bias: "Pro-labor - social safety nets",
-    angle:
-      "Centers wages, workplace power, and the human impact of corporate or policy decisions.",
-    region: "US/EU",
-    categorySlug: "business-economy",
-  },
-  futureproof: {
-    bias: "Pro-innovation - venture mindset",
-    angle:
-      "Highlights breakthroughs, founder narratives, and how technology can accelerate productivity.",
-    region: "Global",
-    categorySlug: "science-technology",
-  },
-  "safety-net": {
-    bias: "Precautionary - regulation-minded",
-    angle:
-      "Surfaces governance gaps, safety guardrails, and the social cost of unchecked tech.",
-    region: "Global",
-    categorySlug: "science-technology",
-  },
-  "cultural-currents": {
-    bias: "Inclusive - reform-first",
-    angle:
-      "Explores representation, power dynamics, and the social movements pushing change.",
-    region: "US",
-    categorySlug: "society-identity",
-  },
-  "tradition-keeper": {
-    bias: "Conservative - institution-first",
-    angle:
-      "Looks for continuity, community stability, and the tradeoffs that come with rapid shifts.",
-    region: "US",
-    categorySlug: "society-identity",
-  },
-  "maga-dude": {
-    bias: "Center-right - free-market",
-    angle:
-      "Scrutinizes government spending, champions decentralization, and spotlights individual liberties.",
-    region: "US",
-    categorySlug: "world-politics",
-  },
+  return { section, title, description, order };
 };
 
 const {
@@ -273,33 +206,24 @@ const personas = computed(() => {
       profile,
       readerLocale: locale?.value,
     });
-    const fallback =
-      personaCopy[persona.persona_key] || personaCopy[profile.slug] || {};
-
-    const categorySlug =
-      fallback.categorySlug ||
-      slugify(persona?.category?.slug || persona?.category?.name || "");
 
     return {
       id: persona.id,
       name: localized.displayname || profile.displayname || persona.persona_key,
       role: persona.role || "Contributor",
-      bias: persona.bias || fallback.bias || "",
+      bias: persona.bias || "",
       angle:
         persona.angle ||
         persona.summary ||
         localized.tagline ||
         localized.bio ||
-        fallback.angle ||
         "",
-      region: persona.region || persona.locale || fallback.region || "",
+      region: persona.region || persona.locale || "",
       slug: profile.slug || null,
       genderPath: profile.gender_id ? getGenderPath(profile.gender_id) : null,
       genderId: profile.gender_id || null,
       avatarUrl: profile.avatar_url || null,
-      categoryTitle:
-        persona?.category?.name || fallback.categoryTitle || "AI Voices",
-      categorySlug: categorySlug || fallback.categorySlug || "ai-voices",
+      moodGroup: persona.mood_group || "other",
       tagline:
         localized.tagline || localized.bio || persona.role || "Contributor",
     };
@@ -310,15 +234,14 @@ const categoryBlocks = computed(() => {
   const grouped = new Map();
 
   personas.value.forEach((profile) => {
-    const slug = profile.categorySlug || "ai-voices";
+    const slug = profile.moodGroup || "other";
     const copy = categoryCopy(slug);
-    const title = profile.categoryTitle || "AI Voices";
 
     if (!grouped.has(slug)) {
       grouped.set(slug, {
         slug,
         section: copy.section || defaultSection,
-        title,
+        title: copy.title || slug,
         description: copy.description || defaultDescription,
         order: copy.order || 99,
         profiles: [],
@@ -329,8 +252,8 @@ const categoryBlocks = computed(() => {
   });
 
   return Array.from(grouped.values()).sort((a, b) => {
-    if (a.slug === "ai-voices" && b.slug !== "ai-voices") return 1;
-    if (b.slug === "ai-voices" && a.slug !== "ai-voices") return -1;
+    if (a.slug === "other" && b.slug !== "other") return 1;
+    if (b.slug === "other" && a.slug !== "other") return -1;
     if (a.order === b.order) return a.title.localeCompare(b.title);
     return a.order - b.order;
   });

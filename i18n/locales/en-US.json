@@ -299,8 +299,8 @@
         "join_us-title": "Join Us",
         "join_us-text": "We invite you to join Imchatty and be a part of our journey. Whether you’re looking for a place to chat, share ideas, or simply meet new people, Imchatty is here for you. Together, we can create a dynamic and fun community.",
         "aiProfiles": {
-          "title": "Meet the AI newsroom",
-          "subtitle": "Each category uses a couple of distinct voices so you can see who is shaping the coverage and what lens they bring."
+          "title": "Meet the AI companions",
+          "subtitle": "Each mood has a pair of distinct personalities — one male, one female — ready to match your vibe."
         }
       },
       "faq": {
@@ -361,48 +361,56 @@
       },
       "aiProfiles": {
         "default": {
-          "section": "AI Voices",
-          "description": "Active newsroom personas grouped by category so you can see who shapes each rewrite."
+          "section": "Mood",
+          "description": "Chat companions matched to how you're feeling right now."
         },
-        "categories": {
-          "world-politics": {
-            "section": "Global & Governance",
-            "description": "Voices that read the room on diplomacy, conflict, and public policy so you can see where coverage is anchored.",
+        "moodGroups": {
+          "bored": {
+            "section": "Mood",
+            "title": "Feeling Bored",
+            "description": "Need a distraction? These two will spark something unexpected.",
             "order": 1
           },
-          "business-economy-finance": {
-            "section": "Markets & Money",
-            "description": "Lenses on growth, equity, and how money moves through communities and boardrooms.",
+          "cant-sleep": {
+            "section": "Mood",
+            "title": "Can't Sleep",
+            "description": "Someone to talk to when your mind won't slow down at 2 am.",
             "order": 2
           },
-          "science-technology": {
-            "section": "Innovation",
-            "description": "Balancing optimism and caution on the tools shaping the near future.",
+          "want-advice": {
+            "section": "Mood",
+            "title": "Need Some Advice",
+            "description": "Thoughtful and honest — ready to listen and offer a gentle nudge.",
             "order": 3
           },
-          "society-identity": {
-            "section": "Culture",
-            "description": "Cultural interpreters who come at stories from different lived lenses.",
+          "light-chat": {
+            "section": "Mood",
+            "title": "Up for Light Chat",
+            "description": "Playful and easy — no agenda, just good vibes.",
             "order": 4
           },
-          "entertainment-pop-culture": {
-            "section": "Pop Culture",
-            "description": "Personas that capture the pulse of entertainment, trends, and celebrity news.",
+          "lonely": {
+            "section": "Mood",
+            "title": "Feeling Lonely",
+            "description": "Warm and present — because everyone deserves to feel less alone.",
             "order": 5
           },
-          "lifestyle-health": {
-            "section": "Health & Lifestyle",
-            "description": "Personas that focus on wellness, lifestyle trends, and personal development.",
+          "sad": {
+            "section": "Mood",
+            "title": "Sad or Processing",
+            "description": "No pressure to explain. Just a steady presence that listens.",
             "order": 6
           },
-          "society-culture-identity": {
-            "section": "Identity Culture & Society",
-            "description": "Personas that focus on the dynamics of culture, identity, and societal trends.",
+          "calm": {
+            "section": "Mood",
+            "title": "Calm & Reflective",
+            "description": "For the moments when you want to slow down and think things through.",
             "order": 7
           },
-          "sports-athletics": {
-            "section": "Sports & Athletics",
-            "description": "Personas that cover the world of sports, athletes, and competitive events.",
+          "curious": {
+            "section": "Mood",
+            "title": "Restless & Curious",
+            "description": "Explorers at heart — ready to wander into interesting conversations.",
             "order": 8
           }
         }

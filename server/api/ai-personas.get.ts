@@ -15,6 +15,7 @@ const PUBLIC_PERSONA_SELECT = `
   angle,
   region,
   language_code,
+  mood_group,
   category:categories!ai_personas_category_id_fkey (
     id,
     name,

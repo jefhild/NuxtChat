@@ -299,53 +299,61 @@
         "join_us-text": "Nous vous invitons à rejoindre Imchatty et à faire partie de notre voyage. Que vous cherchiez un endroit pour chatter, partager des idées, ou simplement rencontrer de nouvelles personnes, Imchatty est là pour vous. Ensemble, nous pouvons créer une communauté dynamique et amusante.",
         "aiProfiles": {
           "default": {
-            "section": "Voix IA",
-            "description": "Des personas rédactionnels actifs, regroupés par catégorie pour voir qui façonne chaque article."
+            "section": "Ambiance",
+            "description": "Des compagnons de conversation adaptés à votre humeur du moment."
           },
-          "categories": {
-            "world-politics": {
-              "section": "Gouvernance mondiale",
-              "description": "Des voix qui lisent la diplomatie, les conflits et les politiques publiques pour situer la couverture.",
+          "title": "Rencontrez les compagnons IA",
+          "subtitle": "Chaque ambiance dispose d'une paire de personnalités distinctes prêtes à s'adapter à votre état d'esprit.",
+          "moodGroups": {
+            "bored": {
+              "section": "Ambiance",
+              "title": "Vous vous ennuyez",
+              "description": "Besoin d'une distraction ? Ces deux-là sauront vous surprendre.",
               "order": 1
             },
-            "business-economy-finance": {
-              "section": "Marchés & Économie",
-              "description": "Des regards sur la croissance, l'équité, et la circulation de l'argent dans les communautés et conseils d'administration.",
+            "cant-sleep": {
+              "section": "Ambiance",
+              "title": "Vous n'arrivez pas à dormir",
+              "description": "Quelqu'un à qui parler quand vos pensées ne s'arrêtent pas à 2h du matin.",
               "order": 2
             },
-            "science-technology": {
-              "section": "Innovation",
-              "description": "Équilibrer optimisme et prudence sur les technologies qui façonnent le futur proche.",
+            "want-advice": {
+              "section": "Ambiance",
+              "title": "Besoin de conseils",
+              "description": "Attentionnés et honnêtes — prêts à écouter et à vous aider doucement.",
               "order": 3
             },
-            "society-identity": {
-              "section": "Culture",
-              "description": "Des interprètes culturels qui abordent les sujets depuis des vécus différents.",
+            "light-chat": {
+              "section": "Ambiance",
+              "title": "Pour une discussion légère",
+              "description": "Détendu et sans prise de tête — juste pour le plaisir.",
               "order": 4
             },
-            "entertainment-pop-culture": {
-              "section": "Culture pop",
-              "description": "Des personas qui captent le pouls du divertissement, des tendances et des célébrités.",
+            "lonely": {
+              "section": "Ambiance",
+              "title": "Vous vous sentez seul·e",
+              "description": "Chaleureux et présents — parce que chacun mérite de se sentir moins seul.",
               "order": 5
             },
-            "lifestyle-health": {
-              "section": "Santé & Lifestyle",
-              "description": "Des personas centrés sur le bien-être, les tendances de vie et le développement personnel.",
+            "sad": {
+              "section": "Ambiance",
+              "title": "Triste ou en réflexion",
+              "description": "Pas besoin d'expliquer. Juste une présence stable qui écoute.",
               "order": 6
             },
-            "society-culture-identity": {
-              "section": "Identité, culture & société",
-              "description": "Des personas qui explorent les dynamiques culturelles, identitaires et sociétales.",
+            "calm": {
+              "section": "Ambiance",
+              "title": "Calme et réfléchi·e",
+              "description": "Pour les moments où vous souhaitez ralentir et prendre le temps de réfléchir.",
               "order": 7
             },
-            "sports-athletics": {
-              "section": "Sport & Athlétisme",
-              "description": "Des personas qui couvrent le monde du sport, des athlètes et des compétitions.",
+            "curious": {
+              "section": "Ambiance",
+              "title": "Agité·e et curieux·se",
+              "description": "Des explorateurs dans l'âme — prêts à s'aventurer dans des conversations intéressantes.",
               "order": 8
             }
-          },
-          "title": "Découvrez la rédaction IA",
-          "subtitle": "Chaque catégorie s’appuie sur plusieurs voix distinctes pour montrer qui façonne la couverture et sous quel prisme."
+          }
         }
       },
       "faq": {
