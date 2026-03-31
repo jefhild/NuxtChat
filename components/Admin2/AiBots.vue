@@ -559,11 +559,23 @@
                   <v-row dense>
                     <v-col cols="12" md="6">
                       <v-select
+                        v-model="form.persona.mood_group"
+                        :items="moodGroupOptions"
+                        item-title="label"
+                        item-value="value"
+                        label="Mood group (About page grouping)"
+                        clearable
+                        hint="Which mood section this bot appears under on the About page and match UI"
+                        persistent-hint
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-select
                         v-model="form.persona.category_id"
                         :items="categoryOptions"
                         item-title="name"
                         item-value="id"
-                        label="Category (expertise)"
+                        label="Category (editorial / article pipeline)"
                         clearable
                       />
                     </v-col>
@@ -1000,6 +1012,7 @@ const form = reactive({
     frequency_penalty: 0,
     max_response_tokens: 600,
     max_history_messages: 10,
+    mood_group: null,
     category_id: null,
     system_prompt_template: "",
     response_style_template: "",
@@ -1053,6 +1066,17 @@ const postForm = reactive({
 });
 
 const categoryOptions = computed(() => categories.value || []);
+
+const moodGroupOptions = [
+  { label: "Feeling Bored",      value: "bored" },
+  { label: "Can't Sleep",        value: "cant-sleep" },
+  { label: "Need Some Advice",   value: "want-advice" },
+  { label: "Up for Light Chat",  value: "light-chat" },
+  { label: "Feeling Lonely",     value: "lonely" },
+  { label: "Sad or Processing",  value: "sad" },
+  { label: "Calm & Reflective",  value: "calm" },
+  { label: "Restless & Curious", value: "curious" },
+];
 const postTypeOptions = [
   { label: "Text", value: "text" },
   { label: "Link", value: "link" },
@@ -1249,6 +1273,7 @@ const resetForm = () => {
     frequency_penalty: 0,
     max_response_tokens: 600,
     max_history_messages: 10,
+    mood_group: null,
     category_id: null,
     system_prompt_template: "",
     response_style_template: "",
@@ -1325,6 +1350,7 @@ const populateForm = (bot) => {
     max_response_tokens: bot.max_response_tokens ?? 600,
     max_history_messages: bot.max_history_messages ?? 10,
     category_id: bot.category_id ?? bot.category?.id ?? null,
+    mood_group: bot.mood_group ?? null,
     system_prompt_template: bot.system_prompt_template || "",
     response_style_template: bot.response_style_template || "",
     editorial_system_prompt_template: bot.editorial_system_prompt_template || "",
@@ -1509,6 +1535,7 @@ const handleSubmit = async () => {
       max_response_tokens: Number(form.persona.max_response_tokens),
       max_history_messages: Number(form.persona.max_history_messages),
       category_id: form.persona.category_id || null,
+      mood_group: form.persona.mood_group || null,
       moltbook_config: {
         enabled: Boolean(moltbookForm.enabled),
         agent_name: String(moltbookForm.agent_name || "").trim() || null,
