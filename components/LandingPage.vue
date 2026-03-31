@@ -160,12 +160,14 @@
 
           <div class="mood-chips">
             <v-chip
-              v-for="chip in moodCopy.chips"
-              :key="chip"
+              v-for="item in moodChipsWithPresets"
+              :key="item.preset?.key ?? item.label"
               size="large"
               variant="outlined"
+              class="mood-chip-interactive"
+              @click="onMoodChipClick(item.preset)"
             >
-              {{ chip }}
+              {{ item.label }}
             </v-chip>
           </div>
 
@@ -305,6 +307,7 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useLocalePath } from "#imports";
 import { useAuthStore } from "@/stores/authStore1";
+import { MOOD_PRESETS } from "@/constants/moodPresets";
 import { useDb } from "@/composables/useDB";
 
 const { t, tm, rt } = useI18n();
@@ -380,6 +383,20 @@ const moodCopy = computed(() => ({
   chips: translatedStringList("mood.chips"),
   cta: t(homePageKey("mood.cta")),
 }));
+
+// Zip translated chip labels with preset keys for click handling.
+// Array order must match MOOD_PRESETS order (bored, cant_sleep, want_advice, light_chat).
+const moodChipsWithPresets = computed(() =>
+  moodCopy.value.chips.map((label, i) => ({
+    label,
+    preset: MOOD_PRESETS[i] ?? null,
+  }))
+);
+
+function onMoodChipClick(preset) {
+  if (!preset) return;
+  navigateTo(localPath(`/match?preset=${preset.key}`));
+}
 
 const finalCtaCopy = computed(() => ({
   kicker: t(homePageKey("finalCta.kicker")),
@@ -743,6 +760,15 @@ watch(
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 28px;
+}
+
+.mood-chip-interactive {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mood-chip-interactive:hover {
+  transform: translateY(-2px);
 }
 
 .final-cta-grid {

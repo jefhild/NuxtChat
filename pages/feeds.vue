@@ -9,6 +9,14 @@
       </div>
     </div>
 
+    <!-- Mood matching strip -->
+    <div class="feeds-mood-match-strip mb-4">
+      <p class="text-body-2 text-medium-emphasis text-center mb-3">
+        {{ $t("pages.feeds.findSomeone") }}
+      </p>
+      <MatchMoodChipsBar @select="onFeedsMoodSelect" />
+    </div>
+
     <MoodFeedHomeQuestionBar variant="feeds" @posted="loadEntries" />
 
     <section class="feeds-list" aria-labelledby="feeds-latest-heading">
@@ -200,6 +208,10 @@ const localPath = useLocalePath();
 const config = useRuntimeConfig();
 const siteConfig = useSiteConfig();
 const PAGE_SIZE = 30;
+
+function onFeedsMoodSelect(preset) {
+  navigateTo(localPath(`/match?preset=${preset.key}`));
+}
 
 const infiniteSentinel = ref(null);
 let infiniteObserver = null;
@@ -814,6 +826,11 @@ if (import.meta.client) {
 
 .feeds-header-shell {
   margin-bottom: 16px;
+}
+
+.feeds-mood-match-strip {
+  max-width: 680px;
+  margin: 0 auto 8px;
 }
 
 .feeds-list {

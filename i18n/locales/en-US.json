@@ -257,7 +257,8 @@
       "registerBody": "Finish registration to create your profile and keep using the Mood Feed.",
       "registerNotNow": "Not now",
       "registerGoChat": "Go to chat",
-      "registerNotice": "Finish registration to create your profile."
+      "registerNotice": "Finish registration to create your profile.",
+      "findSomeone": "Find someone in this mood to chat with:"
     },
     "about": {
       "heading": "About Us",
@@ -1035,6 +1036,39 @@
         "twitterDescription": "Sign in to start anonymous conversations on ImChatty with real people or AI profiles. Connect using Google, Facebook, or email.",
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
+    },
+    "match": {
+      "kicker": "Mood matching",
+      "title": "Find someone who gets it",
+      "subtitle": "Pick how you feel right now. We'll find people who match your vibe.",
+      "seoTitle": "Mood Match — Find Someone to Chat With | ImChatty",
+      "seoDescription": "Find real people and AI personas matched to your mood. Chat anonymously based on how you feel right now.",
+      "moodSet": "Showing matches for: {mood}",
+      "signInToSave": "Sign in to save your mood",
+      "empty": "No matches found yet. Try a different mood or check back soon.",
+      "sections": {
+        "online": "Online now",
+        "offline": "Recently active",
+        "ai": "AI personas"
+      },
+      "signInDialog": {
+        "title": "Sign in to start chatting",
+        "body": "Create a free account or sign in to start a conversation with this person.",
+        "cancel": "Not now",
+        "signIn": "Sign in"
+      },
+      "presets": {
+        "bored": "I'm bored",
+        "cant_sleep": "I can't sleep",
+        "want_advice": "I want advice",
+        "light_chat": "I want a light chat"
+      },
+      "onboardingDialog": {
+        "title": "Start a conversation",
+        "body": "To chat with real people or AI personas, you'll go through a quick setup. It takes less than a minute and you can stay anonymous.",
+        "cancel": "Not now",
+        "start": "Get started"
+      }
     }
   },
   "components": {
@@ -1573,6 +1607,13 @@
       "ai": "AI matches",
       "random": "Random match",
       "refresh": "Refresh matches"
+    },
+    "candidateCard": {
+      "anonymous": "Anonymous",
+      "online": "online",
+      "chat": "Chat",
+      "chatAi": "Chat with AI",
+      "chatWith": "Chat with {name}"
     }
   },
   "composables": {
@@ -1671,6 +1712,31 @@
       "saveFailed": "I’ll need to validate your Mood Feed entry before posting it.",
       "skip": "Skip",
       "skipAck": "No worries. I’ll ask again later."
+    }
+  },
+  "match": {
+    "emotion": {
+      "lonely": "Lonely",
+      "calm": "Calm",
+      "annoyed": "Annoyed",
+      "overwhelmed": "Overwhelmed",
+      "playful": "Playful",
+      "curious": "Curious",
+      "hopeful": "Hopeful",
+      "sad": "Sad"
+    },
+    "intent": {
+      "be_heard": "Wants to be heard",
+      "listen": "Wants to listen",
+      "distract_me": "Needs distraction",
+      "deep_talk": "Deep conversation",
+      "casual_chat": "Casual chat",
+      "meet_someone_similar": "Meet someone similar"
+    },
+    "energy": {
+      "drained": "Low energy",
+      "normal": "Normal",
+      "wired": "Wired"
     }
   }
 }

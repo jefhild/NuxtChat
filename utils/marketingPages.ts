@@ -161,6 +161,90 @@ const pageCopy = {
       metaDescription:
         "Meet new people online through chat on ImChatty. Start a simple text conversation and keep the first interaction low pressure.",
     },
+    talkToStrangersOnline: {
+      title: "Talk to Strangers Online",
+      subtitle: "A simple, text-first place to start a real conversation with someone you have never met.",
+      heroTitle: "Talk to Strangers Online",
+      heroBody:
+        "The appeal of talking to strangers online has always been the same: a clean start, no history, and a conversation that goes wherever it goes.",
+      body: [
+        "## Why talking to strangers online still works",
+        "There is something specific about a conversation with someone you do not know. It is not weighted down by shared history, mutual friends, or the usual social accounting. You can say what you actually think and see what comes back.",
+        "## A better way to begin",
+        "ImChatty focuses on text, which immediately reduces pressure. You are not managing how you look — you are just writing a message. Mood-based matching gives conversations a starting point so the first message is easier to write.",
+        "## Who this is a good fit for",
+        "People who want casual conversation, users who prefer text over video, and anyone who wants a clean start without their social network involved.",
+      ].join("\n\n"),
+      highlights: [
+        "Start a real conversation without complicated setup",
+        "Text-first means no camera pressure",
+        "Mood matching gives the conversation a direction",
+      ],
+      relatedLinks: [
+        { label: "Mood-based chat", href: "/mood-based-chat" },
+        { label: "Anonymous chat", href: "/anonymous-chat" },
+        { label: "Meet new people online", href: "/meet-new-people-online" },
+      ],
+      metaTitle: "Talk to Strangers Online | ImChatty",
+      metaDescription:
+        "Start a text conversation with someone new on ImChatty. No video required, no complicated setup, no performance pressure.",
+    },
+    needSomeoneToTalkTo: {
+      title: "Need Someone to Talk To",
+      subtitle: "When you want a real conversation with someone who is actually there, this is a simple way to find one.",
+      heroTitle: "Need Someone to Talk To?",
+      heroBody:
+        "Sometimes you just need someone on the other end of a conversation. ImChatty makes that easier to find.",
+      body: [
+        "## When you need to talk but do not know where to start",
+        "There are moments when you want a conversation but everyone in your usual circle feels like the wrong choice. Maybe they are asleep. Maybe you just want to talk to someone who does not already know the context.",
+        "## What this is and what it is not",
+        "This is not a crisis service. What this is: a simple, low-pressure way to have a real conversation with another person. Text-based, anonymous if you want, and available when your usual options are not.",
+        "## Getting started",
+        "Pick a mood that fits how you are feeling, skip the signup if that is easier, and send a first message. Someone is usually there.",
+      ].join("\n\n"),
+      highlights: [
+        "Start a real conversation in under a minute",
+        "No camera, no profile performance",
+        "Mood matching finds someone who wants the same kind of chat",
+      ],
+      relatedLinks: [
+        { label: "Mood-based chat", href: "/mood-based-chat" },
+        { label: "Anonymous chat", href: "/anonymous-chat" },
+        { label: "Can't sleep chat", href: "/cant-sleep-chat" },
+      ],
+      metaTitle: "Need Someone to Talk To? Start Here | ImChatty",
+      metaDescription:
+        "When you need someone to talk to, ImChatty gives you a fast, text-first way to start a real conversation — no signup wall, no camera pressure.",
+    },
+    cantSleepChat: {
+      title: "Can't Sleep? Find Someone to Chat With",
+      subtitle: "When it's late and your mind won't stop, sometimes a conversation is the simplest fix.",
+      heroTitle: "Can't Sleep? Find Someone to Chat With",
+      heroBody:
+        "It is 2am, you are still awake, and staring at the ceiling is not helping. Sometimes the thing that actually works is just talking to someone.",
+      body: [
+        "## The specific problem with being awake at 2am",
+        "Being unable to sleep is rarely just physical. Most of the time the body is tired but the mind will not cooperate. The feeling that someone else is awake on the other side of a conversation can help.",
+        "## Why a chat is different from scrolling",
+        "Opening a social feed at midnight usually makes things worse. A conversation is different — it requires something of you, which can pull your mind off whatever loop it has been running.",
+        "## Who else is up right now",
+        "Because ImChatty has users across many time zones, there is almost always someone awake somewhere. AI personas are also available at any hour without timezone dependency.",
+      ].join("\n\n"),
+      highlights: [
+        "Available late at night when everyone else is offline",
+        "Real people across time zones, plus AI personas",
+        "Text-only — no camera, no bright lights",
+      ],
+      relatedLinks: [
+        { label: "Mood-based chat", href: "/mood-based-chat" },
+        { label: "Need someone to talk to", href: "/need-someone-to-talk-to" },
+        { label: "Anonymous chat", href: "/anonymous-chat" },
+      ],
+      metaTitle: "Can't Sleep? Chat With Someone Online | ImChatty",
+      metaDescription:
+        "Can't sleep and want to talk to someone? ImChatty is available late at night with real people and AI personas ready to chat.",
+    },
   },
 } as const;
 
@@ -180,6 +264,18 @@ const pageDefinitions = {
   "meet-new-people-online": {
     sectionLabel: "Topic",
     key: "meetNewPeopleOnline",
+  },
+  "talk-to-strangers-online": {
+    sectionLabel: "Topic",
+    key: "talkToStrangersOnline",
+  },
+  "need-someone-to-talk-to": {
+    sectionLabel: "Guide",
+    key: "needSomeoneToTalkTo",
+  },
+  "cant-sleep-chat": {
+    sectionLabel: "Topic",
+    key: "cantSleepChat",
   },
 } as const;
 

@@ -94,6 +94,16 @@ onMounted(async () => {
     console.warn('[callback] profile completeness check failed (non-fatal)', e)
   }
 
+  // Check sessionStorage for a post-login redirect stored by specific pages (e.g. /match)
+  const sessionNext =
+    typeof sessionStorage !== "undefined"
+      ? sessionStorage.getItem("postLoginNext")
+      : null;
+  if (sessionNext && sessionNext.startsWith("/") && !sessionNext.startsWith("//")) {
+    sessionStorage.removeItem("postLoginNext");
+    return router.replace(localPath(sessionNext));
+  }
+
   router.replace(localPath(nextPath))
 })
 </script>

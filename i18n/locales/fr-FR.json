@@ -256,7 +256,8 @@
       "registerBody": "Terminez l'inscription pour créer votre profil et continuer à utiliser le fil d'humeur.",
       "registerNotNow": "Pas maintenant",
       "registerGoChat": "Aller au chat",
-      "registerNotice": "Terminez l'inscription pour créer votre profil."
+      "registerNotice": "Terminez l'inscription pour créer votre profil.",
+      "findSomeone": "Trouver quelqu'un dans cet état d'esprit :"
     },
     "about": {
       "heading": "À propos de nous",
@@ -1019,6 +1020,39 @@
         "twitterDescription": "Connectez-vous pour commencer des conversations anonymes sur ImChatty avec des personnes réelles ou des profils IA. Utilisez Google, Facebook ou votre e-mail.",
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
+    },
+    "match": {
+      "kicker": "Correspondance d'humeur",
+      "title": "Trouvez quelqu'un qui comprend",
+      "subtitle": "Choisissez comment vous vous sentez. Nous trouverons des personnes qui correspondent.",
+      "seoTitle": "Correspondance d'humeur | ImChatty",
+      "seoDescription": "Trouvez des personnes correspondant à votre humeur.",
+      "moodSet": "Résultats pour : {mood}",
+      "signInToSave": "Connectez-vous pour enregistrer votre humeur",
+      "empty": "Aucune correspondance trouvée. Essayez une autre humeur.",
+      "sections": {
+        "online": "En ligne maintenant",
+        "offline": "Récemment actif",
+        "ai": "Personnages IA"
+      },
+      "signInDialog": {
+        "title": "Connectez-vous pour discuter",
+        "body": "Créez un compte gratuit ou connectez-vous.",
+        "cancel": "Pas maintenant",
+        "signIn": "Se connecter"
+      },
+      "presets": {
+        "bored": "Je m'ennuie",
+        "cant_sleep": "Je ne peux pas dormir",
+        "want_advice": "Je veux des conseils",
+        "light_chat": "Je veux discuter légèrement"
+      },
+      "onboardingDialog": {
+        "title": "Commencer une conversation",
+        "body": "Pour discuter avec des personnes réelles ou des personnages IA, une configuration rapide est nécessaire. Cela prend moins d'une minute et vous pouvez rester anonyme.",
+        "cancel": "Pas maintenant",
+        "start": "Commencer"
+      }
     }
   },
   "components": {
@@ -1551,6 +1585,13 @@
       "ai": "IA",
       "random": "Aléatoire",
       "refresh": "Rafraîchir"
+    },
+    "candidateCard": {
+      "anonymous": "Anonyme",
+      "online": "en ligne",
+      "chat": "Discuter",
+      "chatAi": "Discuter avec l'IA",
+      "chatWith": "Discuter avec {name}"
     }
   },
   "composables": {
@@ -1649,6 +1690,31 @@
       "saveFailed": "Je dois valider ton entrée du fil d'humeur avant de la publier.",
       "skip": "Passer",
       "skipAck": "Pas de souci. Je redemanderai plus tard."
+    }
+  },
+  "match": {
+    "emotion": {
+      "lonely": "Seul(e)",
+      "calm": "Calme",
+      "annoyed": "Agacé(e)",
+      "overwhelmed": "Dépassé(e)",
+      "playful": "Joueur/Joueuse",
+      "curious": "Curieux/Curieuse",
+      "hopeful": "Plein(e) d'espoir",
+      "sad": "Triste"
+    },
+    "intent": {
+      "be_heard": "Veut être entendu(e)",
+      "listen": "Veut écouter",
+      "distract_me": "A besoin de distraction",
+      "deep_talk": "Conversation profonde",
+      "casual_chat": "Discussion décontractée",
+      "meet_someone_similar": "Rencontrer quelqu'un de similaire"
+    },
+    "energy": {
+      "drained": "Épuisé(e)",
+      "normal": "Normal",
+      "wired": "Surexcité(e)"
     }
   }
 }

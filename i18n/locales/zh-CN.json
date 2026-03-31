@@ -256,7 +256,8 @@
       "registerBody": "完成注册以创建个人资料并继续使用心情动态。",
       "registerNotNow": "暂不",
       "registerGoChat": "前往聊天",
-      "registerNotice": "完成注册以创建个人资料。"
+      "registerNotice": "完成注册以创建个人资料。",
+      "findSomeone": "找一个心情相近的人聊聊："
     },
     "about": {
       "heading": "关于我们",
@@ -1019,6 +1020,39 @@
         "twitterDescription": "登录以开始在 ImChatty 上与真人或 AI 进行匿名对话。支持 Google、Facebook 或邮箱登录。",
         "twitterImage": "https://imchatty.com/images/article-image.webp"
       }
+    },
+    "match": {
+      "kicker": "心情匹配",
+      "title": "找到懂你的人",
+      "subtitle": "告诉我们你的心情，我们帮你找到匹配的人。",
+      "seoTitle": "心情匹配 | ImChatty",
+      "seoDescription": "根据心情匹配真实用户和AI角色。",
+      "moodSet": "正在显示匹配结果：{mood}",
+      "signInToSave": "登录以保存你的心情",
+      "empty": "暂无匹配结果，请尝试其他心情。",
+      "sections": {
+        "online": "当前在线",
+        "offline": "最近活跃",
+        "ai": "AI角色"
+      },
+      "signInDialog": {
+        "title": "登录后开始聊天",
+        "body": "注册免费账户或登录。",
+        "cancel": "暂时不",
+        "signIn": "登录"
+      },
+      "presets": {
+        "bored": "我很无聊",
+        "cant_sleep": "我睡不着",
+        "want_advice": "我想要建议",
+        "light_chat": "我想随便聊聊"
+      },
+      "onboardingDialog": {
+        "title": "开始对话",
+        "body": "要与真实用户或AI角色聊天，需要完成简单设置，不到一分钟，可保持匿名。",
+        "cancel": "暂时不",
+        "start": "开始"
+      }
     }
   },
   "components": {
@@ -1550,6 +1584,13 @@
       "ai": "AI匹配",
       "random": "随机",
       "refresh": "刷新匹配"
+    },
+    "candidateCard": {
+      "anonymous": "匿名",
+      "online": "在线",
+      "chat": "聊天",
+      "chatAi": "与AI聊天",
+      "chatWith": "与{name}聊天"
     }
   },
   "composables": {
@@ -1648,6 +1689,31 @@
       "saveFailed": "发布前需要先审核你的心情动态内容。",
       "skip": "跳过",
       "skipAck": "没问题。我稍后再问。"
+    }
+  },
+  "match": {
+    "emotion": {
+      "lonely": "孤独",
+      "calm": "平静",
+      "annoyed": "烦恼",
+      "overwhelmed": "不知所措",
+      "playful": "嬉戏",
+      "curious": "好奇",
+      "hopeful": "充满希望",
+      "sad": "悲伤"
+    },
+    "intent": {
+      "be_heard": "想被倾听",
+      "listen": "想倾听别人",
+      "distract_me": "需要分散注意力",
+      "deep_talk": "深度交流",
+      "casual_chat": "随意聊天",
+      "meet_someone_similar": "遇见相似的人"
+    },
+    "energy": {
+      "drained": "精力耗尽",
+      "normal": "正常",
+      "wired": "亢奋"
     }
   }
 }

@@ -5,6 +5,9 @@ const LANDING_PAGE_TYPES: Record<string, "landing"> = {
   "chat-without-signup": "landing",
   "mood-based-chat": "landing",
   "meet-new-people-online": "landing",
+  "talk-to-strangers-online": "landing",
+  "need-someone-to-talk-to": "landing",
+  "cant-sleep-chat": "landing",
 };
 
 export function useLandingSeoPage(slug: string) {

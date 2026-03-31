@@ -459,6 +459,12 @@ async function onConfirmRefine() {
     await loadPrompt();
     await loadPostEligibility(refinedPromptKey.value || promptKey.value || null);
     emit("posted");
+
+    // Fire-and-forget: infer mood from the posted text and save it for matching.
+    // Only runs for authenticated users; errors are silently ignored.
+    if (auth.authStatus !== "unauthenticated") {
+      inferMoodFromFeedPost(refinedOriginal.value || refinedPreview.value || "");
+    }
   } catch (err) {
     const { statusCode, statusMessage, data } = extractFetchError(err);
     if (statusCode === 429 && data?.limitType) {
@@ -493,6 +499,32 @@ async function onConfirmRefine() {
 
 function onRefineEdit() {
   refineDialogOpen.value = false;
+}
+
+/** Fire-and-forget: infer mood signals from a mood feed text response, then save them. */
+async function inferMoodFromFeedPost(text) {
+  if (!text || text.length < 5) return;
+  try {
+    const inferResult = await $fetch("/api/live-mood/infer", {
+      method: "POST",
+      body: { text, locale: locale.value },
+    });
+    const state = inferResult?.state;
+    if (!state?.emotion || !state?.intent || !state?.energy) return;
+
+    await $fetch("/api/live-mood/self-select", {
+      method: "POST",
+      body: {
+        emotion: state.emotion,
+        intent: state.intent,
+        energy: state.energy,
+        time_horizon: state.time_horizon || "right_now",
+        free_text: text,
+      },
+    });
+  } catch {
+    // Silently ignore — this is a background enhancement, not blocking UX
+  }
 }
 
 function onCaptchaVerified(token) {
