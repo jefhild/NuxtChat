@@ -88,10 +88,29 @@ function scoreIntake(mine: any, theirs: any): number {
   return Math.min(Math.round(score * 1000) / 1000, 1.0);
 }
 
+const normalizeLocale = (value: unknown): string => {
+  const code = String(value || "").trim().toLowerCase();
+  if (code.startsWith("zh")) return "zh";
+  if (code.startsWith("fr")) return "fr";
+  if (code.startsWith("ru")) return "ru";
+  return "en";
+};
+
+/** Return translated displayname/tagline for the requested locale, falling back to base profile */
+function resolvedField(profile: any, field: string, locale: string): string | null {
+  const translations: any[] = profile.profile_translations || [];
+  const exact = translations.find((t: any) => t.locale === locale);
+  if (exact?.[field]) return exact[field];
+  const en = translations.find((t: any) => t.locale === "en");
+  if (en?.[field]) return en[field];
+  return profile[field] ?? null;
+}
+
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event);
   if (!user) throw createError({ statusCode: 401, message: "Unauthorized" });
 
+  const locale = normalizeLocale(getQuery(event).locale);
   const supabase = await getServiceRoleClient(event);
   const onlineCutoff = new Date(Date.now() - ONLINE_WINDOW_MS).toISOString();
 
@@ -155,7 +174,7 @@ export default defineEventHandler(async (event) => {
 
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, displayname, avatar_url, tagline, is_ai, gender_id, countries:country_id (emoji)")
+      .select("user_id, displayname, avatar_url, tagline, is_ai, gender_id, countries:country_id (emoji), profile_translations(locale, displayname, tagline)")
       .in("user_id", candidateIds);
 
     // Include real users and honey bots; skip other AI profiles
@@ -180,9 +199,9 @@ export default defineEventHandler(async (event) => {
     const score = scoreIntake(myIntakeRow, intake);
     const candidate = {
       user_id:       candidateId,
-      displayname:   profile.displayname,
+      displayname:   resolvedField(profile, "displayname", locale),
       avatar_url:    profile.avatar_url,
-      tagline:       profile.tagline,
+      tagline:       resolvedField(profile, "tagline", locale),
       gender_id:     profile.gender_id ?? null,
       country_emoji: profile.country_emoji ?? null,
       score,
@@ -214,7 +233,8 @@ export default defineEventHandler(async (event) => {
         user_id,
         displayname,
         avatar_url,
-        tagline
+        tagline,
+        profile_translations(locale, displayname, tagline)
       )
     `)
     .eq("is_active", true)
@@ -239,9 +259,9 @@ export default defineEventHandler(async (event) => {
       const intake = aiIntakeMap.get(p.profile.user_id) ?? null;
       return {
         user_id:     p.profile.user_id,
-        displayname: p.profile.displayname,
+        displayname: resolvedField(p.profile, "displayname", locale),
         avatar_url:  p.profile.avatar_url,
-        tagline:     p.profile.tagline,
+        tagline:     resolvedField(p.profile, "tagline", locale),
         persona_key: p.persona_key,
         score:       scoreIntake(myIntakeRow, intake),
       };

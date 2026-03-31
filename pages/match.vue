@@ -156,7 +156,7 @@ import { useAuthStore } from "@/stores/authStore1";
 import { useMatchCandidates, bustMatchCache } from "@/composables/useMatchCandidates";
 import { getPreset } from "@/constants/moodPresets";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const route = useRoute();
 const localPath = useLocalePath();
 const auth = useAuthStore();
@@ -292,7 +292,9 @@ async function loadPublicPersonas() {
   try {
     const [personasRes, candidatesRes] = await Promise.all([
       $fetch("/api/match/public-personas"),
-      $fetch("/api/match/public-candidates"),
+      $fetch("/api/match/public-candidates", {
+        query: { locale: locale.value },
+      }),
     ]);
     publicPersonas.value = personasRes?.personas ?? [];
     publicOnline.value = candidatesRes?.online ?? [];

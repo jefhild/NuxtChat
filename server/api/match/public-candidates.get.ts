@@ -8,13 +8,31 @@
  *
  * No scoring is applied — results are sorted by recency / forced-online status.
  */
-import { defineEventHandler } from "h3";
+import { defineEventHandler, getQuery } from "h3";
 import { getServiceRoleClient } from "@/server/utils/aiBots";
+
+const normalizeLocale = (value: unknown): string => {
+  const code = String(value || "").trim().toLowerCase();
+  if (code.startsWith("zh")) return "zh";
+  if (code.startsWith("fr")) return "fr";
+  if (code.startsWith("ru")) return "ru";
+  return "en";
+};
+
+function resolvedField(profile: any, field: string, locale: string): string | null {
+  const translations: any[] = profile.profile_translations || [];
+  const exact = translations.find((t: any) => t.locale === locale);
+  if (exact?.[field]) return exact[field];
+  const en = translations.find((t: any) => t.locale === "en");
+  if (en?.[field]) return en[field];
+  return profile[field] ?? null;
+}
 
 const RECENT_DAYS = 7;
 const OFFLINE_LIMIT = 20;
 
 export default defineEventHandler(async (event) => {
+  const locale = normalizeLocale(getQuery(event).locale);
   const supabase = await getServiceRoleClient(event);
 
   const recentCutoff = new Date(
@@ -30,6 +48,7 @@ export default defineEventHandler(async (event) => {
         displayname,
         avatar_url,
         tagline,
+        profile_translations(locale, displayname, tagline),
         countries:country_id (emoji)
       )
     `)
@@ -44,7 +63,7 @@ export default defineEventHandler(async (event) => {
   // 2. Recently-active real users (exclude AI profiles)
   const { data: recentProfiles } = await supabase
     .from("profiles")
-    .select("user_id, displayname, avatar_url, tagline, countries:country_id (emoji)")
+    .select("user_id, displayname, avatar_url, tagline, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
     .eq("is_ai", false)
     .gte("last_active", recentCutoff)
     .order("last_active", { ascending: false })
@@ -69,9 +88,9 @@ export default defineEventHandler(async (event) => {
     const intake = intakeMap.get(p.user_id) ?? null;
     return {
       user_id: p.user_id,
-      displayname: p.displayname,
+      displayname: resolvedField(p, "displayname", locale),
       avatar_url: p.avatar_url,
-      tagline: p.tagline,
+      tagline: resolvedField(p, "tagline", locale),
       country_emoji: p.countries?.emoji ?? null,
       emotion: intake?.emotion ?? null,
       intent: intake?.intent ?? null,

@@ -27,14 +27,24 @@ export function setMatchFilter(filter) {
 }
 
 export function useMatchCandidates() {
+  const { locale } = useI18n();
+
+  const normalizeLocale = (code) => {
+    const c = String(code || "").trim().toLowerCase();
+    if (c.startsWith("zh")) return "zh";
+    if (c.startsWith("fr")) return "fr";
+    if (c.startsWith("ru")) return "ru";
+    return "en";
+  };
+
   async function fetchCandidates(force = false) {
     const now = Date.now();
     if (!force && _sharedData.value && now - _cachedAt < TTL_MS) return;
 
     _sharedLoading.value = true;
     _sharedError.value = null;
+    const localeCode = normalizeLocale(locale.value);
     try {
-      // On a forced refresh, snapshot the latest live mood state first
       if (force) {
         try {
           await $fetch("/api/match/snapshot", { method: "POST" });
@@ -42,12 +52,15 @@ export function useMatchCandidates() {
           // Non-fatal
         }
       }
-      const result = await $fetch("/api/match/candidates");
-      // If no intake yet, try a one-time snapshot to bootstrap the pipeline
+      const result = await $fetch("/api/match/candidates", {
+        query: { locale: localeCode },
+      });
       if (!result?.intake) {
         try {
           await $fetch("/api/match/snapshot", { method: "POST" });
-          const refreshed = await $fetch("/api/match/candidates");
+          const refreshed = await $fetch("/api/match/candidates", {
+            query: { locale: localeCode },
+          });
           _sharedData.value = refreshed;
           _cachedAt = Date.now();
           return;
