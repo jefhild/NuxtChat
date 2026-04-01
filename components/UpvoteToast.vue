@@ -5,6 +5,7 @@
     timeout="3200"
     transition="fade-transition"
     class="upvote-toast"
+    :z-index="2000"
   >
     <div class="upvote-toast__content">
       <v-avatar size="32" class="upvote-toast__avatar">
@@ -58,9 +59,18 @@ watch(
 </script>
 
 <style scoped>
+.upvote-toast :deep(.v-overlay__scrim) {
+  display: none;
+}
+
+.upvote-toast :deep(.v-overlay__content) {
+  pointer-events: auto;
+}
+
 .upvote-toast :deep(.v-snackbar__wrapper) {
   max-width: 320px;
   border-radius: 14px;
+  margin-top: 68px;
 }
 
 .upvote-toast__content {

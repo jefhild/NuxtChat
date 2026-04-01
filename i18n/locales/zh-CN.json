@@ -1097,7 +1097,7 @@
     },
     "button-upvote": {
       "upvote": "为此档案点赞",
-      "remove": "取消点赞",
+      "already-voted": "您已经为此档案点赞",
       "own-profile": "您不能为自己点赞"
     },
     "home": {

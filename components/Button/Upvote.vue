@@ -7,7 +7,7 @@
           :icon="hasVoted ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'"
           size="small"
           variant="text"
-          :disabled="!!isOwnProfile || isLoading"
+          :disabled="!!isOwnProfile || isLoading || hasVoted"
           @click="handleUpvote"
         ></v-btn>
       </span>
@@ -36,9 +36,8 @@ const isOwnProfile = computed(
 
 const tooltipText = computed(() => {
   if (isOwnProfile.value) return t("components.button-upvote.own-profile");
-  return hasVoted.value
-    ? t("components.button-upvote.remove")
-    : t("components.button-upvote.upvote");
+  if (hasVoted.value) return t("components.button-upvote.already-voted");
+  return t("components.button-upvote.upvote");
 });
 
 onMounted(async () => {

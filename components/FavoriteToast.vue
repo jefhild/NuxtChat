@@ -5,6 +5,7 @@
     timeout="3200"
     transition="fade-transition"
     class="favorite-toast"
+    :z-index="2000"
   >
     <div class="favorite-toast__content">
       <v-avatar size="32" class="favorite-toast__avatar">
@@ -57,9 +58,18 @@ watch(
 </script>
 
 <style scoped>
+.favorite-toast :deep(.v-overlay__scrim) {
+  display: none;
+}
+
+.favorite-toast :deep(.v-overlay__content) {
+  pointer-events: auto;
+}
+
 .favorite-toast :deep(.v-snackbar__wrapper) {
   max-width: 320px;
   border-radius: 14px;
+  margin-top: 68px;
 }
 
 .favorite-toast__content {

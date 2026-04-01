@@ -1097,7 +1097,7 @@
     },
     "button-upvote": {
       "upvote": "Voter pour ce profil",
-      "remove": "Retirer le vote",
+      "already-voted": "Vous avez déjà voté pour ce profil",
       "own-profile": "Vous ne pouvez pas voter pour vous-même"
     },
     "home": {

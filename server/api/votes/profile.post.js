@@ -37,14 +37,13 @@ export default defineEventHandler(async (event) => {
   let hasVoted = false;
 
   if (existing?.vote_type === "upvote") {
-    // Toggle off — remove the upvote
-    const { error: delErr } = await supa.from("votes").delete().eq("id", existing.id);
-    if (delErr) throw createError({ statusCode: 500, statusMessage: delErr.message });
-
-    const decremented = Math.max(0, newCount - 1);
-    await supa.from("profiles").update({ upvotes_count: decremented }).eq("id", profileRow.id);
-    newCount = decremented;
-    hasVoted = false;
+    // Already voted — return current state, no change
+    const { data: updated } = await supa
+      .from("profiles")
+      .select("upvotes_count")
+      .eq("id", profileRow.id)
+      .maybeSingle();
+    return { upvotes: updated?.upvotes_count ?? newCount, hasVoted: true };
   } else {
     // Add upvote via RPC (handles downvote conversion atomically)
     const { error: rpcErr } = await supa.rpc("upvote_profile", {

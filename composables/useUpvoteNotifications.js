@@ -53,7 +53,11 @@ export const useUpvoteNotifications = () => {
     // Look up this user's profiles.id (needed to filter votes table)
     const { data: profile } = await db.getUserProfileFromId(userId);
     const profileId = profile?.id;
-    if (!profileId) return;
+    if (!profileId) {
+      console.warn("[upvote-notifications] could not resolve profileId for user", userId);
+      return;
+    }
+    console.log("[upvote-notifications] subscribing for profileId", profileId);
 
     unsubscribe = await db.subscribeToUpvotes(profileId, {
       onInsert: async (row) => {

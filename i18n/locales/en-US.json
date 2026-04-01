@@ -1112,7 +1112,7 @@
     },
     "button-upvote": {
       "upvote": "Upvote this profile",
-      "remove": "Remove upvote",
+      "already-voted": "You already upvoted this profile",
       "own-profile": "You can't upvote yourself"
     },
     "home": {
