@@ -85,6 +85,21 @@
               "body": "Start a fun new conversation and see where it leads. Simple and straightforward, no overthinking.",
               "cta": "Meet new people"
             }
+          ],
+          "moreLabel": "Also explore:",
+          "moreLinks": [
+            {
+              "href": "/talk-to-strangers-online",
+              "label": "Talk to strangers online"
+            },
+            {
+              "href": "/need-someone-to-talk-to",
+              "label": "Need someone to talk to"
+            },
+            {
+              "href": "/cant-sleep-chat",
+              "label": "Can't sleep? Chat"
+            }
           ]
         },
         "proof": {
@@ -1084,7 +1099,10 @@
       "privacy": "Privacy Policy",
       "cookies": "Cookie Policy",
       "public-profiles": "Public Profiles",
-      "consent-preferences": "Consent Preferences"
+      "consent-preferences": "Consent Preferences",
+      "talk-to-strangers": "Talk to Strangers",
+      "need-to-talk": "Need to Talk",
+      "cant-sleep-chat": "Can't Sleep Chat"
     },
     "button-favorite": {
       "log-in": "Log In",

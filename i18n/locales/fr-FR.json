@@ -84,6 +84,21 @@
               "body": "Lancez une nouvelle conversation simplement, sans surpenser chaque étape.",
               "cta": "Rencontrer de nouvelles personnes"
             }
+          ],
+          "moreLabel": "À découvrir :",
+          "moreLinks": [
+            {
+              "href": "/talk-to-strangers-online",
+              "label": "Parler à des inconnus en ligne"
+            },
+            {
+              "href": "/need-someone-to-talk-to",
+              "label": "Besoin de quelqu'un à qui parler"
+            },
+            {
+              "href": "/cant-sleep-chat",
+              "label": "Insomnie ? Discutez"
+            }
           ]
         },
         "proof": {
@@ -1069,7 +1084,10 @@
       "privacy": "Politique de Confidentialité",
       "cookies": "Politique des Cookies",
       "public-profiles": "Profils Publics",
-      "consent-preferences": "Préférences de Consentement"
+      "consent-preferences": "Préférences de Consentement",
+      "talk-to-strangers": "Parler à des inconnus",
+      "need-to-talk": "Besoin de parler",
+      "cant-sleep-chat": "Insomnie – Discutez"
     },
     "button-favorite": {
       "log-in": "Se Connecter",

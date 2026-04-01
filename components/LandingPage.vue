@@ -91,6 +91,13 @@
               </NuxtLink>
             </v-col>
           </v-row>
+          <div v-if="moreLinks.length" class="entry-more-links text-center mt-5">
+            <span class="text-body-2 text-medium-emphasis mr-1">{{ entryCopy.moreLabel }}</span>
+            <template v-for="(link, i) in moreLinks" :key="link.href">
+              <NuxtLink :to="localPath(link.href)" class="entry-more-link">{{ link.label }}</NuxtLink>
+              <span v-if="i < moreLinks.length - 1" class="entry-more-sep">·</span>
+            </template>
+          </div>
         </v-container>
       </v-sheet>
     </section>
@@ -361,9 +368,11 @@ const entryCopy = computed(() => ({
   kicker: t(homePageKey("entry.kicker")),
   title: t(homePageKey("entry.title")),
   subtitle: t(homePageKey("entry.subtitle")),
+  moreLabel: t(homePageKey("entry.moreLabel")),
 }));
 
 const entryCards = computed(() => translatedObjectList("entry.cards"));
+const moreLinks = computed(() => translatedObjectList("entry.moreLinks"));
 
 const proofCopy = computed(() => ({
   kicker: t(homePageKey("proof.kicker")),
@@ -647,6 +656,26 @@ watch(
   text-decoration: none;
   display: block;
   height: 100%;
+}
+
+.entry-more-links {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.entry-more-link {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.entry-more-link:hover {
+  text-decoration: underline;
+}
+
+.entry-more-sep {
+  color: rgba(var(--v-theme-on-surface), 0.35);
+  margin: 0 6px;
 }
 
 .entry-card {

@@ -28,13 +28,19 @@
   <div
     v-if="!isMobile"
     class="app-footer app-footer--desktop"
-    :class="{ 'app-footer--chat': isChatRoute, 'app-footer--feeds': isFeedsRoute }"
+    :class="{
+      'app-footer--chat': isChatRoute,
+      'app-footer--feeds': isFeedsRoute,
+      'app-footer--collapsible': desktopChatFooter,
+      'app-footer--hidden': desktopChatFooter && !footerVisible,
+    }"
   >
     <Footer />
   </div>
 
   <div
     v-else
+    ref="mobileFooterRef"
     class="app-footer app-footer--mobile"
     :class="{
       'app-footer--hidden': footerToggleEnabled && !footerVisible,
@@ -149,6 +155,27 @@ const footerToggleEnabled = computed(
     isSettingsRoute.value ||
     isAdminRoute.value
 );
+const desktopChatFooter = computed(() => isChatRoute.value && !isMobile.value);
+
+const mobileFooterRef = ref(null);
+const mobileFooterHeight = ref(80);
+let footerResizeObserver = null;
+
+onMounted(() => {
+  if (typeof ResizeObserver === "undefined") return;
+  footerResizeObserver = new ResizeObserver(() => {
+    const el = mobileFooterRef.value;
+    if (el) mobileFooterHeight.value = el.offsetHeight || 80;
+  });
+  watch(mobileFooterRef, (el) => {
+    if (el) footerResizeObserver?.observe(el);
+  }, { immediate: true });
+});
+
+onBeforeUnmount(() => {
+  footerResizeObserver?.disconnect();
+});
+
 const mainStyle = computed(() => {
   const isChat = isChatRoute.value;
   const base = {
@@ -165,7 +192,7 @@ const mainStyle = computed(() => {
   }
   const chatMinBottom = isChat ? 56 : 0;
   const padding = footerVisible.value
-    ? 64
+    ? mobileFooterHeight.value
     : Math.max(peekOffset + 12, chatMinBottom);
   return {
     ...base,
@@ -189,13 +216,23 @@ const onFooterTouchMove = (e) => {
 };
 
 const toggleFooter = () => {
-  if (!isMobile.value) return;
   if (footerVisible.value) hideFooter();
   else showFooter();
 };
 
+// Chat route: collapse footer on both mobile and desktop; restore on all other routes
+watch(isChatRoute, (isChat) => {
+  if (isChat) hideFooter();
+  else showFooter();
+}, { immediate: true });
+
+// Also collapse when resizing to large screen while already on chat route
+watch(desktopChatFooter, (active) => {
+  if (active) hideFooter();
+});
+
 const showFooterFab = computed(
-  () => isMobile.value && footerToggleEnabled.value
+  () => desktopChatFooter.value || (isMobile.value && footerToggleEnabled.value)
 );
 const unreadCount = computed(() => messages.totalUnread || 0);
 const unreadLabel = computed(() =>
@@ -613,6 +650,17 @@ if (isClient) {
 
 .app-footer--hidden {
   transform: translateY(calc(100% - 14px));
+}
+
+.app-footer--collapsible {
+  overflow: hidden;
+  max-height: 120px;
+  transition: max-height 200ms ease, transform 160ms ease;
+}
+
+.app-footer--collapsible.app-footer--hidden {
+  max-height: 0;
+  transform: none;
 }
 
 .app-footer__handle {

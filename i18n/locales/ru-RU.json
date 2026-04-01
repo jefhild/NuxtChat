@@ -84,6 +84,21 @@
               "body": "Начните легкий новый разговор и посмотрите, куда он приведет, без лишних сомнений и подготовки.",
               "cta": "Познакомиться с людьми"
             }
+          ],
+          "moreLabel": "Ещё варианты:",
+          "moreLinks": [
+            {
+              "href": "/talk-to-strangers-online",
+              "label": "Общение с незнакомцами онлайн"
+            },
+            {
+              "href": "/need-someone-to-talk-to",
+              "label": "Нужен собеседник"
+            },
+            {
+              "href": "/cant-sleep-chat",
+              "label": "Не спится? Пообщайтесь"
+            }
           ]
         },
         "proof": {
@@ -1069,7 +1084,10 @@
       "privacy": "Политика конфиденциальности",
       "cookies": "Политика куки",
       "public-profiles": "Публичные профили",
-      "consent-preferences": "Настройки согласия"
+      "consent-preferences": "Настройки согласия",
+      "talk-to-strangers": "Говорить с незнакомцами",
+      "need-to-talk": "Нужно поговорить",
+      "cant-sleep-chat": "Не спится — чат"
     },
     "button-favorite": {
       "log-in": "Войти",

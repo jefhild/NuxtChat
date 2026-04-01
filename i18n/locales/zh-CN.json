@@ -84,6 +84,21 @@
               "body": "轻松开启一段新的对话，看看它会带你去哪里，不必想得太复杂。",
               "cta": "认识新朋友"
             }
+          ],
+          "moreLabel": "更多选择：",
+          "moreLinks": [
+            {
+              "href": "/talk-to-strangers-online",
+              "label": "在线与陌生人聊天"
+            },
+            {
+              "href": "/need-someone-to-talk-to",
+              "label": "需要找人倾诉"
+            },
+            {
+              "href": "/cant-sleep-chat",
+              "label": "失眠？来聊聊"
+            }
           ]
         },
         "proof": {
@@ -1069,7 +1084,10 @@
       "privacy": "隐私政策",
       "cookies": "Cookie政策",
       "public-profiles": "公开档案",
-      "consent-preferences": "同意偏好"
+      "consent-preferences": "同意偏好",
+      "talk-to-strangers": "与陌生人聊天",
+      "need-to-talk": "需要倾诉",
+      "cant-sleep-chat": "失眠聊天"
     },
     "button-favorite": {
       "log-in": "登录",

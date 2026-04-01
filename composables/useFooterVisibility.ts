@@ -28,7 +28,7 @@ export function useFooterVisibility() {
   }));
 
   const isVisible = computed(() => {
-    if (!smAndDown.value) return true; // desktop/tablet: always show
+    if (!smAndDown.value) return visible.value;
     return visible.value;
   });
 
@@ -90,20 +90,19 @@ export function useFooterVisibility() {
 
   onMounted(() => {
     if (smAndDown.value) {
-      hideFooter(); // start hidden on mobile
       bindWindowScroll();
     }
   });
 
   watch(
     () => smAndDown.value,
-    (isMobile) => {
-      if (isMobile) {
+    (isMobileNow) => {
+      if (isMobileNow) {
         hideFooter();
         bindWindowScroll();
       } else {
-        showFooter();
         unbindWindowScroll();
+        // Desktop show/hide is managed by the layout based on route
       }
     }
   );
