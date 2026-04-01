@@ -6,6 +6,7 @@
     transition="fade-transition"
     class="favorite-toast"
     :z-index="2000"
+    color="#1e293b"
   >
     <div class="favorite-toast__content">
       <v-avatar size="32" class="favorite-toast__avatar">

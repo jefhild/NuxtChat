@@ -6,6 +6,7 @@
     transition="fade-transition"
     class="upvote-toast"
     :z-index="2000"
+    color="#1e293b"
   >
     <div class="upvote-toast__content">
       <v-avatar size="32" class="upvote-toast__avatar">
