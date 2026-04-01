@@ -48,6 +48,9 @@ export const useDb = () => {
   let _favoritesChan = null;
   let _favoritesFor = null;
   let _favoritesInflight = null;
+  let _upvotesChan = null;
+  let _upvotesFor = null;
+  let _upvotesInflight = null;
 
   const getCountryByIsoCode = async (isoCode) => {
     const supabase = getClient();
@@ -3034,6 +3037,96 @@ const verifyEmailOtp = async (email, token) => {
     return true;
   };
 
+  // Subscribe to upvotes for a profile (by profiles.id, not auth user.id)
+  const subscribeToUpvotes = async (profileId, { onInsert } = {}) => {
+    if (!profileId) return null;
+    const supabase = getClient();
+
+    if (_upvotesChan && _upvotesFor === profileId) {
+      return async () => {
+        const ch = _upvotesChan;
+        _upvotesChan = null;
+        _upvotesFor = null;
+        _upvotesInflight = null;
+        try { await ch.unsubscribe?.(); } catch {}
+        try { await supabase.removeChannel?.(ch); } catch {}
+      };
+    }
+
+    if (_upvotesInflight && _upvotesFor === profileId) {
+      return _upvotesInflight;
+    }
+
+    if (_upvotesChan) {
+      try { await _upvotesChan.unsubscribe?.(); } catch {}
+      try { await supabase.removeChannel?.(_upvotesChan); } catch {}
+      _upvotesChan = null;
+      _upvotesFor = null;
+      _upvotesInflight = null;
+    }
+
+    const mkChannel = (name, opts) =>
+      typeof supabase.channel === "function"
+        ? supabase.channel(name, opts)
+        : supabase.realtime.channel(name, opts);
+
+    const ch = mkChannel(`upvotes-${profileId}`);
+
+    ch.on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "votes",
+        filter: `profile_id=eq.${profileId}`,
+      },
+      (payload) => {
+        if (payload.new?.vote_type === "upvote") onInsert?.(payload.new);
+      }
+    );
+
+    _upvotesFor = profileId;
+    _upvotesInflight = (async () => {
+      await new Promise((resolve) => {
+        ch.subscribe((status) => {
+          if (status === "SUBSCRIBED") resolve();
+          else if (status === "CHANNEL_ERROR" || status === "CLOSED") resolve();
+        });
+      });
+
+      _upvotesChan = ch;
+
+      return async () => {
+        if (_upvotesChan === ch) {
+          _upvotesChan = null;
+          _upvotesFor = null;
+          _upvotesInflight = null;
+        }
+        try { await ch.unsubscribe?.(); } catch {}
+        try { await supabase.removeChannel?.(ch); } catch {}
+      };
+    })();
+
+    return _upvotesInflight;
+  };
+
+  const unsubscribeUpvotes = async () => {
+    const ch = _upvotesChan;
+    if (!ch) return false;
+    _upvotesChan = null;
+    _upvotesFor = null;
+    try { await ch.unsubscribe?.(); } catch (e) {
+      console.warn("[rt] upvotes unsubscribe error:", e?.message || e);
+    }
+    try {
+      const client = getClient();
+      await client.removeChannel?.(ch);
+    } catch (e) {
+      console.warn("[rt] upvotes removeChannel error:", e?.message || e);
+    }
+    return true;
+  };
+
   const fetchUnreadCounts = async (me) => {
     const supabase = getClient();
     const { data, error } = await supabase
@@ -3228,6 +3321,8 @@ const verifyEmailOtp = async (email, token) => {
     unsubscribeMessages,
     subscribeToFavorites,
     unsubscribeFavorites,
+    subscribeToUpvotes,
+    unsubscribeUpvotes,
     fetchUnreadCounts,
     markThreadAsRead,
   };

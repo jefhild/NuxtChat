@@ -387,6 +387,7 @@
                       View full profile
                     </v-btn>
                     <div class="d-flex align-center gap-2 ml-auto">
+                      <ButtonUpvote :profile="selectedUser" />
                       <v-tooltip
                         :text="t('components.chatheader.favorite-profile')"
                         location="top"
@@ -849,6 +850,7 @@
                       View full profile
                     </v-btn>
                     <div class="d-flex align-center gap-2 ml-auto">
+                      <ButtonUpvote :profile="selectedUser" />
                       <v-tooltip
                         :text="t('components.chatheader.favorite-profile')"
                         location="top"

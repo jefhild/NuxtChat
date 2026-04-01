@@ -1110,6 +1110,11 @@
       "please-log-in": "Please Log in",
       "need-log-in": "You need to log in to save profiles as favorites."
     },
+    "button-upvote": {
+      "upvote": "Upvote this profile",
+      "remove": "Remove upvote",
+      "own-profile": "You can't upvote yourself"
+    },
     "home": {
       "ai": {
         "title": "Recent AI Profiles",

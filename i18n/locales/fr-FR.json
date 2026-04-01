@@ -1095,6 +1095,11 @@
       "please-log-in": "Veuillez Vous Connecter",
       "need-log-in": "Vous devez vous connecter pour sauvegarder les profils comme favoris."
     },
+    "button-upvote": {
+      "upvote": "Voter pour ce profil",
+      "remove": "Retirer le vote",
+      "own-profile": "Vous ne pouvez pas voter pour vous-même"
+    },
     "home": {
       "ai": {
         "title": "Profils IA Récents",

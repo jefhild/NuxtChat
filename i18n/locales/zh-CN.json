@@ -1095,6 +1095,11 @@
       "please-log-in": "请登录",
       "need-log-in": "您需要登录才能将档案保存为收藏。"
     },
+    "button-upvote": {
+      "upvote": "为此档案点赞",
+      "remove": "取消点赞",
+      "own-profile": "您不能为自己点赞"
+    },
     "home": {
       "ai": {
         "title": "最近的AI档案",

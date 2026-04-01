@@ -1,6 +1,7 @@
 <template>
   <NavBar />
   <FavoriteToast />
+  <UpvoteToast />
   <!-- Main content; let children shrink to create scroll areas -->
   <v-main
     class="d-flex flex-column min-h-0"
@@ -85,6 +86,7 @@ import { useDisplay } from "vuetify";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
 import { useHead, useRoute, useRuntimeConfig, useSiteConfig } from "#imports";
 import { useFavoriteNotifications } from "@/composables/useFavoriteNotifications";
+import { useUpvoteNotifications } from "@/composables/useUpvoteNotifications";
 import { FOOTER_TOGGLE_ROUTE_PATHS } from "@/constants/footerLinks";
 
 const auth = useAuthStore();
@@ -107,6 +109,7 @@ const {
 } = useFooterVisibility();
 
 useFavoriteNotifications();
+useUpvoteNotifications();
 
 const isClient = typeof window !== "undefined";
 const isMobile = computed(() => hasMounted.value && smAndDown.value === true);

@@ -233,6 +233,8 @@
       ></v-btn>
       <v-spacer></v-spacer>
 
+      <ButtonUpvote :profile="profile" />
+
       <v-btn
         :to="chatLink"
         color="blue medium-emphasis"
