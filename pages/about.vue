@@ -33,8 +33,25 @@ import AboutFaq from "~/components/AboutFaq.vue";
 
 const tab = ref(1);
 const route = useRoute();
+const { t } = useI18n();
 
 useSeoI18nMeta('about');
+
+useHead(() => ({
+  script: [{
+    key: 'ld-about-page',
+    type: 'application/ld+json',
+    children: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "name": t('pages.about.meta.title'),
+      "description": t('pages.about.meta.description'),
+      "url": "https://imchatty.com/about",
+      "isPartOf": { "@id": "https://imchatty.com/#website" },
+      "publisher": { "@id": "https://imchatty.com/#organization" },
+    }),
+  }],
+}));
 
 watch(
   () => route.hash,

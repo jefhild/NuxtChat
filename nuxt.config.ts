@@ -65,10 +65,10 @@ export default defineNuxtConfig({
     strategy: "prefix_except_default",
     // strategy: "prefix",
     locales: [
-      { code: "en", iso: "en-US", file: "en-US.json" },
-      { code: "fr", iso: "fr-FR", file: "fr-FR.json" },
-      { code: "ru", iso: "ru-RU", file: "ru-RU.json" },
-      { code: "zh", iso: "zh-CN", file: "zh-CN.json" },
+      { code: "en", language: "en-US", file: "en-US.json" },
+      { code: "fr", language: "fr-FR", file: "fr-FR.json" },
+      { code: "ru", language: "ru-RU", file: "ru-RU.json" },
+      { code: "zh", language: "zh-CN", file: "zh-CN.json" },
     ],
     bundle: {
       optimizeTranslationDirective: false,

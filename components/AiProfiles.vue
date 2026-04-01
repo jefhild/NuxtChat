@@ -213,6 +213,7 @@ const personas = computed(() => {
       role: persona.role || "Contributor",
       bias: persona.bias || "",
       angle:
+        localized.angle ||
         persona.angle ||
         persona.summary ||
         localized.tagline ||

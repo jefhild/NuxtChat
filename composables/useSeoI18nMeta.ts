@@ -124,6 +124,7 @@ export function useSeoI18nMeta(
   );
   const localeIso = computed(
     () =>
+      locales?.value?.find?.((l: any) => l?.code === currentLocale.value)?.language ||
       locales?.value?.find?.((l: any) => l?.code === currentLocale.value)?.iso ||
       hreflangMap[currentLocale.value] ||
       "en-US"
@@ -143,7 +144,7 @@ export function useSeoI18nMeta(
         ) {
           return null;
         }
-        const iso = String(localeEntry?.iso || hreflangMap[code] || code);
+        const iso = String(localeEntry?.language || localeEntry?.iso || hreflangMap[code] || code);
         return iso.replace("-", "_");
       })
       .filter(Boolean)

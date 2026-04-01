@@ -70,7 +70,11 @@ export const AI_PERSONA_SELECT = `
     gender_id,
     status_id,
     is_ai,
-    avatar_decoration_url
+    avatar_decoration_url,
+    profile_translations (
+      locale,
+      angle
+    )
   )
 `;
 

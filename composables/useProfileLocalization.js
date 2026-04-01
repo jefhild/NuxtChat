@@ -67,14 +67,17 @@ export const resolveProfileLocalization = ({
   const displayname = pickField(orderedLocales, map, "displayname");
   const bio = pickField(orderedLocales, map, "bio");
   const tagline = pickField(orderedLocales, map, "tagline");
+  const angle = pickField(orderedLocales, map, "angle");
 
   return {
     displayname: displayname.value || profile?.displayname || "",
     bio: bio.value || profile?.bio || "",
     tagline: clampText(tagline.value || profile?.tagline || "", taglineMaxLength),
+    angle: angle.value || null,
     displaynameLocale: displayname.locale,
     bioLocale: bio.locale,
     taglineLocale: tagline.locale,
+    angleLocale: angle.locale,
   };
 };
 

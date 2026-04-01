@@ -29,7 +29,14 @@ const PUBLIC_PERSONA_SELECT = `
     tagline,
     bio,
     gender_id,
-    is_ai
+    is_ai,
+    profile_translations (
+      locale,
+      displayname,
+      tagline,
+      bio,
+      angle
+    )
   )
 `;
 

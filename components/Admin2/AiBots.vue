@@ -142,6 +142,25 @@
                 >
                   {{ bot.is_active ? "Active" : "Inactive" }}
                 </v-chip>
+                <div class="d-flex flex-wrap ga-1 mt-1">
+                  <v-tooltip
+                    v-for="loc in ['en', 'fr', 'ru', 'zh']"
+                    :key="loc"
+                    :text="angleTranslatedLocales(bot).includes(loc) ? `${loc} angle translated` : `${loc} not translated`"
+                    location="top"
+                  >
+                    <template #activator="{ props: tipProps }">
+                      <v-chip
+                        v-bind="tipProps"
+                        size="x-small"
+                        :variant="angleTranslatedLocales(bot).includes(loc) ? 'tonal' : 'outlined'"
+                        :color="angleTranslatedLocales(bot).includes(loc) ? 'primary' : 'grey'"
+                        :opacity="angleTranslatedLocales(bot).includes(loc) ? 1 : 0.35"
+                        class="text-uppercase"
+                      >{{ loc }}</v-chip>
+                    </template>
+                  </v-tooltip>
+                </div>
                 <div class="d-flex flex-wrap ga-1 mt-2">
                   <v-chip
                     v-if="bot.editorial_enabled"
@@ -598,6 +617,19 @@
                         rows="2"
                         auto-grow
                       />
+                      <div class="d-flex justify-end mt-1">
+                        <v-btn
+                          size="x-small"
+                          variant="tonal"
+                          color="secondary"
+                          :loading="translatingPersona"
+                          :disabled="!form.persona.angle"
+                          prepend-icon="mdi-translate"
+                          @click="translatePersonaFields"
+                        >
+                          Translate angle
+                        </v-btn>
+                      </div>
                     </v-col>
                     <v-col cols="12" md="4">
                       <v-text-field
@@ -965,6 +997,7 @@ const deleting = ref(false);
 const posting = ref(false);
 const previewingPost = ref(false);
 const runningHoneyMoltbook = ref(false);
+const translatingPersona = ref(false);
 const personaKeyTouched = ref(false);
 
 const DEFAULT_MODERATION_CONFIG = {
@@ -1225,6 +1258,14 @@ const formatTimestamp = (value) => {
   }
 };
 
+const angleTranslatedLocales = (bot) => {
+  const translations = bot?.profile?.profile_translations || [];
+  return translations
+    .filter((t) => t?.angle && String(t.angle).trim())
+    .map((t) => String(t.locale || "").trim().toLowerCase().split("-")[0])
+    .filter(Boolean);
+};
+
 const truncate = (text, len = 100) => {
   if (!text) return "-";
   const normalized = String(text).replace(/\s+/g, " ").trim();
@@ -1483,6 +1524,41 @@ const openPostDialog = (bot) => {
     type: "text",
   });
   postDialog.value = true;
+};
+
+const translatePersonaFields = async () => {
+  const profileUserId = form.persona.profile_user_id;
+  const angle = form.persona.angle?.trim() || "";
+
+  if (!profileUserId || !angle) {
+    snackbar.show = true;
+    snackbar.color = "amber-darken-2";
+    snackbar.message = "No angle/summary text to translate.";
+    return;
+  }
+
+  translatingPersona.value = true;
+  try {
+    const result = await $fetch("/api/admin/ai-bots/translate", {
+      method: "POST",
+      body: { profileUserId, angle, sourceLocale: "en" },
+    });
+    if (result?.ok) {
+      snackbar.show = true;
+      snackbar.color = "success";
+      snackbar.message = `Angle translated to: ${(result.translated || []).join(", ") || "all locales"}.`;
+    } else {
+      snackbar.show = true;
+      snackbar.color = "red";
+      snackbar.message = result?.error || "Translation failed.";
+    }
+  } catch (err) {
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = err?.data?.error || "Translation request failed.";
+  } finally {
+    translatingPersona.value = false;
+  }
 };
 
 const handleSubmit = async () => {
