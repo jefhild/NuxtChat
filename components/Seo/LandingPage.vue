@@ -267,27 +267,36 @@ const renderedPhotoCredits = computed(() =>
 );
 
 const route = useRoute();
-const articleSchema = computed(() => {
+const webPageSchema = computed(() => {
   const canonicalUrl = `https://imchatty.com${props.page.path || route.path}`;
   return {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: props.page.metaTitle || props.page.title,
-    description: props.page.metaDescription || props.page.subtitle || "",
+    "@type": "WebPage",
+    "@id": `${canonicalUrl}#webpage`,
     url: canonicalUrl,
+    name: props.page.metaTitle || props.page.title,
+    description: props.page.metaDescription || props.page.subtitle || "",
     ...(props.page.heroImageUrl ? { image: props.page.heroImageUrl } : {}),
     ...(props.page.createdAt ? { datePublished: props.page.createdAt } : {}),
     ...(props.page.updatedAt ? { dateModified: props.page.updatedAt } : {}),
-    author: {
-      "@type": "Organization",
-      name: "ImChatty",
-      url: "https://imchatty.com",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "ImChatty",
-      url: "https://imchatty.com",
-    },
+    isPartOf: { "@id": "https://imchatty.com/#website" },
+    publisher: { "@id": "https://imchatty.com/#organization" },
+  };
+});
+const faqSchema = computed(() => {
+  const faqs = props.page.faqs;
+  if (!faqs?.length) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
   };
 });
 useHead(
@@ -295,9 +304,18 @@ useHead(
     script: [
       {
         type: "application/ld+json",
-        innerHTML: JSON.stringify(articleSchema.value),
-        key: "article-schema",
+        innerHTML: JSON.stringify(webPageSchema.value),
+        key: "webpage-schema",
       },
+      ...(faqSchema.value
+        ? [
+            {
+              type: "application/ld+json",
+              innerHTML: JSON.stringify(faqSchema.value),
+              key: "faq-schema",
+            },
+          ]
+        : []),
     ],
   }))
 );
