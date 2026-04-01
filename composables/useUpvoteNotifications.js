@@ -50,14 +50,12 @@ export const useUpvoteNotifications = () => {
       unsubscribe = null;
     }
 
-    // Look up this user's profiles.id (needed to filter votes table)
-    const { data: profile } = await db.getUserProfileFromId(userId);
-    const profileId = profile?.id;
+    // Use already-loaded profile from auth store — avoids RLS-dependent re-query
+    const profileId = auth.userProfile?.id;
     if (!profileId) {
       console.warn("[upvote-notifications] could not resolve profileId for user", userId);
       return;
     }
-    console.log("[upvote-notifications] subscribing for profileId", profileId);
 
     unsubscribe = await db.subscribeToUpvotes(profileId, {
       onInsert: async (row) => {
@@ -83,17 +81,19 @@ export const useUpvoteNotifications = () => {
     });
   };
 
+  // Watch userProfile.id — not user.id — because profile loads async after auth
   watch(
-    () => auth.user?.id,
-    async (id) => {
-      if (!id) {
+    () => auth.userProfile?.id,
+    async (profileId) => {
+      const userId = auth.user?.id;
+      if (!profileId || !userId) {
         if (unsubscribe) {
           await unsubscribe().catch(() => {});
           unsubscribe = null;
         }
         return;
       }
-      await wireForUser(id);
+      await wireForUser(userId);
     },
     { immediate: true }
   );

@@ -234,6 +234,21 @@ body,
   border-bottom-color: rgba(148, 163, 184, 0.35) !important;
 }
 
+/* Snackbar toasts should never dim/block the page */
+.v-snackbar.v-overlay > .v-overlay__scrim {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+.v-snackbar.v-overlay {
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+.v-snackbar.v-overlay > .v-overlay__content {
+  pointer-events: auto !important;
+}
+
 /* Devtools tracer can paint dim bands while inspecting; keep it off */
 #vue-tracer-overlay,
 nuxt-devtools-inspect-panel {
