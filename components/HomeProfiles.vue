@@ -79,13 +79,6 @@
           <span class="text-body-2">{{ item.age ?? "—" }}</span>
         </template>
 
-        <template #item.comment_count="{ item }">
-          <div class="d-flex align-center justify-end ga-1">
-            <v-icon size="16" color="blue-grey-darken-1">mdi-chat-outline</v-icon>
-            <span class="text-body-2">{{ item.comment_count ?? 0 }}</span>
-          </div>
-        </template>
-
         <template #item.upvotes="{ item }">
           <div class="d-flex align-center justify-end ga-1">
             <v-icon size="16" color="amber-darken-2">mdi-thumb-up</v-icon>
@@ -166,10 +159,6 @@
                       <span>{{ item.age ?? "—" }}</span>
                     </div>
                     <div class="meta-cell">
-                      <v-icon size="16" color="blue-grey-darken-1">mdi-chat-outline</v-icon>
-                      <span>{{ item.comment_count ?? 0 }}</span>
-                    </div>
-                    <div class="meta-cell">
                       <v-icon size="16" color="amber-darken-2">mdi-thumb-up</v-icon>
                       <span>{{ item.upvote_count ?? 0 }}</span>
                     </div>
@@ -236,7 +225,6 @@ const headers = computed(() => [
   { title: t("components.homeProfiles.columns.profile"), key: "profile", sortable: false },
   { title: t("components.homeProfiles.columns.tagline"), key: "tagline", sortable: false },
   { title: t("components.homeProfiles.columns.age"), key: "age", align: "end", width: 72, sortable: false },
-  { title: t("components.homeProfiles.columns.comments"), key: "comment_count", align: "end", width: 120 },
   { title: t("components.homeProfiles.columns.upvotes"), key: "upvotes", align: "end", width: 100 },
 ]);
 
