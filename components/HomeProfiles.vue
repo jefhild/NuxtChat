@@ -15,7 +15,7 @@
       </div>
 
       <v-data-table
-        v-if="!smAndDown"
+        v-if="useTableLayout"
         :headers="headers"
         :items="displayedProfiles"
         :items-per-page="-1"
@@ -182,6 +182,7 @@
     v-model="isProfileDialogOpen"
     :slug="profileDialogSlug"
     :user-id="profileDialogUserId"
+    @upvoted="handleUpvoted"
   />
 </template>
 
@@ -212,6 +213,12 @@ const props = defineProps({
 
 const emit = defineEmits(["loaded"]);
 const { smAndDown } = useDisplay();
+const isMounted = ref(false);
+const useTableLayout = computed(() => !isMounted.value || !smAndDown.value);
+onMounted(() => {
+  isMounted.value = true;
+  initObserver();
+});
 
 const INITIAL_VISIBLE_PROFILES = 18;
 const loadedCount = ref(18);
@@ -258,6 +265,13 @@ const openProfileDialog = (profile) => {
   profileDialogUserId.value = profile?.user_id || profile?.id || null;
   profileDialogSlug.value = profile?.slug || null;
   isProfileDialogOpen.value = true;
+};
+
+const handleUpvoted = ({ userId, count }) => {
+  if (!profilesData.value) return;
+  profilesData.value = profilesData.value.map((p) =>
+    p.user_id === userId ? { ...p, upvote_count: count } : p
+  );
 };
 
 const displayedProfiles = computed(() => {
@@ -358,10 +372,6 @@ watch(
   },
   { immediate: true }
 );
-
-onMounted(() => {
-  initObserver();
-});
 
 onUnmounted(() => {
   observer?.disconnect();

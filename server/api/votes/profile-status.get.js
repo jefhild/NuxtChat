@@ -18,15 +18,22 @@ export default defineEventHandler(async (event) => {
     .eq("user_id", profileUserId)
     .maybeSingle();
 
-  if (!profileRow) return { hasVoted: false };
+  if (!profileRow) return { hasVoted: false, upvoteCount: 0 };
 
-  const { data: existing } = await supa
-    .from("votes")
-    .select("id")
-    .eq("profile_id", profileRow.id)
-    .eq("user_id", user.id)
-    .eq("vote_type", "upvote")
-    .maybeSingle();
+  const [{ data: existing }, { count }] = await Promise.all([
+    supa
+      .from("votes")
+      .select("id")
+      .eq("profile_id", profileRow.id)
+      .eq("user_id", user.id)
+      .eq("vote_type", "upvote")
+      .maybeSingle(),
+    supa
+      .from("votes")
+      .select("*", { count: "exact", head: true })
+      .eq("profile_id", profileRow.id)
+      .eq("vote_type", "upvote"),
+  ]);
 
-  return { hasVoted: !!existing };
+  return { hasVoted: !!existing, upvoteCount: count ?? 0 };
 });

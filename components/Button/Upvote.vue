@@ -26,9 +26,11 @@ const props = defineProps({
   profile: Object,
 });
 
+const emit = defineEmits(["upvoted"]);
+
 const hasVoted = ref(false);
 const isLoading = ref(false);
-const count = ref(props.profile?.upvotes_count ?? props.profile?.upvotes ?? 0);
+const count = ref(props.profile?.upvote_count ?? props.profile?.upvotes_count ?? props.profile?.upvotes ?? 0);
 
 const isOwnProfile = computed(
   () => authStore.user?.id && props.profile?.user_id === authStore.user?.id
@@ -48,6 +50,10 @@ onMounted(async () => {
       `/api/votes/profile-status?profileUserId=${props.profile.user_id}`
     );
     hasVoted.value = data.hasVoted;
+    if (data.hasVoted && data.upvoteCount > 0) {
+      count.value = data.upvoteCount;
+      emit("upvoted", { userId: props.profile.user_id, count: data.upvoteCount });
+    }
   } catch {
     // silent — button just starts in un-voted state
   }
@@ -63,6 +69,7 @@ const handleUpvote = async () => {
     });
     hasVoted.value = data.hasVoted;
     count.value = data.upvotes;
+    emit("upvoted", { userId: props.profile.user_id, count: data.upvotes });
   } catch (e) {
     console.error("Upvote error:", e);
   } finally {

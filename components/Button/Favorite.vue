@@ -2,8 +2,8 @@
   <!-- {{ authStore.user.id }} {{ props.profile.id }} -->
 
   <v-btn
-    :color="isFavorite ? 'red darken-2' : 'red medium-emphasis'"
-    :icon="isFavorite ? 'mdi-star' : 'mdi-star-outline'"
+    :color="isFavorite ? 'pink' : 'medium-emphasis'"
+    :icon="isFavorite ? 'mdi-heart' : 'mdi-heart-outline'"
     size="small"
     variant="text"
     @click="handleFavoriteToggle"

@@ -233,7 +233,7 @@
       ></v-btn>
       <v-spacer></v-spacer>
 
-      <ButtonUpvote :profile="profile" />
+      <ButtonUpvote :profile="profile" @upvoted="emit('upvoted', $event)" />
 
       <v-btn
         :to="chatLink"
@@ -273,7 +273,7 @@ const props = defineProps({
   themeOverride: { type: String, default: "" },
 });
 
-const emit = defineEmits(["likePhoto", "chat-now"]);
+const emit = defineEmits(["likePhoto", "chat-now", "upvoted"]);
 const avatarLoadError = ref(false);
 const resolvedAvatarUrl = ref("");
 const avatarResolveTried = ref(false);

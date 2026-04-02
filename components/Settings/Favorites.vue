@@ -14,7 +14,7 @@
             v-for="profile in favoriteProfiles"
             :key="profile.profile_id"
             :profile="profile"
-            icon="mdi-star-outline"
+            icon="mdi-heart-outline"
             type="favorite"
             hide-un
             class="mb-2"
@@ -36,7 +36,7 @@
             v-for="profile in favoritedMeProfiles"
             :key="profile.profile_id"
             :profile="profile"
-            icon="mdi-star-outline"
+            icon="mdi-heart-outline"
             type="favorite"
             class="mb-2"
             @unfavorite="handleUnfavorite"

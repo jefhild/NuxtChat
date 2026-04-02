@@ -16,6 +16,7 @@
       :gallery-blurred="!canViewGallery"
       @likePhoto="handlePhotoVote"
       @chat-now="isOpen = false"
+      @upvoted="emit('upvoted', $event)"
     >
       <template #overlay>
         <v-btn
@@ -49,7 +50,7 @@ const props = defineProps({
   slug: { type: String, default: null },
 });
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "upvoted"]);
 
 const isOpen = computed({
   get: () => props.modelValue,
