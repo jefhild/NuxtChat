@@ -1,5 +1,13 @@
 import { serverSupabaseUser } from "#supabase/server";
 import { useDb } from "@/composables/useDB";
+import { translateText } from "@/server/utils/translate";
+
+const NON_LATIN_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\u0400-\u04ff\u0500-\u052f]/;
+const FRENCH_RE = /[àâçéèêëîïôûùüÿœ]/i;
+const needsTranslation = (text = "", targetLocale = "en") => {
+  if (targetLocale !== "en") return true;
+  return NON_LATIN_RE.test(text) || FRENCH_RE.test(text);
+};
 
 export default defineEventHandler(async (event) => {
   try {
@@ -14,6 +22,7 @@ export default defineEventHandler(async (event) => {
     const peerId = String(query.peer_id || "");
     const unreadOnly = query.unread_only === "true";
     const limit = Math.min(Number(query.limit || 40), 200);
+    const adminLocale = String(query.locale || "en");
 
     if (!userId) {
       setResponseStatus(event, 400);
@@ -74,6 +83,31 @@ export default defineEventHandler(async (event) => {
 
     const items = Array.isArray(data) ? data : [];
 
+    const withTranslations = async (list) => {
+      if (!list?.length) return list;
+      return Promise.all(
+        list.map(async (item) => {
+          const content = String(item.content || "");
+          if (!needsTranslation(content, adminLocale)) return item;
+          try {
+            const result = await translateText({
+              text: content,
+              targetLocale: adminLocale,
+              config: cfg,
+            });
+            return {
+              ...item,
+              translated_content: result?.ok && result.translatedText !== content
+                ? result.translatedText
+                : null,
+            };
+          } catch {
+            return item;
+          }
+        })
+      );
+    };
+
     if (!peerId && items.length) {
       const senderIds = Array.from(
         new Set(items.map((item) => item.sender_id).filter(Boolean))
@@ -105,12 +139,12 @@ export default defineEventHandler(async (event) => {
               has_reply: replyAt ? replyAt >= item.created_at : false,
             };
           });
-          return { items: enriched };
+          return { items: await withTranslations(enriched) };
         }
       }
     }
 
-    return { items };
+    return { items: await withTranslations(items) };
   } catch (err) {
     console.error("[admin/messages.get] error:", err);
     setResponseStatus(event, 500);

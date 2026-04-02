@@ -112,7 +112,12 @@
                     {{ msg.sender?.displayname || msg.sender_id }}
                   </v-list-item-title>
                   <v-list-item-subtitle class="text-caption">
-                    {{ msg.content }}
+                    {{ msg.translated_content || msg.content }}
+                    <span
+                      v-if="msg.translated_content"
+                      class="text-medium-emphasis d-block"
+                      style="font-size: 0.7rem; opacity: 0.6;"
+                    >{{ msg.content }}</span>
                   </v-list-item-subtitle>
                   <template #append>
                     <v-chip
@@ -369,6 +374,7 @@ const loadInbox = async () => {
       query: {
         user_id: userProfile.value.user_id,
         limit: 25,
+        locale: "en",
       },
     });
     inboxMessages.value = Array.isArray(res?.items) ? res.items : [];
