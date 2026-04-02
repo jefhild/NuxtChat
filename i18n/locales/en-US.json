@@ -1020,7 +1020,14 @@
     },
     "settings": {
       "heading": "Settings",
-      "subtitle": "Update your account preferences and personal information."
+      "subtitle": "Update your account preferences and personal information.",
+      "emailNotifications": {
+        "title": "Email Notifications",
+        "subtitle": "Manage the emails ImChatty sends to your confirmed email address.",
+        "weekly_digest_label": "Weekly activity summary",
+        "weekly_digest_description": "Receive a weekly email every Sunday summarizing your favorites, upvotes, and new messages.",
+        "email_on_file": "Emails are sent to:"
+      }
     },
     "signin": {
       "note": "You should never be here...",
@@ -1745,6 +1752,26 @@
       "drained": "Low energy",
       "normal": "Normal",
       "wired": "Wired"
+    }
+  },
+  "emails": {
+    "digest": {
+      "subject": "Your weekly activity on ImChatty",
+      "tagline": "Chat with real people",
+      "greeting": "Hi {name},",
+      "intro": "Here's what happened on your profile this week.",
+      "quiet_week": "It was a quiet week — but we're glad you're here.",
+      "favorites_heading": "You've been favorited",
+      "upvotes_heading": "People upvoted your profile",
+      "messages_heading": "Check your new messages",
+      "times": "times",
+      "conversations_waiting": "conversations waiting",
+      "attributed_suffix": "...and {n} anonymous",
+      "anonymous_only": "{n} anonymous",
+      "view_profile": "View your profile",
+      "cta_chat": "Start chatting →",
+      "settings_link": "Manage email preferences",
+      "footer": "You're receiving this because you're a registered member of ImChatty."
     }
   }
 }

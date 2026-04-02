@@ -1005,7 +1005,14 @@
     },
     "settings": {
       "heading": "Paramètres",
-      "subtitle": "Mettez à jour les préférences de votre compte et vos informations personnelles."
+      "subtitle": "Mettez à jour les préférences de votre compte et vos informations personnelles.",
+      "emailNotifications": {
+        "title": "Notifications par e-mail",
+        "subtitle": "Gérez les e-mails qu'ImChatty envoie à votre adresse e-mail confirmée.",
+        "weekly_digest_label": "Résumé d'activité hebdomadaire",
+        "weekly_digest_description": "Recevez chaque dimanche un e-mail récapitulant vos favoris, vos votes positifs et vos nouveaux messages.",
+        "email_on_file": "Les e-mails sont envoyés à :"
+      }
     },
     "signin": {
       "note": "Vous ne devriez jamais être ici...",
@@ -1724,6 +1731,26 @@
       "drained": "Épuisé(e)",
       "normal": "Normal",
       "wired": "Surexcité(e)"
+    }
+  },
+  "emails": {
+    "digest": {
+      "subject": "Votre activité hebdomadaire sur ImChatty",
+      "tagline": "Discutez avec de vraies personnes",
+      "greeting": "Bonjour {name},",
+      "intro": "Voici ce qui s'est passé sur votre profil cette semaine.",
+      "quiet_week": "C'était une semaine calme — mais nous sommes contents que vous soyez là.",
+      "favorites_heading": "Vous avez été ajouté en favori",
+      "upvotes_heading": "Des personnes ont voté pour votre profil",
+      "messages_heading": "Consultez vos nouveaux messages",
+      "times": "fois",
+      "conversations_waiting": "conversations en attente",
+      "attributed_suffix": "...et {n} anonyme(s)",
+      "anonymous_only": "{n} anonyme(s)",
+      "view_profile": "Voir votre profil",
+      "cta_chat": "Commencer à discuter →",
+      "settings_link": "Gérer les préférences e-mail",
+      "footer": "Vous recevez cet e-mail car vous êtes membre inscrit sur ImChatty."
     }
   }
 }

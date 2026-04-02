@@ -1005,7 +1005,14 @@
     },
     "settings": {
       "heading": " 设置",
-      "subtitle": "更新您的账户偏好和个人信息。"
+      "subtitle": "更新您的账户偏好和个人信息。",
+      "emailNotifications": {
+        "title": "电子邮件通知",
+        "subtitle": "管理 ImChatty 发送到您确认邮箱的邮件。",
+        "weekly_digest_label": "每周活动摘要",
+        "weekly_digest_description": "每周日收到一封邮件，汇总您的收藏、点赞和新消息。",
+        "email_on_file": "邮件将发送至："
+      }
     },
     "signin": {
       "note": "您不应该在这里...",
@@ -1723,6 +1730,26 @@
       "drained": "精力耗尽",
       "normal": "正常",
       "wired": "亢奋"
+    }
+  },
+  "emails": {
+    "digest": {
+      "subject": "您在 ImChatty 的每周动态",
+      "tagline": "与真实的人聊天",
+      "greeting": "你好，{name}，",
+      "intro": "以下是您的个人资料本周的动态。",
+      "quiet_week": "这周比较平静——但我们很高兴您还在这里。",
+      "favorites_heading": "您被收藏了",
+      "upvotes_heading": "有人为您的资料点赞",
+      "messages_heading": "查看您的新消息",
+      "times": "次",
+      "conversations_waiting": "个对话等待中",
+      "attributed_suffix": "……以及 {n} 位匿名用户",
+      "anonymous_only": "{n} 位匿名用户",
+      "view_profile": "查看您的资料",
+      "cta_chat": "开始聊天 →",
+      "settings_link": "管理邮件偏好",
+      "footer": "您收到此邮件是因为您是 ImChatty 的注册会员。"
     }
   }
 }
