@@ -131,23 +131,6 @@
           </v-col>
         </v-row>
         <v-row v-if="props.isEditable" class="mt-2" align="center">
-          <v-col cols="12" class="d-flex justify-center">
-            <v-btn
-              color="error"
-              variant="outlined"
-              size="small"
-              class="settings-delete-btn"
-              :loading="props.deleteBusy"
-              :disabled="props.deleteBusy"
-              @click="emit('toggleDeletionMark')"
-            >
-              {{
-                props.isMarkedForDeletion
-                  ? t("components.profile-container.marked-for-deletion")
-                  : t("components.profile-container.delete")
-              }}
-            </v-btn>
-          </v-col>
         </v-row>
       </v-card-text>
     </v-card>

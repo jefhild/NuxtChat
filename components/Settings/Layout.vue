@@ -92,6 +92,7 @@
               <v-col class="settings-content-col">
                 <SettingsChatSettings />
                 <SettingsEmailNotifications />
+                <SettingsDeleteAccount />
               </v-col>
             </v-row>
 
