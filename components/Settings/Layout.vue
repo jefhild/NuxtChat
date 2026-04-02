@@ -91,6 +91,7 @@
             <v-row v-else-if="tab === 5" align="start">
               <v-col class="settings-content-col">
                 <SettingsChatSettings />
+                <SettingsEmailNotifications />
               </v-col>
             </v-row>
 

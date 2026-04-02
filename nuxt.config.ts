@@ -282,6 +282,11 @@ export default defineNuxtConfig({
     INDEXNOW_KEY: process.env.INDEXNOW_KEY,
     INDEXNOW_ENDPOINT: process.env.INDEXNOW_ENDPOINT,
     SITEMAP_ALERT_WEBHOOK_URL: process.env.SITEMAP_ALERT_WEBHOOK_URL,
+    SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
+    SENDGRID_FROM_EMAIL: process.env.SENDGRID_FROM_EMAIL || "",
+    SENDGRID_FROM_NAME: process.env.SENDGRID_FROM_NAME || "ImChatty",
+    SENDGRID_UNSUBSCRIBE_GROUP_ID: process.env.SENDGRID_UNSUBSCRIBE_GROUP_ID || "",
+    CRON_SECRET: process.env.CRON_SECRET || "",
 
     public: {
       // Non-sensitive keys (accessible on both server and client)

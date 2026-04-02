@@ -237,6 +237,37 @@
           >
             Profile not found.
           </v-alert>
+
+          <!-- Email Notifications -->
+          <v-card v-if="userProfile" class="mt-4">
+            <v-card-title>Email Notifications</v-card-title>
+            <v-card-text>
+              <p class="text-body-2 text-medium-emphasis mb-3">
+                Send a test email to this user's confirmed address. Test sends are
+                preview-only and do <strong>not</strong> mark pending interactions as sent.
+              </p>
+              <div class="d-flex align-center ga-2 flex-wrap">
+                <v-btn
+                  size="small"
+                  variant="outlined"
+                  prepend-icon="mdi-email-outline"
+                  :loading="testEmailLoading"
+                  @click="sendTestEmail('weekly_digest')"
+                >
+                  Send test: Weekly Digest
+                </v-btn>
+              </div>
+              <v-alert
+                v-if="testEmailStatus"
+                :type="testEmailError ? 'error' : 'success'"
+                variant="tonal"
+                density="compact"
+                class="mt-3"
+              >
+                {{ testEmailStatus }}
+              </v-alert>
+            </v-card-text>
+          </v-card>
         </template>
       </v-col>
     </v-row>
@@ -287,6 +318,29 @@ const compose = reactive({
 const sendBusy = ref(false);
 const sendStatus = ref("");
 const photoLibraryDialog = ref(false);
+const testEmailLoading = ref(false);
+const testEmailStatus = ref("");
+const testEmailError = ref(false);
+
+const sendTestEmail = async (type) => {
+  if (!userProfile.value?.user_id) return;
+  testEmailLoading.value = true;
+  testEmailStatus.value = "";
+  testEmailError.value = false;
+  try {
+    const res = await $fetch("/api/admin/notifications/test-email", {
+      method: "POST",
+      body: { userId: userProfile.value.user_id, type },
+    });
+    testEmailStatus.value = `Sent to ${res.sentTo}`;
+  } catch (err) {
+    testEmailError.value = true;
+    testEmailStatus.value = err?.data?.error ?? "Failed to send test email.";
+  } finally {
+    testEmailLoading.value = false;
+    setTimeout(() => { testEmailStatus.value = ""; }, 5000);
+  }
+};
 
 const fetchProfile = async () => {
   const userId = String(route.params.id || "");
