@@ -13,29 +13,22 @@
       </v-alert>
 
       <div v-else>
-        <v-list lines="two" class="pa-0">
-          <v-list-item class="px-0">
-            <template #prepend>
-              <v-icon class="mr-3">mdi-calendar-week</v-icon>
-            </template>
-            <v-list-item-title class="text-body-2 font-weight-medium">
-              {{ $t("pages.settings.emailNotifications.weekly_digest_label") }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-caption">
-              {{ $t("pages.settings.emailNotifications.weekly_digest_description") }}
-            </v-list-item-subtitle>
-            <template #append>
-              <v-switch
-                v-model="digestEnabled"
-                color="primary"
-                density="compact"
-                hide-details
-                :loading="saving"
-                @update:model-value="savePreference"
-              />
-            </template>
-          </v-list-item>
-        </v-list>
+        <div class="d-flex align-center">
+          <v-icon class="mr-3 text-medium-emphasis">mdi-calendar-week</v-icon>
+          <v-switch
+            v-model="digestEnabled"
+            inset
+            class="mt-2"
+            color="primary"
+            :label="$t('pages.settings.emailNotifications.weekly_digest_label')"
+            :disabled="saving"
+            hide-details
+            @update:model-value="savePreference"
+          />
+        </div>
+        <p class="text-caption text-medium-emphasis ml-9 mt-n2 mb-2">
+          {{ $t("pages.settings.emailNotifications.weekly_digest_description") }}
+        </p>
 
         <v-alert
           v-if="saveError"
