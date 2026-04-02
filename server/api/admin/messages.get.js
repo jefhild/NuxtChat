@@ -88,18 +88,32 @@ export default defineEventHandler(async (event) => {
       return Promise.all(
         list.map(async (item) => {
           const content = String(item.content || "");
-          if (!needsTranslation(content, adminLocale)) return item;
+          const displayname = String(item.sender?.displayname || "");
+          const needsContentTx = needsTranslation(content, adminLocale);
+          const needsNameTx = needsTranslation(displayname, adminLocale);
+          if (!needsContentTx && !needsNameTx) return item;
           try {
-            const result = await translateText({
-              text: content,
-              targetLocale: adminLocale,
-              config: cfg,
-            });
+            const [contentResult, nameResult] = await Promise.all([
+              needsContentTx
+                ? translateText({ text: content, targetLocale: adminLocale, config: cfg })
+                : null,
+              needsNameTx
+                ? translateText({ text: displayname, targetLocale: adminLocale, config: cfg })
+                : null,
+            ]);
             return {
               ...item,
-              translated_content: result?.ok && result.translatedText !== content
-                ? result.translatedText
-                : null,
+              translated_content:
+                contentResult?.ok && contentResult.translatedText !== content
+                  ? contentResult.translatedText
+                  : null,
+              sender: {
+                ...item.sender,
+                translated_displayname:
+                  nameResult?.ok && nameResult.translatedText !== displayname
+                    ? nameResult.translatedText
+                    : null,
+              },
             };
           } catch {
             return item;

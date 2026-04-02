@@ -109,7 +109,12 @@
                 >
                   <v-list-item-title class="text-body-2">
                     <span v-if="!msg.read" class="inbox-dot" />
-                    {{ msg.sender?.displayname || msg.sender_id }}
+                    {{ msg.sender?.translated_displayname || msg.sender?.displayname || msg.sender_id }}
+                    <span
+                      v-if="msg.sender?.translated_displayname"
+                      class="text-medium-emphasis"
+                      style="font-size: 0.75rem; opacity: 0.6;"
+                    >({{ msg.sender.displayname }})</span>
                   </v-list-item-title>
                   <v-list-item-subtitle class="text-caption">
                     {{ msg.translated_content || msg.content }}
