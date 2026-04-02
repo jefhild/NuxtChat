@@ -7,7 +7,7 @@
           :icon="hasVoted ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'"
           size="small"
           variant="text"
-          :disabled="!!isOwnProfile || isLoading || hasVoted"
+          :disabled="!!isOwnProfile || isLoading"
           @click="handleUpvote"
         ></v-btn>
       </span>
@@ -54,7 +54,7 @@ onMounted(async () => {
 });
 
 const handleUpvote = async () => {
-  if (!authStore.user?.id || !props.profile?.user_id || isLoading.value) return;
+  if (!authStore.user?.id || !props.profile?.user_id || isLoading.value || hasVoted.value) return;
   isLoading.value = true;
   try {
     const data = await $fetch("/api/votes/profile", {

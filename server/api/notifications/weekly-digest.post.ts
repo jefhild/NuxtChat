@@ -42,11 +42,12 @@ export default defineEventHandler(async (event) => {
     cfg.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  // Fetch all eligible recipients (registered, digest enabled)
+  // Fetch all eligible recipients (registered, digest enabled, not AI)
   const { data: recipients, error: recipientsErr } = await supa
     .from("profiles")
     .select("user_id, displayname, slug, preferred_locale, email_digest_enabled")
     .eq("email_digest_enabled", true)
+    .eq("is_ai", false)
     .not("user_id", "is", null);
 
   if (recipientsErr) {
