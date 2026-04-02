@@ -83,6 +83,23 @@ export default defineEventHandler(async (event) => {
 
     const items = Array.isArray(data) ? data : [];
 
+    // Pre-fetch canonical stored translations for all senders in one batch query
+    const allSenderIds = Array.from(
+      new Set(items.map((item) => item.sender_id).filter(Boolean))
+    );
+    const storedDisplaynames = new Map();
+    if (allSenderIds.length) {
+      const { data: txRows } = await supa
+        .from("profile_translations")
+        .select("user_id, displayname")
+        .in("user_id", allSenderIds)
+        .eq("locale", adminLocale === "en" ? "en" : adminLocale)
+        .not("displayname", "is", null);
+      (txRows || []).forEach((row) => {
+        if (row.displayname) storedDisplaynames.set(row.user_id, row.displayname);
+      });
+    }
+
     const withTranslations = async (list) => {
       if (!list?.length) return list;
       return Promise.all(
@@ -90,8 +107,10 @@ export default defineEventHandler(async (event) => {
           const content = String(item.content || "");
           const displayname = String(item.sender?.displayname || "");
           const needsContentTx = needsTranslation(content, adminLocale);
-          const needsNameTx = needsTranslation(displayname, adminLocale);
-          if (!needsContentTx && !needsNameTx) return item;
+          // Use stored canonical translation if available — avoids diverging results
+          const storedName = storedDisplaynames.get(item.sender_id) || null;
+          const needsNameTx = !storedName && needsTranslation(displayname, adminLocale);
+          if (!needsContentTx && !needsNameTx && !storedName) return item;
           try {
             const [contentResult, nameResult] = await Promise.all([
               needsContentTx
@@ -101,19 +120,20 @@ export default defineEventHandler(async (event) => {
                 ? translateText({ text: displayname, targetLocale: adminLocale, config: cfg })
                 : null,
             ]);
+            const translatedName =
+              storedName ||
+              (nameResult?.ok && nameResult.translatedText !== displayname
+                ? nameResult.translatedText
+                : null);
             return {
               ...item,
               translated_content:
                 contentResult?.ok && contentResult.translatedText !== content
                   ? contentResult.translatedText
                   : null,
-              sender: {
-                ...item.sender,
-                translated_displayname:
-                  nameResult?.ok && nameResult.translatedText !== displayname
-                    ? nameResult.translatedText
-                    : null,
-              },
+              sender: translatedName
+                ? { ...item.sender, translated_displayname: translatedName }
+                : item.sender,
             };
           } catch {
             return item;
