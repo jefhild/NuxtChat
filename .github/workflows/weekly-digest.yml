@@ -1,0 +1,22 @@
+name: Weekly Email Digest
+
+on:
+  schedule:
+    - cron: "0 9 * * 0" # Sundays at 9am UTC
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI for testing
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger weekly digest
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${{ secrets.APP_URL }}/api/notifications/weekly-digest" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          echo "Response status: $response"
+          if [ "$response" != "200" ]; then
+            echo "Digest endpoint returned non-200 status: $response"
+            exit 1
+          fi
