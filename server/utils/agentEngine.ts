@@ -6,6 +6,14 @@
  */
 
 import { getOpenAIClient } from "~/server/utils/openaiGateway";
+import { translateText, normalizeLocale } from "~/server/utils/translate";
+
+const LOCALE_NAME: Record<string, string> = {
+  en: "English",
+  fr: "French",
+  ru: "Russian",
+  zh: "Chinese",
+};
 
 export type AgentPromptPreset =
   | "friendly"
@@ -87,6 +95,9 @@ export function buildAgentSystemPrompt(
     `- Do not discuss sensitive topics, politics, or anything that could be harmful.`,
     `- You are representing ${name}'s profile; stay consistent with their bio and interests.`,
     `- When the conversation hits its limit, end gracefully: "I'll let ${name} continue this when they're back online."`,
+    agentProfile.preferred_locale
+      ? `- Always reply in ${LOCALE_NAME[normalizeLocale(agentProfile.preferred_locale) ?? "en"] ?? "English"} — translation to the recipient's language is handled automatically.`
+      : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -163,13 +174,44 @@ export async function generateAgentGreeting(
 
 /**
  * Insert a message into the messages table as the agent (service role).
+ * If senderLocale and targetLocale differ, the content is translated first.
  */
 export async function sendAgentMessage(
   supabase: any,
   senderUserId: string,
   receiverUserId: string,
-  content: string
+  content: string,
+  opts?: {
+    senderLocale?: string | null;
+    targetLocale?: string | null;
+    runtimeConfig?: any;
+  }
 ): Promise<{ id: string } | null> {
+  const senderLocale = normalizeLocale(opts?.senderLocale);
+  const targetLocale = normalizeLocale(opts?.targetLocale);
+
+  const translationFields: Record<string, string> = {};
+
+  if (senderLocale && targetLocale && senderLocale !== targetLocale && opts?.runtimeConfig) {
+    try {
+      const result = await translateText({
+        text: content,
+        targetLocale,
+        sourceLocaleHint: senderLocale,
+        config: opts.runtimeConfig,
+      });
+      if (result.ok && result.translatedText && result.translatedText !== content) {
+        translationFields.original_language = result.sourceLocale;
+        translationFields.translated_content = result.translatedText;
+        translationFields.translated_language = targetLocale;
+        translationFields.translation_engine = result.engine;
+        translationFields.translation_created_at = new Date().toISOString();
+      }
+    } catch (err) {
+      console.error("[agentEngine] translation failed, sending untranslated:", err);
+    }
+  }
+
   const { data, error } = await supabase
     .from("messages")
     .insert({
@@ -177,6 +219,7 @@ export async function sendAgentMessage(
       receiver_id: receiverUserId,
       content,
       sent_by_agent: true,
+      ...translationFields,
     })
     .select("id")
     .maybeSingle();

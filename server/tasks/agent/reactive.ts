@@ -4,7 +4,6 @@
  * Finds unanswered messages in active agent conversations and generates replies.
  * Only runs for profiles where agent_enabled = true.
  */
-import { defineTask } from "#nitro-internal-virtual/tasks";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import {
   generateAgentReply,
@@ -14,7 +13,7 @@ import {
 
 const REPLY_WINDOW_SECONDS = 120; // look back 2 minutes for unanswered messages
 
-export default defineTask({
+export default defineNitroTask({
   meta: {
     name: "agent:reactive",
     description: "Reply to messages received by away agents",
@@ -38,6 +37,9 @@ export default defineTask({
         agent_profile:profiles!agent_conversation_log_agent_profile_id_fkey (
           id, user_id, displayname, bio, age, gender_id, preferred_locale, agent_enabled
         ),
+        target_profile:profiles!agent_conversation_log_target_user_id_fkey (
+          preferred_locale
+        ),
         config:agent_configs!agent_configs_profile_id_fkey (
           prompt_preset_key,
           system_prompt_addition,
@@ -53,6 +55,7 @@ export default defineTask({
 
     for (const log of activeLogs) {
       const agentProfile = Array.isArray(log.agent_profile) ? log.agent_profile[0] : log.agent_profile;
+      const targetProfile = Array.isArray(log.target_profile) ? log.target_profile[0] : log.target_profile;
       const config = Array.isArray(log.config) ? log.config[0] : log.config;
 
       if (!agentProfile?.agent_enabled || !config) continue;
@@ -125,7 +128,12 @@ export default defineTask({
         supabase,
         agentProfile.user_id,
         log.target_user_id,
-        reply
+        reply,
+        {
+          senderLocale: agentProfile.preferred_locale,
+          targetLocale: targetProfile?.preferred_locale,
+          runtimeConfig,
+        }
       );
 
       if (sent) {

@@ -383,13 +383,16 @@ export default defineNuxtConfig({
       ],
     },
     debug: false,
-    experimental: {
-      tasks: true,
-    },
-    scheduledTasks: {
-      "*/5 * * * *": ["agent:proactive"],
-      "* * * * *":   ["agent:reactive"],
-    },
+    // Scheduled tasks only run in production (no cron scheduler in dev anyway)
+    ...(process.env.NODE_ENV !== "development" && {
+      experimental: {
+        tasks: true,
+      },
+      scheduledTasks: {
+        "*/5 * * * *": ["agent:proactive"],
+        "* * * * *":   ["agent:reactive"],
+      },
+    }),
   },
 
   hooks: {

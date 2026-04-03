@@ -4,7 +4,6 @@
  * For each active away agent, finds recently online users who match
  * their criteria and haven't been contacted yet, then sends a greeting.
  */
-import { defineTask } from "#nitro-internal-virtual/tasks";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import {
   generateAgentGreeting,
@@ -15,7 +14,7 @@ import {
 const ONLINE_WINDOW_MINUTES = 15; // consider users online if active within 15 min
 const CONTACT_COOLDOWN_HOURS = 24; // don't re-contact same user within 24h
 
-export default defineTask({
+export default defineNitroTask({
   meta: {
     name: "agent:proactive",
     description: "Proactively reach out to new matching users on behalf of away agents",
@@ -66,7 +65,7 @@ export default defineTask({
       // 2. Find recently online users not yet contacted by this agent
       let query = supabase
         .from("profiles")
-        .select("id, user_id, displayname, bio, gender_id")
+        .select("id, user_id, displayname, bio, gender_id, preferred_locale")
         .eq("is_private", false)
         .eq("is_ai", false)
         .eq("agent_enabled", false) // don't contact other agents
@@ -114,7 +113,12 @@ export default defineTask({
         supabase,
         agentProfile.user_id,
         target.user_id,
-        greeting
+        greeting,
+        {
+          senderLocale: agentProfile.preferred_locale,
+          targetLocale: target.preferred_locale,
+          runtimeConfig,
+        }
       );
 
       if (sent) {
