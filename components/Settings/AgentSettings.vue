@@ -42,7 +42,7 @@
       <!-- Status chip -->
       <div class="mb-5">
         <v-chip
-          :color="agentEnabled ? 'amber' : 'default'"
+          :color="agentEnabled ? 'amber' : 'primary'"
           :variant="agentEnabled ? 'tonal' : 'outlined'"
           size="small"
           :prepend-icon="agentEnabled ? 'mdi-robot' : 'mdi-robot-off-outline'"
@@ -65,11 +65,11 @@
             density="compact"
             class="flex-wrap"
           >
-            <v-btn value="friendly" size="small">Friendly</v-btn>
-            <v-btn value="curious" size="small">Curious</v-btn>
-            <v-btn value="playful" size="small">Playful</v-btn>
-            <v-btn value="professional" size="small">Professional</v-btn>
-            <v-btn value="custom" size="small">Custom</v-btn>
+            <v-btn value="friendly" size="small" variant="outlined">Friendly</v-btn>
+            <v-btn value="curious" size="small" variant="outlined">Curious</v-btn>
+            <v-btn value="playful" size="small" variant="outlined">Playful</v-btn>
+            <v-btn value="professional" size="small" variant="outlined">Professional</v-btn>
+            <v-btn value="custom" size="small" variant="outlined">Custom</v-btn>
           </v-btn-toggle>
           <div class="text-caption text-medium-emphasis mt-1">
             {{ presetDescription }}
