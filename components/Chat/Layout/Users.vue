@@ -274,7 +274,7 @@ const normalizedListType = computed(() =>
     : "online"
 );
 
-const idStr = (u) => String(u?.id ?? u?.user_id ?? "").trim();
+const idStr = (u) => String(u?.user_id ?? u?.id ?? "").trim();
 const slugStr = (u) =>
   String(u?.slug ?? u?.profile_slug ?? u?.username_slug ?? "")
     .trim()

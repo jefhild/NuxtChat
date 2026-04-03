@@ -26,7 +26,8 @@ RETURNS TABLE(
   marked_for_deletion_at timestamptz,
   slug text,
   persona_is_active boolean,
-  created timestamptz
+  created timestamptz,
+  agent_enabled boolean
 )
 LANGUAGE plpgsql
 AS $$
@@ -59,7 +60,8 @@ BEGIN
     p.marked_for_deletion_at::timestamptz,
     MIN(p.slug)::text AS slug,
     bool_or(ap.is_active) AS persona_is_active,
-    p.created::timestamptz AS created
+    p.created::timestamptz AS created,
+    p.agent_enabled
   FROM profiles p
   LEFT JOIN sex s ON p.gender_id = s.id
   LEFT JOIN countries c ON p.country_id = c.id
@@ -75,6 +77,6 @@ BEGIN
     p.id, p.user_id, s.gender, p.gender_id, c.name, c.emoji, st.name, ct.name, 
     p.displayname, p.tagline, p.bio, p.age, p.provider, p.avatar_url, p.site_url, 
     status.name, p.status_id, p.is_ai, p.force_online, p.is_simulated,
-    p.marked_for_deletion_at, p.created;
+    p.marked_for_deletion_at, p.created, p.agent_enabled;
 END;
 $$;
