@@ -33,7 +33,7 @@ const copy = computed(() => {
       description:
         "Parcourez des comparaisons conçues pour aider chacun à choisir le format de chat qui lui convient le mieux.",
       intro:
-        "Les pages de comparaison aident à comprendre les différences entre les expériences de chat. Cette section permet d'évaluer les options, de voir les compromis et de trouver plus vite le bon point de départ.",
+        "Ces comparaisons sont là pour vous aider à trouver ce qui vous convient vraiment — pas seulement l'option la plus populaire. Parcourez les différences, voyez ce qui vous parle, et lancez-vous quand vous êtes prêt.",
       summaryTitle: (count) => `${count} pages pour vous aider à comparer`,
       siblingHubs: [
         { label: "Voir les guides", href: "/guides" },
@@ -53,7 +53,7 @@ const copy = computed(() => {
       description:
         "Изучайте сравнения, которые помогают выбрать формат чата, подходящий именно вам.",
       intro:
-        "Страницы сравнений помогают понять разницу между вариантами чата. Этот раздел нужен для того, чтобы увидеть компромиссы, быстрее сориентироваться и выбрать подходящий формат.",
+        "Эти сравнения помогут найти то, что подходит именно вам — а не просто самый популярный вариант. Просматривайте различия, выбирайте то, что откликается, и начинайте, когда будете готовы.",
       summaryTitle: (count) => `${count} страницы, чтобы помочь вам сравнить`,
       siblingHubs: [
         { label: "Смотреть гайды", href: "/guides" },
@@ -73,7 +73,7 @@ const copy = computed(() => {
       description:
         "浏览帮助用户判断哪种聊天形式更适合自己的对比页面。",
       intro:
-        "对比页帮助用户看清不同聊天体验之间的差别。这个版块适合用来理解取舍、减少困惑，并更快找到合适的入口。",
+        "这些对比页面帮助你找到真正适合自己的选择——而不只是最热门的那个。浏览差异，看看哪个更符合你的感觉，准备好了就直接开始。",
       summaryTitle: (count) => `${count} 个页面帮助你比较选择`,
       siblingHubs: [
         { label: "查看指南", href: "/guides" },
@@ -92,7 +92,7 @@ const copy = computed(() => {
     description:
       "Browse comparison pages built to help people choose the chat format that fits them best.",
     intro:
-      "Comparison pages help people understand the differences between chat experiences. Use this section to compare formats, see what fits your style, and decide where you want to begin.",
+      "These comparisons are here to help you find what actually fits you — not just the most popular option. Browse the differences, see what feels right, and jump in when you're ready.",
     summaryTitle: (count) => `${count} pages to help you compare`,
     siblingHubs: [
       { label: "Browse guides", href: "/guides" },
