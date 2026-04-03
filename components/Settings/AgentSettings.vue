@@ -26,14 +26,17 @@
             </div>
           </div>
           <v-spacer />
-          <v-switch
-            v-model="agentEnabled"
-            color="primary"
-            hide-details
-            :loading="toggling"
-            :disabled="toggling || saving"
-            @update:model-value="onToggle"
-          />
+          <div class="flex-0">
+            <v-switch
+              v-model="agentEnabled"
+              color="primary"
+              hide-details
+              inset
+              :loading="toggling"
+              :disabled="toggling || saving"
+              @update:model-value="onToggle"
+            />
+          </div>
         </div>
       </div>
 
@@ -274,9 +277,18 @@ onMounted(fetchStatus);
 }
 
 .agent-section-header {
-  background: rgba(var(--v-theme-surface-variant), 0.3);
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   border-radius: 10px;
   padding: 14px 16px;
+}
+
+.agent-section-header :deep(.v-switch .v-selection-control) {
+  background: transparent !important;
+}
+
+.flex-0 {
+  flex: 0 0 auto;
 }
 
 .agent-field {
