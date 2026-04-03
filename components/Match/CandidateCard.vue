@@ -90,12 +90,12 @@
     <v-card-actions class="px-3 pt-0 pb-3">
       <v-btn
         color="primary"
-        variant="flat"
+        variant="tonal"
         size="small"
         block
+        :prepend-icon="isAi ? 'mdi-robot-outline' : 'mdi-message-text-outline'"
         @click="onChat"
       >
-        <v-icon start :icon="isAi ? 'mdi-robot-outline' : 'mdi-message-text-outline'" />
         {{ $t("components.candidateCard.chatWith", { name: candidate.displayname || $t("components.candidateCard.anonymous") }) }}
       </v-btn>
     </v-card-actions>

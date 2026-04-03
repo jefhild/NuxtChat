@@ -28,6 +28,7 @@ function resolvedField(profile: any, field: string, locale: string): string | nu
   return profile[field] ?? null;
 }
 
+const ONLINE_WINDOW_MS = 10 * 60 * 1000;
 const RECENT_DAYS = 7;
 const OFFLINE_LIMIT = 20;
 
@@ -35,11 +36,12 @@ export default defineEventHandler(async (event) => {
   const locale = normalizeLocale(getQuery(event).locale);
   const supabase = await getServiceRoleClient(event);
 
+  const onlineCutoff = new Date(Date.now() - ONLINE_WINDOW_MS).toISOString();
   const recentCutoff = new Date(
     Date.now() - RECENT_DAYS * 24 * 60 * 60 * 1000
   ).toISOString();
 
-  // 1. Honey bots — they appear as real users, always online
+  // 1. Honey bots — always online
   const { data: honeyPersonas } = await supabase
     .from("ai_personas")
     .select(`
@@ -60,19 +62,46 @@ export default defineEventHandler(async (event) => {
     .filter((p: any) => p.profile?.user_id)
     .map((p: any) => p.profile);
 
-  // 2. Recently-active real users (exclude AI profiles)
+  const honeyIds = new Set(honeyProfiles.map((p: any) => p.user_id));
+
+  // 2. Real online users — presence table OR last_active within 10 min
+  const [presenceRes, lastActiveRes] = await Promise.all([
+    supabase.from("presence").select("user_id").gte("last_seen_at", onlineCutoff),
+    supabase.from("profiles")
+      .select("user_id, displayname, avatar_url, tagline, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
+      .eq("is_ai", false)
+      .eq("is_private", false)
+      .gte("last_active", onlineCutoff),
+  ]);
+
+  const onlineRealIds = new Set<string>([
+    ...(presenceRes.data || []).map((r: any) => r.user_id),
+    ...(lastActiveRes.data || []).map((r: any) => r.user_id),
+  ]);
+
+  const onlineRealProfiles = (lastActiveRes.data || []).filter(
+    (p: any) => onlineRealIds.has(p.user_id) && !honeyIds.has(p.user_id)
+  );
+
+  // 3. Recently-active real users for offline bucket (exclude online users)
   const { data: recentProfiles } = await supabase
     .from("profiles")
     .select("user_id, displayname, avatar_url, tagline, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
     .eq("is_ai", false)
+    .eq("is_private", false)
     .gte("last_active", recentCutoff)
     .order("last_active", { ascending: false })
     .limit(OFFLINE_LIMIT);
 
-  // 3. Collect all user IDs and fetch their mood intakes for badges
+  const offlineProfiles = (recentProfiles || []).filter(
+    (p: any) => !onlineRealIds.has(p.user_id) && !honeyIds.has(p.user_id)
+  );
+
+  // 4. Collect all user IDs and fetch mood intake badges
   const allIds = [
     ...honeyProfiles.map((p: any) => p.user_id),
-    ...(recentProfiles || []).map((p: any) => p.user_id),
+    ...onlineRealProfiles.map((p: any) => p.user_id),
+    ...offlineProfiles.map((p: any) => p.user_id),
   ].filter(Boolean);
 
   let intakeMap = new Map<string, any>();
@@ -100,7 +129,7 @@ export default defineEventHandler(async (event) => {
   }
 
   return {
-    online: honeyProfiles.map(toCard),
-    offline: (recentProfiles || []).map(toCard),
+    online: [...honeyProfiles, ...onlineRealProfiles].map(toCard),
+    offline: offlineProfiles.map(toCard),
   };
 });
