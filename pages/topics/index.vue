@@ -33,7 +33,7 @@ const copy = computed(() => {
       description:
         "Parcourez des pages autour de la rencontre en ligne, de l'amitié et des raisons qui poussent à commencer une conversation.",
       intro:
-        "Les pages thématiques relient de vraies raisons de discuter à l'expérience de chat. Cette section aide à explorer des thèmes de conversation, des objectifs sociaux et des façons simples de parler avec quelqu'un de nouveau.",
+        "Parfois, on a juste besoin de quelqu'un à qui parler — et ces sujets sont là pour vous aider à trouver ce que ça veut dire pour vous. Explorez par humeur, objectif, ou ce qui vous passe par la tête, et trouvez votre entrée.",
       summaryTitle: (count) => `${count} sujets pour explorer avant de discuter`,
       siblingHubs: [
         { label: "Voir les comparaisons", href: "/compare" },
@@ -53,7 +53,7 @@ const copy = computed(() => {
       description:
         "Изучайте страницы о знакомстве онлайн, дружбе и причинах, по которым люди начинают разговор.",
       intro:
-        "Тематические страницы связывают реальные причины для общения с самим опытом чата. Этот раздел помогает исследовать темы разговора, социальные цели и простые способы начать диалог с новым человеком.",
+        "Иногда просто нужен кто-то, с кем поговорить — и эти темы помогут вам разобраться, что именно вам нужно. Просматривайте по настроению, цели или тому, что сейчас на уме, и найдите свой путь.",
       summaryTitle: (count) => `${count} темы, которые стоит изучить до начала чата`,
       siblingHubs: [
         { label: "Смотреть сравнения", href: "/compare" },
@@ -73,7 +73,7 @@ const copy = computed(() => {
       description:
         "浏览围绕在线认识人、交朋友以及人们为什么想开始一段对话的主题页面。",
       intro:
-        "主题页把真实的聊天动机连接到实际产品体验。这个版块帮助用户探索对话主题、社交目标，以及与新朋友开始交流的简单方式。",
+        "有时候，你只是需要一个可以倾诉的人——这些主题就是帮你弄清楚那对你意味着什么。按心情、目标，或者脑海中任何想法去浏览，找到属于你的入口。",
       summaryTitle: (count) => `${count} 个主题，帮你在聊天前先了解方向`,
       siblingHubs: [
         { label: "查看对比", href: "/compare" },
@@ -92,7 +92,7 @@ const copy = computed(() => {
     description:
       "Browse topic pages around meeting people online, making friends, and the reasons people start new conversations.",
     intro:
-      "Topic pages look at the real reasons people are choosing ImChatty. Explore conversation themes, moods, goals, and simple ways to start talking with someone new.",
+      "Sometimes you just need someone to talk to — and these topics are here to help you figure out what that looks like for you. Browse by mood, goal, or whatever's on your mind, and find your way in.",
     summaryTitle: (count) => `${count} topics to explore`,
     siblingHubs: [
       { label: "Browse comparisons", href: "/compare" },
