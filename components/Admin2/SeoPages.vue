@@ -103,18 +103,23 @@
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
-                  v-model="form.locale"
-                  :items="localeOptions"
+                  :model-value="form.locale"
+                  :items="activeLocaleOptions"
+                  item-title="title"
+                  item-value="value"
                   label="Locale"
                   :rules="[required]"
+                  @update:model-value="onLocaleChange"
                 />
               </v-col>
               <v-col cols="12" md="4">
                 <v-switch
-                  v-model="form.isPublished"
+                  :model-value="form.isPublished"
                   color="success"
                   inset
+                  :loading="publishToggling"
                   label="Published"
+                  @update:model-value="onPublishedToggle"
                 />
               </v-col>
               <v-col cols="12" md="4" class="d-flex align-center">
@@ -400,7 +405,9 @@ const localeOptions = ["en", "fr", "ru", "zh"];
 
 const loading = ref(true);
 const saving = ref(false);
+const publishToggling = ref(false);
 const dialog = ref(false);
+const editLocaleVariants = ref({});
 const translationDialog = ref(false);
 const importDialog = ref(false);
 const selectedType = ref("landing");
@@ -530,6 +537,21 @@ const translationOptions = computed(() => {
     }));
 });
 
+const editLocaleOptions = computed(() =>
+  localeOptions.map((locale) => ({
+    title: editLocaleVariants.value[locale]
+      ? locale.toUpperCase()
+      : `${locale.toUpperCase()} (new)`,
+    value: locale,
+  }))
+);
+
+const activeLocaleOptions = computed(() =>
+  Object.keys(editLocaleVariants.value).length
+    ? editLocaleOptions.value
+    : localeOptions.map((locale) => ({ title: locale.toUpperCase(), value: locale }))
+);
+
 const availableFaqOptions = computed(() =>
   availableFaqs.value.map((faq) => ({
     label: faq.question,
@@ -572,6 +594,7 @@ const loadFaqs = async () => {
 };
 
 const openCreateDialog = () => {
+  editLocaleVariants.value = {};
   form.value = {
     ...emptyForm(),
     pageType: selectedType.value,
@@ -581,6 +604,7 @@ const openCreateDialog = () => {
 
 const openImportDialog = () => {
   if (!dialog.value) {
+    editLocaleVariants.value = {};
     form.value = {
       ...emptyForm(),
       pageType: selectedType.value,
@@ -590,7 +614,7 @@ const openImportDialog = () => {
   importDialog.value = true;
 };
 
-const openEditDialog = (page) => {
+const populateFormFromPage = (page) => {
   form.value = {
     id: page.id,
     pageType: page.pageType,
@@ -618,7 +642,44 @@ const openEditDialog = (page) => {
     ctaHref: page.ctaHref || "/chat",
     isPublished: Boolean(page.isPublished),
   };
+};
+
+const openEditDialog = (page) => {
+  const key = `${page.pageType}:${page.slug}`;
+  const allVariants = pages.value.filter((p) => `${p.pageType}:${p.slug}` === key);
+  editLocaleVariants.value = Object.fromEntries(allVariants.map((p) => [p.locale, p]));
+  populateFormFromPage(page);
   dialog.value = true;
+};
+
+const onLocaleChange = (newLocale) => {
+  // Hero image is shared across all locale variants — preserve it across switches
+  const sharedImage = {
+    heroImagePath: form.value.heroImagePath,
+    heroImageUrl: form.value.heroImageUrl,
+    photoCreditsUrl: form.value.photoCreditsUrl,
+    photoCreditsHtml: form.value.photoCreditsHtml,
+  };
+
+  const variant = editLocaleVariants.value[newLocale];
+  if (variant) {
+    populateFormFromPage(variant);
+    if (!form.value.heroImageUrl && sharedImage.heroImageUrl) {
+      form.value.heroImagePath = sharedImage.heroImagePath;
+      form.value.heroImageUrl = sharedImage.heroImageUrl;
+      form.value.photoCreditsUrl = sharedImage.photoCreditsUrl;
+      form.value.photoCreditsHtml = sharedImage.photoCreditsHtml;
+    }
+  } else {
+    form.value = {
+      ...emptyForm(),
+      id: null,
+      pageType: form.value.pageType,
+      slug: form.value.slug,
+      locale: newLocale,
+      ...sharedImage,
+    };
+  }
 };
 
 const applyImportedPayload = (payload) => {
@@ -712,6 +773,12 @@ const applyTranslationJob = async (job) => {
     if (job.skipped?.length) parts.push(`Skipped: ${job.skipped.join(", ")}`);
     translationDialog.value = false;
     await loadPages();
+    // Refresh locale variants so the switcher immediately reflects newly translated rows
+    if (dialog.value && form.value.pageType && form.value.slug) {
+      const key = `${form.value.pageType}:${form.value.slug}`;
+      const allVariants = pages.value.filter((p) => `${p.pageType}:${p.slug}` === key);
+      editLocaleVariants.value = Object.fromEntries(allVariants.map((p) => [p.locale, p]));
+    }
     showMessage(parts.length ? parts.join(" · ") : "Translation complete.");
   } else if (job.status === "failed") {
     stopTranslationPolling();
@@ -805,6 +872,61 @@ const runTranslation = async () => {
   }
 };
 
+const buildFormPayload = () => ({
+  id: form.value.id,
+  pageType: form.value.pageType,
+  locale: form.value.locale,
+  slug: form.value.slug,
+  title: form.value.title,
+  subtitle: form.value.subtitle,
+  metaTitle: form.value.metaTitle,
+  metaDescription: form.value.metaDescription,
+  heroTitle: form.value.heroTitle,
+  heroBody: form.value.heroBody,
+  heroImagePath: form.value.heroImagePath,
+  heroImageUrl: form.value.heroImageUrl,
+  photoCreditsUrl: form.value.photoCreditsUrl,
+  photoCreditsHtml: form.value.photoCreditsHtml,
+  body: form.value.body,
+  highlights: form.value.highlights,
+  faqEntryIds: form.value.faqEntryIds,
+  relatedLinks: form.value.relatedLinks,
+  ctaLabel: form.value.ctaLabel,
+  ctaHref: form.value.ctaHref,
+  isPublished: form.value.isPublished,
+});
+
+const applyPageSaveResponse = (saved) => {
+  form.value.id = saved.id;
+  editLocaleVariants.value = {
+    ...editLocaleVariants.value,
+    [saved.locale]: saved,
+  };
+  const next = pages.value.filter((page) => page.id !== saved.id);
+  next.unshift(saved);
+  pages.value = next;
+};
+
+const onPublishedToggle = async (value) => {
+  form.value.isPublished = value;
+  if (!form.value.id) return;
+  publishToggling.value = true;
+  try {
+    const response = await $fetch("/api/admin/seo-pages/save", {
+      method: "POST",
+      body: buildFormPayload(),
+    });
+    if (!response?.success) throw new Error(response?.error || "Failed to update.");
+    applyPageSaveResponse(response.page);
+    showMessage(value ? "Published." : "Unpublished.");
+  } catch (error) {
+    form.value.isPublished = !value;
+    showMessage(error?.data?.error || error?.message || "Failed to update published state.", "error");
+  } finally {
+    publishToggling.value = false;
+  }
+};
+
 const savePage = async () => {
   const result = await formRef.value?.validate?.();
   if (result?.valid === false) return;
@@ -813,29 +935,7 @@ const savePage = async () => {
   try {
     const response = await $fetch("/api/admin/seo-pages/save", {
       method: "POST",
-      body: {
-        id: form.value.id,
-        pageType: form.value.pageType,
-        locale: form.value.locale,
-        slug: form.value.slug,
-        title: form.value.title,
-        subtitle: form.value.subtitle,
-        metaTitle: form.value.metaTitle,
-        metaDescription: form.value.metaDescription,
-        heroTitle: form.value.heroTitle,
-        heroBody: form.value.heroBody,
-        heroImagePath: form.value.heroImagePath,
-        heroImageUrl: form.value.heroImageUrl,
-        photoCreditsUrl: form.value.photoCreditsUrl,
-        photoCreditsHtml: form.value.photoCreditsHtml,
-        body: form.value.body,
-        highlights: form.value.highlights,
-        faqEntryIds: form.value.faqEntryIds,
-        relatedLinks: form.value.relatedLinks,
-        ctaLabel: form.value.ctaLabel,
-        ctaHref: form.value.ctaHref,
-        isPublished: form.value.isPublished,
-      },
+      body: buildFormPayload(),
     });
 
     if (!response?.success) {
@@ -852,9 +952,7 @@ const savePage = async () => {
       throw new Error("SEO page save returned no page payload.");
     }
 
-    const next = pages.value.filter((page) => page.id !== saved.id);
-    next.unshift(saved);
-    pages.value = next;
+    applyPageSaveResponse(saved);
 
     dialog.value = false;
     showMessage("SEO page saved.");

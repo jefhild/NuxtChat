@@ -41,15 +41,14 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: "SEO page not found" });
     }
 
-    // Serve translation variants even if only the English row is published
-    const rows = allRows;
+    // Only serve published variants; unpublished locales fall back to English
     const preferred =
-      rows.find((row) => normalizeLocaleCode(row.locale) === locale) ||
-      rows.find((row) => normalizeLocaleCode(row.locale) === "en") ||
-      rows[0];
+      publishedRows.find((row) => normalizeLocaleCode(row.locale) === locale) ||
+      publishedRows.find((row) => normalizeLocaleCode(row.locale) === "en") ||
+      publishedRows[0];
     const availableLocales = Array.from(
       new Set(
-        allRows.map((row) => normalizeLocaleCode(row.locale)).filter(Boolean)
+        publishedRows.map((row) => normalizeLocaleCode(row.locale)).filter(Boolean)
       )
     );
 
