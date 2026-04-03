@@ -4,7 +4,7 @@
       v-for="preset in MOOD_PRESETS"
       :key="preset.key"
       :color="selectedKey === preset.key ? 'primary' : undefined"
-      :variant="selectedKey === preset.key ? 'flat' : 'outlined'"
+      :variant="selectedKey === preset.key ? 'tonal' : 'outlined'"
       class="mood-chip"
       size="large"
       @click="onChipClick(preset)"
