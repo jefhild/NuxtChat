@@ -33,6 +33,16 @@
             >
               {{ $t("components.candidateCard.online") }}
             </v-chip>
+            <v-chip
+              v-if="candidate.agent_enabled"
+              size="x-small"
+              color="amber"
+              variant="tonal"
+              prepend-icon="mdi-robot-outline"
+              class="ml-1"
+            >
+              Away Agent
+            </v-chip>
           </div>
           <p
             v-if="candidate.tagline"

@@ -68,7 +68,7 @@ export default defineEventHandler(async (event) => {
   const [presenceRes, lastActiveRes] = await Promise.all([
     supabase.from("presence").select("user_id").gte("last_seen_at", onlineCutoff),
     supabase.from("profiles")
-      .select("user_id, displayname, avatar_url, tagline, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
+      .select("user_id, displayname, avatar_url, tagline, agent_enabled, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
       .eq("is_ai", false)
       .eq("is_private", false)
       .gte("last_active", onlineCutoff),
@@ -86,7 +86,7 @@ export default defineEventHandler(async (event) => {
   // 3. Recently-active real users for offline bucket (exclude online users)
   const { data: recentProfiles } = await supabase
     .from("profiles")
-    .select("user_id, displayname, avatar_url, tagline, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
+    .select("user_id, displayname, avatar_url, tagline, agent_enabled, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
     .eq("is_ai", false)
     .eq("is_private", false)
     .gte("last_active", recentCutoff)
@@ -121,6 +121,7 @@ export default defineEventHandler(async (event) => {
       avatar_url: p.avatar_url,
       tagline: resolvedField(p, "tagline", locale),
       country_emoji: p.countries?.emoji ?? null,
+      agent_enabled: p.agent_enabled ?? false,
       emotion: intake?.emotion ?? null,
       intent: intake?.intent ?? null,
       energy: intake?.energy ?? null,

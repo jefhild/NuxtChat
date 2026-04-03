@@ -111,6 +111,11 @@
                 </template>
               </v-col>
             </v-row>
+            <v-row v-else-if="tab === 7" align="start">
+              <v-col class="settings-content-col">
+                <SettingsAgentSettings />
+              </v-col>
+            </v-row>
           </template>
         </v-card>
       </v-col>
@@ -177,6 +182,12 @@ const menuItems = computed(() => [
       label: t("components.settings-container.photo-library"),
       title: t("components.settings-container.menu.photo-library"),
       icon: "mdi-image-multiple",
+    },
+    {
+      value: 7,
+      label: "Away Agent",
+      title: "Away Agent",
+      icon: "mdi-robot-outline",
     },
   ]);
 

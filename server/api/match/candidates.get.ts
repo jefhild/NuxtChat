@@ -174,7 +174,7 @@ export default defineEventHandler(async (event) => {
 
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, displayname, avatar_url, tagline, is_ai, gender_id, countries:country_id (emoji), profile_translations(locale, displayname, tagline)")
+      .select("user_id, displayname, avatar_url, tagline, is_ai, gender_id, agent_enabled, countries:country_id (emoji), profile_translations(locale, displayname, tagline)")
       .in("user_id", candidateIds);
 
     // Include real users and honey bots; skip other AI profiles
@@ -204,6 +204,7 @@ export default defineEventHandler(async (event) => {
       tagline:       resolvedField(profile, "tagline", locale),
       gender_id:     profile.gender_id ?? null,
       country_emoji: profile.country_emoji ?? null,
+      agent_enabled: profile.agent_enabled ?? false,
       score,
       emotion:       intake.emotion,
       intent:        intake.intent,

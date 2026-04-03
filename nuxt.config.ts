@@ -383,6 +383,13 @@ export default defineNuxtConfig({
       ],
     },
     debug: false,
+    experimental: {
+      tasks: true,
+    },
+    scheduledTasks: {
+      "*/5 * * * *": ["agent:proactive"],
+      "* * * * *":   ["agent:reactive"],
+    },
   },
 
   hooks: {
