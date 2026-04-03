@@ -221,6 +221,10 @@ watch(
   (groups) => {
     if (!groups.length || opened.value.length) return;
     opened.value = [groups[0].id];
+    if (!route.hash && !activeFilter.value) {
+      activated.value = [groups[0].id];
+      activeFilter.value = groups[0].id;
+    }
   },
   { immediate: true }
 );
