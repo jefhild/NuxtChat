@@ -277,7 +277,7 @@ onMounted(fetchStatus);
 }
 
 .agent-section-header {
-  background: rgb(var(--v-theme-surface));
+  background: rgba(var(--v-theme-on-surface), 0.06);
   border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   border-radius: 10px;
   padding: 14px 16px;
