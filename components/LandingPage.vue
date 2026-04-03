@@ -57,7 +57,7 @@
     </section>
 
     <section class="entry-section full-bleed">
-      <v-sheet class="entry-surface" elevation="0">
+      <v-sheet class="entry-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
         <v-container class="py-10 py-md-14">
           <div class="section-copy text-center">
             <v-chip color="primary" variant="tonal" class="mb-4">
@@ -103,7 +103,7 @@
     </section>
 
     <section class="full-bleed proof-section">
-      <v-sheet class="proof-surface" elevation="0">
+      <v-sheet class="proof-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
         <v-container class="py-10 py-md-14">
           <v-row align="stretch">
             <v-col cols="12" md="7">
@@ -151,7 +151,7 @@
     </section>
 
     <section class="full-bleed mood-teaser-section">
-      <v-sheet class="mood-teaser-surface" elevation="0">
+      <v-sheet class="mood-teaser-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
         <v-container class="py-10 py-md-14">
           <div class="section-copy text-center">
             <v-chip color="primary" variant="tonal" class="mb-4">
@@ -192,7 +192,7 @@
     </v-container>
 
     <section class="full-bleed final-cta-section mt-10">
-      <v-sheet class="final-cta-surface" elevation="0">
+      <v-sheet class="final-cta-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
         <v-container class="py-12 py-md-16">
           <v-row align="center" class="final-cta-grid">
             <v-col cols="12" md="5">
@@ -514,6 +514,18 @@ watch(
   },
   { immediate: true }
 );
+
+const updateSpotlight = (e) => {
+  const el = e.currentTarget;
+  const rect = el.getBoundingClientRect();
+  el.style.setProperty("--sx", `${e.clientX - rect.left}px`);
+  el.style.setProperty("--sy", `${e.clientY - rect.top}px`);
+  el.style.setProperty("--sp-opacity", "1");
+};
+
+const clearSpotlight = (e) => {
+  e.currentTarget.style.setProperty("--sp-opacity", "0");
+};
 </script>
 
 <style scoped>
@@ -600,6 +612,8 @@ watch(
 }
 
 .entry-surface {
+  position: relative;
+  isolation: isolate;
   background:
     radial-gradient(900px 320px at 4% 0%, rgba(14, 165, 233, 0.14), transparent 62%),
     linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
@@ -608,6 +622,8 @@ watch(
 }
 
 .proof-surface {
+  position: relative;
+  isolation: isolate;
   background:
     radial-gradient(720px 220px at 96% 0%, rgba(30, 64, 175, 0.08), transparent 60%),
     linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
@@ -615,6 +631,8 @@ watch(
 }
 
 .mood-teaser-surface {
+  position: relative;
+  isolation: isolate;
   background:
     radial-gradient(780px 280px at 50% 0%, rgba(34, 197, 94, 0.1), transparent 60%),
     linear-gradient(180deg, #f8fafc 0%, #edf7f3 100%);
@@ -622,6 +640,8 @@ watch(
 }
 
 .final-cta-surface {
+  position: relative;
+  isolation: isolate;
   background:
     radial-gradient(820px 260px at 12% 0%, rgba(59, 130, 246, 0.16), transparent 60%),
     radial-gradient(640px 220px at 88% 100%, rgba(14, 165, 233, 0.1), transparent 55%),
@@ -868,16 +888,49 @@ watch(
     linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
 }
 
+:global(.v-theme--dark .entry-surface::before) {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(600px circle at var(--sx, -600px) var(--sy, -600px), rgba(14, 165, 233, 0.1), transparent 40%);
+  opacity: var(--sp-opacity, 0);
+  transition: opacity 0.5s ease;
+}
+
 :global(.v-theme--dark .proof-surface) {
   background:
     radial-gradient(720px 220px at 96% 0%, rgba(30, 64, 175, 0.12), transparent 60%),
     linear-gradient(180deg, #0b1220 0%, #111827 100%);
 }
 
+:global(.v-theme--dark .proof-surface::before) {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(600px circle at var(--sx, -600px) var(--sy, -600px), rgba(99, 102, 241, 0.1), transparent 40%);
+  opacity: var(--sp-opacity, 0);
+  transition: opacity 0.5s ease;
+}
+
 :global(.v-theme--dark .mood-teaser-surface) {
   background:
     radial-gradient(780px 280px at 50% 0%, rgba(34, 197, 94, 0.12), transparent 60%),
     linear-gradient(180deg, #111827 0%, #0f172a 100%);
+}
+
+:global(.v-theme--dark .mood-teaser-surface::before) {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(600px circle at var(--sx, -600px) var(--sy, -600px), rgba(34, 197, 94, 0.1), transparent 40%);
+  opacity: var(--sp-opacity, 0);
+  transition: opacity 0.5s ease;
 }
 
 :global(.v-theme--dark .final-cta-surface) {
@@ -888,6 +941,17 @@ watch(
   color: #e5eefc;
   border-top: 1px solid rgba(147, 197, 253, 0.12);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+:global(.v-theme--dark .final-cta-surface::before) {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(600px circle at var(--sx, -600px) var(--sy, -600px), rgba(59, 130, 246, 0.12), transparent 40%);
+  opacity: var(--sp-opacity, 0);
+  transition: opacity 0.5s ease;
 }
 
 :global(.v-theme--dark .entry-card),
