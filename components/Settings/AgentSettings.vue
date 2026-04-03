@@ -177,11 +177,54 @@
 
     </v-card-text>
   </v-card>
+
+  <!-- Registration gate dialog -->
+  <v-dialog v-model="showAuthDialog" max-width="420" persistent>
+    <v-card>
+      <v-card-title class="d-flex align-center gap-2 pt-5 px-5">
+        <v-icon color="primary">mdi-robot-outline</v-icon>
+        Away Agent requires an account
+      </v-card-title>
+      <v-card-text class="px-5 pb-2">
+        <p class="text-body-2 text-medium-emphasis mb-4">
+          Create a free account to activate your Away Agent. It only takes a moment.
+        </p>
+
+        <v-tabs v-model="authDialogTab" density="compact" class="mb-4">
+          <v-tab value="email">Email</v-tab>
+          <v-tab value="google">Google</v-tab>
+          <v-tab value="facebook">Facebook</v-tab>
+        </v-tabs>
+
+        <v-window v-model="authDialogTab">
+          <v-window-item value="email">
+            <LoginEmail />
+          </v-window-item>
+          <v-window-item value="google">
+            <div class="py-4">
+              <LoginOAuthButton provider="google" label="Google" icon="mdi-google" />
+            </div>
+          </v-window-item>
+          <v-window-item value="facebook">
+            <div class="py-4">
+              <LoginOAuthButton provider="facebook" label="Facebook" icon="mdi-facebook" />
+            </div>
+          </v-window-item>
+        </v-window>
+      </v-card-text>
+      <v-card-actions class="px-5 pb-4">
+        <v-spacer />
+        <v-btn variant="text" @click="showAuthDialog = false">Maybe later</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
+import LoginEmail from "~/components/Login/Email.vue";
+import LoginOAuthButton from "~/components/Login/OAuthButton.vue";
 
 const authStore = useAuthStore();
 
@@ -191,6 +234,8 @@ const toggling = ref(false);
 const saving = ref(false);
 const returnBanner = ref(false);
 const returnStats = ref({ conversations: 0 });
+const showAuthDialog = ref(false);
+const authDialogTab = ref("email");
 
 const config = ref({
   prompt_preset_key: "friendly",
@@ -243,6 +288,11 @@ async function fetchStatus() {
 }
 
 async function onToggle(value) {
+  if (value && authStore.authStatus !== "authenticated") {
+    agentEnabled.value = false;
+    showAuthDialog.value = true;
+    return;
+  }
   toggling.value = true;
   try {
     await $fetch("/api/agent/activate", {
