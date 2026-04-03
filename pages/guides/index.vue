@@ -33,7 +33,7 @@ const copy = computed(() => {
       description:
         "Parcourez des guides pratiques sur le chat anonyme, la confidentialité et la meilleure façon de commencer sur ImChatty.",
       intro:
-        "Les guides répondent aux questions concrètes qui reviennent avant de commencer à discuter. Cette section aide à clarifier les attentes, à rassurer les utilisateurs et à faciliter les premiers pas.",
+        "C'est normal d'avoir des questions avant de se lancer dans quelque chose de nouveau. Ces guides sont là pour vous donner des réponses honnêtes et claires — sur la confidentialité, ce à quoi vous attendre, et comment commencer en toute confiance.",
       summaryTitle: (count) => `${count} guides pour commencer plus sereinement`,
       siblingHubs: [
         { label: "Voir les comparaisons", href: "/compare" },
@@ -53,7 +53,7 @@ const copy = computed(() => {
       description:
         "Изучайте практические гайды об анонимном чате, приватности и о том, как проще начать пользоваться ImChatty.",
       intro:
-        "Гайды отвечают на конкретные вопросы, которые возникают перед началом общения. Этот раздел помогает снять сомнения, прояснить ожидания и упростить первый шаг.",
+        "Задавать вопросы перед чем-то новым — это нормально. Эти гайды дают честные и понятные ответы — о приватности, чего ожидать и как начать уверенно.",
       summaryTitle: (count) => `${count} гайда, чтобы начать увереннее`,
       siblingHubs: [
         { label: "Смотреть сравнения", href: "/compare" },
@@ -73,7 +73,7 @@ const copy = computed(() => {
       description:
         "浏览关于匿名聊天、隐私以及如何更顺畅开始使用 ImChatty 的实用指南。",
       intro:
-        "指南页用来回答开始聊天前最常见的实际问题。这个版块有助于降低顾虑、建立清晰预期，并让第一步更容易。",
+        "在尝试新事物之前有疑问是很正常的。这些指南提供诚实、直接的解答——关于隐私、该期待什么，以及如何自信地开始。",
       summaryTitle: (count) => `${count} 篇指南，帮你更从容地开始`,
       siblingHubs: [
         { label: "查看对比", href: "/compare" },
@@ -92,7 +92,7 @@ const copy = computed(() => {
     description:
       "Browse practical guides covering anonymous chat, privacy, and the easiest ways to get started on ImChatty.",
     intro:
-      "Guide pages answer the practical questions people have before they start chatting. Explore straightforward help on privacy, getting started, and what to expect from the experience.",
+      "It's normal to have questions before jumping into something new. These guides are here to give you honest, straightforward answers — on privacy, what to expect, and how to get started confidently.",
     summaryTitle: (count) => `${count} guides to help you get started`,
     siblingHubs: [
       { label: "Browse comparisons", href: "/compare" },
