@@ -389,7 +389,7 @@ export default defineNuxtConfig({
         tasks: true,
       },
       scheduledTasks: {
-        "*/5 * * * *": ["agent:proactive"],
+        "*/2 * * * *": ["agent:proactive"],
         "* * * * *":   ["agent:reactive"],
       },
     }),

@@ -13,6 +13,7 @@ import {
 
 const ONLINE_WINDOW_MINUTES = 15; // consider users online if active within 15 min
 const CONTACT_COOLDOWN_HOURS = 24; // don't re-contact same user within 24h
+const MAX_AGENTS_PER_TARGET_PER_DAY = 3; // max distinct agents that can contact one user per day
 
 export default defineNitroTask({
   meta: {
@@ -92,9 +93,29 @@ export default defineNitroTask({
         (recentContacts ?? []).map((r) => r.target_user_id)
       );
 
-      const freshCandidates = candidates.filter(
-        (c) => !alreadyContactedIds.has(c.user_id)
-      );
+      // 4. Check how many distinct agents have already contacted each candidate today
+      const candidateUserIds = candidates.map((c) => c.user_id);
+      const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data: dailyContacts } = await supabase
+        .from("agent_conversation_log")
+        .select("target_user_id, agent_profile_id")
+        .in("target_user_id", candidateUserIds)
+        .gte("started_at", dayAgo);
+
+      // Build map: target_user_id → count of distinct agents
+      const agentsPerTarget = new Map<string, Set<string>>();
+      for (const row of (dailyContacts ?? [])) {
+        if (!agentsPerTarget.has(row.target_user_id)) {
+          agentsPerTarget.set(row.target_user_id, new Set());
+        }
+        agentsPerTarget.get(row.target_user_id)!.add(row.agent_profile_id);
+      }
+
+      const freshCandidates = candidates.filter((c) => {
+        if (alreadyContactedIds.has(c.user_id)) return false;
+        const agentCount = agentsPerTarget.get(c.user_id)?.size ?? 0;
+        return agentCount < MAX_AGENTS_PER_TARGET_PER_DAY;
+      });
       if (!freshCandidates.length) continue;
 
       // 4. Pick one candidate (first match — scoring could be added later)
