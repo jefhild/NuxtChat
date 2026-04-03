@@ -5,7 +5,7 @@
 <script setup>
 import { computed } from "vue";
 import { shouldIndexProfile } from "@/composables/useIndexability";
-import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
+import { resolveProfileLocalization, getProfileTranslationLocales } from "@/composables/useProfileLocalization";
 
 const { locale } = useI18n();
 const localPath = useLocalePath();
@@ -45,9 +45,11 @@ const localized = computed(() =>
 const getLimitedDescription = (text) =>
   text && text.length > 160 ? text.slice(0, 157) + "..." : text;
 const shouldIndex = computed(() => shouldIndexProfile(profile.value));
+const availableProfileLocales = computed(() => getProfileTranslationLocales(profile.value));
 
 // ✅ Call composable AFTER the function is declared
 useSeoI18nMeta("profiles.index", {
+  availableLocaleCodes: availableProfileLocales,
   dynamic: {
     title: localized.value?.displayname,
     description: getLimitedDescription(localized.value?.bio),

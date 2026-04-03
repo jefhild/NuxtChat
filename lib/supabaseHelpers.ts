@@ -8,11 +8,12 @@ const supabase = createClient(
 export async function getRegisteredUsersDisplaynames(options?: {
   onlyAI?: boolean;
   includePrivate?: boolean;
+  minAgeDays?: number;
 }) {
   const query = supabase
     .from("profiles")
     .select(
-      "displayname, gender_id, slug, is_ai, is_private, bio, tagline, avatar_url"
+      "displayname, gender_id, slug, is_ai, is_private, bio, tagline, avatar_url, preferred_locale, created, profile_translations(locale)"
     );
 
   if (options?.onlyAI) {
@@ -21,6 +22,11 @@ export async function getRegisteredUsersDisplaynames(options?: {
 
   if (!options?.includePrivate) {
     query.eq("is_private", false);
+  }
+
+  if (options?.minAgeDays) {
+    const cutoff = new Date(Date.now() - options.minAgeDays * 24 * 60 * 60 * 1000).toISOString();
+    query.lt("created", cutoff);
   }
 
   return await query;

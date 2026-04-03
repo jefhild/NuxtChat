@@ -14,6 +14,7 @@ import { buildSeoPagePath } from "../utils/seoPagePaths";
 const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
 const defaultLocale = "en";
 const INDEXABLE_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+const PROFILE_MIN_AGE_DAYS = 7;
 
 function localizePath(path: string, locale: string) {
   return locale === defaultLocale ? path : `/${locale}${path}`;
@@ -35,10 +36,34 @@ function normalizeIndexableSlug(value?: string | null) {
   return slug;
 }
 
+/**
+ * Returns the locales a profile should appear under in the sitemap:
+ * the profile's preferred_locale + any locales with explicit translations.
+ * Unlike getProfileTranslationLocales(), this does NOT auto-add 'en' unless
+ * it is the preferred locale or has a real translation.
+ */
+function getProfileSitemapLocales(profile: any): string[] {
+  const locales = new Set<string>();
+  const preferred = normalizeLocaleCode(profile?.preferred_locale);
+  if (preferred && SUPPORTED_LOCALES.includes(preferred)) {
+    locales.add(preferred);
+  } else {
+    locales.add("en");
+  }
+  const translations = Array.isArray(profile?.profile_translations)
+    ? profile.profile_translations
+    : [];
+  for (const t of translations) {
+    const locale = normalizeLocaleCode(t?.locale);
+    if (locale && SUPPORTED_LOCALES.includes(locale)) locales.add(locale);
+  }
+  return Array.from(locales);
+}
+
 export async function getAllDynamicRoutes(): Promise<string[]> {
   try {
     const [{ data: profiles, error }, seoPageData] = await Promise.all([
-      getRegisteredUsersDisplaynames(),
+      getRegisteredUsersDisplaynames({ minAgeDays: PROFILE_MIN_AGE_DAYS }),
       getPublishedSeoPageRoutes(),
     ]);
 
@@ -60,10 +85,12 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
             if (!normalizedSlug) return null;
 
             const gender = getGenderFromId(profile.gender_id) || "unknown";
-            return `/profiles/${gender}/${normalizedSlug}`;
+            const basePath = `/profiles/${gender}/${normalizedSlug}`;
+            const sitemapLocales = getProfileSitemapLocales(profile);
+            return sitemapLocales.map((locale) => localizePath(basePath, locale));
           })
       )
-    ).filter((route): route is string => Boolean(route));
+    ).filter((routes): routes is string[] => Boolean(routes)).flat();
 
     const staticPages = [
       "/about",
@@ -76,13 +103,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
     ];
     const homeRoutes = ["/"];
 
-    const allRoutes = [
-      ...homeRoutes,
-      ...staticPages,
-      ...profileRoutes,
-    ];
-
-    const localizedRoutes = allRoutes.flatMap((route) =>
+    const localizedStaticRoutes = [...homeRoutes, ...staticPages].flatMap((route) =>
       SUPPORTED_LOCALES.map((locale) => localizePath(route, locale))
     );
 
@@ -101,7 +122,8 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
 
     return [
       ...new Set([
-        ...localizedRoutes,
+        ...localizedStaticRoutes,
+        ...profileRoutes,
         ...localizedSeoPageRoutes,
       ]),
     ];
@@ -120,7 +142,7 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
 > {
   try {
     const [{ data: profiles, error }, seoPageData] = await Promise.all([
-      getRegisteredUsersDisplaynames(),
+      getRegisteredUsersDisplaynames({ minAgeDays: PROFILE_MIN_AGE_DAYS }),
       getPublishedSeoPageRoutes(),
     ]);
 
@@ -177,12 +199,20 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
             if (!normalizedSlug) return null;
 
             const gender = getGenderFromId(profile.gender_id) || "unknown";
-            return `/profiles/${gender}/${normalizedSlug}`;
+            const basePath = `/profiles/${gender}/${normalizedSlug}`;
+            const lastmod = profile.created
+              ? new Date(profile.created).toISOString()
+              : fallbackLastmod;
+            const sitemapLocales = getProfileSitemapLocales(profile);
+            return sitemapLocales.map((locale) => ({
+              loc: localizePath(basePath, locale),
+              lastmod,
+            }));
           })
       )
-    ).filter((route): route is string => Boolean(route));
+    ).filter((routes): routes is { loc: string; lastmod: string }[] => Boolean(routes)).flat();
 
-    profileRoutes.forEach((route) => addLocalizedRoutes(route));
+    profileRoutes.forEach((route) => localizedRoutes.push(route));
 
     (seoPageData || []).forEach((page: any) => {
       const slug = normalizeIndexableSlug(page?.slug);
