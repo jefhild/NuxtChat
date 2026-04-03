@@ -15,12 +15,8 @@ const ONLINE_WINDOW_MINUTES = 15; // consider users online if active within 15 m
 const CONTACT_COOLDOWN_HOURS = 24; // don't re-contact same user within 24h
 const MAX_AGENTS_PER_TARGET_PER_DAY = 3; // max distinct agents that can contact one user per day
 
-export default defineNitroTask({
-  meta: {
-    name: "agent:proactive",
-    description: "Proactively reach out to new matching users on behalf of away agents",
-  },
-  async run({ payload: _payload, context }) {
+export default {
+  async run({ payload: _payload, context }: { payload: unknown; context: Record<string, unknown> }) {
     const event = context?.event;
     const supabase = await getServiceRoleClient(event);
     const runtimeConfig = useRuntimeConfig(event);
@@ -154,4 +150,4 @@ export default defineNitroTask({
 
     return { result: `initiated ${contactsMade} new conversation(s)` };
   },
-});
+};

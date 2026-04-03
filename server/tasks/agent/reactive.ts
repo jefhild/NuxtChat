@@ -13,12 +13,8 @@ import {
 
 const REPLY_WINDOW_SECONDS = 120; // look back 2 minutes for unanswered messages
 
-export default defineNitroTask({
-  meta: {
-    name: "agent:reactive",
-    description: "Reply to messages received by away agents",
-  },
-  async run({ payload: _payload, context }) {
+export default {
+  async run({ payload: _payload, context }: { payload: unknown; context: Record<string, unknown> }) {
     const event = context?.event;
     const supabase = await getServiceRoleClient(event);
     const runtimeConfig = useRuntimeConfig(event);
@@ -144,4 +140,4 @@ export default defineNitroTask({
 
     return { result: `replied to ${repliesSent} conversation(s)` };
   },
-});
+};
