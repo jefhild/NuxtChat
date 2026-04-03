@@ -2567,6 +2567,8 @@ const usersWithPresence = computed(() => {
         presence = "online";
       } else if (isRecentActive) {
         presence = "away";
+      } else if (u.agent_enabled === true) {
+        presence = "agent";
       } else {
         presence = "offline";
       }

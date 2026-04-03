@@ -360,13 +360,14 @@ const sortWithPin = (arr = []) =>
 
 const presenceValue = (u) => {
   const p = u?.presence;
-  if (p === "online" || p === "away" || p === "offline") return p;
+  if (p === "online" || p === "away" || p === "offline" || p === "agent") return p;
   return u?.online ? "online" : "offline";
 };
 
 const presenceClass = (u) => {
   const p = presenceValue(u);
   if (p === "away") return "away";
+  if (p === "agent") return "agent";
   return p === "online" ? "on" : "off";
 };
 
@@ -765,6 +766,11 @@ function toggleGroup(id) {
 
 .presence-dot.away {
   background: #f59e0b;
+}
+
+.presence-dot.agent {
+  background: #818cf8;
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-surface), 0.98), 0 0 4px 1px rgba(129, 140, 248, 0.6);
 }
 
 .presence-dot.off {
