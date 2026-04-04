@@ -625,8 +625,11 @@ export const useDb = () => {
   const getAllProfiles = async (withAI) => {
     const supabase = getClient();
     const { data, error } = await supabase.rpc("get_all_profiles_1", {
-      // pass through boolean or null (no filter)
       p_is_ai: typeof withAI === "boolean" ? withAI : null,
+      p_limit: 5000,
+      p_offset: 0,
+      p_search: null,
+      p_filter: null,
     });
 
     if (error) {
@@ -640,11 +643,16 @@ export const useDb = () => {
     return { data, error: null };
   };
 
-  const getAdminProfiles = async (withAI) => {
+  const getAdminProfiles = async (withAI, { page = 1, limit = 5000, search = "", filter = "", minimal = false } = {}) => {
     try {
       const response = await $fetch("/api/admin/profiles", {
         query: {
           is_ai: typeof withAI === "boolean" ? String(withAI) : undefined,
+          page,
+          limit,
+          search: search || undefined,
+          filter: filter || undefined,
+          minimal: minimal ? "true" : undefined,
         },
       });
       const items = Array.isArray(response?.items)
@@ -652,7 +660,13 @@ export const useDb = () => {
         : Array.isArray(response)
         ? response
         : [];
-      return { data: items, error: null };
+      return {
+        data: items,
+        total: response?.total ?? items.length,
+        page: response?.page ?? page,
+        limit: response?.limit ?? limit,
+        error: null,
+      };
     } catch (error) {
       const detail =
         error?.data?.error?.message ||
@@ -660,7 +674,7 @@ export const useDb = () => {
         error?.message ||
         error;
       console.error("[useDB.getAdminProfiles] error:", detail);
-      return { data: [], error };
+      return { data: [], total: 0, page, limit, error };
     }
   };
 

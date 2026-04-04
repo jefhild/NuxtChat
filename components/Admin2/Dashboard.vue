@@ -27,15 +27,6 @@
                   hide-details
                   class="admin-filter"
                 />
-                <v-select
-                  v-model="sortSelection"
-                  :items="sortOptions"
-                  label="Sort by"
-                  variant="outlined"
-                  density="compact"
-                  hide-details
-                  class="admin-sort"
-                />
               </div>
 
               <div v-if="markedCount" class="admin-purge-wrap">
@@ -50,19 +41,21 @@
               </div>
             </div>
 
-            <v-data-table
+            <v-data-table-server
               v-model:expanded="expanded"
               :headers="tableHeaders"
               :items="activeProfiles"
-              :items-per-page="-1"
+              :items-length="totalItems"
+              v-model:page="currentPage"
+              v-model:items-per-page="itemsPerPage"
+              :items-per-page-options="[25, 50, 100]"
               item-value="user_id"
               fixed-header
               height="680"
               class="admin-table"
-              :sort-by="sortBy"
-              :loading="bulkActivityLoading"
+              :loading="isTableLoading"
               hover
-              hide-default-footer
+              @update:options="onTableOptions"
             >
               <template #item.profile="{ item }">
                 <div class="d-flex align-center ga-3">
@@ -88,6 +81,9 @@
                       >
                         {{ getCountryEmoji(item) }}
                       </span>
+                      <v-avatar v-if="item.email" size="18" class="admin-registered-badge">
+                        <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
+                      </v-avatar>
                       <v-icon
                         v-if="item?.gender_id"
                         size="20"
@@ -122,6 +118,9 @@
                     >
                       {{ getCountryEmoji(item) }}
                     </span>
+                    <v-avatar v-if="item.email" size="18" class="admin-registered-badge">
+                      <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
+                    </v-avatar>
                     <v-icon
                       v-if="item?.gender_id"
                       size="20"
@@ -412,7 +411,7 @@
                   </td>
                 </tr>
               </template>
-            </v-data-table>
+            </v-data-table-server>
           </v-card-text>
         </v-card>
       </v-col>
@@ -617,17 +616,20 @@ import { getAvatar, getGenderPath } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 import { useDisplay } from "vuetify";
+import { useAuthStore } from "@/stores/authStore1";
 
 const isLoading = ref(true);
-const profiles = ref([]); // will always be an array after load
-const aiProfiles = ref([]);
+const isTableLoading = ref(false);
+const serverProfiles = ref([]);
+const allProfilesLight = ref([]);
+const totalItems = ref(0);
+const currentPage = ref(1);
+const itemsPerPage = ref(50);
 const search = ref("");
 const expanded = ref([]);
-const sortSelection = ref("newest");
 const filterSelection = ref("registered");
 const activityByUserId = ref({});
 const activityLoadingIds = ref([]);
-const bulkActivityLoading = ref(false);
 const pendingReplyByUserId = ref({});
 const adminFlagsByUserId = ref({});
 const adminFlagsSavingByUserId = ref({});
@@ -659,6 +661,7 @@ const { locale } = useI18n();
 const { mdAndUp } = useDisplay();
 const localPath = useLocalePath();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const {
   getAdminProfiles,
@@ -701,46 +704,25 @@ const toArray = (val) => {
 };
 
 onMounted(async () => {
-  try {
-    const [regRaw, aiRaw] = await Promise.all([
-      getAdminProfiles(false),
-      getAdminProfiles(true),
-    ]);
-    profiles.value = toArray(regRaw);
-    aiProfiles.value = toArray(aiRaw);
-    await loadReplyStatus([...profiles.value, ...aiProfiles.value]);
-    await loadPendingPhotoUsers();
-  } catch (e) {
-    console.error("[admin] getAllProfiles failed:", e);
-    profiles.value = [];
-    aiProfiles.value = [];
-    pendingPhotoUserIds.value = [];
-  } finally {
-    isLoading.value = false;
+  await authStore.checkAuth();
+  if (!authStore.userProfile?.is_admin) {
+    console.log("Unauthorized access to admin panel");
+    router.push(localPath("/"));
+    return;
   }
+  const route = useRoute();
+  const section = route.query?.section;
+  if (section === "profilePhotos") filterSelection.value = "photos_pending";
+  await loadPage();
+  isLoading.value = false;
+  // Load non-blocking background data
+  loadAllProfilesLight();
+  loadPendingPhotoUsers();
 });
-
-const normSearch = computed(() => (search.value || "").toLowerCase());
-
-const matchesSearch = (p) => {
-  if (!normSearch.value) return true;
-  const haystack = [
-    p?.displayname,
-    p?.username,
-    p?.slug,
-    p?.email,
-    p?.user_id,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-  return haystack.includes(normSearch.value);
-};
 
 const pendingPhotoCount = computed(() => pendingPhotoUserIds.value.length);
 const mockUserOptions = computed(() => {
-  const all = [...profiles.value, ...aiProfiles.value];
-  return all
+  return allProfilesLight.value
     .map((p) => {
       const labelBase = displayNameFor(p) || p?.slug || p?.user_id || "Unknown";
       const label = `${labelBase} — ${p?.user_id || "—"}`;
@@ -762,32 +744,18 @@ const filterOptions = computed(() => [
   { title: "Forced online", value: "forced_online" },
 ]);
 
-const matchesFilter = (p) => {
-  const hasEmail = !!p?.email;
-  const isAnonymousProvider = p?.provider === "anonymous";
-  const isSimulated = !!p?.is_simulated;
-  const isForcedOnline = !!p?.force_online;
-  const isAi = !!p?.is_ai;
-
+const resolveFilterParams = () => {
   switch (filterSelection.value) {
     case "registered":
-      return !isAi;
+      return { isAi: false, serverFilter: "" };
     case "ai":
-      return isAi;
-    case "anon_authenticated":
-      return !hasEmail || isAnonymousProvider;
-    case "authenticated":
-      return hasEmail && !isAnonymousProvider;
-    case "simulated":
-      return isSimulated;
-    case "forced_online":
-      return isForcedOnline;
-    case "photos_pending":
-      return pendingPhotoUserIds.value.includes(p?.user_id);
+      return { isAi: true, serverFilter: "" };
     default:
-      return true;
+      return { isAi: null, serverFilter: filterSelection.value };
   }
 };
+
+const activeProfiles = computed(() => serverProfiles.value.map(buildProfileRow));
 
 const loadPendingPhotoUsers = async () => {
   try {
@@ -812,17 +780,7 @@ const filteredProfiles = computed(() =>
 
 const sortOptions = [
   { title: "Newest", value: "newest" },
-  { title: "Most active (chat)", value: "chat" },
 ];
-
-const sortBy = computed(() => {
-  switch (sortSelection.value) {
-    case "chat":
-      return [{ key: "chatCount", order: "desc" }];
-    default:
-      return [{ key: "createdAtSort", order: "desc" }];
-  }
-});
 
 const tableHeaders = computed(() => {
   const headers = [{ title: "Profile", key: "profile", sortable: false }];
@@ -857,10 +815,9 @@ const isActivityLoading = (userId) => activityLoadingIds.value.includes(userId);
 const hasPendingReply = (profile) =>
   !!profile?.is_simulated && !!pendingReplyByUserId.value[profile.user_id];
 
-const markedCount = computed(() => {
-  const all = [...profiles.value, ...aiProfiles.value];
-  return all.filter((p) => p?.marked_for_deletion_at).length;
-});
+const markedCount = computed(() =>
+  serverProfiles.value.filter((p) => p?.marked_for_deletion_at).length
+);
 
 const photoReviewLink = computed(() =>
   localPath({ path: "/admin", query: { section: "profilePhotos" } })
@@ -894,47 +851,59 @@ const buildProfileRow = (p) => {
   };
 };
 
-const activeProfiles = computed(() => filteredProfiles.value.map(buildProfileRow));
+const loadPage = async (page, perPage) => {
+  if (page !== undefined) currentPage.value = page;
+  if (perPage !== undefined) itemsPerPage.value = perPage;
+  isTableLoading.value = true;
+  try {
+    const { isAi, serverFilter } = resolveFilterParams();
+    const result = await getAdminProfiles(isAi, {
+      page: currentPage.value,
+      limit: itemsPerPage.value,
+      search: search.value || "",
+      filter: serverFilter,
+    });
+    serverProfiles.value = toArray(result);
+    totalItems.value = result.total || 0;
+    await loadReplyStatus(serverProfiles.value);
+  } catch (e) {
+    console.error("[admin] loadPage failed:", e);
+    serverProfiles.value = [];
+    totalItems.value = 0;
+  } finally {
+    isTableLoading.value = false;
+  }
+};
+
+const onTableOptions = ({ page, itemsPerPage: perPage }) => {
+  loadPage(page, perPage);
+};
+
+let searchTimer = null;
+watch(search, () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentPage.value = 1;
+    loadPage();
+  }, 400);
+});
+
+watch(filterSelection, () => {
+  currentPage.value = 1;
+  loadPage();
+});
 
 watch(expanded, (next) => {
   (next || []).forEach((userId) => ensureActivityLoaded(userId));
 });
 
-watch(
-  () => sortSelection.value,
-  () => {
-    if (sortSelection.value !== "newest") {
-      preloadActivity(activeProfiles.value);
-    }
-  }
-);
-
-
-watch(
-  () => filterSelection.value,
-  () => {
-    if (sortSelection.value !== "newest") {
-      preloadActivity(activeProfiles.value);
-    }
-  }
-);
-
-const preloadActivity = async (items) => {
-  if (bulkActivityLoading.value) return;
-  const ids = (items || [])
-    .map((p) => p.user_id)
-    .filter((id) => id && !activityByUserId.value[id]);
-  if (!ids.length) return;
-
-  bulkActivityLoading.value = true;
+const loadAllProfilesLight = async () => {
   try {
-    const batchSize = 6;
-    for (let i = 0; i < ids.length; i += batchSize) {
-      const batch = ids.slice(i, i + batchSize);
-      await Promise.all(batch.map((id) => ensureActivityLoaded(id)));
-    }
-  } finally {
-    bulkActivityLoading.value = false;
+    const result = await getAdminProfiles(null, { limit: 5000, minimal: true });
+    allProfilesLight.value = toArray(result);
+  } catch (e) {
+    console.warn("[admin] loadAllProfilesLight failed:", e);
+    allProfilesLight.value = [];
   }
 };
 
@@ -1296,21 +1265,15 @@ async function unmarkDeletion(profile) {
 
 async function handleUserDeleted(userId, undo = false) {
   const nextValue = undo ? null : new Date().toISOString();
-  profiles.value = profiles.value.map((p) =>
-    p?.user_id === userId ? { ...p, marked_for_deletion_at: nextValue } : p
-  );
-  aiProfiles.value = aiProfiles.value.map((p) =>
+  serverProfiles.value = serverProfiles.value.map((p) =>
     p?.user_id === userId ? { ...p, marked_for_deletion_at: nextValue } : p
   );
 }
 
 const syncProfileFlags = (userId, nextFlags) => {
-  const apply = (list) =>
-    list.map((p) =>
-      p?.user_id === userId ? { ...p, ...nextFlags } : p
-    );
-  profiles.value = apply(profiles.value);
-  aiProfiles.value = apply(aiProfiles.value);
+  serverProfiles.value = serverProfiles.value.map((p) =>
+    p?.user_id === userId ? { ...p, ...nextFlags } : p
+  );
 };
 
 const getAdminFlags = (profile) => {
@@ -1432,12 +1395,6 @@ const purgeMarkedProfiles = async () => {
       ? res.deletedUserIds
       : [];
     if (deletedIds.length) {
-      profiles.value = profiles.value.filter(
-        (p) => !deletedIds.includes(p.user_id)
-      );
-      aiProfiles.value = aiProfiles.value.filter(
-        (p) => !deletedIds.includes(p.user_id)
-      );
       const nextPending = { ...pendingReplyByUserId.value };
       deletedIds.forEach((id) => delete nextPending[id]);
       pendingReplyByUserId.value = nextPending;
@@ -1447,6 +1404,7 @@ const purgeMarkedProfiles = async () => {
       return;
     }
     purgeDialogOpen.value = false;
+    await loadPage();
   } catch (error) {
     console.error("[admin] purgeMarkedProfiles error:", error);
     purgeError.value = "Purge failed.";
@@ -1539,6 +1497,13 @@ const purgeMarkedProfiles = async () => {
   padding: 0;
   font-size: 17px;
   line-height: 1;
+}
+
+.admin-registered-badge {
+  position: absolute;
+  left: -6px;
+  top: -6px;
+  background: transparent;
 }
 
 .admin-detail-grid {

@@ -38,8 +38,20 @@ export default defineEventHandler(async (event) => {
   if (query.is_ai === "true") isAi = true;
   if (query.is_ai === "false") isAi = false;
 
+  const page = Math.max(1, parseInt(query.page) || 1);
+  const limit = Math.min(5000, Math.max(1, parseInt(query.limit) || 5000));
+  const offset = (page - 1) * limit;
+  const search = String(query.search || "").trim();
+  const filter = String(query.filter || "").trim();
+  // Skip the expensive auth email lookup for large/bulk requests
+  const minimal = query.minimal === "true" || limit > 200;
+
     const { data, error } = await supa.rpc("get_all_profiles_1", {
       p_is_ai: typeof isAi === "boolean" ? isAi : null,
+      p_limit: limit,
+      p_offset: offset,
+      p_search: search || null,
+      p_filter: filter || null,
     });
 
     if (error) {
@@ -49,37 +61,23 @@ export default defineEventHandler(async (event) => {
     }
 
     const items = Array.isArray(data) ? data : [];
+    const total = items.length > 0 ? Number(items[0].total_count ?? 0) : 0;
     const userIds = items.map((p) => p.user_id).filter(Boolean);
 
     let extraByUserId = new Map();
-    if (userIds.length) {
-      const pending = new Set(userIds);
-      const perPage = 1000;
-      for (let page = 1; page <= 20 && pending.size; page += 1) {
-        const { data: listData, error: listErr } =
-          await supa.auth.admin.listUsers({ page, perPage });
-
-        if (listErr) {
-          console.error("[admin/profiles] auth users error:", listErr);
-          setResponseStatus(event, 500);
-          return {
-            error: { stage: "auth_users", message: listErr.message },
-          };
-        }
-
-        const users = listData?.users || [];
-        for (const userRow of users) {
-          if (pending.has(userRow.id)) {
-            extraByUserId.set(userRow.id, {
-              id: userRow.id,
-              email: userRow.email || null,
-            });
-            pending.delete(userRow.id);
-          }
-        }
-
-        if (users.length < perPage) break;
-      }
+    if (!minimal && userIds.length) {
+      // Fetch emails per-user for the current page only (no full list scan)
+      const results = await Promise.allSettled(
+        userIds.map((id) => supa.auth.admin.getUserById(id))
+      );
+      results.forEach((result, i) => {
+        const userId = userIds[i];
+        const email =
+          result.status === "fulfilled"
+            ? result.value?.data?.user?.email || null
+            : null;
+        extraByUserId.set(userId, { id: userId, email });
+      });
     }
 
     let translationsByUserId = new Map();
@@ -132,6 +130,7 @@ export default defineEventHandler(async (event) => {
       const persona = personaByUserId.get(row.user_id) || null;
       return {
         ...row,
+        total_count: undefined,
         email: extra?.email ?? row.email ?? null,
         created: row.created ?? null,
         profile_translations: translationsByUserId.get(row.user_id) || [],
@@ -141,7 +140,7 @@ export default defineEventHandler(async (event) => {
       };
     });
 
-    return { items: merged };
+    return { items: merged, total, page, limit };
   } catch (err) {
     console.error("[admin/profiles] error:", err);
     setResponseStatus(event, 500);
