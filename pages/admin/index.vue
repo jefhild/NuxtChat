@@ -57,6 +57,7 @@ import AdminProfileAvatars from "~/components/Admin2/ProfileAvatars.vue";
 import AdminProfilePhotos from "~/components/Admin2/ProfilePhotos.vue";
 import AdminMoodFeedAdmin from "~/components/Admin2/MoodFeedAdmin.vue";
 import AdminSeoPages from "~/components/Admin2/SeoPages.vue";
+import AdminSeoIntelligence from "~/components/Admin2/SeoIntelligence.vue";
 import AdminAboutContent from "~/components/Admin2/AboutContent.vue";
 import PageHeader from "~/components/PageHeader.vue";
 import { useAuthStore } from "@/stores/authStore1";
@@ -80,6 +81,11 @@ const items = computed(() => [
     text: "SEO Pages",
     icon: "mdi-file-search-outline",
     value: "seoPages",
+  },
+  {
+    text: "SEO Intelligence",
+    icon: "mdi-chart-line",
+    value: "seoIntelligence",
   },
   {
     text: "About Content",
@@ -153,6 +159,8 @@ const getSectionComponent = (section) => {
   switch (section) {
     case "seoPages":
       return AdminSeoPages;
+    case "seoIntelligence":
+      return AdminSeoIntelligence;
     case "aboutContent":
       return AdminAboutContent;
     case "reports":

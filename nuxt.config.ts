@@ -293,6 +293,10 @@ export default defineNuxtConfig({
     SENDGRID_FROM_NAME: process.env.SENDGRID_FROM_NAME || "ImChatty",
     SENDGRID_UNSUBSCRIBE_GROUP_ID: process.env.SENDGRID_UNSUBSCRIBE_GROUP_ID || "",
     CRON_SECRET: process.env.CRON_SECRET || "",
+    GSC_SERVICE_ACCOUNT_KEY: process.env.GSC_SERVICE_ACCOUNT_KEY || "",
+    GSC_SITE_URL: process.env.GSC_SITE_URL || "",
+    BING_WEBMASTER_API_KEY: process.env.BING_WEBMASTER_API_KEY || "",
+    BING_SITE_URL: process.env.BING_SITE_URL || "",
 
     public: {
       // Non-sensitive keys (accessible on both server and client)
@@ -397,6 +401,7 @@ export default defineNuxtConfig({
       scheduledTasks: {
         "*/2 * * * *": ["agent:proactive"],
         "* * * * *":   ["agent:reactive"],
+        "0 6 * * *":   ["seo:daily-snapshot"],
       },
     }),
   },
