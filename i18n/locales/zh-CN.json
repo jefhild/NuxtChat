@@ -98,6 +98,18 @@
             {
               "href": "/cant-sleep-chat",
               "label": "失眠？来聊聊"
+            },
+            {
+              "href": "/vent-to-strangers-online",
+              "label": "倾诉一下"
+            },
+            {
+              "href": "/chat-when-bored-online",
+              "label": "无聊？"
+            },
+            {
+              "href": "/practice-english-chat-online",
+              "label": "练习英语"
             }
           ]
         },

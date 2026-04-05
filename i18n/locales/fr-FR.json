@@ -98,6 +98,18 @@
             {
               "href": "/cant-sleep-chat",
               "label": "Insomnie ? Discutez"
+            },
+            {
+              "href": "/vent-to-strangers-online",
+              "label": "Vider son sac"
+            },
+            {
+              "href": "/chat-when-bored-online",
+              "label": "Vous vous ennuyez ?"
+            },
+            {
+              "href": "/practice-english-chat-online",
+              "label": "Pratiquer l'anglais"
             }
           ]
         },

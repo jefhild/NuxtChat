@@ -98,7 +98,19 @@
             },
             {
               "href": "/cant-sleep-chat",
-              "label": "Can't sleep? Chat"
+              "label": "Can't sleep?"
+            },
+            {
+              "href": "/vent-to-strangers-online",
+              "label": "Vent to someone"
+            },
+            {
+              "href": "/chat-when-bored-online",
+              "label": "Bored?"
+            },
+            {
+              "href": "/practice-english-chat-online",
+              "label": "Practice English"
             }
           ]
         },

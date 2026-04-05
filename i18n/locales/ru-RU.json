@@ -98,6 +98,18 @@
             {
               "href": "/cant-sleep-chat",
               "label": "Не спится? Пообщайтесь"
+            },
+            {
+              "href": "/vent-to-strangers-online",
+              "label": "Выговориться"
+            },
+            {
+              "href": "/chat-when-bored-online",
+              "label": "Скучаете?"
+            },
+            {
+              "href": "/practice-english-chat-online",
+              "label": "Практиковать английский"
             }
           ]
         },
