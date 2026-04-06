@@ -446,15 +446,25 @@
       "tooltip": "Frequently asked questions",
       "meta": {
         "title": "FAQ – ImChatty Help Center",
-        "description": "Find answers about profiles, chat tools, privacy, and community guidelines on ImChatty.",
+        "description": "Frequently asked questions about ImChatty — anonymous chat, AI personas, privacy, profiles, and community guidelines.",
         "ogTitle": "FAQ – ImChatty Help Center",
         "ogType": "website",
-        "ogDescription": "Browse common questions and answers about ImChatty.",
+        "ogDescription": "Browse questions about anonymous chat, AI personas, privacy, profiles, and community guidelines on ImChatty.",
         "ogImage": "https://imchatty.com/images/robot.png",
         "twitterCard": "summary_large_image",
         "twitterTitle": "ImChatty FAQ",
-        "twitterDescription": "Get quick answers about ImChatty.",
+        "twitterDescription": "Get answers about ImChatty — anonymous chat, AI personas, privacy, and more.",
         "twitterImage": "https://imchatty.com/images/robot.png"
+      },
+      "topic": {
+        "subtitle": "in {group}",
+        "empty": "No questions found in this topic.",
+        "back-link": "Back to all FAQs",
+        "breadcrumb-home": "Home",
+        "meta": {
+          "title": "FAQ Topic — ImChatty",
+          "description": "Browse frequently asked questions about this ImChatty topic."
+        }
       }
     },
     "terms": {

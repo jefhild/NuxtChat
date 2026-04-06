@@ -443,15 +443,25 @@
       "tooltip": "Часто задаваемые вопросы",
       "meta": {
         "title": "FAQ – Центр помощи ImChatty",
-        "description": "Найдите ответы о профилях, инструментах чата, конфиденциальности и правилах сообщества ImChatty.",
+        "description": "Часто задаваемые вопросы об ImChatty — анонимный чат, ИИ-персонажи, конфиденциальность, профили и правила сообщества.",
         "ogTitle": "FAQ – Центр помощи ImChatty",
         "ogType": "website",
-        "ogDescription": "Просмотрите часто задаваемые вопросы и ответы о ImChatty.",
+        "ogDescription": "Просматривайте вопросы об анонимном чате, ИИ-персонажах, конфиденциальности и профилях на ImChatty.",
         "ogImage": "https://imchatty.com/images/robot.png",
         "twitterCard": "summary_large_image",
         "twitterTitle": "FAQ ImChatty",
-        "twitterDescription": "Получите быстрые ответы о ImChatty.",
+        "twitterDescription": "Получите ответы об ImChatty — анонимный чат, ИИ-персонажи, конфиденциальность и многое другое.",
         "twitterImage": "https://imchatty.com/images/robot.png"
+      },
+      "topic": {
+        "subtitle": "в разделе {group}",
+        "empty": "В этой теме вопросов не найдено.",
+        "back-link": "Вернуться ко всем FAQ",
+        "breadcrumb-home": "Главная",
+        "meta": {
+          "title": "Тема FAQ — ImChatty",
+          "description": "Просматривайте часто задаваемые вопросы по этой теме ImChatty."
+        }
       }
     },
     "terms": {

@@ -443,15 +443,25 @@
       "tooltip": "常见问题",
       "meta": {
         "title": "FAQ – ImChatty 帮助中心",
-        "description": "查找关于个人资料、聊天工具、隐私与社区准则的答案。",
+        "description": "ImChatty 常见问题解答 — 匿名聊天、AI 角色、隐私保护、个人资料和社区准则。",
         "ogTitle": "FAQ – ImChatty 帮助中心",
         "ogType": "website",
-        "ogDescription": "浏览 ImChatty 的常见问题与答案。",
+        "ogDescription": "浏览 ImChatty 关于匿名聊天、AI 角色、隐私保护和个人资料的问题。",
         "ogImage": "https://imchatty.com/images/robot.png",
         "twitterCard": "summary_large_image",
         "twitterTitle": "ImChatty FAQ",
-        "twitterDescription": "快速获取 ImChatty 的答案。",
+        "twitterDescription": "获取 ImChatty 答案 — 匿名聊天、AI 角色、隐私保护等更多内容。",
         "twitterImage": "https://imchatty.com/images/robot.png"
+      },
+      "topic": {
+        "subtitle": "在 {group} 中",
+        "empty": "此主题下未找到问题。",
+        "back-link": "返回所有常见问题",
+        "breadcrumb-home": "首页",
+        "meta": {
+          "title": "FAQ 主题 — ImChatty",
+          "description": "浏览此 ImChatty 主题的常见问题。"
+        }
       }
     },
     "terms": {

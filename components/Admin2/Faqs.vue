@@ -86,6 +86,15 @@
                 title="Edit translations"
                 @click.stop="openTranslationDialog(item)"
               />
+              <v-btn
+                v-if="item.type === 'topic'"
+                size="x-small"
+                variant="text"
+                icon="mdi-delete"
+                color="error"
+                title="Delete topic"
+                @click.stop="removeTopic(item)"
+              />
             </template>
           </v-treeview>
         </v-card>
@@ -442,6 +451,7 @@ const {
   updateFaqEntry,
   updateFaqTranslation,
   deleteFaqEntry,
+  deleteFaqTopic,
 } = useDb();
 
 const { locale, localeProperties } = useI18n();
@@ -959,6 +969,29 @@ const removeFaq = async (row) => {
     await refreshData();
   } catch (err) {
     snackbar.value.message = err?.message || "Failed to delete FAQ.";
+    snackbar.value.show = true;
+  } finally {
+    saving.value = false;
+  }
+};
+
+const removeTopic = async (item) => {
+  const entryCount = entries.value.filter(
+    (entry) => entry.topic_id === item.id
+  ).length;
+  const warning =
+    entryCount > 0
+      ? ` This will also permanently delete ${entryCount} FAQ${entryCount === 1 ? "" : "s"} inside it.`
+      : "";
+  if (!confirm(`Delete topic "${item.title}"?${warning}`)) return;
+  saving.value = true;
+  try {
+    const error = await deleteFaqTopic(item.id);
+    if (error) throw error;
+    if (activated.value[0] === item.id) activated.value = [];
+    await refreshData();
+  } catch (err) {
+    snackbar.value.message = err?.message || "Failed to delete topic.";
     snackbar.value.show = true;
   } finally {
     saving.value = false;

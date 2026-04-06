@@ -2114,6 +2114,21 @@ export const useDb = () => {
     return null;
   };
 
+  const deleteFaqTopic = async (topicId) => {
+    const supabase = getClient();
+    const { error } = await supabase
+      .from("faq_topics")
+      .delete()
+      .eq("id", topicId);
+
+    if (error) {
+      console.error("Error deleting faq topic:", error);
+      return error;
+    }
+
+    return null;
+  };
+
   const insertReport = async (
     currentUserId,
     reportedUserId,
@@ -3294,6 +3309,7 @@ const verifyEmailOtp = async (email, token) => {
     updateFaqEntry,
     updateFaqTranslation,
     deleteFaqEntry,
+    deleteFaqTopic,
 
     deleteChatWithUser,
     deleteFavorite,

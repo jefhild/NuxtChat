@@ -95,3 +95,31 @@ export async function getUserSlugFromDisplayName(displayName: string){
   
   return data?.slug;
 }
+
+export async function getFaqTopicSlugs(): Promise<
+  { slug: string; updatedAt: string }[]
+> {
+  const { data, error } = await supabase
+    .from("faq_topics")
+    .select("slug, updated_at")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching FAQ topic slugs:", error.message);
+    return [];
+  }
+
+  const seen = new Set<string>();
+  return (data || [])
+    .filter((row) => {
+      const slug = String(row.slug || "").trim();
+      if (!slug || seen.has(slug)) return false;
+      seen.add(slug);
+      return true;
+    })
+    .map((row) => ({
+      slug: String(row.slug).trim(),
+      updatedAt: row.updated_at || new Date().toISOString(),
+    }));
+}

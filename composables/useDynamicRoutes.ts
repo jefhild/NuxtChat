@@ -1,6 +1,7 @@
 import {
   getRegisteredUsersDisplaynames,
   getPublishedSeoPageRoutes,
+  getFaqTopicSlugs,
   getUserSlugFromDisplayName,
 } from "../lib/supabaseHelpers";
 import { getGenderFromId } from "../lib/dbUtils";
@@ -62,9 +63,10 @@ function getProfileSitemapLocales(profile: any): string[] {
 
 export async function getAllDynamicRoutes(): Promise<string[]> {
   try {
-    const [{ data: profiles, error }, seoPageData] = await Promise.all([
+    const [{ data: profiles, error }, seoPageData, faqTopics] = await Promise.all([
       getRegisteredUsersDisplaynames({ minAgeDays: PROFILE_MIN_AGE_DAYS }),
       getPublishedSeoPageRoutes(),
+      getFaqTopicSlugs(),
     ]);
 
     if (!profiles || !seoPageData || error) {
@@ -120,11 +122,18 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       })
       .filter((route): route is string => Boolean(route));
 
+    const localizedFaqTopicRoutes = (faqTopics || []).flatMap((topic) =>
+      SUPPORTED_LOCALES.map((locale) =>
+        localizePath(`/faq/topic/${topic.slug}`, locale)
+      )
+    );
+
     return [
       ...new Set([
         ...localizedStaticRoutes,
         ...profileRoutes,
         ...localizedSeoPageRoutes,
+        ...localizedFaqTopicRoutes,
       ]),
     ];
   } catch (error) {
@@ -141,9 +150,10 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
   { loc: string; lastmod: string; images?: { loc: string }[] }[]
 > {
   try {
-    const [{ data: profiles, error }, seoPageData] = await Promise.all([
+    const [{ data: profiles, error }, seoPageData, faqTopics] = await Promise.all([
       getRegisteredUsersDisplaynames({ minAgeDays: PROFILE_MIN_AGE_DAYS }),
       getPublishedSeoPageRoutes(),
+      getFaqTopicSlugs(),
     ]);
 
     if (!profiles || !seoPageData || error) {
@@ -228,6 +238,15 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       localizedRoutes.push({
         loc: localizePath(path, locale),
         lastmod: page?.updated_at || fallbackLastmod,
+      });
+    });
+
+    (faqTopics || []).forEach((topic) => {
+      SUPPORTED_LOCALES.forEach((locale) => {
+        localizedRoutes.push({
+          loc: localizePath(`/faq/topic/${topic.slug}`, locale),
+          lastmod: topic.updatedAt || fallbackLastmod,
+        });
       });
     });
 

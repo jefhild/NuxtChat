@@ -114,7 +114,7 @@
             >
               <v-expansion-panel-title>
                 <div class="faq-title">
-                  <span class="font-weight-medium">{{ faq.question }}</span>
+                  <h3 class="font-weight-medium faq-question-heading">{{ faq.question }}</h3>
                   <v-chip size="x-small" variant="tonal" color="primary">
                     {{ faq.topicTitle }}
                   </v-chip>
@@ -225,6 +225,10 @@ watch(
       activated.value = [groups[0].id];
       activeFilter.value = groups[0].id;
     }
+    if (!route.hash && !expanded.value) {
+      const firstEntry = faqEntries.value.find((e) => e.groupId === groups[0].id);
+      if (firstEntry) expanded.value = firstEntry.slug || firstEntry.id;
+    }
   },
   { immediate: true }
 );
@@ -279,6 +283,12 @@ watch(
 
 .faq-panel :deep(.v-expansion-panel-text__wrapper) {
   padding: 0 16px 16px;
+}
+
+.faq-question-heading {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 @media (max-width: 960px) {
