@@ -149,7 +149,11 @@
               class="profile-gallery-item"
               :class="{ 'profile-gallery-item--blurred': galleryBlurred }"
             >
-              <div class="profile-gallery-thumb-wrap">
+              <div
+                class="profile-gallery-thumb-wrap"
+                :class="{ 'profile-gallery-thumb-wrap--clickable': !galleryBlurred && (item.url || item.public_url) }"
+                @click.stop="!galleryBlurred && openLightbox(item)"
+              >
                 <v-img
                   v-if="item.url || item.public_url"
                   :src="item.url || item.public_url"
@@ -254,6 +258,31 @@
       ></v-btn>
     </v-card-actions>
   </v-card>
+
+  <!-- Photo lightbox -->
+  <v-dialog
+    v-model="lightboxOpen"
+    :max-width="900"
+    content-class="lightbox-dialog"
+  >
+    <div class="lightbox-wrap" @click="lightboxOpen = false">
+      <v-btn
+        icon="mdi-close"
+        variant="text"
+        size="small"
+        class="lightbox-close"
+        color="white"
+        @click.stop="lightboxOpen = false"
+      />
+      <v-img
+        :src="lightboxSrc"
+        :max-height="'80vh'"
+        contain
+        class="lightbox-img"
+        @click.stop
+      />
+    </div>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -433,6 +462,17 @@ const galleryDisplayItems = computed(() => {
     _placeholderId: `placeholder-${idx}`,
   }));
 });
+
+const lightboxSrc = ref(null);
+const lightboxOpen = computed({
+  get: () => Boolean(lightboxSrc.value),
+  set: (v) => { if (!v) lightboxSrc.value = null; },
+});
+
+function openLightbox(item) {
+  const src = item.url || item.public_url;
+  if (src) lightboxSrc.value = src;
+}
 </script>
 
 <style scoped>
@@ -978,8 +1018,40 @@ const galleryDisplayItems = computed(() => {
   --profile-value-color: #0c306f;
   --profile-value-green: #0f9f5c;
   --profile-body-color: rgba(12, 34, 68, 0.94);
-  --profile-panel-title-color: rgba(21, 37, 68, 0.76);
-  --profile-gallery-count-color: rgba(17, 34, 64, 0.84);
-  --profile-gallery-empty-color: rgba(25, 45, 76, 0.74);
+}
+
+.profile-gallery-thumb-wrap--clickable {
+  cursor: zoom-in;
+  transition: opacity 0.15s ease;
+}
+
+.profile-gallery-thumb-wrap--clickable:hover {
+  opacity: 0.85;
+}
+
+/* Lightbox — scoped styles won't reach the teleported dialog, so use :deep */
+:deep(.lightbox-dialog) {
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.lightbox-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -36px;
+  right: 0;
+  z-index: 10;
+}
+
+.lightbox-img {
+  border-radius: 8px;
+  max-width: 100%;
 }
 </style>
