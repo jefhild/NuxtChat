@@ -1,18 +1,29 @@
 <template>
   <v-card class="candidate-card" :elevation="2" rounded="lg">
+    <!-- Status dot: green=online, purple=away agent, grey=offline -->
+    <span class="status-dot" :class="statusDotClass" />
+
     <v-card-text class="pa-3">
       <div class="d-flex align-center gap-3">
-        <v-avatar
-          size="44"
-          color="surface-variant"
-          class="cursor-pointer"
-          @click="onViewProfile"
-        >
-          <v-img v-if="candidate.avatar_url" :src="candidate.avatar_url" :alt="candidate.displayname" />
-          <v-icon v-else icon="mdi-account" />
-        </v-avatar>
+        <!-- Avatar with flag + gender badge overlay (matches HomeProfiles style) -->
+        <div class="avatar-stack" @click="onViewProfile">
+          <v-avatar size="48" color="surface-variant" class="cursor-pointer">
+            <v-img v-if="candidate.avatar_url" :src="candidate.avatar_url" :alt="candidate.displayname" />
+            <v-icon v-else icon="mdi-account" />
+          </v-avatar>
+          <span v-if="candidate.country_emoji" class="avatar-flag">
+            {{ candidate.country_emoji }}
+          </span>
+          <v-avatar size="28" color="transparent" class="gender-badge">
+            <v-icon
+              size="18"
+              :color="getGenderColor(candidate.gender_id)"
+              :icon="getAvatarIcon(candidate.gender_id)"
+            />
+          </v-avatar>
+        </div>
 
-        <div class="flex-grow-1 overflow-hidden">
+        <div class="flex-grow-1 overflow-hidden" style="margin-left: 6px;">
           <div class="d-flex align-center gap-1">
             <span
               class="text-body-1 font-weight-medium text-truncate cursor-pointer text-primary"
@@ -21,28 +32,6 @@
             >
               {{ candidate.displayname || $t("components.candidateCard.anonymous") }}
             </span>
-            <span v-if="candidate.country_emoji" class="text-body-2">
-              {{ candidate.country_emoji }}
-            </span>
-            <v-chip
-              v-if="isOnline"
-              size="x-small"
-              color="success"
-              variant="flat"
-              class="ml-1"
-            >
-              {{ $t("components.candidateCard.online") }}
-            </v-chip>
-            <v-chip
-              v-if="candidate.agent_enabled"
-              size="x-small"
-              color="amber"
-              variant="tonal"
-              prepend-icon="mdi-robot-outline"
-              class="ml-1"
-            >
-              Away Agent
-            </v-chip>
           </div>
           <p
             v-if="candidate.tagline"
@@ -114,6 +103,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { getAvatarIcon, getGenderColor } from "@/composables/useUserUtils";
 
 const props = defineProps({
   candidate: {
@@ -131,6 +121,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["chat", "view-profile"]);
+
+const statusDotClass = computed(() => {
+  if (props.isOnline) return "status-dot--online";
+  if (props.candidate.agent_enabled) return "status-dot--agent";
+  return "status-dot--offline";
+});
 
 const scoreColor = computed(() => {
   const s = props.candidate.score ?? 0;
@@ -173,11 +169,62 @@ function onChat() {
 
 <style scoped>
 .candidate-card {
+  position: relative;
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .candidate-card:hover {
   transform: translateY(-2px);
+}
+
+.status-dot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  z-index: 1;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+}
+
+.status-dot--online  { background-color: #4caf50; }
+.status-dot--agent   { background-color: #7c3aed; }
+.status-dot--offline { background-color: #90a4ae; }
+
+.avatar-stack {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.avatar-flag {
+  position: absolute;
+  left: -6px;
+  top: 2px;
+  font-size: 1.3rem;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(2, 6, 23, 0.75);
+  z-index: 2;
+}
+
+.gender-badge {
+  position: absolute;
+  left: -8px;
+  bottom: -8px;
+  --v-avatar-background: transparent;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.gender-badge :deep(.v-avatar__underlay),
+.gender-badge :deep(.v-avatar__content) {
+  background: transparent !important;
+}
+
+.gender-badge :deep(.v-icon) {
+  background: transparent !important;
 }
 
 .score-wrap {
