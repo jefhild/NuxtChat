@@ -50,6 +50,9 @@
                   {{ item }}
                 </span>
               </div>
+              <ClientOnly>
+                <HomeRecentlyConnectedTicker />
+              </ClientOnly>
             </div>
           </div>
         </v-img>
