@@ -270,15 +270,14 @@ export default defineEventHandler(async (event) => {
     .filter((a: any) => a.score > 0)
     .sort((a: any, b: any) => b.score - a.score);
 
-  const aiSliced = ai.slice(0, 50);
   return {
-    online:  online.slice(0, 50),
-    offline: offline.slice(0, 50),
-    ai:      aiSliced,
+    online:  online.slice(0, 20),
+    offline: offline.slice(0, 20),
+    ai:      ai.slice(0, 20),
     counts: {
       online:  online.length,
       offline: offline.length,
-      ai:      aiSliced.length,
+      ai:      ai.slice(0, 20).length,
     },
     intake: myIntakeRow
       ? {

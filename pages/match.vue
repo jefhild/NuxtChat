@@ -58,7 +58,7 @@
         <div class="d-flex align-center gap-2 mb-3">
           <span class="dot dot-online" />
           <h2 class="text-subtitle-1 font-weight-bold">
-            {{ $t("pages.match.sections.online") }} ({{ onlineCandidates.length }})
+            {{ $t("pages.match.sections.online") }}
           </h2>
         </div>
         <div class="match-grid">
@@ -79,7 +79,7 @@
         <div class="d-flex align-center gap-2 mb-3">
           <span class="dot dot-offline" />
           <h2 class="text-subtitle-1 font-weight-bold">
-            {{ $t("pages.match.sections.offline") }} ({{ offlineCandidates.length }})
+            {{ $t("pages.match.sections.offline") }}
           </h2>
         </div>
         <div class="match-grid">
@@ -100,7 +100,7 @@
         <div class="d-flex align-center gap-2 mb-3">
           <v-icon size="18" color="secondary">mdi-robot-outline</v-icon>
           <h2 class="text-subtitle-1 font-weight-bold">
-            {{ $t("pages.match.sections.ai") }} ({{ displayAiCandidates.length }})
+            {{ $t("pages.match.sections.ai") }}
           </h2>
         </div>
         <div class="match-grid">

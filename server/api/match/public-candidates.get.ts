@@ -132,7 +132,7 @@ export default defineEventHandler(async (event) => {
   }
 
   return {
-    online: [...honeyProfiles, ...onlineRealProfiles].map(toCard),
+    online: [...honeyProfiles, ...onlineRealProfiles].map(toCard).slice(0, 20),
     offline: offlineProfiles.map(toCard),
   };
 });

@@ -2,8 +2,8 @@
   <!-- Regular3.vue template -->
   <div ref="wrapRef" class="d-flex flex-column h-100 overflow-hidden">
     <div
-      v-if="showQuickReplyInline"
-      class="flex-grow-1 overflow-auto"
+      ref="vsRef"
+      class="overflow-y-auto"
       :style="{ height: `${listHeight}px` }"
     >
       <div v-for="item in items" :key="item.id || item._peerTempKey || item._tempKey || 'typing'">
@@ -40,32 +40,6 @@
         </template>
       </div>
     </div>
-    <v-virtual-scroll
-      v-else
-      ref="vsRef"
-      :items="items"
-      :item-height="itemHeight"
-      :height="listHeight"
-    >
-      <template #default="{ item }">
-        <template v-if="item._typing">
-          <ChatLayoutTypingBubble />
-        </template>
-        <template v-else>
-          <div>
-            <ChatLayoutChatBubble
-              :from-me="item.sender_id === meId"
-              :html="render(item._displayContent)"
-              :time="formatDisplayTime(item.created_at)"
-              :name="item._name"
-              :avatar="item._avatar"
-              :status="item._status"
-              :show-meta="Boolean(item._name || item._avatar || item.created_at)"
-            />
-          </div>
-        </template>
-      </template>
-    </v-virtual-scroll>
   </div>
 </template>
 
@@ -224,7 +198,6 @@ const headerRef = ref(null);
 const composerRef = ref(null);
 const vsRef = ref(null);
 
-const itemHeight = 72;
 const listHeight = ref(420);
 
 let roWrap, roHeader, roComposer;
@@ -266,11 +239,10 @@ onBeforeUnmount(() => {
   }
 });
 
-const scrollEl = () => (vsRef.value && vsRef.value.$el) || null;
+const scrollEl = () => vsRef.value || null;
 const raf = () => new Promise((r) => requestAnimationFrame(r));
 const scrollToBottom = async () => {
   await nextTick();
-  await raf();
   await raf();
   const el = scrollEl();
   if (el) el.scrollTop = el.scrollHeight;
