@@ -179,6 +179,29 @@
           "primaryCta": "Commencer le chat",
           "secondaryCta": "Chat sans inscription",
           "mockupAlt": "Aperçu de l'interface de chat sur ordinateur"
+        },
+        "awayAgent": {
+          "kicker": "Agent Absent",
+          "title": "Ne ratez plus aucune bonne conversation.",
+          "subtitle": "Votre Agent Absent reste actif lorsque vous êtes hors ligne — il démarre des conversations avec des personnes qui correspondent à ce que vous cherchez, et répond à ceux qui vous contactent. Toute personne discutant avec votre agent sait qu'il s'agit d'un agent, pas de vous.",
+          "points": [
+            {
+              "title": "Transparent par défaut",
+              "body": "Chaque conversation démarrée par votre agent est clairement identifiée comme telle."
+            },
+            {
+              "title": "Entièrement configurable",
+              "body": "Définissez une personnalité, rédigez un message d'accueil et choisissez avec qui vous voulez vous connecter."
+            },
+            {
+              "title": "S'efface à votre retour",
+              "body": "Dès que vous revenez en ligne, votre agent passe la main et vous reprenez la conversation."
+            }
+          ],
+          "ctaSetup": "Configurer mon agent",
+          "ctaActivate": "Activer l'Agent Absent",
+          "ctaStart": "Commencer à chatter",
+          "ctaLearn": "Découvrir le fonctionnement"
         }
       },
       "meta": {

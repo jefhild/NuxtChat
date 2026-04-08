@@ -168,7 +168,30 @@
 
       </template>
 
-      <!-- Registered-only gate -->
+      <!-- Anon-authenticated upsell: has a profile but no email yet -->
+      <template v-else-if="authStore.authStatus === 'anon_authenticated'">
+        <v-alert
+          type="info"
+          variant="tonal"
+          density="compact"
+          class="mt-4"
+          icon="mdi-robot-outline"
+        >
+          <strong>Almost there.</strong> Away Agent needs a registered account so it knows who
+          you are when you return. It only takes your email.
+        </v-alert>
+        <v-btn
+          color="primary"
+          variant="tonal"
+          class="mt-4"
+          prepend-icon="mdi-email-outline"
+          @click="showConvertDialog = true"
+        >
+          Activate Away Agent
+        </v-btn>
+      </template>
+
+      <!-- Fully unauthenticated gate -->
       <template v-else>
         <v-alert type="warning" variant="tonal" density="compact" class="mt-4">
           Away Agent is only available to registered users.
@@ -178,55 +201,20 @@
     </v-card-text>
   </v-card>
 
-  <!-- Registration gate dialog -->
-  <v-dialog v-model="showAuthDialog" max-width="420" persistent>
-    <v-card>
-      <v-card-title class="d-flex align-center gap-2 pt-5 px-5">
-        <v-icon color="primary">mdi-robot-outline</v-icon>
-        Away Agent requires an account
-      </v-card-title>
-      <v-card-text class="px-5 pb-2">
-        <p class="text-body-2 text-medium-emphasis mb-4">
-          Create a free account to activate your Away Agent. It only takes a moment.
-        </p>
-
-        <v-tabs v-model="authDialogTab" density="compact" class="mb-4">
-          <v-tab value="email">Email</v-tab>
-          <v-tab value="google">Google</v-tab>
-          <v-tab value="facebook">Facebook</v-tab>
-        </v-tabs>
-
-        <v-window v-model="authDialogTab">
-          <v-window-item value="email">
-            <LoginEmail />
-          </v-window-item>
-          <v-window-item value="google">
-            <div class="py-4">
-              <LoginOAuthButton provider="google" label="Google" icon="mdi-google" />
-            </div>
-          </v-window-item>
-          <v-window-item value="facebook">
-            <div class="py-4">
-              <LoginOAuthButton provider="facebook" label="Facebook" icon="mdi-facebook" />
-            </div>
-          </v-window-item>
-        </v-window>
-      </v-card-text>
-      <v-card-actions class="px-5 pb-4">
-        <v-spacer />
-        <v-btn variant="text" @click="showAuthDialog = false">Maybe later</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <AuthConvertAccountDialog
+    v-model="showConvertDialog"
+    context="away-agent"
+    @converted="onConverted"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore1";
-import LoginEmail from "~/components/Login/Email.vue";
-import LoginOAuthButton from "~/components/Login/OAuthButton.vue";
 
 const authStore = useAuthStore();
+const route = useRoute();
 
 const agentEnabled = ref(false);
 const activeConversations = ref(0);
@@ -234,8 +222,7 @@ const toggling = ref(false);
 const saving = ref(false);
 const returnBanner = ref(false);
 const returnStats = ref({ conversations: 0 });
-const showAuthDialog = ref(false);
-const authDialogTab = ref("email");
+const showConvertDialog = ref(false);
 
 const config = ref({
   prompt_preset_key: "friendly",
@@ -290,7 +277,7 @@ async function fetchStatus() {
 async function onToggle(value) {
   if (value && authStore.authStatus !== "authenticated") {
     agentEnabled.value = false;
-    showAuthDialog.value = true;
+    showConvertDialog.value = true;
     return;
   }
   toggling.value = true;
@@ -306,6 +293,10 @@ async function onToggle(value) {
   }
 }
 
+async function onConverted() {
+  await authStore.checkAuth();
+}
+
 async function saveConfig() {
   saving.value = true;
   try {
@@ -318,7 +309,12 @@ async function saveConfig() {
   }
 }
 
-onMounted(fetchStatus);
+onMounted(() => {
+  fetchStatus();
+  if (route.query.convertAccount === "1" && authStore.authStatus === "anon_authenticated") {
+    showConvertDialog.value = true;
+  }
+});
 </script>
 
 <style scoped>

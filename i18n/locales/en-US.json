@@ -184,6 +184,29 @@
           "primaryCta": "Start Chat",
           "secondaryCta": "Chat Without Signup",
           "mockupAlt": "Desktop chat interface preview"
+        },
+        "awayAgent": {
+          "kicker": "Away Agent",
+          "title": "Never miss a good conversation.",
+          "subtitle": "Your Away Agent stays active while you're offline — starting conversations with people who match what you're looking for, and responding to those who reach out. Anyone chatting with your agent knows it's an agent, not you.",
+          "points": [
+            {
+              "title": "Transparent by default",
+              "body": "Every conversation your agent starts is clearly labeled as an agent, not you."
+            },
+            {
+              "title": "Yours to configure",
+              "body": "Set a personality, write a greeting, and choose who you want to connect with."
+            },
+            {
+              "title": "Steps aside when you return",
+              "body": "The moment you come back online, your agent hands off and you take over."
+            }
+          ],
+          "ctaSetup": "Set up your agent",
+          "ctaActivate": "Activate Away Agent",
+          "ctaStart": "Start chatting",
+          "ctaLearn": "Learn how it works"
         }
       },
       "meta": {

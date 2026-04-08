@@ -153,6 +153,76 @@
       </v-sheet>
     </section>
 
+    <section class="full-bleed away-agent-section">
+      <v-sheet class="away-agent-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
+        <v-container class="py-10 py-md-14">
+          <v-row align="center">
+            <v-col cols="12" md="6">
+              <div class="section-copy">
+                <v-chip color="primary" variant="tonal" class="mb-4">
+                  {{ awayAgentCopy.kicker }}
+                </v-chip>
+                <h2 class="text-h4 font-weight-bold mb-3">
+                  {{ awayAgentCopy.title }}
+                </h2>
+                <p class="text-body-1 text-medium-emphasis mb-6">
+                  {{ awayAgentCopy.subtitle }}
+                </p>
+
+                <div class="proof-grid mb-6">
+                  <div v-for="point in awayAgentCopy.points" :key="point.title" class="proof-point">
+                    <div class="proof-point__title">{{ point.title }}</div>
+                    <div class="proof-point__body">{{ point.body }}</div>
+                  </div>
+                </div>
+
+                <div class="hero-actions">
+                  <!-- Authenticated: go directly to settings Away Agent tab -->
+                  <template v-if="authStatus === 'authenticated'">
+                    <v-btn color="primary" size="large" class="hero-btn" :to="localPath('/settings') + '?tab=7'">
+                      {{ awayAgentCopy.ctaSetup }}
+                    </v-btn>
+                    <v-btn variant="outlined" size="large" class="hero-btn" :to="localPath('/away-agent')">
+                      {{ awayAgentCopy.ctaLearn }}
+                    </v-btn>
+                  </template>
+                  <!-- Anon authenticated: open conversion dialog -->
+                  <template v-else-if="authStatus === 'anon_authenticated'">
+                    <v-btn color="primary" size="large" class="hero-btn" @click="awayAgentDialogVisible = true">
+                      {{ awayAgentCopy.ctaActivate }}
+                    </v-btn>
+                    <v-btn variant="outlined" size="large" class="hero-btn" :to="localPath('/away-agent')">
+                      {{ awayAgentCopy.ctaLearn }}
+                    </v-btn>
+                  </template>
+                  <!-- Unauthenticated / guest: funnel to onboarding -->
+                  <template v-else>
+                    <v-btn color="primary" size="large" class="hero-btn" :to="localPath('/chat')">
+                      {{ awayAgentCopy.ctaStart }}
+                    </v-btn>
+                    <v-btn variant="outlined" size="large" class="hero-btn" :to="localPath('/away-agent')">
+                      {{ awayAgentCopy.ctaLearn }}
+                    </v-btn>
+                  </template>
+                </div>
+              </div>
+            </v-col>
+
+            <v-col cols="12" md="6" class="d-none d-md-flex justify-center align-center">
+              <div class="away-agent-icon-wrap">
+                <v-icon size="120" color="primary" style="opacity: 0.15;">mdi-robot-outline</v-icon>
+              </div>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-sheet>
+    </section>
+
+    <AuthConvertAccountDialog
+      v-model="awayAgentDialogVisible"
+      context="away-agent"
+    />
+
     <section class="full-bleed mood-teaser-section">
       <v-sheet class="mood-teaser-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
         <v-container class="py-10 py-md-14">
@@ -256,63 +326,15 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog
-      v-if="linkEmailDialogVisible"
+    <AuthConvertAccountDialog
       v-model="linkEmailDialogVisible"
-      max-width="480"
-      :retain-focus="false"
-    >
-      <v-card>
-        <v-card-title class="text-h6">
-          {{ t("components.profile-email-link.dialog-title") }}
-        </v-card-title>
-        <v-card-text>
-          <p class="text-body-2 mb-4">
-            {{ t("components.profile-email-link.dialog-description") }}
-          </p>
-
-          <v-text-field
-            v-model="linkEmailForm.email"
-            type="email"
-            :label="t('components.profile-email-link.email-label')"
-            autocomplete="email"
-            variant="outlined"
-          />
-          <v-text-field
-            v-model="linkEmailForm.confirmEmail"
-            type="email"
-            :label="t('components.profile-email-link.confirm-label')"
-            autocomplete="email"
-            variant="outlined"
-          />
-
-          <v-alert v-if="linkEmailError" type="error" variant="tonal" class="mt-2">
-            {{ linkEmailError }}
-          </v-alert>
-          <v-alert
-            v-else-if="linkEmailSuccess"
-            type="success"
-            variant="tonal"
-            class="mt-2"
-          >
-            {{ linkEmailSuccess }}
-          </v-alert>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="text" @click="closeLinkEmailDialog">
-            {{ t("components.profile-email-link.cancel") }}
-          </v-btn>
-          <v-btn color="primary" :loading="linkEmailSubmitting" @click="submitLinkEmail">
-            {{ t("components.profile-email-link.submit") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      context="general"
+    />
   </v-container>
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useLocalePath } from "#imports";
@@ -324,7 +346,7 @@ const { t, tm, rt } = useI18n();
 const router = useRouter();
 const localPath = useLocalePath();
 const authStore = useAuthStore();
-const { hasEmail, updateUserEmail } = useDb();
+const { hasEmail } = useDb();
 
 const logoutDialog = ref(false);
 const authStatus = computed(() => authStore.authStatus);
@@ -421,16 +443,8 @@ const finalCtaCopy = computed(() => ({
 }));
 
 const linkEmailDialogVisible = ref(false);
-const linkEmailSubmitting = ref(false);
-const linkEmailError = ref("");
-const linkEmailSuccess = ref("");
 const hasLinkedEmail = ref(true);
-const linkEmailForm = reactive({
-  email: "",
-  confirmEmail: "",
-});
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const showLinkEmailCta = computed(
   () => authStatus.value === "anon_authenticated" && !hasLinkedEmail.value
 );
@@ -440,21 +454,8 @@ async function confirmLogout() {
   router.push(localPath("/logout"));
 }
 
-const resetLinkEmailForm = () => {
-  const existingEmail = authStore.user?.email ?? "";
-  linkEmailForm.email = existingEmail;
-  linkEmailForm.confirmEmail = existingEmail;
-  linkEmailError.value = "";
-  linkEmailSuccess.value = "";
-};
-
 const openLinkEmailDialog = () => {
-  resetLinkEmailForm();
   linkEmailDialogVisible.value = true;
-};
-
-const closeLinkEmailDialog = () => {
-  linkEmailDialogVisible.value = false;
 };
 
 const refreshLinkedEmailState = async () => {
@@ -467,40 +468,6 @@ const refreshLinkedEmailState = async () => {
   } catch (err) {
     console.warn("[LandingPage] hasEmail failed:", err);
     hasLinkedEmail.value = false;
-  }
-};
-
-const submitLinkEmail = async () => {
-  linkEmailError.value = "";
-  linkEmailSuccess.value = "";
-
-  const email = linkEmailForm.email.trim().toLowerCase();
-  const confirm = linkEmailForm.confirmEmail.trim().toLowerCase();
-
-  if (!emailPattern.test(email)) {
-    linkEmailError.value = t("components.profile-email-link.invalid");
-    return;
-  }
-
-  if (email !== confirm) {
-    linkEmailError.value = t("components.profile-email-link.mismatch");
-    return;
-  }
-
-  linkEmailSubmitting.value = true;
-  try {
-    const { error } = await updateUserEmail(email);
-    if (error) throw error;
-    linkEmailSuccess.value = t("components.profile-email-link.success");
-    await authStore.checkAuth();
-    await refreshLinkedEmailState();
-    linkEmailDialogVisible.value = false;
-  } catch (err) {
-    console.error("[LandingPage] link email failed:", err);
-    linkEmailError.value =
-      err?.message || t("components.profile-email-link.generic-error");
-  } finally {
-    linkEmailSubmitting.value = false;
   }
 };
 
@@ -517,6 +484,19 @@ watch(
   },
   { immediate: true }
 );
+
+const awayAgentDialogVisible = ref(false);
+
+const awayAgentCopy = computed(() => ({
+  kicker: t(homePageKey("awayAgent.kicker")),
+  title: t(homePageKey("awayAgent.title")),
+  subtitle: t(homePageKey("awayAgent.subtitle")),
+  points: translatedObjectList("awayAgent.points"),
+  ctaSetup: t(homePageKey("awayAgent.ctaSetup")),
+  ctaActivate: t(homePageKey("awayAgent.ctaActivate")),
+  ctaStart: t(homePageKey("awayAgent.ctaStart")),
+  ctaLearn: t(homePageKey("awayAgent.ctaLearn")),
+}));
 
 const updateSpotlight = (e) => {
   const el = e.currentTarget;
@@ -545,6 +525,7 @@ const clearSpotlight = (e) => {
 .hero-surface,
 .entry-surface,
 .proof-surface,
+.away-agent-surface,
 .mood-teaser-surface,
 .final-cta-surface {
   border-radius: 0;
