@@ -206,7 +206,16 @@
           "ctaSetup": "Set up your agent",
           "ctaActivate": "Activate Away Agent",
           "ctaStart": "Start chatting",
-          "ctaLearn": "Learn how it works"
+          "ctaLearn": "Learn how it works",
+          "mock": {
+            "badge": "Away Agent active",
+            "msg1": "Hey, your bio says you're into late night talks — same 👋",
+            "agentLabel": "Tall27's Away Agent",
+            "reply1": "Ha, guilty! Tall27's offline right now but I'm holding the fort. What's on your mind?",
+            "msg2": "That's actually kind of cool. What's he usually like?",
+            "reply2": "Curious, a bit nerdy, usually up way too late. You'd probably get along 😄",
+            "status": "Tall27 will see this when they're back"
+          }
         }
       },
       "meta": {

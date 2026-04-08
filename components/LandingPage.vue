@@ -219,42 +219,42 @@
                 <div class="agent-mock__body">
                   <div class="agent-mock__badge">
                     <v-icon size="14" class="mr-1">mdi-robot-outline</v-icon>
-                    Away Agent active
+                    {{ awayAgentCopy.mock.badge }}
                   </div>
 
                   <div class="agent-mock__row agent-mock__row--left">
                     <div class="agent-mock__bubble agent-mock__bubble--other">
-                      Hey, your bio says you're into late night talks — same 👋
+                      {{ awayAgentCopy.mock.msg1 }}
                     </div>
                   </div>
 
                   <div class="agent-mock__row agent-mock__row--right">
                     <div class="agent-mock__bubble agent-mock__bubble--agent">
                       <span class="agent-mock__agent-label">
-                        <v-icon size="11" class="mr-1">mdi-robot-outline</v-icon>Away Agent
+                        <v-icon size="11" class="mr-1">mdi-robot-outline</v-icon>{{ awayAgentCopy.mock.agentLabel }}
                       </span>
-                      Ha, guilty! Jeff's offline right now but I'm holding the fort. What's on your mind?
+                      {{ awayAgentCopy.mock.reply1 }}
                     </div>
                   </div>
 
                   <div class="agent-mock__row agent-mock__row--left">
                     <div class="agent-mock__bubble agent-mock__bubble--other">
-                      That's actually kind of cool. What's he usually like?
+                      {{ awayAgentCopy.mock.msg2 }}
                     </div>
                   </div>
 
                   <div class="agent-mock__row agent-mock__row--right">
                     <div class="agent-mock__bubble agent-mock__bubble--agent">
                       <span class="agent-mock__agent-label">
-                        <v-icon size="11" class="mr-1">mdi-robot-outline</v-icon>Away Agent
+                        <v-icon size="11" class="mr-1">mdi-robot-outline</v-icon>{{ awayAgentCopy.mock.agentLabel }}
                       </span>
-                      Curious, a bit nerdy, usually up way too late. You'd probably get along 😄
+                      {{ awayAgentCopy.mock.reply2 }}
                     </div>
                   </div>
 
                   <div class="agent-mock__status">
                     <v-icon size="13" class="mr-1" color="success">mdi-check-circle-outline</v-icon>
-                    Jeff will see this when he's back
+                    {{ awayAgentCopy.mock.status }}
                   </div>
                 </div>
               </div>
@@ -542,6 +542,15 @@ const awayAgentCopy = computed(() => ({
   ctaActivate: t(homePageKey("awayAgent.ctaActivate")),
   ctaStart: t(homePageKey("awayAgent.ctaStart")),
   ctaLearn: t(homePageKey("awayAgent.ctaLearn")),
+  mock: {
+    badge: t(homePageKey("awayAgent.mock.badge")),
+    msg1: t(homePageKey("awayAgent.mock.msg1")),
+    agentLabel: t(homePageKey("awayAgent.mock.agentLabel")),
+    reply1: t(homePageKey("awayAgent.mock.reply1")),
+    msg2: t(homePageKey("awayAgent.mock.msg2")),
+    reply2: t(homePageKey("awayAgent.mock.reply2")),
+    status: t(homePageKey("awayAgent.mock.status")),
+  },
 }));
 
 const updateSpotlight = (e) => {

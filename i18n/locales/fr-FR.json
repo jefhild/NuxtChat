@@ -201,7 +201,16 @@
           "ctaSetup": "Configurer mon agent",
           "ctaActivate": "Activer l'Agent Absent",
           "ctaStart": "Commencer à chatter",
-          "ctaLearn": "Découvrir le fonctionnement"
+          "ctaLearn": "Découvrir le fonctionnement",
+          "mock": {
+            "badge": "Agent Absent actif",
+            "msg1": "Hey, ton profil dit que t'aimes les discussions tard le soir — pareil 👋",
+            "agentLabel": "Agent Absent de Tall27",
+            "reply1": "Ha, coupable ! Tall27 est hors ligne en ce moment mais je gère. C'est quoi ton humeur ?",
+            "msg2": "C'est franchement cool comme concept. Il est comment d'habitude ?",
+            "reply2": "Curieux, un peu geek, souvent debout trop tard. Vous vous entendriez bien 😄",
+            "status": "Tall27 verra ça à son retour"
+          }
         }
       },
       "meta": {
