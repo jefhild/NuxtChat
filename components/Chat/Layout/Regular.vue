@@ -520,13 +520,7 @@ watch(
 //   { immediate: true }
 // );
 
-watch(
-  () => typingStore.typingByPeer,
-  (t) => {
-    console.log("[Regular3] store:", JSON.stringify(t));
-  },
-  { deep: true }
-);
+
 </script>
 
 <style scoped>

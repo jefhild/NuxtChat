@@ -791,8 +791,11 @@ if (!allowed) {
       });
       await insertMessage(receiverId, personaUserId, opener);
       chat.addActivePeer?.(personaUserId);
+      // Set selection BEFORE fetchChatUsers so the rebind logic preserves it.
+      // Pass the profile object directly — avoids getUserById failing if the
+      // persona hasn't been loaded into users.value yet.
+      chat.setSelectedUser?.(personaProfile);
       await chat.fetchChatUsers?.();
-      chat.setSelectedUser?.(personaUserId);
     } catch (err) {
       console.warn("[bot-handoff] message insert failed:", err?.message || err);
       return false;
