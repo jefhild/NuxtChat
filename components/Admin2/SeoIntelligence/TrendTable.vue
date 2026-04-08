@@ -31,9 +31,15 @@
       class="seo-trend-table"
     >
       <template #item.page_url="{ item }">
-        <a :href="item.page_url" target="_blank" class="text-primary text-decoration-none text-body-2">
-          {{ shortUrl(item.page_url) }}
-        </a>
+        <span class="text-body-2">
+          <template v-if="bingQueryLabel(item.page_url)">
+            <v-chip size="x-small" color="primary" variant="tonal" class="mr-1">query</v-chip>
+            {{ bingQueryLabel(item.page_url) }}
+          </template>
+          <a v-else :href="item.page_url" target="_blank" class="text-primary text-decoration-none">
+            {{ shortUrl(item.page_url) }}
+          </a>
+        </span>
       </template>
 
       <template #item.impressions="{ item }">
@@ -85,7 +91,7 @@ const selectedSource = ref<"all" | "gsc" | "bing">("all");
 const search = ref("");
 
 const headers = [
-  { title: "Page", key: "page_url", sortable: true },
+  { title: "Page / Query", key: "page_url", sortable: true },
   { title: "Source", key: "source", sortable: true },
   { title: "Date", key: "snapshot_date", sortable: true },
   { title: "Impressions", key: "impressions", sortable: true },
@@ -97,13 +103,24 @@ const headers = [
 const filteredRows = computed(() =>
   props.rows.filter((r) => {
     if (selectedSource.value !== "all" && r.source !== selectedSource.value) return false;
-    if (search.value && !r.page_url.toLowerCase().includes(search.value.toLowerCase())) return false;
+    if (search.value) {
+      const term = search.value.toLowerCase();
+      const label = bingQueryLabel(r.page_url) ?? shortUrl(r.page_url);
+      if (!label.toLowerCase().includes(term)) return false;
+    }
     return true;
   })
 );
 
 function shortUrl(url: string) {
   try { return new URL(url).pathname; } catch { return url; }
+}
+
+function bingQueryLabel(url: string): string | null {
+  try {
+    const q = new URL(url).searchParams.get("bing_query");
+    return q ? decodeURIComponent(q) : null;
+  } catch { return null; }
 }
 
 function ctrColor(ctr: number | null) {

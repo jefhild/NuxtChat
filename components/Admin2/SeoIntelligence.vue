@@ -89,6 +89,8 @@
         <Admin2SeoIntelligenceSuggestionList
           :items="latestBrief?.pages_to_create ?? []"
           :loading="loadingBriefs"
+          :existing-page-map="existingPageMap"
+          @created="loadExistingPages"
         />
       </v-tabs-window-item>
 
@@ -122,7 +124,7 @@ interface SeoBrief {
   headline: string;
   pages_working: { url: string; reason: string; metric: string }[];
   pages_to_optimize: { url: string; issue: string; suggestion: string }[];
-  pages_to_create: { suggested_slug: string; rationale: string; target_queries: string[] }[];
+  pages_to_create: { suggested_slug: string; page_type?: "landing" | "guide" | "topic" | "compare"; rationale: string; target_queries: string[] }[];
   action_plan: string;
   sources_used: string[];
 }
@@ -154,8 +156,25 @@ const running = ref(false);
 const runResult = ref<RunResult | null>(null);
 const configWarning = ref(false);
 
+interface ExistingPageEntry { isPublished: boolean; path: string }
+const existingPages = ref<{ slug: string; isPublished: boolean; path: string }[]>([]);
+const existingPageMap = computed(() => {
+  const map = new Map<string, ExistingPageEntry>();
+  for (const p of existingPages.value) map.set(p.slug, { isPublished: p.isPublished, path: p.path });
+  return map;
+});
+
 const latestBrief = computed(() => briefs.value[0] ?? null);
 const lastSnapshotDate = computed(() => snapshots.value[0]?.snapshot_date ?? null);
+
+async function loadExistingPages() {
+  try {
+    const { pages } = await $fetch<{ pages: { slug: string; isPublished: boolean; path: string; locale: string }[] }>("/api/admin/seo-pages");
+    existingPages.value = (pages ?? []).filter((p) => p.locale === "en");
+  } catch (e) {
+    console.error("[SeoIntelligence] existing pages fetch error", e);
+  }
+}
 
 async function loadBriefs() {
   loadingBriefs.value = true;
@@ -205,5 +224,6 @@ async function runNow() {
 onMounted(() => {
   loadBriefs();
   loadSnapshots();
+  loadExistingPages();
 });
 </script>

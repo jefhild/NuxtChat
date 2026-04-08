@@ -262,30 +262,23 @@
 
             <v-divider class="my-4" />
             <div class="text-subtitle-2 mb-2">Related links</div>
-            <div class="d-flex flex-column ga-4 mb-3">
-              <v-card
-                v-for="(link, index) in form.relatedLinks"
-                :key="`link-${index}`"
-                class="pa-3"
-                rounded="lg"
-                variant="outlined"
-              >
-                <v-row>
-                  <v-col cols="12" md="5">
-                    <v-text-field v-model="link.label" label="Label" />
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="link.href" label="Href" hint="Internal example: /faq" persistent-hint />
-                  </v-col>
-                  <v-col cols="12" md="1" class="d-flex align-center justify-end">
-                    <v-btn icon="mdi-delete" variant="text" color="error" @click="removeRelatedLink(index)" />
-                  </v-col>
-                </v-row>
-              </v-card>
-            </div>
-            <v-btn variant="tonal" prepend-icon="mdi-plus" @click="addRelatedLink">
-              Add related link
-            </v-btn>
+            <v-autocomplete
+              v-model="selectedRelatedLinkHrefs"
+              :items="availableSeoPageOptions"
+              item-title="title"
+              item-value="href"
+              label="Linked pages"
+              multiple
+              chips
+              closable-chips
+              clearable
+              hint="Select internal landing, guide, topic, or compare pages."
+              persistent-hint
+            >
+              <template #item="{ props, item }">
+                <v-list-item v-bind="props" :subtitle="item.raw.subtitle" />
+              </template>
+            </v-autocomplete>
 
             <v-divider class="my-4" />
             <div class="text-subtitle-2 mb-2">Call to action</div>
@@ -558,6 +551,36 @@ const availableFaqOptions = computed(() =>
     value: faq.id,
   }))
 );
+
+const availableSeoPageOptions = computed(() => {
+  const seen = new Set();
+  const currentSlug = form.value.slug;
+  return pages.value
+    .filter((p) => p.locale === "en")
+    .filter((p) => {
+      if (seen.has(p.slug) || p.slug === currentSlug) return false;
+      seen.add(p.slug);
+      return true;
+    })
+    .map((p) => ({
+      title: p.title,
+      subtitle: p.path,
+      href: p.path,
+      pageType: p.pageType,
+    }));
+});
+
+const selectedRelatedLinkHrefs = computed({
+  get: () => form.value.relatedLinks.map((l) => l.href),
+  set: (hrefs) => {
+    form.value.relatedLinks = hrefs.map((href) => {
+      const existing = form.value.relatedLinks.find((l) => l.href === href);
+      if (existing) return existing;
+      const option = availableSeoPageOptions.value.find((o) => o.href === href);
+      return { label: option?.title || href, href };
+    });
+  },
+});
 
 const showMessage = (message, color = "success") => {
   snackbar.value = {
@@ -1001,9 +1024,6 @@ const buildAdminPath = (page) => {
 
 const addHighlight = () => form.value.highlights.push("");
 const removeHighlight = (index) => form.value.highlights.splice(index, 1);
-const addRelatedLink = () =>
-  form.value.relatedLinks.push({ label: "", href: "" });
-const removeRelatedLink = (index) => form.value.relatedLinks.splice(index, 1);
 
 const handleHeroImageChange = async (event) => {
   const file = Array.isArray(event) ? event[0] : event?.target?.files?.[0] || event;

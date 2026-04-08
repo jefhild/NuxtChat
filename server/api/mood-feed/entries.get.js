@@ -80,6 +80,7 @@ export default defineEventHandler(async (event) => {
             [
               "id",
               "prompt_key",
+              "is_active",
               "mood_feed_prompt_translations (locale, prompt_text, source_locale)",
             ].join(",")
           )
@@ -275,6 +276,16 @@ export default defineEventHandler(async (event) => {
     };
   };
 
+  const inactivePromptKeys = new Set(
+    (promptTranslations.data || [])
+      .filter((p) => p.is_active === false)
+      .map((p) => p.prompt_key)
+  );
+
+  const activeEntries = entries.filter(
+    (e) => !e.prompt_key || !inactivePromptKeys.has(e.prompt_key)
+  );
+
   const promptMetaMap = new Map();
   for (const prompt of promptTranslations.data || []) {
     const rows = prompt.mood_feed_prompt_translations || [];
@@ -303,7 +314,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const items = entries.map((entry) => {
+  const items = activeEntries.map((entry) => {
     const translation = pickTranslation(entry);
     const score = scoreMap.get(entry.id) || {};
     const repliesRaw = repliesByEntry.get(entry.id) || [];

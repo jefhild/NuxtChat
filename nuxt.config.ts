@@ -1,6 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 import { getAllDynamicRoutes } from "./composables/useDynamicRoutes";
+import { landingPageSlugs } from "./config/landingPageSlugs";
 
 export default defineNuxtConfig({
   devtools: { enabled: false },
@@ -132,12 +133,8 @@ export default defineNuxtConfig({
         "/chat",
         "/*/about",
         "/about",
-        "/*/anonymous-chat",
-        "/anonymous-chat",
-        "/*/mood-based-chat",
-        "/mood-based-chat",
-        "/*/chat-without-signup",
-        "/chat-without-signup",
+        // Landing pages — managed via config/landingPageSlugs.ts
+        ...landingPageSlugs.flatMap((slug) => [`/*/${slug}`, `/${slug}`]),
         "/*/compare",
         "/*/compare/**",
         "/compare",
@@ -158,20 +155,6 @@ export default defineNuxtConfig({
         "/*/guides/**",
         "/guides",
         "/guides/**",
-        "/*/meet-new-people-online",
-        "/meet-new-people-online",
-        "/*/talk-to-strangers-online",
-        "/talk-to-strangers-online",
-        "/*/need-someone-to-talk-to",
-        "/need-someone-to-talk-to",
-        "/*/cant-sleep-chat",
-        "/cant-sleep-chat",
-        "/*/vent-to-strangers-online",
-        "/vent-to-strangers-online",
-        "/*/chat-when-bored-online",
-        "/chat-when-bored-online",
-        "/*/practice-english-chat-online",
-        "/practice-english-chat-online",
         "/logout",
         "/*/logout",
         "/signin",

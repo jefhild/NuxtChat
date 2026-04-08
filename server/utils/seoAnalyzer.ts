@@ -32,7 +32,7 @@ export interface SeoBrief {
   headline: string;
   pages_working: { url: string; reason: string; metric: string }[];
   pages_to_optimize: { url: string; issue: string; suggestion: string }[];
-  pages_to_create: { suggested_slug: string; rationale: string; target_queries: string[] }[];
+  pages_to_create: { suggested_slug: string; page_type: "landing" | "guide" | "topic" | "compare"; rationale: string; target_queries: string[] }[];
   action_plan: string;
 }
 
@@ -143,7 +143,7 @@ Analyze the data and return a JSON object (no markdown, no explanation, just val
     { "url": "...", "issue": "e.g. high impressions but 0.8% CTR", "suggestion": "..." }
   ],
   "pages_to_create": [
-    { "suggested_slug": "e.g. chat-with-strangers-free", "rationale": "...", "target_queries": ["...", "..."] }
+    { "suggested_slug": "e.g. chat-with-strangers-free", "page_type": "landing", "rationale": "...", "target_queries": ["...", "..."] }
   ],
   "action_plan": "A concise markdown action plan (3-5 bullet points) for this week"
 }
@@ -151,7 +151,7 @@ Analyze the data and return a JSON object (no markdown, no explanation, just val
 Rules:
 - pages_working: up to 5 pages showing positive momentum
 - pages_to_optimize: up to 5 pages with high impressions but low CTR (< 2%) or declining clicks
-- pages_to_create: up to 5 suggested NEW slugs — you MUST NOT suggest any path already in the existing pages list above, not even a close variant. Check carefully.
+- pages_to_create: up to 5 suggested NEW slugs — you MUST NOT suggest any path already in the existing pages list above, not even a close variant. Check carefully. For page_type use "landing" for root-path pages (e.g. /free-chat), "guide" for how-to content (e.g. /guides/how-to-chat), "topic" for subject pages (e.g. /topics/anonymous-chat), "compare" for comparison pages (e.g. /compare/omegle-vs-imchatty).
 - Keep suggestions specific and actionable for a chat platform targeting lonely/bored/language-learning users
 - Do not suggest pages that already exist in the slug list above`;
 
