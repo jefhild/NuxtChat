@@ -268,48 +268,34 @@ export async function getOrCreateConversationLog(
 }
 
 /**
- * Increment exchange count. Returns false if limit reached.
+ * Increment exchange count and mark as limit_reached when cap is hit.
+ * Returns false if the limit is now reached (no more replies should be sent).
  */
 export async function incrementExchangeCount(
   supabase: any,
   logId: string,
   maxExchanges: number
 ): Promise<boolean> {
-  const { data, error } = await supabase
+  const { data: current } = await supabase
     .from("agent_conversation_log")
-    .update({ exchange_count: supabase.rpc("coalesce", {}) }) // will do raw below
-    .eq("id", logId)
     .select("exchange_count")
+    .eq("id", logId)
     .maybeSingle();
 
-  // Use a raw increment via RPC to avoid race conditions
-  const { data: updated, error: err } = await supabase.rpc(
-    "increment_agent_exchange",
-    { log_id: logId }
-  );
+  const newCount = (current?.exchange_count ?? 0) + 1;
+  const limitReached = newCount >= maxExchanges;
 
-  if (err) {
-    // Fallback: manual increment
-    const { data: current } = await supabase
-      .from("agent_conversation_log")
-      .select("exchange_count")
-      .eq("id", logId)
-      .maybeSingle();
+  await supabase
+    .from("agent_conversation_log")
+    .update({
+      exchange_count: newCount,
+      ...(limitReached
+        ? { status: "limit_reached", ended_at: new Date().toISOString() }
+        : {}),
+    })
+    .eq("id", logId);
 
-    const newCount = (current?.exchange_count ?? 0) + 1;
-    await supabase
-      .from("agent_conversation_log")
-      .update({
-        exchange_count: newCount,
-        status: newCount >= maxExchanges ? "limit_reached" : "active",
-        ended_at: newCount >= maxExchanges ? new Date().toISOString() : null,
-      })
-      .eq("id", logId);
-
-    return newCount < maxExchanges;
-  }
-
-  return (updated ?? 0) < maxExchanges;
+  return !limitReached;
 }
 
 /**

@@ -11,7 +11,7 @@ import {
   incrementExchangeCount,
 } from "~/server/utils/agentEngine";
 
-const REPLY_WINDOW_SECONDS = 120; // look back 2 minutes for unanswered messages
+const REPLY_WINDOW_SECONDS = 300; // look back 5 minutes for unanswered messages
 
 export default {
   async run({ payload: _payload, context }: { payload: unknown; context: Record<string, unknown> }) {
@@ -35,12 +35,6 @@ export default {
         ),
         target_profile:profiles!agent_conversation_log_target_user_id_fkey (
           preferred_locale
-        ),
-        config:agent_configs!agent_configs_profile_id_fkey (
-          prompt_preset_key,
-          system_prompt_addition,
-          max_exchanges_per_conversation,
-          max_conversations_per_session
         )
       `)
       .eq("status", "active");
@@ -52,9 +46,19 @@ export default {
     for (const log of activeLogs) {
       const agentProfile = Array.isArray(log.agent_profile) ? log.agent_profile[0] : log.agent_profile;
       const targetProfile = Array.isArray(log.target_profile) ? log.target_profile[0] : log.target_profile;
-      const config = Array.isArray(log.config) ? log.config[0] : log.config;
 
-      if (!agentProfile?.agent_enabled || !config) continue;
+      if (!agentProfile?.agent_enabled) continue;
+
+      // agent_configs has no direct FK to agent_conversation_log, so query separately
+      const { data: configRow } = await supabase
+        .from("agent_configs")
+        .select("prompt_preset_key, system_prompt_addition, max_exchanges_per_conversation, max_conversations_per_session")
+        .eq("profile_id", log.agent_profile_id)
+        .eq("enabled", true)
+        .maybeSingle();
+
+      if (!configRow) continue;
+      const config = configRow;
 
       // Check per-session conversation limit
       const { count: sessionCount } = await supabase
@@ -64,6 +68,9 @@ export default {
         .eq("status", "active");
 
       if ((sessionCount ?? 0) > (config.max_conversations_per_session ?? 10)) continue;
+
+      // Skip if this conversation has already hit its exchange limit
+      if ((log.exchange_count ?? 0) >= (config.max_exchanges_per_conversation ?? 5)) continue;
 
       // Find the most recent unanswered message from the target
       const { data: incoming } = await supabase
