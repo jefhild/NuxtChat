@@ -209,8 +209,54 @@
             </v-col>
 
             <v-col cols="12" md="6" class="d-none d-md-flex justify-center align-center">
-              <div class="away-agent-icon-wrap">
-                <v-icon size="120" color="primary" style="opacity: 0.15;">mdi-robot-outline</v-icon>
+              <div class="agent-mock">
+                <div class="agent-mock__titlebar">
+                  <span class="agent-mock__dot" />
+                  <span class="agent-mock__dot" />
+                  <span class="agent-mock__dot" />
+                  <span class="agent-mock__title">Chat</span>
+                </div>
+                <div class="agent-mock__body">
+                  <div class="agent-mock__badge">
+                    <v-icon size="14" class="mr-1">mdi-robot-outline</v-icon>
+                    Away Agent active
+                  </div>
+
+                  <div class="agent-mock__row agent-mock__row--left">
+                    <div class="agent-mock__bubble agent-mock__bubble--other">
+                      Hey, your bio says you're into late night talks — same 👋
+                    </div>
+                  </div>
+
+                  <div class="agent-mock__row agent-mock__row--right">
+                    <div class="agent-mock__bubble agent-mock__bubble--agent">
+                      <span class="agent-mock__agent-label">
+                        <v-icon size="11" class="mr-1">mdi-robot-outline</v-icon>Away Agent
+                      </span>
+                      Ha, guilty! Jeff's offline right now but I'm holding the fort. What's on your mind?
+                    </div>
+                  </div>
+
+                  <div class="agent-mock__row agent-mock__row--left">
+                    <div class="agent-mock__bubble agent-mock__bubble--other">
+                      That's actually kind of cool. What's he usually like?
+                    </div>
+                  </div>
+
+                  <div class="agent-mock__row agent-mock__row--right">
+                    <div class="agent-mock__bubble agent-mock__bubble--agent">
+                      <span class="agent-mock__agent-label">
+                        <v-icon size="11" class="mr-1">mdi-robot-outline</v-icon>Away Agent
+                      </span>
+                      Curious, a bit nerdy, usually up way too late. You'd probably get along 😄
+                    </div>
+                  </div>
+
+                  <div class="agent-mock__status">
+                    <v-icon size="13" class="mr-1" color="success">mdi-check-circle-outline</v-icon>
+                    Jeff will see this when he's back
+                  </div>
+                </div>
               </div>
             </v-col>
           </v-row>
@@ -814,6 +860,113 @@ const clearSpotlight = (e) => {
 
 .final-cta-section {
   position: relative;
+}
+
+.agent-mock {
+  width: min(100%, 400px);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.68);
+  box-shadow:
+    0 24px 60px rgba(2, 6, 23, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+}
+
+.agent-mock__titlebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.agent-mock__dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.agent-mock__title {
+  margin-left: 6px;
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.6);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.agent-mock__body {
+  padding: 16px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.agent-mock__badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.12);
+  border: 1px solid rgba(var(--v-theme-primary), 0.2);
+  border-radius: 20px;
+  padding: 3px 10px;
+  margin-bottom: 4px;
+}
+
+.agent-mock__row {
+  display: flex;
+}
+
+.agent-mock__row--right {
+  justify-content: flex-end;
+}
+
+.agent-mock__bubble {
+  max-width: 78%;
+  padding: 8px 12px;
+  border-radius: 14px;
+  line-height: 1.45;
+  color: rgba(226, 232, 240, 0.92);
+}
+
+.agent-mock__bubble--other {
+  background: rgba(255, 255, 255, 0.07);
+  border-bottom-left-radius: 4px;
+}
+
+.agent-mock__bubble--agent {
+  background: rgba(var(--v-theme-primary), 0.18);
+  border: 1px solid rgba(var(--v-theme-primary), 0.22);
+  border-bottom-right-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.agent-mock__agent-label {
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgb(var(--v-theme-primary));
+  opacity: 0.85;
+  letter-spacing: 0.03em;
+}
+
+.agent-mock__status {
+  display: flex;
+  align-items: center;
+  align-self: flex-end;
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.5);
+  margin-top: 2px;
 }
 
 .final-cta-mockup {
