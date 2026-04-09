@@ -1,19 +1,26 @@
 /**
- * agent:proactive — runs every 5 minutes
+ * agent:proactive — runs every 2 minutes (fallback)
  *
- * For each active away agent, finds recently online users who match
- * their criteria and haven't been contacted yet, then sends a greeting.
+ * Safety net for users whose presence-join event was missed by the
+ * agentPresenceWatcher plugin (e.g. server restart mid-session).
+ * The plugin handles immediate greetings; this task only contacts users
+ * who came online in the last 5 minutes and haven't been reached yet.
  */
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import {
   generateAgentGreeting,
   sendAgentMessage,
   getOrCreateConversationLog,
+  CONTACT_COOLDOWN_HOURS,
+  MAX_AGENTS_PER_TARGET_PER_DAY,
 } from "~/server/utils/agentEngine";
 
-const ONLINE_WINDOW_MINUTES = 15; // consider users online if active within 15 min
-const CONTACT_COOLDOWN_HOURS = 24; // don't re-contact same user within 24h
-const MAX_AGENTS_PER_TARGET_PER_DAY = 3; // max distinct agents that can contact one user per day
+/**
+ * Fallback window: slightly wider than the cron interval (every 2 min) so we
+ * catch users whose presence-join event was missed (server restart, etc.).
+ * The presence watcher plugin handles immediate greetings; this task is a net.
+ */
+const ONLINE_WINDOW_MINUTES = 5;
 
 export default {
   async run({ payload: _payload, context }: { payload: unknown; context: Record<string, unknown> }) {
@@ -23,6 +30,11 @@ export default {
 
     const onlineSince = new Date(Date.now() - ONLINE_WINDOW_MINUTES * 60 * 1000).toISOString();
     const cooldownSince = new Date(Date.now() - CONTACT_COOLDOWN_HOURS * 60 * 60 * 1000).toISOString();
+
+    // Snapshot the live presence channel so we can skip users who are no
+    // longer connected. Keys in presenceState() are the userId strings set
+    // by presenceStore2.js (String(userId)).
+    const onlineUserIds = await snapshotPresence(supabase);
 
     // 1. Get all active agents with their configs and profiles
     const { data: activeAgents } = await supabase
@@ -110,12 +122,17 @@ export default {
       const freshCandidates = candidates.filter((c) => {
         if (alreadyContactedIds.has(c.user_id)) return false;
         const agentCount = agentsPerTarget.get(c.user_id)?.size ?? 0;
-        return agentCount < MAX_AGENTS_PER_TARGET_PER_DAY;
+        if (agentCount >= MAX_AGENTS_PER_TARGET_PER_DAY) return false;
+        // Only target users who are currently in the presence channel.
+        // If onlineUserIds is empty (presence unavailable) we fall back to
+        // the last_active window from the DB query above.
+        if (onlineUserIds.size > 0 && !onlineUserIds.has(c.user_id)) return false;
+        return true;
       });
       if (!freshCandidates.length) continue;
 
-      // 4. Pick one candidate (first match — scoring could be added later)
-      const target = freshCandidates[0];
+      // Pick a random candidate so different users get contacted across runs
+      const target = freshCandidates[Math.floor(Math.random() * freshCandidates.length)];
 
       // 5. Generate greeting and send
       const greeting = await generateAgentGreeting(
@@ -151,3 +168,36 @@ export default {
     return { result: `initiated ${contactsMade} new conversation(s)` };
   },
 };
+
+/**
+ * Subscribe to presence:global briefly, wait for the initial sync, then
+ * return the set of currently-online user IDs (the presence key = userId).
+ * Falls back to an empty set if the channel doesn't sync within 5 seconds.
+ */
+async function snapshotPresence(supabase: any): Promise<Set<string>> {
+  return new Promise<Set<string>>((resolve) => {
+    const TIMEOUT_MS = 5_000;
+    let settled = false;
+
+    const done = (ids: Set<string>) => {
+      if (settled) return;
+      settled = true;
+      channel.unsubscribe().catch(() => {});
+      resolve(ids);
+    };
+
+    const channel = supabase.channel("presence:global");
+
+    channel.on("presence", { event: "sync" }, () => {
+      const state: Record<string, unknown[]> = channel.presenceState() ?? {};
+      done(new Set(Object.keys(state)));
+    });
+
+    channel.subscribe();
+
+    setTimeout(() => {
+      console.warn("[agent:proactive] presence sync timed out — using last_active only");
+      done(new Set());
+    }, TIMEOUT_MS);
+  });
+}

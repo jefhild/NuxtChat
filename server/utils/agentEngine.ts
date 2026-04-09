@@ -312,6 +312,136 @@ export async function handOffAgentConversations(
     .eq("status", "active");
 }
 
+// Shared constants — used by both the presence watcher plugin and the proactive task
+export const CONTACT_COOLDOWN_HOURS = 24;
+export const MAX_AGENTS_PER_TARGET_PER_DAY = 3;
+
+/**
+ * Find one eligible agent and send a greeting to the target user.
+ *
+ * Used by the presence watcher (real-time) and the proactive cron (fallback).
+ * Picks a single random agent to prevent message bursts and vary the sender.
+ * Returns true if a greeting was sent.
+ */
+export async function greetTargetUser(
+  supabase: any,
+  targetUserId: string, // profiles.user_id (auth UUID)
+  runtimeConfig: any
+): Promise<boolean> {
+  // Fetch the target's profile
+  const { data: targetProfile } = await supabase
+    .from("profiles")
+    .select("id, user_id, displayname, bio, gender_id, preferred_locale, is_private, is_ai, agent_enabled")
+    .eq("user_id", targetUserId)
+    .maybeSingle();
+
+  if (!targetProfile) return false;
+  if (targetProfile.is_private || targetProfile.is_ai || targetProfile.agent_enabled) return false;
+
+  const dayAgo = new Date(Date.now() - CONTACT_COOLDOWN_HOURS * 60 * 60 * 1000).toISOString();
+
+  // How many distinct agents have already contacted this user in the last 24 h?
+  const { data: dailyContacts } = await supabase
+    .from("agent_conversation_log")
+    .select("agent_profile_id")
+    .eq("target_user_id", targetUserId)
+    .gte("started_at", dayAgo);
+
+  const alreadyContacted = new Set<string>(
+    (dailyContacts ?? []).map((r: any) => r.agent_profile_id)
+  );
+
+  if (alreadyContacted.size >= MAX_AGENTS_PER_TARGET_PER_DAY) return false;
+
+  // Load all active agent configs
+  const { data: activeAgents } = await supabase
+    .from("agent_configs")
+    .select(`
+      profile_id,
+      prompt_preset_key,
+      system_prompt_addition,
+      greeting_template,
+      max_exchanges_per_conversation,
+      max_conversations_per_session,
+      target_gender_ids,
+      target_mood_keys,
+      profile:profiles!agent_configs_profile_id_fkey (
+        id, user_id, displayname, bio, age, gender_id, preferred_locale, agent_enabled
+      )
+    `)
+    .eq("enabled", true);
+
+  if (!activeAgents?.length) return false;
+
+  // Collect eligible agents (pass all guards)
+  const eligible: Array<{ agent: any; agentProfile: any }> = [];
+
+  for (const agent of activeAgents) {
+    const agentProfile = Array.isArray(agent.profile) ? agent.profile[0] : agent.profile;
+    if (!agentProfile?.agent_enabled) continue;
+    if (agentProfile.user_id === targetUserId) continue;
+    if (alreadyContacted.has(agentProfile.id)) continue;
+
+    // Gender targeting
+    if (agent.target_gender_ids?.length && !agent.target_gender_ids.includes(targetProfile.gender_id)) continue;
+
+    // Session conversation cap
+    const { count: activeCount } = await supabase
+      .from("agent_conversation_log")
+      .select("id", { count: "exact", head: true })
+      .eq("agent_profile_id", agentProfile.id)
+      .eq("status", "active");
+
+    if ((activeCount ?? 0) >= (agent.max_conversations_per_session ?? 10)) continue;
+
+    // 24 h cooldown for this specific agent ↔ target pair
+    const { data: existing } = await supabase
+      .from("agent_conversation_log")
+      .select("id")
+      .eq("agent_profile_id", agentProfile.id)
+      .eq("target_user_id", targetUserId)
+      .gte("started_at", dayAgo)
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) continue;
+
+    eligible.push({ agent, agentProfile });
+  }
+
+  if (!eligible.length) return false;
+
+  // Pick ONE random eligible agent so messages are staggered and varied
+  const { agent, agentProfile } = eligible[Math.floor(Math.random() * eligible.length)];
+
+  const greeting = await generateAgentGreeting(
+    agentProfile,
+    agent,
+    { displayname: targetProfile.displayname, bio: targetProfile.bio },
+    runtimeConfig
+  );
+  if (!greeting) return false;
+
+  const sent = await sendAgentMessage(
+    supabase,
+    agentProfile.user_id,
+    targetUserId,
+    greeting,
+    {
+      senderLocale: agentProfile.preferred_locale,
+      targetLocale: targetProfile.preferred_locale,
+      runtimeConfig,
+    }
+  );
+
+  if (sent) {
+    await getOrCreateConversationLog(supabase, agentProfile.id, targetUserId);
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * Deactivate an agent: set agent_enabled = false on profile + agent_configs,
  * and hand off all active conversations.

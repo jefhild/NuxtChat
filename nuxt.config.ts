@@ -380,11 +380,13 @@ export default defineNuxtConfig({
       ],
     },
     debug: false,
-    // Scheduled tasks only run in production (no cron scheduler in dev anyway)
+    // Tasks are enabled in all environments so they can be manually triggered
+    // in dev via POST /_nitro/tasks/run/:taskName
+    experimental: {
+      tasks: true,
+    },
+    // Scheduled (cron) tasks only run in production
     ...(process.env.NODE_ENV !== "development" && {
-      experimental: {
-        tasks: true,
-      },
       scheduledTasks: {
         "*/2 * * * *": ["agent:proactive"],
         "* * * * *":   ["agent:reactive"],
