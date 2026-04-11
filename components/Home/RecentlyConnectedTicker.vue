@@ -33,7 +33,6 @@
             </span>
           </div>
           <span class="ticker-name">{{ user.displayname }}</span>
-          <span class="ticker-time">{{ timeAgo(user.last_active) }}</span>
         </div>
       </div>
     </div>
@@ -72,17 +71,6 @@ const genderRingClass = (genderId) => {
   if (genderId === 1) return "ring-male";
   if (genderId === 2) return "ring-female";
   return "ring-other";
-};
-
-const timeAgo = (iso) => {
-  if (!iso) return "";
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 2) return "now";
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h`;
-  return `${Math.floor(hrs / 24)}d`;
 };
 
 const openProfile = (user) => {
@@ -267,9 +255,4 @@ onUnmounted(() => clearInterval(interval));
   text-overflow: ellipsis;
 }
 
-.ticker-time {
-  font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.45);
-  white-space: nowrap;
-}
 </style>

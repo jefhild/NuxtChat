@@ -218,6 +218,26 @@ const md = new MarkdownIt({
   breaks: true,
 });
 
+const defaultLinkOpen =
+  md.renderer.rules.link_open ||
+  ((tokens: Parameters<typeof md.renderer.renderToken>[0], idx: number, opts: Parameters<typeof md.renderer.renderToken>[2], _env: unknown, self: typeof md.renderer) =>
+    self.renderToken(tokens, idx, opts));
+md.renderer.rules.link_open = (tokens, idx, opts, env, self) => {
+  const hrefIdx = tokens[idx].attrIndex("href");
+  const href = hrefIdx >= 0 ? tokens[idx].attrs![hrefIdx][1] : "";
+  const isExternal =
+    /^https?:\/\//i.test(href) ||
+    /^\/\//.test(href) ||
+    /^mailto:/i.test(href) ||
+    /^tel:/i.test(href);
+  const tIdx = tokens[idx].attrIndex("target");
+  const targetValue = isExternal ? "_blank" : "_self";
+  if (tIdx < 0) tokens[idx].attrPush(["target", targetValue]);
+  else tokens[idx].attrs![tIdx][1] = targetValue;
+  if (isExternal) tokens[idx].attrPush(["rel", "noopener noreferrer"]);
+  return defaultLinkOpen(tokens, idx, opts, env, self);
+};
+
 const normalizeMarkdown = (value?: string) =>
   String(value || "")
     .replace(/\r\n?/g, "\n")
