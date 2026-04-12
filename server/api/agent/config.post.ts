@@ -5,6 +5,7 @@
 import { defineEventHandler, readBody, setResponseStatus } from "h3";
 import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
+import { clampAwayAgentConversationLimit } from "~/constants/awayAgent";
 
 const VALID_PRESETS = ["friendly", "curious", "playful", "professional", "custom"];
 
@@ -24,7 +25,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const maxExchanges = Math.min(Math.max(parseInt(body?.max_exchanges_per_conversation) || 5, 1), 20);
-  const maxConvs = Math.min(Math.max(parseInt(body?.max_conversations_per_session) || 10, 1), 50);
+  const maxConvs = clampAwayAgentConversationLimit(body?.max_conversations_per_session);
 
   const supabase = await getServiceRoleClient(event);
 

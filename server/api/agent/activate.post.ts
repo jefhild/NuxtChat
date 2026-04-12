@@ -7,6 +7,7 @@ import { defineEventHandler, readBody, setResponseStatus } from "h3";
 import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import { deactivateAgent } from "~/server/utils/agentEngine";
+import { AWAY_AGENT_MAX_SIMULTANEOUS_CONVERSATIONS } from "~/constants/awayAgent";
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event);
@@ -49,6 +50,7 @@ export default defineEventHandler(async (event) => {
     await supabase.from("agent_configs").insert({
       profile_id: profile.id,
       enabled: true,
+      max_conversations_per_session: AWAY_AGENT_MAX_SIMULTANEOUS_CONVERSATIONS,
     });
   } else {
     await supabase

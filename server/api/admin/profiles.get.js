@@ -66,17 +66,39 @@ export default defineEventHandler(async (event) => {
 
     let extraByUserId = new Map();
     if (!minimal && userIds.length) {
-      // Fetch emails per-user for the current page only (no full list scan)
-      const results = await Promise.allSettled(
-        userIds.map((id) => supa.auth.admin.getUserById(id))
-      );
-      results.forEach((result, i) => {
-        const userId = userIds[i];
-        const email =
-          result.status === "fulfilled"
-            ? result.value?.data?.user?.email || null
-            : null;
-        extraByUserId.set(userId, { id: userId, email });
+      const pendingUserIds = new Set(userIds);
+      const perPage = 1000;
+
+      try {
+        for (let authPage = 1; authPage <= 100 && pendingUserIds.size > 0; authPage++) {
+          const { data: listData, error: listErr } = await supa.auth.admin.listUsers({
+            page: authPage,
+            perPage,
+          });
+
+          if (listErr) {
+            console.error("[admin/profiles] auth listUsers error:", listErr);
+            break;
+          }
+
+          const users = listData?.users ?? [];
+          for (const authUser of users) {
+            if (!pendingUserIds.has(authUser.id)) continue;
+            extraByUserId.set(authUser.id, {
+              id: authUser.id,
+              email: authUser.email || null,
+            });
+            pendingUserIds.delete(authUser.id);
+          }
+
+          if (users.length < perPage) break;
+        }
+      } catch (authLookupErr) {
+        console.error("[admin/profiles] auth lookup error:", authLookupErr);
+      }
+
+      pendingUserIds.forEach((userId) => {
+        extraByUserId.set(userId, { id: userId, email: null });
       });
     }
 

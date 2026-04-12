@@ -14,6 +14,8 @@ import {
   CONTACT_COOLDOWN_HOURS,
   MAX_AGENTS_PER_TARGET_PER_DAY,
 } from "~/server/utils/agentEngine";
+import { snapshotPresenceUserIds } from "~/server/utils/presenceSnapshot";
+import { clampAwayAgentConversationLimit } from "~/constants/awayAgent";
 
 /**
  * Fallback window: slightly wider than the cron interval (every 2 min) so we
@@ -34,7 +36,7 @@ export default {
     // Snapshot the live presence channel so we can skip users who are no
     // longer connected. Keys in presenceState() are the userId strings set
     // by presenceStore2.js (String(userId)).
-    const onlineUserIds = await snapshotPresence(supabase);
+    const onlineUserIds = await snapshotPresenceUserIds(supabase);
 
     // 1. Get all active agents with their configs and profiles
     const { data: activeAgents } = await supabase
@@ -61,6 +63,7 @@ export default {
     for (const agent of activeAgents) {
       const agentProfile = Array.isArray(agent.profile) ? agent.profile[0] : agent.profile;
       if (!agentProfile?.agent_enabled) continue;
+      if (onlineUserIds.has(agentProfile.user_id)) continue;
 
       // Check current active conversation count vs session limit
       const { count: activeCount } = await supabase
@@ -69,7 +72,7 @@ export default {
         .eq("agent_profile_id", agentProfile.id)
         .eq("status", "active");
 
-      if ((activeCount ?? 0) >= (agent.max_conversations_per_session ?? 10)) continue;
+      if ((activeCount ?? 0) >= clampAwayAgentConversationLimit(agent.max_conversations_per_session)) continue;
 
       // 2. Find recently online users not yet contacted by this agent
       let query = supabase
@@ -162,7 +165,7 @@ export default {
 
       // Respect session limit — stop if we hit the cap
       const newActiveCount = (activeCount ?? 0) + contactsMade;
-      if (newActiveCount >= (agent.max_conversations_per_session ?? 10)) break;
+      if (newActiveCount >= clampAwayAgentConversationLimit(agent.max_conversations_per_session)) break;
     }
 
     return { result: `initiated ${contactsMade} new conversation(s)` };
@@ -174,30 +177,3 @@ export default {
  * return the set of currently-online user IDs (the presence key = userId).
  * Falls back to an empty set if the channel doesn't sync within 5 seconds.
  */
-async function snapshotPresence(supabase: any): Promise<Set<string>> {
-  return new Promise<Set<string>>((resolve) => {
-    const TIMEOUT_MS = 5_000;
-    let settled = false;
-
-    const done = (ids: Set<string>) => {
-      if (settled) return;
-      settled = true;
-      channel.unsubscribe().catch(() => {});
-      resolve(ids);
-    };
-
-    const channel = supabase.channel("presence:global");
-
-    channel.on("presence", { event: "sync" }, () => {
-      const state: Record<string, unknown[]> = channel.presenceState() ?? {};
-      done(new Set(Object.keys(state)));
-    });
-
-    channel.subscribe();
-
-    setTimeout(() => {
-      console.warn("[agent:proactive] presence sync timed out — using last_active only");
-      done(new Set());
-    }, TIMEOUT_MS);
-  });
-}

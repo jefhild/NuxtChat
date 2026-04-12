@@ -2,19 +2,6 @@
   <v-card class="agent-settings-card elevation-0 border-0">
     <v-card-text class="pa-0">
 
-      <!-- Return banner: agent was active when user was away -->
-      <v-alert
-        v-if="returnBanner"
-        type="success"
-        variant="tonal"
-        closable
-        class="mb-5"
-        @click:close="returnBanner = false"
-      >
-        <strong>Welcome back!</strong> Your Away Agent had
-        {{ returnStats.conversations }} conversation(s) while you were away.
-      </v-alert>
-
       <!-- Section header -->
       <div class="agent-section-header mb-4">
         <div class="d-flex align-center gap-3">
@@ -29,6 +16,7 @@
           <div class="flex-0">
             <v-switch
               v-model="agentEnabled"
+              class="agent-toggle"
               color="primary"
               hide-details
               inset
@@ -45,12 +33,12 @@
       <!-- Status chip -->
       <div class="mb-5">
         <v-chip
-          :color="agentEnabled ? 'amber' : 'primary'"
-          :variant="agentEnabled ? 'tonal' : 'outlined'"
+          :color="statusChip.color"
+          :variant="statusChip.variant"
           size="small"
-          :prepend-icon="agentEnabled ? 'mdi-robot' : 'mdi-robot-off-outline'"
+          :prepend-icon="statusChip.icon"
         >
-          {{ agentEnabled ? `Active · ${activeConversations} conversation(s) in progress` : 'Inactive' }}
+          {{ statusChip.label }}
         </v-chip>
       </div>
 
@@ -131,7 +119,7 @@
             <div class="text-body-2 font-weight-medium mb-2">Max simultaneous conversations</div>
             <v-select
               v-model="config.max_conversations_per_session"
-              :items="[1, 3, 5, 10, 20]"
+              :items="AWAY_AGENT_SIMULTANEOUS_CONVERSATION_OPTIONS"
               variant="outlined"
               density="compact"
               hide-details
@@ -162,8 +150,8 @@
           icon="mdi-information-outline"
         >
           Your agent will introduce itself as your representative and messages it sends will be
-          labeled <strong>Away Agent</strong> so other users know. It stops immediately when you
-          log back in.
+          labeled <strong>Away Agent</strong> so other users know. It pauses while you are online
+          and resumes the next time you are away.
         </v-alert>
 
       </template>
@@ -212,16 +200,19 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore1";
+import {
+  AWAY_AGENT_SIMULTANEOUS_CONVERSATION_OPTIONS,
+  clampAwayAgentConversationLimit,
+} from "@/constants/awayAgent";
 
 const authStore = useAuthStore();
 const route = useRoute();
 
 const agentEnabled = ref(false);
 const activeConversations = ref(0);
+const pausedBecauseOnline = ref(false);
 const toggling = ref(false);
 const saving = ref(false);
-const returnBanner = ref(false);
-const returnStats = ref({ conversations: 0 });
 const showConvertDialog = ref(false);
 
 const config = ref({
@@ -229,7 +220,7 @@ const config = ref({
   system_prompt_addition: null,
   greeting_template: null,
   max_exchanges_per_conversation: 5,
-  max_conversations_per_session: 10,
+  max_conversations_per_session: 5,
 });
 
 const PRESET_DESCRIPTIONS = {
@@ -243,6 +234,41 @@ const PRESET_DESCRIPTIONS = {
 const presetDescription = computed(
   () => PRESET_DESCRIPTIONS[config.value.prompt_preset_key] ?? ""
 );
+const statusChip = computed(() => {
+  if (!agentEnabled.value) {
+    return {
+      color: "primary",
+      variant: "outlined",
+      icon: "mdi-robot-off-outline",
+      label: "Disabled",
+    };
+  }
+
+  if (activeConversations.value > 0) {
+    return {
+      color: "amber",
+      variant: "tonal",
+      icon: "mdi-robot",
+      label: `Enabled · ${activeConversations.value} conversation(s) in progress`,
+    };
+  }
+
+  if (pausedBecauseOnline.value) {
+    return {
+      color: "primary",
+      variant: "tonal",
+      icon: "mdi-pause-circle-outline",
+      label: "Enabled · paused while you're online",
+    };
+  }
+
+  return {
+    color: "success",
+    variant: "tonal",
+    icon: "mdi-robot",
+    label: "Enabled · ready for when you're away",
+  };
+});
 
 async function fetchStatus() {
   const data = await $fetch("/api/agent/status").catch(() => null);
@@ -250,6 +276,7 @@ async function fetchStatus() {
 
   agentEnabled.value = data.enabled ?? false;
   activeConversations.value = data.activeConversations ?? 0;
+  pausedBecauseOnline.value = data.pausedBecauseOnline ?? false;
 
   if (data.config) {
     config.value = {
@@ -257,21 +284,12 @@ async function fetchStatus() {
       system_prompt_addition: data.config.system_prompt_addition ?? null,
       greeting_template: data.config.greeting_template ?? null,
       max_exchanges_per_conversation: data.config.max_exchanges_per_conversation ?? 5,
-      max_conversations_per_session: data.config.max_conversations_per_session ?? 10,
+      max_conversations_per_session: clampAwayAgentConversationLimit(
+        data.config.max_conversations_per_session
+      ),
     };
   }
 
-  // Show return banner if agent was active and is now being deactivated on arrival
-  if (data.enabled && data.activeConversations > 0) {
-    returnStats.value = { conversations: data.activeConversations };
-    returnBanner.value = true;
-    // Auto-deactivate since user is back
-    await $fetch("/api/agent/activate", {
-      method: "POST",
-      body: { enabled: false },
-    }).catch(() => {});
-    agentEnabled.value = false;
-  }
 }
 
 async function onToggle(value) {
@@ -282,10 +300,17 @@ async function onToggle(value) {
   }
   toggling.value = true;
   try {
-    await $fetch("/api/agent/activate", {
+    const result = await $fetch("/api/agent/activate", {
       method: "POST",
       body: { enabled: value },
     });
+    agentEnabled.value = result?.enabled ?? value;
+    if (!agentEnabled.value) {
+      activeConversations.value = 0;
+      pausedBecauseOnline.value = false;
+    } else {
+      await fetchStatus();
+    }
   } catch {
     agentEnabled.value = !value; // revert
   } finally {
@@ -331,6 +356,21 @@ onMounted(() => {
 
 .agent-section-header :deep(.v-switch .v-selection-control) {
   background: transparent !important;
+}
+
+.agent-toggle {
+  background: transparent !important;
+  margin: 0;
+  padding: 0;
+}
+
+.agent-toggle :deep(.v-input__control),
+.agent-toggle :deep(.v-input__details),
+.agent-toggle :deep(.v-selection-control),
+.agent-toggle :deep(.v-selection-control__wrapper),
+.agent-toggle :deep(.v-switch__loader) {
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .flex-0 {

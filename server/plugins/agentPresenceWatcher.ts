@@ -10,7 +10,7 @@
  * started, or when this plugin restarts mid-session).
  */
 import { createClient } from "@supabase/supabase-js";
-import { greetTargetUser } from "~/server/utils/agentEngine";
+import { greetTargetUser, handOffAgentConversations } from "~/server/utils/agentEngine";
 
 // Small random jitter so simultaneous joins don't all hit the DB at once
 const MAX_JITTER_MS = 3_000;
@@ -46,6 +46,16 @@ export default defineNitroPlugin((nitroApp) => {
       const jitter = Math.random() * MAX_JITTER_MS;
       setTimeout(async () => {
         try {
+          const { data: joinedProfile } = await supabase
+            .from("profiles")
+            .select("id, agent_enabled")
+            .eq("user_id", userId)
+            .maybeSingle();
+
+          if (joinedProfile?.agent_enabled) {
+            await handOffAgentConversations(supabase, joinedProfile.id);
+          }
+
           let sent = await greetTargetUser(supabase, userId, config);
           if (!sent) {
             await new Promise((r) => setTimeout(r, PROFILE_RETRY_MS));

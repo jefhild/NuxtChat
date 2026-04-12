@@ -7,6 +7,7 @@
 
 import { getOpenAIClient } from "~/server/utils/openaiGateway";
 import { translateText, normalizeLocale } from "~/server/utils/translate";
+import { clampAwayAgentConversationLimit } from "~/constants/awayAgent";
 
 const LOCALE_NAME: Record<string, string> = {
   en: "English",
@@ -392,7 +393,7 @@ export async function greetTargetUser(
       .eq("agent_profile_id", agentProfile.id)
       .eq("status", "active");
 
-    if ((activeCount ?? 0) >= (agent.max_conversations_per_session ?? 10)) continue;
+    if ((activeCount ?? 0) >= clampAwayAgentConversationLimit(agent.max_conversations_per_session)) continue;
 
     // 24 h cooldown for this specific agent ↔ target pair
     const { data: existing } = await supabase

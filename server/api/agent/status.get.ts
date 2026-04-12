@@ -5,6 +5,7 @@
 import { defineEventHandler, setResponseStatus } from "h3";
 import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
+import { snapshotPresenceUserIds } from "~/server/utils/presenceSnapshot";
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event);
@@ -14,6 +15,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const supabase = await getServiceRoleClient(event);
+  const onlineUserIds = await snapshotPresenceUserIds(supabase);
 
   // Get the user's profile id
   const { data: profile } = await supabase
@@ -42,8 +44,9 @@ export default defineEventHandler(async (event) => {
     .eq("status", "active");
 
   return {
-    enabled: profile.agent_enabled ?? false,
+    enabled: config?.enabled ?? profile.agent_enabled ?? false,
     config: config ?? null,
     activeConversations: activeConversations ?? 0,
+    pausedBecauseOnline: onlineUserIds.has(user.id),
   };
 });
