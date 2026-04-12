@@ -27,7 +27,7 @@
 
   <!-- FOOTER must be an app footer to reserve space -->
   <div
-    v-if="!isMobile"
+    v-if="showAppFooter && !isMobile"
     class="app-footer app-footer--desktop"
     :class="{
       'app-footer--chat': isChatRoute,
@@ -40,7 +40,7 @@
   </div>
 
   <div
-    v-else
+    v-else-if="showAppFooter"
     ref="mobileFooterRef"
     class="app-footer app-footer--mobile"
     :class="{
@@ -159,6 +159,12 @@ const footerToggleEnabled = computed(
     isAdminRoute.value
 );
 const desktopChatFooter = computed(() => isChatRoute.value && !isMobile.value);
+const hideFooterForActiveChat = computed(
+  () =>
+    isChatRoute.value &&
+    ["anon_authenticated", "authenticated"].includes(auth.authStatus)
+);
+const showAppFooter = computed(() => !hideFooterForActiveChat.value);
 
 const mobileFooterRef = ref(null);
 const mobileFooterHeight = ref(80);
@@ -193,10 +199,18 @@ const mainStyle = computed(() => {
       paddingBottom: "12px",
     };
   }
-  const chatMinBottom = isChat ? 56 : 0;
+  if (!showAppFooter.value) {
+    return {
+      ...base,
+      paddingBottom: "0px",
+      transition: "padding-bottom 160ms ease",
+    };
+  }
   const padding = footerVisible.value
     ? mobileFooterHeight.value
-    : Math.max(peekOffset + 12, chatMinBottom);
+    : isChat
+      ? 0
+      : peekOffset + 12;
   return {
     ...base,
     paddingBottom: `calc(${padding}px + env(safe-area-inset-bottom, 0px))`,
@@ -235,7 +249,9 @@ watch(desktopChatFooter, (active) => {
 });
 
 const showFooterFab = computed(
-  () => desktopChatFooter.value || (isMobile.value && footerToggleEnabled.value)
+  () =>
+    showAppFooter.value &&
+    (desktopChatFooter.value || (isMobile.value && footerToggleEnabled.value))
 );
 const unreadCount = computed(() => messages.totalUnread || 0);
 const unreadLabel = computed(() =>
