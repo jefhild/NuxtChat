@@ -9,7 +9,6 @@ import { defineEventHandler, getQuery } from "h3";
 import { getServiceRoleClient } from "@/server/utils/aiBots";
 import {
   fetchProfileLanguagePreferenceMap,
-  isExplicitLanguagePracticePreference,
   withLanguagePreferenceFallback,
 } from "@/server/utils/profileLanguagePreferences";
 import {
@@ -67,12 +66,7 @@ export default defineEventHandler(async (event) => {
     .filter((p: any) => p.profile?.user_id)
     .filter((p: any) =>
       !languagePracticeOnly ||
-      (
-        isExplicitLanguagePracticePreference(
-          languagePreferenceMap.get(p.profile.user_id)
-        ) &&
-        isLanguagePracticePersonaEnabled(p)
-      )
+      isLanguagePracticePersonaEnabled(p)
     )
     .map((p: any) => {
       const intake = withLanguagePreferenceFallback(
@@ -81,26 +75,42 @@ export default defineEventHandler(async (event) => {
         { preferredLocale: p.profile?.preferred_locale }
       );
       const languagePracticeConfig = getLanguagePracticePersonaConfig(p.metadata);
+      const supportedTargetLanguages =
+        languagePracticeConfig.supported_target_languages ?? [];
+      const supportedNativeLanguages =
+        languagePracticeConfig.supported_native_languages ?? [];
+      const supportedLevels = languagePracticeConfig.supported_levels ?? [];
+
       return {
         user_id: p.profile.user_id,
+        is_ai: true,
         displayname: p.profile.displayname,
         avatar_url: p.profile.avatar_url,
         tagline: p.profile.tagline,
         country_emoji: p.profile.countries?.emoji ?? null,
         persona_key: p.persona_key,
+        language_practice_enabled: languagePracticeConfig.enabled,
         emotion: intake?.emotion ?? null,
         intent: intake?.intent ?? null,
         energy: intake?.energy ?? null,
-        native_language_code: intake?.native_language_code ?? null,
-        target_language_code: intake?.target_language_code ?? null,
-        target_language_level: intake?.target_language_level ?? null,
-        correction_preference: intake?.correction_preference ?? null,
-        language_exchange_mode: intake?.language_exchange_mode ?? null,
-        supported_target_languages:
-          languagePracticeConfig.supported_target_languages ?? [],
-        supported_native_languages:
-          languagePracticeConfig.supported_native_languages ?? [],
-        supported_levels: languagePracticeConfig.supported_levels ?? [],
+        native_language_code: languagePracticeOnly
+          ? supportedNativeLanguages[0] ?? null
+          : intake?.native_language_code ?? null,
+        target_language_code: languagePracticeOnly
+          ? supportedTargetLanguages[0] ?? null
+          : intake?.target_language_code ?? null,
+        target_language_level: languagePracticeOnly
+          ? supportedLevels[0] ?? null
+          : intake?.target_language_level ?? null,
+        correction_preference: languagePracticeOnly
+          ? languagePracticeConfig.default_correction_preference
+          : intake?.correction_preference ?? null,
+        language_exchange_mode: languagePracticeOnly
+          ? languagePracticeConfig.default_exchange_mode
+          : intake?.language_exchange_mode ?? null,
+        supported_target_languages: supportedTargetLanguages,
+        supported_native_languages: supportedNativeLanguages,
+        supported_levels: supportedLevels,
         score: null,
       };
     });

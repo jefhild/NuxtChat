@@ -1409,7 +1409,8 @@
       "other": "Other",
       "all": "All",
       "registered": "Only Registered Users",
-      "anony": "Only Anonymous Users"
+      "anony": "Only Anonymous Users",
+      "include-language-practice-ai": "Include language practice AI chatbots"
     },
     "finish-profile": {
       "finish-up": "Let's finish setting up your profile - you have",

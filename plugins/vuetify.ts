@@ -7,10 +7,13 @@ import { onNuxtReady } from "#app";
 
 export default defineNuxtPlugin((app) => {
   const THEME_COOKIE_KEY = "imchatty_theme";
+  const RESOLVED_THEME_COOKIE_KEY = "imchatty_theme_resolved";
   const normalizeThemeMode = (value) =>
     value === "dark" || value === "light" || value === "system"
       ? value
       : "system";
+  const normalizeResolvedTheme = (value) =>
+    value === "dark" || value === "light" ? value : null;
   const resolveSystemTheme = () => {
     if (import.meta.client) {
       return window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -23,10 +26,15 @@ export default defineNuxtPlugin((app) => {
     sameSite: "lax",
     path: "/",
   });
+  const resolvedThemeCookie = useCookie(RESOLVED_THEME_COOKIE_KEY, {
+    sameSite: "lax",
+    path: "/",
+  });
   const initialMode = normalizeThemeMode(themeCookie.value);
-  // Keep first render deterministic across SSR/static HTML and client hydration.
-  // Apply the persisted mode after mount.
-  const initialTheme = "light";
+  const initialTheme =
+    initialMode === "dark" || initialMode === "light"
+      ? initialMode
+      : normalizeResolvedTheme(resolvedThemeCookie.value) || "light";
 
   const vuetify = createVuetify({
     defaults: {
@@ -134,6 +142,7 @@ export default defineNuxtPlugin((app) => {
       document.documentElement.style.colorScheme = themeName;
     }
     themeCookie.value = normalizedMode;
+    resolvedThemeCookie.value = themeName;
   };
 
   if (import.meta.client) {

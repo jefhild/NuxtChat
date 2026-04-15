@@ -1394,7 +1394,8 @@
       "other": "其他",
       "all": "全部",
       "registered": "仅注册用户",
-      "anony": "仅匿名用户"
+      "anony": "仅匿名用户",
+      "include-language-practice-ai": "显示语言练习 AI 聊天机器人"
     },
     "finish-profile": {
       "finish-up": "让我们完成设置您的档案 - 您有",

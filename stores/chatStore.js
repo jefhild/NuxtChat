@@ -63,6 +63,7 @@ export const useChatStore = defineStore("chatStore", () => {
           editorial_enabled: !!persona?.editorial_enabled,
           counterpoint_enabled: !!persona?.counterpoint_enabled,
           honey_enabled: !!persona?.honey_enabled,
+          language_practice_enabled: !!persona?.language_practice_enabled,
           honey_delay_min_ms: Number(persona?.honey_delay_min_ms ?? 0),
           honey_delay_max_ms: Number(persona?.honey_delay_max_ms ?? 0),
           list_publicly:

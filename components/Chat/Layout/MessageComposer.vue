@@ -20,7 +20,10 @@
       <input
         v-model="localDraft"
         :placeholder="placeholderText"
-        class="flex-1 border rounded px-3 py-2 chat-composer-input"
+        :class="[
+          'flex-1 border rounded px-3 py-2 chat-composer-input',
+          { 'chat-composer-input--language': languagePracticeMode },
+        ]"
         :disabled="isDisabled || !peerId"
         :title="isDisabled ? placeholderText : ''"
         @input="onInput"
@@ -49,6 +52,7 @@ const props = defineProps({
   conversationKey: { type: String, default: null },
   blockedUserIds: { type: Array, default: () => [] },
   helperActions: { type: Array, default: () => [] },
+  languagePracticeMode: { type: Boolean, default: false },
 });
 
 const config = useRuntimeConfig();
@@ -248,6 +252,15 @@ button {
   outline: none;
   border-color: #60a5fa !important;
   box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.25);
+}
+
+.chat-composer-input--language {
+  border-color: rgba(var(--v-theme-success), 0.55) !important;
+}
+
+.chat-composer-input--language:focus {
+  border-color: rgba(var(--v-theme-success), 0.9) !important;
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-success), 0.22);
 }
 
 .chat-composer-input:disabled {

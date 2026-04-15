@@ -12,8 +12,10 @@
           :auth-status="authStatus"
           :disable-toggle="disableFilterToggle"
           :show-ai="showAi"
+          :show-language-practice-ai="showLanguagePracticeAi"
           @filter-changed="$emit('filter-changed', $event)"
           @update:showAi="$emit('update:showAi', $event)"
+          @update:showLanguagePracticeAi="$emit('update:showLanguagePracticeAi', $event)"
         />
       </div>
       <span v-if="showCount" class="header-count">
@@ -219,6 +221,7 @@ const props = defineProps({
   disableFilterToggle: { type: Boolean, default: false },
   showFilters: { type: Boolean, default: true },
   showAi: { type: Boolean, default: true },
+  showLanguagePracticeAi: { type: Boolean, default: false },
   suppressMatchStrip: { type: Boolean, default: false },
   languagePracticeChatIds: { type: Array, default: () => [] },
 });
@@ -226,6 +229,7 @@ const emit = defineEmits([
   "user-selected",
   "filter-changed",
   "update:showAi",
+  "update:showLanguagePracticeAi",
   "delete-chat",
   "view-profile",
   "end-language-practice",

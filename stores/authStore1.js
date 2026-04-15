@@ -64,6 +64,7 @@ function pickPreferredLocaleFromBrowser() {
 }
 
 let _logoutInflight = null;
+let _checkAuthInflight = null;
 
 async function _clearSupabaseTokensSafe() {
   try {
@@ -81,6 +82,7 @@ export const useAuthStore = defineStore("authStore1", {
     authStatus: "unauthenticated",
     user: null,
     userProfile: null,
+    authResolved: false,
     onboardingLocal: false,
     // authBusy: false, // optional flag you can set
   }),
@@ -112,6 +114,7 @@ export const useAuthStore = defineStore("authStore1", {
       this.user = null;
       this.userProfile = null;
       this.authStatus = "unauthenticated";
+      this.authResolved = true;
     },
 
     setUserAndProfile(user, profile) {
@@ -120,69 +123,84 @@ export const useAuthStore = defineStore("authStore1", {
     },
 
     async checkAuth() {
-      const { getUserProfileFunctionFromId, getClient } = useDb();
-      const supabase = getClient();
+      if (_checkAuthInflight) return _checkAuthInflight;
 
-      const { data: sessionData, error: sessErr } =
-        await supabase.auth.getSession();
-      if (sessErr) {
-        console.warn("[authStore1] getSession error:", sessErr);
-        if (import.meta.client) {
-          // Recover from stale/broken local auth state without manual cookie deletion.
-          await _clearSupabaseTokensSafe();
-          try {
-            await supabase.auth.signOut({ scope: "local" });
-          } catch {}
-        }
-        this.clear();
-        this.onboardingLocal = false;
-        if (import.meta.client) {
-          try {
-            const presence = usePresenceStore2();
-            await presence.leave();
-          } catch {}
-          try {
-            const draft = useOnboardingDraftStore();
-            draft.clearAll?.();
-          } catch {}
-        }
-        return;
-      }
+      _checkAuthInflight = (async () => {
+        const { getUserProfileFunctionFromId, getClient } = useDb();
+        const supabase = getClient();
 
-      const session = sessionData?.session || null;
-      let user = session?.user || null;
-      let profile = null;
-
-      if (session?.user?.id) {
-        try {
-          const { data: userData, error: userErr } = await supabase.auth.getUser();
-          if (userErr) {
-            console.warn("[authStore1] getUser error:", userErr);
-          } else if (userData?.user) {
-            user = userData.user;
+        const { data: sessionData, error: sessErr } =
+          await supabase.auth.getSession();
+        if (sessErr) {
+          console.warn("[authStore1] getSession error:", sessErr);
+          if (import.meta.client) {
+            // Recover from stale/broken local auth state without manual cookie deletion.
+            await _clearSupabaseTokensSafe();
+            try {
+              await supabase.auth.signOut({ scope: "local" });
+            } catch {}
           }
-        } catch (e) {
-          console.warn("[authStore1] fresh getUser failed:", e);
+          this.clear();
+          this.onboardingLocal = false;
+          if (import.meta.client) {
+            try {
+              const presence = usePresenceStore2();
+              await presence.leave();
+            } catch {}
+            try {
+              const draft = useOnboardingDraftStore();
+              draft.clearAll?.();
+            } catch {}
+          }
+          return;
         }
-      }
 
-      if (user) {
-        try {
-          const arr = await getUserProfileFunctionFromId(user.id);
-          profile = Array.isArray(arr) ? arr[0] : arr ?? null;
-        } catch (e) {
-          console.warn("[authStore1] getUserProfile error:", e);
-          profile = null;
+        const session = sessionData?.session || null;
+        let user = session?.user || null;
+        let profile = null;
+
+        if (session?.user?.id) {
+          try {
+            const { data: userData, error: userErr } = await supabase.auth.getUser();
+            if (userErr) {
+              console.warn("[authStore1] getUser error:", userErr);
+            } else if (userData?.user) {
+              user = userData.user;
+            }
+          } catch (e) {
+            console.warn("[authStore1] fresh getUser failed:", e);
+          }
         }
-      }
 
-      let status = resolveAuthStatus({ session, user, profile });
-      // keep onboarding if we’re anon, no profile yet, but user already consented and started onboarding
-      if (status === "guest" && user?.is_anonymous && this.onboardingLocal) {
-        status = "onboarding";
-      }
+        if (user) {
+          try {
+            const arr = await getUserProfileFunctionFromId(user.id);
+            profile = Array.isArray(arr) ? arr[0] : arr ?? null;
+          } catch (e) {
+            console.warn("[authStore1] getUserProfile error:", e);
+            profile = null;
+          }
+        }
 
-      this.$patch({ user, userProfile: profile, authStatus: status });
+        let status = resolveAuthStatus({ session, user, profile });
+        // keep onboarding if we’re anon, no profile yet, but user already consented and started onboarding
+        if (status === "guest" && user?.is_anonymous && this.onboardingLocal) {
+          status = "onboarding";
+        }
+
+        this.$patch({
+          user,
+          userProfile: profile,
+          authStatus: status,
+          authResolved: true,
+        });
+      })();
+
+      try {
+        await _checkAuthInflight;
+      } finally {
+        _checkAuthInflight = null;
+      }
     },
 
     async ensureAnonymousUserAfterConsent() {
@@ -246,6 +264,7 @@ export const useAuthStore = defineStore("authStore1", {
       this.$patch({
         user,
         authStatus: this.onboardingLocal ? "onboarding" : "guest",
+        authResolved: true,
       });
 
       return this.user;

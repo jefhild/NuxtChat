@@ -45,6 +45,17 @@
           label="Include AI chatbots"
         />
       </div>
+      <div class="d-flex align-center mb-2">
+        <v-checkbox
+          v-model="includeLanguagePracticeAiModel"
+          density="compact"
+          hide-details
+          color="indigo"
+          :disabled="!isAllowed || !includeAiModel"
+          :aria-label="t('components.filter-menu.include-language-practice-ai')"
+          :label="t('components.filter-menu.include-language-practice-ai')"
+        />
+      </div>
 
       <!-- User Info -->
       <v-row class="mb-1 mt-2" align="center" no-gutters>
@@ -262,6 +273,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  showLanguagePracticeAi: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const localized = computed(() =>
@@ -271,7 +286,11 @@ const localized = computed(() =>
   })
 );
 
-const emit = defineEmits(["filter-changed", "update:showAi"]);
+const emit = defineEmits([
+  "filter-changed",
+  "update:showAi",
+  "update:showLanguagePracticeAi",
+]);
 const genders = [
   { text: t("components.filter-menu.male"), value: 1, icon: "mdi-gender-male" },
   {
@@ -308,6 +327,10 @@ const selectedInterests = ref([]);
 const includeAiModel = computed({
   get: () => props.showAi,
   set: (val) => emit("update:showAi", Boolean(val)),
+});
+const includeLanguagePracticeAiModel = computed({
+  get: () => props.showLanguagePracticeAi,
+  set: (val) => emit("update:showLanguagePracticeAi", Boolean(val)),
 });
 
 const applyFilters = () => {

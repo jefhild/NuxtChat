@@ -1394,7 +1394,8 @@
       "other": "Autre",
       "all": "Tous",
       "registered": "Utilisateurs Enregistrés Uniquement",
-      "anony": "Utilisateurs Anonymes Uniquement"
+      "anony": "Utilisateurs Anonymes Uniquement",
+      "include-language-practice-ai": "Inclure les IA de pratique des langues"
     },
     "finish-profile": {
       "finish-up": "Finissons de configurer votre profil - vous avez",

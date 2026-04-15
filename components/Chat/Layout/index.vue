@@ -57,10 +57,12 @@
                 :auth-status="auth.authStatus"
                 :disable-filter-toggle="shouldDisableToggle"
                 :show-ai="showAIUsers"
+                :show-language-practice-ai="showLanguagePracticeAIUsers"
                 :suppress-match-strip="suppressMatchStrip"
                 @user-selected="selectUser"
                 @filter-changed="updateFilters"
                 @update:showAi="showAIUsers = $event"
+                @update:showLanguagePracticeAi="showLanguagePracticeAIUsers = $event"
               />
             </div>
           </v-card>
@@ -523,9 +525,8 @@
               :me-id="meId"
               :conversation-key="conversationKey"
               :blocked-user-ids="blockedUsers"
-              :helper-actions="languagePracticeHelperActions"
+              :language-practice-mode="Boolean(languagePracticeSession)"
               class="w-100 mx-auto"
-              @apply-helper="applyLanguagePracticeHelper"
               @send="onSend"
             />
           </div>
@@ -562,12 +563,14 @@
                 :disable-filter-toggle="shouldDisableToggle"
                 :show-filters="false"
                 :show-ai="showAIUsers"
+                :show-language-practice-ai="showLanguagePracticeAIUsers"
                 @user-selected="selectUser"
                 @filter-changed="updateFilters"
                 @delete-chat="openDeleteDialog"
                 @end-language-practice="endLanguagePracticeChat"
                 @view-profile="openProfileDialog"
                 @update:showAi="showAIUsers = $event"
+                @update:showLanguagePracticeAi="showLanguagePracticeAIUsers = $event"
               />
           </div>
           </v-card>
@@ -992,9 +995,8 @@
               :me-id="meId"
               :conversation-key="conversationKey"
               :blocked-user-ids="blockedUsers"
-              :helper-actions="languagePracticeHelperActions"
+              :language-practice-mode="Boolean(languagePracticeSession)"
               class="w-100 mx-auto"
-              @apply-helper="applyLanguagePracticeHelper"
               @send="onSend"
             />
           </div>
@@ -1038,10 +1040,12 @@
               :auth-status="auth.authStatus"
               :disable-filter-toggle="shouldDisableToggle"
               :show-ai="showAIUsers"
+              :show-language-practice-ai="showLanguagePracticeAIUsers"
               :suppress-match-strip="suppressMatchStrip"
               @user-selected="selectUser"
               @filter-changed="updateFilters"
               @update:showAi="showAIUsers = $event"
+              @update:showLanguagePracticeAi="showLanguagePracticeAIUsers = $event"
             />
           </div>
         </v-card>
@@ -1083,12 +1087,14 @@
               :disable-filter-toggle="shouldDisableToggle"
               :show-filters="false"
               :show-ai="showAIUsers"
+              :show-language-practice-ai="showLanguagePracticeAIUsers"
               @user-selected="selectUser"
               @filter-changed="updateFilters"
               @delete-chat="openDeleteDialog"
               @end-language-practice="endLanguagePracticeChat"
               @view-profile="openProfileDialog"
               @update:showAi="showAIUsers = $event"
+              @update:showLanguagePracticeAi="showLanguagePracticeAIUsers = $event"
             />
           </div>
         </v-card>
@@ -1548,6 +1554,7 @@ const regRef = ref(null);
 const isLoading = ref(false);
 const isTabVisible = ref(true);
 const showAIUsers = ref(true);
+const showLanguagePracticeAIUsers = ref(false);
 const activeChats = ref([]);
 const endedAiPeers = ref(new Set());
 const replyingToMessage = ref(null); // { id, content } | null
@@ -1813,12 +1820,6 @@ const selectedUserTitle = computed(() => {
   return parts.join(", ");
 });
 
-const languagePracticeHelperActions = computed(() =>
-  languagePracticeSession.value
-    ? ["ask_correction", "translate", "simpler", "natural"]
-    : []
-);
-
 const browserLocale = computed(() => {
   if (!import.meta.client || typeof navigator === "undefined") return "en";
   const value = String(navigator.language || "").trim().toLowerCase();
@@ -1827,29 +1828,6 @@ const browserLocale = computed(() => {
   if (value.startsWith("zh")) return "zh";
   return "en";
 });
-
-const languagePracticeHelperPrompts = computed(() => ({
-  ask_correction: t(
-    "components.languagePracticeBanner.prompts.askCorrection",
-    {},
-    { locale: browserLocale.value }
-  ),
-  translate: t(
-    "components.languagePracticeBanner.prompts.translate",
-    {},
-    { locale: browserLocale.value }
-  ),
-  simpler: t(
-    "components.languagePracticeBanner.prompts.simpler",
-    {},
-    { locale: browserLocale.value }
-  ),
-  natural: t(
-    "components.languagePracticeBanner.prompts.natural",
-    {},
-    { locale: browserLocale.value }
-  ),
-}));
 
 const languagePracticeIndicatorUserIds = computed(() =>
   Array.from(
@@ -2792,12 +2770,18 @@ const usersWithPresence = computed(() => {
       return isHoneyBot ? canSeeHoneyBots.value : true;
     })
     // hide AI if toggled off; Honey + simulated users are treated as real users
-    .filter((u) => {
-      if (isImchattyUser(u)) return true;
-      if (showAIUsers.value) return true;
-      const isHoneySimulated = !!u.is_ai && !!u.honey_enabled && !!u.is_simulated;
-      return !u.is_ai || isHoneySimulated;
-    })
+      .filter((u) => {
+        if (isImchattyUser(u)) return true;
+        if (showAIUsers.value) return true;
+        const isHoneySimulated = !!u.is_ai && !!u.honey_enabled && !!u.is_simulated;
+        return !u.is_ai || isHoneySimulated;
+      })
+      .filter((u) => {
+        if (isImchattyUser(u)) return true;
+        if (!u?.is_ai || !showAIUsers.value) return true;
+        if (showLanguagePracticeAIUsers.value) return true;
+        return !u?.language_practice_enabled;
+      })
     // gender filter
     .filter((u) =>
       want.gender == null ? true : u.gender_id_norm === want.gender
@@ -3309,16 +3293,6 @@ const resetTranslationPromptState = () => {
 watch(translationPromptOpen, (open) => {
   if (!open) resetTranslationPromptState();
 });
-
-function applyLanguagePracticeHelper(actionKey) {
-  const prompt = languagePracticeHelperPrompts.value[actionKey];
-  if (!prompt) return;
-  if (!String(messageDraft.value || "").trim()) {
-    messageDraft.value = prompt;
-    return;
-  }
-  messageDraft.value = `${String(messageDraft.value || "").trim()}\n\n${prompt}`;
-}
 
 const maybePromptTranslation = async (text, selectedPeer, toId, sendingToBot) => {
   if (!text) return true;

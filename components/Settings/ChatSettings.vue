@@ -197,6 +197,10 @@ const themeCookie = useCookie("imchatty_theme", {
   sameSite: "lax",
   path: "/",
 });
+const resolvedThemeCookie = useCookie("imchatty_theme_resolved", {
+  sameSite: "lax",
+  path: "/",
+});
 
 const loading = ref(true);
 const saving = ref(false);
@@ -268,6 +272,7 @@ const applyThemePreference = (nextThemeMode) => {
   setThemeNameSafe(effectiveTheme);
   themeMode.value = normalizedMode;
   themeCookie.value = normalizedMode;
+  resolvedThemeCookie.value = effectiveTheme;
   if (import.meta.client) {
     document.documentElement.style.colorScheme = effectiveTheme;
   }

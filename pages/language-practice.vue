@@ -298,7 +298,10 @@ const saveSuccess = ref("");
 const chatStartError = ref("");
 
 const isAuthenticated = computed(() => auth.authStatus !== "unauthenticated");
-const isLoading = computed(() => loadingCandidates.value || publicLoading.value);
+const authResolved = computed(() => auth.authResolved === true);
+const isLoading = computed(
+  () => !authResolved.value || loadingCandidates.value || publicLoading.value
+);
 const hasSavableLanguageFilters = computed(
   () =>
     Boolean(
@@ -423,6 +426,7 @@ function matchesLanguageFilters(candidate) {
   const candidateSupportedLevels = Array.isArray(candidate.supported_levels)
     ? candidate.supported_levels
     : [];
+  const isAiCandidate = Boolean(candidate?.is_ai);
   const matchesCandidateNativeLanguage = (value) =>
     candidate.native_language_code === value || candidateNativeLanguages.includes(value);
   const matchesCandidateTargetLanguage = (value) =>
@@ -439,13 +443,21 @@ function matchesLanguageFilters(candidate) {
   };
 
   if (targetLanguage) {
-    if (!matchesCandidateNativeLanguage(targetLanguage)) {
+    const matchesRequestedTargetLanguage = isAiCandidate
+      ? matchesCandidateTargetLanguage(targetLanguage)
+      : matchesCandidateNativeLanguage(targetLanguage);
+    if (!matchesRequestedTargetLanguage) {
       return false;
     }
   }
 
-  if (nativeLanguage && !matchesCandidateTargetLanguage(nativeLanguage)) {
-    return false;
+  if (nativeLanguage) {
+    const matchesRequestedSupportLanguage = isAiCandidate
+      ? matchesCandidateNativeLanguage(nativeLanguage)
+      : matchesCandidateTargetLanguage(nativeLanguage);
+    if (!matchesRequestedSupportLanguage) {
+      return false;
+    }
   }
 
   if (!matchesCandidateLevel(targetLevel)) {
@@ -683,14 +695,23 @@ async function saveCurrentFilters() {
 onMounted(async () => {
   openSections.value = mdAndUp.value ? largeScreenDefaultSections : ["online"];
   hydrateLanguageFiltersFromQuery();
+  if (!authResolved.value) {
+    await auth.checkAuth();
+  }
   if (isAuthenticated.value) {
     await hydrateAuthenticatedLanguageFilters();
   }
   await loadCandidates();
 });
 
-watch(isAuthenticated, loadCandidates);
-watch(locale, loadCandidates);
+watch(isAuthenticated, () => {
+  if (!authResolved.value) return;
+  loadCandidates();
+});
+watch(locale, () => {
+  if (!authResolved.value) return;
+  loadCandidates();
+});
 
 useHead({
   title: t("pages.languagePractice.seoTitle"),

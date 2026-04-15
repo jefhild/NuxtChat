@@ -1,5 +1,6 @@
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import { serverSupabaseUser } from "#supabase/server";
+import { isLanguagePracticePersonaEnabled } from "@/utils/languagePracticePersona";
 
 const PUBLIC_PERSONA_SELECT = `
   id,
@@ -11,6 +12,7 @@ const PUBLIC_PERSONA_SELECT = `
   honey_enabled,
   honey_delay_min_ms,
   honey_delay_max_ms,
+  metadata,
   bias,
   angle,
   region,
@@ -57,11 +59,17 @@ export default defineEventHandler(async (event) => {
 
     if (error) throw error;
 
-    const personas = (data || []).filter((persona: any) => {
-      if (!persona?.profile?.is_ai) return false;
-      if (persona?.honey_enabled && !allowHoney) return false;
-      return true;
-    });
+    const personas = (data || [])
+      .filter((persona: any) => {
+        if (!persona?.profile?.is_ai) return false;
+        if (persona?.honey_enabled && !allowHoney) return false;
+        return true;
+      })
+      .map((persona: any) => ({
+        ...persona,
+        language_practice_enabled: isLanguagePracticePersonaEnabled(persona),
+        metadata: undefined,
+      }));
 
     return { success: true, data: personas };
   } catch (err: any) {

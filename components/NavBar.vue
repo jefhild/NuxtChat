@@ -37,22 +37,22 @@
                 </span>
               </NuxtLink>
             </li>
-            <li v-if="userProfile?.is_admin && !isImpersonating">
+            <li v-if="showResolvedAuthLinks && userProfile?.is_admin && !isImpersonating">
               <NuxtLink :to="localPath('/admin')" class="nav2__link" exact>
                 {{ $t("components.navbar.admin") }}
               </NuxtLink>
             </li>
-            <li v-if="isAuthenticated">
+            <li v-if="showResolvedAuthLinks && isAuthenticated">
               <NuxtLink :to="localPath('/settings')" class="nav2__link" exact>
                 {{ $t("components.navbar.settings") }}
               </NuxtLink>
             </li>
-            <li v-if="isAuthenticated">
+            <li v-if="showResolvedAuthLinks && isAuthenticated">
               <button class="nav2__link nav2__btn-like" type="button" @click="showLogoutDialog">
                 {{ $t("components.navbar.logout") }}
               </button>
             </li>
-            <li v-else>
+            <li v-else-if="showResolvedAuthLinks">
               <NuxtLink :to="localPath('/signin')" class="nav2__link" exact>
                 {{ $t("components.navbar.signin") }}
               </NuxtLink>
@@ -121,13 +121,23 @@
               >
                 <v-list-item-title>{{ $t("components.navbar.admin") }}</v-list-item-title>
               </v-list-item>
-              <v-list-item v-if="isAuthenticated" :to="localPath('/settings')" link @click="closeMobileMenu">
+              <v-list-item
+                v-if="showResolvedAuthLinks && isAuthenticated"
+                :to="localPath('/settings')"
+                link
+                @click="closeMobileMenu"
+              >
                 <v-list-item-title>{{ $t("components.navbar.settings") }}</v-list-item-title>
               </v-list-item>
-              <v-list-item v-if="isAuthenticated" @click="handleMobileLogout">
+              <v-list-item v-if="showResolvedAuthLinks && isAuthenticated" @click="handleMobileLogout">
                 <v-list-item-title>{{ $t("components.navbar.logout") }}</v-list-item-title>
               </v-list-item>
-              <v-list-item v-else :to="localPath('/signin')" link @click="closeMobileMenu">
+              <v-list-item
+                v-else-if="showResolvedAuthLinks"
+                :to="localPath('/signin')"
+                link
+                @click="closeMobileMenu"
+              >
                 <v-list-item-title>{{ $t("components.navbar.signin") }}</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -246,6 +256,7 @@ const { primaryNavItems } = usePrimaryNavigation();
 const isAuthenticated = computed(() =>
   ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
 );
+const showResolvedAuthLinks = computed(() => authStore.authResolved);
 const isAnonAuthenticated = computed(
   () => authStore.authStatus === "anon_authenticated"
 );
