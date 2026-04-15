@@ -1768,7 +1768,9 @@
       "chatAi": "Discuter avec l'IA",
       "chatWith": "Discuter avec {name}",
       "practicingLanguage": "Pratique {language}",
-      "nativeLanguage": "{language} natif"
+      "nativeLanguage": "{language} natif",
+      "aiHelpingLanguage": "Aide en {language}",
+      "aiSupportLanguage": "Explique en {language}"
     }
   },
   "composables": {

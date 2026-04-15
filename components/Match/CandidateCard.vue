@@ -95,9 +95,14 @@
           prepend-icon="mdi-translate"
         >
           {{
-            $t("components.candidateCard.practicingLanguage", {
-              language: targetLanguageLabel,
-            })
+            $t(
+              isAi
+                ? "components.candidateCard.aiHelpingLanguage"
+                : "components.candidateCard.practicingLanguage",
+              {
+                language: targetLanguageLabel,
+              }
+            )
           }}
         </v-chip>
         <v-chip
@@ -108,9 +113,14 @@
           prepend-icon="mdi-account-voice"
         >
           {{
-            $t("components.candidateCard.nativeLanguage", {
-              language: nativeLanguageLabel,
-            })
+            $t(
+              isAi
+                ? "components.candidateCard.aiSupportLanguage"
+                : "components.candidateCard.nativeLanguage",
+              {
+                language: nativeLanguageLabel,
+              }
+            )
           }}
         </v-chip>
         <v-chip

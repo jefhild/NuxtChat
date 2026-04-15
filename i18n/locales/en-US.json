@@ -1789,7 +1789,9 @@
       "chatAi": "Chat with AI",
       "chatWith": "Chat with {name}",
       "practicingLanguage": "Practicing {language}",
-      "nativeLanguage": "Native {language}"
+      "nativeLanguage": "Native {language}",
+      "aiHelpingLanguage": "Helps with {language}",
+      "aiSupportLanguage": "Explains in {language}"
     },
     "languagePracticeBanner": {
       "title": "Practicing {language}",

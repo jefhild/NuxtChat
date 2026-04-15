@@ -1767,7 +1767,9 @@
       "chatAi": "与AI聊天",
       "chatWith": "与{name}聊天",
       "practicingLanguage": "正在练习{language}",
-      "nativeLanguage": "母语{language}"
+      "nativeLanguage": "母语{language}",
+      "aiHelpingLanguage": "可帮助练习{language}",
+      "aiSupportLanguage": "可用{language}讲解"
     }
   },
   "composables": {

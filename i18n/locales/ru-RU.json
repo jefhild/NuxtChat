@@ -1767,7 +1767,9 @@
       "chatAi": "Чат с ИИ",
       "chatWith": "Написать {name}",
       "practicingLanguage": "Практикует {language}",
-      "nativeLanguage": "Родной {language}"
+      "nativeLanguage": "Родной {language}",
+      "aiHelpingLanguage": "Помогает с {language}",
+      "aiSupportLanguage": "Объясняет на {language}"
     }
   },
   "composables": {
