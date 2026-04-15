@@ -192,6 +192,11 @@ export default defineNuxtConfig({
         "/fr/match",
         "/ru/match",
         "/zh/match",
+        "/language-practice",
+        "/en/language-practice",
+        "/fr/language-practice",
+        "/ru/language-practice",
+        "/zh/language-practice",
       ],
     },
 

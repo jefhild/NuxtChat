@@ -1,6 +1,7 @@
 import { readBody } from "h3";
 import { ensureAdmin } from "@/server/utils/adminAuth";
 import { getServiceRoleClient } from "@/server/utils/aiBots";
+import { buildLanguageLearningPayload } from "@/server/utils/languageLearning";
 
 const EMOTIONS = ["lonely", "calm", "annoyed", "overwhelmed", "playful", "curious", "hopeful", "sad"];
 const INTENTS = ["be_heard", "listen", "distract_me", "deep_talk", "casual_chat", "meet_someone_similar"];
@@ -62,6 +63,7 @@ export default defineEventHandler(async (event) => {
   const privacy = normalize(body?.privacy, PRIVACY) ?? "private_matching_only";
   const time_horizon = normalize(body?.timeHorizon, TIME_HORIZON) ?? "right_now";
   const free_text_raw = String(body?.freeText || "").trim() || null;
+  const languageLearning = buildLanguageLearningPayload(body);
 
   const now = new Date();
   const expires_at = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();
@@ -101,6 +103,7 @@ export default defineEventHandler(async (event) => {
     free_text_raw,
     source_persona: "admin-tester",
     confidence: 1.0,
+    ...languageLearning,
   });
 
   if (intakeError) {

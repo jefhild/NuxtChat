@@ -210,6 +210,10 @@ export function useOnboardingAi() {
     else draft.stage = "finalizing";
     draft.setField?.("handoffPending", true);
     draft.setField?.("moodFeedStage", "done");
+    const pendingLanguagePracticeIntent =
+      draft.languagePracticeIntent && typeof draft.languagePracticeIntent === "object"
+        ? { ...draft.languagePracticeIntent }
+        : null;
     // Block any parallel mood-prompt auto-trigger while finalize + welcome
     // sequencing is still in progress.
     draft.setField?.("moodFeedDeferUntil", Date.now() + 7000);
@@ -250,6 +254,7 @@ export function useOnboardingAi() {
         const handoffOk = await startPostOnboardingHandoff(receiverId, {
           display,
           rawBio,
+          languagePracticeIntent: pendingLanguagePracticeIntent,
         });
 
         if (!handoffOk) {
@@ -721,7 +726,7 @@ if (!allowed) {
 
   async function startPostOnboardingHandoff(
     receiverId,
-    { display = "", rawBio = "" } = {}
+    { display = "", rawBio = "", languagePracticeIntent = null } = {}
   ) {
     if (!receiverId) return false;
     if ((draft.liveMoodStage || "idle") !== "idle") return false;
@@ -768,11 +773,32 @@ if (!allowed) {
     if (!personaKey || !personaUserId) return false;
 
     const moodPrompt = getLiveMoodOpener();
-    const opener =
-      `Hey ${display || "there"}, I'm ${personaName}. Your profile is live — you can start browsing and chatting right now. Or if you want, answer one quick question and I'll find people who actually match your vibe. ${moodPrompt}`;
+    const languagePracticeTarget = String(
+      languagePracticeIntent?.target_language_code || ""
+    )
+      .trim()
+      .toLowerCase();
+    const languageLabelKey = languagePracticeTarget
+      ? `match.language.languages.${languagePracticeTarget}`
+      : "";
+    const localizedLanguageName = languageLabelKey ? t(languageLabelKey) : "";
+    const targetLanguageName =
+      localizedLanguageName && localizedLanguageName !== languageLabelKey
+        ? localizedLanguageName
+        : languagePracticeTarget
+        ? languagePracticeTarget.toUpperCase()
+        : "";
+    const hasLanguagePracticeIntent = Boolean(languagePracticeTarget);
+    const opener = hasLanguagePracticeIntent
+      ? t("onboarding.languagePractice.postSignupOpener", {
+          name: display || "there",
+          personaName,
+          language: targetLanguageName,
+        })
+      : `Hey ${display || "there"}, I'm ${personaName}. Your profile is live — you can start browsing and chatting right now. Or if you want, answer one quick question and I'll find people who actually match your vibe. ${moodPrompt}`;
 
     draft.setField?.("moodFeedStage", "done");
-    draft.setField?.("liveMoodStage", "prompt");
+    draft.setField?.("liveMoodStage", hasLanguagePracticeIntent ? "done" : "prompt");
     draft.setField?.("liveMoodPersonaKey", personaKey);
     draft.setField?.("liveMoodPersonaUserId", personaUserId);
     draft.setField?.("liveMoodPersonaDisplayName", personaName);
@@ -781,6 +807,22 @@ if (!allowed) {
     draft.setField?.("liveMoodInput", "");
     draft.setField?.("liveMoodCandidate", null);
     draft.setField?.("liveMoodNudges", nudges);
+    draft.setField?.(
+      "liveMoodNextStepStage",
+      hasLanguagePracticeIntent ? "language_practice" : "idle"
+    );
+    draft.setField?.(
+      "postOnboardingLanguagePracticeContext",
+      hasLanguagePracticeIntent
+        ? {
+            native_language_code:
+              languagePracticeIntent?.native_language_code || null,
+            target_language_code: languagePracticeTarget,
+            target_language_level:
+              languagePracticeIntent?.target_language_level || null,
+          }
+        : null
+    );
     draft.setField?.("handoffPending", false);
 
     let typingTimer = null;

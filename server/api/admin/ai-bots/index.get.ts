@@ -8,6 +8,7 @@ const BASIC_AI_PERSONA_SELECT = `
   profile_user_id,
   is_active,
   model,
+  metadata,
   category:categories!ai_personas_category_id_fkey (
     name
   ),

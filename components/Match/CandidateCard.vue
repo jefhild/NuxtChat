@@ -55,7 +55,7 @@
       </div>
 
       <!-- Mood badges -->
-      <div v-if="candidate.emotion || candidate.intent" class="d-flex flex-wrap gap-1 mt-2">
+      <div v-if="showMoodBadges" class="d-flex flex-wrap gap-1 mt-2">
         <v-chip
           v-if="candidate.emotion"
           size="x-small"
@@ -84,6 +84,50 @@
           {{ $t(`match.energy.${candidate.energy}`, candidate.energy) }}
         </v-chip>
       </div>
+
+      <!-- Language practice badges -->
+      <div v-if="showLanguageBadges" class="d-flex flex-wrap gap-1 mt-2">
+        <v-chip
+          v-if="targetLanguageLabel"
+          size="x-small"
+          variant="tonal"
+          color="success"
+          prepend-icon="mdi-translate"
+        >
+          {{
+            $t("components.candidateCard.practicingLanguage", {
+              language: targetLanguageLabel,
+            })
+          }}
+        </v-chip>
+        <v-chip
+          v-if="nativeLanguageLabel"
+          size="x-small"
+          variant="tonal"
+          color="info"
+          prepend-icon="mdi-account-voice"
+        >
+          {{
+            $t("components.candidateCard.nativeLanguage", {
+              language: nativeLanguageLabel,
+            })
+          }}
+        </v-chip>
+        <v-chip
+          v-if="candidate.correction_preference"
+          size="x-small"
+          variant="tonal"
+          color="secondary"
+          prepend-icon="mdi-pencil-outline"
+        >
+          {{
+            $t(
+              `match.language.correctionPreferences.${candidate.correction_preference}`,
+              candidate.correction_preference
+            )
+          }}
+        </v-chip>
+      </div>
     </v-card-text>
 
     <v-card-actions class="px-3 pt-0 pb-3">
@@ -104,6 +148,7 @@
 <script setup>
 import { computed } from "vue";
 import { getAvatarIcon, getGenderColor } from "@/composables/useUserUtils";
+import { useI18n } from "vue-i18n";
 
 const props = defineProps({
   candidate: {
@@ -118,9 +163,42 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  context: {
+    type: String,
+    default: "mood",
+  },
 });
 
 const emit = defineEmits(["chat", "view-profile"]);
+const { t } = useI18n();
+
+const candidateNativeLanguages = computed(() => {
+  const values = Array.isArray(props.candidate.supported_native_languages)
+    ? props.candidate.supported_native_languages
+    : [];
+  return values.length ? values : [props.candidate.native_language_code].filter(Boolean);
+});
+
+const candidateTargetLanguages = computed(() => {
+  const values = Array.isArray(props.candidate.supported_target_languages)
+    ? props.candidate.supported_target_languages
+    : [];
+  return values.length ? values : [props.candidate.target_language_code].filter(Boolean);
+});
+
+const formatLanguageLabel = (codes) =>
+  codes
+    .filter(Boolean)
+    .map((code) => t(`match.language.languages.${code}`, code))
+    .join(", ");
+
+const nativeLanguageLabel = computed(() =>
+  formatLanguageLabel(candidateNativeLanguages.value)
+);
+
+const targetLanguageLabel = computed(() =>
+  formatLanguageLabel(candidateTargetLanguages.value)
+);
 
 const statusDotClass = computed(() => {
   if (props.isOnline) return "status-dot--online";
@@ -134,6 +212,23 @@ const scoreColor = computed(() => {
   if (s >= 0.4) return "warning";
   return "default";
 });
+
+const hasLanguageBadges = computed(
+  () =>
+    candidateTargetLanguages.value.length > 0 ||
+    candidateNativeLanguages.value.length > 0 ||
+    !!props.candidate.correction_preference
+);
+
+const showMoodBadges = computed(
+  () =>
+    props.context !== "language" &&
+    (!!props.candidate.emotion || !!props.candidate.intent || !!props.candidate.energy)
+);
+
+const showLanguageBadges = computed(
+  () => props.context === "language" && hasLanguageBadges.value
+);
 
 function emotionIcon(emotion) {
   const map = {

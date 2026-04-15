@@ -125,9 +125,33 @@
               </v-btn>
             </template>
             <template v-else>
+              <v-btn
+                v-if="props.showTranslateButton"
+                color="secondary"
+                variant="tonal"
+                :loading="props.translateLoading"
+                @click="emit('translateProfile')"
+              >
+                Translate profile text
+              </v-btn>
               <v-btn color="primary" @click="emit('startEdit')"> Edit </v-btn>
               <v-btn color="primary" class="ml-2" to="/chat"> Back To Chat </v-btn>
             </template>
+          </v-col>
+        </v-row>
+        <v-row
+          v-if="props.translateStatus && !props.isEditable"
+          class="mt-2"
+          align="center"
+        >
+          <v-col cols="12">
+            <v-alert
+              :type="props.translateError ? 'error' : 'success'"
+              variant="tonal"
+              density="compact"
+            >
+              {{ props.translateStatus }}
+            </v-alert>
           </v-col>
         </v-row>
         <v-row v-if="props.isEditable" class="mt-2" align="center">
@@ -200,6 +224,22 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  showTranslateButton: {
+    type: Boolean,
+    default: false,
+  },
+  translateLoading: {
+    type: Boolean,
+    default: false,
+  },
+  translateStatus: {
+    type: String,
+    default: "",
+  },
+  translateError: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits([
@@ -222,6 +262,7 @@ const emit = defineEmits([
   "toggleDeletionMark",
   "linkAnonEmail",
   "openAiBio",
+  "translateProfile",
 ]);
 
 const { isEditable } = toRefs(props);

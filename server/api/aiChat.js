@@ -2,9 +2,39 @@
 import { getOpenAIClient } from "@/server/utils/openaiGateway";
 import mustache from "mustache";
 import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
+import { getServiceRoleClient } from "~/server/utils/aiBots";
+import {
+  getLanguagePracticePersonaConfig,
+} from "@/utils/languagePracticePersona";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const END_CHAT_TOKEN = "__END_CHAT__";
+const LANGUAGE_LABELS = {
+  en: "English",
+  fr: "French",
+  ru: "Russian",
+  zh: "Chinese",
+};
+const DEFAULT_LANGUAGE_PRACTICE_SYSTEM_PROMPT = `
+You are a language-practice assistant.
+
+Your primary job is to help the learner practice the target language through short, natural conversation with gentle teaching support.
+
+Core behavior:
+- Stay in the target language unless a very short clarification in the support language is truly necessary.
+- Act like a tutor, conversation partner, or native helper depending on the session context.
+- Be practical and instructional when the learner makes obvious mistakes.
+- Prefer short, clear, usable replies over abstract or emotionally reflective responses.
+- Do not default to therapy-style mirroring, emotional coaching, flirting, or vague reassurance.
+- When the learner asks whether you can teach, coach, or act like a teacher, answer yes and immediately behave that way.
+`.trim();
+const DEFAULT_LANGUAGE_PRACTICE_RESPONSE_STYLE =
+  "Short, clear, encouraging, target-language-first, and coach-like. Prefer correcting obvious mistakes briefly before continuing the conversation.";
+const normalizeLanguagePracticeCode = (value) => {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  return normalizeLocale(raw);
+};
 
 const normalizeLocale = (value) => {
   const v = String(value || "").trim().toLowerCase();
@@ -96,11 +126,26 @@ const isLikelyIncoherentMessage = (value) => {
 
 const normalizeCapability = (value) => {
   const v = String(value || "").trim().toLowerCase();
-  return ["editorial", "counterpoint", "honey"].includes(v) ? v : null;
+  return ["editorial", "counterpoint", "honey", "language_practice"].includes(v)
+    ? v
+    : null;
 };
 
-const resolveCapability = (requested, persona, allowHoney = false) => {
+const resolveCapability = (
+  requested,
+  persona,
+  allowHoney = false,
+  languagePracticeConfig = null,
+  languagePracticeSession = null
+) => {
   const req = normalizeCapability(requested);
+  if (
+    req === "language_practice" &&
+    languagePracticeConfig?.enabled &&
+    languagePracticeSession
+  ) {
+    return "language_practice";
+  }
   if (req === "honey" && allowHoney && persona?.honey_enabled) return "honey";
   if (req === "honey" && !allowHoney) return null;
   if (req === "counterpoint" && persona?.counterpoint_enabled) return "counterpoint";
@@ -108,6 +153,71 @@ const resolveCapability = (requested, persona, allowHoney = false) => {
   if (persona?.counterpoint_enabled) return "counterpoint";
   if (persona?.editorial_enabled) return "editorial";
   return null;
+};
+
+const describeLanguageCode = (code) => {
+  const normalized = normalizeLanguagePracticeCode(code);
+  return normalized ? LANGUAGE_LABELS[normalized] || normalized : "Unknown";
+};
+
+const describeCorrectionPreference = (value) => {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, " ");
+  if (!normalized) return "light corrections";
+  return normalized;
+};
+
+const describeExchangeMode = (value) => {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, " ");
+  return normalized || "practice only";
+};
+
+const supportsLanguagePracticeSession = (config, session) => {
+  if (!config?.enabled || !session) return false;
+
+  const targetLanguage = normalizeLanguagePracticeCode(
+    session.target_language_code
+  );
+  const nativeLanguage = session.learner_native_language_code
+    ? normalizeLanguagePracticeCode(session.learner_native_language_code)
+    : null;
+  const level = String(session.target_language_level || "")
+    .trim()
+    .toLowerCase();
+
+  if (
+    Array.isArray(config.supported_target_languages) &&
+    config.supported_target_languages.length &&
+    (!targetLanguage ||
+      !config.supported_target_languages.includes(targetLanguage))
+  ) {
+    return false;
+  }
+
+  if (
+    nativeLanguage &&
+    Array.isArray(config.supported_native_languages) &&
+    config.supported_native_languages.length &&
+    !config.supported_native_languages.includes(nativeLanguage)
+  ) {
+    return false;
+  }
+
+  if (
+    level &&
+    Array.isArray(config.supported_levels) &&
+    config.supported_levels.length &&
+    !config.supported_levels.includes(level)
+  ) {
+    return false;
+  }
+
+  return true;
 };
 
 const supportsMaxCompletionTokens = (model) => {
@@ -138,9 +248,9 @@ export default defineEventHandler(async (event) => {
       userMessage, // string (required)
       userGender, // string | null
       userName, // string | null
-      assistantTurn, // number | null
-      locale, // string | null
-      aiUser, // string (persona key or display name, required)
+        assistantTurn, // number | null
+        locale, // string | null
+        aiUser, // string (persona key or display name, required)
       userAge, // number | null
       history, // [{ sender, content }]
       replyTo, // string | null
@@ -177,7 +287,7 @@ export default defineEventHandler(async (event) => {
     const { data: personas, error: personaErr } = await supabase
       .from("ai_personas")
       .select(
-        "id, persona_key, profile_user_id, model, temperature, top_p, presence_penalty, frequency_penalty, max_response_tokens, max_history_messages, system_prompt_template, response_style_template, parameters, editorial_enabled, counterpoint_enabled, honey_enabled, honey_delay_min_ms, honey_delay_max_ms, editorial_system_prompt_template, editorial_response_style_template, counterpoint_system_prompt_template, counterpoint_response_style_template, honey_system_prompt_template, honey_response_style_template, profile:profiles!ai_personas_profile_user_id_fkey(displayname)"
+        "id, persona_key, profile_user_id, model, temperature, top_p, presence_penalty, frequency_penalty, max_response_tokens, max_history_messages, system_prompt_template, response_style_template, parameters, metadata, editorial_enabled, counterpoint_enabled, honey_enabled, honey_delay_min_ms, honey_delay_max_ms, editorial_system_prompt_template, editorial_response_style_template, counterpoint_system_prompt_template, counterpoint_response_style_template, honey_system_prompt_template, honey_response_style_template, profile:profiles!ai_personas_profile_user_id_fkey(displayname)"
       )
       .in("persona_key", personaCandidates)
       .eq("is_active", true)
@@ -207,18 +317,48 @@ export default defineEventHandler(async (event) => {
     // Honey capability is available for anonymous/no-session users,
     // but blocked for fully authenticated users.
     const allowHoneyCapability = !caller || !!caller?.is_anonymous;
+    const languagePracticeConfig = getLanguagePracticePersonaConfig(
+      persona?.metadata
+    );
+    let languagePracticeSession = null;
+    if (
+      normalizeCapability(capability) === "language_practice" &&
+      caller?.id &&
+      languagePracticeConfig.enabled &&
+      persona?.profile_user_id
+    ) {
+      const serviceSupabase = await getServiceRoleClient(event);
+      const { data: activeSession, error: sessionError } = await serviceSupabase
+        .from("language_practice_sessions")
+        .select("*")
+        .eq("status", "active")
+        .or(
+          `and(learner_user_id.eq.${caller.id},partner_user_id.eq.${persona.profile_user_id}),and(learner_user_id.eq.${persona.profile_user_id},partner_user_id.eq.${caller.id})`
+        )
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (sessionError) {
+        console.warn("[aiChat] language practice session lookup failed:", sessionError);
+      } else if (
+        supportsLanguagePracticeSession(languagePracticeConfig, activeSession)
+      ) {
+        languagePracticeSession = activeSession;
+      }
+    }
     const localeFromHeader = event.node?.req?.headers?.["accept-language"] || "";
     const closeLines = getCloseLinesForLocale(locale || localeFromHeader);
     const resolvedCapability = resolveCapability(
       capability,
       persona,
-      allowHoneyCapability
+      allowHoneyCapability,
+      languagePracticeConfig,
+      languagePracticeSession
     );
     const requestedCapability = normalizeCapability(capability);
     const isHoneyMode =
       resolvedCapability === "honey" ||
-      requestedCapability === "honey" ||
-      !!persona?.honey_enabled;
+      requestedCapability === "honey";
     const systemTemplate =
       resolvedCapability === "honey"
         ? persona.honey_system_prompt_template || persona.system_prompt_template || ""
@@ -230,6 +370,9 @@ export default defineEventHandler(async (event) => {
         ? persona.editorial_system_prompt_template ||
           persona.system_prompt_template ||
           ""
+        : resolvedCapability === "language_practice"
+        ? languagePracticeConfig.system_prompt_template ||
+          DEFAULT_LANGUAGE_PRACTICE_SYSTEM_PROMPT
         : persona.system_prompt_template || "";
 
     const styleTemplate =
@@ -243,6 +386,9 @@ export default defineEventHandler(async (event) => {
         ? persona.editorial_response_style_template ||
           persona.response_style_template ||
           ""
+        : resolvedCapability === "language_practice"
+        ? languagePracticeConfig.response_style_template ||
+          DEFAULT_LANGUAGE_PRACTICE_RESPONSE_STYLE
         : persona.response_style_template || "";
 
     if (resolvedCapability === "honey") {
@@ -293,6 +439,33 @@ export default defineEventHandler(async (event) => {
       userAge: userAge ?? "",
       assistantTurn: resolvedAssistantTurn,
       mustClose,
+      targetLanguageCode:
+        languagePracticeSession?.target_language_code ?? "",
+      targetLanguageLabel: describeLanguageCode(
+        languagePracticeSession?.target_language_code
+      ),
+      learnerNativeLanguageCode:
+        languagePracticeSession?.learner_native_language_code ?? "",
+      learnerNativeLanguageLabel: describeLanguageCode(
+        languagePracticeSession?.learner_native_language_code
+      ),
+      targetLanguageLevel:
+        languagePracticeSession?.target_language_level ?? "",
+      correctionPreference:
+        languagePracticeSession?.correction_preference ??
+        languagePracticeConfig.default_correction_preference,
+      correctionPreferenceLabel: describeCorrectionPreference(
+        languagePracticeSession?.correction_preference ??
+          languagePracticeConfig.default_correction_preference
+      ),
+      exchangeMode:
+        languagePracticeSession?.language_exchange_mode ??
+        languagePracticeConfig.default_exchange_mode,
+      exchangeModeLabel: describeExchangeMode(
+        languagePracticeSession?.language_exchange_mode ??
+          languagePracticeConfig.default_exchange_mode
+      ),
+      languagePracticeAssistantRole: languagePracticeConfig.assistant_role,
     };
 
     // Render the base system prompt template
@@ -307,6 +480,55 @@ export default defineEventHandler(async (event) => {
       ).trim();
       if (style) {
         promptBase = `${promptBase}\nResponse style: ${style}`;
+      }
+    }
+    if (resolvedCapability === "language_practice" && languagePracticeSession) {
+      const correctionPreference =
+        languagePracticeSession.correction_preference ??
+        languagePracticeConfig.default_correction_preference;
+      const autoCorrectionPolicy =
+        correctionPreference === "active_corrections"
+          ? "Always correct clear grammar, wording, agreement, or spelling mistakes from the learner's latest message before you continue. Start your reply with a short corrected version in the target language, optionally add one brief explanation, then continue naturally in the target language."
+          : correctionPreference === "light_corrections"
+          ? "When the learner makes an obvious mistake, start with a short corrected version of what they meant in the target language, then continue the conversation. Do this automatically for clear mistakes, but keep it light and do not correct every tiny issue."
+          : "Do not proactively correct mistakes. Only correct when the learner explicitly asks for help.";
+      promptBase = `${promptBase}\nLanguage practice mode is active.
+- These language-practice rules override any conflicting persona instructions.
+- Act as a ${languagePracticeConfig.assistant_role.replace(/_/g, " ")}.
+- The learner is practicing ${describeLanguageCode(
+        languagePracticeSession.target_language_code
+      )} (${languagePracticeSession.target_language_code}).
+- The learner's stronger support language is ${describeLanguageCode(
+        languagePracticeSession.learner_native_language_code
+      )} (${languagePracticeSession.learner_native_language_code || "n/a"}).
+- Learner level: ${languagePracticeSession.target_language_level || "unsure"}.
+- Correction preference: ${describeCorrectionPreference(
+        correctionPreference
+      )}.
+- Exchange mode: ${describeExchangeMode(
+        languagePracticeSession.language_exchange_mode ??
+          languagePracticeConfig.default_exchange_mode
+      )}.
+Behavior requirements:
+- Reply in the target language by default. Only use the support language for a very short clarification when absolutely necessary.
+- Prioritize being a language coach and practice partner, not a therapist, flirt bot, or reflective listener.
+- Keep the tone encouraging, natural, and conversational.
+- Match difficulty to the learner level.
+- ${autoCorrectionPolicy}
+- If you correct, show the improved phrasing in the target language and then continue the conversation.
+- If the learner's latest message has an obvious mistake, do not ignore it and do not only paraphrase their intent.
+- For light or active corrections, prefer this structure when needed:
+  1. corrected phrase or sentence in the target language
+  2. one very short explanation only if it helps
+  3. your natural reply or follow-up in the target language
+- Avoid generic reflective prompts such as "Does that feel right?", "Does that sound right?", or emotion-coaching responses unless the learner is explicitly talking about feelings.
+- If the learner writes in the support language instead of the target language, gently guide them back into the target language.
+- Prefer continuing the conversation over turning every reply into a lesson.`;
+      if (resolvedAssistantTurn === 1) {
+        promptBase = `${promptBase}
+- This is your first reply in this language-practice session. Briefly introduce the practice in ${describeLanguageCode(
+          languagePracticeSession.target_language_code
+        )} and invite the learner to continue in that language.`;
       }
     }
     if (isHoneyMode) {

@@ -1064,6 +1064,16 @@
     "settings": {
       "heading": "Paramètres",
       "subtitle": "Mettez à jour les préférences de votre compte et vos informations personnelles.",
+      "languagePractice": {
+        "title": "Pratique linguistique",
+        "subtitle": "Enregistrez les langues avec lesquelles vous pouvez aider, celle que vous voulez pratiquer et le niveau de correction souhaité.",
+        "enabledLabel": "Me montrer dans la pratique linguistique",
+        "localeHint": "La langue du site reste séparée. Ces réglages servent seulement au matching et au guidage des chats de pratique linguistique.",
+        "inactiveHint": "Activez cette option quand vous voulez apparaître comme partenaire de pratique linguistique.",
+        "loadError": "Impossible de charger les paramètres de pratique linguistique.",
+        "saveError": "Impossible d'enregistrer les paramètres de pratique linguistique.",
+        "saveSuccess": "Paramètres de pratique linguistique enregistrés."
+      },
       "emailNotifications": {
         "title": "Notifications par e-mail",
         "subtitle": "Gérez les e-mails qu'ImChatty envoie à votre adresse e-mail confirmée.",
@@ -1095,6 +1105,44 @@
       "seoDescription": "Trouvez des personnes correspondant à votre humeur.",
       "moodSet": "Résultats pour : {mood}",
       "signInToSave": "Connectez-vous pour enregistrer votre humeur",
+      "language": {
+        "title": "Pratique linguistique",
+        "subtitle": "Utilisez ces filtres pour affiner les correspondances par langue.",
+        "toggle": "Filtrer par langue",
+        "nativeLanguage": "Je peux aider en",
+        "targetLanguage": "Je veux pratiquer",
+        "level": "Mon niveau",
+        "corrections": "Corrections",
+        "mode": "Type d'échange",
+        "apply": "Appliquer",
+        "moodHint": "Choisissez une humeur ci-dessus pour appliquer la pratique linguistique à votre demande.",
+        "signInHint": "Connectez-vous pour enregistrer la pratique linguistique avec votre demande.",
+        "languages": {
+          "en": "Anglais",
+          "fr": "Français",
+          "ru": "Russe",
+          "zh": "Chinois"
+        },
+        "levels": {
+          "unsure": "Je ne sais pas",
+          "a1": "A1 débutant",
+          "a2": "A2 élémentaire",
+          "b1": "B1 intermédiaire",
+          "b2": "B2 intermédiaire avancé",
+          "c1": "C1 avancé",
+          "c2": "C2 courant"
+        },
+        "correctionOptions": {
+          "no_corrections": "Pas de corrections",
+          "light_corrections": "Corrections légères",
+          "active_corrections": "Corrections actives"
+        },
+        "exchangeModes": {
+          "practice_only": "Pratique seulement",
+          "reciprocal_exchange": "Échange réciproque",
+          "native_helper": "Aider les autres"
+        }
+      },
       "empty": "Aucune correspondance trouvée. Essayez une autre humeur.",
       "sections": {
         "online": "En ligne maintenant",
@@ -1115,6 +1163,51 @@
       },
       "onboardingDialog": {
         "title": "Commencer une conversation",
+        "body": "Pour discuter avec des personnes réelles ou des personnages IA, une configuration rapide est nécessaire. Cela prend moins d'une minute et vous pouvez rester anonyme.",
+        "cancel": "Pas maintenant",
+        "start": "Commencer"
+      }
+    },
+    "languagePractice": {
+      "kicker": "Échange linguistique",
+      "title": "Trouvez un partenaire de pratique linguistique",
+      "subtitle": "Choisissez ce que vous parlez, ce que vous voulez pratiquer et le type de retour souhaité.",
+      "seoTitle": "Chat de pratique linguistique | ImChatty",
+      "seoDescription": "Trouvez des personnes réelles et des personnages IA pour pratiquer une langue selon la langue cible, le niveau et les préférences de correction.",
+      "filtersTitle": "Filtres linguistiques",
+      "filtersExplanation": "\"Je peux aider en\" correspond aux personnes qui veulent pratiquer cette langue. \"Je veux pratiquer\" correspond aux personnes qui peuvent vous aider dans cette langue.",
+      "saveSettings": "Enregistrer comme mes paramètres linguistiques",
+      "saveHint": "Enregistrez ces filtres pour les réutiliser dans les paramètres et le matching.",
+      "saveSuccess": "Enregistré dans vos paramètres de pratique linguistique.",
+      "saveError": "Impossible d'enregistrer vos paramètres de pratique linguistique.",
+      "chatStartError": "Impossible de démarrer ce chat de pratique linguistique.",
+      "nativeLanguage": "Je peux aider en",
+      "targetLanguage": "Je veux pratiquer",
+      "level": "Mon niveau",
+      "corrections": "Corrections",
+      "mode": "Type d'échange",
+      "empty": "Aucune correspondance linguistique trouvée. Essayez de retirer un filtre.",
+      "levels": {
+        "unsure": "Je ne sais pas",
+        "a1": "A1 débutant",
+        "a2": "A2 élémentaire",
+        "b1": "B1 intermédiaire",
+        "b2": "B2 intermédiaire avancé",
+        "c1": "C1 avancé",
+        "c2": "C2 courant"
+      },
+      "exchangeModes": {
+        "practice_only": "Pratique seulement",
+        "reciprocal_exchange": "Échange réciproque",
+        "native_helper": "Aider les autres"
+      },
+      "sections": {
+        "online": "Partenaires en ligne",
+        "offline": "Partenaires récemment actifs",
+        "ai": "Partenaires linguistiques IA"
+      },
+      "onboardingDialog": {
+        "title": "Commencer à pratiquer",
         "body": "Pour discuter avec des personnes réelles ou des personnages IA, une configuration rapide est nécessaire. Cela prend moins d'une minute et vous pouvez rester anonyme.",
         "cancel": "Pas maintenant",
         "start": "Commencer"
@@ -1217,6 +1310,9 @@
       "confirm": "Confirmer",
       "cancel": "Annuler",
       "profile-title": "Voir le profil",
+      "end-language-practice-title": "Revenir au chat normal",
+      "end-language-practice-success": "La pratique des langues a été désactivée pour ce chat.",
+      "end-language-practice-error": "Impossible de remettre ce chat en mode normal.",
       "delete-title": "Supprimer Ce Chat",
       "delete-confirm": "Êtes-vous sûr de vouloir supprimer ce chat ? Cette action ne peut pas être annulée.",
       "delete-with-user": "Voulez-vous vraiment supprimer ce chat entre vous et {name} ?",
@@ -1534,6 +1630,7 @@
       "favorites": "Mes Favoris",
       "blocked": "Utilisateurs Bloqués",
       "upvotes": "Votes Positifs",
+      "language-practice": "Pratique linguistique",
       "site-settings": "Paramètres du site",
       "chat-settings": "Paramètres du chat",
       "photo-library": "Bibliothèque de photos",
@@ -1542,6 +1639,7 @@
         "favorites": "Mes Favoris",
         "blocked": "Utilisateurs Bloqués",
         "upvotes": "Votes Positifs",
+        "language-practice": "Pratique linguistique",
         "site-settings": "Paramètres du site",
         "chat-settings": "Paramètres du chat",
         "photo-library": "Bibliothèque de photos"
@@ -1618,7 +1716,9 @@
       "none-active": "Aucun utilisateur actif trouvé",
       "none-offline": "Aucun utilisateur hors ligne trouvé",
       "aiAgents": "Agents IA et biais",
-      "realHumans": "Humains réels"
+      "realHumans": "Humains réels",
+      "languagePracticeAvailable": "Disponible pour la pratique des langues",
+      "languagePracticeChat": "Discussion de pratique des langues"
     },
     "presence": {
       "label": "Présence",
@@ -1665,12 +1765,32 @@
       "online": "en ligne",
       "chat": "Discuter",
       "chatAi": "Discuter avec l'IA",
-      "chatWith": "Discuter avec {name}"
+      "chatWith": "Discuter avec {name}",
+      "practicingLanguage": "Pratique {language}",
+      "nativeLanguage": "{language} natif"
     }
   },
   "composables": {
     "presenceChannel": {
       "online": "est en ligne !"
+    },
+    "languagePracticeBanner": {
+      "title": "Pratique de {language}",
+      "level": "Niveau",
+      "corrections": "Corrections",
+      "mode": "Mode",
+      "actions": {
+        "askCorrection": "Demander une correction",
+        "translate": "Traduire",
+        "simpler": "Formulation plus simple",
+        "natural": "Formulation plus naturelle"
+      },
+      "prompts": {
+        "askCorrection": "Peux-tu corriger mon dernier message ?",
+        "translate": "Peux-tu me traduire ça ?",
+        "simpler": "Peux-tu reformuler cela plus simplement ?",
+        "natural": "Peux-tu m'aider à le dire plus naturellement ?"
+      }
     },
     "presenceStatus": {
       "online": "En ligne",
@@ -1756,6 +1876,16 @@
     "welcomeBioIntro": "C’est un premier jet — améliore-le ou garde-le tel quel.",
     "welcomeSettings": "✨ Ajoute une photo et peaufine ton profil dans les [Réglages]({settingsUrl}) pour plus d’échanges.",
     "urgentLinkEmail": "⚠️ Si tu ne lies pas ton e-mail, tu ne sauras jamais qui te contacte !",
+    "languagePractice": {
+      "postSignupOpener": "Salut {name}, moi c’est {personaName}. Ton profil est prêt, et j’ai bien enregistré ta configuration de pratique linguistique pour le {language}. Tu veux retourner voir les partenaires de langue maintenant, ou répondre d’abord à une petite question d’humeur ?",
+      "moodQuestionPrompt": "Parfait. {prompt}",
+      "keepChattingAck": "Très bien. On peut rester ici pour l’instant, et tu pourras revenir aux partenaires de langue quand tu veux depuis le menu.",
+      "quickReplies": {
+        "browsePartners": "Voir les partenaires de langue",
+        "answerMoodQuestion": "Répondre à une question d’humeur",
+        "keepChatting": "Continuer ici"
+      }
+    },
     "moodFeed": {
       "confirm": "Donc tu dis \"{text}\". C’est bien ça ?",
       "rephrase": "Pas de souci — peux-tu reformuler en une courte phrase ?",
@@ -1789,6 +1919,19 @@
       "drained": "Épuisé(e)",
       "normal": "Normal",
       "wired": "Surexcité(e)"
+    },
+    "language": {
+      "languages": {
+        "en": "Anglais",
+        "fr": "Français",
+        "ru": "Russe",
+        "zh": "Chinois"
+      },
+      "correctionPreferences": {
+        "no_corrections": "Pas de corrections",
+        "light_corrections": "Corrections légères",
+        "active_corrections": "Corrections actives"
+      }
     }
   },
   "emails": {

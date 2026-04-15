@@ -123,6 +123,14 @@
                   <span class="flag" v-if="item.user.country_emoji">
                     {{ item.user.country_emoji }}
                   </span>
+                  <span
+                    v-if="hasLanguagePracticeChat(item.user)"
+                    class="language-practice-marker language-practice-marker--chat"
+                    :title="t('components.users.languagePracticeChat')"
+                    :aria-label="t('components.users.languagePracticeChat')"
+                  >
+                    <v-icon size="13">mdi-translate</v-icon>
+                  </span>
                   <div
                     v-if="showActions"
                     class="actions"
@@ -147,16 +155,23 @@
                       @update:model-value="setActionMenuOpen(item.user, $event)"
                     >
                       <v-list density="compact">
-                        <v-list-item
-                          value="view-profile"
-                          :title="$t('components.activeChats.profile-title')"
-                          prepend-icon="mdi-card-account-details-outline"
-                          @click.stop="onActionMenuClick('view-profile', item.user)"
-                        />
-                        <v-list-item
-                          value="delete-chat"
-                          :title="$t('components.activeChats.delete-title')"
-                          prepend-icon="mdi-trash-can-outline"
+                      <v-list-item
+                        value="view-profile"
+                        :title="$t('components.activeChats.profile-title')"
+                        prepend-icon="mdi-card-account-details-outline"
+                        @click.stop="onActionMenuClick('view-profile', item.user)"
+                      />
+                      <v-list-item
+                        v-if="hasLanguagePracticeChat(item.user)"
+                        value="end-language-practice"
+                        :title="$t('components.activeChats.end-language-practice-title')"
+                        prepend-icon="mdi-translate-off"
+                        @click.stop="onActionMenuClick('end-language-practice', item.user)"
+                      />
+                      <v-list-item
+                        value="delete-chat"
+                        :title="$t('components.activeChats.delete-title')"
+                        prepend-icon="mdi-trash-can-outline"
                           @click.stop="onActionMenuClick('delete-chat', item.user)"
                         />
                       </v-list>
@@ -205,6 +220,7 @@ const props = defineProps({
   showFilters: { type: Boolean, default: true },
   showAi: { type: Boolean, default: true },
   suppressMatchStrip: { type: Boolean, default: false },
+  languagePracticeChatIds: { type: Array, default: () => [] },
 });
 const emit = defineEmits([
   "user-selected",
@@ -212,6 +228,7 @@ const emit = defineEmits([
   "update:showAi",
   "delete-chat",
   "view-profile",
+  "end-language-practice",
 ]);
 
 const msgs = useMessagesStore();
@@ -275,6 +292,9 @@ const normalizedListType = computed(() =>
 );
 
 const idStr = (u) => String(u?.user_id ?? u?.id ?? "").trim();
+const languagePracticeChatIdSet = computed(
+  () => new Set((props.languagePracticeChatIds || []).map((id) => String(id)))
+);
 const slugStr = (u) =>
   String(u?.slug ?? u?.profile_slug ?? u?.username_slug ?? "")
     .trim()
@@ -287,6 +307,8 @@ const isPinned = (u) => {
   return false;
 };
 const unreadFor = (u) => msgs.unreadByPeer?.[idStr(u)] || 0;
+const hasLanguagePracticeChat = (u) =>
+  languagePracticeChatIdSet.value.has(idStr(u));
 const displayNameFor = (u) =>
   resolveProfileLocalization({
     profile: u,
@@ -590,6 +612,10 @@ function onActionMenuClick(action, u) {
     emit("view-profile", u);
     return;
   }
+  if (action === "end-language-practice") {
+    emit("end-language-practice", u);
+    return;
+  }
   if (action === "delete-chat") {
     emit("delete-chat", u);
   }
@@ -830,6 +856,24 @@ function toggleGroup(id) {
   align-items: center;
   gap: 6px;
   flex: 0 0 auto;
+}
+
+.language-practice-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(114, 230, 126, 0.45);
+  border-radius: 999px;
+  color: #72e67e;
+  background: rgba(42, 96, 58, 0.1);
+}
+
+.language-practice-marker--chat {
+  border-color: rgba(114, 230, 126, 0.9);
+  background: rgba(114, 230, 126, 0.22);
+  box-shadow: 0 0 0 1px rgba(114, 230, 126, 0.12);
 }
 
 .gender-icon {

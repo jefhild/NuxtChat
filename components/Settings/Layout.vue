@@ -44,7 +44,7 @@
                 <template v-if="userProfile">
                   <SettingsProfileForm
                     :userProfile="userProfile"
-                    @openPhotoLibrary="selectTab(6)"
+                    @openPhotoLibrary="selectTab(7)"
                   />
                 </template>
                 <template v-else>
@@ -90,13 +90,19 @@
 
             <v-row v-else-if="tab === 5" align="start">
               <v-col class="settings-content-col">
+                <SettingsLanguagePractice />
+              </v-col>
+            </v-row>
+
+            <v-row v-else-if="tab === 6" align="start">
+              <v-col class="settings-content-col">
                 <SettingsChatSettings />
                 <SettingsEmailNotifications />
                 <SettingsDeleteAccount />
               </v-col>
             </v-row>
 
-            <v-row v-else-if="tab === 6" align="start">
+            <v-row v-else-if="tab === 7" align="start">
               <v-col class="settings-content-col">
                 <v-row v-if="!photoLibraryAvailable">
                   <v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">
@@ -111,7 +117,7 @@
                 </template>
               </v-col>
             </v-row>
-            <v-row v-else-if="tab === 7" align="start">
+            <v-row v-else-if="tab === 8" align="start">
               <v-col class="settings-content-col">
                 <SettingsAgentSettings />
               </v-col>
@@ -173,18 +179,24 @@ const menuItems = computed(() => [
     },
     {
       value: 5,
+      label: t("components.settings-container.language-practice", "Language Practice"),
+      title: t("components.settings-container.menu.language-practice", "Language Practice"),
+      icon: "mdi-translate",
+    },
+    {
+      value: 6,
       label: t("components.settings-container.site-settings", "Site Settings"),
       title: t("components.settings-container.menu.site-settings", "Site Settings"),
       icon: "mdi-chat-outline",
     },
     {
-      value: 6,
+      value: 7,
       label: t("components.settings-container.photo-library"),
       title: t("components.settings-container.menu.photo-library"),
       icon: "mdi-image-multiple",
     },
     {
-      value: 7,
+      value: 8,
       label: "Away Agent",
       title: "Away Agent",
       icon: "mdi-robot-outline",

@@ -1064,6 +1064,16 @@
     "settings": {
       "heading": " 设置",
       "subtitle": "更新您的账户偏好和个人信息。",
+      "languagePractice": {
+        "title": "语言练习",
+        "subtitle": "保存你能帮助的语言、想练习的语言，以及你希望获得多少纠错。",
+        "enabledLabel": "在语言练习中显示我",
+        "localeHint": "网站语言仍然单独设置。这里的内容只用于语言练习聊天的匹配和引导。",
+        "inactiveHint": "当你希望出现在语言练习匹配中时，请开启此项。",
+        "loadError": "无法加载语言练习设置。",
+        "saveError": "无法保存语言练习设置。",
+        "saveSuccess": "语言练习设置已保存。"
+      },
       "emailNotifications": {
         "title": "电子邮件通知",
         "subtitle": "管理 ImChatty 发送到您确认邮箱的邮件。",
@@ -1095,6 +1105,44 @@
       "seoDescription": "根据心情匹配真实用户和AI角色。",
       "moodSet": "正在显示匹配结果：{mood}",
       "signInToSave": "登录以保存你的心情",
+      "language": {
+        "title": "语言练习",
+        "subtitle": "使用这些筛选项按语言缩小匹配范围。",
+        "toggle": "按语言筛选",
+        "nativeLanguage": "我可以帮助",
+        "targetLanguage": "我想练习",
+        "level": "我的水平",
+        "corrections": "纠错",
+        "mode": "交换方式",
+        "apply": "应用",
+        "moodHint": "请先在上方选择心情，再把语言练习加入匹配请求。",
+        "signInHint": "登录后可以把语言练习保存到匹配请求中。",
+        "languages": {
+          "en": "英语",
+          "fr": "法语",
+          "ru": "俄语",
+          "zh": "中文"
+        },
+        "levels": {
+          "unsure": "不确定",
+          "a1": "A1 初学",
+          "a2": "A2 基础",
+          "b1": "B1 中级",
+          "b2": "B2 中高级",
+          "c1": "C1 高级",
+          "c2": "C2 流利"
+        },
+        "correctionOptions": {
+          "no_corrections": "不需要纠错",
+          "light_corrections": "轻度纠错",
+          "active_corrections": "积极纠错"
+        },
+        "exchangeModes": {
+          "practice_only": "只练习",
+          "reciprocal_exchange": "互相交换",
+          "native_helper": "帮助别人"
+        }
+      },
       "empty": "暂无匹配结果，请尝试其他心情。",
       "sections": {
         "online": "当前在线",
@@ -1115,6 +1163,51 @@
       },
       "onboardingDialog": {
         "title": "开始对话",
+        "body": "要与真实用户或AI角色聊天，需要完成简单设置，不到一分钟，可保持匿名。",
+        "cancel": "暂时不",
+        "start": "开始"
+      }
+    },
+    "languagePractice": {
+      "kicker": "语言交换",
+      "title": "寻找语言练习伙伴",
+      "subtitle": "选择你能帮助的语言、想练习的语言，以及你偏好的反馈方式。",
+      "seoTitle": "语言练习聊天 | ImChatty",
+      "seoDescription": "按目标语言、水平和纠错偏好寻找真人或 AI 语言练习伙伴。",
+      "filtersTitle": "语言筛选",
+      "filtersExplanation": "“我可以帮助”会匹配想练习该语言的人；“我想练习”会匹配能够帮助你练习该语言的人。",
+      "saveSettings": "保存为我的语言设置",
+      "saveHint": "保存这些筛选项，以便在设置和匹配中再次使用。",
+      "saveSuccess": "已保存到你的语言练习设置。",
+      "saveError": "无法保存你的语言练习设置。",
+      "chatStartError": "无法开始这段语言练习聊天。",
+      "nativeLanguage": "我可以帮助",
+      "targetLanguage": "我想练习",
+      "level": "我的水平",
+      "corrections": "纠错",
+      "mode": "交换方式",
+      "empty": "暂时没有找到语言匹配。可以尝试清除一个筛选项。",
+      "levels": {
+        "unsure": "不确定",
+        "a1": "A1 初学",
+        "a2": "A2 基础",
+        "b1": "B1 中级",
+        "b2": "B2 中高级",
+        "c1": "C1 高级",
+        "c2": "C2 流利"
+      },
+      "exchangeModes": {
+        "practice_only": "只练习",
+        "reciprocal_exchange": "互相交换",
+        "native_helper": "帮助别人"
+      },
+      "sections": {
+        "online": "在线练习伙伴",
+        "offline": "最近活跃的伙伴",
+        "ai": "AI 语言伙伴"
+      },
+      "onboardingDialog": {
+        "title": "开始练习",
         "body": "要与真实用户或AI角色聊天，需要完成简单设置，不到一分钟，可保持匿名。",
         "cancel": "暂时不",
         "start": "开始"
@@ -1217,6 +1310,9 @@
       "confirm": "确认",
       "cancel": "取消",
       "profile-title": "查看资料",
+      "end-language-practice-title": "恢复为普通聊天",
+      "end-language-practice-success": "此聊天已结束语言练习模式。",
+      "end-language-practice-error": "无法将此聊天恢复为普通模式。",
       "delete-title": "删除此聊天",
       "delete-confirm": "您确定要删除此聊天吗？此操作无法撤销。",
       "delete-with-user": "确定要删除你和 {name} 之间的聊天吗？",
@@ -1533,6 +1629,7 @@
       "favorites": "我的收藏",
       "blocked": "屏蔽的用户",
       "upvotes": "点赞",
+      "language-practice": "语言练习",
       "site-settings": "站点设置",
       "chat-settings": "聊天设置",
       "photo-library": "照片库",
@@ -1541,6 +1638,7 @@
         "favorites": "我的收藏",
         "blocked": "屏蔽的用户",
         "upvotes": "点赞",
+        "language-practice": "语言练习",
         "site-settings": "站点设置",
         "chat-settings": "聊天设置",
         "photo-library": "照片库"
@@ -1617,7 +1715,9 @@
       "none-active": "未找到活跃用户",
       "none-offline": "未找到离线用户",
       "aiAgents": "AI 代理与偏见",
-      "realHumans": "真实用户"
+      "realHumans": "真实用户",
+      "languagePracticeAvailable": "可进行语言练习",
+      "languagePracticeChat": "语言练习聊天"
     },
     "presence": {
       "label": "在线状态",
@@ -1664,12 +1764,32 @@
       "online": "在线",
       "chat": "聊天",
       "chatAi": "与AI聊天",
-      "chatWith": "与{name}聊天"
+      "chatWith": "与{name}聊天",
+      "practicingLanguage": "正在练习{language}",
+      "nativeLanguage": "母语{language}"
     }
   },
   "composables": {
     "presenceChannel": {
       "online": "在线！"
+    },
+    "languagePracticeBanner": {
+      "title": "正在练习 {language}",
+      "level": "水平",
+      "corrections": "纠错",
+      "mode": "模式",
+      "actions": {
+        "askCorrection": "请求纠正",
+        "translate": "翻译",
+        "simpler": "更简单表达",
+        "natural": "更自然表达"
+      },
+      "prompts": {
+        "askCorrection": "你可以帮我纠正上一条消息吗？",
+        "translate": "你可以帮我翻译一下吗？",
+        "simpler": "你可以把这句话说得更简单一点吗？",
+        "natural": "你可以帮我把这句话说得更自然一点吗？"
+      }
     },
     "presenceStatus": {
       "online": "在线",
@@ -1755,6 +1875,16 @@
     "welcomeBioIntro": "这是初稿——你可以微调或直接使用。",
     "welcomeSettings": "✨ 想要更多聊天？去[设置页面]({settingsUrl})添加照片并完善资料。",
     "urgentLinkEmail": "⚠️ 如果你不绑定邮箱，你将永远不知道谁联系了你！",
+    "languagePractice": {
+      "postSignupOpener": "嗨，{name}，我是 {personaName}。你的个人资料已经创建好了，我也已经保存了你的 {language} 语言练习设置。你想现在就回到语言伙伴列表，还是先回答一个简短的心情问题？",
+      "moodQuestionPrompt": "好呀。{prompt}",
+      "keepChattingAck": "没问题。我们先继续在这里聊，你也可以随时从菜单回到语言伙伴列表。",
+      "quickReplies": {
+        "browsePartners": "查看语言伙伴",
+        "answerMoodQuestion": "回答一个心情问题",
+        "keepChatting": "继续在这里聊天"
+      }
+    },
     "moodFeed": {
       "confirm": "所以你是说“{text}”。对吗？",
       "rephrase": "没问题——你能用一句更短的话重新表述吗？",
@@ -1788,6 +1918,19 @@
       "drained": "精力耗尽",
       "normal": "正常",
       "wired": "亢奋"
+    },
+    "language": {
+      "languages": {
+        "en": "英语",
+        "fr": "法语",
+        "ru": "俄语",
+        "zh": "中文"
+      },
+      "correctionPreferences": {
+        "no_corrections": "不需要纠错",
+        "light_corrections": "轻度纠错",
+        "active_corrections": "积极纠错"
+      }
     }
   },
   "emails": {

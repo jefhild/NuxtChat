@@ -1,13 +1,16 @@
-import { defineEventHandler } from "h3";
+import { defineEventHandler, readBody, createError } from "h3";
 import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "@/server/utils/aiBots";
 import { inferTopicHint } from "@/server/utils/botPlatform";
+import { buildLanguageLearningPayload } from "@/server/utils/languageLearning";
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event);
   if (!user?.id) throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
   const supabase = await getServiceRoleClient(event);
+  const body = (await readBody(event).catch(() => null)) || {};
+  const languageLearning = buildLanguageLearningPayload(body);
 
   const { data: liveState } = await supabase
     .from("live_mood_states")
@@ -35,6 +38,7 @@ export default defineEventHandler(async (event) => {
       confidence:        liveState.confidence,
       topic_hint:        topicHint,
       source_persona:    liveState.source_persona,
+      ...languageLearning,
     })
     .select("id")
     .maybeSingle();
@@ -58,6 +62,7 @@ export default defineEventHandler(async (event) => {
         intake_id:         intake.id,
         status:            "pending",
         allow_ai_fallback: true,
+        ...languageLearning,
       });
   }
 

@@ -15,11 +15,14 @@
  *   time_horizon string  (optional, defaults to "right_now")
  *   topic_hint   string  (optional)
  *   free_text    string  (optional — the mood feed post text that was inferred)
+ *   native_language_code / target_language_code / target_language_level
+ *   correction_preference / language_exchange_mode (optional)
  */
 import { defineEventHandler, readBody, createError } from "h3";
 import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "@/server/utils/aiBots";
 import { LIVE_MOOD_TAXONOMY, inferTopicHint } from "@/server/utils/botPlatform";
+import { buildLanguageLearningPayload } from "@/server/utils/languageLearning";
 
 const VALID_EMOTIONS = LIVE_MOOD_TAXONOMY.emotions as readonly string[];
 const VALID_INTENTS = LIVE_MOOD_TAXONOMY.intents as readonly string[];
@@ -37,6 +40,7 @@ export default defineEventHandler(async (event) => {
   const time_horizon = String(body?.time_horizon || "right_now").trim();
   const topic_hint = body?.topic_hint ? String(body.topic_hint).trim() : null;
   const free_text = body?.free_text ? String(body.free_text).trim() : null;
+  const languageLearning = buildLanguageLearningPayload(body);
 
   if (!VALID_EMOTIONS.includes(emotion)) {
     throw createError({ statusCode: 400, statusMessage: `Invalid emotion: ${emotion}` });
@@ -93,6 +97,7 @@ export default defineEventHandler(async (event) => {
       confidence: 0.85,
       topic_hint: resolvedTopicHint,
       source_persona: "self_selected",
+      ...languageLearning,
     })
     .select("id")
     .maybeSingle();
@@ -114,6 +119,7 @@ export default defineEventHandler(async (event) => {
       intake_id: intake.id,
       status: "pending",
       allow_ai_fallback: true,
+      ...languageLearning,
     });
   }
 

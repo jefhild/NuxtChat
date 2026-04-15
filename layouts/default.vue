@@ -128,6 +128,9 @@ const isProfilesRoute = computed(() =>
   normalizedPath.value.startsWith("/profiles")
 );
 const isFeedsRoute = computed(() => normalizedPath.value.startsWith("/feeds"));
+const isLanguagePracticeRoute = computed(() =>
+  normalizedPath.value.startsWith("/language-practice")
+);
 const isArticlesRoute = computed(() =>
   normalizedPath.value.startsWith("/articles")
 );
@@ -155,6 +158,7 @@ const footerToggleEnabled = computed(
     isArticlesRoute.value ||
     isTaxonomyRoute.value ||
     isFeedsRoute.value ||
+    isLanguagePracticeRoute.value ||
     isSettingsRoute.value ||
     isAdminRoute.value
 );
@@ -237,9 +241,14 @@ const toggleFooter = () => {
   else showFooter();
 };
 
-// Chat route: collapse footer on both mobile and desktop; restore on all other routes
-watch(isChatRoute, (isChat) => {
-  if (isChat) hideFooter();
+const shouldCollapseFooterByDefault = computed(
+  () => isChatRoute.value || (isMobile.value && isLanguagePracticeRoute.value)
+);
+
+// Chat route: collapse footer on both mobile and desktop.
+// Language practice: collapse by default on mobile to keep filters and cards reachable.
+watch(shouldCollapseFooterByDefault, (shouldCollapse) => {
+  if (shouldCollapse) hideFooter();
   else showFooter();
 }, { immediate: true });
 

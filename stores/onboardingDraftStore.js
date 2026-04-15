@@ -38,6 +38,8 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
     liveMoodNudges: null,
     liveMoodNextStepStage: "idle", // 'idle' | 'choose' | 'dormant' | 'done'
     handoffPending: false,
+    languagePracticeIntent: null,
+    postOnboardingLanguagePracticeContext: null,
   }),
 
   getters: {
@@ -123,6 +125,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
         "liveMoodNudges",
         "liveMoodNextStepStage",
         "handoffPending",
+        "postOnboardingLanguagePracticeContext",
       ]);
 
       if (!allowed.has(key)) return;
@@ -176,6 +179,8 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
       this.liveMoodNudges = null;
       this.liveMoodNextStepStage = "idle";
       this.handoffPending = false;
+      this.languagePracticeIntent = null;
+      this.postOnboardingLanguagePracticeContext = null;
       this.stage = "idle";
       this.updatedAt = null;
       try {
@@ -218,16 +223,18 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           "liveMoodPrompt",
           "liveMoodInput",
           "liveMoodCandidate",
-          "liveMoodClarifierOptions",
-          "liveMoodRefinementCount",
-          "liveMoodNudges",
-          "liveMoodNextStepStage",
-          "handoffPending",
-        ]) {
-          if (k in data) this[k] = data[k];
-        }
-      } catch {
-        /* ignore */
+            "liveMoodClarifierOptions",
+            "liveMoodRefinementCount",
+            "liveMoodNudges",
+            "liveMoodNextStepStage",
+            "handoffPending",
+            "languagePracticeIntent",
+            "postOnboardingLanguagePracticeContext",
+          ]) {
+            if (k in data) this[k] = data[k];
+          }
+        } catch {
+          /* ignore */
       }
     },
 
@@ -272,6 +279,8 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           liveMoodNudges,
           liveMoodNextStepStage,
           handoffPending,
+          languagePracticeIntent,
+          postOnboardingLanguagePracticeContext,
         } = this;
         localStorage.setItem("onboardingDraft", JSON.stringify({
           displayName,
@@ -308,13 +317,46 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           liveMoodNudges,
           liveMoodNextStepStage,
           handoffPending,
+          languagePracticeIntent,
+          postOnboardingLanguagePracticeContext,
         }));
       } catch {
         /* ignore */
       }
     },
 
-  appendThreadMessage(msg) {
+    setLanguagePracticeIntent(intent) {
+      if (!intent || typeof intent !== "object") {
+        this.languagePracticeIntent = null;
+        this.updatedAt = new Date().toISOString();
+        this.saveLocal();
+        return;
+      }
+
+      const payload = {
+        is_active: intent.is_active !== false,
+        native_language_code: intent.native_language_code || null,
+        target_language_code: intent.target_language_code || null,
+        target_language_level: intent.target_language_level || null,
+        correction_preference: intent.correction_preference || null,
+        language_exchange_mode: intent.language_exchange_mode || null,
+      };
+
+      this.languagePracticeIntent =
+        payload.native_language_code || payload.target_language_code
+          ? payload
+          : null;
+      this.updatedAt = new Date().toISOString();
+      this.saveLocal();
+    },
+
+    clearLanguagePracticeIntent() {
+      this.languagePracticeIntent = null;
+      this.updatedAt = new Date().toISOString();
+      this.saveLocal();
+    },
+
+   appendThreadMessage(msg) {
     if (!msg || typeof msg !== "object") return;
     const payload = {
       id: msg.id || crypto.randomUUID?.() || String(Date.now()),

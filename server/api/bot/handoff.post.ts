@@ -7,6 +7,7 @@ import {
   inferTopicHint,
 } from "@/server/utils/botPlatform";
 import { getServiceRoleClient } from "@/server/utils/aiBots";
+import { buildLanguageLearningPayload } from "@/server/utils/languageLearning";
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event);
@@ -15,6 +16,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event);
+  const languageLearning = buildLanguageLearningPayload(body);
   const persona = body?.personaKey
     ? { persona_key: body.personaKey }
     : await choosePostOnboardingPersona(event, { targetUserId: user.id });
@@ -71,6 +73,7 @@ export default defineEventHandler(async (event) => {
           topic_hint:       topicHint,
           source_persona:   liveState.source_persona,
           locale:           body?.locale || null,
+          ...languageLearning,
         })
         .select("id")
         .maybeSingle();
@@ -92,6 +95,7 @@ export default defineEventHandler(async (event) => {
             intake_id:         intake.id,
             status:            "pending",
             allow_ai_fallback: true,
+            ...languageLearning,
           });
 
         if (requestError) {

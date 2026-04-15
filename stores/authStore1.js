@@ -446,6 +446,34 @@ export const useAuthStore = defineStore("authStore1", {
       const profile = Array.isArray(arr) ? arr[0] : arr ?? null;
       this.userProfile = profile;
 
+      const draftStore = useOnboardingDraftStore();
+      const pendingLanguagePracticeIntent = draftStore.languagePracticeIntent;
+      if (
+        pendingLanguagePracticeIntent?.is_active &&
+        (
+          pendingLanguagePracticeIntent.native_language_code ||
+          pendingLanguagePracticeIntent.target_language_code
+        )
+      ) {
+        await $fetch("/api/profile/language-preferences", {
+          method: "PATCH",
+          body: {
+            is_active: true,
+            native_language_code:
+              pendingLanguagePracticeIntent.native_language_code || null,
+            target_language_code:
+              pendingLanguagePracticeIntent.target_language_code || null,
+            target_language_level:
+              pendingLanguagePracticeIntent.target_language_level || null,
+            correction_preference:
+              pendingLanguagePracticeIntent.correction_preference || null,
+            language_exchange_mode:
+              pendingLanguagePracticeIntent.language_exchange_mode || null,
+          },
+        });
+        draftStore.clearLanguagePracticeIntent?.();
+      }
+
       const {
         data: { session },
       } = await supabase.auth.getSession();

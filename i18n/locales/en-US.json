@@ -1079,6 +1079,16 @@
     "settings": {
       "heading": "Settings",
       "subtitle": "Update your account preferences and personal information.",
+      "languagePractice": {
+        "title": "Language Practice",
+        "subtitle": "Save the languages you can help with, what you want to practice, and how much correction you want.",
+        "enabledLabel": "Show me in language practice",
+        "localeHint": "Your site language stays separate. We only use this to match and guide language-practice chats.",
+        "inactiveHint": "Turn this on when you want to appear as a language-practice match.",
+        "loadError": "Failed to load language practice settings.",
+        "saveError": "Failed to save language practice settings.",
+        "saveSuccess": "Language practice settings saved."
+      },
       "emailNotifications": {
         "title": "Email Notifications",
         "subtitle": "Manage the emails ImChatty sends to your confirmed email address.",
@@ -1110,6 +1120,44 @@
       "seoDescription": "Find real people and AI personas matched to your mood. Chat anonymously based on how you feel right now.",
       "moodSet": "Showing matches for: {mood}",
       "signInToSave": "Sign in to save your mood",
+      "language": {
+        "title": "Language practice",
+        "subtitle": "Use these filters to narrow matches by language.",
+        "toggle": "Filter by language",
+        "nativeLanguage": "I can help with",
+        "targetLanguage": "I want to practice",
+        "level": "My level",
+        "corrections": "Corrections",
+        "mode": "Exchange style",
+        "apply": "Apply",
+        "moodHint": "Pick a mood above to apply language practice to your match request.",
+        "signInHint": "Sign in to save language practice with your match request.",
+        "languages": {
+          "en": "English",
+          "fr": "French",
+          "ru": "Russian",
+          "zh": "Chinese"
+        },
+        "levels": {
+          "unsure": "Not sure",
+          "a1": "A1 beginner",
+          "a2": "A2 elementary",
+          "b1": "B1 intermediate",
+          "b2": "B2 upper intermediate",
+          "c1": "C1 advanced",
+          "c2": "C2 fluent"
+        },
+        "correctionOptions": {
+          "no_corrections": "No corrections",
+          "light_corrections": "Light corrections",
+          "active_corrections": "Active corrections"
+        },
+        "exchangeModes": {
+          "practice_only": "Practice only",
+          "reciprocal_exchange": "Reciprocal exchange",
+          "native_helper": "Help others"
+        }
+      },
       "empty": "No matches found yet. Try a different mood or check back soon.",
       "sections": {
         "online": "Online now",
@@ -1130,6 +1178,51 @@
       },
       "onboardingDialog": {
         "title": "Start a conversation",
+        "body": "To chat with real people or AI personas, you'll go through a quick setup. It takes less than a minute and you can stay anonymous.",
+        "cancel": "Not now",
+        "start": "Get started"
+      }
+    },
+    "languagePractice": {
+      "kicker": "Language exchange",
+      "title": "Find a language practice partner",
+      "subtitle": "Choose what you speak, what you want to practice, and how you like feedback.",
+      "seoTitle": "Language Practice Chat | ImChatty",
+      "seoDescription": "Find real people and AI personas for language practice by target language, level, and correction preference.",
+      "filtersTitle": "Language filters",
+      "filtersExplanation": "\"I can help with\" matches people who want to practice that language. \"I want to practice\" matches people who can help you with that language.",
+      "saveSettings": "Save as my language settings",
+      "saveHint": "Save these filters to use them again in settings and matching.",
+      "saveSuccess": "Saved to your language practice settings.",
+      "saveError": "Could not save your language practice settings.",
+      "chatStartError": "Could not start that language-practice chat.",
+      "nativeLanguage": "I can help with",
+      "targetLanguage": "I want to practice",
+      "level": "My level",
+      "corrections": "Corrections",
+      "mode": "Exchange style",
+      "empty": "No language matches found yet. Try clearing a filter.",
+      "levels": {
+        "unsure": "Not sure",
+        "a1": "A1 beginner",
+        "a2": "A2 elementary",
+        "b1": "B1 intermediate",
+        "b2": "B2 upper intermediate",
+        "c1": "C1 advanced",
+        "c2": "C2 fluent"
+      },
+      "exchangeModes": {
+        "practice_only": "Practice only",
+        "reciprocal_exchange": "Reciprocal exchange",
+        "native_helper": "Help others"
+      },
+      "sections": {
+        "online": "Online practice partners",
+        "offline": "Recently active partners",
+        "ai": "AI language partners"
+      },
+      "onboardingDialog": {
+        "title": "Start practicing",
         "body": "To chat with real people or AI personas, you'll go through a quick setup. It takes less than a minute and you can stay anonymous.",
         "cancel": "Not now",
         "start": "Get started"
@@ -1232,6 +1325,9 @@
       "confirm": "Confirm",
       "cancel": "Cancel",
       "profile-title": "Show profile",
+      "end-language-practice-title": "Return to normal chat",
+      "end-language-practice-success": "Language practice ended for this chat.",
+      "end-language-practice-error": "Could not return this chat to normal mode.",
       "delete-title": "Delete This Chat",
       "delete-confirm": "Are you sure you want to delete this chat? This action cannot be undone.",
       "delete-with-user": "Are you sure you want to delete this chat between yourself and {name}?",
@@ -1555,6 +1651,7 @@
       "favorites": "My Favorites",
       "blocked": "Blocked Users",
       "upvotes": "Upvotes",
+      "language-practice": "Language Practice",
       "site-settings": "Site Settings",
       "chat-settings": "Chat Settings",
       "photo-library": "Photo Library",
@@ -1563,6 +1660,7 @@
         "favorites": "My Favorites",
         "blocked": "Blocked Users",
         "upvotes": "Upvotes",
+        "language-practice": "Language Practice",
         "site-settings": "Site Settings",
         "chat-settings": "Chat Settings",
         "photo-library": "Photo Library"
@@ -1639,7 +1737,9 @@
       "none-active": "No active discussions found",
       "none-offline": "No offline users found",
       "aiAgents": "AI Personas",
-      "realHumans": "Real Humans"
+      "realHumans": "Real Humans",
+      "languagePracticeAvailable": "Open to language practice",
+      "languagePracticeChat": "Language practice chat"
     },
     "presence": {
       "label": "Presence",
@@ -1686,7 +1786,27 @@
       "online": "online",
       "chat": "Chat",
       "chatAi": "Chat with AI",
-      "chatWith": "Chat with {name}"
+      "chatWith": "Chat with {name}",
+      "practicingLanguage": "Practicing {language}",
+      "nativeLanguage": "Native {language}"
+    },
+    "languagePracticeBanner": {
+      "title": "Practicing {language}",
+      "level": "Level",
+      "corrections": "Corrections",
+      "mode": "Mode",
+      "actions": {
+        "askCorrection": "Ask for correction",
+        "translate": "Translate",
+        "simpler": "Simpler wording",
+        "natural": "More natural wording"
+      },
+      "prompts": {
+        "askCorrection": "Can you correct my last message?",
+        "translate": "Can you translate that for me?",
+        "simpler": "Can you rephrase that more simply?",
+        "natural": "Can you help me say that more naturally?"
+      }
     }
   },
   "composables": {
@@ -1777,6 +1897,16 @@
     "welcomeBioIntro": "Below is a first draft—polish it or keep it as-is.",
     "welcomeSettings": "✨ Add a photo and refine your profile in [Settings]({settingsUrl}) to get more chats.",
     "urgentLinkEmail": "⚠️ If you don't link your email you'll never know who reaches out to you!",
+    "languagePractice": {
+      "postSignupOpener": "Hey {name}, I'm {personaName}. Your profile is live, and I saved your language practice setup for {language}. Want to jump back to language partners now, or answer one quick mood question first?",
+      "moodQuestionPrompt": "Perfect. {prompt}",
+      "keepChattingAck": "Sounds good. We can stay here for now, and you can head back to language partners anytime from the menu.",
+      "quickReplies": {
+        "browsePartners": "Browse language partners",
+        "answerMoodQuestion": "Answer one mood question",
+        "keepChatting": "Keep chatting here"
+      }
+    },
     "moodFeed": {
       "confirm": "So you're saying \"{text}\". Is that right?",
       "rephrase": "No problem—can you rephrase that in a short phrase?",
@@ -1810,6 +1940,19 @@
       "drained": "Low energy",
       "normal": "Normal",
       "wired": "Wired"
+    },
+    "language": {
+      "languages": {
+        "en": "English",
+        "fr": "French",
+        "ru": "Russian",
+        "zh": "Chinese"
+      },
+      "correctionPreferences": {
+        "no_corrections": "No corrections",
+        "light_corrections": "Light corrections",
+        "active_corrections": "Active corrections"
+      }
     }
   },
   "emails": {

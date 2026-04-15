@@ -50,6 +50,7 @@
                 :users="usersWithPresence"
                 :pinnedId="IMCHATTY_ID"
                 :activeChats="activeChats"
+                :language-practice-chat-ids="languagePracticeSessionUserIds"
                 :selectedUserId="selectedUserId"
                 :isLoading="isLoading"
                 :user-profile="userProfile"
@@ -449,6 +450,11 @@
             </v-card>
           </v-expand-transition>
 
+          <ChatLayoutLanguagePracticeBanner
+            v-if="languagePracticeSession && selectedUserId"
+            :session="languagePracticeSession"
+          />
+
           <!-- Scrollable messages list -->
           <div
             ref="centerScrollRef"
@@ -517,7 +523,9 @@
               :me-id="meId"
               :conversation-key="conversationKey"
               :blocked-user-ids="blockedUsers"
+              :helper-actions="languagePracticeHelperActions"
               class="w-100 mx-auto"
+              @apply-helper="applyLanguagePracticeHelper"
               @send="onSend"
             />
           </div>
@@ -546,6 +554,7 @@
                 :users="usersWithPresence"
                 :pinnedId="IMCHATTY_ID"
                 :activeChats="activeChats"
+                :language-practice-chat-ids="languagePracticeSessionUserIds"
                 :selectedUserId="selectedUserId"
                 :isLoading="isLoading"
                 :user-profile="userProfile"
@@ -556,6 +565,7 @@
                 @user-selected="selectUser"
                 @filter-changed="updateFilters"
                 @delete-chat="openDeleteDialog"
+                @end-language-practice="endLanguagePracticeChat"
                 @view-profile="openProfileDialog"
                 @update:showAi="showAIUsers = $event"
               />
@@ -912,6 +922,11 @@
             </v-card>
           </v-expand-transition>
 
+          <ChatLayoutLanguagePracticeBanner
+            v-if="languagePracticeSession && selectedUserId"
+            :session="languagePracticeSession"
+          />
+
           <div
             ref="centerScrollRef"
             class="flex-grow-1 overflow-auto users-scroll min-h-0 px-1 py-2"
@@ -977,7 +992,9 @@
               :me-id="meId"
               :conversation-key="conversationKey"
               :blocked-user-ids="blockedUsers"
+              :helper-actions="languagePracticeHelperActions"
               class="w-100 mx-auto"
+              @apply-helper="applyLanguagePracticeHelper"
               @send="onSend"
             />
           </div>
@@ -1014,6 +1031,7 @@
               :users="usersWithPresence"
               :pinnedId="IMCHATTY_ID"
               :activeChats="activeChats"
+              :language-practice-chat-ids="languagePracticeSessionUserIds"
               :selectedUserId="selectedUserId"
               :isLoading="isLoading"
               :user-profile="userProfile"
@@ -1057,6 +1075,7 @@
               :users="usersWithPresence"
               :pinnedId="IMCHATTY_ID"
               :activeChats="activeChats"
+              :language-practice-chat-ids="languagePracticeSessionUserIds"
               :selectedUserId="selectedUserId"
               :isLoading="isLoading"
               :user-profile="userProfile"
@@ -1067,6 +1086,7 @@
               @user-selected="selectUser"
               @filter-changed="updateFilters"
               @delete-chat="openDeleteDialog"
+              @end-language-practice="endLanguagePracticeChat"
               @view-profile="openProfileDialog"
               @update:showAi="showAIUsers = $event"
             />
@@ -1181,6 +1201,15 @@
       {{ t("components.chatheader.profile-copied") }}
     </v-snackbar>
 
+    <v-snackbar
+      v-model="languagePracticeToastOpen"
+      :timeout="2500"
+      :color="languagePracticeToastColor"
+      location="top"
+    >
+      {{ languagePracticeToastMessage }}
+    </v-snackbar>
+
     <ProfileDialog
       v-model="isProfileDialogOpen"
       :slug="profileDialogSlug"
@@ -1215,6 +1244,7 @@ import { useTabFilters } from "@/composables/useTabFilters";
 import { useI18n } from "vue-i18n";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
 import { bustMatchCache, setMatchFilter, useMatchCandidates } from "@/composables/useMatchCandidates";
+import { useLanguagePracticeSession } from "@/composables/useLanguagePracticeSession";
 import ProfileDialog from "@/components/ProfileDialog.vue";
 import {
   resolveProfileLocalization,
@@ -1228,6 +1258,10 @@ const draft = useOnboardingDraftStore();
 const draftStore = draft; // alias for template
 const presence2 = usePresenceStore2();
 const { blockedUsers, loadBlockedUsers } = useBlockedUsers();
+const {
+  fetchActiveLanguagePracticeSession,
+  endLanguagePracticeSession,
+} = useLanguagePracticeSession();
 const recentActiveIds = ref([]);
 const recentActiveLoading = ref(false);
 let recentActiveTimer = null;
@@ -1295,6 +1329,8 @@ const translationPrefLoading = ref(false);
 const pendingSendText = ref("");
 const pendingTranslatePeerId = ref(null);
 const awayNoticeMap = ref(null);
+const languagePracticeSession = ref(null);
+const languagePracticeSessionUserIds = ref([]);
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
@@ -1521,6 +1557,9 @@ const deleteError = ref("");
 const deletingChat = ref(false);
 const isBlocking = ref(false);
 const shareToast = ref(false);
+const languagePracticeToastOpen = ref(false);
+const languagePracticeToastMessage = ref("");
+const languagePracticeToastColor = ref("primary");
 const hasUnreadActiveChats = computed(() => {
   const unread = msgs.unreadByPeer || {};
   return (Array.isArray(activeChats.value) ? activeChats.value : []).some(
@@ -1773,6 +1812,59 @@ const selectedUserTitle = computed(() => {
   if (user.age) parts.push(String(user.age));
   return parts.join(", ");
 });
+
+const languagePracticeHelperActions = computed(() =>
+  languagePracticeSession.value
+    ? ["ask_correction", "translate", "simpler", "natural"]
+    : []
+);
+
+const browserLocale = computed(() => {
+  if (!import.meta.client || typeof navigator === "undefined") return "en";
+  const value = String(navigator.language || "").trim().toLowerCase();
+  if (value.startsWith("fr")) return "fr";
+  if (value.startsWith("ru")) return "ru";
+  if (value.startsWith("zh")) return "zh";
+  return "en";
+});
+
+const languagePracticeHelperPrompts = computed(() => ({
+  ask_correction: t(
+    "components.languagePracticeBanner.prompts.askCorrection",
+    {},
+    { locale: browserLocale.value }
+  ),
+  translate: t(
+    "components.languagePracticeBanner.prompts.translate",
+    {},
+    { locale: browserLocale.value }
+  ),
+  simpler: t(
+    "components.languagePracticeBanner.prompts.simpler",
+    {},
+    { locale: browserLocale.value }
+  ),
+  natural: t(
+    "components.languagePracticeBanner.prompts.natural",
+    {},
+    { locale: browserLocale.value }
+  ),
+}));
+
+const languagePracticeIndicatorUserIds = computed(() =>
+  Array.from(
+    new Set(
+      (Array.isArray(chat.users) ? chat.users : [])
+        .map((user) => String(user?.user_id ?? user?.id ?? "").trim())
+        .filter(Boolean)
+        .filter((id) => id !== String(meId.value || ""))
+    )
+  )
+);
+
+const languagePracticeIndicatorUserIdsKey = computed(() =>
+  languagePracticeIndicatorUserIds.value.join(",")
+);
 
 const selectedUserLocation = computed(() => {
   const user = selectedUser.value;
@@ -2081,6 +2173,88 @@ watch(
 // alias for clarity (ref)
 const peerId = selectedUserId;
 
+async function loadLanguagePracticeSession() {
+  if (!meId.value || !selectedUserId.value || (isAdmin.value && asUserId.value)) {
+    languagePracticeSession.value = null;
+    return;
+  }
+
+  const ownerId = String(meId.value);
+  const selectedPeerId = String(selectedUserId.value);
+  languagePracticeSession.value = null;
+
+  try {
+    const session = await fetchActiveLanguagePracticeSession(selectedPeerId);
+    if (String(selectedUserId.value || "") !== selectedPeerId) return;
+
+    const learnerId = String(session?.learner_user_id || "");
+    const partnerId = String(session?.partner_user_id || "");
+    const matchesSelectedPair =
+      session &&
+      ((learnerId === ownerId && partnerId === selectedPeerId) ||
+        (learnerId === selectedPeerId && partnerId === ownerId));
+
+    languagePracticeSession.value = matchesSelectedPair ? session : null;
+  } catch (error) {
+    console.warn("[chat][language-practice] session load failed:", error);
+    if (String(selectedUserId.value || "") === selectedPeerId) {
+      languagePracticeSession.value = null;
+    }
+  }
+}
+
+watch([() => meId.value, selectedUserId], loadLanguagePracticeSession, {
+  immediate: true,
+});
+
+async function loadLanguagePracticeIndicators() {
+  if (!meId.value || (isAdmin.value && asUserId.value)) {
+    languagePracticeSessionUserIds.value = [];
+    return;
+  }
+
+  const requestedUserIds = languagePracticeIndicatorUserIds.value;
+  if (!requestedUserIds.length) {
+    languagePracticeSessionUserIds.value = [];
+    return;
+  }
+
+  const requestedKey = languagePracticeIndicatorUserIdsKey.value;
+
+  try {
+    const response = await $fetch("/api/language-practice/indicators", {
+      query: {
+        userIds: requestedKey,
+      },
+    });
+
+    if (languagePracticeIndicatorUserIdsKey.value !== requestedKey) return;
+
+    languagePracticeSessionUserIds.value = Array.isArray(response?.session_user_ids)
+      ? response.session_user_ids
+      : [];
+  } catch (error) {
+    console.warn("[chat][language-practice] indicator load failed:", error);
+    if (languagePracticeIndicatorUserIdsKey.value === requestedKey) {
+      languagePracticeSessionUserIds.value = [];
+    }
+  }
+}
+
+function showLanguagePracticeToast(message, color = "primary") {
+  languagePracticeToastMessage.value = message;
+  languagePracticeToastColor.value = color;
+  languagePracticeToastOpen.value = true;
+}
+
+watch(
+  [() => meId.value, languagePracticeIndicatorUserIdsKey],
+  loadLanguagePracticeIndicators,
+  {
+    immediate: true,
+  }
+);
+
 // stable key for typing channel / DM room
 const conversationKey = computed(() =>
   meId.value && peerId.value
@@ -2208,13 +2382,23 @@ const showLiveMoodClarifierQuickReplies = computed(
 );
 
 const MATCH_FILTER_PILLS = ["🟢 Online", "⭕ Offline", "🤖 AI", "🎲 Random"];
+const languagePracticePostOnboardingQuickReplies = computed(() => [
+  t("onboarding.languagePractice.quickReplies.browsePartners"),
+  t("onboarding.languagePractice.quickReplies.answerMoodQuestion"),
+  t("onboarding.languagePractice.quickReplies.keepChatting"),
+]);
 
 const liveMoodNextStepQuickReplies = computed(() => {
   if (
-    ["choose", "dormant", "matched"].includes(draftStore.liveMoodNextStepStage) &&
+    ["choose", "dormant", "matched", "language_practice"].includes(
+      draftStore.liveMoodNextStepStage
+    ) &&
     String(selectedUserId.value || "") ===
       String(draftStore.liveMoodPersonaUserId || "")
   ) {
+    if (draftStore.liveMoodNextStepStage === "language_practice") {
+      return languagePracticePostOnboardingQuickReplies.value;
+    }
     if (draftStore.liveMoodNextStepStage === "dormant") {
       return ["Find a match"];
     }
@@ -2879,6 +3063,42 @@ function openDeleteDialog(user) {
   deleteDialog.value = !!user;
 }
 
+async function endLanguagePracticeChat(user) {
+  const candidatePeerIds = [
+    user?.user_id,
+    user?.id,
+    user?.auth_user_id,
+    user?.uid,
+  ]
+    .map((id) => String(id ?? "").trim())
+    .filter(Boolean);
+
+  const peerId = candidatePeerIds[0] || null;
+  if (!peerId) return;
+
+  try {
+    await endLanguagePracticeSession(peerId);
+    languagePracticeSessionUserIds.value = languagePracticeSessionUserIds.value.filter(
+      (id) => String(id) !== String(peerId)
+    );
+    if (String(selectedUserId.value || "") === String(peerId)) {
+      languagePracticeSession.value = null;
+    }
+    await loadLanguagePracticeIndicators();
+    showLanguagePracticeToast(
+      t("components.activeChats.end-language-practice-success")
+    );
+  } catch (error) {
+    console.warn("[chat][language-practice] end session failed:", error);
+    showLanguagePracticeToast(
+      error?.data?.statusMessage ||
+        error?.data?.message ||
+        t("components.activeChats.end-language-practice-error"),
+      "error"
+    );
+  }
+}
+
 function closeDeleteDialog() {
   deleteDialog.value = false;
   deleteTarget.value = null;
@@ -3090,9 +3310,20 @@ watch(translationPromptOpen, (open) => {
   if (!open) resetTranslationPromptState();
 });
 
+function applyLanguagePracticeHelper(actionKey) {
+  const prompt = languagePracticeHelperPrompts.value[actionKey];
+  if (!prompt) return;
+  if (!String(messageDraft.value || "").trim()) {
+    messageDraft.value = prompt;
+    return;
+  }
+  messageDraft.value = `${String(messageDraft.value || "").trim()}\n\n${prompt}`;
+}
+
 const maybePromptTranslation = async (text, selectedPeer, toId, sendingToBot) => {
   if (!text) return true;
   if (sendingToBot || selectedPeer?.is_ai) return true;
+  if (languagePracticeSession.value) return true;
   const ownerId = meId.value;
   if (!ownerId || !toId) return true;
 
@@ -3218,7 +3449,9 @@ async function onSend(
   }
 
   const liveMoodNextStepActive =
-    ["choose", "dormant", "matched"].includes(draftStore.liveMoodNextStepStage || "idle") &&
+    ["choose", "dormant", "matched", "language_practice"].includes(
+      draftStore.liveMoodNextStepStage || "idle"
+    ) &&
     String(toId || "") === String(draftStore.liveMoodPersonaUserId || "");
   if (liveMoodNextStepActive) {
     regRef.value?.setTyping?.(true);
@@ -3267,7 +3500,9 @@ async function onSend(
 
   // translate if needed (DM only)
   let translationPayload = null;
-  const mode = translationMode || translationPref.value?.mode || "ask";
+  const mode = languagePracticeSession.value
+    ? "never"
+    : translationMode || translationPref.value?.mode || "ask";
   const shouldTranslate = mode === "always" || mode === "once";
   const targetLocale = peerPreferredLocale.value;
   if (shouldTranslate && targetLocale && !sendingToBot) {
@@ -3383,7 +3618,9 @@ async function onSend(
 
     try {
       const requestedCapability =
-        auth.authStatus !== "authenticated" && selectedPeer?.honey_enabled
+        languagePracticeSession.value && selectedPeer?.is_ai
+          ? "language_practice"
+          : auth.authStatus !== "authenticated" && selectedPeer?.honey_enabled
           ? "honey"
           : selectedPeer?.counterpoint_enabled
           ? "counterpoint"
@@ -3745,6 +3982,40 @@ function normalizeLiveMoodNextStepChoice(text) {
     .trim();
 
   if (!normalized) return null;
+  const browsePartnersLabel = String(
+    t("onboarding.languagePractice.quickReplies.browsePartners")
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const answerMoodQuestionLabel = String(
+    t("onboarding.languagePractice.quickReplies.answerMoodQuestion")
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const keepChattingLabel = String(
+    t("onboarding.languagePractice.quickReplies.keepChatting")
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (normalized === browsePartnersLabel) {
+    return "browse_language_partners";
+  }
+  if (normalized === answerMoodQuestionLabel) {
+    return "answer_mood_question";
+  }
+  if (normalized === keepChattingLabel) {
+    return "keep_chatting";
+  }
   if (
     normalized === "find a match" ||
     normalized === "find match" ||
@@ -4162,11 +4433,70 @@ async function handleLiveMoodCaptureMessage(text, { peerId = null, peer = null }
 
 async function handleLiveMoodNextStepMessage(text, { peerId = null, peer = null } = {}) {
   if (!["authenticated", "anon_authenticated"].includes(auth.authStatus)) return false;
-  if (!["choose", "dormant", "matched"].includes(draftStore.liveMoodNextStepStage || "idle")) {
+  if (
+    !["choose", "dormant", "matched", "language_practice"].includes(
+      draftStore.liveMoodNextStepStage || "idle"
+    )
+  ) {
     return false;
   }
   if (!peerId || String(peerId) !== String(draftStore.liveMoodPersonaUserId || "")) {
     return false;
+  }
+
+  if (draftStore.liveMoodNextStepStage === "language_practice") {
+    const choice = normalizeLiveMoodNextStepChoice(text);
+    if (!choice) {
+      draftStore.setField?.("liveMoodNextStepStage", "done");
+      draftStore.setField?.("postOnboardingLanguagePracticeContext", null);
+      return false;
+    }
+
+    await regRef.value?.appendLocalAndSend?.(text);
+
+    if (choice === "browse_language_partners") {
+      const languageContext =
+        draftStore.postOnboardingLanguagePracticeContext || {};
+      draftStore.setField?.("liveMoodNextStepStage", "done");
+      draftStore.setField?.("postOnboardingLanguagePracticeContext", null);
+      await navigateTo(
+        localePath({
+          path: "/language-practice",
+          query: {
+            ...(languageContext.native_language_code
+              ? { nativeLanguage: languageContext.native_language_code }
+              : {}),
+            ...(languageContext.target_language_code
+              ? { targetLanguage: languageContext.target_language_code }
+              : {}),
+            ...(languageContext.target_language_level
+              ? { targetLevel: languageContext.target_language_level }
+              : {}),
+          },
+        })
+      );
+      return true;
+    }
+
+    if (choice === "answer_mood_question") {
+      draftStore.setField?.("postOnboardingLanguagePracticeContext", null);
+      draftStore.setField?.("liveMoodNextStepStage", "choose");
+      await pushLiveMoodBotMessage(
+        t("onboarding.languagePractice.moodQuestionPrompt", {
+          prompt: getLiveMoodNextStepPrompt(draftStore.liveMoodCandidate),
+        }),
+        peer
+      );
+      return true;
+    }
+
+    draftStore.setField?.("liveMoodNextStepStage", "done");
+    draftStore.setField?.("postOnboardingLanguagePracticeContext", null);
+    await pushLiveMoodBotMessage(
+      t("onboarding.languagePractice.keepChattingAck"),
+      peer
+    );
+    return true;
   }
 
   // Handle filter pill taps when in "matched" stage
@@ -4543,6 +4873,7 @@ async function fetchAiResponse(
       userMessage: message,
       userGender: userProfile?.gender ?? null,
       userAge: userProfile?.age ?? null,
+      locale: browserLocale.value,
       history: safeHistory, // ✅ no .value here
       replyTo: replyToStr ?? null, // ✅ string or null
       capability: capability ?? null,

@@ -1,4 +1,5 @@
 import { getServiceRoleClient } from "~/server/utils/aiBots";
+import { buildLanguageLearningPayload } from "~/server/utils/languageLearning";
 
 // Topic hint inference shared by SET_LIVE_MOOD_STATE and the snapshot endpoint
 const INTAKE_TOPIC_KEYWORDS: Record<string, string[]> = {
@@ -381,6 +382,7 @@ export async function executeBotCapability({
     );
     const confidenceNum = Number(payload.confidence);
     const expiresAt = payload.expiresAt || payload.expires_at || null;
+    const languageLearning = buildLanguageLearningPayload(payload);
 
     const upsertPayload = {
       user_id: targetUserId,
@@ -449,6 +451,7 @@ export async function executeBotCapability({
             confidence:        data.confidence,
             topic_hint:        topicHint,
             source_persona:    data.source_persona,
+            ...languageLearning,
           });
         if (intakeErr) {
           console.warn("[SET_LIVE_MOOD_STATE] match_intake insert skipped:", intakeErr.message);

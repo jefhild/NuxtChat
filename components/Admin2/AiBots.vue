@@ -187,6 +187,14 @@
                     Honey
                   </v-chip>
                   <v-chip
+                    v-if="hasLanguagePracticeCapability(bot)"
+                    size="x-small"
+                    color="success"
+                    variant="tonal"
+                  >
+                    Language Practice
+                  </v-chip>
+                  <v-chip
                     size="x-small"
                     :color="moltbookStatusColor(bot)"
                     variant="tonal"
@@ -451,6 +459,13 @@
                     hide-details
                   />
                   <v-switch
+                    v-model="languagePracticeForm.enabled"
+                    label="Language Practice"
+                    color="success"
+                    density="compact"
+                    hide-details
+                  />
+                  <v-switch
                     v-model="form.persona.honey_enabled"
                     label="Honey"
                     color="amber-darken-2"
@@ -564,6 +579,87 @@
                       rows="3"
                       auto-grow
                     />
+                  </v-window-item>
+                  <v-window-item value="language_practice">
+                    <v-textarea
+                      v-model="languagePracticeForm.system_prompt_template"
+                      label="Language practice prompt override (optional)"
+                      rows="4"
+                      auto-grow
+                      hint="Used when this persona is in an active language-practice session."
+                      persistent-hint
+                    />
+                    <v-textarea
+                      v-model="languagePracticeForm.response_style_template"
+                      label="Language practice response style override (optional)"
+                      rows="3"
+                      auto-grow
+                    />
+                    <v-row dense>
+                      <v-col cols="12" md="4">
+                        <v-select
+                          v-model="languagePracticeForm.assistant_role"
+                          :items="languagePracticeRoleOptions"
+                          item-title="label"
+                          item-value="value"
+                          label="Assistant role"
+                          hide-details
+                        />
+                      </v-col>
+                      <v-col cols="12" md="4">
+                        <v-select
+                          v-model="languagePracticeForm.default_correction_preference"
+                          :items="languagePracticeCorrectionOptions"
+                          item-title="label"
+                          item-value="value"
+                          label="Default correction style"
+                          hide-details
+                        />
+                      </v-col>
+                      <v-col cols="12" md="4">
+                        <v-select
+                          v-model="languagePracticeForm.default_exchange_mode"
+                          :items="languagePracticeExchangeModeOptions"
+                          item-title="label"
+                          item-value="value"
+                          label="Default exchange mode"
+                          hide-details
+                        />
+                      </v-col>
+                      <v-col cols="12" md="4">
+                        <v-select
+                          v-model="languagePracticeForm.supported_target_languages"
+                          :items="languagePracticeLanguageOptions"
+                          item-title="label"
+                          item-value="value"
+                          label="Supported target languages"
+                          multiple
+                          chips
+                        />
+                      </v-col>
+                      <v-col cols="12" md="4">
+                        <v-select
+                          v-model="languagePracticeForm.supported_native_languages"
+                          :items="languagePracticeLanguageOptions"
+                          item-title="label"
+                          item-value="value"
+                          label="Supported support languages"
+                          multiple
+                          chips
+                        />
+                      </v-col>
+                      <v-col cols="12" md="4">
+                        <v-select
+                          v-model="languagePracticeForm.supported_levels"
+                          :items="languagePracticeLevelOptions"
+                          item-title="label"
+                          item-value="value"
+                          label="Supported learner levels"
+                          multiple
+                          chips
+                        />
+                      </v-col>
+                    </v-row>
                   </v-window-item>
                 </v-window>
               </v-col>
@@ -964,6 +1060,12 @@
 
 <script setup>
 import { useAdminAiBots } from "@/composables/useAdminAiBots";
+import {
+  buildLanguagePracticePersonaMetadata,
+  getLanguagePracticePersonaConfig,
+  isLanguagePracticePersonaEnabled,
+  LANGUAGE_PRACTICE_PERSONA_OPTIONS,
+} from "@/utils/languagePracticePersona";
 
 const {
   listBots,
@@ -1070,6 +1172,18 @@ const moltbookForm = reactive({
   honey_cta_variants: [],
 });
 
+const languagePracticeForm = reactive({
+  enabled: false,
+  assistant_role: "conversation_partner",
+  supported_target_languages: [],
+  supported_native_languages: [],
+  supported_levels: [],
+  default_correction_preference: "light_corrections",
+  default_exchange_mode: "practice_only",
+  system_prompt_template: "",
+  response_style_template: "",
+});
+
 const jsonInputs = reactive({
   parameters: "{}",
   metadata: "{}",
@@ -1115,6 +1229,31 @@ const postTypeOptions = [
   { label: "Link", value: "link" },
   { label: "Image", value: "image" },
 ];
+const languagePracticeRoleOptions =
+  LANGUAGE_PRACTICE_PERSONA_OPTIONS.assistantRoles.map((value) => ({
+    label: value.replace(/_/g, " "),
+    value,
+  }));
+const languagePracticeLanguageOptions =
+  LANGUAGE_PRACTICE_PERSONA_OPTIONS.languageCodes.map((value) => ({
+    label: value.toUpperCase(),
+    value,
+  }));
+const languagePracticeLevelOptions =
+  LANGUAGE_PRACTICE_PERSONA_OPTIONS.targetLevels.map((value) => ({
+    label: value.toUpperCase(),
+    value,
+  }));
+const languagePracticeCorrectionOptions =
+  LANGUAGE_PRACTICE_PERSONA_OPTIONS.correctionPreferences.map((value) => ({
+    label: value.replace(/_/g, " "),
+    value,
+  }));
+const languagePracticeExchangeModeOptions =
+  LANGUAGE_PRACTICE_PERSONA_OPTIONS.exchangeModes.map((value) => ({
+    label: value.replace(/_/g, " "),
+    value,
+  }));
 const selectedCapabilityTab = ref("honey");
 const enabledCapabilityTabs = computed(() => {
   const tabs = [];
@@ -1124,6 +1263,9 @@ const enabledCapabilityTabs = computed(() => {
   }
   if (form.persona.editorial_enabled) {
     tabs.push({ key: "editorial", label: "Editorial" });
+  }
+  if (languagePracticeForm.enabled) {
+    tabs.push({ key: "language_practice", label: "Language Practice" });
   }
   return tabs;
 });
@@ -1168,6 +1310,9 @@ const filteredBots = computed(() => {
     if (capabilityFilter.value === "editorial") return !!bot.editorial_enabled;
     if (capabilityFilter.value === "counterpoint")
       return !!bot.counterpoint_enabled;
+    if (capabilityFilter.value === "language_practice") {
+      return isLanguagePracticePersonaEnabled(bot);
+    }
     return true;
   });
 
@@ -1183,10 +1328,14 @@ const filteredBots = computed(() => {
 });
 const capabilityFilterOptions = [
   { label: "All capabilities", value: "all" },
+  { label: "Language Practice", value: "language_practice" },
   { label: "Honey", value: "honey" },
   { label: "Editorial", value: "editorial" },
   { label: "Counterpoint", value: "counterpoint" },
 ];
+
+const hasLanguagePracticeCapability = (bot) =>
+  isLanguagePracticePersonaEnabled(bot);
 
 const requiredRule = (value) =>
   (!!String(value ?? "").trim() && value !== null && value !== undefined) ||
@@ -1340,6 +1489,17 @@ const resetForm = () => {
     honey_emotional_themes: [],
     honey_cta_variants: [],
   });
+  Object.assign(languagePracticeForm, {
+    enabled: false,
+    assistant_role: "conversation_partner",
+    supported_target_languages: [],
+    supported_native_languages: [],
+    supported_levels: [],
+    default_correction_preference: "light_corrections",
+    default_exchange_mode: "practice_only",
+    system_prompt_template: "",
+    response_style_template: "",
+  });
   Object.keys(jsonErrors).forEach((key) => {
     jsonErrors[key] = "";
   });
@@ -1426,6 +1586,14 @@ const populateForm = (bot) => {
       ? [...bot.moltbook.honey_posting.cta_variants]
       : [],
   });
+  Object.assign(
+    languagePracticeForm,
+    getLanguagePracticePersonaConfig(bot.metadata)
+  );
+  languagePracticeForm.system_prompt_template =
+    languagePracticeForm.system_prompt_template || "";
+  languagePracticeForm.response_style_template =
+    languagePracticeForm.response_style_template || "";
   Object.keys(jsonErrors).forEach((key) => {
     jsonErrors[key] = "";
   });
@@ -1641,6 +1809,11 @@ const handleSubmit = async () => {
     },
   };
 
+  payload.persona.metadata = buildLanguagePracticePersonaMetadata(
+    payload.persona.metadata,
+    languagePracticeForm
+  );
+
   if (
     payload.persona.honey_delay_max_ms < payload.persona.honey_delay_min_ms
   ) {
@@ -1654,11 +1827,12 @@ const handleSubmit = async () => {
     !isStarterPersona.value &&
     !payload.persona.editorial_enabled &&
     !payload.persona.counterpoint_enabled &&
-    !payload.persona.honey_enabled
+    !payload.persona.honey_enabled &&
+    !languagePracticeForm.enabled
   ) {
     snackbar.show = true;
     snackbar.color = "red";
-    snackbar.message = "Enable at least one capability (editorial, counterpoint, or honey).";
+    snackbar.message = "Enable at least one capability (language practice, editorial, counterpoint, or honey).";
     saving.value = false;
     return;
   }

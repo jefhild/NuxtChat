@@ -45,7 +45,7 @@
 
     <!-- No candidates empty state (only for authenticated with real data) -->
     <div
-      v-else-if="isAuthenticated && !hasAnyCandidates"
+      v-else-if="!hasAnyCandidates"
       class="text-center mt-10"
     >
       <v-icon size="64" color="surface-variant" class="mb-3">mdi-account-search-outline</v-icon>
@@ -187,21 +187,18 @@ const isAuthenticated = computed(() =>
 );
 
 // Sign-in: stash the current destination so callback.vue can return here after OAuth
-function goSignIn() {
+function buildMatchDestination() {
   const preset = activePreset.value?.key;
-  const dest = preset ? `/match?preset=${preset}` : "/match";
+  return preset ? `/match?preset=${preset}` : "/match";
+}
+
+function goSignIn() {
+  const dest = buildMatchDestination();
   if (typeof sessionStorage !== "undefined") {
     sessionStorage.setItem("postLoginNext", dest);
   }
   navigateTo(localPath("/signin"));
 }
-
-// Keep signinHref as a fallback href (for non-JS / SSR rendering)
-const signinHref = computed(() => {
-  const preset = activePreset.value?.key;
-  const dest = preset ? `/match?preset=${preset}` : "/match";
-  return localPath(`/signin?next=${encodeURIComponent(dest)}`);
-});
 
 // Candidate lists — use public data for unauthenticated visitors
 const onlineCandidates = computed(() =>
@@ -221,7 +218,7 @@ const hasAnyCandidates = computed(
   () =>
     onlineCandidates.value.length +
     offlineCandidates.value.length +
-    aiCandidates.value.length > 0
+    displayAiCandidates.value.length > 0
 );
 
 // ----------------------------------------------------------
@@ -404,4 +401,5 @@ useHead({
 .dot-offline {
   background: rgb(var(--v-theme-surface-variant));
 }
+
 </style>

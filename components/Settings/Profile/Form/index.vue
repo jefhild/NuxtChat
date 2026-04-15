@@ -73,6 +73,10 @@
       :bioMinLength="MIN_BIO_LENGTH"
       :bioErrorMessage="bioErrorMessage"
       :tagLineErrorMessage="taglineError"
+      :showTranslateButton="props.adminMode"
+      :translateLoading="translateProfileLoading"
+      :translateStatus="translateProfileStatus"
+      :translateError="translateProfileError"
       @update:country="onUpdateCountry"
       @update:state="onUpdateState"
       @update:city="onUpdateCity"
@@ -91,6 +95,7 @@
       @toggleDeletionMark="toggleDeletionMark"
       @linkAnonEmail="openLinkEmailDialog"
       @openAiBio="openAiBioDialog"
+      @translateProfile="manuallyTranslateProfile"
     />
 
     <v-dialog
@@ -646,19 +651,7 @@ const saveChanges = async () => {
     isEditable.value = false;
     if ((nameChanged || bioChanged || taglineChanged) && next.user_id) {
       try {
-        await $fetch("/api/profile/translate", {
-          method: "POST",
-          body: {
-            userId: next.user_id,
-            displayname: next.displayname,
-            bio: next.bio,
-            tagline: next.tagline || null,
-            sourceLocale: next.preferred_locale || "en",
-            targetLocales: ["en", "fr", "ru", "zh"].filter(
-              (locale) => locale !== (next.preferred_locale || "en")
-            ),
-          },
-        });
+        await translateProfileFields({ profile: next });
       } catch (err) {
         console.warn("[settings] auto-translate failed:", err);
       }
@@ -1139,6 +1132,59 @@ const maybeAutoSelectAvatar = async () => {
 };
 
 const saving = ref(false);
+const translateProfileLoading = ref(false);
+const translateProfileStatus = ref("");
+const translateProfileError = ref(false);
+
+const translateProfileFields = async ({
+  profile = editableProfile.value,
+  showStatus = false,
+} = {}) => {
+  const next = profile || {};
+  if (!next?.user_id || !(next.displayname || next.bio || next.tagline)) {
+    if (showStatus) {
+      translateProfileError.value = true;
+      translateProfileStatus.value = "No profile text to translate.";
+    }
+    return false;
+  }
+
+  await $fetch("/api/profile/translate", {
+    method: "POST",
+    body: {
+      userId: next.user_id,
+      displayname: next.displayname,
+      bio: next.bio,
+      tagline: next.tagline || null,
+      sourceLocale: next.preferred_locale || "en",
+      targetLocales: ["en", "fr", "ru", "zh"].filter(
+        (locale) => locale !== (next.preferred_locale || "en")
+      ),
+    },
+  });
+
+  if (showStatus) {
+    translateProfileError.value = false;
+    translateProfileStatus.value = "Profile translations refreshed.";
+  }
+  return true;
+};
+
+const manuallyTranslateProfile = async () => {
+  translateProfileLoading.value = true;
+  translateProfileStatus.value = "";
+  translateProfileError.value = false;
+  try {
+    await translateProfileFields({ showStatus: true });
+  } catch (err) {
+    console.warn("[settings] manual profile translate failed:", err);
+    translateProfileError.value = true;
+    translateProfileStatus.value =
+      err?.data?.error || "Profile translation failed.";
+  } finally {
+    translateProfileLoading.value = false;
+  }
+};
 
 
 onMounted(async () => {
