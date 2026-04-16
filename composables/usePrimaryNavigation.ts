@@ -11,6 +11,11 @@ export function usePrimaryNavigation() {
       path: localePath("/chat"),
     },
     {
+      id: "languagePractice",
+      name: t("components.navbar.languagePractice"),
+      path: localePath("/language-practice"),
+    },
+    {
       id: "topics",
       name: t("components.footer.topics") || "Topics",
       path: localePath("/topics"),

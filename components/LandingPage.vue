@@ -105,54 +105,6 @@
       </v-sheet>
     </section>
 
-    <section class="full-bleed proof-section">
-      <v-sheet class="proof-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
-        <v-container class="py-10 py-md-14">
-          <v-row align="stretch">
-            <v-col cols="12" md="7">
-              <div class="section-copy">
-                <v-chip color="primary" variant="tonal" class="mb-4">
-                  {{ proofCopy.kicker }}
-                </v-chip>
-                <h2 class="text-h4 font-weight-bold mb-3">
-                  {{ proofCopy.title }}
-                </h2>
-                <p class="text-body-1 text-medium-emphasis mb-6">
-                  {{ proofCopy.subtitle }}
-                </p>
-              </div>
-
-              <div class="proof-grid">
-                <div v-for="point in proofCopy.points" :key="point.title" class="proof-point">
-                  <div class="proof-point__title">{{ point.title }}</div>
-                  <div class="proof-point__body">{{ point.body }}</div>
-                </div>
-              </div>
-            </v-col>
-
-            <v-col cols="12" md="5">
-              <v-card class="entry-flow-card h-100" rounded="xl" elevation="0">
-                <div class="text-overline mb-2">{{ proofCopy.flowEyebrow }}</div>
-                <div class="text-h5 font-weight-bold mb-3">{{ proofCopy.flowTitle }}</div>
-                <div class="entry-flow-list">
-                  <div v-for="step in proofCopy.flowSteps" :key="step.title" class="entry-flow-step">
-                    <div class="entry-flow-step__number">{{ step.number }}</div>
-                    <div>
-                      <div class="entry-flow-step__title">{{ step.title }}</div>
-                      <div class="entry-flow-step__body">{{ step.body }}</div>
-                    </div>
-                  </div>
-                </div>
-                <v-btn color="primary" size="large" block class="mt-6" :to="localPath('/chat')">
-                  {{ proofCopy.flowCta }}
-                </v-btn>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-sheet>
-    </section>
-
     <section class="full-bleed away-agent-section">
       <v-sheet class="away-agent-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
         <v-container class="py-10 py-md-14">
@@ -258,6 +210,108 @@
                   </div>
                 </div>
               </div>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-sheet>
+    </section>
+
+    <section class="full-bleed language-practice-section">
+      <v-sheet class="language-practice-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
+        <v-container class="py-10 py-md-14">
+          <div class="section-copy text-center">
+            <v-chip color="success" variant="tonal" class="mb-4">
+              {{ languagePracticeCopy.kicker }}
+            </v-chip>
+            <h2 class="text-h4 font-weight-bold mb-3">
+              {{ languagePracticeCopy.title }}
+            </h2>
+            <p class="text-body-1 text-medium-emphasis language-practice-intro">
+              {{ languagePracticeCopy.subtitle }}
+            </p>
+          </div>
+
+          <v-row class="mt-6" dense>
+            <v-col v-for="card in languagePracticeCopy.cards" :key="card.title" cols="12" md="4">
+              <v-card class="language-practice-card h-100" elevation="0">
+                <div class="language-practice-card__icon">
+                  <v-icon size="20">{{ card.icon }}</v-icon>
+                </div>
+                <div class="text-h6 font-weight-bold mb-2">
+                  {{ card.title }}
+                </div>
+                <p class="text-body-2 text-medium-emphasis mb-0">
+                  {{ card.body }}
+                </p>
+                <div v-if="card.languages" class="language-practice-card__languages">
+                  <v-chip
+                    v-for="language in card.languages"
+                    :key="language"
+                    size="small"
+                    color="success"
+                    variant="tonal"
+                  >
+                    {{ language }}
+                  </v-chip>
+                </div>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <div class="hero-actions language-practice-actions">
+            <v-btn color="success" size="large" class="hero-btn" :to="localPath('/language-practice')">
+              {{ languagePracticeCopy.primaryCta }}
+            </v-btn>
+            <v-btn variant="outlined" size="large" class="hero-btn language-practice-secondary" :to="localPath('/language-exchange-chat')">
+              {{ languagePracticeCopy.secondaryCta }}
+            </v-btn>
+          </div>
+        </v-container>
+      </v-sheet>
+    </section>
+
+    <section class="full-bleed proof-section">
+      <v-sheet class="proof-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
+        <v-container class="py-10 py-md-14">
+          <v-row align="stretch">
+            <v-col cols="12" md="7">
+              <div class="section-copy">
+                <v-chip color="primary" variant="tonal" class="mb-4">
+                  {{ proofCopy.kicker }}
+                </v-chip>
+                <h2 class="text-h4 font-weight-bold mb-3">
+                  {{ proofCopy.title }}
+                </h2>
+                <p class="text-body-1 text-medium-emphasis mb-6">
+                  {{ proofCopy.subtitle }}
+                </p>
+              </div>
+
+              <div class="proof-grid">
+                <div v-for="point in proofCopy.points" :key="point.title" class="proof-point">
+                  <div class="proof-point__title">{{ point.title }}</div>
+                  <div class="proof-point__body">{{ point.body }}</div>
+                </div>
+              </div>
+            </v-col>
+
+            <v-col cols="12" md="5">
+              <v-card class="entry-flow-card h-100" rounded="xl" elevation="0">
+                <div class="text-overline mb-2">{{ proofCopy.flowEyebrow }}</div>
+                <div class="text-h5 font-weight-bold mb-3">{{ proofCopy.flowTitle }}</div>
+                <div class="entry-flow-list">
+                  <div v-for="step in proofCopy.flowSteps" :key="step.title" class="entry-flow-step">
+                    <div class="entry-flow-step__number">{{ step.number }}</div>
+                    <div>
+                      <div class="entry-flow-step__title">{{ step.title }}</div>
+                      <div class="entry-flow-step__body">{{ step.body }}</div>
+                    </div>
+                  </div>
+                </div>
+                <v-btn color="primary" size="large" block class="mt-6" :to="localPath('/chat')">
+                  {{ proofCopy.flowCta }}
+                </v-btn>
+              </v-card>
             </v-col>
           </v-row>
         </v-container>
@@ -406,6 +460,12 @@ const resolveMessage = (value) => {
   }
   return String(rt(value));
 };
+const resolveTranslatedValue = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => resolveMessage(item));
+  }
+  return resolveMessage(value);
+};
 
 const translatedStringList = (suffix) => {
   const value = tm(homePageKey(suffix));
@@ -418,7 +478,7 @@ const translatedObjectList = (suffix) => {
         Object.fromEntries(
           Object.entries(item || {}).map(([key, entry]) => [
             key,
-            resolveMessage(entry),
+            resolveTranslatedValue(entry),
           ])
         )
       )
@@ -553,6 +613,15 @@ const awayAgentCopy = computed(() => ({
   },
 }));
 
+const languagePracticeCopy = computed(() => ({
+  kicker: t(homePageKey("languagePractice.kicker")),
+  title: t(homePageKey("languagePractice.title")),
+  subtitle: t(homePageKey("languagePractice.subtitle")),
+  cards: translatedObjectList("languagePractice.cards"),
+  primaryCta: t(homePageKey("languagePractice.primaryCta")),
+  secondaryCta: t(homePageKey("languagePractice.secondaryCta")),
+}));
+
 const updateSpotlight = (e) => {
   const el = e.currentTarget;
   const rect = el.getBoundingClientRect();
@@ -581,6 +650,7 @@ const clearSpotlight = (e) => {
 .entry-surface,
 .proof-surface,
 .away-agent-surface,
+.language-practice-surface,
 .mood-teaser-surface,
 .final-cta-surface {
   border-radius: 0;
@@ -678,6 +748,16 @@ const clearSpotlight = (e) => {
   border-bottom: 1px solid rgba(148, 163, 184, 0.08);
 }
 
+.language-practice-surface {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(760px 260px at 16% 0%, rgba(34, 197, 94, 0.15), transparent 62%),
+    radial-gradient(620px 220px at 88% 100%, rgba(20, 184, 166, 0.1), transparent 56%),
+    linear-gradient(180deg, #f8fafc 0%, #edf8f1 100%);
+  border-bottom: 1px solid rgba(34, 197, 94, 0.12);
+}
+
 .final-cta-surface {
   position: relative;
   isolation: isolate;
@@ -697,6 +777,7 @@ const clearSpotlight = (e) => {
 
 .entry-intro,
 .mood-teaser-intro,
+.language-practice-intro,
 .final-cta-copy {
   max-width: 56ch;
   margin-left: auto;
@@ -857,6 +938,46 @@ const clearSpotlight = (e) => {
 
 .mood-chip-interactive:hover {
   transform: translateY(-2px);
+}
+
+.language-practice-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 254, 249, 0.94) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.16);
+  border-radius: 8px;
+  padding: 22px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 12px 30px rgba(15, 23, 42, 0.05);
+}
+
+.language-practice-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  color: #047857;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+}
+
+.language-practice-card__languages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.language-practice-actions {
+  margin-top: 30px;
+}
+
+.language-practice-secondary {
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.42);
 }
 
 .final-cta-grid {
@@ -1079,6 +1200,25 @@ const clearSpotlight = (e) => {
   transition: opacity 0.5s ease;
 }
 
+:global(.v-theme--dark .language-practice-surface) {
+  background:
+    radial-gradient(760px 260px at 16% 0%, rgba(34, 197, 94, 0.18), transparent 62%),
+    radial-gradient(620px 220px at 88% 100%, rgba(20, 184, 166, 0.12), transparent 56%),
+    linear-gradient(180deg, #0f172a 0%, #102018 100%);
+  border-bottom: 1px solid rgba(34, 197, 94, 0.14);
+}
+
+:global(.v-theme--dark .language-practice-surface::before) {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(600px circle at var(--sx, -600px) var(--sy, -600px), rgba(34, 197, 94, 0.12), transparent 40%);
+  opacity: var(--sp-opacity, 0);
+  transition: opacity 0.5s ease;
+}
+
 :global(.v-theme--dark .final-cta-surface) {
   background:
     radial-gradient(820px 260px at 12% 0%, rgba(59, 130, 246, 0.24), transparent 60%),
@@ -1101,7 +1241,8 @@ const clearSpotlight = (e) => {
 }
 
 :global(.v-theme--dark .entry-card),
-:global(.v-theme--dark .proof-point) {
+:global(.v-theme--dark .proof-point),
+:global(.v-theme--dark .language-practice-card) {
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(17, 24, 39, 0.92) 100%);
   border-color: rgba(148, 163, 184, 0.18);
 }

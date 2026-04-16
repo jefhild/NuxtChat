@@ -53,6 +53,16 @@ export interface ConversationLog {
   room_id: string | null;
   exchange_count: number;
   status: string;
+  reply_lock_until?: string | null;
+  last_replied_message_id?: string | null;
+}
+
+export interface LanguagePracticeAgentContext {
+  target_language_code: string | null;
+  learner_native_language_code: string | null;
+  target_language_level: string | null;
+  correction_preference: string | null;
+  language_exchange_mode: string | null;
 }
 
 // Preset prompt additions injected into the system prompt
@@ -114,12 +124,24 @@ export async function generateAgentReply(
   config: AgentConfig,
   conversationHistory: { role: "user" | "assistant"; content: string }[],
   incomingMessage: string,
-  runtimeConfig: any
+  runtimeConfig: any,
+  languagePracticeContext: LanguagePracticeAgentContext | null = null
 ): Promise<string | null> {
   const { client, model } = getOpenAIClient({ runtimeConfig });
   if (!client) return null;
 
-  const systemPrompt = buildAgentSystemPrompt(agentProfile, config);
+  let systemPrompt = buildAgentSystemPrompt(agentProfile, config);
+  if (languagePracticeContext?.target_language_code) {
+    const targetLanguage =
+      LOCALE_NAME[normalizeLocale(languagePracticeContext.target_language_code) ?? ""] ??
+      languagePracticeContext.target_language_code.toUpperCase();
+    const level = languagePracticeContext.target_language_level || "unsure";
+    const corrections =
+      languagePracticeContext.correction_preference || "light_corrections";
+    const exchangeMode =
+      languagePracticeContext.language_exchange_mode || "practice_only";
+    systemPrompt += `\nLanguage-practice context:\n- This chat is currently in language-practice mode.\n- Continue as ${agentProfile.displayname}'s away agent, but support the learner's ${targetLanguage} practice.\n- Prefer replying in ${targetLanguage}; use the learner's native language only for brief clarification if necessary.\n- Learner level: ${level}.\n- Correction preference: ${corrections}.\n- Exchange mode: ${exchangeMode}.\n- If the learner asks whether you are a bot or away agent, disclose that you are ${agentProfile.displayname}'s away agent.`;
+  }
   const messages = [
     { role: "system" as const, content: systemPrompt },
     ...conversationHistory,
@@ -134,6 +156,64 @@ export async function generateAgentReply(
   });
 
   return response.choices[0]?.message?.content?.trim() ?? null;
+}
+
+export async function claimAgentReplyLock(
+  supabase: any,
+  logId: string,
+  lockMs = 2 * 60 * 1000
+): Promise<boolean> {
+  const now = new Date();
+  const lockUntil = new Date(now.getTime() + lockMs).toISOString();
+  const { data, error } = await supabase
+    .from("agent_conversation_log")
+    .update({ reply_lock_until: lockUntil })
+    .eq("id", logId)
+    .eq("status", "active")
+    .or(`reply_lock_until.is.null,reply_lock_until.lt.${now.toISOString()}`)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    console.error("[agentEngine] reply lock failed:", error.message);
+    return false;
+  }
+  return Boolean(data?.id);
+}
+
+export async function clearAgentReplyLock(
+  supabase: any,
+  logId: string
+): Promise<void> {
+  await supabase
+    .from("agent_conversation_log")
+    .update({ reply_lock_until: null })
+    .eq("id", logId);
+}
+
+export async function loadLanguagePracticeAgentContext(
+  supabase: any,
+  learnerUserId: string,
+  partnerUserId: string
+): Promise<LanguagePracticeAgentContext | null> {
+  const { data, error } = await supabase
+    .from("language_practice_sessions")
+    .select(
+      "target_language_code, learner_native_language_code, target_language_level, correction_preference, language_exchange_mode"
+    )
+    .eq("status", "active")
+    .or(
+      `and(learner_user_id.eq.${learnerUserId},partner_user_id.eq.${partnerUserId}),and(learner_user_id.eq.${partnerUserId},partner_user_id.eq.${learnerUserId})`
+    )
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[agentEngine] language-practice context failed:", error.message);
+    return null;
+  }
+  return data || null;
 }
 
 /**
@@ -275,7 +355,8 @@ export async function getOrCreateConversationLog(
 export async function incrementExchangeCount(
   supabase: any,
   logId: string,
-  maxExchanges: number
+  maxExchanges: number,
+  repliedMessageId: string | null = null
 ): Promise<boolean> {
   const { data: current } = await supabase
     .from("agent_conversation_log")
@@ -290,6 +371,8 @@ export async function incrementExchangeCount(
     .from("agent_conversation_log")
     .update({
       exchange_count: newCount,
+      reply_lock_until: null,
+      ...(repliedMessageId ? { last_replied_message_id: repliedMessageId } : {}),
       ...(limitReached
         ? { status: "limit_reached", ended_at: new Date().toISOString() }
         : {}),

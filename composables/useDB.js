@@ -1859,6 +1859,46 @@ export const useDb = () => {
     return data || [];
   };
 
+  const insertFaqGroup = async (payload) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("faq_groups")
+      .insert({
+        slug: payload.slug,
+        sort_order: payload.sort_order ?? 0,
+        is_active: payload.is_active ?? true,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Error inserting faq group:", error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
+  };
+
+  const insertFaqGroupTranslation = async (payload) => {
+    const supabase = getClient();
+    const { data, error } = await supabase
+      .from("faq_group_translations")
+      .insert({
+        group_id: payload.group_id,
+        locale: payload.locale,
+        title: payload.title,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Error inserting faq group translation:", error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
+  };
+
   const getFaqTopics = async () => {
     const supabase = getClient();
     const { data, error } = await supabase
@@ -3300,6 +3340,8 @@ const verifyEmailOtp = async (email, token) => {
     getFaqTopicTranslations,
     getFaqEntries,
     getFaqTranslations,
+    insertFaqGroup,
+    insertFaqGroupTranslation,
     insertFaqTopic,
     insertFaqTopicTranslation,
     updateFaqTopicTranslation,

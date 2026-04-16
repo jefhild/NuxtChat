@@ -16,6 +16,7 @@ export const landingPageSlugs: string[] = [
   "vent-to-strangers-online",
   "chat-when-bored-online",
   "practice-english-chat-online",
+  "language-exchange-chat",
   "free-anonymous-chat-rooms",
   "away-agent",
 ];

@@ -125,14 +125,16 @@
                   <span class="flag" v-if="item.user.country_emoji">
                     {{ item.user.country_emoji }}
                   </span>
-                  <span
+                  <button
                     v-if="hasLanguagePracticeChat(item.user)"
+                    type="button"
                     class="language-practice-marker language-practice-marker--chat"
                     :title="t('components.users.languagePracticeChat')"
                     :aria-label="t('components.users.languagePracticeChat')"
+                    @click.stop="emit('activate-language-practice', item.user)"
                   >
                     <v-icon size="13">mdi-translate</v-icon>
-                  </span>
+                  </button>
                   <div
                     v-if="showActions"
                     class="actions"
@@ -165,10 +167,10 @@
                       />
                       <v-list-item
                         v-if="hasLanguagePracticeChat(item.user)"
-                        value="end-language-practice"
-                        :title="$t('components.activeChats.end-language-practice-title')"
-                        prepend-icon="mdi-translate-off"
-                        @click.stop="onActionMenuClick('end-language-practice', item.user)"
+                        value="activate-language-practice"
+                        :title="$t('components.activeChats.activate-language-practice-title')"
+                        prepend-icon="mdi-translate"
+                        @click.stop="onActionMenuClick('activate-language-practice', item.user)"
                       />
                       <v-list-item
                         value="delete-chat"
@@ -232,6 +234,7 @@ const emit = defineEmits([
   "update:showLanguagePracticeAi",
   "delete-chat",
   "view-profile",
+  "activate-language-practice",
   "end-language-practice",
 ]);
 
@@ -620,6 +623,10 @@ function onActionMenuClick(action, u) {
     emit("end-language-practice", u);
     return;
   }
+  if (action === "activate-language-practice") {
+    emit("activate-language-practice", u);
+    return;
+  }
   if (action === "delete-chat") {
     emit("delete-chat", u);
   }
@@ -868,10 +875,14 @@ function toggleGroup(id) {
   justify-content: center;
   width: 18px;
   height: 18px;
+  padding: 0;
+  appearance: none;
   border: 1px solid rgba(114, 230, 126, 0.45);
   border-radius: 999px;
   color: #72e67e;
   background: rgba(42, 96, 58, 0.1);
+  cursor: pointer;
+  line-height: 1;
 }
 
 .language-practice-marker--chat {

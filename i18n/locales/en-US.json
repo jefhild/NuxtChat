@@ -212,6 +212,36 @@
             "reply2": "Curious, a bit nerdy, usually up way too late. You'd probably get along 😄",
             "status": "Tall27 will see this when they're back"
           }
+        },
+        "languagePractice": {
+          "kicker": "Language Practice",
+          "title": "Practice a language with an AI tutor or a real person.",
+          "subtitle": "Find language partners by target language, level, and correction style, including people who want to help you learn.",
+          "cards": [
+            {
+              "icon": "mdi-translate",
+              "title": "Choose your practice language",
+              "body": "Filter by the language you want to practice and the language you can help with.",
+              "languages": [
+                "English",
+                "Chinese",
+                "Russian",
+                "French"
+              ]
+            },
+            {
+              "icon": "mdi-message-text-outline",
+              "title": "Set your feedback style",
+              "body": "Pick gentle corrections, active coaching, or a more natural conversation flow."
+            },
+            {
+              "icon": "mdi-account-group-outline",
+              "title": "Match with the right partner",
+              "body": "Start with online partners, recently active members, or AI personas built for practice."
+            }
+          ],
+          "primaryCta": "Start language practice",
+          "secondaryCta": "Preview the landing page"
         }
       },
       "meta": {
@@ -680,6 +710,7 @@
         "title": "Create, organize, and publish FAQ content",
         "subtitle": "Use the tree to group topics and the list to draft, publish, or retire answers.",
         "newFaq": "New FAQ",
+        "newGroup": "New Group",
         "newTopic": "New Topic",
         "copyLink": "Copy link",
         "treeTitle": "Categories & topics",
@@ -1234,6 +1265,7 @@
       "imchatty": "ImChatty",
       "blog": "Articles",
       "chat": "Chat",
+      "languagePractice": "Language Practice",
       "feeds": "Mood Feed",
       "discussions": "Discussions",
       "settings": "Settings",
@@ -1325,6 +1357,7 @@
       "confirm": "Confirm",
       "cancel": "Cancel",
       "profile-title": "Show profile",
+      "activate-language-practice-title": "Open language practice",
       "end-language-practice-title": "Return to normal chat",
       "end-language-practice-success": "Language practice ended for this chat.",
       "end-language-practice-error": "Could not return this chat to normal mode.",

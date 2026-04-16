@@ -211,6 +211,36 @@
             "reply2": "Curieux, un peu geek, souvent debout trop tard. Vous vous entendriez bien 😄",
             "status": "Tall27 verra ça à son retour"
           }
+        },
+        "languagePractice": {
+          "kicker": "Pratique linguistique",
+          "title": "Pratiquez une langue avec un tuteur IA ou une vraie personne.",
+          "subtitle": "Trouvez des partenaires par langue cible, niveau et style de correction, y compris des personnes prêtes à vous aider à progresser.",
+          "cards": [
+            {
+              "icon": "mdi-translate",
+              "title": "Choisir votre langue de pratique",
+              "body": "Filtrez selon la langue que vous voulez pratiquer et celle avec laquelle vous pouvez aider.",
+              "languages": [
+                "Anglais",
+                "Chinois",
+                "Russe",
+                "Français"
+              ]
+            },
+            {
+              "icon": "mdi-message-text-outline",
+              "title": "Définir votre style de feedback",
+              "body": "Choisissez des corrections légères, un accompagnement actif ou une conversation plus naturelle."
+            },
+            {
+              "icon": "mdi-account-group-outline",
+              "title": "Trouver le bon partenaire",
+              "body": "Commencez avec des partenaires en ligne, des membres récemment actifs ou des personas IA conçus pour pratiquer."
+            }
+          ],
+          "primaryCta": "Commencer la pratique linguistique",
+          "secondaryCta": "Prévisualiser la page d'arrivée"
         }
       },
       "meta": {
@@ -677,6 +707,7 @@
         "title": "Create, organize, and publish FAQ content",
         "subtitle": "Use the tree to group topics and the list to draft, publish, or retire answers.",
         "newFaq": "New FAQ",
+        "newGroup": "New Group",
         "newTopic": "New Topic",
         "copyLink": "Copier le lien",
         "treeTitle": "Categories & topics",
@@ -1219,6 +1250,7 @@
       "imchatty": "ImChatty",
       "blog": "Articles",
       "chat": "Chat",
+      "languagePractice": "Pratique linguistique",
       "feeds": "Fil d'humeur",
       "discussions": "Discussions",
       "settings": "Paramètres",
@@ -1310,6 +1342,7 @@
       "confirm": "Confirmer",
       "cancel": "Annuler",
       "profile-title": "Voir le profil",
+      "activate-language-practice-title": "Ouvrir la pratique des langues",
       "end-language-practice-title": "Revenir au chat normal",
       "end-language-practice-success": "La pratique des langues a été désactivée pour ce chat.",
       "end-language-practice-error": "Impossible de remettre ce chat en mode normal.",

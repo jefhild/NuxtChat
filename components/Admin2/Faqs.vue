@@ -26,6 +26,13 @@
         </v-btn>
         <v-btn
           variant="tonal"
+          prepend-icon="mdi-folder-multiple-plus"
+          @click="openNewGroup"
+        >
+          {{ $t("pages.admin.faq.newGroup") }}
+        </v-btn>
+        <v-btn
+          variant="tonal"
           prepend-icon="mdi-folder-plus"
           @click="openNewTopic"
         >
@@ -200,6 +207,36 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="newGroupDialog" max-width="520">
+      <v-card>
+        <v-card-title>New group</v-card-title>
+        <v-card-text>
+          <v-form ref="groupFormRef" @submit.prevent="createGroup">
+            <v-select
+              v-model="newGroup.locale"
+              :items="localeOptions"
+              label="Locale"
+              density="comfortable"
+            />
+            <v-text-field
+              v-model="newGroup.title"
+              label="Title"
+              :rules="[(v) => !!v || 'Title is required']"
+            />
+            <v-text-field v-model="newGroup.slug" label="Slug (optional)" />
+            <v-switch v-model="newGroup.isActive" label="Published" />
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="newGroupDialog = false">Cancel</v-btn>
+          <v-btn color="primary" :loading="saving" @click="createGroup">
+            Create
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-dialog v-model="newTopicDialog" max-width="520">
       <v-card>
@@ -442,6 +479,8 @@ const {
   getFaqTopicTranslations,
   getFaqEntries,
   getFaqTranslations,
+  insertFaqGroup,
+  insertFaqGroupTranslation,
   insertFaqTopic,
   insertFaqTopicTranslation,
   updateFaqTopicTranslation,
@@ -470,11 +509,13 @@ const entries = ref([]);
 const entryTranslations = ref([]);
 
 const newTopicDialog = ref(false);
+const newGroupDialog = ref(false);
 const newFaqDialog = ref(false);
 const importFaqDialog = ref(false);
 const editFaqDialog = ref(false);
 const translationDialog = ref(false);
 const topicFormRef = ref(null);
+const groupFormRef = ref(null);
 const faqFormRef = ref(null);
 const importFaqFormRef = ref(null);
 const editFaqFormRef = ref(null);
@@ -482,6 +523,13 @@ const translationFormRef = ref(null);
 
 const newTopic = ref({
   groupId: null,
+  title: "",
+  slug: "",
+  locale: "en-US",
+  isActive: true,
+});
+
+const newGroup = ref({
   title: "",
   slug: "",
   locale: "en-US",
@@ -617,6 +665,7 @@ const groupIconMap = {
   "getting-started": "mdi-rocket-launch",
   "chat-tools": "mdi-message-text-outline",
   "safety-privacy": "mdi-shield-check",
+  "language-practice": "mdi-translate",
   community: "mdi-account-group-outline",
 };
 
@@ -743,14 +792,27 @@ const refreshData = async () => {
 };
 
 const openNewTopic = () => {
+  const activeFilter = activated.value[0];
+  const activeGroup = groups.value.find((group) => group.id === activeFilter);
+  const activeTopic = topics.value.find((topic) => topic.id === activeFilter);
   newTopic.value = {
-    groupId: groups.value[0]?.id || null,
+    groupId: activeGroup?.id || activeTopic?.group_id || groups.value[0]?.id || null,
     title: "",
     slug: "",
     locale: "en-US",
     isActive: true,
   };
   newTopicDialog.value = true;
+};
+
+const openNewGroup = () => {
+  newGroup.value = {
+    title: "",
+    slug: "",
+    locale: "en-US",
+    isActive: true,
+  };
+  newGroupDialog.value = true;
 };
 
 const openNewFaq = () => {
@@ -772,6 +834,42 @@ const openImportFaqDialog = () => {
     payload: "",
   };
   importFaqDialog.value = true;
+};
+
+const createGroup = async () => {
+  const { valid } = await groupFormRef.value.validate();
+  if (!valid) return;
+  saving.value = true;
+  try {
+    const slug = newGroup.value.slug || slugify(newGroup.value.title);
+    const nextSort =
+      Math.max(0, ...groups.value.map((group) => group.sort_order || 0)) + 1;
+    const { data, error } = await insertFaqGroup({
+      slug,
+      sort_order: nextSort,
+      is_active: newGroup.value.isActive,
+    });
+
+    if (error) throw error;
+
+    const translationError = await insertFaqGroupTranslation({
+      group_id: data.id,
+      locale: newGroup.value.locale || "en-US",
+      title: newGroup.value.title,
+    });
+
+    if (translationError?.error) throw translationError.error;
+
+    newGroupDialog.value = false;
+    opened.value = [data.id];
+    activated.value = [data.id];
+    await refreshData();
+  } catch (err) {
+    snackbar.value.message = err?.message || "Failed to create group.";
+    snackbar.value.show = true;
+  } finally {
+    saving.value = false;
+  }
 };
 
 const createTopic = async () => {

@@ -6,7 +6,10 @@
  */
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import {
+  claimAgentReplyLock,
+  clearAgentReplyLock,
   generateAgentReply,
+  loadLanguagePracticeAgentContext,
   sendAgentMessage,
   incrementExchangeCount,
 } from "~/server/utils/agentEngine";
@@ -33,6 +36,8 @@ export default {
         target_user_id,
         exchange_count,
         status,
+        reply_lock_until,
+        last_replied_message_id,
         agent_profile:profiles!agent_conversation_log_agent_profile_id_fkey (
           id, user_id, displayname, bio, age, gender_id, preferred_locale, agent_enabled
         ),
@@ -101,6 +106,25 @@ export default {
         .maybeSingle();
 
       if (alreadyReplied) continue;
+      if (log.last_replied_message_id && log.last_replied_message_id === incoming.id) continue;
+
+      const claimed = await claimAgentReplyLock(supabase, log.id);
+      if (!claimed) continue;
+
+      const { data: repliedAfterClaim } = await supabase
+        .from("messages")
+        .select("id")
+        .eq("sender_id", agentProfile.user_id)
+        .eq("receiver_id", log.target_user_id)
+        .eq("sent_by_agent", true)
+        .gte("created_at", incoming.created_at)
+        .limit(1)
+        .maybeSingle();
+
+      if (repliedAfterClaim) {
+        await clearAgentReplyLock(supabase, log.id);
+        continue;
+      }
 
       // Fetch short conversation history (last 10 messages)
       const { data: history } = await supabase
@@ -120,32 +144,54 @@ export default {
           content: m.content,
         }));
 
-      // Generate and send reply
-      const reply = await generateAgentReply(
-        agentProfile,
-        config,
-        conversationHistory,
-        incoming.content,
-        runtimeConfig
-      );
+      try {
+        const languagePracticeContext = await loadLanguagePracticeAgentContext(
+          supabase,
+          log.target_user_id,
+          agentProfile.user_id
+        );
 
-      if (!reply) continue;
-
-      const sent = await sendAgentMessage(
-        supabase,
-        agentProfile.user_id,
-        log.target_user_id,
-        reply,
-        {
-          senderLocale: agentProfile.preferred_locale,
-          targetLocale: targetProfile?.preferred_locale,
+        // Generate and send reply
+        const reply = await generateAgentReply(
+          agentProfile,
+          config,
+          conversationHistory,
+          incoming.content,
           runtimeConfig,
-        }
-      );
+          languagePracticeContext
+        );
 
-      if (sent) {
-        repliesSent++;
-        await incrementExchangeCount(supabase, log.id, config.max_exchanges_per_conversation ?? 5);
+        if (!reply) {
+          await clearAgentReplyLock(supabase, log.id);
+          continue;
+        }
+
+        const sent = await sendAgentMessage(
+          supabase,
+          agentProfile.user_id,
+          log.target_user_id,
+          reply,
+          {
+            senderLocale: agentProfile.preferred_locale,
+            targetLocale: targetProfile?.preferred_locale,
+            runtimeConfig,
+          }
+        );
+
+        if (sent) {
+          repliesSent++;
+          await incrementExchangeCount(
+            supabase,
+            log.id,
+            config.max_exchanges_per_conversation ?? 5,
+            incoming.id
+          );
+        } else {
+          await clearAgentReplyLock(supabase, log.id);
+        }
+      } catch (err) {
+        await clearAgentReplyLock(supabase, log.id);
+        console.error("[agent:reactive] reply failed:", err);
       }
     }
 

@@ -211,6 +211,36 @@
             "reply2": "好奇心旺盛，有点极客，通常熬夜到很晚。你们应该会聊得来 😄",
             "status": "Tall27 回来后会看到这条消息"
           }
+        },
+        "languagePractice": {
+          "kicker": "语言练习",
+          "title": "和 AI 导师或真人一起练习语言。",
+          "subtitle": "按目标语言、水平和纠错方式寻找练习伙伴，包括愿意帮助你学习的人。",
+          "cards": [
+            {
+              "icon": "mdi-translate",
+              "title": "选择要练习的语言",
+              "body": "根据你想练习的语言，以及你可以帮助别人的语言进行筛选。",
+              "languages": [
+                "英语",
+                "中文",
+                "俄语",
+                "法语"
+              ]
+            },
+            {
+              "icon": "mdi-message-text-outline",
+              "title": "设置反馈方式",
+              "body": "选择轻度纠错、主动指导，或更自然的对话节奏。"
+            },
+            {
+              "icon": "mdi-account-group-outline",
+              "title": "匹配合适的练习伙伴",
+              "body": "从在线伙伴、最近活跃成员，或专为练习设计的 AI 角色开始。"
+            }
+          ],
+          "primaryCta": "开始语言练习",
+          "secondaryCta": "预览落地页"
         }
       },
       "meta": {
@@ -677,6 +707,7 @@
         "title": "Create, organize, and publish FAQ content",
         "subtitle": "Use the tree to group topics and the list to draft, publish, or retire answers.",
         "newFaq": "New FAQ",
+        "newGroup": "New Group",
         "newTopic": "New Topic",
         "copyLink": "复制链接",
         "treeTitle": "Categories & topics",
@@ -1219,6 +1250,7 @@
       "imchatty": "ImChatty",
       "blog": "文章",
       "chat": "聊天",
+      "languagePractice": "语言练习",
       "feeds": "心情动态",
       "discussions": "讨论",
       "settings": "设置",
@@ -1310,6 +1342,7 @@
       "confirm": "确认",
       "cancel": "取消",
       "profile-title": "查看资料",
+      "activate-language-practice-title": "打开语言练习",
       "end-language-practice-title": "恢复为普通聊天",
       "end-language-practice-success": "此聊天已结束语言练习模式。",
       "end-language-practice-error": "无法将此聊天恢复为普通模式。",

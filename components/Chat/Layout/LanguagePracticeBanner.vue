@@ -11,6 +11,15 @@
         {{ metaLine }}
       </div>
     </div>
+    <v-btn
+      class="language-practice-banner__action"
+      size="small"
+      variant="text"
+      color="success"
+      @click="$emit('deactivate')"
+    >
+      {{ t("components.activeChats.end-language-practice-title") }}
+    </v-btn>
   </div>
 </template>
 
@@ -24,6 +33,8 @@ const props = defineProps({
     default: null,
   },
 });
+
+defineEmits(["deactivate"]);
 
 const { t } = useI18n();
 
@@ -79,6 +90,7 @@ const metaLine = computed(() =>
 }
 
 .language-practice-banner__content {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -94,5 +106,11 @@ const metaLine = computed(() =>
   color: rgba(226, 232, 240, 0.88);
   font-size: 0.9rem;
   line-height: 1.35;
+}
+
+.language-practice-banner__action {
+  flex: 0 0 auto;
+  align-self: center;
+  border-radius: 8px;
 }
 </style>

@@ -211,6 +211,36 @@
             "reply2": "Любопытный, немного гик, обычно не спит слишком долго. Вы бы поладили 😄",
             "status": "Tall27 увидит это, когда вернётся"
           }
+        },
+        "languagePractice": {
+          "kicker": "Языковая практика",
+          "title": "Практикуйте язык с AI-репетитором или реальным человеком.",
+          "subtitle": "Находите партнеров по целевому языку, уровню и стилю исправлений, включая людей, которые хотят помочь вам учиться.",
+          "cards": [
+            {
+              "icon": "mdi-translate",
+              "title": "Выберите язык практики",
+              "body": "Фильтруйте по языку, который хотите практиковать, и языку, с которым можете помочь.",
+              "languages": [
+                "Английский",
+                "Китайский",
+                "Русский",
+                "Французский"
+              ]
+            },
+            {
+              "icon": "mdi-message-text-outline",
+              "title": "Настройте стиль обратной связи",
+              "body": "Выберите мягкие исправления, активный коучинг или более естественный поток разговора."
+            },
+            {
+              "icon": "mdi-account-group-outline",
+              "title": "Найдите подходящего партнера",
+              "body": "Начните с онлайн-партнеров, недавно активных участников или AI-персон для практики."
+            }
+          ],
+          "primaryCta": "Начать языковую практику",
+          "secondaryCta": "Предпросмотр лендинга"
         }
       },
       "meta": {
@@ -677,6 +707,7 @@
         "title": "Create, organize, and publish FAQ content",
         "subtitle": "Use the tree to group topics and the list to draft, publish, or retire answers.",
         "newFaq": "New FAQ",
+        "newGroup": "New Group",
         "newTopic": "New Topic",
         "copyLink": "Копировать ссылку",
         "treeTitle": "Categories & topics",
@@ -1219,6 +1250,7 @@
       "imchatty": "ImChatty",
       "blog": "Статьи",
       "chat": "Чат",
+      "languagePractice": "Языковая практика",
       "feeds": "Лента настроения",
       "discussions": "Обсуждения",
       "settings": "Настройки",
@@ -1310,6 +1342,7 @@
       "confirm": "Подтвердить",
       "cancel": "Отмена",
       "profile-title": "Показать профиль",
+      "activate-language-practice-title": "Открыть языковую практику",
       "end-language-practice-title": "Вернуться к обычному чату",
       "end-language-practice-success": "Языковая практика отключена для этого чата.",
       "end-language-practice-error": "Не удалось вернуть этот чат в обычный режим.",

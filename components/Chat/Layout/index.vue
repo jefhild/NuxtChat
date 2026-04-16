@@ -61,6 +61,7 @@
                 :suppress-match-strip="suppressMatchStrip"
                 @user-selected="selectUser"
                 @filter-changed="updateFilters"
+                @activate-language-practice="activateLanguagePracticeChat"
                 @update:showAi="showAIUsers = $event"
                 @update:showLanguagePracticeAi="showLanguagePracticeAIUsers = $event"
               />
@@ -455,6 +456,7 @@
           <ChatLayoutLanguagePracticeBanner
             v-if="languagePracticeSession && selectedUserId"
             :session="languagePracticeSession"
+            @deactivate="deactivateLanguagePracticeMode"
           />
 
           <!-- Scrollable messages list -->
@@ -567,6 +569,7 @@
                 @user-selected="selectUser"
                 @filter-changed="updateFilters"
                 @delete-chat="openDeleteDialog"
+                @activate-language-practice="activateLanguagePracticeChat"
                 @end-language-practice="endLanguagePracticeChat"
                 @view-profile="openProfileDialog"
                 @update:showAi="showAIUsers = $event"
@@ -928,6 +931,7 @@
           <ChatLayoutLanguagePracticeBanner
             v-if="languagePracticeSession && selectedUserId"
             :session="languagePracticeSession"
+            @deactivate="deactivateLanguagePracticeMode"
           />
 
           <div
@@ -1044,6 +1048,7 @@
               :suppress-match-strip="suppressMatchStrip"
               @user-selected="selectUser"
               @filter-changed="updateFilters"
+              @activate-language-practice="activateLanguagePracticeChat"
               @update:showAi="showAIUsers = $event"
               @update:showLanguagePracticeAi="showLanguagePracticeAIUsers = $event"
             />
@@ -1091,6 +1096,7 @@
               @user-selected="selectUser"
               @filter-changed="updateFilters"
               @delete-chat="openDeleteDialog"
+              @activate-language-practice="activateLanguagePracticeChat"
               @end-language-practice="endLanguagePracticeChat"
               @view-profile="openProfileDialog"
               @update:showAi="showAIUsers = $event"
@@ -1337,6 +1343,10 @@ const pendingTranslatePeerId = ref(null);
 const awayNoticeMap = ref(null);
 const languagePracticeSession = ref(null);
 const languagePracticeSessionUserIds = ref([]);
+const isLanguagePracticeModeRequested = computed(() => {
+  const mode = normStr(route.query.mode)?.toLowerCase();
+  return mode === "language" || mode === "language-practice";
+});
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
@@ -2152,7 +2162,12 @@ watch(
 const peerId = selectedUserId;
 
 async function loadLanguagePracticeSession() {
-  if (!meId.value || !selectedUserId.value || (isAdmin.value && asUserId.value)) {
+  if (
+    !isLanguagePracticeModeRequested.value ||
+    !meId.value ||
+    !selectedUserId.value ||
+    (isAdmin.value && asUserId.value)
+  ) {
     languagePracticeSession.value = null;
     return;
   }
@@ -2181,9 +2196,13 @@ async function loadLanguagePracticeSession() {
   }
 }
 
-watch([() => meId.value, selectedUserId], loadLanguagePracticeSession, {
-  immediate: true,
-});
+watch(
+  [() => meId.value, selectedUserId, isLanguagePracticeModeRequested],
+  loadLanguagePracticeSession,
+  {
+    immediate: true,
+  }
+);
 
 async function loadLanguagePracticeIndicators() {
   if (!meId.value || (isAdmin.value && asUserId.value)) {
@@ -2985,6 +3004,47 @@ function selectUser(u) {
   }
 }
 
+function chatUserId(u) {
+  const id = u?.user_id ?? u?.id ?? u?.auth_user_id ?? u?.uid;
+  const normalized = String(id ?? "").trim();
+  return normalized || null;
+}
+
+async function setLanguagePracticeRouteMode(enabled, user = null) {
+  const peerId = user ? chatUserId(user) : selectedUserId.value;
+  if (enabled && !peerId) return;
+
+  if (user) {
+    selectUser(user);
+  }
+
+  const query = { ...route.query };
+  if (enabled) {
+    query.mode = "language";
+    query.userId = peerId;
+  } else {
+    delete query.mode;
+  }
+
+  await router.replace({ path: route.path, query });
+
+  if (enabled) {
+    await nextTick();
+    await loadLanguagePracticeSession();
+    return;
+  }
+
+  languagePracticeSession.value = null;
+}
+
+function activateLanguagePracticeChat(user) {
+  setLanguagePracticeRouteMode(true, user);
+}
+
+function deactivateLanguagePracticeMode() {
+  setLanguagePracticeRouteMode(false);
+}
+
 const pendingSelectImChatty = ref(false);
 
 function selectImChatty() {
@@ -3373,6 +3433,19 @@ const translateChatMessage = async (text, targetLocale) => {
   }
 };
 
+async function triggerAwayAgentReply(agentUserId) {
+  const id = String(agentUserId || "").trim();
+  if (!id) return;
+  try {
+    await $fetch("/api/agent/reactive-reply", {
+      method: "POST",
+      body: { agentUserId: id },
+    });
+  } catch (err) {
+    console.warn("[away-agent] immediate reply trigger failed:", err?.message || err);
+  }
+}
+
 async function onSend(
   text,
   { bypassTranslationPrompt = false, translationMode = null } = {}
@@ -3484,15 +3557,22 @@ async function onSend(
   }
 
   // optimistic local send
+  let sentMessagePromise = null;
   if (!moodHandled) {
-    regRef.value?.appendLocalAndSend?.(text, translationPayload);
+    sentMessagePromise =
+      regRef.value?.appendLocalAndSend?.(text, translationPayload) || null;
   }
 
-  if (
+  const isAwayAgentPeer =
     selectedPeer &&
-    selectedPeer.presence === "away" &&
     !selectedPeer.is_ai &&
-    !sendingToBot
+    !sendingToBot &&
+    (selectedPeer.presence === "away" ||
+      selectedPeer.presence === "agent" ||
+      selectedPeer.agent_enabled === true);
+
+  if (
+    isAwayAgentPeer
   ) {
     const toKey = String(toId || "").trim().toLowerCase();
     const isRecentlyActive = recentActiveNormalized.value.includes(toKey);
@@ -3515,6 +3595,9 @@ async function onSend(
       setTimeout(() => regRef.value?.setTyping?.(false), 700);
       markAwayNoticeShown(toId);
     }
+
+    await sentMessagePromise;
+    triggerAwayAgentReply(toId);
   }
 
   // BOT path only
