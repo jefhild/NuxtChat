@@ -428,6 +428,15 @@ const sendMessageAsUser = async () => {
   }
 };
 
+const getAdminErrorMessage = (error, fallback) => {
+  return (
+    error?.data?.error?.message ||
+    error?.data?.statusMessage ||
+    error?.message ||
+    fallback
+  );
+};
+
 const markMessageRead = async (msg) => {
   if (!msg?.id) return;
   try {
@@ -452,11 +461,12 @@ const deleteAllMessages = async () => {
       method: "POST",
       body: { user_id: userProfile.value.user_id },
     });
-    inboxMessages.value = [];
     deleteDialog.value = false;
+    deletePeerId.value = "";
+    await loadInbox();
   } catch (error) {
     console.error("[admin][profile] delete messages error", error);
-    inboxError.value = "Unable to delete messages";
+    inboxError.value = getAdminErrorMessage(error, "Unable to delete messages");
   } finally {
     deleteBusy.value = false;
   }
@@ -475,10 +485,11 @@ const deleteMessagesWithPeer = async () => {
       },
     });
     deletePeerDialog.value = false;
+    deletePeerId.value = "";
     await loadInbox();
   } catch (error) {
     console.error("[admin][profile] delete peer messages error", error);
-    inboxError.value = "Unable to delete messages";
+    inboxError.value = getAdminErrorMessage(error, "Unable to delete messages");
   } finally {
     deleteBusy.value = false;
   }

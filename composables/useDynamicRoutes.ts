@@ -1,11 +1,7 @@
 import {
-  getRegisteredUsersDisplaynames,
   getPublishedSeoPageRoutes,
   getFaqTopicSlugs,
-  getUserSlugFromDisplayName,
 } from "../lib/supabaseHelpers";
-import { getGenderFromId } from "../lib/dbUtils";
-import { shouldIndexProfile } from "./useIndexability";
 import { buildSeoPagePath } from "../utils/seoPagePaths";
 
 /**
@@ -15,7 +11,6 @@ import { buildSeoPagePath } from "../utils/seoPagePaths";
 const SUPPORTED_LOCALES = ["en", "fr", "ru", "zh"];
 const defaultLocale = "en";
 const INDEXABLE_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
-const PROFILE_MIN_AGE_DAYS = 7;
 
 function localizePath(path: string, locale: string) {
   return locale === defaultLocale ? path : `/${locale}${path}`;
@@ -37,62 +32,17 @@ function normalizeIndexableSlug(value?: string | null) {
   return slug;
 }
 
-/**
- * Returns the locales a profile should appear under in the sitemap:
- * the profile's preferred_locale + any locales with explicit translations.
- * Unlike getProfileTranslationLocales(), this does NOT auto-add 'en' unless
- * it is the preferred locale or has a real translation.
- */
-function getProfileSitemapLocales(profile: any): string[] {
-  const locales = new Set<string>();
-  const preferred = normalizeLocaleCode(profile?.preferred_locale);
-  if (preferred && SUPPORTED_LOCALES.includes(preferred)) {
-    locales.add(preferred);
-  } else {
-    locales.add("en");
-  }
-  const translations = Array.isArray(profile?.profile_translations)
-    ? profile.profile_translations
-    : [];
-  for (const t of translations) {
-    const locale = normalizeLocaleCode(t?.locale);
-    if (locale && SUPPORTED_LOCALES.includes(locale)) locales.add(locale);
-  }
-  return Array.from(locales);
-}
-
 export async function getAllDynamicRoutes(): Promise<string[]> {
   try {
-    const [{ data: profiles, error }, seoPageData, faqTopics] = await Promise.all([
-      getRegisteredUsersDisplaynames({ minAgeDays: PROFILE_MIN_AGE_DAYS }),
+    const [seoPageData, faqTopics] = await Promise.all([
       getPublishedSeoPageRoutes(),
       getFaqTopicSlugs(),
     ]);
 
-    if (!profiles || !seoPageData || error) {
-      console.error("One or more data fetches failed.", { error });
+    if (!seoPageData) {
+      console.error("One or more data fetches failed.");
       return [];
     }
-
-    const profileRoutes = (
-      await Promise.all(
-        profiles
-          .map(async (profile) => {
-            if (!shouldIndexProfile(profile)) return null;
-            const slug =
-              profile.slug ||
-              (await getUserSlugFromDisplayName(profile.displayname));
-
-            const normalizedSlug = normalizeIndexableSlug(slug);
-            if (!normalizedSlug) return null;
-
-            const gender = getGenderFromId(profile.gender_id) || "unknown";
-            const basePath = `/profiles/${gender}/${normalizedSlug}`;
-            const sitemapLocales = getProfileSitemapLocales(profile);
-            return sitemapLocales.map((locale) => localizePath(basePath, locale));
-          })
-      )
-    ).filter((routes): routes is string[] => Boolean(routes)).flat();
 
     const staticPages = [
       "/about",
@@ -100,7 +50,6 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
       "/cookies",
       "/compare",
       "/guides",
-      "/profiles",
       "/topics",
     ];
     const homeRoutes = ["/"];
@@ -131,7 +80,6 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
     return [
       ...new Set([
         ...localizedStaticRoutes,
-        ...profileRoutes,
         ...localizedSeoPageRoutes,
         ...localizedFaqTopicRoutes,
       ]),
@@ -150,14 +98,13 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
   { loc: string; lastmod: string; images?: { loc: string }[] }[]
 > {
   try {
-    const [{ data: profiles, error }, seoPageData, faqTopics] = await Promise.all([
-      getRegisteredUsersDisplaynames({ minAgeDays: PROFILE_MIN_AGE_DAYS }),
+    const [seoPageData, faqTopics] = await Promise.all([
       getPublishedSeoPageRoutes(),
       getFaqTopicSlugs(),
     ]);
 
-    if (!profiles || !seoPageData || error) {
-      console.error("One or more data fetches failed.", { error });
+    if (!seoPageData) {
+      console.error("One or more data fetches failed.");
       return [];
     }
 
@@ -167,7 +114,6 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
       "/cookies",
       "/compare",
       "/guides",
-      "/profiles",
       "/topics",
     ];
     const homeRoutes = ["/"];
@@ -195,34 +141,6 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
 
     homeRoutes.forEach((route) => addLocalizedRoutes(route));
     staticPages.forEach((route) => addLocalizedRoutes(route));
-
-    const profileRoutes = (
-      await Promise.all(
-        profiles
-          .map(async (profile) => {
-            if (!shouldIndexProfile(profile)) return null;
-            const slug =
-              profile.slug ||
-              (await getUserSlugFromDisplayName(profile.displayname));
-
-            const normalizedSlug = normalizeIndexableSlug(slug);
-            if (!normalizedSlug) return null;
-
-            const gender = getGenderFromId(profile.gender_id) || "unknown";
-            const basePath = `/profiles/${gender}/${normalizedSlug}`;
-            const lastmod = profile.created
-              ? new Date(profile.created).toISOString()
-              : fallbackLastmod;
-            const sitemapLocales = getProfileSitemapLocales(profile);
-            return sitemapLocales.map((locale) => ({
-              loc: localizePath(basePath, locale),
-              lastmod,
-            }));
-          })
-      )
-    ).filter((routes): routes is { loc: string; lastmod: string }[] => Boolean(routes)).flat();
-
-    profileRoutes.forEach((route) => localizedRoutes.push(route));
 
     (seoPageData || []).forEach((page: any) => {
       const slug = normalizeIndexableSlug(page?.slug);

@@ -128,7 +128,7 @@
                   </div>
                 </div>
 
-                <div class="hero-actions">
+                <div class="hero-actions away-agent-actions">
                   <!-- Authenticated: go directly to settings Away Agent tab -->
                   <template v-if="authStatus === 'authenticated'">
                     <v-btn color="primary" size="large" class="hero-btn" :to="localPath('/settings') + '?tab=7'">
@@ -704,6 +704,15 @@ const clearSpotlight = (e) => {
   white-space: normal;
 }
 
+.away-agent-actions {
+  flex-wrap: nowrap;
+}
+
+.away-agent-actions .hero-btn {
+  flex: 0 1 260px;
+  min-width: 0;
+}
+
 .hero-trust {
   margin-top: 22px;
   display: flex;
@@ -1146,6 +1155,16 @@ const clearSpotlight = (e) => {
 
   .final-cta-copy-wrap .hero-actions {
     justify-content: center;
+  }
+}
+
+@media (max-width: 599px) {
+  .away-agent-actions {
+    flex-wrap: wrap;
+  }
+
+  .away-agent-actions .hero-btn {
+    flex-basis: 100%;
   }
 }
 
