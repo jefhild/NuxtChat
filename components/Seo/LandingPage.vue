@@ -414,6 +414,11 @@ const selectLocale = (localeCode: string) => {
   color: #e2e8f0;
 }
 
+:global(.v-theme--dark) .seo-page-shell,
+:global(html[data-imchatty-theme="dark"]) .seo-page-shell {
+  color: #e2e8f0;
+}
+
 .seo-layout {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
@@ -449,13 +454,46 @@ const selectLocale = (localeCode: string) => {
   color: #e2e8f0;
 }
 
+.seo-page-shell--dark .seo-cta-point,
+:global(.v-theme--dark) .seo-cta-point,
+:global(html[data-imchatty-theme="dark"]) .seo-cta-point {
+  color: #cbd5e1;
+}
+
+:global(.v-theme--dark) .seo-hero__copy,
+:global(.v-theme--dark) .seo-hero__panel,
+:global(.v-theme--dark) .seo-page-shell .v-card,
+:global(html[data-imchatty-theme="dark"]) .seo-hero__copy,
+:global(html[data-imchatty-theme="dark"]) .seo-hero__panel,
+:global(html[data-imchatty-theme="dark"]) .seo-page-shell .v-card {
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94));
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: #e2e8f0;
+}
+
 .seo-page-shell--dark :deep(.text-medium-emphasis),
 .seo-page-shell--dark :deep(.text-body-2),
 .seo-page-shell--dark :deep(.text-body-1) {
   color: #cbd5e1 !important;
 }
 
+:global(.v-theme--dark) .seo-page-shell :deep(.text-medium-emphasis),
+:global(.v-theme--dark) .seo-page-shell :deep(.text-body-2),
+:global(.v-theme--dark) .seo-page-shell :deep(.text-body-1),
+:global(html[data-imchatty-theme="dark"]) .seo-page-shell :deep(.text-medium-emphasis),
+:global(html[data-imchatty-theme="dark"]) .seo-page-shell :deep(.text-body-2),
+:global(html[data-imchatty-theme="dark"]) .seo-page-shell :deep(.text-body-1) {
+  color: #cbd5e1 !important;
+}
+
 .seo-page-shell--dark :deep(.v-expansion-panel) {
+  background: rgba(15, 23, 42, 0.72);
+  color: #e2e8f0;
+}
+
+:global(.v-theme--dark) .seo-page-shell :deep(.v-expansion-panel),
+:global(html[data-imchatty-theme="dark"]) .seo-page-shell :deep(.v-expansion-panel) {
   background: rgba(15, 23, 42, 0.72);
   color: #e2e8f0;
 }
@@ -487,7 +525,7 @@ const selectLocale = (localeCode: string) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #cbd5e1;
+  color: rgba(var(--v-theme-on-surface), 0.78);
   font-size: 0.95rem;
 }
 
@@ -553,6 +591,13 @@ const selectLocale = (localeCode: string) => {
 
 .seo-page-shell--dark .seo-richtext :deep(a),
 .seo-page-shell--dark .seo-related-link {
+  color: #7dd3fc;
+}
+
+:global(.v-theme--dark) .seo-page-shell .seo-richtext :deep(a),
+:global(.v-theme--dark) .seo-page-shell .seo-related-link,
+:global(html[data-imchatty-theme="dark"]) .seo-page-shell .seo-richtext :deep(a),
+:global(html[data-imchatty-theme="dark"]) .seo-page-shell .seo-related-link {
   color: #7dd3fc;
 }
 

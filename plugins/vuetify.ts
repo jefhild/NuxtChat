@@ -140,12 +140,17 @@ export default defineNuxtPlugin((app) => {
     }
     if (import.meta.client) {
       document.documentElement.style.colorScheme = themeName;
+      document.documentElement.dataset.imchattyTheme = themeName;
     }
     themeCookie.value = normalizedMode;
     resolvedThemeCookie.value = themeName;
   };
 
   if (import.meta.client) {
+    // Apply before app mount so SSR's deterministic light fallback does not
+    // linger visibly on first paint when the browser/user preference is dark.
+    applyThemeMode(themeCookie.value || "system");
+
     onNuxtReady(() => {
       const syncActiveTheme = () => {
         applyThemeMode(themeCookie.value || "system");
