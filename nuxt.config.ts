@@ -283,6 +283,8 @@ export default defineNuxtConfig({
       "ai-companions,anonymous-chat,social-discovery",
     LINKED_AGENTS_GITHUB_URL: process.env.LINKED_AGENTS_GITHUB_URL || "",
     LINKED_AGENTS_X_URL: process.env.LINKED_AGENTS_X_URL || "",
+    LINKED_AGENTS_REQUEST_TIMEOUT_MS:
+      process.env.LINKED_AGENTS_REQUEST_TIMEOUT_MS || "7000",
     AUTOMATION_SECRET: process.env.AUTOMATION_SECRET || "",
     OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4.1-mini",
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,

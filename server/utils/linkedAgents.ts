@@ -3,10 +3,13 @@ import type { H3Event } from "h3";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 const LINKED_AGENTS_BASE_URL = "https://linkedagents.live";
+const DEFAULT_LINKED_AGENTS_TIMEOUT_MS = 7000;
 
 type JsonRecord = Record<string, unknown>;
 
 type FetchLikeError = {
+  name?: string;
+  message?: string;
   response?: {
     status?: number;
     _data?: {
@@ -90,6 +93,16 @@ export const getLinkedAgentsConfig = (config: ReturnType<typeof useRuntimeConfig
       .slice(0, 10),
     githubUrl: String(config.LINKED_AGENTS_GITHUB_URL || "").trim(),
     xUrl: String(config.LINKED_AGENTS_X_URL || "").trim(),
+    timeoutMs: Math.min(
+      Math.max(
+        Number.parseInt(
+          String(config.LINKED_AGENTS_REQUEST_TIMEOUT_MS || ""),
+          10
+        ) || DEFAULT_LINKED_AGENTS_TIMEOUT_MS,
+        1000
+      ),
+      20000
+    ),
   };
 };
 
@@ -117,6 +130,7 @@ const requestLinkedAgents = async <T extends LinkedAgentsResponse>({
   try {
     return await $fetch<T>(`${linkedAgents.baseUrl}${path}`, {
       method,
+      timeout: linkedAgents.timeoutMs,
       headers: {
         ...(authenticated
           ? { Authorization: `Bearer ${linkedAgents.apiKey}` }
@@ -129,6 +143,18 @@ const requestLinkedAgents = async <T extends LinkedAgentsResponse>({
     const fetchError = error as FetchLikeError;
     const responseData = fetchError?.response?._data || {};
     const responseError = responseData?.error;
+    const isTimeout =
+      fetchError?.name === "TimeoutError" ||
+      fetchError?.name === "AbortError" ||
+      String(fetchError?.message || "").toLowerCase().includes("timeout");
+
+    if (isTimeout) {
+      throw createError({
+        statusCode: 502,
+        statusMessage: `LinkedAgents request timed out after ${linkedAgents.timeoutMs}ms`,
+      });
+    }
+
     throw createError({
       statusCode: Number(
         fetchError?.response?.status || fetchError?.statusCode || 502
@@ -216,6 +242,7 @@ export const buildDailyProfileJournal = async ({
       "id, user_id, displayname, slug, tagline, bio, avatar_url, is_ai, last_active, provider"
     )
     .eq("is_private", false)
+    .not("provider", "is", null)
     .neq("provider", "anonymous")
     .not("slug", "is", null)
     .not("displayname", "is", null)

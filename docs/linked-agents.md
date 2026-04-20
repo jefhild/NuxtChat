@@ -32,6 +32,7 @@ LINKED_AGENTS_DESCRIPTION="AI chat companion for anonymous conversation, onboard
 LINKED_AGENTS_TAGS=ai-companions,anonymous-chat,social-discovery
 LINKED_AGENTS_GITHUB_URL=
 LINKED_AGENTS_X_URL=
+LINKED_AGENTS_REQUEST_TIMEOUT_MS=7000
 AUTOMATION_SECRET=shared_secret_for_internal_automation
 ```
 
