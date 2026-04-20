@@ -200,6 +200,56 @@ const clearFilters = () => {
   activeFilter.value = null;
 };
 
+const normalizeRouteQueryValue = (value) => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return String(raw || "").trim().toLowerCase();
+};
+
+const selectFilter = (id, groupId = null) => {
+  if (!id) return;
+  search.value = "";
+  activeFilter.value = id;
+  activated.value = [id];
+  if (groupId && !opened.value.includes(groupId)) {
+    opened.value = [...opened.value, groupId];
+  }
+  const firstEntry = faqEntries.value.find(
+    (entry) => entry.groupId === id || entry.topicId === id
+  );
+  if (firstEntry) {
+    expanded.value = firstEntry.slug || firstEntry.id;
+  }
+};
+
+const applyRouteFilter = () => {
+  const topicSlug = normalizeRouteQueryValue(route.query.topic);
+  const groupSlug = normalizeRouteQueryValue(route.query.group);
+
+  if (topicSlug) {
+    for (const group of faqGroups.value) {
+      const topic = (group.topics || []).find(
+        (item) => String(item.slug || "").toLowerCase() === topicSlug
+      );
+      if (topic) {
+        selectFilter(topic.id, group.id);
+        return true;
+      }
+    }
+  }
+
+  if (groupSlug) {
+    const group = faqGroups.value.find(
+      (item) => String(item.slug || "").toLowerCase() === groupSlug
+    );
+    if (group) {
+      selectFilter(group.id, group.id);
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const applyHash = async () => {
   const hash = route.hash.replace(/^#/, "");
   if (!hash) return;
@@ -217,16 +267,19 @@ const applyHash = async () => {
 };
 
 watch(
-  () => faqGroups.value,
+  () => [faqGroups.value, faqEntries.value, route.query.group, route.query.topic],
   (groups) => {
-    if (!groups.length || opened.value.length) return;
-    opened.value = [groups[0].id];
+    const currentGroups = groups[0] || [];
+    if (!currentGroups.length) return;
+    if (applyRouteFilter()) return;
+    if (opened.value.length) return;
+    opened.value = [currentGroups[0].id];
     if (!route.hash && !activeFilter.value) {
-      activated.value = [groups[0].id];
-      activeFilter.value = groups[0].id;
+      activated.value = [currentGroups[0].id];
+      activeFilter.value = currentGroups[0].id;
     }
     if (!route.hash && !expanded.value) {
-      const firstEntry = faqEntries.value.find((e) => e.groupId === groups[0].id);
+      const firstEntry = faqEntries.value.find((e) => e.groupId === currentGroups[0].id);
       if (firstEntry) expanded.value = firstEntry.slug || firstEntry.id;
     }
   },

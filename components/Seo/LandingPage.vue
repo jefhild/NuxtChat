@@ -16,7 +16,7 @@
             <v-btn color="primary" size="large" :to="localPath(page.ctaHref || '/chat')">
               {{ page.ctaLabel || "Start chatting" }}
             </v-btn>
-            <v-btn variant="outlined" size="large" :to="localPath('/faq')">
+            <v-btn variant="outlined" size="large" :to="learnMoreTo">
               {{ t("pages.home.landing_page.learn_more") }}
             </v-btn>
           </div>
@@ -287,6 +287,28 @@ const renderedPhotoCredits = computed(() =>
 );
 
 const route = useRoute();
+const languagePracticeLandingSlugs = new Set([
+  "practice-english-chat-online",
+  "practice-french-chat-online",
+  "practice-russian-chat-online",
+  "practice-chinese-chat-online",
+]);
+const routeSlug = computed(() =>
+  String(route.path || "")
+    .split("/")
+    .filter(Boolean)
+    .at(-1)
+    ?.toLowerCase()
+);
+const learnMoreTo = computed(() => {
+  if (routeSlug.value && languagePracticeLandingSlugs.has(routeSlug.value)) {
+    return localPath({
+      path: "/faq",
+      query: { group: "language-practice" },
+    });
+  }
+  return localPath("/faq");
+});
 const webPageSchema = computed(() => {
   const canonicalUrl = `https://imchatty.com${props.page.path || route.path}`;
   return {
