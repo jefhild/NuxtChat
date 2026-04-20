@@ -106,21 +106,11 @@
                 </span>
                 <span class="flag-wrap">
                   <v-icon
-                    v-if="item.user.gender_id === 1"
                     size="14"
-                    class="gender-icon gender-male"
+                    class="gender-icon"
+                    :style="{ '--chat-gender-color': genderColorFor(item.user.gender_id) }"
                   >
-                    mdi-gender-male
-                  </v-icon>
-                  <v-icon
-                    v-else-if="item.user.gender_id === 2"
-                    size="14"
-                    class="gender-icon gender-female"
-                  >
-                    mdi-gender-female
-                  </v-icon>
-                  <v-icon v-else size="14" class="gender-icon gender-other">
-                    mdi-gender-non-binary
+                    {{ genderIconFor(item.user.gender_id) }}
                   </v-icon>
                   <span class="flag" v-if="item.user.country_emoji">
                     {{ item.user.country_emoji }}
@@ -316,6 +306,19 @@ const isPinned = (u) => {
 const unreadFor = (u) => msgs.unreadByPeer?.[idStr(u)] || 0;
 const hasLanguagePracticeChat = (u) =>
   languagePracticeChatIdSet.value.has(idStr(u));
+const normalizedGenderId = (genderId) => Number(genderId);
+const genderIconFor = (genderId) => {
+  const id = normalizedGenderId(genderId);
+  if (id === 1) return "mdi-gender-male";
+  if (id === 2) return "mdi-gender-female";
+  return "mdi-gender-non-binary";
+};
+const genderColorFor = (genderId) => {
+  const id = normalizedGenderId(genderId);
+  if (id === 1) return "#3b82f6";
+  if (id === 2) return "#ec4899";
+  return "#a855f7";
+};
 const displayNameFor = (u) =>
   resolveProfileLocalization({
     profile: u,
@@ -892,22 +895,10 @@ function toggleGroup(id) {
 }
 
 .gender-icon {
-  color: rgba(var(--v-theme-on-surface), 0.65);
+  color: var(--chat-gender-color, rgba(var(--v-theme-on-surface), 0.65)) !important;
   background: transparent !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-}
-
-.gender-male {
-  color: #1e88e5;
-}
-
-.gender-female {
-  color: #ec407a;
-}
-
-.gender-other {
-  color: #8e24aa;
 }
 
 .actions {

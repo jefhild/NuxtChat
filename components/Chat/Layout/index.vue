@@ -153,6 +153,7 @@
                     size="20"
                     class="selected-avatar-gender"
                     :class="selectedUserGenderClass"
+                    :style="{ '--selected-gender-color': selectedUserGenderColor }"
                   >
                     {{ selectedUserGenderIcon }}
                   </v-icon>
@@ -630,6 +631,7 @@
                   size="20"
                   class="selected-avatar-gender mobile-gender-icon"
                   :class="selectedUserGenderClass"
+                  :style="{ '--selected-gender-color': selectedUserGenderColor }"
                 >
                   {{ selectedUserGenderIcon }}
                 </v-icon>
@@ -1881,6 +1883,13 @@ const selectedUserGenderClass = computed(() => {
   if (genderId === 1) return "is-male";
   if (genderId === 2) return "is-female";
   return "is-other";
+});
+
+const selectedUserGenderColor = computed(() => {
+  const genderId = Number(selectedUser.value?.gender_id);
+  if (genderId === 1) return "#3b82f6";
+  if (genderId === 2) return "#ec4899";
+  return "#a855f7";
 });
 
 const selectedUserSubtitle = computed(() => {
@@ -5343,17 +5352,17 @@ function toggleFilters() {
   background: transparent;
   border-radius: 999px;
   padding: 4px;
-  color: #1d3b58;
+  color: var(--selected-gender-color, #1d3b58) !important;
   z-index: 3;
 }
 .selected-avatar-gender.is-male {
-  color: #2563eb;
+  color: var(--selected-gender-color, #3b82f6) !important;
 }
 .selected-avatar-gender.is-female {
-  color: #ec4899;
+  color: var(--selected-gender-color, #ec4899) !important;
 }
 .selected-avatar-gender.is-other {
-  color: #7c3aed;
+  color: var(--selected-gender-color, #a855f7) !important;
 }
 .chat-mobile-drawer {
   z-index: 1700 !important;
