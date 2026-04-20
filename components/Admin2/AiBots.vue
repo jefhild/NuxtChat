@@ -2027,7 +2027,12 @@ const runLinkedAgentsDailyProfileNow = async () => {
           ? "LinkedAgents daily profile was already posted today."
           : "LinkedAgents daily profile run completed.";
   } catch (error) {
-    console.error("[admin][ai-bots] linked agents run error", error);
+    console.error("[admin][ai-bots] linked agents run error", {
+      message: error?.message,
+      statusCode: error?.statusCode,
+      data: error?.data,
+      raw: error,
+    });
     snackbar.show = true;
     snackbar.color = "red";
     snackbar.message =

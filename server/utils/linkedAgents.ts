@@ -152,6 +152,11 @@ const requestLinkedAgents = async <T extends LinkedAgentsResponse>({
       throw createError({
         statusCode: 502,
         statusMessage: `LinkedAgents request timed out after ${linkedAgents.timeoutMs}ms`,
+        data: {
+          upstream: linkedAgents.baseUrl,
+          path,
+          timeout_ms: linkedAgents.timeoutMs,
+        },
       });
     }
 
@@ -164,7 +169,11 @@ const requestLinkedAgents = async <T extends LinkedAgentsResponse>({
         responseData?.message ||
         (typeof responseError === "string" ? responseError : null) ||
         "LinkedAgents request failed",
-      data: responseData,
+      data: {
+        upstream: linkedAgents.baseUrl,
+        path,
+        response: responseData,
+      },
     });
   }
 };

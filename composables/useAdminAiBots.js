@@ -1,6 +1,22 @@
 export const useAdminAiBots = () => {
   const basePath = "/api/admin/ai-bots";
 
+  const getFetchErrorPayload = (error) =>
+    error?.data || error?.response?._data || null;
+
+  const getFetchErrorMessage = (error, fallback) => {
+    const payload = getFetchErrorPayload(error);
+    const payloadError = payload?.error;
+    if (typeof payloadError === "string" && payloadError.trim()) {
+      return payloadError.trim();
+    }
+    if (payloadError?.message) return String(payloadError.message).trim();
+    if (payload?.message) return String(payload.message).trim();
+    if (error?.statusMessage) return String(error.statusMessage).trim();
+    if (error?.message) return String(error.message).trim();
+    return fallback;
+  };
+
   const listBots = async () => {
     return await $fetch(basePath, { method: "GET" });
   };
@@ -49,10 +65,22 @@ export const useAdminAiBots = () => {
   };
 
   const runLinkedAgentsDailyProfile = async (payload = {}) => {
-    return await $fetch(`${basePath}/linked-agents/daily-profile`, {
-      method: "POST",
-      body: payload,
-    });
+    try {
+      return await $fetch(`${basePath}/linked-agents/daily-profile`, {
+        method: "POST",
+        body: payload,
+      });
+    } catch (error) {
+      const wrapped = new Error(
+        getFetchErrorMessage(
+          error,
+          "Failed to run LinkedAgents daily profile post."
+        )
+      );
+      wrapped.data = getFetchErrorPayload(error);
+      wrapped.statusCode = error?.statusCode || error?.response?.status;
+      throw wrapped;
+    }
   };
 
   return {
