@@ -9,5 +9,5 @@
 </template>
 
 <script setup lang="ts">
-const { locale, page, availableLocales } = useLandingSeoPage("chat-without-signup");
+const { locale, page, availableLocales } = await useLandingSeoPage("chat-without-signup");
 </script>

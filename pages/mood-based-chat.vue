@@ -9,5 +9,5 @@
 </template>
 
 <script setup lang="ts">
-const { locale, page, availableLocales } = useLandingSeoPage("mood-based-chat");
+const { locale, page, availableLocales } = await useLandingSeoPage("mood-based-chat");
 </script>

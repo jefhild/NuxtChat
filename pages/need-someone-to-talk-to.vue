@@ -9,5 +9,5 @@
 </template>
 
 <script setup lang="ts">
-const { locale, page, availableLocales } = useLandingSeoPage("need-someone-to-talk-to");
+const { locale, page, availableLocales } = await useLandingSeoPage("need-someone-to-talk-to");
 </script>

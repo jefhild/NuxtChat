@@ -9,5 +9,5 @@
 </template>
 
 <script setup lang="ts">
-const { locale, page, availableLocales } = useLandingSeoPage("anonymous-chat");
+const { locale, page, availableLocales } = await useLandingSeoPage("anonymous-chat");
 </script>

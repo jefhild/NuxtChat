@@ -9,5 +9,5 @@
 </template>
 
 <script setup lang="ts">
-const { locale, page, availableLocales } = useLandingSeoPage("cant-sleep-chat");
+const { locale, page, availableLocales } = await useLandingSeoPage("cant-sleep-chat");
 </script>

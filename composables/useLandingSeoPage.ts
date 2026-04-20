@@ -1,5 +1,3 @@
-import { getMarketingPage } from "@/utils/marketingPages";
-
 const LANDING_PAGE_TYPES: Record<string, "landing"> = {
   "anonymous-chat": "landing",
   "chat-without-signup": "landing",
@@ -10,29 +8,18 @@ const LANDING_PAGE_TYPES: Record<string, "landing"> = {
   "cant-sleep-chat": "landing",
 };
 
-export function useLandingSeoPage(slug: string) {
+export async function useLandingSeoPage(slug: string) {
   const { locale } = useI18n();
   const pageType = LANDING_PAGE_TYPES[String(slug || "").trim().toLowerCase()] || "landing";
 
-  const fallbackPage = computed(() => getMarketingPage(slug, locale.value));
-
-  const { data } = useAsyncData(
+  const asyncPage = useAsyncData(
     () => `seo-page-landing-${slug}-${locale.value}`,
-    async () => {
-      try {
-        return await $fetch(`/api/seo-pages/${pageType}/${slug}`, {
-          query: { locale: locale.value },
-        });
-      } catch (error) {
-        console.error("[landing-page] admin fetch failed", {
-          slug,
-          locale: locale.value,
-          error,
-        });
-        return null;
-      }
-    }
+    () =>
+      $fetch(`/api/seo-pages/${pageType}/${slug}`, {
+        query: { locale: locale.value },
+      })
   );
+  const { data, error } = asyncPage;
 
   const adminPage = computed(() => data.value?.page || null);
   const page = computed(() =>
@@ -41,12 +28,11 @@ export function useLandingSeoPage(slug: string) {
           ...adminPage.value,
           sectionLabel: "Landing",
         }
-      : fallbackPage.value
+      : null
   );
   const availableLocales = computed(() =>
-    (adminPage.value ? data.value?.availableLocales || ["en"] : ["en"]).map(
-      (localeCode: string) =>
-        String(localeCode || "").split("-")[0].trim().toLowerCase()
+    (data.value?.availableLocales || ["en"]).map((localeCode: string) =>
+      String(localeCode || "").split("-")[0].trim().toLowerCase()
     )
   );
   const baseLocale = computed(() =>
@@ -85,6 +71,12 @@ export function useLandingSeoPage(slug: string) {
       twitterImage: computed(() => page.value?.heroImageUrl || ""),
     },
   });
+
+  await asyncPage;
+
+  if (error.value || !data.value?.page) {
+    throw createError({ statusCode: 404, statusMessage: "Page not found" });
+  }
 
   return {
     locale,
