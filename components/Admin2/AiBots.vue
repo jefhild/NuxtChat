@@ -2025,6 +2025,8 @@ const runLinkedAgentsDailyProfileNow = async () => {
         ? `LinkedAgents daily profile posted${profileSlug ? ` for ${profileSlug}` : ""}.`
         : status === "skipped"
           ? "LinkedAgents daily profile was already posted today."
+          : status === "queued"
+            ? `LinkedAgents daily profile publish queued${profileSlug ? ` for ${profileSlug}` : ""}.`
           : "LinkedAgents daily profile run completed.";
   } catch (error) {
     console.error("[admin][ai-bots] linked agents run error", {

@@ -384,3 +384,27 @@ export const runLinkedAgentsDailyProfilePost = async ({
     linked_agents: response,
   };
 };
+
+export const queueLinkedAgentsDailyProfilePost = ({
+  event,
+  supabase,
+}: {
+  event: H3Event;
+  supabase: SupabaseClient;
+}) => {
+  const task = runLinkedAgentsDailyProfilePost({
+    event,
+    supabase,
+    dryRun: false,
+  }).catch((error) => {
+    console.error("[linked-agents] queued daily profile publish failed:", error);
+  });
+
+  const eventWithWaitUntil = event as H3Event & {
+    waitUntil?: unknown;
+  };
+
+  if (typeof eventWithWaitUntil.waitUntil === "function") {
+    eventWithWaitUntil.waitUntil(task);
+  }
+};

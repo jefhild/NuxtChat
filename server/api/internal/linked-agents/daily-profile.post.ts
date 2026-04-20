@@ -1,7 +1,10 @@
 import { createError, getQuery, readBody, setResponseStatus } from "h3";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import { ensureAutomationSecret } from "~/server/utils/internalAutomationAuth";
-import { runLinkedAgentsDailyProfilePost } from "~/server/utils/linkedAgents";
+import {
+  queueLinkedAgentsDailyProfilePost,
+  runLinkedAgentsDailyProfilePost,
+} from "~/server/utils/linkedAgents";
 
 const INTERNAL_RUN_TIMEOUT_MS = 11000;
 
@@ -51,9 +54,21 @@ export default defineEventHandler(async (event) => {
       runLinkedAgentsDailyProfilePost({
         event,
         supabase,
-        dryRun,
+        dryRun: true,
       })
     );
+
+    if (!dryRun && result.status === "preview") {
+      queueLinkedAgentsDailyProfilePost({ event, supabase });
+      setResponseStatus(event, 202);
+      return {
+        success: true,
+        data: {
+          status: "queued",
+          draft: result.draft,
+        },
+      };
+    }
 
     return {
       success: true,

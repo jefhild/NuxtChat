@@ -1,7 +1,10 @@
 import { createError, readBody, setResponseStatus } from "h3";
 import { ensureAdmin } from "~/server/utils/adminAuth";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
-import { runLinkedAgentsDailyProfilePost } from "~/server/utils/linkedAgents";
+import {
+  queueLinkedAgentsDailyProfilePost,
+  runLinkedAgentsDailyProfilePost,
+} from "~/server/utils/linkedAgents";
 
 const ADMIN_RUN_TIMEOUT_MS = 11000;
 
@@ -44,13 +47,26 @@ export default defineEventHandler(async (event) => {
     const supabase = await getServiceRoleClient(event);
     await ensureAdmin(event, supabase);
 
+    const dryRun = Boolean(body.dry_run);
     const result = await withAdminRunTimeout(
       runLinkedAgentsDailyProfilePost({
         event,
         supabase,
-        dryRun: Boolean(body.dry_run),
+        dryRun: true,
       })
     );
+
+    if (!dryRun && result.status === "preview") {
+      queueLinkedAgentsDailyProfilePost({ event, supabase });
+      setResponseStatus(event, 202);
+      return {
+        success: true,
+        data: {
+          status: "queued",
+          draft: result.draft,
+        },
+      };
+    }
 
     return {
       success: true,
