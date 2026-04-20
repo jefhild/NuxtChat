@@ -57,6 +57,15 @@
         <v-card-subtitle class="text-body-2">
           Manage personas, prompts, and OpenAI settings for your chat agents.
         </v-card-subtitle>
+        <v-alert
+          v-if="linkedAgentsRunNotice"
+          class="mt-3"
+          :type="linkedAgentsRunNotice.type"
+          variant="tonal"
+          border="start"
+        >
+          {{ linkedAgentsRunNotice.message }}
+        </v-alert>
 
         <v-text-field
           v-model="search"
@@ -1059,8 +1068,8 @@
     <v-snackbar
       v-model="snackbar.show"
       :color="snackbar.color"
-      location="top"
-      timeout="3500"
+      location="bottom"
+      timeout="7000"
     >
       {{ snackbar.message }}
     </v-snackbar>
@@ -1214,6 +1223,7 @@ const snackbar = reactive({
   message: "",
   color: "primary",
 });
+const linkedAgentsRunNotice = ref(null);
 
 const postForm = reactive({
   submolt_name: "",
@@ -2018,16 +2028,22 @@ const runLinkedAgentsDailyProfileNow = async () => {
     const status = String(res?.data?.status || "").trim();
     const profileSlug = String(res?.data?.draft?.entry_payload?.profile_slug || "").trim();
 
-    snackbar.show = true;
-    snackbar.color = status === "posted" ? "teal" : "amber-darken-2";
-    snackbar.message =
+    const message =
       status === "posted"
         ? `LinkedAgents daily profile posted${profileSlug ? ` for ${profileSlug}` : ""}.`
         : status === "skipped"
           ? "LinkedAgents daily profile was already posted today."
           : status === "queued"
             ? `LinkedAgents daily profile publish queued${profileSlug ? ` for ${profileSlug}` : ""}.`
-          : "LinkedAgents daily profile run completed.";
+            : "LinkedAgents daily profile run completed.";
+
+    linkedAgentsRunNotice.value = {
+      type: status === "posted" ? "success" : status === "queued" ? "warning" : "info",
+      message,
+    };
+    snackbar.show = true;
+    snackbar.color = status === "posted" ? "teal" : "amber-darken-2";
+    snackbar.message = message;
   } catch (error) {
     console.error("[admin][ai-bots] linked agents run error", {
       message: error?.message,
@@ -2035,12 +2051,17 @@ const runLinkedAgentsDailyProfileNow = async () => {
       data: error?.data,
       raw: error,
     });
-    snackbar.show = true;
-    snackbar.color = "red";
-    snackbar.message =
+    const message =
       error?.data?.error ||
       error?.message ||
       "Failed to run LinkedAgents daily profile post.";
+    linkedAgentsRunNotice.value = {
+      type: "error",
+      message,
+    };
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = message;
   } finally {
     runningLinkedAgents.value = false;
   }
