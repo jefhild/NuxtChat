@@ -112,14 +112,21 @@ const requestLinkedAgents = async <T extends LinkedAgentsResponse>({
   method = "GET",
   body,
   authenticated = false,
+  timeoutMs,
 }: {
   event: H3Event;
   path: string;
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   body?: JsonRecord;
   authenticated?: boolean;
+  timeoutMs?: number;
 }) => {
   const linkedAgents = getLinkedAgentsConfig(useRuntimeConfig(event));
+  const requestTimeoutMs = Math.min(
+    Math.max(Number(timeoutMs) || linkedAgents.timeoutMs, 1000),
+    linkedAgents.timeoutMs
+  );
+
   if (authenticated && !linkedAgents.apiKey) {
     throw createError({
       statusCode: 500,
@@ -127,10 +134,16 @@ const requestLinkedAgents = async <T extends LinkedAgentsResponse>({
     });
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, requestTimeoutMs);
+
   try {
     return await $fetch<T>(`${linkedAgents.baseUrl}${path}`, {
       method,
-      timeout: linkedAgents.timeoutMs,
+      timeout: requestTimeoutMs,
+      signal: controller.signal,
       headers: {
         ...(authenticated
           ? { Authorization: `Bearer ${linkedAgents.apiKey}` }
@@ -151,11 +164,11 @@ const requestLinkedAgents = async <T extends LinkedAgentsResponse>({
     if (isTimeout) {
       throw createError({
         statusCode: 502,
-        statusMessage: `LinkedAgents request timed out after ${linkedAgents.timeoutMs}ms`,
+        statusMessage: `LinkedAgents request timed out after ${requestTimeoutMs}ms`,
         data: {
           upstream: linkedAgents.baseUrl,
           path,
-          timeout_ms: linkedAgents.timeoutMs,
+          timeout_ms: requestTimeoutMs,
         },
       });
     }
@@ -175,6 +188,8 @@ const requestLinkedAgents = async <T extends LinkedAgentsResponse>({
         response: responseData,
       },
     });
+  } finally {
+    clearTimeout(timeoutId);
   }
 };
 
@@ -219,6 +234,7 @@ export const hasLinkedAgentsJournalForDay = async ({
     path: `/api/agents/${encodeURIComponent(
       linkedAgents.agentId
     )}/journal?limit=10`,
+    timeoutMs: Math.min(linkedAgents.timeoutMs, 2500),
   }).catch(() => []);
 
   return asArray(response).some((entry) => {

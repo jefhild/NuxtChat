@@ -1,13 +1,38 @@
-import { readBody, setResponseStatus } from "h3";
+import { createError, readBody, setResponseStatus } from "h3";
 import { ensureAdmin } from "~/server/utils/adminAuth";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import { runLinkedAgentsDailyProfilePost } from "~/server/utils/linkedAgents";
+
+const ADMIN_RUN_TIMEOUT_MS = 11000;
 
 type HandlerError = {
   statusCode?: number;
   statusMessage?: string;
   message?: string;
   data?: unknown;
+};
+
+const withAdminRunTimeout = async <T>(promise: Promise<T>) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(
+        createError({
+          statusCode: 504,
+          statusMessage: `LinkedAgents admin run timed out after ${ADMIN_RUN_TIMEOUT_MS}ms`,
+          data: {
+            timeout_ms: ADMIN_RUN_TIMEOUT_MS,
+          },
+        })
+      );
+    }, ADMIN_RUN_TIMEOUT_MS);
+  });
+
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
 };
 
 export default defineEventHandler(async (event) => {
@@ -19,11 +44,13 @@ export default defineEventHandler(async (event) => {
     const supabase = await getServiceRoleClient(event);
     await ensureAdmin(event, supabase);
 
-    const result = await runLinkedAgentsDailyProfilePost({
-      event,
-      supabase,
-      dryRun: Boolean(body.dry_run),
-    });
+    const result = await withAdminRunTimeout(
+      runLinkedAgentsDailyProfilePost({
+        event,
+        supabase,
+        dryRun: Boolean(body.dry_run),
+      })
+    );
 
     return {
       success: true,

@@ -1,13 +1,38 @@
-import { getQuery, readBody, setResponseStatus } from "h3";
+import { createError, getQuery, readBody, setResponseStatus } from "h3";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import { ensureAutomationSecret } from "~/server/utils/internalAutomationAuth";
 import { runLinkedAgentsDailyProfilePost } from "~/server/utils/linkedAgents";
+
+const INTERNAL_RUN_TIMEOUT_MS = 11000;
 
 type HandlerError = {
   statusCode?: number;
   statusMessage?: string;
   message?: string;
   data?: unknown;
+};
+
+const withInternalRunTimeout = async <T>(promise: Promise<T>) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(
+        createError({
+          statusCode: 504,
+          statusMessage: `LinkedAgents internal run timed out after ${INTERNAL_RUN_TIMEOUT_MS}ms`,
+          data: {
+            timeout_ms: INTERNAL_RUN_TIMEOUT_MS,
+          },
+        })
+      );
+    }, INTERNAL_RUN_TIMEOUT_MS);
+  });
+
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
 };
 
 export default defineEventHandler(async (event) => {
@@ -22,11 +47,13 @@ export default defineEventHandler(async (event) => {
       String(body.dry_run ?? query.dry_run ?? "").trim().toLowerCase() === "true";
 
     const supabase = await getServiceRoleClient(event);
-    const result = await runLinkedAgentsDailyProfilePost({
-      event,
-      supabase,
-      dryRun,
-    });
+    const result = await withInternalRunTimeout(
+      runLinkedAgentsDailyProfilePost({
+        event,
+        supabase,
+        dryRun,
+      })
+    );
 
     return {
       success: true,

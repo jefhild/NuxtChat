@@ -6,6 +6,9 @@ export const useAdminAiBots = () => {
 
   const getFetchErrorMessage = (error, fallback) => {
     const payload = getFetchErrorPayload(error);
+    if (typeof payload === "string" && payload.includes("Cloudflare")) {
+      return "Cloudflare returned a 502 from the imchatty.com origin before Nuxt could respond.";
+    }
     const payloadError = payload?.error;
     if (typeof payloadError === "string" && payloadError.trim()) {
       return payloadError.trim();
