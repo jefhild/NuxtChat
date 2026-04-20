@@ -250,6 +250,8 @@
                     size="small"
                     color="success"
                     variant="tonal"
+                    :to="localPath(languagePracticeLandingHref(language))"
+                    class="language-practice-card__language-link"
                   >
                     {{ language }}
                   </v-chip>
@@ -622,6 +624,29 @@ const languagePracticeCopy = computed(() => ({
   secondaryCta: t(homePageKey("languagePractice.secondaryCta")),
 }));
 
+const languagePracticeLandingMap = {
+  english: "/practice-english-chat-online",
+  anglais: "/practice-english-chat-online",
+  английский: "/practice-english-chat-online",
+  英语: "/practice-english-chat-online",
+  chinese: "/practice-chinese-chat-online",
+  chinois: "/practice-chinese-chat-online",
+  китайский: "/practice-chinese-chat-online",
+  中文: "/practice-chinese-chat-online",
+  russian: "/practice-russian-chat-online",
+  russe: "/practice-russian-chat-online",
+  русский: "/practice-russian-chat-online",
+  俄语: "/practice-russian-chat-online",
+  french: "/practice-french-chat-online",
+  français: "/practice-french-chat-online",
+  французский: "/practice-french-chat-online",
+  法语: "/practice-french-chat-online",
+};
+
+const languagePracticeLandingHref = (language) =>
+  languagePracticeLandingMap[String(language || "").trim().toLowerCase()] ||
+  "/language-practice";
+
 const updateSpotlight = (e) => {
   const el = e.currentTarget;
   const rect = el.getBoundingClientRect();
@@ -978,6 +1003,10 @@ const clearSpotlight = (e) => {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;
+}
+
+.language-practice-card__language-link {
+  text-decoration: none;
 }
 
 .language-practice-actions {

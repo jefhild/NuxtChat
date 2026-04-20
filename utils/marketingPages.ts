@@ -26,6 +26,265 @@ export type MarketingPage = {
   metaDescription: string;
 };
 
+const languagePracticeLandingCopy = {
+  english: {
+    title: "Practice English Chat Online",
+    subtitle:
+      "Build more natural English through text chat, small corrections, and real conversation.",
+    heroTitle: "Practice English Chat Online Without Turning It Into a Lesson",
+    heroBody:
+      "English practice gets better when you can try real sentences, notice what sounds natural, and keep the conversation moving.",
+    body: [
+      "## Why English chat practice feels different from studying English",
+      "A lot of English learners know more than they can comfortably use. They can read an article, pass a grammar quiz, or recognize a word in a video, then freeze when a simple reply is needed. That gap is normal. Chat practice is useful because it trains the small decisions that happen inside a real conversation.",
+      "English is especially awkward because correct English and natural English are not always the same thing. A sentence can be grammatical and still sound stiff. Native and fluent speakers shorten things, use phrasal verbs, leave out obvious words, and choose softer wording depending on the situation.",
+      "Text chat gives you time to notice those patterns without the pressure of live speaking. You can write a message, reread it, change one word, and still have a real exchange with another person.",
+      "## What English learners usually need more of",
+      "The hard parts of English are rarely limited to vocabulary. Learners often need practice with articles, prepositions, phrasal verbs, word order, tone, and the difference between direct and polite wording. They also need to see which phrases people actually use in casual chat.",
+      "For example, a textbook might teach a complete sentence. A real chat might use a shorter reply, a question tag, or a quick phrase like 'sounds good', 'I am not sure yet', or 'that makes sense'. Those small pieces are what make English feel usable.",
+      "## How to use ImChatty for English practice",
+      "Start with a simple topic you would actually talk about: your day, music, food, work, movies, school, travel, games, or something you are curious about. Then decide whether you want gentle correction or a more active coaching style.",
+      "If you want natural conversation, ask your partner to correct only the sentences that sound confusing or unnatural. If you are preparing for work, study, or travel, ask for more direct feedback. AI tutors can also help when you want immediate practice before talking with a real person.",
+      "## What makes a good English chat partner",
+      "A good English partner does not need to act like a strict teacher. The best partner is patient, clear, and willing to explain why one phrase sounds better than another. They can help you with everyday wording, not only formal grammar.",
+      "Useful correction often looks small: replacing one preposition, suggesting a more common verb, or showing a more relaxed way to say the same thing. Those small fixes build confidence faster than long grammar lectures.",
+      "## Practice that sounds like real life",
+      "English is used globally, so there is no single perfect version of casual English. You may meet people with different accents, spelling habits, slang, and cultural references. That is part of the value. Real chat helps you understand English as people actually use it online.",
+      "You do not need perfect English to start. You need a place where mistakes are expected, corrections are useful, and the conversation gives you a reason to keep writing.",
+    ].join("\n\n"),
+    highlights: [
+      "Practice natural English instead of only textbook sentences",
+      "Work on phrasal verbs, articles, tone, and everyday replies",
+      "Choose light corrections or active coaching",
+      "Use real people, AI tutors, or both",
+      "Start with text before speaking feels comfortable",
+    ],
+    relatedLinks: [
+      { label: "Language exchange chat", href: "/language-exchange-chat" },
+      { label: "Practice French chat online", href: "/practice-french-chat-online" },
+      { label: "Practice Chinese chat online", href: "/practice-chinese-chat-online" },
+      { label: "Practice Russian chat online", href: "/practice-russian-chat-online" },
+      { label: "Language practice", href: "/language-practice" },
+    ],
+    faqs: [
+      {
+        question: "Can I practice English with real people?",
+        answer:
+          "Yes. You can use language practice filters to look for people who can help with English, and you can use AI tutors when you want immediate practice.",
+      },
+      {
+        question: "What should I ask an English partner to correct?",
+        answer:
+          "Ask for the correction style you actually want: light fixes for confusing sentences, more active coaching, or notes on what sounds natural in casual English.",
+      },
+      {
+        question: "Is text chat useful before speaking practice?",
+        answer:
+          "Yes. Text chat gives you more time to choose words, notice patterns, and build confidence before faster spoken conversation.",
+      },
+    ],
+    metaTitle: "Practice English Chat Online | ImChatty",
+    metaDescription:
+      "Practice English chat online with real people or AI tutors. Build natural phrasing, confidence, and everyday conversation skills through text.",
+    ctaLabel: "Practice English",
+    ctaHref: "/language-practice",
+  },
+  french: {
+    title: "Practice French Chat Online",
+    subtitle:
+      "Use French in real conversation while getting practical help with tone, gender, verbs, and natural phrasing.",
+    heroTitle: "Practice French Chat Online With More Than Flashcards",
+    heroBody:
+      "French becomes easier to use when you can write real messages, test natural phrasing, and get corrections that respect the flow of the conversation.",
+    body: [
+      "## French practice needs context",
+      "French learners often know the rule but hesitate when it is time to use it. Is it tu or vous? Does this noun take le or la? Should the sentence sound casual, polite, or too formal for a normal chat? Those decisions are hard to train with drills alone.",
+      "Online French chat gives you context. A short exchange can show how people soften a request, react to a joke, agree without sounding stiff, or change register depending on who they are talking to.",
+      "## The details that make French feel natural",
+      "French has several features that learners need to meet inside real sentences: gender, adjective agreement, verb tense, pronouns, negation, and small connecting phrases. Spoken French also drops or compresses parts of sentences in ways that can surprise learners who studied mostly from books.",
+      "Text chat is useful because it lets you slow those details down. You can see the written form, ask why a correction was made, and try the same structure again a few messages later.",
+      "## Tu, vous, and tone",
+      "One of the most practical reasons to practice French with people is tone. Learners often translate too directly from their native language. The result may be understandable but a little blunt, overly formal, or strangely written.",
+      "A good partner can help you choose between casual and polite phrasing. They can also point out when something sounds like a classroom sentence instead of something someone would type naturally.",
+      "## Pronunciation still matters, even in text",
+      "Text chat will not replace listening and speaking, but it can prepare you for them. Written practice helps you notice accents, silent endings, word families, and the structure behind sounds like nasal vowels and liaison. Once the sentence makes sense on the page, it is easier to practice saying it later.",
+      "You can also ask an AI tutor or a fluent partner to rewrite a sentence in a more spoken style. That bridges the gap between written French and the French you hear in conversation.",
+      "## How to practice French on ImChatty",
+      "Pick a correction style before you begin. If you want a relaxed conversation, ask for light corrections. If you are preparing for travel, school, or a test, ask for more direct coaching. If you want natural French, ask your partner to rewrite one or two messages the way they would actually say them.",
+      "Use simple topics at first: what you did today, what you are eating, what you are watching, where you live, what you like, or what you are planning. The goal is not to sound impressive. The goal is to keep French active.",
+      "## A better first step than waiting until you feel ready",
+      "Many people wait too long to use French because they think conversation requires confidence first. Usually confidence comes after using the language imperfectly and surviving the moment. Text chat makes that first step smaller.",
+      "You can write slowly, ask questions, accept corrections, and keep going. Over time, the grammar stops being a separate exercise and becomes part of how you express yourself.",
+    ].join("\n\n"),
+    highlights: [
+      "Practice tu, vous, politeness, and casual French tone",
+      "Get help with gender, agreement, verbs, and pronouns",
+      "Use text to slow down tricky French structures",
+      "Ask for light correction or active coaching",
+      "Bridge written French and spoken phrasing",
+    ],
+    relatedLinks: [
+      { label: "Language exchange chat", href: "/language-exchange-chat" },
+      { label: "Practice English chat online", href: "/practice-english-chat-online" },
+      { label: "Practice Russian chat online", href: "/practice-russian-chat-online" },
+      { label: "Practice Chinese chat online", href: "/practice-chinese-chat-online" },
+      { label: "Language practice", href: "/language-practice" },
+    ],
+    faqs: [
+      {
+        question: "Can beginners practice French in chat?",
+        answer:
+          "Yes. Beginners can start with short messages, simple topics, and light correction. Text chat gives learners time to think before replying.",
+      },
+      {
+        question: "What should I focus on when practicing French?",
+        answer:
+          "Useful focus areas include gender, agreement, verb tense, pronouns, tu versus vous, and whether a phrase sounds natural in casual conversation.",
+      },
+      {
+        question: "Can French chat help with speaking later?",
+        answer:
+          "Yes. Writing sentences and seeing corrections makes the structure clearer, which can make later speaking practice less intimidating.",
+      },
+    ],
+    metaTitle: "Practice French Chat Online | ImChatty",
+    metaDescription:
+      "Practice French chat online with real people or AI tutors. Work on tone, gender, verbs, and natural everyday phrasing through text.",
+    ctaLabel: "Practice French",
+    ctaHref: "/language-practice",
+  },
+  russian: {
+    title: "Practice Russian Chat Online",
+    subtitle:
+      "Build confidence with Cyrillic, cases, aspect, and real Russian conversation at a manageable pace.",
+    heroTitle: "Practice Russian Chat Online Without Rushing Every Sentence",
+    heroBody:
+      "Russian practice works better when you can slow the sentence down, see the endings, ask why they changed, and try again in a real exchange.",
+    body: [
+      "## Russian rewards slow, repeated conversation",
+      "Russian can feel heavy at first because so much meaning is packed into endings, verb choice, and word order. A learner may understand the idea of cases but still need time to choose the right form while writing a normal message.",
+      "That is where chat practice helps. Text gives you a little breathing room. You can type in Cyrillic, check a word, notice an ending, and ask for a correction without the whole conversation collapsing.",
+      "## The main challenge is not only vocabulary",
+      "Russian learners often need practice with case endings, verb aspect, motion verbs, gender agreement, and flexible word order. These are not isolated grammar topics in real conversation. They appear together in simple sentences like where you went, what you bought, who you talked to, or what you plan to do tomorrow.",
+      "A chat partner can correct one piece at a time. That matters because too much correction at once makes Russian feel impossible. A useful correction might simply show the right case after a preposition, or explain why one verb aspect fits better than another.",
+      "## Cyrillic gets easier when you actually use it",
+      "Some learners stay in transliteration too long because Cyrillic looks like a barrier. Text chat makes the alphabet practical. You see words repeatedly, type them in context, and connect the letters with real meaning instead of copying them from a chart.",
+      "Using Cyrillic also helps partners correct you more clearly. It makes spelling, endings, and word forms visible in a way transliteration often hides.",
+      "## Aspect, cases, and patience",
+      "Russian correction works best when expectations are clear. If you want a relaxed chat, ask for only the most important fixes. If you are studying seriously, ask for case and aspect notes. If you are a beginner, ask your partner to rewrite one sentence at a time rather than marking every mistake.",
+      "AI tutors can be useful for focused repetition: practicing one case, one verb pair, or one situation until it stops feeling abstract. Real people are useful for the living part of the language: humor, everyday replies, natural pacing, and cultural context.",
+      "## Topics that work well for Russian practice",
+      "Start with concrete topics. Daily routine, food, weather, travel, hobbies, family, work, films, music, and weekend plans create the kinds of sentences Russian learners need most. These topics naturally bring in cases, time phrases, motion, and verbs of wanting, liking, going, watching, reading, and meeting.",
+      "You do not need complicated subjects at the start. You need many small sentences that force the language to become usable.",
+      "## Make mistakes visible, not embarrassing",
+      "The best Russian practice environment is one where mistakes are treated as information. An ending changes, a verb pair was wrong, or the word order sounded odd. That is not failure. It is the exact feedback a learner needs.",
+      "Text-first practice makes those moments easier to handle. You can look at the correction, compare it with your original sentence, ask a follow-up question, and continue the conversation.",
+    ].join("\n\n"),
+    highlights: [
+      "Practice Cyrillic in real messages",
+      "Get manageable help with cases, aspect, and endings",
+      "Use text chat to slow down difficult sentences",
+      "Choose focused coaching or relaxed conversation",
+      "Work with real people, AI tutors, or both",
+    ],
+    relatedLinks: [
+      { label: "Language exchange chat", href: "/language-exchange-chat" },
+      { label: "Practice English chat online", href: "/practice-english-chat-online" },
+      { label: "Practice French chat online", href: "/practice-french-chat-online" },
+      { label: "Practice Chinese chat online", href: "/practice-chinese-chat-online" },
+      { label: "Language practice", href: "/language-practice" },
+    ],
+    faqs: [
+      {
+        question: "Is Russian chat practice useful for beginners?",
+        answer:
+          "Yes. Beginners can start with simple topics and ask for limited corrections, especially around Cyrillic, cases, and basic verb forms.",
+      },
+      {
+        question: "Should I type Russian in Cyrillic?",
+        answer:
+          "Cyrillic is usually better for practice because spelling and endings are easier to see and correct. Transliteration can help at the start, but it hides useful details.",
+      },
+      {
+        question: "Can AI help with Russian grammar practice?",
+        answer:
+          "Yes. AI tutors can drill cases, aspect, and sentence rewrites, while real people can help with natural conversation and cultural context.",
+      },
+    ],
+    metaTitle: "Practice Russian Chat Online | ImChatty",
+    metaDescription:
+      "Practice Russian chat online with real people or AI tutors. Build confidence with Cyrillic, cases, aspect, and everyday conversation.",
+    ctaLabel: "Practice Russian",
+    ctaHref: "/language-practice",
+  },
+  chinese: {
+    title: "Practice Chinese Chat Online",
+    subtitle:
+      "Practice Mandarin Chinese through text chat, pinyin support, character exposure, and practical sentence feedback.",
+    heroTitle: "Practice Chinese Chat Online at a Pace You Can Actually Use",
+    heroBody:
+      "Chinese practice gets easier when you can build a sentence slowly, see characters in context, and get feedback on word choice, particles, and natural phrasing.",
+    body: [
+      "## Chinese chat practice gives you time to think",
+      "Many learners of Mandarin Chinese can recognize words in an app but struggle to create a sentence in a real conversation. The problem is not laziness. Chinese asks you to manage word order, measure words, particles, tone memory, characters, and context at the same time.",
+      "Text chat slows the process down. You can type with pinyin, choose characters, check whether the sentence looks right, and send something short enough to get a useful reply.",
+      "## Characters, pinyin, and real use",
+      "Pinyin is helpful, especially early on, but Chinese becomes more durable when you see characters used in meaningful messages. Chat practice helps because the same words appear in context instead of as isolated flashcards.",
+      "A good partner can respond with characters, add pinyin when needed, and explain why a word choice sounds natural or strange. That kind of feedback is hard to get from a vocabulary list.",
+      "## The details learners need to practice",
+      "Chinese learners often need help with measure words, word order, time phrases, question forms, and particles like le, guo, zhe, ma, ne, and ba. These are small pieces, but they change how a sentence feels.",
+      "For example, a learner may know the words for 'I', 'yesterday', 'watch', and 'movie', but still need practice putting time before the verb, choosing the right aspect marker, or deciding whether the sentence needs a measure word. Real chat turns those choices into habits.",
+      "## Tones still matter in a text-first space",
+      "Text chat will not train pronunciation by itself, but it can support tone memory. Seeing pinyin with tone marks, asking for a word to be read aloud later, or comparing similar-sounding words can make spoken practice easier.",
+      "If you are nervous about speaking Chinese, text is a practical bridge. You can build sentence confidence first, then use audio or speaking practice when you are ready.",
+      "## How to use ImChatty for Chinese practice",
+      "Set your goal before you start. If you want casual Mandarin, ask for natural rewrites. If you are studying HSK-style vocabulary, ask for focused corrections. If characters feel overwhelming, ask your partner or AI tutor to include pinyin beside new words.",
+      "Use everyday topics: food, family, work, school, weather, hobbies, travel, music, games, and plans. Those topics repeatedly use the structures learners need most, and they make the practice feel like conversation instead of homework.",
+      "## Mandarin, Chinese, and clarity",
+      "People often say 'Chinese' when they mean Mandarin, but Chinese includes many spoken varieties. This page focuses on Mandarin Chinese practice because that is the most common learning goal for online learners. If you are looking for another variety, be clear in your profile or first message so partners know what kind of help you need.",
+      "## Make the first message simple",
+      "A strong Chinese practice chat can start with one short sentence: what you are learning, what you want corrected, and what topic you want to talk about. The sentence does not need to be perfect. It only needs to begin the exchange.",
+      "Once the conversation starts, each correction has a place. A measure word, a particle, a character choice, or a more natural word order becomes easier to remember because it was connected to something you were trying to say.",
+    ].join("\n\n"),
+    highlights: [
+      "Practice Mandarin Chinese through text-first conversation",
+      "Use pinyin support while building character recognition",
+      "Get help with measure words, particles, and word order",
+      "Ask for natural rewrites or focused corrections",
+      "Prepare for speaking by strengthening sentence confidence",
+    ],
+    relatedLinks: [
+      { label: "Language exchange chat", href: "/language-exchange-chat" },
+      { label: "Practice English chat online", href: "/practice-english-chat-online" },
+      { label: "Practice French chat online", href: "/practice-french-chat-online" },
+      { label: "Practice Russian chat online", href: "/practice-russian-chat-online" },
+      { label: "Language practice", href: "/language-practice" },
+    ],
+    faqs: [
+      {
+        question: "Does this page mean Mandarin Chinese?",
+        answer:
+          "Yes. Most online learners searching for Chinese practice mean Mandarin, so the guidance here focuses on Mandarin Chinese.",
+      },
+      {
+        question: "Can I use pinyin while practicing Chinese?",
+        answer:
+          "Yes. Pinyin can help early on, and you can ask partners or AI tutors to include pinyin beside new characters when useful.",
+      },
+      {
+        question: "Is text chat enough for Chinese pronunciation?",
+        answer:
+          "Text chat does not replace pronunciation practice, but it helps you build vocabulary, sentence structure, character recognition, and confidence before speaking.",
+      },
+    ],
+    metaTitle: "Practice Chinese Chat Online | ImChatty",
+    metaDescription:
+      "Practice Chinese chat online with real people or AI tutors. Build Mandarin sentence confidence with pinyin, characters, and practical corrections.",
+    ctaLabel: "Practice Chinese",
+    ctaHref: "/language-practice",
+  },
+} as const;
+
 const pageCopy = {
   en: {
     common: {
@@ -245,6 +504,10 @@ const pageCopy = {
       metaDescription:
         "Can't sleep and want to talk to someone? ImChatty is available late at night with real people and AI personas ready to chat.",
     },
+    practiceEnglishChatOnline: languagePracticeLandingCopy.english,
+    practiceFrenchChatOnline: languagePracticeLandingCopy.french,
+    practiceRussianChatOnline: languagePracticeLandingCopy.russian,
+    practiceChineseChatOnline: languagePracticeLandingCopy.chinese,
   },
 } as const;
 
@@ -277,6 +540,22 @@ const pageDefinitions = {
     sectionLabel: "Topic",
     key: "cantSleepChat",
   },
+  "practice-english-chat-online": {
+    sectionLabel: "Guide",
+    key: "practiceEnglishChatOnline",
+  },
+  "practice-french-chat-online": {
+    sectionLabel: "Guide",
+    key: "practiceFrenchChatOnline",
+  },
+  "practice-russian-chat-online": {
+    sectionLabel: "Guide",
+    key: "practiceRussianChatOnline",
+  },
+  "practice-chinese-chat-online": {
+    sectionLabel: "Guide",
+    key: "practiceChineseChatOnline",
+  },
 } as const;
 
 type PageSlug = keyof typeof pageDefinitions;
@@ -307,22 +586,24 @@ export function getMarketingPage(slug: string, locale?: string | null): Marketin
     body: page.body,
     highlights: [...page.highlights],
     relatedLinks: [...page.relatedLinks],
-    faqs: [
-      {
-        question: common.faqAnonymous,
-        answer: common.faqAnonymousAnswer,
-      },
-      {
-        question: common.faqSignup,
-        answer: common.faqSignupAnswer,
-      },
-      {
-        question: common.faqVideo,
-        answer: common.faqVideoAnswer,
-      },
-    ],
-    ctaHref: "/chat",
-    ctaLabel: common.ctaLabel,
+    faqs: "faqs" in page
+      ? [...page.faqs]
+      : [
+          {
+            question: common.faqAnonymous,
+            answer: common.faqAnonymousAnswer,
+          },
+          {
+            question: common.faqSignup,
+            answer: common.faqSignupAnswer,
+          },
+          {
+            question: common.faqVideo,
+            answer: common.faqVideoAnswer,
+          },
+        ],
+    ctaHref: "ctaHref" in page ? page.ctaHref : "/chat",
+    ctaLabel: "ctaLabel" in page ? page.ctaLabel : common.ctaLabel,
     metaTitle: page.metaTitle,
     metaDescription: page.metaDescription,
   };
