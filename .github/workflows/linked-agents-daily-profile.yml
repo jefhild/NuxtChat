@@ -1,27 +1,22 @@
-name: Honey Moltbook Automation
+name: LinkedAgents Daily Profile
 
 on:
   schedule:
-    - cron: "10 7 * * *"
+    - cron: "35 7 * * *"
   workflow_dispatch:
     inputs:
-      limit:
-        description: "Maximum bots to post in this run"
-        required: false
-        default: "2"
       dry_run:
         description: "Set to true to preview without publishing"
         required: false
         default: "false"
 
 jobs:
-  run-honey-moltbook:
+  post-daily-profile:
     if: github.repository == 'jefhild/NuxtChat-Private'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       SITE_URL: https://imchatty.com
-      DEFAULT_LIMIT: "2"
       DEFAULT_DRY_RUN: "false"
       AUTOMATION_SECRET: ${{ secrets.MOLTBOOK_AUTOMATION_SECRET }}
 
@@ -33,20 +28,18 @@ jobs:
             exit 1
           fi
 
-      - name: Trigger honey Moltbook automation
+      - name: Trigger LinkedAgents daily profile post
         shell: bash
         run: |
           set -euo pipefail
 
-          LIMIT="${DEFAULT_LIMIT}"
           DRY_RUN="${DEFAULT_DRY_RUN}"
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            LIMIT="${{ github.event.inputs.limit }}"
             DRY_RUN="${{ github.event.inputs.dry_run }}"
           fi
 
-          echo "Triggering honey Moltbook automation with limit=${LIMIT} dry_run=${DRY_RUN}"
+          echo "Triggering LinkedAgents daily profile post dry_run=${DRY_RUN}"
 
           STATUS=$(curl --show-error --silent \
             --output response.json \
@@ -54,13 +47,13 @@ jobs:
             --request POST \
             --header "x-automation-secret: ${AUTOMATION_SECRET}" \
             --header "content-type: application/json" \
-            "${SITE_URL}/api/internal/moltbook/honey-run?limit=${LIMIT}&dry_run=${DRY_RUN}")
+            "${SITE_URL}/api/internal/linked-agents/daily-profile?dry_run=${DRY_RUN}")
 
           echo "HTTP status: ${STATUS}"
           cat response.json
           echo
 
           if [ "${STATUS}" -lt 200 ] || [ "${STATUS}" -ge 300 ]; then
-            echo "Honey Moltbook automation request failed."
+            echo "LinkedAgents daily profile request failed."
             exit 1
           fi

@@ -48,6 +48,13 @@ export const useAdminAiBots = () => {
     });
   };
 
+  const runLinkedAgentsDailyProfile = async (payload = {}) => {
+    return await $fetch(`${basePath}/linked-agents/daily-profile`, {
+      method: "POST",
+      body: payload,
+    });
+  };
+
   return {
     listBots,
     createBot,
@@ -56,5 +63,6 @@ export const useAdminAiBots = () => {
     postToMoltbook,
     generateMoltbookDraft,
     runHoneyMoltbook,
+    runLinkedAgentsDailyProfile,
   };
 };

@@ -269,6 +269,20 @@ export default defineNuxtConfig({
       process.env.MOLTBOOK_AUTOMATION_SECRET ||
       process.env.AUTOMATION_SECRET ||
       "",
+    LINKED_AGENTS_ENABLED: process.env.LINKED_AGENTS_ENABLED || "false",
+    LINKED_AGENTS_BASE_URL:
+      process.env.LINKED_AGENTS_BASE_URL || "https://linkedagents.live",
+    LINKED_AGENTS_AGENT_ID: process.env.LINKED_AGENTS_AGENT_ID || "",
+    LINKED_AGENTS_API_KEY: process.env.LINKED_AGENTS_API_KEY || "",
+    LINKED_AGENTS_HANDLE: process.env.LINKED_AGENTS_HANDLE || "imchatty-agent",
+    LINKED_AGENTS_DESCRIPTION:
+      process.env.LINKED_AGENTS_DESCRIPTION ||
+      "AI chat companion for anonymous conversation, onboarding, and social discovery.",
+    LINKED_AGENTS_TAGS:
+      process.env.LINKED_AGENTS_TAGS ||
+      "ai-companions,anonymous-chat,social-discovery",
+    LINKED_AGENTS_GITHUB_URL: process.env.LINKED_AGENTS_GITHUB_URL || "",
+    LINKED_AGENTS_X_URL: process.env.LINKED_AGENTS_X_URL || "",
     AUTOMATION_SECRET: process.env.AUTOMATION_SECRET || "",
     OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4.1-mini",
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,

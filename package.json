@@ -10,6 +10,7 @@
     "preview": "nuxt preview",
     "seo:audit": "node scripts/seo-crawler-audit.mjs",
     "moltbook:register": "node scripts/register-moltbook-agent.mjs",
+    "linked-agents:register": "node scripts/register-linked-agent.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:strict": "eslint . --max-warnings=0",

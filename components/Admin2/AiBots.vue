@@ -40,6 +40,15 @@
             <v-icon start icon="mdi-post"></v-icon>
             Run Honey Moltbook
           </v-btn>
+          <v-btn
+            color="teal"
+            variant="tonal"
+            :loading="runningLinkedAgents"
+            @click="runLinkedAgentsDailyProfileNow"
+          >
+            <v-icon start icon="mdi-account-broadcast-outline" />
+            Run LinkedAgents
+          </v-btn>
           <v-btn color="primary" @click="openCreateDialog">
             <v-icon start icon="mdi-robot-happy-outline"></v-icon>
             Add Bot
@@ -1075,6 +1084,7 @@ const {
   postToMoltbook,
   generateMoltbookDraft,
   runHoneyMoltbook,
+  runLinkedAgentsDailyProfile,
 } = useAdminAiBots();
 const { getAllCategories, getAdminProfiles } = useDb();
 const localPath = useLocalePath();
@@ -1099,6 +1109,7 @@ const deleting = ref(false);
 const posting = ref(false);
 const previewingPost = ref(false);
 const runningHoneyMoltbook = ref(false);
+const runningLinkedAgents = ref(false);
 const translatingPersona = ref(false);
 const personaKeyTouched = ref(false);
 
@@ -1995,6 +2006,36 @@ const runHoneyMoltbookNow = async () => {
       error?.data?.error || error?.message || "Failed to run honey Moltbook posting.";
   } finally {
     runningHoneyMoltbook.value = false;
+  }
+};
+
+const runLinkedAgentsDailyProfileNow = async () => {
+  runningLinkedAgents.value = true;
+  try {
+    const res = await runLinkedAgentsDailyProfile({ dry_run: false });
+    if (res?.success === false) throw new Error(res.error);
+
+    const status = String(res?.data?.status || "").trim();
+    const profileSlug = String(res?.data?.draft?.entry_payload?.profile_slug || "").trim();
+
+    snackbar.show = true;
+    snackbar.color = status === "posted" ? "teal" : "amber-darken-2";
+    snackbar.message =
+      status === "posted"
+        ? `LinkedAgents daily profile posted${profileSlug ? ` for ${profileSlug}` : ""}.`
+        : status === "skipped"
+          ? "LinkedAgents daily profile was already posted today."
+          : "LinkedAgents daily profile run completed.";
+  } catch (error) {
+    console.error("[admin][ai-bots] linked agents run error", error);
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message =
+      error?.data?.error ||
+      error?.message ||
+      "Failed to run LinkedAgents daily profile post.";
+  } finally {
+    runningLinkedAgents.value = false;
   }
 };
 
