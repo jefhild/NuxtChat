@@ -419,6 +419,13 @@ const isPhotoLibraryDisabled = computed(() => {
   return authStore.authStatus === "anon_authenticated";
 });
 
+const isViewingOwnProfile = computed(() => {
+  if (props.adminMode) return true;
+  const profileUserId = editableProfile.value?.user_id;
+  const authUserId = authStore.user?.id;
+  return !!profileUserId && !!authUserId && profileUserId === authUserId;
+});
+
 const showPhotoLibrary = computed(() => {
   return (
     props.adminMode ||
@@ -473,7 +480,11 @@ const onPresenceStatusChange = async (val) => {
 const loadPhotoLibraryPreview = async (
   userId = editableProfile.value?.user_id
 ) => {
-  if (!showPhotoLibrary.value || isPhotoLibraryDisabled.value) {
+  if (
+    !showPhotoLibrary.value ||
+    isPhotoLibraryDisabled.value ||
+    !isViewingOwnProfile.value
+  ) {
     photoLibraryPreview.value = [];
     return;
   }
@@ -842,6 +853,17 @@ watch(
     }
   },
   { immediate: true }
+);
+
+watch(
+  () => [
+    editableProfile.value?.user_id,
+    authStore.user?.id,
+    authStore.authStatus,
+  ],
+  () => {
+    loadPhotoLibraryPreview();
+  }
 );
 
 watch(

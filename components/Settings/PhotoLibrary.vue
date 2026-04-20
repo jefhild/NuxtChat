@@ -121,8 +121,10 @@
 import { useI18n } from "vue-i18n";
 import LoadingContainer from "@/components/LoadingContainer.vue";
 import { computed, ref, onMounted, watch } from "vue";
+import { useAuthStore } from "@/stores/authStore1";
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
 const props = defineProps({
   userId: {
@@ -146,6 +148,10 @@ const deleteDialog = ref(false);
 const deleteTarget = ref(null);
 const deleting = ref(false);
 const isAdminContext = computed(() => props.adminMode && !!props.userId);
+const isViewingOwnLibrary = computed(() => {
+  if (isAdminContext.value) return true;
+  return !!props.userId && !!authStore.user?.id && props.userId === authStore.user.id;
+});
 
 const statusLabel = (status) =>
   t(`components.photo-library.status.${status || "pending"}`);
@@ -175,6 +181,11 @@ const readFileAsDataUrl = (file) =>
 const loadPhotos = async () => {
   loading.value = true;
   errorMessage.value = "";
+  if (!isViewingOwnLibrary.value) {
+    photos.value = [];
+    loading.value = false;
+    return;
+  }
   try {
     const result = isAdminContext.value
       ? await $fetch("/api/admin/profile-photos/list", {
@@ -273,7 +284,7 @@ const confirmDelete = async () => {
 onMounted(loadPhotos);
 
 watch(
-  () => [props.userId, props.adminMode],
+  () => [props.userId, props.adminMode, authStore.user?.id],
   () => {
     loadPhotos();
   }

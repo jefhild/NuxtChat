@@ -218,8 +218,7 @@ const selectTab = (value) => {
 };
 
 onMounted(async () => {
-  // await authStore.checkAuth();
-  // user.value = authStore.user;
+  await authStore.checkAuth();
   isLoading.value = false;
 });
 </script>
