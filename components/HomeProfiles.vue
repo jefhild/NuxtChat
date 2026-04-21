@@ -44,7 +44,8 @@
               <v-avatar size="30" color="transparent" class="gender-badge">
                 <v-icon
                   size="20"
-                  :color="getGenderColor(resolveGenderId(item))"
+                  class="profile-gender-icon"
+                  :style="{ '--profile-gender-color': getGenderHexColor(resolveGenderId(item)) }"
                   :icon="getAvatarIcon(resolveGenderId(item))"
                 />
               </v-avatar>
@@ -81,7 +82,7 @@
 
         <template #item.upvotes="{ item }">
           <div class="d-flex align-center justify-end ga-1">
-            <v-icon size="16" color="amber-darken-2">mdi-thumb-up</v-icon>
+            <v-icon size="16" class="profile-upvote-icon">mdi-thumb-up</v-icon>
             <span class="text-body-2">{{ item.upvote_count ?? 0 }}</span>
           </div>
         </template>
@@ -129,7 +130,8 @@
                   <v-avatar size="28" color="transparent" class="gender-badge">
                     <v-icon
                       size="18"
-                      :color="getGenderColor(resolveGenderId(item))"
+                      class="profile-gender-icon"
+                      :style="{ '--profile-gender-color': getGenderHexColor(resolveGenderId(item)) }"
                       :icon="getAvatarIcon(resolveGenderId(item))"
                     />
                   </v-avatar>
@@ -159,7 +161,7 @@
                       <span>{{ item.age ?? "—" }}</span>
                     </div>
                     <div class="meta-cell">
-                      <v-icon size="16" color="amber-darken-2">mdi-thumb-up</v-icon>
+                      <v-icon size="16" class="profile-upvote-icon">mdi-thumb-up</v-icon>
                       <span>{{ item.upvote_count ?? 0 }}</span>
                     </div>
                   </div>
@@ -193,7 +195,7 @@ import ProfileDialog from "@/components/ProfileDialog.vue";
 import {
   getAvatar,
   getAvatarIcon,
-  getGenderColor,
+  getGenderHexColor,
 } from "@/composables/useUserUtils";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
@@ -476,6 +478,14 @@ onUnmounted(() => {
 
 .gender-badge :deep(.v-icon) {
   background: transparent !important;
+}
+
+.profile-gender-icon {
+  color: var(--profile-gender-color, #a855f7) !important;
+}
+
+.profile-upvote-icon {
+  color: #d97706 !important;
 }
 
 .registered-badge {

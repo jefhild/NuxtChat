@@ -88,6 +88,7 @@
                         v-if="item?.gender_id"
                         size="20"
                         class="admin-gender-icon"
+                        :style="{ '--admin-gender-color': getGenderHexColor(item?.gender_id) }"
                         :class="{
                           'is-male': item?.gender_id === 1,
                           'is-female': item?.gender_id === 2,
@@ -125,6 +126,7 @@
                       v-if="item?.gender_id"
                       size="20"
                       class="admin-gender-icon"
+                      :style="{ '--admin-gender-color': getGenderHexColor(item?.gender_id) }"
                       :class="{
                         'is-male': item?.gender_id === 1,
                         'is-female': item?.gender_id === 2,
@@ -612,7 +614,7 @@
 </template>
 
 <script setup>
-import { getAvatar, getGenderPath } from "@/composables/useUserUtils";
+import { getAvatar, getGenderHexColor, getGenderPath } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 import { useDisplay } from "vuetify";
@@ -1485,7 +1487,7 @@ const purgeMarkedProfiles = async () => {
   background: transparent;
   border-radius: 999px;
   padding: 0;
-  color: #1d3b58;
+  color: var(--admin-gender-color, #a855f7) !important;
 }
 
 .admin-flag-icon {
@@ -1535,15 +1537,15 @@ const purgeMarkedProfiles = async () => {
 }
 
 .admin-gender-icon.is-male {
-  color: #2563eb;
+  color: var(--admin-gender-color, #3b82f6) !important;
 }
 
 .admin-gender-icon.is-female {
-  color: #ec4899;
+  color: var(--admin-gender-color, #ec4899) !important;
 }
 
 .admin-gender-icon.is-other {
-  color: #7c3aed;
+  color: var(--admin-gender-color, #a855f7) !important;
 }
 
 .admin-sort {

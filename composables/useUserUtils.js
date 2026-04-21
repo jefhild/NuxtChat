@@ -36,6 +36,17 @@ export const getGenderColor = (gender_id) => {
   }
 };
 
+export const getGenderHexColor = (gender_id) => {
+  switch (Number(gender_id)) {
+    case 1:
+      return "#3b82f6";
+    case 2:
+      return "#ec4899";
+    default:
+      return "#a855f7";
+  }
+};
+
 export const getGenderColorClass = (gender_id) => {
   switch (gender_id) {
     case 1:
