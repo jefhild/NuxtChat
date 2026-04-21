@@ -2745,7 +2745,7 @@ const verifyEmailOtp = async (email, token) => {
         email: mappedEmail,
       },
       {
-        redirectTo: emailRedirectTo,
+        emailRedirectTo,
       }
     );
 

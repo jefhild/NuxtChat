@@ -2,8 +2,9 @@
   <!-- {{ authStore.user.id }} {{ props.profile.id }} -->
 
   <v-btn
-    :color="isFavorite ? 'pink' : 'medium-emphasis'"
     :icon="isFavorite ? 'mdi-heart' : 'mdi-heart-outline'"
+    class="profile-favorite-btn"
+    :class="{ 'is-active': isFavorite }"
     size="small"
     variant="text"
     @click="handleFavoriteToggle"
@@ -95,3 +96,17 @@ onMounted(async () => {
   isLoading.value = false;
 });
 </script>
+
+<style scoped>
+.profile-favorite-btn {
+  color: #f9a8d4 !important;
+}
+
+.profile-favorite-btn.is-active {
+  color: #ec4899 !important;
+}
+
+.profile-favorite-btn:deep(.v-icon) {
+  color: currentColor !important;
+}
+</style>

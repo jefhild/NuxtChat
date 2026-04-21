@@ -27,8 +27,11 @@
                     :to="profilePathFor(profile) || undefined">
                       {{ displayNameFor(profile) }} ({{ profile.age }})
                     </v-btn>
-                    <v-icon :color="getGenderColor(profile.gender_id)"
-                      :icon="getAvatarIcon(profile.gender_id)"></v-icon>
+                    <v-icon
+                      class="profile-gender-icon"
+                      :style="{ '--profile-gender-color': getGenderHexColor(profile.gender_id) }"
+                      :icon="getAvatarIcon(profile.gender_id)"
+                    />
                 </v-col>
                 <v-spacer />
                 <v-col>
@@ -57,7 +60,7 @@
 <script lang="ts" setup>
 import { useBlockedProfiles } from "@/composables/useBlockedProfiles";
 // import { getAvatar } from "@/utils/userUtils"; // Import the helper function
-import { getAvatar } from "@/composables/useUserUtils";
+import { getAvatar, getAvatarIcon, getGenderHexColor } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 const { t, locale } = useI18n();
@@ -168,5 +171,10 @@ watch(blockedProfiles, async (newProfiles) =>
   pointer-events: none;
   z-index: 1;
   object-fit: contain;
+}
+
+.profile-gender-icon {
+  color: var(--profile-gender-color, #a855f7) !important;
+  background: transparent !important;
 }
 </style>

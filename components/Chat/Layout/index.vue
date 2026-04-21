@@ -367,14 +367,15 @@
 
                   <div
                     v-if="selectedUserInterests.length"
-                    class="d-flex flex-wrap gap-2 mb-3"
+                    class="profile-looking-for-row mb-3"
                   >
                     <v-chip
                       v-for="interest in selectedUserInterests"
                       :key="interest"
                       size="small"
                       variant="outlined"
-                      color="primary"
+                      class="profile-looking-for-chip"
+                      :style="getLookingForChipStyle(interest)"
                     >
                       {{ interest }}
                     </v-chip>
@@ -843,14 +844,15 @@
 
                   <div
                     v-if="selectedUserInterests.length"
-                    class="d-flex flex-wrap gap-2 mb-3"
+                    class="profile-looking-for-row mb-3"
                   >
                     <v-chip
                       v-for="interest in selectedUserInterests"
                       :key="interest"
                       size="small"
                       variant="outlined"
-                      color="primary"
+                      class="profile-looking-for-chip"
+                      :style="getLookingForChipStyle(interest)"
                     >
                       {{ interest }}
                     </v-chip>
@@ -2077,6 +2079,25 @@ const selectedUserInterests = computed(() => {
     .map((entry) => String(entry || "").trim())
     .filter((entry) => entry.length);
 });
+
+const LOOKING_FOR_CHIP_COLORS = {
+  love: "#ef4444",
+  fun: "#3b82f6",
+  "nothing serious": "#22c55e",
+  men: "#3b82f6",
+  women: "#ec4899",
+  friends: "#f97316",
+};
+
+const getLookingForChipStyle = (interest) => {
+  const key = String(interest || "").trim().toLowerCase();
+  const color = LOOKING_FOR_CHIP_COLORS[key] || "#818cf8";
+  return {
+    "--profile-looking-for-color": color,
+    "--profile-looking-for-bg": `${color}24`,
+    "--profile-looking-for-border": `${color}80`,
+  };
+};
 
 const loadingMsgs = computed(() => chat.loading);
 const peerPreferredLocaleOverride = ref(null);
@@ -5251,6 +5272,20 @@ function toggleFilters() {
   white-space: pre-line;
   color: #cbd5e1;
 }
+
+.profile-looking-for-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-looking-for-chip {
+  color: var(--profile-looking-for-color, #818cf8) !important;
+  background: var(--profile-looking-for-bg, rgba(129, 140, 248, 0.14)) !important;
+  border-color: var(--profile-looking-for-border, rgba(129, 140, 248, 0.5)) !important;
+  font-weight: 500;
+}
+
 .thread-info-panel-card {
   background: #0f172a !important;
   border: 1px solid rgba(148, 163, 184, 0.45) !important;
@@ -5278,8 +5313,12 @@ function toggleFilters() {
   opacity: 0.92;
 }
 
+.profile-action-btn--block :deep(.v-icon) {
+  color: #60a5fa !important;
+}
+
 .profile-action-btn--share :deep(.v-icon) {
-  color: #cbd5e1 !important;
+  color: #93c5fd !important;
 }
 
 .profile-empty-state {

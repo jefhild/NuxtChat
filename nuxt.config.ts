@@ -14,7 +14,7 @@ export default defineNuxtConfig({
     viteEnvironmentApi: false,
   },
 
-  css: ["@/assets/css/util.css"],
+  css: ["@mdi/font/css/materialdesignicons.css", "@/assets/css/util.css"],
 
   app: {
     head: {

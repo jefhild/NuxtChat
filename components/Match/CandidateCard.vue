@@ -17,7 +17,8 @@
           <v-avatar size="28" color="transparent" class="gender-badge">
             <v-icon
               size="18"
-              :color="getGenderColor(candidate.gender_id)"
+              class="candidate-gender-icon"
+              :style="{ '--candidate-gender-color': getGenderHexColor(candidate.gender_id) }"
               :icon="getAvatarIcon(candidate.gender_id)"
             />
           </v-avatar>
@@ -86,12 +87,12 @@
       </div>
 
       <!-- Language practice badges -->
-      <div v-if="showLanguageBadges" class="d-flex flex-wrap gap-1 mt-2">
+      <div v-if="showLanguageBadges" class="language-chip-row mt-2">
         <v-chip
           v-if="targetLanguageLabel"
+          class="language-chip language-chip--target"
           size="x-small"
           variant="tonal"
-          color="success"
           prepend-icon="mdi-translate"
         >
           {{
@@ -107,9 +108,9 @@
         </v-chip>
         <v-chip
           v-if="nativeLanguageLabel"
+          class="language-chip language-chip--native"
           size="x-small"
           variant="tonal"
-          color="info"
           prepend-icon="mdi-account-voice"
         >
           {{
@@ -125,9 +126,9 @@
         </v-chip>
         <v-chip
           v-if="candidate.correction_preference"
+          class="language-chip language-chip--correction"
           size="x-small"
           variant="tonal"
-          color="secondary"
           prepend-icon="mdi-pencil-outline"
         >
           {{
@@ -157,7 +158,7 @@
 
 <script setup>
 import { computed } from "vue";
-import { getAvatarIcon, getGenderColor } from "@/composables/useUserUtils";
+import { getAvatarIcon, getGenderHexColor } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
 
 const props = defineProps({
@@ -330,6 +331,51 @@ function onChat() {
 
 .gender-badge :deep(.v-icon) {
   background: transparent !important;
+}
+
+.candidate-gender-icon {
+  color: var(--candidate-gender-color, #a855f7) !important;
+}
+
+.language-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 7px;
+  row-gap: 6px;
+  align-items: flex-start;
+}
+
+.language-chip {
+  flex: 0 1 auto;
+  border: 1px solid var(--language-chip-border, rgba(148, 163, 184, 0.2));
+  background: var(--language-chip-bg, rgba(148, 163, 184, 0.12)) !important;
+  color: var(--language-chip-text, rgba(var(--v-theme-on-surface), 0.84)) !important;
+  min-height: 24px;
+  padding-inline: 8px 10px !important;
+  overflow: visible;
+}
+
+.language-chip :deep(.v-icon) {
+  color: var(--language-chip-icon, currentColor) !important;
+  margin-inline-end: 5px;
+}
+
+.language-chip--target {
+  --language-chip-bg: rgba(34, 197, 94, 0.14);
+  --language-chip-border: rgba(34, 197, 94, 0.34);
+  --language-chip-icon: #22c55e;
+}
+
+.language-chip--native {
+  --language-chip-bg: rgba(56, 189, 248, 0.14);
+  --language-chip-border: rgba(56, 189, 248, 0.34);
+  --language-chip-icon: #38bdf8;
+}
+
+.language-chip--correction {
+  --language-chip-bg: rgba(129, 140, 248, 0.16);
+  --language-chip-border: rgba(129, 140, 248, 0.36);
+  --language-chip-icon: #a5b4fc;
 }
 
 .score-wrap {

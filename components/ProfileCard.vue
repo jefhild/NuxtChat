@@ -41,8 +41,8 @@
               <v-icon
                 v-if="profile?.gender_id"
                 class="gender-inline"
-                :color="getGenderColor(profile.gender_id)"
                 :icon="getAvatarIcon(profile.gender_id)"
+                :style="{ '--profile-gender-color': getGenderHexColor(profile.gender_id) }"
                 size="15"
               />
               <span>{{ profile.age }}{{ $t("components.profile-details.age-suffix") }}</span>
@@ -287,7 +287,7 @@
 
 <script setup>
 import { computed, ref, useSlots, watch } from "vue";
-import { getAvatar, getAvatarIcon, getGenderColor } from "@/composables/useUserUtils";
+import { getAvatar, getAvatarIcon, getGenderHexColor } from "@/composables/useUserUtils";
 import { resolveProfileLocalization, normalizeLocale } from "@/composables/useProfileLocalization";
 
 const props = defineProps({
@@ -676,6 +676,11 @@ function openLightbox(item) {
 .profile-stat-pill--looking-for {
   min-height: 24px;
   padding: 1px 6px;
+}
+
+.gender-inline {
+  color: var(--profile-gender-color, #a855f7) !important;
+  background: transparent !important;
 }
 
 .profile-stat-pill--looking-for :deep(.pa-1) {

@@ -48,9 +48,15 @@
               />
             </v-col>
             <v-col class="d-flex align-center justify-center">
-              <v-icon :color="userLookingForIds.includes(option.id) ? option.color : 'black'">
-                {{ option.icon }}
-              </v-icon>
+              <v-icon
+                :icon="option.icon"
+                class="looking-for-option-icon"
+                :style="{
+                  '--looking-for-option-icon-color': userLookingForIds.includes(option.id)
+                    ? resolveIconColor(option.color)
+                    : 'rgba(var(--v-theme-on-surface), 0.62)'
+                }"
+              />
             </v-col>
           </v-row>
         </v-list-item>
@@ -99,6 +105,22 @@ const {
   toggleLookingFor,
 } = useLookingFor();
 
+const ICON_COLORS = {
+  red: "#ef4444",
+  blue: "#3b82f6",
+  green: "#22c55e",
+  pink: "#ec4899",
+  orange: "#f97316",
+  purple: "#a855f7",
+  "deep-purple": "#7e22ce",
+  "blue-lighten-1": "#38bdf8",
+};
+
+const resolveIconColor = (color) => {
+  const normalized = String(color || "").trim().toLowerCase();
+  return ICON_COLORS[normalized] || normalized || "rgba(var(--v-theme-on-surface), 0.62)";
+};
+
 const init = async () => {
   if (!userId.value) return;
   await fetchLookingForOptions();
@@ -113,3 +135,10 @@ const saveChanges = () => {
   emit("lookingForUpdated");
 };
 </script>
+
+<style scoped>
+.looking-for-option-icon {
+  color: var(--looking-for-option-icon-color, rgba(var(--v-theme-on-surface), 0.62)) !important;
+  background: transparent !important;
+}
+</style>

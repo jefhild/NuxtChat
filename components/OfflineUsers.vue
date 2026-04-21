@@ -14,8 +14,12 @@
           ]">
             <v-list-item @click="selectUser(user)">
               <template v-slot:prepend>
-                <v-icon :color="getGenderColor(user.gender_id)" :icon="getAvatarIcon(user.gender_id)"
-                  size="small"></v-icon>
+                <v-icon
+                  class="profile-gender-icon"
+                  :style="{ '--profile-gender-color': getGenderHexColor(user.gender_id) }"
+                  :icon="getAvatarIcon(user.gender_id)"
+                  size="small"
+                />
 
                 <div class="avatar-wrapper">
                   <v-avatar :image="getAvatar(user.avatar_url, user.gender_id)"></v-avatar>
@@ -50,7 +54,7 @@
 //   getGenderColorClass,
 // } from "/utils/userUtils";
 
-import { getAvatar, getAvatarIcon, getGenderColor, getGenderColorClass } from "@/composables/useUserUtils";
+import { getAvatar, getAvatarIcon, getGenderHexColor, getGenderColorClass } from "@/composables/useUserUtils";
 
 const props = defineProps({
   users: Array,
@@ -72,6 +76,11 @@ const selectUser = (user) => {
 </script>
 
 <style scoped>
+
+.profile-gender-icon {
+  color: var(--profile-gender-color, #a855f7) !important;
+  background: transparent !important;
+}
 
 .selected-user {
   border-left: 10px solid;
@@ -127,4 +136,3 @@ const selectUser = (user) => {
   z-index: 3;
 }
 </style>
-

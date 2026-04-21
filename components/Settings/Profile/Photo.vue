@@ -3,7 +3,7 @@
     <v-col class="d-flex flex-column align-center">
       <v-card class="profile-photo-card" elevation="0" variant="outlined">
         <div class="photo-hero">
-          <NuxtImg
+          <img
             v-if="heroImage"
             :src="heroImage"
             class="photo-hero-image"
@@ -129,7 +129,7 @@
                     :class="{ 'photo-library-thumb--active': item.url === heroImage }"
                     @click="setHeroFromOption(item)"
                   >
-                    <NuxtImg :src="item.url" class="photo-library-thumb-image" alt="Photo option" />
+                    <img :src="item.url" class="photo-library-thumb-image" alt="Photo option" />
                   </v-card>
                 </template>
                 <div v-else class="photo-library-skeleton" />

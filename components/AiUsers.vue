@@ -7,7 +7,8 @@
             <v-list-item @click="selectUser(user)">
               <template v-slot:prepend>
                 <v-icon
-                  :color="getGenderColor(user.gender_id)"
+                  class="profile-gender-icon"
+                  :style="{ '--profile-gender-color': getGenderHexColor(user.gender_id) }"
                   :icon="getAvatarIcon(user.gender_id)"
                   size="small"
                 ></v-icon>
@@ -42,7 +43,7 @@
 import {
   getAvatar,
   getAvatarIcon,
-  getGenderColor,
+  getGenderHexColor,
   getGenderColorClass,
 } from "@/composables/useUserUtils";
 
@@ -71,5 +72,10 @@ const selectUser = (user) => {
 
 .v-list-item {
   margin-top: 10px;
+}
+
+.profile-gender-icon {
+  color: var(--profile-gender-color, #a855f7) !important;
+  background: transparent !important;
 }
 </style>

@@ -17,10 +17,10 @@
         :alt="`${profile.displayname} image`"
       />
       <v-icon
-        :color="getGenderColor(profile.gender_id)"
         :icon="getAvatarIcon(profile.gender_id)"
         size="17"
         class="icon-overlay"
+        :style="{ '--profile-card-gender-color': getGenderHexColor(profile.gender_id) }"
       />
 
     </div>
@@ -71,7 +71,7 @@ const tooltipText = computed(() => {
 
 import {
   getAvatar,
-  getGenderColor,
+  getGenderHexColor,
   getAvatarIcon,
 } from "@/composables/useUserUtils";
 
@@ -122,6 +122,7 @@ const handleClick = () => {
   left: 0;
   transform: translate(-30%, -30%);
   background-color: white;
+  color: var(--profile-card-gender-color, #a855f7) !important;
   border-radius: 9999px;
   padding: 2px;
   z-index: 2;

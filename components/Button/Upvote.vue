@@ -3,8 +3,9 @@
     <template #activator="{ props: tooltipProps }">
       <span v-bind="tooltipProps">
         <v-btn
-          :color="hasVoted ? 'amber-darken-1' : 'medium-emphasis'"
           :icon="hasVoted ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'"
+          class="profile-upvote-btn"
+          :class="{ 'is-active': hasVoted }"
           size="small"
           variant="text"
           :disabled="!!isOwnProfile || isLoading"
@@ -77,3 +78,17 @@ const handleUpvote = async () => {
   }
 };
 </script>
+
+<style scoped>
+.profile-upvote-btn {
+  color: #93c5fd !important;
+}
+
+.profile-upvote-btn.is-active {
+  color: #f59e0b !important;
+}
+
+.profile-upvote-btn:deep(.v-icon) {
+  color: currentColor !important;
+}
+</style>
