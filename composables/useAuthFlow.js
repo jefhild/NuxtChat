@@ -16,7 +16,14 @@ export async function handleGoogleLoginRedirect() {
 
 export async function linkGoogleIdentity() {
   const { linkIdentity } = useDb();
-  const { data, error } = await linkIdentity("google", "/login");
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "https://imchatty.com";
+  const { data, error } = await linkIdentity({
+    provider: "google",
+    redirectTo: `${origin}/callback?next=${encodeURIComponent("/settings")}`,
+  });
 
   if (error) {
     console.error("[AuthFlow] Identity link error:", error.message);

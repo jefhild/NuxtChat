@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   const languagePracticeOnly = parseBooleanQuery(query.languagePracticeOnly);
   const supabase = await getServiceRoleClient(event);
 
-  const { data: aiPersonas } = await supabase
+  let personasQuery = supabase
     .from("ai_personas")
     .select(`
       persona_key,
@@ -39,9 +39,14 @@ export default defineEventHandler(async (event) => {
       )
     `)
     .eq("is_active", true)
-    .eq("honey_enabled", false)
     .eq("list_publicly", true)
     .limit(24);
+
+  if (!languagePracticeOnly) {
+    personasQuery = personasQuery.eq("honey_enabled", false);
+  }
+
+  const { data: aiPersonas } = await personasQuery;
 
   const profileIds = (aiPersonas || [])
     .map((p: any) => p.profile?.user_id)

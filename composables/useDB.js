@@ -2720,15 +2720,32 @@ const verifyEmailOtp = async (email, token) => {
     return { data, error };
   };
 
-  const updateUserEmail = async (mappedEmail) => {
+  const updateUserEmail = async (
+    mappedEmail,
+    { next = "/settings", redirectTo } = {}
+  ) => {
     const supabase = getClient();
+    const config = getConfig();
+    const origin =
+      typeof window !== "undefined" && window.location?.origin
+        ? window.location.origin
+        : config.public.SITE_URL || "https://imchatty.com";
+    const normalizeRedirect = (value) => {
+      if (!value) return null;
+      if (/^https?:\/\//i.test(value)) return value;
+      const leadingSlash = value.startsWith("/") ? "" : "/";
+      return `${origin}${leadingSlash}${value}`;
+    };
+    const emailRedirectTo =
+      normalizeRedirect(redirectTo) ||
+      `${origin}/callback?next=${encodeURIComponent(next)}`;
 
     const { data, error } = await supabase.auth.updateUser(
       {
         email: mappedEmail,
       },
       {
-        redirectTo: `${window.location.origin}/loginemail`,
+        redirectTo: emailRedirectTo,
       }
     );
 
