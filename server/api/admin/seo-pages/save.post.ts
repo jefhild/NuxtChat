@@ -43,19 +43,35 @@ export default defineEventHandler(async (event) => {
       ...payload,
       ...(payload.id ? {} : { created_at: new Date().toISOString() }),
     };
-    if (!payload.id) {
+
+    let saveRequest;
+    if (payload.id) {
+      saveRequest = supabase
+        .from("seo_pages")
+        .update(row)
+        .eq("id", payload.id)
+        .select(SEO_PAGE_SELECT)
+        .single<SeoPageRow>();
+    } else {
       delete row.id;
+      saveRequest = supabase
+        .from("seo_pages")
+        .upsert(row, {
+          onConflict: "page_type,locale,slug",
+        })
+        .select(SEO_PAGE_SELECT)
+        .single<SeoPageRow>();
     }
 
-    const { data, error } = await supabase
-      .from("seo_pages")
-      .upsert(row, {
-        onConflict: "page_type,locale,slug",
-      })
-      .select(SEO_PAGE_SELECT)
-      .single<SeoPageRow>();
+    const { data, error } = await saveRequest;
 
     if (error) throw error;
+    if (!data) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "SEO page not found.",
+      });
+    }
 
     const previousHeroPath = String(existingRow?.hero_image_path || "").trim();
     const nextHeroPath = String(data?.hero_image_path || "").trim();

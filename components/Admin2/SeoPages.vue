@@ -976,6 +976,7 @@ const savePage = async () => {
     }
 
     applyPageSaveResponse(saved);
+    await loadPages();
 
     dialog.value = false;
     showMessage("SEO page saved.");

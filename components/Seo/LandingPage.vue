@@ -213,7 +213,7 @@ const theme = useTheme();
 const isDarkTheme = computed(() => theme.global.current.value.dark);
 
 const md = new MarkdownIt({
-  html: false,
+  html: true,
   linkify: true,
   breaks: true,
 });
