@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
 
     const { data: existingPersona, error: existingPersonaErr } = await supabase
       .from("ai_personas")
-      .select("id")
+      .select("id, persona_key, is_active, list_publicly")
       .eq("profile_user_id", profileUserId)
       .limit(1)
       .maybeSingle();
@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
     if (existingPersona?.id) {
       throw createError({
         statusCode: 409,
-        statusMessage: "This profile is already linked to an AI persona.",
+        statusMessage: `This profile is already linked to AI persona "${existingPersona.persona_key || existingPersona.id}". Clear filters/search or edit that existing bot instead.`,
       });
     }
 

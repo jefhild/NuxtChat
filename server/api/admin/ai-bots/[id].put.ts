@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
 
       const { data: personaOnProfile, error: personaOnProfileErr } = await supabase
         .from("ai_personas")
-        .select("id")
+        .select("id, persona_key")
         .eq("profile_user_id", requestedProfileUserId)
         .neq("id", personaId)
         .limit(1)
@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
       if (personaOnProfile?.id) {
         throw createError({
           statusCode: 409,
-          statusMessage: "Selected profile is already linked to another AI persona.",
+          statusMessage: `Selected profile is already linked to AI persona "${personaOnProfile.persona_key || personaOnProfile.id}".`,
         });
       }
     }

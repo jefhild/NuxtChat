@@ -113,6 +113,33 @@ export function isLanguagePracticePersonaEnabled(personaOrMetadata) {
   return getLanguagePracticePersonaConfig(metadata).enabled;
 }
 
+export function getLanguagePracticePersonaDiagnostics(personaOrMetadata) {
+  const persona =
+    personaOrMetadata && typeof personaOrMetadata === "object" && "metadata" in personaOrMetadata
+      ? personaOrMetadata
+      : { metadata: personaOrMetadata };
+  const config = getLanguagePracticePersonaConfig(persona.metadata);
+  const issues = [];
+
+  if (!config.enabled) issues.push("Language Practice toggle is off");
+  if (persona && "is_active" in persona && !persona.is_active) {
+    issues.push("Bot is inactive");
+  }
+  if (persona && "list_publicly" in persona && !persona.list_publicly) {
+    issues.push("Public listing is off");
+  }
+  if (persona?.profile && "is_ai" in persona.profile && !persona.profile.is_ai) {
+    issues.push("Linked profile is not marked as AI");
+  }
+
+  return {
+    enabled: config.enabled,
+    ready: issues.length === 0,
+    issues,
+    config,
+  };
+}
+
 export function buildLanguagePracticePersonaMetadata(metadata, configInput) {
   const meta = asObject(metadata);
   const config = getLanguagePracticePersonaConfig({

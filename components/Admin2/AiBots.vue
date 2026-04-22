@@ -84,6 +84,20 @@
           item-value="value"
           hide-details
         />
+        <v-alert
+          v-if="activeFilterNotice"
+          class="mt-3"
+          type="info"
+          variant="tonal"
+          density="compact"
+        >
+          <div class="d-flex align-center ga-2 flex-wrap">
+            <span>{{ activeFilterNotice }}</span>
+            <v-btn size="x-small" variant="text" @click="capabilityFilter = 'all'">
+              Show all
+            </v-btn>
+          </div>
+        </v-alert>
 
         <v-table class="mt-4" density="comfortable">
           <thead>
@@ -212,6 +226,22 @@
                   >
                     Language Practice
                   </v-chip>
+                  <v-tooltip
+                    v-else
+                    :text="languagePracticeDiagnosticText(bot)"
+                    location="top"
+                  >
+                    <template #activator="{ props: tipProps }">
+                      <v-chip
+                        v-bind="tipProps"
+                        size="x-small"
+                        color="grey"
+                        variant="outlined"
+                      >
+                        LP off
+                      </v-chip>
+                    </template>
+                  </v-tooltip>
                   <v-chip
                     size="x-small"
                     :color="moltbookStatusColor(bot)"
@@ -259,7 +289,7 @@
             </tr>
             <tr v-if="!filteredBots.length">
               <td colspan="5" class="text-center py-6 text-medium-emphasis">
-                {{ search ? `No bots match "${search}".` : "No AI bots yet." }}
+                {{ emptyBotsMessage }}
               </td>
             </tr>
           </tbody>
@@ -1080,6 +1110,7 @@
 import { useAdminAiBots } from "@/composables/useAdminAiBots";
 import {
   buildLanguagePracticePersonaMetadata,
+  getLanguagePracticePersonaDiagnostics,
   getLanguagePracticePersonaConfig,
   isLanguagePracticePersonaEnabled,
   LANGUAGE_PRACTICE_PERSONA_OPTIONS,
@@ -1342,10 +1373,34 @@ const filteredBots = computed(() => {
     const profile = bot.profile || {};
     return (
       profile.displayname?.toLowerCase().includes(q) ||
+      profile.slug?.toLowerCase().includes(q) ||
+      profile.user_id?.toLowerCase().includes(q) ||
       bot.persona_key?.toLowerCase().includes(q) ||
       bot.model?.toLowerCase().includes(q)
     );
   });
+});
+
+const activeFilterNotice = computed(() => {
+  if (capabilityFilter.value === "all") return "";
+  const hiddenCount = bots.value.length - filteredBots.value.length;
+  if (hiddenCount <= 0) return "";
+  const selected = capabilityFilterOptions.find(
+    (item) => item.value === capabilityFilter.value
+  );
+  const label = selected?.label || "selected capability";
+  return `${hiddenCount} bot${hiddenCount === 1 ? "" : "s"} hidden by the ${label} filter.`;
+});
+
+const emptyBotsMessage = computed(() => {
+  if (search.value?.trim()) return `No bots match "${search.value.trim()}".`;
+  if (capabilityFilter.value !== "all") {
+    const selected = capabilityFilterOptions.find(
+      (item) => item.value === capabilityFilter.value
+    );
+    return `No bots match the ${selected?.label || "selected"} filter.`;
+  }
+  return "No AI bots yet.";
 });
 const capabilityFilterOptions = [
   { label: "All capabilities", value: "all" },
@@ -1357,6 +1412,12 @@ const capabilityFilterOptions = [
 
 const hasLanguagePracticeCapability = (bot) =>
   isLanguagePracticePersonaEnabled(bot);
+
+const languagePracticeDiagnosticText = (bot) => {
+  const diagnostics = getLanguagePracticePersonaDiagnostics(bot);
+  if (diagnostics.ready) return "Language practice is ready";
+  return diagnostics.issues.join("; ") || "Language practice is not configured";
+};
 
 const requiredRule = (value) =>
   (!!String(value ?? "").trim() && value !== null && value !== undefined) ||
