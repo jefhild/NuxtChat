@@ -1891,7 +1891,7 @@
     "loginHelp": "好的——请点击顶部的“登录”按钮进行登录。我会在这里等你。",
     "generateBio": "生成个人简介",
     "bioSaved": "简介已保存！",
-    "askBioKeywords": "你想在简介中加入哪些关键词？（如爱好、兴趣、性格特征）",
+    "askBioKeywords": "告诉我们一些关于你的事。",
     "skip": "跳过",
     "resumeDraftIntro": "你已经开始填写资料了。这是目前的信息：",
     "startOver": "重新开始",

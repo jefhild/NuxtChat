@@ -75,7 +75,7 @@ export function useOnboardingOrchestrator() {
     if (key === "displayName") return "What display name should we show?";
     if (key === "age") return "How old are you? (18+ only)";
     if (key === "genderId") return "Pick a gender: 1=male, 2=female, 3=other";
-    if (key === "bio") return "Write a short bio (1–2 sentences).";
+    if (key === "bio") return "Tell us something about yourself.";
     return "Let’s confirm your details—ready to finalize?";
   }
 

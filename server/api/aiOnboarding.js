@@ -26,10 +26,9 @@ const STRINGS = {
     genderMale: "Male",
     genderFemale: "Female",
     genderOther: "Other",
-    askBioShort:
-      "Almost done! Please share a short bio (1–280 chars, one paragraph).",
-    askBio: "Write a short bio (1–2 sentences).",
-    askBioAlt: "Please keep your bio between 1 and 280 characters, one paragraph.",
+    askBioShort: "Almost done! Tell us something about yourself.",
+    askBio: "Tell us something about yourself.",
+    askBioAlt: "Please tell us a real detail about yourself.",
     askBioShorter: "Please keep your bio under 300 characters.",
     askNameValidation: "Please choose a longer display name.",
     askNameTaken: "That display name is already taken. Try another.",
@@ -50,11 +49,9 @@ const STRINGS = {
     genderMale: "Homme",
     genderFemale: "Femme",
     genderOther: "Autre",
-    askBioShort:
-      "Presque terminé ! Partagez une courte bio (1–280 caractères, un seul paragraphe).",
-    askBio: "Écrivez une courte bio (1–2 phrases).",
-    askBioAlt:
-      "Veuillez garder votre bio entre 1 et 280 caractères, un seul paragraphe.",
+    askBioShort: "Presque terminé ! Parlez-nous un peu de vous.",
+    askBio: "Parlez-nous un peu de vous.",
+    askBioAlt: "Veuillez partager un vrai détail sur vous.",
     askBioShorter: "Veuillez garder votre bio sous 300 caractères.",
     askNameValidation: "Veuillez choisir un nom d’affichage plus long.",
     askNameTaken: "Ce nom d’affichage est déjà utilisé. Essayez-en un autre.",
@@ -75,11 +72,9 @@ const STRINGS = {
     genderMale: "Мужской",
     genderFemale: "Женский",
     genderOther: "Другое",
-    askBioShort:
-      "Почти готово! Напишите короткое био (1–280 символов, один абзац).",
-    askBio: "Напишите короткое био (1–2 предложения).",
-    askBioAlt:
-      "Сохраните био в пределах 1–280 символов, один абзац.",
+    askBioShort: "Почти готово! Расскажите немного о себе.",
+    askBio: "Расскажите немного о себе.",
+    askBioAlt: "Пожалуйста, расскажите реальную деталь о себе.",
     askBioShorter: "Пожалуйста, держите био короче 300 символов.",
     askNameValidation: "Пожалуйста, выберите более длинное отображаемое имя.",
     askNameTaken: "Это отображаемое имя уже занято. Попробуйте другое.",
@@ -98,9 +93,9 @@ const STRINGS = {
     genderMale: "男",
     genderFemale: "女",
     genderOther: "其他",
-    askBioShort: "快好了！写一段简介（1–280字符，单段）。",
-    askBio: "写一段简短的简介（1–2句话）。",
-    askBioAlt: "简介需控制在1–280字符，单段。",
+    askBioShort: "快好了！告诉我们一些关于你的事。",
+    askBio: "告诉我们一些关于你的事。",
+    askBioAlt: "请分享一个真实的个人细节。",
     askBioShorter: "简介请控制在300字符以内。",
     askNameValidation: "请使用更长的显示名称。",
     askNameTaken: "这个显示名称已被占用，请换一个。",
@@ -137,6 +132,18 @@ const pickVariant = (locale = "en", variants = {}) => {
     variants.en
   );
 };
+
+function parseKeywords(input) {
+  if (!input || typeof input !== "string") return [];
+  const raw = input
+    .split(/[,\n]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const tokens = raw.length === 1 ? raw[0].split(/\s+/) : raw;
+  return [...new Set(tokens.map((t) => t.toLowerCase()))]
+    .filter((t) => t.length > 1)
+    .slice(0, 8);
+}
 
 const DISPLAYNAME_MAX = 40;
 const CJK_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/;
@@ -369,6 +376,81 @@ Return ONLY the tagline text, no quotes.
   }
 }
 
+function normalizeBioSeed(input) {
+  return String(input || "")
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isMeaningfulBioSeed(input) {
+  const seed = normalizeBioSeed(input);
+  if (seed.length < 2 || seed.length > 280) return false;
+  if (/^\d{1,3}$/.test(seed)) return false;
+
+  const lower = seed.toLowerCase();
+  if (/^(1|2|3)$/.test(lower)) return false;
+  if (/^(male|female|other|man|woman|yes|no|ok|okay|none|n\/a|null)$/i.test(seed))
+    return false;
+  if (/^i'?m\s+(male|female|other|man|woman)\b/i.test(seed)) return false;
+  if (/^\d+\s*yo\b/i.test(seed)) return false;
+  if (/\b(asdf|qwer|zxcv|hjkl|lorem ipsum|blah blah)\b/i.test(seed)) return false;
+
+  const letters = seed.match(/\p{L}/gu) || [];
+  if (letters.length < 2) return false;
+
+  const allowedChars = seed.match(/[\p{L}\p{N}\s,'’.-]/gu) || [];
+  if (allowedChars.length / seed.length < 0.65) return false;
+
+  if (/(.)\1{4,}/u.test(seed)) return false;
+
+  const uniqueLetters = new Set(letters.map((char) => char.toLowerCase())).size;
+  if (letters.length >= 8 && uniqueLetters <= 2) return false;
+
+  const words = lower.match(/[\p{L}\p{N}]+/gu) || [];
+  const placeholderWords = new Set(["test", "testing", "blah", "asdf", "qwer", "hello"]);
+  if (words.length && words.every((word) => placeholderWords.has(word))) return false;
+
+  return true;
+}
+
+async function buildGeneratedBioActions({
+  input = "",
+  state,
+  localeCode = "en",
+  apiKey,
+}) {
+  const seed = normalizeBioSeed(input);
+  if (!isMeaningfulBioSeed(seed)) return null;
+
+  const keywords = parseKeywords(seed);
+  const generationSeeds = keywords.length ? keywords : [seed];
+  const bioText = await generateBioFromKeywords({
+    apiKey,
+    displayname: state.draftSummary.displayName ?? "",
+    age: state.draftSummary.age ?? "",
+    gender: state.draftSummary.genderId ?? "",
+    keywords: generationSeeds,
+    locale: localeCode,
+    maxChars: 220,
+  });
+  const taglineText = await generateTaglineFromKeywords({
+    apiKey,
+    keywords: generationSeeds,
+    locale: localeCode,
+    maxChars: 45,
+    minChars: 4,
+  });
+
+  return [
+    { type: "set_field", key: "bio", value: bioText },
+    ...(taglineText
+      ? [{ type: "set_field", key: "tagline", value: taglineText }]
+      : []),
+    { type: "finalize" },
+  ];
+}
+
 export default defineEventHandler(async (event) => {
   const {
     messages = [],
@@ -537,23 +619,6 @@ export default defineEventHandler(async (event) => {
     }
   };
 
-  function parseKeywords(input) {
-    if (!input || typeof input !== "string") return [];
-    // Accept “comma,separated” or space-separated short list
-    const raw = input
-      .split(/[,\n]/) // commas or new lines
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    // If they gave a single blob like "coffee hiking dogs", split on spaces
-    const tokens = raw.length === 1 ? raw[0].split(/\s+/) : raw;
-    // Keep 2–8 reasonable tokens, de-dup, drop 1-char fillers
-    const uniq = [...new Set(tokens.map((t) => t.toLowerCase()))]
-      .filter((t) => t.length > 1)
-      .slice(0, 8);
-    return uniq;
-  }
-
   function normalizeGender(input) {
     const s = String(input ?? "")
       .trim()
@@ -602,20 +667,8 @@ export default defineEventHandler(async (event) => {
     const trimmed = s.trim();
 
     // length bounds & one paragraph
-    if (trimmed.length < 8 || trimmed.length > 280) return false;
+    if (!isMeaningfulBioSeed(trimmed)) return false;
     if (/\r|\n/.test(trimmed)) return false;
-
-    const lower = trimmed.toLowerCase();
-
-    // reject obvious non-bio patterns
-    if (/^\d{1,3}$/.test(lower)) return false; // pure number
-    if (/^(1|2|3)$/.test(lower)) return false; // menu choice
-    if (/^(male|female|other)$/.test(lower)) return false;
-    if (/^i'?m\s+(male|female|other)\b/.test(lower)) return false;
-    if (/^\d+\s*yo\b/.test(lower)) return false; // "23 yo"
-
-    // very light "sentence-y" hint: require at least one space
-    if (!/\s/.test(trimmed)) return false;
 
     return true;
   }
@@ -640,6 +693,42 @@ export default defineEventHandler(async (event) => {
               !state.draftSummary[k].trim())
         )
   ).find((f) => REQUIRED.includes(f));
+
+  if (nextField === "bio" && latestUtter) {
+    const seed = normalizeBioSeed(latestUtter);
+    if (isMeaningfulBioSeed(seed)) {
+      const generatedActions = await buildGeneratedBioActions({
+        input: seed,
+        state,
+        localeCode,
+        apiKey,
+      });
+      if (generatedActions) return { actions: generatedActions };
+    }
+    return {
+      actions: [
+        {
+          type: "bot_message",
+          text: L(seed.length > 280 ? "askBioShorter" : "askBioAlt"),
+        },
+      ],
+    };
+  }
+
+  if (
+    !nextField &&
+    state.isComplete &&
+    state.draftSummary.bio &&
+    !String(state.draftSummary.tagline || "").trim()
+  ) {
+    const generatedActions = await buildGeneratedBioActions({
+      input: state.draftSummary.bio,
+      state,
+      localeCode,
+      apiKey,
+    });
+    if (generatedActions) return { actions: generatedActions };
+  }
 
   if (nextField === "displayName" && latestUtter) {
     const nameCheck = await validateDisplayName(supa, latestUtter);
@@ -860,14 +949,17 @@ export default defineEventHandler(async (event) => {
 
     // bio
     if (next === "bio") {
-      if (utter.length <= 280) {
-        return {
-          actions: [
-            { type: "set_field", key: "bio", value: utter },
-            { type: "finalize" },
-          ],
-        };
-      } else {
+      if (isMeaningfulBioSeed(utter)) {
+        const generatedActions = await buildGeneratedBioActions({
+          input: utter,
+          state,
+          localeCode,
+          apiKey,
+        });
+        if (generatedActions) return { actions: generatedActions };
+      }
+
+      if (normalizeBioSeed(utter).length > 280) {
         return {
           actions: [
             {
@@ -877,6 +969,15 @@ export default defineEventHandler(async (event) => {
           ],
         };
       }
+
+      return {
+        actions: [
+          {
+            type: "bot_message",
+            text: L("askBioAlt"),
+          },
+        ],
+      };
     }
   }
 
@@ -953,7 +1054,7 @@ CRITICAL RULES — FOLLOW ALL OF THEM:
    - displayName: string with a reasonable length; do not mention exact character limits.
    - age: integer 18–120 (do not mention numeric ranges in the user message).
    - genderId: interpret natural language (e.g., “male/man/he/him”→1, “female/woman/she/her”→2, “other/non-binary/nb/enby”→3) and call set_field with the numeric code [1,2,3]. Do not ask the user to reply with numbers.
-   - bio: string 1–280 chars, single paragraph.
+   - bio: meaningful self-description source material, 1–280 chars, single paragraph; reject gibberish, placeholders, repeated characters, and mostly-symbol input.
 4) If the user input is invalid, call bot_message with a short corrective prompt and ask again.
 5) Ask only one question at a time; keep messages concise and friendly.
 6) When all required fields are present and valid, call finalize() and nothing else.
@@ -961,9 +1062,10 @@ CRITICAL RULES — FOLLOW ALL OF THEM:
 8) If you can’t proceed due to missing info, ask a targeted question via bot_message.
 9) If userUtterance is non-empty and the next required field is known, validate and call set_field immediately; do not repeat the same question.
 10) For the "bio" step:
-    a) If user already typed a bio (1–280 chars, single paragraph), call set_field("bio") immediately.
-    b) Otherwise, ask for 3–6 short keywords (separated by commas or spaces).
-    c) When keywords are provided, call generate_bio(keywords, locale, tone, maxChars), then call set_field("bio", <result>) and finalize if all fields are present.
+    a) Treat the user's answer as source material, not final profile copy.
+    b) Ask them to tell us something about themselves if the answer is too vague or looks like gibberish.
+    c) When source material or keywords are provided, call generate_bio(keywords, locale, tone, maxChars), then call set_field("bio", <result>) and finalize if all fields are present.
+    d) Do not store the user's raw bio answer unchanged unless generation is unavailable.
 Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
 `.trim();
 
@@ -1246,7 +1348,15 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
       stillMissing === "bio" &&
       isValidBio(latestUtter2)
     ) {
-      actions.push({ type: "set_field", key: "bio", value: latestUtter2 });
+      const generatedBioActions = await buildGeneratedBioActions({
+        input: latestUtter2,
+        state,
+        localeCode,
+        apiKey,
+      });
+      if (generatedBioActions) {
+        actions.push(...generatedBioActions);
+      }
 
       // Remove any just-added "please share a bio" prompt to avoid mixed signals
       actions = actions.filter(
@@ -1258,7 +1368,14 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
       );
 
       // Re-evaluate missing; finalize if complete
-      projected.bio = latestUtter2;
+      for (const a of generatedBioActions || []) {
+        if (
+          a.type === "set_field" &&
+          ["displayName", "age", "genderId", "bio", "tagline"].includes(a.key)
+        ) {
+          projected[a.key] = a.value;
+        }
+      }
       missingAfter = REQUIRED.filter(
         (k) =>
           !projected[k] ||

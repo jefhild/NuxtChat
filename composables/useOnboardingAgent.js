@@ -330,7 +330,7 @@ export function useOnboardingAgent(selectedUserRef) {
           type: "bot",
           text: t(
             "onboarding.askBioKeywords",
-            "Give me 3–6 keywords for your bio (comma‑separated)."
+            "Tell us something about yourself."
           ),
           quickReplies: [],
         };
@@ -393,7 +393,7 @@ export function useOnboardingAgent(selectedUserRef) {
         type: "bot",
         text: t(
           "onboarding.askBioKeywords",
-          "Give me 3–6 keywords for your bio (comma‑separated)."
+          "Tell us something about yourself."
         ),
         quickReplies: [],
       };

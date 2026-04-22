@@ -101,7 +101,7 @@ export function useOnboardingFlow() {
         case "bio": {
           const bio = text.trim();
           if (!bio || bio.length < 10)
-            return bot(`Write a short bio (at least 10 characters).`);
+            return bot(`Tell us something about yourself.`);
           draft.setField("bio", bio);
           return askNextMissing();
         }
@@ -151,7 +151,7 @@ export function useOnboardingFlow() {
     else if (next === "age") bot(`How old are you?`);
     else if (next === "genderId")
       bot(`What’s your gender? (male/female/other)`);
-    else if (next === "bio") bot(`Tell me a short bio about yourself.`);
+    else if (next === "bio") bot(`Tell us something about yourself.`);
   }
 
   function askConfirm() {
