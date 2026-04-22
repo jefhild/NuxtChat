@@ -454,6 +454,17 @@
                     </div>
                   </div>
                 </v-alert>
+                <v-alert
+                  v-if="!editingId && selectedProfileLinkedPersonaKey"
+                  type="warning"
+                  variant="tonal"
+                  density="compact"
+                  class="mt-2"
+                >
+                  This profile is already linked to AI persona
+                  <strong>{{ selectedProfileLinkedPersonaKey }}</strong>.
+                  Edit that bot instead of creating another one.
+                </v-alert>
               </v-col>
             </v-row>
 
@@ -1321,14 +1332,30 @@ const enabledCapabilityTabs = computed(() => {
   }
   return tabs;
 });
+const personaKeyByProfileUserId = computed(() => {
+  const map = new Map();
+  for (const bot of bots.value || []) {
+    const userId = String(bot?.profile_user_id || bot?.profile?.user_id || "");
+    if (!userId) continue;
+    map.set(userId, bot?.persona_key || bot?.id || "existing bot");
+  }
+  return map;
+});
 const profileOptions = computed(() =>
   (profiles.value || [])
-    .map((profile) => ({
-      ...profile,
-      label:
-        `${profile.displayname || "Unnamed"} (${profile.slug || profile.user_id})` +
-        (profile.ai_persona_key ? ` · in use: ${profile.ai_persona_key}` : ""),
-    }))
+    .map((profile) => {
+      const aiPersonaKey =
+        profile.ai_persona_key ||
+        personaKeyByProfileUserId.value.get(String(profile.user_id)) ||
+        null;
+      return {
+        ...profile,
+        ai_persona_key: aiPersonaKey,
+        label:
+          `${profile.displayname || "Unnamed"} (${profile.slug || profile.user_id})` +
+          (aiPersonaKey ? ` · in use: ${aiPersonaKey}` : ""),
+      };
+    })
     .sort((a, b) => (a.displayname || "").localeCompare(b.displayname || ""))
 );
 const selectedProfile = computed(() =>
@@ -1336,6 +1363,15 @@ const selectedProfile = computed(() =>
     (profile) => profile.user_id === form.persona.profile_user_id
   )
 );
+const selectedProfileLinkedPersonaKey = computed(() => {
+  const profile = selectedProfile.value;
+  if (!profile?.user_id) return "";
+  return (
+    profile.ai_persona_key ||
+    personaKeyByProfileUserId.value.get(String(profile.user_id)) ||
+    ""
+  );
+});
 const isStarterPersona = computed(() =>
   String(form.persona.persona_key || "")
     .trim()
@@ -1363,7 +1399,7 @@ const filteredBots = computed(() => {
     if (capabilityFilter.value === "counterpoint")
       return !!bot.counterpoint_enabled;
     if (capabilityFilter.value === "language_practice") {
-      return isLanguagePracticePersonaEnabled(bot);
+      return hasLanguagePracticeConfig(bot);
     }
     return true;
   });
@@ -1411,7 +1447,11 @@ const capabilityFilterOptions = [
 ];
 
 const hasLanguagePracticeCapability = (bot) =>
-  isLanguagePracticePersonaEnabled(bot);
+  getLanguagePracticePersonaDiagnostics(bot).ready;
+
+const hasLanguagePracticeConfig = (bot) =>
+  isLanguagePracticePersonaEnabled(bot) ||
+  getLanguagePracticePersonaDiagnostics(bot).config.enabled;
 
 const languagePracticeDiagnosticText = (bot) => {
   const diagnostics = getLanguagePracticePersonaDiagnostics(bot);
@@ -1949,13 +1989,25 @@ const handleSubmit = async () => {
     dialog.value = false;
   } catch (error) {
     console.error("[admin][ai-bots] save error", error);
+    const message =
+      error?.data?.error || error?.message || "Failed to save bot.";
+    await revealExistingPersonaFromError(message);
     snackbar.show = true;
     snackbar.color = "red";
-    snackbar.message = error?.data?.error || error?.message || "Failed to save bot.";
+    snackbar.message = message;
   } finally {
     saving.value = false;
   }
 };
+
+async function revealExistingPersonaFromError(message = "") {
+  const match = String(message).match(/AI persona "([^"]+)"/i);
+  const personaKey = match?.[1]?.trim();
+  if (!personaKey) return;
+  capabilityFilter.value = "all";
+  search.value = personaKey;
+  await loadBots();
+}
 
 const submitMoltbookPost = async () => {
   if (!postTarget.value) return;
