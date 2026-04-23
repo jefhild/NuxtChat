@@ -78,6 +78,102 @@ Vuetify's `useDisplay()` provides `smAndDown`, `mdAndUp`, etc. Tailwind uses `sm
 
 ---
 
+## Recommended Architecture
+
+Tailwind should be introduced as the styling utility layer, not as the owner of application theme state. The app should own theme resolution, persistence, and SSR/client synchronization. Tailwind should consume that state through semantic CSS variables and dark-mode selectors.
+
+Recommended target shape:
+
+- Keep Vuetify installed while Tailwind is adopted page by page.
+- Preserve the current `imchatty_theme` and resolved-theme cookie behavior.
+- Move theme ownership toward a small app-owned theme plugin/composable over time.
+- Set either `html.dark` or `data-imchatty-theme="light|dark"` as the browser-visible theme state.
+- Define semantic tokens such as `background`, `surface`, `foreground`, `muted`, `border`, `primary`, `danger`, `success`, and `warning`.
+- Configure Tailwind to consume those semantic tokens instead of scattering raw palette classes through the app.
+- Wrap third-party UI behavior behind internal `components/ui/*` components so pages do not depend directly on a vendor API.
+
+This avoids replacing Vuetify's theme system with another library-specific theme system. It also makes Vuetify removal less risky because migrated components will already depend on app-owned tokens instead of `--v-theme-*` variables.
+
+---
+
+## Theme Strategy
+
+The theme migration should happen before broad component replacement. It directly addresses the current pain while still allowing Vuetify and Tailwind to coexist.
+
+The future theme layer should:
+
+- Read and write the same user preference cookie currently used for theme mode.
+- Resolve `system` to `light` or `dark` deterministically for SSR and early client render.
+- Apply the resolved theme to `<html>` using `class="dark"` or `data-imchatty-theme`.
+- Expose a small app composable such as `useAppTheme()` for mode changes and current resolved theme.
+- Keep Vuetify theme synchronization temporarily while Vuetify components remain in use.
+
+The Tailwind color model should be semantic, not palette-first:
+
+```css
+:root {
+  --color-background: 247 248 252;
+  --color-surface: 255 255 255;
+  --color-foreground: 20 24 31;
+}
+
+.dark {
+  --color-background: 18 20 24;
+  --color-surface: 27 31 39;
+  --color-foreground: 230 237 245;
+}
+```
+
+Components should prefer classes like `bg-background`, `bg-surface`, `text-foreground`, and `border-border`. Avoid making core page surfaces depend on scattered raw classes such as `bg-slate-900`, `text-zinc-100`, or one-off `dark:*` combinations. Raw palette utilities are still fine for rare decorative or status-specific details, but not for the main design system.
+
+---
+
+## Third-Party Component Strategy
+
+Tailwind replaces styling utilities; it does not replace Vuetify's accessible behavior. Complex behavior should come from focused third-party libraries and be wrapped in internal app components.
+
+Recommended stack:
+
+| Need | Recommended Replacement |
+|---|---|
+| Common UI components | shadcn-vue components copied into the repo |
+| Accessibility primitives | Reka UI, either directly or through shadcn-vue |
+| Dialogs, menus, selects, tabs, tooltips | Reka UI / shadcn-vue wrappers |
+| Server/data tables | TanStack Table |
+| Virtual scrolling | TanStack Virtual |
+| Snackbars/toasts | A Vue toast library, wrapped as app-level toast API |
+| Icons | Keep MDI initially; consider Lucide later |
+
+Use internal wrappers such as:
+
+- `components/ui/Button.vue`
+- `components/ui/Card.vue`
+- `components/ui/Dialog.vue`
+- `components/ui/Input.vue`
+- `components/ui/Select.vue`
+- `components/ui/Tabs.vue`
+- `components/ui/Toast.vue`
+
+Pages and feature components should depend on these app-level components, not directly on Reka, shadcn-vue, TanStack, or the toast library. That keeps the migration reversible and prevents a second framework lock-in.
+
+---
+
+## Nuxt 4 Sequencing
+
+Nuxt 4 is not required before starting Tailwind. The current app is already on a modern Nuxt 3 version, and Tailwind can be introduced progressively in Nuxt 3 while Vuetify remains active.
+
+Recommended order:
+
+1. Stabilize the current Nuxt 3 app.
+2. Extract theme ownership away from Vuetify while keeping Vuetify synchronized.
+3. Add Tailwind and semantic theme tokens.
+4. Migrate UI progressively, starting with low-risk components and pages.
+5. Consider Nuxt 4 later as a separate branch and regression pass.
+
+Nuxt 4 first is only worth prioritizing if there is an independent framework-upgrade reason, such as a module requirement, hosting/runtime need, or planned adoption of Nuxt 4's app directory structure. Otherwise, upgrading Nuxt first delays the theme fix and adds framework-level regression risk before the UI migration has a stable foundation.
+
+---
+
 ## Repository Management Strategy
 
 ### Recommended: Incremental Strangler Fig Pattern on a Long-Running Feature Branch
@@ -88,14 +184,25 @@ Vuetify's `useDisplay()` provides `smAndDown`, `mdAndUp`, etc. Tailwind uses `sm
 - Configure Tailwind with a design token layer that mirrors the existing color palette
 - Set up `dark` class strategy on `<html>` to work alongside Vuetify's theme cookie
 
-**Phase 1 — Utility Class Layer (~1 week)**
+**Phase 1 — Theme Ownership Layer (~3–5 days)**
+- Add an app-owned theme plugin/composable that preserves the current cookie behavior.
+- Apply the resolved theme to `<html>` through `class="dark"` or `data-imchatty-theme`.
+- Keep Vuetify theme synchronization active so existing Vuetify pages continue to work.
+- Add semantic CSS variables for Tailwind to consume.
+
+**Phase 2 — Utility Class Layer (~1 week)**
 - Write a codemod (jscodeshift or simple regex) to convert the most common Vuetify utility classes to Tailwind equivalents:
   - `d-flex` → `flex`, `d-none` → `hidden`, `d-block` → `block`
   - `pa-4` → `p-4`, `px-2` → `px-2`, `mt-3` → `mt-3` (spacing scale differs — needs mapping table)
 - Apply and review all 112 affected files
 - Keep Vuetify in place — just stop using its utility classes
 
-**Phase 2 — Simple Component Replacement (~2–3 weeks)**
+**Phase 3 — Internal UI Component Layer (~1 week)**
+- Introduce `components/ui/*` wrappers for the simplest shared components.
+- Base wrappers on Tailwind tokens and, where useful, shadcn-vue/Reka primitives.
+- Avoid direct use of third-party primitives in feature pages.
+
+**Phase 4 — Simple Component Replacement (~2–3 weeks)**
 Replace low-complexity components file-by-file:
 - `v-chip` → custom `<span>` with Tailwind
 - `v-avatar` → custom
@@ -106,7 +213,7 @@ Replace low-complexity components file-by-file:
 - `v-card` → custom card component
 - `v-alert` → custom
 
-**Phase 3 — Form Components (~2 weeks)**
+**Phase 5 — Form Components (~2 weeks)**
 Decide on headless form strategy first. Options:
 - **shadcn-vue** (recommended — Tailwind-native, has all needed inputs)
 - Formkit + Tailwind theme
@@ -114,26 +221,25 @@ Decide on headless form strategy first. Options:
 
 Replace all form inputs across the 115 components.
 
-**Phase 4 — Complex Interactive Components (~3–4 weeks)**
-- Drawer → Headless UI `Dialog` or custom
-- Modal/Dialog → Headless UI
+**Phase 6 — Complex Interactive Components (~3–4 weeks)**
+- Drawer → Reka/shadcn Dialog or custom sheet
+- Modal/Dialog → Reka/shadcn Dialog
 - Snackbar/Toast → sonner or vue-toastification
-- Tabs → Headless UI
+- Tabs → Reka/shadcn Tabs
 - DataTable → TanStack Table v8
 - VirtualScroll → @tanstack/vue-virtual
 - Treeview → custom recursive component
 - Carousel → Embla Carousel
 
-**Phase 5 — Layout Restructure (~1 week)**
+**Phase 7 — Layout Restructure (~1 week)**
 Replace `v-app` / `v-main` / `v-container` with plain semantic HTML + Tailwind. This is the **highest-risk phase** — SSR hydration, scroll behavior, safe-area handling all need to be retested.
 
-**Phase 6 — Theme Rebuild (~3–4 days)**
-- Remove Vuetify theme plugin
-- Replace `--v-theme-*` CSS vars with Tailwind CSS vars or custom tokens
-- Replace `v-theme--dark` class selectors with `dark:` Tailwind variants
-- Update `plugins/vuetify.ts` → `plugins/theme.ts` (just cookie + class toggling)
+**Phase 8 — Final Theme Cutover (~3–4 days)**
+- Remove the remaining Vuetify theme dependency once no components need it.
+- Replace remaining `--v-theme-*` CSS vars with app-owned semantic tokens.
+- Replace `v-theme--dark` class selectors with app-owned theme selectors or Tailwind `dark:` variants.
 
-**Phase 7 — Cleanup & Remove Vuetify (~2–3 days)**
+**Phase 9 — Cleanup & Remove Vuetify (~2–3 days)**
 - Remove `vuetify`, `vite-plugin-vuetify`, `@mdi/font` from `package.json` (or keep MDI)
 - Remove `build.transpile: ['vuetify']` from `nuxt.config.ts`
 - Remove the Vuetify module hook
