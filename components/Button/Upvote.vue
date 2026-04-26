@@ -1,19 +1,22 @@
 <template>
-  <v-tooltip :text="tooltipText" location="top">
-    <template #activator="{ props: tooltipProps }">
-      <span v-bind="tooltipProps">
-        <v-btn
-          :icon="hasVoted ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'"
-          class="profile-upvote-btn"
-          :class="{ 'is-active': hasVoted }"
-          size="small"
-          variant="text"
-          :disabled="!!isOwnProfile || isLoading"
-          @click="handleUpvote"
-        ></v-btn>
-      </span>
-    </template>
-  </v-tooltip>
+  <button
+    type="button"
+    class="profile-upvote-btn"
+    :class="{ 'is-active': hasVoted }"
+    :disabled="!!isOwnProfile || isLoading"
+    :title="tooltipText"
+    :aria-label="tooltipText"
+    @click.stop="handleUpvote"
+  >
+    <i
+      :class="[
+        'mdi',
+        hasVoted ? 'mdi-thumb-up' : 'mdi-thumb-up-outline',
+        'profile-upvote-btn__icon',
+      ]"
+      aria-hidden="true"
+    />
+  </button>
 </template>
 
 <script setup>
@@ -81,14 +84,36 @@ const handleUpvote = async () => {
 
 <style scoped>
 .profile-upvote-btn {
-  color: #93c5fd !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #93c5fd;
+  cursor: pointer;
+  transition: color 0.18s ease, background-color 0.18s ease, opacity 0.18s ease;
 }
 
 .profile-upvote-btn.is-active {
-  color: #f59e0b !important;
+  color: #f59e0b;
 }
 
-.profile-upvote-btn:deep(.v-icon) {
-  color: currentColor !important;
+.profile-upvote-btn:hover:not(:disabled),
+.profile-upvote-btn:focus-visible {
+  background: rgba(59, 130, 246, 0.12);
+  outline: none;
+}
+
+.profile-upvote-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.profile-upvote-btn__icon {
+  font-size: 1.1rem;
+  color: currentColor;
 }
 </style>

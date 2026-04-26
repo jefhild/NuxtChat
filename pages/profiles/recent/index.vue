@@ -1,48 +1,13 @@
 <template>
-  <v-container fluid>
-    <!-- Back Button -->
-    <v-row>
-      <v-col cols="12">
-        <!-- Page Title -->
-        <div class="d-flex justify-center mt-4">
-          <v-btn icon @click="$router.back()" color="primary" class="mr-4">
-            <v-icon>mdi-arrow-left</v-icon>
-          </v-btn>
-          <h1>{{ $t("pages.profiles.recent.title") }}</h1>
-        </div>
-      </v-col>
-    </v-row>
-
-    <!-- Content -->
-    <HomeRecent :limit="100" />
-  </v-container>
+  <ProfilesPageShell title-key="pages.profiles.recent.title">
+    <HomeProfiles
+      :limit="100"
+      source="recent"
+      title-key="components.home.recent.title"
+    />
+  </ProfilesPageShell>
 </template>
 
-<script setup>   
-const isAuthenticated = ref(false);
-const authStore = useAuthStore();
-const isLoading = ref(false);
+<script setup>
 useSeoI18nMeta("profiles.recent");
-onMounted(async () => {
-  isLoading.value = true;
-  await authStore.checkAuth();
-  isAuthenticated.value = authStore.user !== null;
-  isLoading.value = false;
-});
 </script>
-
-<style scoped>
-.green--text-h1 {
-  font-family: "poppins", sans-serif;
-  font-size: 2rem;
-  font-weight: 400;
-  color: rgb(51, 90, 78);
-}
-
-.imchattyLogo {
-  font-family: "Amatic SC", sans-serif;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: rgb(80, 51, 90);
-}
-</style>

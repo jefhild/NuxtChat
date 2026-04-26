@@ -6,195 +6,276 @@
       `home-mood-root--card-${resolvedCardTheme}`,
     ]"
   >
-    <v-sheet class="home-mood-card pa-4 pa-md-5" elevation="0">
+    <section class="home-mood-card">
       <div class="home-mood-card__glow" aria-hidden="true" />
       <div class="home-mood-card__content">
         <div v-if="variant === 'home'" class="home-mood-card__header">
           <div class="home-mood-card__header-main">
             <div class="home-mood-card__header-top">
-              <v-chip
-                size="small"
-                color="primary"
-                variant="tonal"
-                class="mb-2 home-mood-card__badge"
-              >
+              <span class="home-mood-card__badge">
                 {{ t("pages.feeds.heading", "Mood Feed") }}
-              </v-chip>
-              <v-btn
-                variant="text"
-                color="primary"
-                :to="localPath('/feeds')"
-                class="home-mood-card__link"
-              >
+              </span>
+              <NuxtLink :to="localPath('/feeds')" class="home-mood-card__link">
                 {{ t("pages.feeds.seeAll", "Browse mood feed") }}
-              </v-btn>
+              </NuxtLink>
             </div>
-            <h2 class="text-h5 font-weight-bold mb-1">
+            <h2 class="home-mood-card__title">
               {{ t("pages.feeds.promptTitle", "Daily Mood Question") }}
             </h2>
-            <p class="text-body-2 text-medium-emphasis mb-0">
+            <p class="home-mood-card__subtitle">
               {{ t("pages.feeds.promptSubtitle", "Share how you're feeling and connect with people who get it.") }}
             </p>
           </div>
         </div>
 
         <div class="home-mood-card__prompt" :class="{ 'mb-3': variant === 'home' }">
-        <span v-if="promptLoading">
-          {{ t("pages.feeds.promptLoading", "Loading question...") }}
-        </span>
-        <span v-else>
-          {{ promptText || t("pages.feeds.promptFallback", "Share what's on your mind.") }}
-        </span>
+          <span v-if="promptLoading">
+            {{ t("pages.feeds.promptLoading", "Loading question...") }}
+          </span>
+          <span v-else>
+            {{ promptText || t("pages.feeds.promptFallback", "Share what's on your mind.") }}
+          </span>
         </div>
 
         <div class="home-mood-card__actions">
-        <v-text-field
-          v-model="promptAnswer"
-          class="home-mood-card__input"
-          variant="outlined"
-          density="comfortable"
-          hide-details
-          :placeholder="t('pages.feeds.promptPlaceholder', 'Your response...')"
-          maxlength="280"
-          @keyup.enter="onSubmitPrompt"
-        />
-        <v-btn
-          color="primary"
-          class="home-mood-card__submit"
-          size="large"
-          :loading="submitBusy"
-          :disabled="promptSubmitDisabled"
-          @click="onSubmitPrompt"
-        >
-          {{ t("pages.feeds.submitButton", "Submit") }}
-        </v-btn>
+          <input
+            v-model="promptAnswer"
+            class="home-mood-card__input"
+            type="text"
+            maxlength="280"
+            :placeholder="t('pages.feeds.promptPlaceholder', 'Your response...')"
+            @keydown.enter.prevent="onSubmitPrompt"
+          >
+          <button
+            type="button"
+            class="home-mood-card__submit"
+            :class="{ 'is-loading': submitBusy }"
+            :disabled="promptSubmitDisabled"
+            @click="onSubmitPrompt"
+          >
+            <span v-if="submitBusy" class="home-mood-card__spinner" aria-hidden="true" />
+            <span>{{ t("pages.feeds.submitButton", "Submit") }}</span>
+          </button>
         </div>
 
-        <div v-if="cooldownActive" class="home-mood-card__cooldown text-caption mt-2">
+        <div v-if="cooldownActive" class="home-mood-card__cooldown">
           {{ cooldownLabel }}
         </div>
         <hr v-if="variant === 'feeds'" class="home-mood-card__divider">
       </div>
-    </v-sheet>
+    </section>
 
-    <v-dialog v-model="refineDialogOpen" max-width="520">
-      <v-card>
-        <v-card-title>
-          {{ t("pages.feeds.refineTitle", "So you're saying...") }}
-        </v-card-title>
-        <v-card-text>
-          <div class="text-body-1 font-weight-medium">
-            {{ refinedPreview }}
-          </div>
-          <div class="text-caption text-medium-emphasis mt-2">
-            {{ t("pages.feeds.refineHelper", "You can edit your response if this misses the mark.") }}
-          </div>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="text" @click="onRefineEdit">
-            {{ t("pages.feeds.refineEdit", "Edit") }}
-          </v-btn>
-          <v-btn color="primary" :loading="submitBusy" @click="onConfirmRefine">
-            {{ t("pages.feeds.refinePost", "Post") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog v-model="consentDialogOpen" max-width="520">
-      <v-card>
-        <v-card-title>
-          {{ t("pages.feeds.consentTitle", "Continue as guest?") }}
-        </v-card-title>
-        <v-card-text>
-          <div class="text-body-2">
-            {{ t("pages.feeds.consentBody", "We'll create a temporary account so you can post. You can register anytime to keep using the Mood Feed.") }}
-          </div>
-          <ClientOnly>
-            <div
-              v-if="captchaEnabled && !captchaPassed"
-              class="mt-4 d-flex flex-column align-center"
-            >
-              <TurnstileWidget
-                :site-key="captchaSiteKey"
-                @verified="onCaptchaVerified"
-                @expired="onCaptchaExpired"
-                @error="onCaptchaError"
-              />
-              <div class="text-caption text-medium-emphasis mt-2 text-center">
-                {{ t("pages.feeds.captchaPrompt", "Please complete the CAPTCHA to continue.") }}
+    <Teleport to="body">
+      <Transition name="home-mood-dialog-fade">
+        <div v-if="refineDialogOpen" class="home-mood-dialog" role="presentation">
+          <button
+            type="button"
+            class="home-mood-dialog__scrim"
+            aria-label="Close refine dialog"
+            @click="onRefineEdit"
+          />
+          <div
+            class="home-mood-dialog__panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="home-mood-refine-title"
+          >
+            <h2 id="home-mood-refine-title" class="home-mood-dialog__title">
+              {{ t("pages.feeds.refineTitle", "So you're saying...") }}
+            </h2>
+            <div class="home-mood-dialog__body">
+              <div class="home-mood-dialog__preview">
+                {{ refinedPreview }}
               </div>
-              <div v-if="captchaError" class="text-caption text-error mt-1">
-                {{ captchaError }}
+              <div class="home-mood-dialog__helper">
+                {{ t("pages.feeds.refineHelper", "You can edit your response if this misses the mark.") }}
               </div>
             </div>
-          </ClientOnly>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="text" @click="onConsentCancel">
-            {{ t("pages.feeds.consentCancel", "Cancel") }}
-          </v-btn>
-          <v-btn
-            color="primary"
-            :loading="consentBusy"
-            @click="onConsentAccept"
+            <div class="home-mood-dialog__actions">
+              <button
+                type="button"
+                class="home-mood-dialog__button home-mood-dialog__button--secondary"
+                @click="onRefineEdit"
+              >
+                {{ t("pages.feeds.refineEdit", "Edit") }}
+              </button>
+              <button
+                type="button"
+                class="home-mood-dialog__button home-mood-dialog__button--primary"
+                :class="{ 'is-loading': submitBusy }"
+                @click="onConfirmRefine"
+              >
+                <span v-if="submitBusy" class="home-mood-card__spinner" aria-hidden="true" />
+                <span>{{ t("pages.feeds.refinePost", "Post") }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="home-mood-dialog-fade">
+        <div v-if="consentDialogOpen" class="home-mood-dialog" role="presentation">
+          <button
+            type="button"
+            class="home-mood-dialog__scrim"
+            aria-label="Close guest consent dialog"
+            @click="onConsentCancel"
+          />
+          <div
+            class="home-mood-dialog__panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="home-mood-consent-title"
           >
-            {{ t("pages.feeds.consentContinue", "Continue") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog v-model="limitDialogOpen" max-width="520">
-      <v-card>
-        <v-card-title>
-          {{ t("pages.feeds.limitTitle", "Keep using Mood Feed") }}
-        </v-card-title>
-        <v-card-text>
-          <div class="text-body-2">
-            {{ t("pages.feeds.limitBody", "You've hit the anonymous limit. To keep using the Mood Feed, finish a quick registration.") }}
+            <h2 id="home-mood-consent-title" class="home-mood-dialog__title">
+              {{ t("pages.feeds.consentTitle", "Continue as guest?") }}
+            </h2>
+            <div class="home-mood-dialog__body">
+              <div class="home-mood-dialog__copy">
+                {{ t("pages.feeds.consentBody", "We'll create a temporary account so you can post. You can register anytime to keep using the Mood Feed.") }}
+              </div>
+              <ClientOnly>
+                <div
+                  v-if="captchaEnabled && !captchaPassed"
+                  class="home-mood-dialog__captcha"
+                >
+                  <TurnstileWidget
+                    :site-key="captchaSiteKey"
+                    @verified="onCaptchaVerified"
+                    @expired="onCaptchaExpired"
+                    @error="onCaptchaError"
+                  />
+                  <div class="home-mood-dialog__helper home-mood-dialog__helper--center">
+                    {{ t("pages.feeds.captchaPrompt", "Please complete the CAPTCHA to continue.") }}
+                  </div>
+                  <div v-if="captchaError" class="home-mood-dialog__error">
+                    {{ captchaError }}
+                  </div>
+                </div>
+              </ClientOnly>
+            </div>
+            <div class="home-mood-dialog__actions">
+              <button
+                type="button"
+                class="home-mood-dialog__button home-mood-dialog__button--secondary"
+                @click="onConsentCancel"
+              >
+                {{ t("pages.feeds.consentCancel", "Cancel") }}
+              </button>
+              <button
+                type="button"
+                class="home-mood-dialog__button home-mood-dialog__button--primary"
+                :class="{ 'is-loading': consentBusy }"
+                @click="onConsentAccept"
+              >
+                <span v-if="consentBusy" class="home-mood-card__spinner" aria-hidden="true" />
+                <span>{{ t("pages.feeds.consentContinue", "Continue") }}</span>
+              </button>
+            </div>
           </div>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="text" @click="limitDialogOpen = false">
-            {{ t("pages.feeds.limitNotNow", "Not now") }}
-          </v-btn>
-          <v-btn color="primary" @click="goToOnboarding">
-            {{ t("pages.feeds.limitGoChat", "Go to chat") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+        </div>
+      </Transition>
+    </Teleport>
 
-    <v-dialog v-model="registerDialogOpen" max-width="520">
-      <v-card>
-        <v-card-title>
-          {{ t("pages.feeds.registerTitle", "Create your profile") }}
-        </v-card-title>
-        <v-card-text>
-          <div class="text-body-2">
-            {{
-              t(
-                "pages.feeds.registerBody",
-                "Finish registration to create your profile and keep using the Mood Feed."
-              )
-            }}
+    <Teleport to="body">
+      <Transition name="home-mood-dialog-fade">
+        <div v-if="limitDialogOpen" class="home-mood-dialog" role="presentation">
+          <button
+            type="button"
+            class="home-mood-dialog__scrim"
+            aria-label="Close limit dialog"
+            @click="limitDialogOpen = false"
+          />
+          <div
+            class="home-mood-dialog__panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="home-mood-limit-title"
+          >
+            <h2 id="home-mood-limit-title" class="home-mood-dialog__title">
+              {{ t("pages.feeds.limitTitle", "Keep using Mood Feed") }}
+            </h2>
+            <div class="home-mood-dialog__body">
+              <div class="home-mood-dialog__copy">
+                {{ t("pages.feeds.limitBody", "You've hit the anonymous limit. To keep using the Mood Feed, finish a quick registration.") }}
+              </div>
+            </div>
+            <div class="home-mood-dialog__actions">
+              <button
+                type="button"
+                class="home-mood-dialog__button home-mood-dialog__button--secondary"
+                @click="limitDialogOpen = false"
+              >
+                {{ t("pages.feeds.limitNotNow", "Not now") }}
+              </button>
+              <button
+                type="button"
+                class="home-mood-dialog__button home-mood-dialog__button--primary"
+                @click="goToOnboarding"
+              >
+                {{ t("pages.feeds.limitGoChat", "Go to chat") }}
+              </button>
+            </div>
           </div>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="text" @click="registerDialogOpen = false">
-            {{ t("pages.feeds.registerNotNow", "Not now") }}
-          </v-btn>
-          <v-btn color="primary" @click="goToRegister">
-            {{ t("pages.feeds.registerGoChat", "Go to chat") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+        </div>
+      </Transition>
+    </Teleport>
 
-    <v-snackbar v-model="submitNoticeOpen" timeout="3000">
-      {{ submitNoticeText }}
-    </v-snackbar>
+    <Teleport to="body">
+      <Transition name="home-mood-dialog-fade">
+        <div v-if="registerDialogOpen" class="home-mood-dialog" role="presentation">
+          <button
+            type="button"
+            class="home-mood-dialog__scrim"
+            aria-label="Close register dialog"
+            @click="registerDialogOpen = false"
+          />
+          <div
+            class="home-mood-dialog__panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="home-mood-register-title"
+          >
+            <h2 id="home-mood-register-title" class="home-mood-dialog__title">
+              {{ t("pages.feeds.registerTitle", "Create your profile") }}
+            </h2>
+            <div class="home-mood-dialog__body">
+              <div class="home-mood-dialog__copy">
+                {{ t("pages.feeds.registerBody", "Finish registration to create your profile and keep using the Mood Feed.") }}
+              </div>
+            </div>
+            <div class="home-mood-dialog__actions">
+              <button
+                type="button"
+                class="home-mood-dialog__button home-mood-dialog__button--secondary"
+                @click="registerDialogOpen = false"
+              >
+                {{ t("pages.feeds.registerNotNow", "Not now") }}
+              </button>
+              <button
+                type="button"
+                class="home-mood-dialog__button home-mood-dialog__button--primary"
+                @click="goToRegister"
+              >
+                {{ t("pages.feeds.registerGoChat", "Go to chat") }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <div class="home-mood-toast-stack" aria-live="polite" aria-atomic="true">
+        <Transition name="home-mood-toast-fade">
+          <div v-if="submitNoticeOpen" class="home-mood-toast" role="status">
+            {{ submitNoticeText }}
+          </div>
+        </Transition>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -258,6 +339,7 @@ const postEligibility = ref({
 });
 const nowTick = ref(Date.now());
 let cooldownTimerId = null;
+let submitNoticeTimerId = null;
 
 const promptSubmitDisabled = computed(
   () => submitBusy.value || !promptAnswer.value.trim() || cooldownActive.value
@@ -288,6 +370,13 @@ const cooldownLabel = computed(() =>
     time: formatDuration(cooldownRemainingMs.value),
   })
 );
+
+function clearSubmitNoticeTimer() {
+  if (submitNoticeTimerId) {
+    clearTimeout(submitNoticeTimerId);
+    submitNoticeTimerId = null;
+  }
+}
 
 async function loadPrompt() {
   const reqId = (promptReqId.value += 1);
@@ -460,8 +549,6 @@ async function onConfirmRefine() {
     await loadPostEligibility(refinedPromptKey.value || promptKey.value || null);
     emit("posted");
 
-    // Fire-and-forget: infer mood from the posted text and save it for matching.
-    // Only runs for authenticated users; errors are silently ignored.
     if (auth.authStatus !== "unauthenticated") {
       inferMoodFromFeedPost(refinedOriginal.value || refinedPreview.value || "");
     }
@@ -501,7 +588,6 @@ function onRefineEdit() {
   refineDialogOpen.value = false;
 }
 
-/** Fire-and-forget: infer mood signals from a mood feed text response, then save them. */
 async function inferMoodFromFeedPost(text) {
   if (!text || text.length < 5) return;
   try {
@@ -613,6 +699,13 @@ watch(
     loadPostEligibility(promptKey.value || null);
   }
 );
+watch(submitNoticeOpen, (open) => {
+  clearSubmitNoticeTimer();
+  if (!open) return;
+  submitNoticeTimerId = window.setTimeout(() => {
+    submitNoticeOpen.value = false;
+  }, 3000);
+});
 
 onMounted(() => {
   cooldownTimerId = window.setInterval(() => {
@@ -625,6 +718,7 @@ onBeforeUnmount(() => {
     clearInterval(cooldownTimerId);
     cooldownTimerId = null;
   }
+  clearSubmitNoticeTimer();
 });
 
 if (import.meta.client) {
@@ -637,43 +731,32 @@ if (import.meta.client) {
 
 <style scoped>
 .home-mood-root {
-  --mf-card-border: rgba(100, 116, 139, 0.24);
+  --mf-card-border: rgb(var(--color-border) / 0.58);
   --mf-card-bg:
-    radial-gradient(1200px 280px at 8% 0%, rgba(59, 130, 246, 0.08), transparent 62%),
-    linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.95));
-  --mf-glow-a: rgba(59, 130, 246, 0.18);
-  --mf-glow-b: rgba(14, 165, 233, 0.12);
-  --mf-card-text: #1e293b;
-  --mf-divider: rgba(100, 116, 139, 0.24);
-  --mf-input-bg: rgba(255, 255, 255, 0.9);
-  --mf-input-border: rgba(100, 116, 139, 0.34);
-  --mf-input-text: #0f172a;
-  --mf-input-placeholder: rgba(71, 85, 105, 0.72);
-  --mf-cooldown: #2563eb;
-}
-
-:global(.v-theme--dark) .home-mood-root {
-  --mf-card-border: rgba(148, 163, 184, 0.28);
-  --mf-card-bg:
-    radial-gradient(1200px 280px at 8% 0%, rgba(59, 130, 246, 0.2), transparent 62%),
-    linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.82));
-  --mf-glow-a: rgba(56, 189, 248, 0.22);
-  --mf-glow-b: rgba(37, 99, 235, 0.2);
-  --mf-card-text: #dbe6ff;
-  --mf-divider: rgba(148, 163, 184, 0.3);
-  --mf-input-bg: rgba(2, 6, 23, 0.6);
-  --mf-input-border: rgba(148, 163, 184, 0.34);
-  --mf-input-text: #e8eefc;
-  --mf-input-placeholder: rgba(148, 163, 184, 0.85);
-  --mf-cooldown: #93c5fd;
+    radial-gradient(1200px 280px at 8% 0%, rgb(var(--color-primary) / 0.12), transparent 62%),
+    linear-gradient(
+      135deg,
+      rgb(var(--color-surface) / 0.98),
+      rgb(var(--color-surface) / 0.92)
+    );
+  --mf-glow-a: rgb(var(--color-primary) / 0.2);
+  --mf-glow-b: rgb(var(--color-info) / 0.14);
+  --mf-card-text: rgb(var(--color-foreground));
+  --mf-divider: rgb(var(--color-border) / 0.58);
+  --mf-input-bg: rgb(var(--color-surface) / 0.9);
+  --mf-input-border: rgb(var(--color-border) / 0.72);
+  --mf-input-text: rgb(var(--color-foreground));
+  --mf-input-placeholder: rgb(var(--color-muted) / 0.88);
+  --mf-cooldown: rgb(var(--color-primary));
 }
 
 .home-mood-card {
+  position: relative;
+  overflow: hidden;
+  padding: 1rem 1.25rem 1.25rem;
   border-radius: 18px;
   border: 1px solid var(--mf-card-border);
   background: var(--mf-card-bg);
-  position: relative;
-  overflow: hidden;
   backdrop-filter: blur(6px);
   box-shadow:
     0 20px 36px rgba(0, 0, 0, 0.28),
@@ -713,21 +796,52 @@ if (import.meta.client) {
   gap: 10px;
 }
 
-.home-mood-card__link {
-  text-transform: none;
-  margin-top: 0;
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  min-width: 0;
-  white-space: nowrap;
-}
-
 .home-mood-card__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0.2rem 0.7rem;
   border: 1px solid color-mix(in oklab, var(--mf-card-text) 20%, transparent 80%);
+  border-radius: 999px;
+  background: rgb(var(--color-primary) / 0.1);
+  color: rgb(var(--color-primary));
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  font-size: 0.75rem;
+}
+
+.home-mood-card__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  color: rgb(var(--color-primary));
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.home-mood-card__link:hover,
+.home-mood-card__link:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.home-mood-card__title {
+  margin: 0.3rem 0 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--mf-card-text);
+}
+
+.home-mood-card__subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--mf-card-text) 68%, transparent 32%);
 }
 
 .home-mood-card__prompt {
@@ -738,17 +852,6 @@ if (import.meta.client) {
   letter-spacing: 0.012em;
 }
 
-.home-mood-card__related {
-  margin-left: 8px;
-  font-size: 0.88em;
-  color: color-mix(in oklab, var(--mf-card-text) 80%, #93c5fd 20%);
-  text-decoration: underline;
-}
-
-.home-mood-card__related:hover {
-  color: #bfdbfe;
-}
-
 .home-mood-card__actions {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -756,42 +859,216 @@ if (import.meta.client) {
   align-items: center;
 }
 
-.home-mood-card__input :deep(.v-field) {
+.home-mood-card__input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--mf-input-border);
   border-radius: 16px;
   background: var(--mf-input-bg);
-  border: 1px solid var(--mf-input-border);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-.home-mood-card__input :deep(.v-field__input),
-.home-mood-card__input :deep(input) {
   color: var(--mf-input-text);
+  font: inherit;
 }
 
-.home-mood-card__input :deep(input::placeholder) {
+.home-mood-card__input::placeholder {
   color: var(--mf-input-placeholder);
 }
 
-.home-mood-card__input :deep(.v-field--focused) {
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.24);
+.home-mood-card__input:focus-visible {
+  outline: 2px solid rgba(96, 165, 250, 0.24);
+  outline-offset: 1px;
+}
+
+.home-mood-card__submit,
+.home-mood-dialog__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 46px;
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
 }
 
 .home-mood-card__submit {
   min-width: 132px;
+  border: 0;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-primary-foreground, var(--color-background)));
   letter-spacing: 0.04em;
-  border-radius: 16px;
-  height: 46px;
-  font-weight: 700;
+}
+
+.home-mood-card__submit:hover:not(:disabled),
+.home-mood-card__submit:focus-visible,
+.home-mood-dialog__button:hover:not(:disabled),
+.home-mood-dialog__button:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.home-mood-card__submit:disabled,
+.home-mood-dialog__button:disabled {
+  opacity: 0.58;
+  cursor: default;
 }
 
 .home-mood-card__cooldown {
+  margin-top: 0.5rem;
   color: var(--mf-cooldown);
+  font-size: 0.78rem;
 }
 
 .home-mood-card__divider {
   margin-top: 12px;
   border: 0;
   border-top: 1px solid var(--mf-divider);
+}
+
+.home-mood-card__spinner {
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: home-mood-spin 0.7s linear infinite;
+}
+
+.home-mood-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 2300;
+}
+
+.home-mood-dialog__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.64);
+}
+
+.home-mood-dialog__panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(calc(100% - 2rem), 520px);
+  transform: translate(-50%, -50%);
+  padding: 1.25rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 18px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 24px 48px rgb(var(--color-shadow) / 0.18);
+}
+
+.home-mood-dialog__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  line-height: 1.35;
+  color: rgb(var(--color-foreground));
+}
+
+.home-mood-dialog__body {
+  margin-top: 0.85rem;
+}
+
+.home-mood-dialog__preview {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: rgb(var(--color-foreground));
+}
+
+.home-mood-dialog__copy,
+.home-mood-dialog__helper {
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: rgb(var(--color-foreground) / 0.76);
+}
+
+.home-mood-dialog__helper {
+  margin-top: 0.6rem;
+}
+
+.home-mood-dialog__helper--center {
+  text-align: center;
+}
+
+.home-mood-dialog__captcha {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home-mood-dialog__error {
+  margin-top: 0.35rem;
+  color: #ef4444;
+  font-size: 0.82rem;
+}
+
+.home-mood-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.home-mood-dialog__button--primary {
+  border: 0;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-primary-foreground, var(--color-background)));
+}
+
+.home-mood-dialog__button--secondary {
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.82);
+}
+
+.home-mood-toast-stack {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2300;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.home-mood-toast {
+  min-width: min(320px, calc(100vw - 2rem));
+  max-width: min(420px, calc(100vw - 2rem));
+  padding: 0.85rem 1rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 14px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  box-shadow: 0 18px 40px rgb(var(--color-shadow) / 0.18);
+}
+
+.home-mood-dialog-fade-enter-active,
+.home-mood-dialog-fade-leave-active,
+.home-mood-toast-fade-enter-active,
+.home-mood-toast-fade-leave-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.home-mood-dialog-fade-enter-from,
+.home-mood-dialog-fade-leave-to,
+.home-mood-toast-fade-enter-from,
+.home-mood-toast-fade-leave-to {
+  opacity: 0;
+}
+
+.home-mood-toast-fade-enter-from,
+.home-mood-toast-fade-leave-to {
+  transform: translateY(8px);
 }
 
 .home-mood-root--card-vintage {
@@ -827,6 +1104,12 @@ if (import.meta.client) {
   --mf-cooldown: #67e8f9;
 }
 
+@keyframes home-mood-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 960px) {
   .home-mood-card {
     border-radius: 14px;
@@ -837,14 +1120,9 @@ if (import.meta.client) {
     gap: 8px;
   }
 
-  .home-mood-card__badge {
-    margin-bottom: 0 !important;
-  }
-
   .home-mood-card__link {
     font-size: 0.9rem;
     letter-spacing: 0.03em;
-    padding-inline: 6px;
   }
 
   .home-mood-card__actions {
@@ -854,6 +1132,27 @@ if (import.meta.client) {
   .home-mood-card__submit {
     width: 100%;
     min-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-mood-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .home-mood-dialog__button {
+    width: 100%;
+  }
+
+  .home-mood-toast-stack {
+    right: 0.75rem;
+    left: 0.75rem;
+    bottom: 0.75rem;
+  }
+
+  .home-mood-toast {
+    min-width: 0;
+    max-width: 100%;
   }
 }
 </style>

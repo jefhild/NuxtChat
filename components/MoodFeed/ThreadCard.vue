@@ -1,22 +1,23 @@
 <template>
-  <v-card class="pa-4 mood-thread" elevation="1">
-    <div class="mood-thread__header" v-if="entry.promptText || replyCount">
-      <div class="text-caption text-medium-emphasis">
+  <div class="mood-thread">
+    <div v-if="entry.promptText || replyCount" class="mood-thread__header">
+      <div class="mood-thread__eyebrow">
         {{ entry.promptText || "" }}
       </div>
-      <v-spacer />
-      <v-btn
+      <button
         v-if="replyCount"
-        icon
-        variant="text"
-        density="comfortable"
+        type="button"
+        class="thread-toggle"
+        :aria-label="expanded ? 'Collapse thread' : 'Expand thread'"
         @click="expanded = !expanded"
       >
-        <v-icon size="18">
-          {{ expanded ? "mdi-chevron-up" : "mdi-chevron-down" }}
-        </v-icon>
-      </v-btn>
+        <i
+          :class="['mdi', expanded ? 'mdi-chevron-up' : 'mdi-chevron-down']"
+          aria-hidden="true"
+        />
+      </button>
     </div>
+
     <MoodFeedCommentList
       v-if="messagesForUI.length"
       :messages="messagesForUI"
@@ -28,36 +29,45 @@
       @menu="openMessageMenu"
       @login-request="$emit('login-request')"
     />
-    <div v-else class="text-body-2 text-medium-emphasis mb-2">
+    <div v-else class="text-body-2 text-medium-emphasis">
       {{ emptyText }}
     </div>
-  </v-card>
+  </div>
 
-  <v-menu
-    v-model="menu.open"
-    :activator="menu.activator"
-    location="bottom end"
-    origin="top end"
-    :close-on-content-click="true"
-    transition="fade-transition"
-  >
-    <v-list density="compact" min-width="180">
-      <v-list-item
-        v-if="isMineSelected"
-        prepend-icon="mdi-delete"
-        @click="onDelete"
-      >
-        <v-list-item-title>Delete</v-list-item-title>
-      </v-list-item>
-      <v-list-item
-        v-else
-        prepend-icon="mdi-flag"
-        @click="onFlag"
-      >
-        <v-list-item-title>Flag</v-list-item-title>
-      </v-list-item>
-    </v-list>
-  </v-menu>
+  <Teleport to="body">
+    <Transition name="mood-thread-menu-fade">
+      <div v-if="menu.open" class="mood-thread-menu-layer" role="presentation">
+        <button
+          type="button"
+          class="mood-thread-menu-layer__scrim"
+          aria-label="Close message menu"
+          @click="menu.open = false"
+        />
+        <div class="mood-thread-menu" :style="menuStyle" role="menu" @click.stop>
+          <button
+            v-if="isMineSelected"
+            type="button"
+            class="mood-thread-menu__item"
+            role="menuitem"
+            @click="onDelete"
+          >
+            <i class="mdi mdi-delete" aria-hidden="true" />
+            <span>Delete</span>
+          </button>
+          <button
+            v-else
+            type="button"
+            class="mood-thread-menu__item"
+            role="menuitem"
+            @click="onFlag"
+          >
+            <i class="mdi mdi-flag" aria-hidden="true" />
+            <span>Flag</span>
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
@@ -140,7 +150,12 @@ const messagesForUI = computed(() => {
   return [...base, ...replies.value.map((r) => ({ ...r, voteTarget: "reply" }))];
 });
 
-const menu = reactive({ open: false, activator: null, id: null });
+const menu = reactive({ open: false, id: null, top: 0, left: 0 });
+const MENU_WIDTH = 188;
+const menuStyle = computed(() => ({
+  top: `${menu.top}px`,
+  left: `${menu.left}px`,
+}));
 const isMineSelected = computed(() => {
   if (!menu.id || !props.meId) return false;
   const msg = messagesForUI.value.find((m) => m.id === menu.id);
@@ -149,11 +164,17 @@ const isMineSelected = computed(() => {
 
 function openMessageMenu({ id, el }) {
   menu.open = false;
-  menu.activator = null;
   menu.id = id || null;
   nextTick(() => {
-    menu.activator = el || null;
-    menu.open = !!menu.activator;
+    if (!el?.getBoundingClientRect || typeof window === "undefined") return;
+    const rect = el.getBoundingClientRect();
+    const padding = 12;
+    menu.top = rect.bottom + 8;
+    menu.left = Math.min(
+      Math.max(rect.right - MENU_WIDTH, padding),
+      window.innerWidth - MENU_WIDTH - padding
+    );
+    menu.open = !!menu.id;
   });
 }
 
@@ -193,11 +214,89 @@ function handleVote(payload) {
 <style scoped>
 .mood-thread {
   margin-bottom: 16px;
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: color-mix(in oklab, rgb(var(--v-theme-surface)) 94%, rgb(var(--v-theme-primary)) 6%);
 }
+
 .mood-thread__header {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
+}
+
+.mood-thread__eyebrow {
+  font-size: 0.78rem;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.thread-toggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.mood-thread-menu-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2300;
+}
+
+.mood-thread-menu-layer__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+}
+
+.mood-thread-menu {
+  position: fixed;
+  width: 188px;
+  padding: 0.35rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 14px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 24px 48px rgb(var(--color-shadow) / 0.2);
+}
+
+.mood-thread-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: rgb(var(--color-foreground));
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mood-thread-menu__item:hover,
+.mood-thread-menu__item:focus-visible {
+  background: rgb(var(--color-primary) / 0.1);
+  outline: none;
+}
+
+.mood-thread-menu-fade-enter-active,
+.mood-thread-menu-fade-leave-active {
+  transition: opacity 0.16s ease;
+}
+
+.mood-thread-menu-fade-enter-from,
+.mood-thread-menu-fade-leave-to {
+  opacity: 0;
 }
 </style>

@@ -1,17 +1,16 @@
 <template>
   <div class="mood-chips-bar">
-    <v-chip
+    <button
       v-for="preset in MOOD_PRESETS"
       :key="preset.key"
-      :color="selectedKey === preset.key ? 'primary' : undefined"
-      :variant="selectedKey === preset.key ? 'tonal' : 'outlined'"
+      type="button"
       class="mood-chip"
-      size="large"
+      :class="{ 'mood-chip--active': selectedKey === preset.key }"
       @click="onChipClick(preset)"
     >
-      <v-icon start :icon="preset.icon" />
-      {{ $t(preset.labelKey) }}
-    </v-chip>
+      <i :class="['mdi', preset.icon, 'mood-chip__icon']" aria-hidden="true" />
+      <span>{{ $t(preset.labelKey) }}</span>
+    </button>
   </div>
 </template>
 
@@ -41,11 +40,36 @@ function onChipClick(preset) {
 }
 
 .mood-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 44px;
+  padding: 0.7rem 1.1rem;
+  border: 1px solid rgb(var(--color-border) / 0.78);
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.88);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.2;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
-.mood-chip:hover {
+.mood-chip:hover,
+.mood-chip:focus-visible {
   transform: translateY(-1px);
+  border-color: rgb(var(--color-primary) / 0.4);
+  outline: none;
+}
+
+.mood-chip--active {
+  background: rgb(var(--color-primary) / 0.12);
+  border-color: rgb(var(--color-primary) / 0.45);
+  color: rgb(var(--color-primary));
+}
+
+.mood-chip__icon {
+  font-size: 1.05rem;
 }
 </style>

@@ -1,31 +1,32 @@
 <template>
-  <v-container
-    fluid
-    :class="['seo-page-shell', { 'seo-page-shell--dark': isDarkTheme }]"
+  <section
+    :class="[
+      'seo-page-shell mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8',
+      { 'seo-page-shell--dark': isDarkTheme },
+    ]"
   >
     <div class="seo-layout">
       <div class="seo-main-stack">
         <div class="seo-hero__copy">
-          <h1 class="text-h3 font-weight-bold mb-3">
+          <h1 class="mb-3 text-3xl font-semibold text-foreground md:text-4xl lg:text-5xl">
             {{ page.heroTitle || page.title }}
           </h1>
-          <p v-if="page.heroBody || page.subtitle" class="text-body-1 text-medium-emphasis mb-6">
+          <p v-if="page.heroBody || page.subtitle" class="mb-6 text-base text-foreground/70 md:text-lg">
             {{ page.heroBody || page.subtitle }}
           </p>
-          <div class="d-flex flex-wrap ga-3">
-            <v-btn color="primary" size="large" :to="localPath(page.ctaHref || '/chat')">
+          <div class="flex flex-wrap gap-3">
+            <NuxtLink :to="localPath(page.ctaHref || '/chat')" class="seo-btn seo-btn--primary">
               {{ page.ctaLabel || "Start chatting" }}
-            </v-btn>
-            <v-btn variant="outlined" size="large" :to="learnMoreTo">
+            </NuxtLink>
+            <NuxtLink :to="learnMoreTo" class="seo-btn seo-btn--secondary">
               {{ t("pages.home.landing_page.learn_more") }}
-            </v-btn>
+            </NuxtLink>
           </div>
         </div>
 
-        <v-card
-          :class="['pa-5 pa-md-8', { 'seo-card--dark': isDarkTheme }]"
-          rounded="xl"
-          elevation="0"
+        <div
+          :class="['p-5 md:p-8', { 'seo-card--dark': isDarkTheme }]"
+          class="seo-card"
         >
           <!-- eslint-disable vue/no-v-html -->
           <div
@@ -33,72 +34,67 @@
             v-html="renderedBody"
           />
           <!-- eslint-enable vue/no-v-html -->
-        </v-card>
+        </div>
       </div>
 
       <div class="seo-side-stack">
-        <v-sheet
+        <div
           v-if="page.heroImageUrl || page.highlights?.length"
-          class="seo-hero__panel pa-4 pa-md-5"
-          rounded="xl"
-          elevation="0"
+          class="seo-hero__panel p-4 md:p-5"
         >
           <div v-if="page.heroImageUrl" class="seo-hero__image-wrap mb-4">
-            <v-img
-              :src="page.heroImageUrl"
-              :alt="page.heroTitle || page.title"
-              class="seo-hero__image"
-              aspect-ratio="16/10"
-              cover
-            />
+            <div class="seo-hero__image">
+              <img
+                :src="page.heroImageUrl"
+                :alt="page.heroTitle || page.title"
+                class="seo-hero__image-el"
+              >
+            </div>
             <div
               v-if="renderedPhotoCredits"
               class="seo-hero__photo-credit"
               v-html="renderedPhotoCredits"
             />
             <div v-if="showLanguageMenu" class="seo-hero__overlay">
-              <v-menu content-class="article-language-menu">
-                <template #activator="{ props: menuProps }">
-                  <v-btn
-                    v-bind="menuProps"
-                    size="x-small"
-                    variant="flat"
-                    class="language-menu-btn"
-                    :title="originalLanguageTitle"
-                  >
-                    <v-icon size="16">mdi-translate</v-icon>
-                  </v-btn>
-                </template>
-                <v-list density="compact">
-                  <v-list-item
+              <details class="seo-language-menu">
+                <summary
+                  class="language-menu-btn"
+                  :title="originalLanguageTitle"
+                  aria-label="Select article language"
+                >
+                  <i class="mdi mdi-translate text-base" aria-hidden="true" />
+                </summary>
+                <div class="seo-language-menu__panel" role="menu">
+                  <button
                     v-for="localeOption in availableLocales"
                     :key="localeOption"
+                    type="button"
+                    class="seo-language-menu__item"
                     @click="selectLocale(localeOption)"
                   >
-                    <v-list-item-title>
-                      {{ formatLocaleLabel(localeOption) }}
-                    </v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
+                    {{ formatLocaleLabel(localeOption) }}
+                  </button>
+                </div>
+              </details>
             </div>
           </div>
-          <div class="text-overline mb-3">{{ t("pages.seo.highlightsTitle") }}</div>
+          <div class="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/65">
+            {{ t("pages.seo.highlightsTitle") }}
+          </div>
           <ul v-if="page.highlights?.length" class="seo-highlights">
             <li v-for="highlight in page.highlights" :key="highlight">
               {{ highlight }}
             </li>
           </ul>
-        </v-sheet>
+        </div>
 
-        <v-card
+        <div
           v-if="page.relatedLinks?.length"
-          :class="['pa-4', { 'seo-card--dark': isDarkTheme }]"
-          rounded="xl"
-          elevation="0"
+          :class="[{ 'seo-card--dark': isDarkTheme }]"
+          class="seo-card p-4"
         >
-          <div class="text-h6 mb-3">Related pages</div>
-          <div class="d-flex flex-column ga-2">
+          <div class="mb-3 text-lg font-semibold text-foreground">Related pages</div>
+          <div class="flex flex-col gap-2">
             <NuxtLink
               v-for="link in page.relatedLinks"
               :key="`${link.label}-${link.href}`"
@@ -108,40 +104,41 @@
               {{ link.label }}
             </NuxtLink>
           </div>
-        </v-card>
+        </div>
 
-        <v-card
+        <div
           v-if="page.faqs?.length"
-          :class="['seo-faq-card pa-3 pa-md-4', { 'seo-card--dark': isDarkTheme }]"
-          rounded="xl"
-          elevation="0"
+          :class="['seo-faq-card p-3 md:p-4', { 'seo-card--dark': isDarkTheme }]"
+          class="seo-card"
         >
-          <div class="text-h5 mb-3">FAQ</div>
-          <v-expansion-panels variant="accordion" class="seo-faq-panels">
-            <v-expansion-panel
+          <div class="mb-3 text-2xl font-semibold text-foreground">FAQ</div>
+          <div class="seo-faq-panels">
+            <details
               v-for="faq in page.faqs"
               :key="faq.question"
-              rounded="lg"
+              class="seo-faq-item"
             >
-              <v-expansion-panel-title>
-                {{ faq.question }}
-              </v-expansion-panel-title>
-              <v-expansion-panel-text>
+              <summary class="seo-faq-item__summary">
+                <span>{{ faq.question }}</span>
+                <i class="mdi mdi-chevron-down seo-faq-item__chevron" aria-hidden="true" />
+              </summary>
+              <div class="seo-faq-item__content">
                 <!-- eslint-disable-next-line vue/no-v-html -->
                 <div class="seo-faq-answer" v-html="renderMarkdown(faq.answer)" />
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-          </v-expansion-panels>
-        </v-card>
+              </div>
+            </details>
+          </div>
+        </div>
 
-        <v-card
-          :class="['pa-4', { 'seo-card--dark': isDarkTheme }]"
-          rounded="xl"
-          elevation="0"
+        <div
+          :class="[{ 'seo-card--dark': isDarkTheme }]"
+          class="seo-card p-4"
         >
-          <div class="text-overline mb-2">{{ ctaCardCopy.eyebrow }}</div>
-          <div class="text-h6 mb-3">{{ ctaCardCopy.title }}</div>
-          <p class="text-body-2 text-medium-emphasis mb-4">
+          <div class="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/65">
+            {{ ctaCardCopy.eyebrow }}
+          </div>
+          <div class="mb-3 text-lg font-semibold text-foreground">{{ ctaCardCopy.title }}</div>
+          <p class="mb-4 text-sm text-foreground/70">
             {{ ctaCardCopy.body }}
           </p>
           <div class="seo-cta-points mb-4">
@@ -150,23 +147,22 @@
               :key="point"
               class="seo-cta-point"
             >
-              <v-icon size="16" color="primary">mdi-check-circle-outline</v-icon>
+              <i class="mdi mdi-check-circle-outline text-base text-primary" aria-hidden="true" />
               <span>{{ point }}</span>
             </div>
           </div>
-          <v-btn block color="primary" size="large" :to="localPath(page.ctaHref || '/chat')">
+          <NuxtLink :to="localPath(page.ctaHref || '/chat')" class="seo-btn seo-btn--primary seo-btn--block">
             {{ page.ctaLabel || ctaCardCopy.button }}
-          </v-btn>
-        </v-card>
+          </NuxtLink>
+        </div>
       </div>
     </div>
-  </v-container>
+  </section>
 </template>
 
 <script setup lang="ts">
 import MarkdownIt from "markdown-it";
 import DOMPurify from "isomorphic-dompurify";
-import { useTheme } from "vuetify";
 
 type SeoLink = {
   label: string;
@@ -209,8 +205,8 @@ const props = defineProps<{
 const { t } = useI18n();
 const localPath = useLocalePath();
 const switchLocalePath = useSwitchLocalePath();
-const theme = useTheme();
-const isDarkTheme = computed(() => theme.global.current.value.dark);
+const { resolvedTheme } = useAppTheme();
+const isDarkTheme = computed(() => resolvedTheme.value === "dark");
 
 const md = new MarkdownIt({
   html: true,
@@ -436,11 +432,6 @@ const selectLocale = (localeCode: string) => {
   color: #e2e8f0;
 }
 
-:global(.v-theme--dark) .seo-page-shell,
-:global(html[data-imchatty-theme="dark"]) .seo-page-shell {
-  color: #e2e8f0;
-}
-
 .seo-layout {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
@@ -456,7 +447,8 @@ const selectLocale = (localeCode: string) => {
 }
 
 .seo-hero__copy,
-.seo-hero__panel {
+.seo-hero__panel,
+.seo-card {
   background:
     linear-gradient(140deg, rgba(255, 255, 255, 0.96), rgba(244, 247, 251, 0.96));
   border: 1px solid rgba(15, 23, 42, 0.08);
@@ -476,66 +468,114 @@ const selectLocale = (localeCode: string) => {
   color: #e2e8f0;
 }
 
-.seo-page-shell--dark .seo-cta-point,
-:global(.v-theme--dark) .seo-cta-point,
-:global(html[data-imchatty-theme="dark"]) .seo-cta-point {
+.seo-page-shell--dark .seo-cta-point {
   color: #cbd5e1;
-}
-
-:global(.v-theme--dark) .seo-hero__copy,
-:global(.v-theme--dark) .seo-hero__panel,
-:global(.v-theme--dark) .seo-page-shell .v-card,
-:global(html[data-imchatty-theme="dark"]) .seo-hero__copy,
-:global(html[data-imchatty-theme="dark"]) .seo-hero__panel,
-:global(html[data-imchatty-theme="dark"]) .seo-page-shell .v-card {
-  background:
-    linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94));
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  color: #e2e8f0;
-}
-
-.seo-page-shell--dark :deep(.text-medium-emphasis),
-.seo-page-shell--dark :deep(.text-body-2),
-.seo-page-shell--dark :deep(.text-body-1) {
-  color: #cbd5e1 !important;
-}
-
-:global(.v-theme--dark) .seo-page-shell :deep(.text-medium-emphasis),
-:global(.v-theme--dark) .seo-page-shell :deep(.text-body-2),
-:global(.v-theme--dark) .seo-page-shell :deep(.text-body-1),
-:global(html[data-imchatty-theme="dark"]) .seo-page-shell :deep(.text-medium-emphasis),
-:global(html[data-imchatty-theme="dark"]) .seo-page-shell :deep(.text-body-2),
-:global(html[data-imchatty-theme="dark"]) .seo-page-shell :deep(.text-body-1) {
-  color: #cbd5e1 !important;
-}
-
-.seo-page-shell--dark :deep(.v-expansion-panel) {
-  background: rgba(15, 23, 42, 0.72);
-  color: #e2e8f0;
-}
-
-:global(.v-theme--dark) .seo-page-shell :deep(.v-expansion-panel),
-:global(html[data-imchatty-theme="dark"]) .seo-page-shell :deep(.v-expansion-panel) {
-  background: rgba(15, 23, 42, 0.72);
-  color: #e2e8f0;
 }
 
 .seo-faq-card {
   overflow: hidden;
 }
 
-.seo-faq-panels {
+.seo-btn {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.seo-btn:hover,
+.seo-btn:focus-visible {
+  transform: translateY(-1px);
+}
+
+.seo-btn:focus-visible {
+  outline: 2px solid rgb(var(--color-primary) / 0.45);
+  outline-offset: 2px;
+}
+
+.seo-btn--primary {
+  background: rgb(var(--color-primary));
+  border: 1px solid rgb(var(--color-primary));
+  color: #fff;
+  box-shadow: 0 10px 22px rgb(var(--color-primary) / 0.2);
+}
+
+.seo-btn--primary:hover,
+.seo-btn--primary:focus-visible {
+  background: rgb(var(--color-primary) / 0.92);
+}
+
+.seo-btn--secondary {
+  border: 1px solid rgb(var(--color-primary) / 0.26);
+  background: transparent;
+  color: rgb(var(--color-primary));
+}
+
+.seo-btn--secondary:hover,
+.seo-btn--secondary:focus-visible {
+  background: rgb(var(--color-primary) / 0.08);
+}
+
+.seo-btn--block {
+  display: flex;
   width: 100%;
 }
 
-.seo-faq-panels :deep(.v-expansion-panel) {
-  margin-inline: 0;
+.seo-faq-panels {
+  width: 100%;
+  display: grid;
+  gap: 10px;
 }
 
-.seo-faq-panels :deep(.v-expansion-panel-title),
-.seo-faq-panels :deep(.v-expansion-panel-text__wrapper) {
-  padding-left: 20px;
-  padding-right: 20px;
+.seo-faq-item {
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgb(148 163 184 / 0.18);
+  background: rgb(255 255 255 / 0.46);
+}
+
+.seo-page-shell--dark .seo-faq-item {
+  background: rgb(15 23 42 / 0.72);
+  color: #e2e8f0;
+}
+
+.seo-faq-item__summary {
+  display: flex;
+  cursor: pointer;
+  list-style: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  font-weight: 600;
+}
+
+.seo-faq-item__summary::-webkit-details-marker {
+  display: none;
+}
+
+.seo-faq-item__chevron {
+  transition: transform 160ms ease;
+}
+
+.seo-faq-item[open] .seo-faq-item__chevron {
+  transform: rotate(180deg);
+}
+
+.seo-faq-item__content {
+  padding: 0 20px 20px;
 }
 
 .seo-cta-points {
@@ -547,7 +587,7 @@ const selectLocale = (localeCode: string) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: rgba(var(--v-theme-on-surface), 0.78);
+  color: rgb(var(--color-foreground) / 0.78);
   font-size: 0.95rem;
 }
 
@@ -569,9 +609,67 @@ const selectLocale = (localeCode: string) => {
   z-index: 2;
 }
 
+.seo-language-menu {
+  position: relative;
+}
+
+.seo-language-menu[open] .language-menu-btn {
+  background: rgb(15 23 42 / 0.92);
+  color: #fff;
+}
+
+.seo-language-menu__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 12;
+  min-width: 180px;
+  border-radius: 14px;
+  border: 1px solid rgb(var(--color-border) / 0.85);
+  background: rgb(var(--color-surface));
+  padding: 0.35rem;
+  box-shadow: 0 16px 36px rgb(var(--color-shadow) / 0.18);
+}
+
+.seo-page-shell--dark .seo-language-menu__panel {
+  background: rgb(15 23 42 / 0.98);
+  border-color: rgb(148 163 184 / 0.22);
+}
+
+.seo-language-menu__item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  color: rgb(var(--color-foreground));
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.seo-page-shell--dark .seo-language-menu__item {
+  color: #e2e8f0;
+}
+
+.seo-language-menu__item:hover,
+.seo-language-menu__item:focus-visible {
+  background: rgb(var(--color-primary) / 0.1);
+  outline: none;
+}
+
 .seo-hero__image {
   border-radius: 20px;
   overflow: hidden;
+  aspect-ratio: 16 / 10;
+}
+
+.seo-hero__image-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .seo-hero__photo-credit {
@@ -606,7 +704,7 @@ const selectLocale = (localeCode: string) => {
 }
 
 .seo-related-link {
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--color-primary));
   text-decoration: none;
   font-weight: 600;
 }
@@ -616,15 +714,27 @@ const selectLocale = (localeCode: string) => {
   color: #7dd3fc;
 }
 
-:global(.v-theme--dark) .seo-page-shell .seo-richtext :deep(a),
-:global(.v-theme--dark) .seo-page-shell .seo-related-link,
-:global(html[data-imchatty-theme="dark"]) .seo-page-shell .seo-richtext :deep(a),
-:global(html[data-imchatty-theme="dark"]) .seo-page-shell .seo-related-link {
-  color: #7dd3fc;
-}
-
 .seo-related-link:hover {
   text-decoration: underline;
+}
+
+.language-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  border-radius: 999px;
+  background: rgb(15 23 42 / 0.78);
+  color: #fff;
+  cursor: pointer;
+  list-style: none;
+  box-shadow: 0 10px 20px rgb(2 6 23 / 0.2);
+}
+
+.language-menu-btn::-webkit-details-marker {
+  display: none;
 }
 
 @media (max-width: 959px) {

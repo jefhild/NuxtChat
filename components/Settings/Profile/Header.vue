@@ -1,10 +1,9 @@
 <template>
-  <v-row no-gutters justify="center" class="settings-media-row">
-    <v-col
-      cols="12"
-      :md="showPhotoLibrary ? 6 : 12"
-      class="d-flex flex-column align-center"
-    >
+  <div
+    class="settings-media-row grid justify-center gap-4"
+    :class="showPhotoLibrary ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'"
+  >
+    <div class="flex flex-col items-center">
       <!-- {{ isEditable ? "Edit Mode" : "View Mode" }} -->
       <SettingsProfilePhoto
         :editable="isEditable"
@@ -26,32 +25,24 @@
         @openDecorationPicker="$emit('openDecorationPicker')"
         @lookingForUpdated="$emit('refreshLookingForDisplay')"
       />
-    </v-col>
-    <v-col
+    </div>
+    <div
       v-if="showPhotoLibrary"
-      cols="12"
-      md="6"
-      class="d-flex flex-column align-center mt-4 mt-md-0"
+      class="mt-4 flex flex-col items-center md:mt-0"
     >
-      <v-card
+      <div
         class="photo-library-card"
         :class="{ 'photo-library-card--disabled': photoLibraryDisabled }"
-        elevation="0"
-        variant="outlined"
       >
         <div class="photo-library-hero">
           <div
             v-if="photoLibraryDisabled"
             class="photo-library-locked-badge"
           >
-            <v-icon size="14" class="mr-1">mdi-lock</v-icon>
+            <i class="mdi mdi-lock mr-1 photo-library-locked-badge__icon" aria-hidden="true" />
             {{ t("components.photo-library.locked-preview") }}
           </div>
-          <v-skeleton-loader
-            v-if="photoLibraryDisabled"
-            type="image"
-            class="photo-library-hero-skeleton"
-          />
+          <div v-if="photoLibraryDisabled" class="photo-library-hero-skeleton" aria-hidden="true" />
           <template v-else>
             <NuxtImg
               v-if="heroPhoto"
@@ -62,22 +53,20 @@
               @load="onHeroPhotoLoad"
             />
             <div v-else class="photo-library-hero-placeholder">
-              <v-icon size="40" color="grey-lighten-2">mdi-image-multiple</v-icon>
+              <i class="mdi mdi-image-multiple photo-library-hero-placeholder__icon" aria-hidden="true" />
             </div>
           </template>
         </div>
-        <v-card-text class="photo-library-body">
+        <div class="photo-library-body">
           <div class="photo-library-strip-wrap">
-            <v-btn
-              icon
-              variant="text"
-              size="small"
+            <button
+              type="button"
               class="photo-library-chevron left"
               :disabled="photoLibraryDisabled"
               @click="scrollThumbs(-1)"
             >
-              <v-icon size="18">mdi-chevron-left</v-icon>
-            </v-btn>
+              <i class="mdi mdi-chevron-left photo-library-chevron__icon" aria-hidden="true" />
+            </button>
             <div ref="thumbsRef" class="photo-library-strip">
               <div
                 v-for="(item, idx) in photoSlots"
@@ -85,48 +74,45 @@
                 class="photo-library-slot"
               >
                 <template v-if="!photoLibraryDisabled && item">
-                  <v-card
-                    variant="outlined"
+                  <button
+                    type="button"
                     class="photo-library-thumb"
                     @click="setHeroFromIndex(idx)"
                   >
-                    <v-img
+                    <img
                       :src="item.url || item.public_url"
-                      aspect-ratio="1"
-                      cover
+                      class="photo-library-thumb__image"
+                      alt=""
                     />
-                  </v-card>
+                  </button>
                 </template>
-                <v-skeleton-loader
+                <div
                   v-else
-                  type="image"
                   class="photo-library-skeleton"
+                  aria-hidden="true"
                 />
               </div>
             </div>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
+            <button
+              type="button"
               class="photo-library-chevron right"
               :disabled="photoLibraryDisabled"
               @click="scrollThumbs(1)"
             >
-              <v-icon size="18">mdi-chevron-right</v-icon>
-            </v-btn>
+              <i class="mdi mdi-chevron-right photo-library-chevron__icon" aria-hidden="true" />
+            </button>
           </div>
-        </v-card-text>
+        </div>
         <div class="photo-library-footer">
-          <v-btn
+          <button
+            type="button"
             class="photo-library-link-btn"
-            variant="text"
-            append-icon="mdi-arrow-expand-right"
-            color="blue"
             :disabled="photoLibraryDisabled"
             @click="$emit('openPhotoLibrary')"
           >
             {{ t("components.photo-library.link") }}
-          </v-btn>
+            <i class="mdi mdi-arrow-expand-right ml-1 photo-library-link-btn__icon" aria-hidden="true" />
+          </button>
           <span
             v-if="photoLibraryDisabled"
             class="photo-library-hint photo-library-hint-link"
@@ -138,9 +124,9 @@
             {{ t("components.photo-library.disabled-hint") }}
           </span>
         </div>
-      </v-card>
-    </v-col>
-  </v-row>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -272,13 +258,13 @@ watch(
   min-height: 296px;
   border-radius: 14px;
   overflow: visible;
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-border) / 0.72);
 }
 
 .photo-library-card--disabled {
-  border-color: rgba(var(--v-theme-primary), 0.32);
-  box-shadow: inset 0 0 0 1px rgba(var(--v-theme-primary), 0.12);
+  border-color: rgb(var(--color-primary) / 0.32);
+  box-shadow: inset 0 0 0 1px rgb(var(--color-primary) / 0.12);
 }
 
 .photo-library-hero {
@@ -296,6 +282,14 @@ watch(
   width: 100%;
   height: 100%;
   opacity: 0.95;
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0.72) 0%,
+    rgba(51, 65, 85, 0.95) 50%,
+    rgba(30, 41, 59, 0.72) 100%
+  );
+  background-size: 200% 100%;
+  animation: profile-photo-skeleton 1.6s ease-in-out infinite;
 }
 
 .photo-library-locked-badge {
@@ -309,9 +303,14 @@ watch(
   padding: 0 8px;
   border-radius: 999px;
   font-size: 0.72rem;
-  color: rgba(var(--v-theme-on-surface), 0.94);
-  background: rgba(var(--v-theme-surface), 0.86);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.2);
+  color: rgb(var(--color-foreground) / 0.94);
+  background: rgb(var(--color-surface) / 0.9);
+  border: 1px solid rgb(var(--color-border) / 0.72);
+}
+
+.photo-library-locked-badge__icon {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .photo-library-hero-placeholder {
@@ -321,6 +320,11 @@ watch(
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #1c1c1c, #2a2a2a);
+}
+
+.photo-library-hero-placeholder__icon {
+  font-size: 40px;
+  color: #cbd5e1;
 }
 
 .photo-library-body {
@@ -346,8 +350,25 @@ watch(
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(var(--v-theme-surface), 0.9);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.2);
+  background: rgb(var(--color-surface) / 0.92);
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(var(--color-foreground));
+}
+
+.photo-library-chevron:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.photo-library-chevron__icon {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .photo-library-chevron.left {
@@ -367,6 +388,14 @@ watch(
   height: 64px;
   border-radius: 10px;
   opacity: 0.95;
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0.72) 0%,
+    rgba(51, 65, 85, 0.95) 50%,
+    rgba(30, 41, 59, 0.72) 100%
+  );
+  background-size: 200% 100%;
+  animation: profile-photo-skeleton 1.6s ease-in-out infinite;
 }
 
 .photo-library-thumb {
@@ -376,6 +405,15 @@ watch(
   width: 64px;
   height: 64px;
   cursor: pointer;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: rgb(var(--color-surface) / 0.9);
+}
+
+.photo-library-thumb__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .photo-library-footer {
@@ -383,7 +421,7 @@ watch(
   display: flex;
   justify-content: flex-start;
   padding: 8px 12px 12px;
-  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+  border-top: 1px solid rgb(var(--color-border) / 0.52);
   min-height: 44px;
   align-items: center;
   gap: 8px;
@@ -395,7 +433,7 @@ watch(
 
 .photo-library-hint {
   font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.88);
+  color: rgb(var(--color-foreground) / 0.72);
 }
 
 .photo-library-hint-link {
@@ -405,10 +443,40 @@ watch(
 }
 
 .photo-library-card--disabled .photo-library-link-btn {
-  color: rgba(var(--v-theme-primary), 0.8) !important;
+  color: rgb(var(--color-primary) / 0.8) !important;
 }
 
 .photo-library-card--disabled .photo-library-hint-link {
-  color: rgba(var(--v-theme-on-surface), 0.95);
+  color: rgb(var(--color-foreground) / 0.95);
+}
+
+.photo-library-link-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #60a5fa;
+  font-size: 0.92rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.photo-library-link-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.photo-library-link-btn__icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+@keyframes profile-photo-skeleton {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
 }
 </style>

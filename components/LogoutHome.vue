@@ -1,84 +1,41 @@
 <template>
-  <!-- <v-card class="pb-12"> -->
-  <v-container fluid>
-    <v-row>
-      <v-col>
-        <v-sheet
-          height="100vh"
-          class="d-flex align-center justify-center position-relative"
-        >
-          <!-- Background Image -->
-          <v-img
-            src="/public/images/background2.webp"
-            cover
-            height="80%"
-            width="80%"
-            class="position-absolute"
-            style="z-index: 1"
-          ></v-img>
+  <section class="logout-hero">
+    <div class="logout-hero__background" aria-hidden="true" />
+    <div class="logout-hero__overlay" aria-hidden="true" />
 
-          <!-- Overlay Mask -->
-          <div
-            class="position-absolute"
-            style="
-              background-color: rgba(0, 0, 0, 0.6);
-              z-index: 2;
-              height: 100%;
-              width: 100%;
-            "
-          ></div>
+    <div class="logout-hero__content">
+      <div class="logout-hero__copy">
+        <h1 class="logout-hero__title">
+          {{ joke }}
+        </h1>
+        <p class="logout-hero__body">
+          {{ $t("pages.home.landing_page.title-text2") }}
+        </p>
 
-          <!-- Foreground Content -->
-          <v-container class="text-center" style="z-index: 3">
-            <v-row justify="center">
-              <v-col cols="12" md="8">
-                <h1 class="text-h4 text-md-h2 font-weight-bold mb-4 text-white">
-                  <!-- {{ $t("pages.home.landing_page.title-text") }} -->
-                  {{ joke }}
-                </h1>
-                <p class="text-body-1 text-md-subtitle-1 mb-6 text-white">
-                  {{ $t("pages.home.landing_page.title-text2") }}
-                </p>
-
-                <v-row justify="center" align="center" class="mx-0" dense>
-                  <v-col cols="12" sm="auto" class="mb-2 mb-sm-0">
-                    <v-btn color="primary" block>
-                      <NuxtLink
-                        :to="localPath('/chat')"
-                        class="text-dec-none text-white"
-                      >
-                        {{ $t("pages.home.landing_page.cta_button") }}
-                      </NuxtLink>
-                    </v-btn>
-                  </v-col>
-                  <v-col cols="12" sm="auto">
-                    <v-btn
-                      color="white"
-                      variant="outlined"
-                      block
-                      @click="$router.push(localPath('/about'))"
-                    >
-                      {{ $t("pages.home.landing_page.learn_more") }}
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-sheet>
-      </v-col>
-    </v-row>
-  </v-container>
-  <!-- </v-card> -->
+        <div class="logout-hero__actions">
+          <NuxtLink
+            :to="localPath('/chat')"
+            class="logout-hero__button logout-hero__button--primary"
+          >
+            {{ $t("pages.home.landing_page.cta_button") }}
+          </NuxtLink>
+          <button
+            type="button"
+            class="logout-hero__button logout-hero__button--secondary"
+            @click="$router.push(localPath('/about'))"
+          >
+            {{ $t("pages.home.landing_page.learn_more") }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
 const localPath = useLocalePath();
 
-import { onMounted } from "vue";
-
 const joke = ref("");
-const mounted = ref(false);
 
 const logoutJokes = [
   "Why did the user log out? Because they needed to cache some sleep! 😴💾",
@@ -94,168 +51,113 @@ const logoutJokes = [
 ];
 
 onMounted(() => {
-  mounted.value = true;
   joke.value = logoutJokes[Math.floor(Math.random() * logoutJokes.length)];
 });
-
-
 </script>
 
 <style scoped>
-.animation-container {
+.logout-hero {
   position: relative;
-  height: 100%;
-  width: 100%;
-  border-radius: 20px;
-  border: 2px solid gray;
-}
-
-.chat-container {
-  max-width: auto;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.chat-bubble {
-  display: flex;
-  align-items: left;
-  gap: 10px;
-  padding: 12px;
-  margin: 8px 0;
-  border-radius: 10px;
-  max-width: 80%;
-  font-size: 16px;
-  position: relative;
-}
-
-.bot-message {
-  color: black;
-  text-align: right;
-  margin-left: auto;
-  max-width: fit-content;
   display: flex;
   align-items: center;
-  padding: 2%;
-  border-radius: 10px;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  position: relative;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
-.bot-message::after {
-  content: "";
+.logout-hero__background,
+.logout-hero__overlay {
   position: absolute;
-  top: 50%;
-  right: -10px;
-  width: 0;
-  height: 0;
-  border-left: 11px solid rgba(0, 150, 255, 0.2);
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  transform: translateY(-50%);
+  inset: 0;
 }
 
-.user-message {
-  color: black;
-  text-align: left;
-  max-width: fit-content;
-  padding: 2%;
-  border-radius: 10px;
-  word-wrap: break-word;
-  white-space: pre-wrap;
+.logout-hero__background {
+  background:
+    linear-gradient(rgb(15 23 42 / 0.3), rgb(15 23 42 / 0.3)),
+    url("/images/background2.webp") center / cover no-repeat;
+  transform: scale(1.02);
+}
+
+.logout-hero__overlay {
+  background: rgb(0 0 0 / 0.58);
+}
+
+.logout-hero__content {
   position: relative;
+  z-index: 1;
+  width: min(100%, 72rem);
+  padding: 2rem 1rem;
 }
 
-.user-message::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: -10px;
-  /* Position the tail to the left of the bubble */
-  width: 0;
-  height: 0;
-  border-right: 10px solid rgba(70, 169, 101, 0.2);
-  /* Tail color */
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  transform: translateY(-50%);
+.logout-hero__copy {
+  width: min(100%, 54rem);
+  margin: 0 auto;
+  text-align: center;
+  color: #fff;
 }
 
-.bot-avatar {
-  background-color: rgba(0, 150, 255, 0.6);
-  padding: 4px;
+.logout-hero__title {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.15;
 }
 
-/* Typing Indicator */
-.typing-indicator {
+.logout-hero__body {
+  margin: 1rem 0 0;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  line-height: 1.7;
+  color: rgb(255 255 255 / 0.88);
+}
+
+.logout-hero__actions {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: 1.75rem;
+}
+
+.logout-hero__button {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  margin: 10px 0;
-  padding: 10px;
-  border-radius: 10px;
-  width: fit-content;
-  margin-left: auto;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.8rem 1.2rem;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
-.dots span {
-  width: 8px;
-  height: 8px;
-  margin: 0 2px;
-  background: black;
-  border-radius: 50%;
-  display: inline-block;
-  animation: blink 1.5s infinite ease-in-out both;
+.logout-hero__button--primary {
+  border: 0;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-primary-foreground, var(--color-background)));
 }
 
-.dots span:nth-child(1) {
-  animation-delay: 0s;
+.logout-hero__button--secondary {
+  border: 1px solid rgb(255 255 255 / 0.72);
+  background: transparent;
+  color: #fff;
 }
 
-.dots span:nth-child(2) {
-  animation-delay: 0.2s;
+.logout-hero__button:hover,
+.logout-hero__button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgb(2 6 23 / 0.24);
+  outline: none;
 }
 
-.dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes blink {
-  0% {
-    opacity: 0.3;
+@media (max-width: 640px) {
+  .logout-hero__actions {
+    flex-direction: column;
   }
 
-  50% {
-    opacity: 1;
+  .logout-hero__button {
+    width: 100%;
   }
-
-  100% {
-    opacity: 0.3;
-  }
-}
-
-.chat-enter-active {
-  animation: slide-in 0.4s ease-out;
-}
-
-.chat-move {
-  transition: transform 0.4s ease;
-}
-
-@keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.text-dec-none {
-  text-decoration: none !important;
 }
 </style>

@@ -1,39 +1,43 @@
 <template>
-  <v-row no-gutters align="start" class="flex-wrap">
-    <v-col
+  <div
+    class="grid items-start gap-2"
+    :class="props.showAiButton ? 'sm:grid-cols-[auto_minmax(0,1fr)]' : 'grid-cols-1'"
+  >
+    <div
       v-if="props.showAiButton"
-      cols="12"
-      sm="1"
-      class="d-flex justify-center pt-1"
+      class="flex justify-start pt-1 sm:justify-center"
     >
-      <v-tooltip :text="aiTooltip">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            icon="mdi-auto-fix"
-            variant="text"
-            :disabled="aiDisabled"
-            :loading="props.aiLoading"
-            @click="emit('openAiBio')"
-          />
-        </template>
-      </v-tooltip>
-    </v-col>
-    <v-col
-      :cols="props.showAiButton ? 12 : 12"
-      :sm="props.showAiButton ? 11 : 12"
-    >
-      <v-textarea
-        :disabled="!props.isEditable"
+      <button
+        type="button"
+        class="bio-ai-btn"
+        :disabled="aiDisabled"
+        :title="aiTooltip"
+        :aria-label="aiTooltip"
+        @click="emit('openAiBio')"
+      >
+        <i
+          class="mdi"
+          :class="props.aiLoading ? 'mdi-loading bio-ai-btn__icon bio-ai-btn__icon--spinning' : 'mdi-auto-fix bio-ai-btn__icon'"
+          aria-hidden="true"
+        />
+      </button>
+    </div>
+    <label class="bio-field">
+      <span class="bio-field__label">{{ $t('components.profile-bio.bio') }}</span>
+      <textarea
         v-model="internalBio"
-        :label="$t('components.profile-bio.bio')"
+        :disabled="!props.isEditable"
         rows="5"
-        variant="outlined"
-        :counter="props.minLength || undefined"
-        :error-messages="props.errorMessage ? [props.errorMessage] : []"
+        class="bio-field__control"
       />
-    </v-col>
-  </v-row>
+      <span v-if="props.errorMessage" class="bio-field__error">
+        {{ props.errorMessage }}
+      </span>
+      <span v-else-if="props.minLength" class="bio-field__meta">
+        {{ internalBio.length }} / {{ props.minLength }}
+      </span>
+    </label>
+  </div>
   <!-- <div v-else>
     <p class="bio-paragraph">{{ bio }}</p>
   </div> -->
@@ -106,6 +110,74 @@ watch(internalBio, (newVal) => {
 </script>
 
 <style scoped>
+.bio-ai-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--color-primary) / 0.14);
+  color: rgb(var(--color-primary));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bio-ai-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.bio-ai-btn__icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.bio-ai-btn__icon--spinning {
+  animation: bio-spin 0.8s linear infinite;
+}
+
+.bio-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.bio-field__label {
+  color: rgb(var(--color-foreground) / 0.82);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.bio-field__control {
+  width: 100%;
+  min-height: 9rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgb(var(--color-border) / 0.82);
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  padding: 0.8rem 0.9rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.bio-field__control:disabled {
+  opacity: 1;
+  cursor: default;
+  background: rgb(var(--color-surface) / 0.76);
+  color: rgb(var(--color-foreground) / 0.62);
+}
+
+.bio-field__error {
+  color: rgb(var(--color-danger));
+  font-size: 0.8rem;
+}
+
+.bio-field__meta {
+  color: rgb(var(--color-foreground) / 0.58);
+  font-size: 0.8rem;
+  justify-self: end;
+}
+
 .bio-paragraph {
   font-size: 1rem;
   line-height: 1.65;
@@ -114,5 +186,11 @@ watch(internalBio, (newVal) => {
   border-left: 4px solid #d1d5db;
   padding-left: 1rem;
   text-align: justify;
+}
+
+@keyframes bio-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

@@ -1,8 +1,8 @@
 <template>
-  <v-card
+  <article
     v-if="profile"
-    :class="['mx-auto', 'profile-card', `profile-card--${resolvedCardTheme}`]"
-    :max-width="maxWidth"
+    :class="['profile-card', `profile-card--${resolvedCardTheme}`]"
+    :style="{ maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth }"
   >
     <div class="profile-card-glow" />
     <slot name="overlay" />
@@ -10,57 +10,51 @@
     <div class="profile-card-header">
       <div class="profile-card-hero">
         <div class="avatar-wrapper">
-          <v-img
+          <img
             :src="profileAvatarSrc"
-            height="112"
             width="112"
-            class="rounded-circle cover-image profile-avatar-image"
+            height="112"
+            class="profile-avatar-image"
             :alt="`${localized.displayname} image`"
-            cover
             @error="onAvatarError"
-          />
+          >
 
-          <v-img
+          <img
             v-if="avatarDecoration"
             :src="avatarDecoration"
             class="avatar-decoration"
             :alt="`${localized.displayname} image decoration`"
-            contain
-          />
+          >
         </div>
 
         <div class="profile-identity">
           <div class="profile-title-row">
-            <h1 class="text-h5">
+            <h1 id="profile-dialog-title" class="profile-title">
               {{ localized.displayname }}
             </h1>
           </div>
 
           <div class="profile-stats-strip">
             <div v-if="profile?.age" class="profile-stat-pill">
-              <v-icon
+              <i
                 v-if="profile?.gender_id"
-                class="gender-inline"
-                :icon="getAvatarIcon(profile.gender_id)"
+                :class="['mdi', getAvatarIcon(profile.gender_id), 'gender-inline']"
                 :style="{ '--profile-gender-color': getGenderHexColor(profile.gender_id) }"
-                size="15"
+                aria-hidden="true"
               />
               <span>{{ profile.age }}{{ $t("components.profile-details.age-suffix") }}</span>
             </div>
             <div v-if="profile?.status" class="profile-stat-pill">
               {{ profile.status }}
             </div>
-            <v-tooltip
+            <div
               v-if="defaultLanguageLabel"
-              :text="$t('components.profile-language.default')"
+              class="profile-stat-pill"
+              :title="$t('components.profile-language.default')"
             >
-              <template #activator="{ props: tooltipProps }">
-                <div class="profile-stat-pill" v-bind="tooltipProps">
-                  <v-icon size="13">mdi-translate</v-icon>
-                  <span>{{ defaultLanguageLabel }}</span>
-                </div>
-              </template>
-            </v-tooltip>
+              <i class="mdi mdi-translate profile-stat-icon" aria-hidden="true" />
+              <span>{{ defaultLanguageLabel }}</span>
+            </div>
             <div
               v-if="lookingForUserId"
               class="profile-stat-pill profile-stat-pill--looking-for"
@@ -71,29 +65,20 @@
                 :icon-size="13"
               />
             </div>
-            <v-tooltip
+            <div
               v-else-if="lookingForLabel"
-              :text="`${$t('components.public-user-profile.looking-for')} ${lookingForLabel}`"
+              class="profile-stat-pill profile-stat-pill--icon-only"
+              :title="`${$t('components.public-user-profile.looking-for')} ${lookingForLabel}`"
+              :aria-label="`${$t('components.public-user-profile.looking-for')} ${lookingForLabel}`"
             >
-              <template #activator="{ props: tooltipProps }">
-                <div
-                  class="profile-stat-pill profile-stat-pill--icon-only"
-                  v-bind="tooltipProps"
-                  :aria-label="`${$t('components.public-user-profile.looking-for')} ${lookingForLabel}`"
-                >
-                  <v-icon size="13">mdi-account-search-outline</v-icon>
-                </div>
-              </template>
-            </v-tooltip>
-            <div v-if="profile?.country_emoji" class="profile-stat-pill profile-stat-pill--flag">
-              <v-tooltip v-if="profile?.country_emoji && profile?.country" :text="profile.country">
-                <template #activator="{ props: tooltipProps }">
-                  <span class="profile-flag" v-bind="tooltipProps">
-                    {{ profile.country_emoji }}
-                  </span>
-                </template>
-              </v-tooltip>
-              <span v-else-if="profile?.country_emoji" class="profile-flag">
+              <i class="mdi mdi-account-search-outline profile-stat-icon" aria-hidden="true" />
+            </div>
+            <div
+              v-if="profile?.country_emoji"
+              class="profile-stat-pill profile-stat-pill--flag"
+              :title="profile?.country || undefined"
+            >
+              <span class="profile-flag">
                 {{ profile.country_emoji }}
               </span>
             </div>
@@ -116,71 +101,76 @@
     </div>
 
     <section v-if="localized.bio" class="profile-details profile-details--always-open">
-      <v-list class="profile-details-tree" density="compact" nav>
-        <v-list-item
-          class="profile-details-about"
-          prepend-icon="mdi-account-details-outline"
-        >
-          <template #title>
-            <div class="profile-details-row profile-details-row--stack">
-              <span class="profile-details-label">
-                {{ $t("components.public-user-profile.about-me") }}
-              </span>
-              <span class="profile-details-body">
-                {{ localized.bio }}
-              </span>
-            </div>
-          </template>
-        </v-list-item>
-      </v-list>
+      <div class="profile-details-about">
+        <i class="mdi mdi-account-details-outline profile-details-about__icon" aria-hidden="true" />
+        <div class="profile-details-row profile-details-row--stack">
+          <span class="profile-details-label">
+            {{ $t("components.public-user-profile.about-me") }}
+          </span>
+          <span class="profile-details-body">
+            {{ localized.bio }}
+          </span>
+        </div>
+      </div>
     </section>
 
-    <v-expansion-panels v-model="expandedSections" multiple class="profile-panels">
-      <v-expansion-panel value="gallery">
-        <v-expansion-panel-title class="profile-panel-title">
-          {{ $t("components.profile-gallery.title", { count: galleryCount }) }}
-        </v-expansion-panel-title>
-        <v-expansion-panel-text class="profile-gallery">
+    <div class="profile-panels">
+      <section class="profile-panel">
+        <button
+          type="button"
+          class="profile-panel-title"
+          :aria-expanded="isSectionExpanded('gallery')"
+          @click="toggleSection('gallery')"
+        >
+          <span>{{ $t("components.profile-gallery.title", { count: galleryCount }) }}</span>
+          <i
+            :class="[
+              'mdi',
+              isSectionExpanded('gallery') ? 'mdi-chevron-up' : 'mdi-chevron-down',
+              'profile-panel-title__icon',
+            ]"
+            aria-hidden="true"
+          />
+        </button>
+        <div v-if="isSectionExpanded('gallery')" class="profile-panel-body profile-gallery">
           <template v-if="galleryDisplayItems.length">
             <div class="profile-gallery-strip">
-            <div
-              v-for="item in galleryDisplayItems"
-              :key="item.id || item.storage_path || item.public_url || item._placeholderId"
-              class="profile-gallery-item"
-              :class="{ 'profile-gallery-item--blurred': galleryBlurred }"
-            >
               <div
-                class="profile-gallery-thumb-wrap"
-                :class="{ 'profile-gallery-thumb-wrap--clickable': !galleryBlurred && (item.url || item.public_url) }"
-                @click.stop="!galleryBlurred && openLightbox(item)"
+                v-for="item in galleryDisplayItems"
+                :key="item.id || item.storage_path || item.public_url || item._placeholderId"
+                class="profile-gallery-item"
+                :class="{ 'profile-gallery-item--blurred': galleryBlurred }"
               >
-                <v-img
-                  v-if="item.url || item.public_url"
-                  :src="item.url || item.public_url"
-                  class="profile-gallery-thumb"
-                  cover
-                />
-                <div v-else class="profile-gallery-placeholder" />
-              </div>
-              <div
-                v-if="!galleryBlurred && (item.url || item.public_url)"
-                class="profile-gallery-vote"
-              >
-                <v-btn
-                  icon
-                  size="x-small"
-                  variant="text"
-                  class="profile-gallery-like"
-                  :color="item.myVote === 1 ? 'primary' : undefined"
-                  @click.stop="emit('likePhoto', item)"
+                <div
+                  class="profile-gallery-thumb-wrap"
+                  :class="{ 'profile-gallery-thumb-wrap--clickable': !galleryBlurred && (item.url || item.public_url) }"
+                  @click.stop="!galleryBlurred && openLightbox(item)"
                 >
-                  <v-icon size="14">mdi-thumb-up-outline</v-icon>
-                </v-btn>
-                <span class="profile-gallery-like-count">
-                  {{ item.upvotes ?? 0 }}
-                </span>
+                  <img
+                    v-if="item.url || item.public_url"
+                    :src="item.url || item.public_url"
+                    class="profile-gallery-thumb"
+                    alt=""
+                  >
+                  <div v-else class="profile-gallery-placeholder" />
+                </div>
+                <div
+                  v-if="!galleryBlurred && (item.url || item.public_url)"
+                  class="profile-gallery-vote"
+                >
+                  <button
+                    type="button"
+                    class="profile-gallery-like"
+                    :class="{ 'profile-gallery-like--active': item.myVote === 1 }"
+                    @click.stop="emit('likePhoto', item)"
+                  >
+                    <i class="mdi mdi-thumb-up-outline" aria-hidden="true" />
+                  </button>
+                  <span class="profile-gallery-like-count">
+                    {{ item.upvotes ?? 0 }}
+                  </span>
+                </div>
               </div>
-            </div>
             </div>
             <div
               v-if="galleryBlurred"
@@ -194,32 +184,47 @@
           <div v-else class="profile-gallery-empty">
             {{ $t("components.profile-gallery.empty") }}
           </div>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
+        </div>
+      </section>
 
-      <v-expansion-panel value="stats">
-        <v-expansion-panel-title class="profile-panel-title">
-          {{ $t("components.profile-stats.title") }}
-        </v-expansion-panel-title>
-        <v-expansion-panel-text class="profile-stats">
-          <v-list class="profile-stats-tree" density="compact" nav>
-            <v-list-item
-              prepend-icon="mdi-clock-outline"
-              :title="$t('components.profile-stats.last-connection')"
-              :subtitle="lastConnectionLabel"
-            />
-          </v-list>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+      <section class="profile-panel">
+        <button
+          type="button"
+          class="profile-panel-title"
+          :aria-expanded="isSectionExpanded('stats')"
+          @click="toggleSection('stats')"
+        >
+          <span>{{ $t("components.profile-stats.title") }}</span>
+          <i
+            :class="[
+              'mdi',
+              isSectionExpanded('stats') ? 'mdi-chevron-up' : 'mdi-chevron-down',
+              'profile-panel-title__icon',
+            ]"
+            aria-hidden="true"
+          />
+        </button>
+        <div v-if="isSectionExpanded('stats')" class="profile-panel-body profile-stats">
+          <div class="profile-stats-item">
+            <i class="mdi mdi-clock-outline profile-stats-item__icon" aria-hidden="true" />
+            <div class="profile-stats-item__content">
+              <div class="profile-stats-item__label">
+                {{ $t('components.profile-stats.last-connection') }}
+              </div>
+              <div class="profile-stats-item__value">
+                {{ lastConnectionLabel }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
 
-    <v-card-actions class="profile-card-actions">
-      <v-btn
+    <div class="profile-card-actions">
+      <a
         v-if="profileSiteUrl"
         :href="profileSiteUrl"
-        color="medium-emphasis"
-        icon="mdi-link-variant"
-        size="small"
+        class="profile-action-btn"
         target="_blank"
         rel="noopener noreferrer"
         :aria-label="
@@ -227,62 +232,73 @@
           `${localized.displayname}` +
           $t('components.public-user-profile.visit2')
         "
-      ></v-btn>
-      <v-btn
+      >
+        <i class="mdi mdi-link-variant" aria-hidden="true" />
+      </a>
+      <button
         v-else
-        color="medium-emphasis"
-        icon="mdi-link-variant-off"
-        size="small"
+        type="button"
+        class="profile-action-btn"
         disabled
-      ></v-btn>
-      <v-spacer></v-spacer>
+      >
+        <i class="mdi mdi-link-variant-off" aria-hidden="true" />
+      </button>
+      <div class="profile-card-actions__spacer" />
 
       <ButtonUpvote :profile="profile" @upvoted="emit('upvoted', $event)" />
 
-      <v-btn
+      <NuxtLink
         :to="chatLink"
-        color="blue medium-emphasis"
-        icon="mdi-chat-outline"
-        size="small"
+        class="profile-action-btn"
         @click="emit('chat-now')"
-      ></v-btn>
+      >
+        <i class="mdi mdi-chat-outline" aria-hidden="true" />
+      </NuxtLink>
 
       <ButtonFavorite :profile="profile" />
 
-      <v-btn color="medium-emphasis" icon="mdi-cancel" size="small"></v-btn>
+      <button type="button" class="profile-action-btn" disabled>
+        <i class="mdi mdi-cancel" aria-hidden="true" />
+      </button>
 
-      <v-btn
-        color="medium-emphasis"
-        icon="mdi-share-variant"
-        size="small"
-      ></v-btn>
-    </v-card-actions>
-  </v-card>
-
-  <!-- Photo lightbox -->
-  <v-dialog
-    v-model="lightboxOpen"
-    :max-width="900"
-    content-class="lightbox-dialog"
-  >
-    <div class="lightbox-wrap" @click="lightboxOpen = false">
-      <v-btn
-        icon="mdi-close"
-        variant="text"
-        size="small"
-        class="lightbox-close"
-        color="white"
-        @click.stop="lightboxOpen = false"
-      />
-      <v-img
-        :src="lightboxSrc"
-        :max-height="'80vh'"
-        contain
-        class="lightbox-img"
-        @click.stop
-      />
+      <button type="button" class="profile-action-btn" disabled>
+        <i class="mdi mdi-share-variant" aria-hidden="true" />
+      </button>
     </div>
-  </v-dialog>
+  </article>
+
+  <Teleport to="body">
+    <Transition name="profile-lightbox-fade">
+      <div
+        v-if="lightboxOpen"
+        class="profile-lightbox"
+        role="presentation"
+      >
+        <button
+          type="button"
+          class="profile-lightbox__scrim"
+          aria-label="Close photo lightbox"
+          @click="lightboxOpen = false"
+        />
+        <div class="lightbox-wrap">
+          <button
+            type="button"
+            class="lightbox-close"
+            aria-label="Close photo lightbox"
+            @click.stop="lightboxOpen = false"
+          >
+            <i class="mdi mdi-close" aria-hidden="true" />
+          </button>
+          <img
+            :src="lightboxSrc"
+            class="lightbox-img"
+            alt=""
+            @click.stop
+          >
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
@@ -412,13 +428,14 @@ const chatLink = computed(() => {
 });
 
 const expandedSections = ref([]);
+const isSectionExpanded = (section) => expandedSections.value.includes(section);
+const toggleSection = (section) => {
+  expandedSections.value = isSectionExpanded(section)
+    ? expandedSections.value.filter((entry) => entry !== section)
+    : [...expandedSections.value, section];
+};
 
 const statsData = computed(() => props.stats || emptyStats);
-const dateFmt = new Intl.DateTimeFormat(undefined, {
-  year: "numeric",
-  month: "short",
-  day: "2-digit",
-});
 const dateTimeFmt = new Intl.DateTimeFormat(undefined, {
   year: "numeric",
   month: "short",
@@ -630,9 +647,11 @@ function openLightbox(item) {
   min-width: 0;
 }
 
-.profile-identity .text-h5 {
+.profile-title {
   font-size: 1.7rem !important;
   line-height: 1.05;
+   margin: 0 0 4px;
+  max-width: 100%;
   margin-bottom: 4px;
   color: #eef4ff;
   font-weight: 700;
@@ -676,6 +695,10 @@ function openLightbox(item) {
 .profile-stat-pill--looking-for {
   min-height: 24px;
   padding: 1px 6px;
+}
+
+.profile-stat-icon {
+  font-size: 13px;
 }
 
 .gender-inline {
@@ -740,12 +763,18 @@ function openLightbox(item) {
   margin: 0 14px 10px;
 }
 
-.profile-details-tree {
-  padding: 0;
+.profile-details-about {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
 }
 
-.profile-details-child {
-  padding-left: 28px;
+.profile-details-about__icon {
+  margin-top: 0.2rem;
+  color: var(--profile-label-color);
+  font-size: 1rem;
 }
 
 .profile-details-row {
@@ -831,11 +860,6 @@ function openLightbox(item) {
   min-width: 0;
 }
 
-.profile-details-about :deep(.v-list-item__prepend) {
-  align-self: flex-start;
-  margin-top: -1px;
-}
-
 .profile-stats {
   background: var(--profile-surface-soft);
   border-radius: 14px;
@@ -918,40 +942,107 @@ function openLightbox(item) {
   text-decoration: underline;
 }
 
-.profile-stats-tree {
-  padding: 0;
+.profile-panels {
+  display: grid;
+  gap: 0.35rem;
 }
 
-.profile-stats-child {
-  padding-left: 28px;
-}
-
-.profile-panels :deep(.v-expansion-panel-title) {
+.profile-panel-title {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
   padding: 8px 14px;
+  border: 0;
+  background: transparent;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.66rem;
   color: var(--profile-panel-title-color);
+  cursor: pointer;
 }
 
-.profile-panels :deep(.v-expansion-panel) {
-  background: transparent;
+.profile-panel-title__icon {
+  font-size: 1rem;
 }
 
-.profile-panels :deep(.v-expansion-panel__shadow) {
-  box-shadow: none;
+.profile-panel-title:hover,
+.profile-panel-title:focus-visible {
+  opacity: 0.92;
+  outline: none;
 }
 
-.profile-panels :deep(.v-expansion-panel-text__wrapper) {
+.profile-panel-body {
   padding: 0 14px 10px;
 }
 
+.profile-stats-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+}
+
+.profile-stats-item__icon {
+  margin-top: 0.2rem;
+  color: var(--profile-label-color);
+  font-size: 1rem;
+}
+
+.profile-stats-item__label {
+  color: var(--profile-label-color);
+  font-size: 0.85rem;
+}
+
+.profile-stats-item__value {
+  margin-top: 0.15rem;
+  color: var(--profile-body-color);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
 .profile-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   position: relative;
   bottom: 0;
   width: 100%;
+  padding: 0.75rem 0.9rem;
   background: rgba(10, 19, 41, 0.66);
   border-top: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.profile-card-actions__spacer {
+  flex: 1;
+}
+
+.profile-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(226, 232, 240, 0.78);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+}
+
+.profile-action-btn:hover:not(:disabled),
+.profile-action-btn:focus-visible {
+  background: rgba(148, 163, 184, 0.12);
+  color: #fff;
+  outline: none;
+}
+
+.profile-action-btn:disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 
 @media (max-width: 760px) {
@@ -986,7 +1077,7 @@ function openLightbox(item) {
     justify-content: center;
   }
 
-  .profile-identity .text-h5 {
+  .profile-title {
     width: 100%;
     text-align: center;
   }
@@ -1034,18 +1125,29 @@ function openLightbox(item) {
   opacity: 0.85;
 }
 
-/* Lightbox — scoped styles won't reach the teleported dialog, so use :deep */
-:deep(.lightbox-dialog) {
-  background: transparent !important;
-  box-shadow: none !important;
-  overflow: visible !important;
+.profile-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2300;
+}
+
+.profile-lightbox__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(2 6 23 / 0.84);
 }
 
 .lightbox-wrap {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: translate(-50%, -50%);
+  width: min(calc(100vw - 2rem), 900px);
+  max-height: calc(100vh - 2rem);
 }
 
 .lightbox-close {
@@ -1053,10 +1155,31 @@ function openLightbox(item) {
   top: -36px;
   right: 0;
   z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(15 23 42 / 0.56);
+  color: #fff;
+  cursor: pointer;
 }
 
 .lightbox-img {
   border-radius: 8px;
   max-width: 100%;
+  max-height: 80vh;
+}
+
+.profile-lightbox-fade-enter-active,
+.profile-lightbox-fade-leave-active {
+  transition: opacity 160ms ease;
+}
+
+.profile-lightbox-fade-enter-from,
+.profile-lightbox-fade-leave-to {
+  opacity: 0;
 }
 </style>

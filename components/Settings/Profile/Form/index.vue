@@ -1,9 +1,7 @@
 <template>
-  <v-card
-    class="mx-auto mb-3 settings-form-root"
-    variant="flat"
-    elevation="0"
+  <section
     v-if="authStateUI.showForm"
+    class="mb-3 w-full settings-form-root"
   >
     <SettingsProfileHeader
       v-if="editableProfile?.user_id"
@@ -29,28 +27,26 @@
       @randomAvatar="pickRandomAvatar"
       @uploadAvatar="uploadAvatar"
     />
-    <v-row v-if="shouldOfferEmailLinkPrompt" class="ma-0 pa-0" dense>
-      <v-col cols="12">
-        <v-alert variant="tonal" type="info" density="comfortable">
-          <div
-            class="d-flex flex-column flex-sm-row align-center justify-space-between"
+    <div v-if="shouldOfferEmailLinkPrompt" class="mt-0">
+      <div class="settings-inline-alert settings-inline-alert--info">
+        <div
+          class="flex flex-col items-center justify-between gap-2 sm:flex-row"
+        >
+          <span class="text-body-2">
+            {{ t("components.profile-email-link.prompt") }}
+          </span>
+          <span
+            class="text-link-btn sm:mt-0"
+            role="button"
+            tabindex="0"
+            @click="openLinkEmailDialog"
+            @keydown.enter.prevent="openLinkEmailDialog"
           >
-            <span class="text-body-2">
-              {{ t("components.profile-email-link.prompt") }}
-            </span>
-            <span
-              class="text-link-btn mt-2 mt-sm-0"
-              role="button"
-              tabindex="0"
-              @click="openLinkEmailDialog"
-              @keydown.enter.prevent="openLinkEmailDialog"
-            >
-              {{ t("components.profile-email-link.cta") }}
-            </span>
-          </div>
-        </v-alert>
-      </v-col>
-    </v-row>
+            {{ t("components.profile-email-link.cta") }}
+          </span>
+        </div>
+      </div>
+    </div>
 
     <SettingsProfileFormContent
       :userProfile="editableProfile"
@@ -98,137 +94,206 @@
       @translateProfile="manuallyTranslateProfile"
     />
 
-    <v-dialog
-      v-model="linkEmailDialogVisible"
-      max-width="480"
-      :retain-focus="false"
-    >
-      <v-card>
-        <v-card-title class="text-h6">
-          {{ t("components.profile-email-link.dialog-title") }}
-        </v-card-title>
-        <v-card-text>
-          <p class="text-body-2 mb-4">
-            {{ t("components.profile-email-link.dialog-description") }}
-          </p>
+    <Teleport to="body">
+      <Transition name="settings-modal-fade">
+        <div
+          v-if="linkEmailDialogVisible"
+          class="settings-modal"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="settings-modal__scrim"
+            aria-label="Close link email dialog"
+            @click="closeLinkEmailDialog"
+          />
+          <div class="settings-modal__panel settings-modal__panel--sm">
+            <h2 class="settings-modal__title">
+              {{ t("components.profile-email-link.dialog-title") }}
+            </h2>
+            <p class="settings-modal__body">
+              {{ t("components.profile-email-link.dialog-description") }}
+            </p>
 
-          <v-text-field
-            v-model="linkEmailForm.email"
-            type="email"
-            :label="t('components.profile-email-link.email-label')"
-            autocomplete="email"
-            variant="outlined"
-          />
-          <v-text-field
-            v-model="linkEmailForm.confirmEmail"
-            type="email"
-            :label="t('components.profile-email-link.confirm-label')"
-            autocomplete="email"
-            variant="outlined"
-          />
+            <label class="settings-modal__field">
+              <span>{{ t("components.profile-email-link.email-label") }}</span>
+              <input
+                v-model="linkEmailForm.email"
+                type="email"
+                autocomplete="email"
+                class="settings-modal__input"
+              >
+            </label>
+            <label class="settings-modal__field">
+              <span>{{ t("components.profile-email-link.confirm-label") }}</span>
+              <input
+                v-model="linkEmailForm.confirmEmail"
+                type="email"
+                autocomplete="email"
+                class="settings-modal__input"
+              >
+            </label>
 
-          <v-alert
-            v-if="linkEmailError"
-            type="error"
-            variant="tonal"
-            class="mt-2"
-          >
-            {{ linkEmailError }}
-          </v-alert>
-          <v-alert
-            v-else-if="linkEmailSuccess"
-            type="success"
-            variant="tonal"
-            class="mt-2"
-          >
-            {{ linkEmailSuccess }}
-          </v-alert>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="text" @click="closeLinkEmailDialog">
-            {{ t("components.profile-email-link.cancel") }}
-          </v-btn>
-          <v-btn
-            color="primary"
-            :loading="linkEmailSubmitting"
-            @click="submitLinkEmail"
-          >
-            {{ t("components.profile-email-link.submit") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model="decorationDialogVisible" max-width="720">
-      <SelectAvatarDecorationDialog
-        v-if="editableProfile?.user_id"
-        :userId="editableProfile.user_id"
-        :photopath="localAvatar"
-        :currentDecorationUrl="editableProfile?.avatar_decoration_url || ''"
-        @selected="handleDecorationSelected"
-        @closeDialog="decorationDialogVisible = false"
-      />
-    </v-dialog>
-    <v-dialog v-model="decorationLockedDialogVisible" max-width="460">
-      <v-card>
-        <v-card-title class="text-h6">
-          {{ t("components.select-avatar-decoration.title") }}
-        </v-card-title>
-        <v-card-text>
-          <p class="text-body-2 mb-4">
-            Link your email to unlock avatar decorations.
-          </p>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="text" @click="decorationLockedDialogVisible = false">
-            {{ t("components.profile-email-link.cancel") }}
-          </v-btn>
-          <v-btn color="primary" @click="openLinkEmailFromDecorationLock">
-            {{ t("components.profile-email-link.cta") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model="aiBioDialogVisible" max-width="520">
-      <v-card>
-        <v-card-title class="text-h6">Generate a bio</v-card-title>
-        <v-card-text>
-          <p class="text-body-2 mb-4">
-            Enter at least 4 words that describe you. The AI will craft a short
-            bio you can edit.
-          </p>
-          <v-textarea
-            v-model="aiBioKeywords"
-            rows="3"
-            variant="outlined"
-            label="Keywords"
-            placeholder="curious, optimistic, hiking, espresso"
-          />
-          <div class="text-caption text-medium-emphasis">
-            Remaining uses: {{ aiBioRemaining }}
+            <div
+              v-if="linkEmailError"
+              class="settings-inline-alert settings-inline-alert--error mt-2"
+            >
+              {{ linkEmailError }}
+            </div>
+            <div
+              v-else-if="linkEmailSuccess"
+              class="settings-inline-alert settings-inline-alert--success mt-2"
+            >
+              {{ linkEmailSuccess }}
+            </div>
+
+            <div class="settings-modal__actions">
+              <button
+                type="button"
+                class="settings-modal__btn"
+                @click="closeLinkEmailDialog"
+              >
+                {{ t("components.profile-email-link.cancel") }}
+              </button>
+              <button
+                type="button"
+                class="settings-modal__btn settings-modal__btn--primary"
+                :disabled="linkEmailSubmitting"
+                @click="submitLinkEmail"
+              >
+                <span v-if="linkEmailSubmitting" class="settings-modal__spinner" aria-hidden="true" />
+                {{ t("components.profile-email-link.submit") }}
+              </button>
+            </div>
           </div>
-          <v-alert
-            v-if="aiBioError"
-            type="error"
-            variant="tonal"
-            class="mt-3"
-          >
-            {{ aiBioError }}
-          </v-alert>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn variant="text" @click="closeAiBioDialog">Cancel</v-btn>
-          <v-btn
-            color="primary"
-            :loading="aiBioLoading"
-            :disabled="aiBioDisabled"
-            @click="generateAiBio"
-          >
-            Generate
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-card>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="settings-modal-fade">
+        <div
+          v-if="decorationDialogVisible"
+          class="settings-modal"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="settings-modal__scrim"
+            aria-label="Close decoration dialog"
+            @click="decorationDialogVisible = false"
+          />
+          <div class="settings-modal__panel settings-modal__panel--lg">
+            <SelectAvatarDecorationDialog
+              v-if="editableProfile?.user_id"
+              :userId="editableProfile.user_id"
+              :photopath="localAvatar"
+              :currentDecorationUrl="editableProfile?.avatar_decoration_url || ''"
+              @selected="handleDecorationSelected"
+              @closeDialog="decorationDialogVisible = false"
+            />
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="settings-modal-fade">
+        <div
+          v-if="decorationLockedDialogVisible"
+          class="settings-modal"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="settings-modal__scrim"
+            aria-label="Close decoration locked dialog"
+            @click="decorationLockedDialogVisible = false"
+          />
+          <div class="settings-modal__panel settings-modal__panel--sm">
+            <h2 class="settings-modal__title">
+              {{ t("components.select-avatar-decoration.title") }}
+            </h2>
+            <p class="settings-modal__body">
+              Link your email to unlock avatar decorations.
+            </p>
+            <div class="settings-modal__actions">
+              <button
+                type="button"
+                class="settings-modal__btn"
+                @click="decorationLockedDialogVisible = false"
+              >
+                {{ t("components.profile-email-link.cancel") }}
+              </button>
+              <button
+                type="button"
+                class="settings-modal__btn settings-modal__btn--primary"
+                @click="openLinkEmailFromDecorationLock"
+              >
+                {{ t("components.profile-email-link.cta") }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="settings-modal-fade">
+        <div
+          v-if="aiBioDialogVisible"
+          class="settings-modal"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="settings-modal__scrim"
+            aria-label="Close AI bio dialog"
+            @click="closeAiBioDialog"
+          />
+          <div class="settings-modal__panel settings-modal__panel--md">
+            <h2 class="settings-modal__title">Generate a bio</h2>
+            <p class="settings-modal__body">
+              Enter at least 4 words that describe you. The AI will craft a short
+              bio you can edit.
+            </p>
+            <label class="settings-modal__field">
+              <span>Keywords</span>
+              <textarea
+                v-model="aiBioKeywords"
+                rows="3"
+                class="settings-modal__input settings-modal__textarea"
+                placeholder="curious, optimistic, hiking, espresso"
+              ></textarea>
+            </label>
+            <div class="settings-modal__caption">
+              Remaining uses: {{ aiBioRemaining }}
+            </div>
+            <div
+              v-if="aiBioError"
+              class="settings-inline-alert settings-inline-alert--error mt-3"
+            >
+              {{ aiBioError }}
+            </div>
+            <div class="settings-modal__actions">
+              <button type="button" class="settings-modal__btn" @click="closeAiBioDialog">
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="settings-modal__btn settings-modal__btn--primary"
+                :disabled="aiBioLoading || aiBioDisabled"
+                @click="generateAiBio"
+              >
+                <span v-if="aiBioLoading" class="settings-modal__spinner" aria-hidden="true" />
+                Generate
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+  </section>
 </template>
 
 <script setup>
@@ -1267,11 +1332,11 @@ onMounted(async () => {
 
 .online-status-overlay {
   position: absolute;
-  top: 10px; /* Adjust as needed */
-  right: 10px; /* Adjust as needed */
-  background-color: white; /* Optional: Add a background color to make it stand out */
-  border-radius: 50%; /* Optional: Adjust for a round status indicator */
-  padding: 5px; /* Optional: Adjust padding as needed */
+  top: 10px;
+  right: 10px;
+  background-color: rgb(var(--color-surface));
+  border-radius: 50%;
+  padding: 5px;
 }
 
 .text-link-btn {
@@ -1292,8 +1357,175 @@ onMounted(async () => {
 }
 
 .settings-form-root {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.settings-inline-alert {
+  padding: 0.9rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  line-height: 1.6;
+}
+
+.settings-inline-alert--info {
+  background: rgb(var(--color-info) / 0.12);
+  border-color: rgb(var(--color-info) / 0.22);
+  color: rgb(var(--color-info));
+}
+
+.settings-inline-alert--error {
+  background: rgb(var(--color-danger) / 0.1);
+  border-color: rgb(var(--color-danger) / 0.22);
+  color: rgb(var(--color-danger));
+}
+
+.settings-inline-alert--success {
+  background: rgb(var(--color-success) / 0.12);
+  border-color: rgb(var(--color-success) / 0.22);
+  color: rgb(var(--color-success));
+}
+
+.settings-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+}
+
+.settings-modal__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.72);
+}
+
+.settings-modal__panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  transform: translate(-50%, -50%);
+  padding: 1.25rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 18px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 24px 48px rgb(15 23 42 / 0.28);
+}
+
+.settings-modal__panel--sm {
+  width: min(92vw, 480px);
+}
+
+.settings-modal__panel--md {
+  width: min(92vw, 520px);
+}
+
+.settings-modal__panel--lg {
+  width: min(92vw, 720px);
+}
+
+.settings-modal__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: rgb(var(--color-foreground));
+}
+
+.settings-modal__body,
+.settings-modal__caption {
+  color: rgb(var(--color-foreground) / 0.72);
+  line-height: 1.6;
+}
+
+.settings-modal__body {
+  margin: 0.75rem 0 1rem;
+}
+
+.settings-modal__field {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+  color: rgb(var(--color-foreground) / 0.82);
+  font-size: 0.9rem;
+}
+
+.settings-modal__input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgb(var(--color-border) / 0.82);
+  border-radius: 12px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  font: inherit;
+}
+
+.settings-modal__textarea {
+  resize: vertical;
+}
+
+.settings-modal__caption {
+  margin-top: 0.65rem;
+  font-size: 0.82rem;
+}
+
+.settings-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.settings-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 10px;
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.82);
+  font: inherit;
+  font-weight: 600;
+}
+
+.settings-modal__btn--primary {
+  border-color: transparent;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-background));
+}
+
+.settings-modal__btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.settings-modal__spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: settings-modal-spin 0.7s linear infinite;
+}
+
+.settings-modal-fade-enter-active,
+.settings-modal-fade-leave-active {
+  transition: opacity 160ms ease;
+}
+
+.settings-modal-fade-enter-from,
+.settings-modal-fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes settings-modal-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

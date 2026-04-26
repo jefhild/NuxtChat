@@ -1,49 +1,37 @@
 <template>
-  <v-container fluid class="landing-page pa-0">
+  <div class="landing-page">
     <section class="full-bleed hero-shell">
-      <v-sheet class="hero-surface" elevation="0">
-        <v-img
-          src="/images/background2.webp"
-          cover
-          class="hero-media"
-          gradient="to bottom, rgba(6, 11, 23, 0.28), rgba(6, 11, 23, 0.82)"
-        >
+      <div class="hero-surface">
+        <div class="hero-media">
           <div class="hero-overlay">
             <div class="hero-copy">
-              <h1 class="hero-title text-white">
+              <h1 class="hero-title">
                 {{ heroCopy.title }}
               </h1>
-              <p class="hero-subtitle text-white">
+              <p class="hero-subtitle">
                 {{ heroCopy.subtitle }}
               </p>
               <div class="hero-actions">
-                <v-btn
-                  color="primary"
-                  size="x-large"
-                  class="hero-btn"
+                <NuxtLink
                   :to="localPath('/chat')"
+                  class="landing-button landing-button--primary landing-button--xl hero-btn"
                 >
                   {{ heroCopy.primaryCta }}
-                </v-btn>
-                <v-btn
-                  variant="outlined"
-                  color="white"
-                  size="x-large"
-                  class="hero-btn"
+                </NuxtLink>
+                <NuxtLink
                   :to="localPath('/anonymous-chat')"
+                  class="landing-button landing-button--hero-secondary landing-button--xl hero-btn"
                 >
                   {{ heroCopy.secondaryCta }}
-                </v-btn>
-                <v-btn
+                </NuxtLink>
+                <button
                   v-if="showLinkEmailCta"
-                  color="amber-darken-2"
-                  variant="flat"
-                  size="x-large"
-                  class="hero-btn"
+                  type="button"
+                  class="landing-button landing-button--link-email landing-button--xl hero-btn"
                   @click="openLinkEmailDialog"
                 >
                   {{ t("components.profile-email-link.cta") || "Link email" }}
-                </v-btn>
+                </button>
               </div>
               <div class="hero-trust">
                 <span v-for="item in heroCopy.trustPoints" :key="item">
@@ -55,73 +43,73 @@
               </ClientOnly>
             </div>
           </div>
-        </v-img>
-      </v-sheet>
+        </div>
+      </div>
     </section>
 
     <section class="entry-section full-bleed">
-      <v-sheet class="entry-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
-        <v-container class="py-10 py-md-14">
-          <div class="section-copy text-center">
-            <v-chip color="primary" variant="tonal" class="mb-4">
+      <div class="entry-surface" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
+        <div class="landing-page__container landing-page__container--section">
+          <div class="section-copy section-copy--center">
+            <span class="landing-chip landing-chip--primary section-kicker">
               {{ entryCopy.kicker }}
-            </v-chip>
-            <h2 class="text-h4 font-weight-bold mb-3">
+            </span>
+            <h2 class="section-title">
               {{ entryCopy.title }}
             </h2>
-            <p class="text-body-1 text-medium-emphasis entry-intro">
+            <p class="section-subtitle entry-intro">
               {{ entryCopy.subtitle }}
             </p>
           </div>
 
-          <v-row class="mt-6" dense>
-            <v-col v-for="card in entryCards" :key="card.href" cols="12" md="6" lg="3">
+          <div class="entry-grid">
+            <div v-for="card in entryCards" :key="card.href" class="entry-grid__item">
               <NuxtLink :to="localPath(card.href)" class="entry-card-link">
-                <v-card class="entry-card h-100" rounded="xl" elevation="0">
+                <article class="entry-card">
                   <div class="entry-card__eyebrow">
                     {{ card.eyebrow }}
                   </div>
-                  <div class="text-h6 font-weight-bold mb-2">
+                  <div class="entry-card__title">
                     {{ card.title }}
                   </div>
-                  <p class="text-body-2 text-medium-emphasis mb-4">
+                  <p class="entry-card__body">
                     {{ card.body }}
                   </p>
                   <span class="entry-card__cta">
                     {{ card.cta }}
                   </span>
-                </v-card>
+                </article>
               </NuxtLink>
-            </v-col>
-          </v-row>
-          <div v-if="moreLinks.length" class="entry-more-links text-center mt-5">
-            <span class="text-body-2 text-medium-emphasis mr-1">{{ entryCopy.moreLabel }}</span>
+            </div>
+          </div>
+          <div v-if="moreLinks.length" class="entry-more-links">
+            <span class="entry-more-label">{{ entryCopy.moreLabel }}</span>
             <template v-for="(link, i) in moreLinks" :key="link.href">
               <NuxtLink :to="localPath(link.href)" class="entry-more-link">{{ link.label }}</NuxtLink>
               <span v-if="i < moreLinks.length - 1" class="entry-more-sep">·</span>
             </template>
           </div>
-        </v-container>
-      </v-sheet>
+        </div>
+      </div>
     </section>
 
     <section class="full-bleed away-agent-section">
-      <v-sheet class="away-agent-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
-        <v-container class="py-10 py-md-14">
-          <v-row align="center">
-            <v-col cols="12" md="6">
-              <div class="section-copy">
-                <v-chip color="primary" variant="tonal" class="mb-4">
+      <div class="away-agent-surface" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
+        <div class="landing-page__container landing-page__container--section">
+          <div class="away-agent-layout">
+            <div class="away-agent-layout__copy">
+              <div class="section-copy section-copy--left">
+                <span class="landing-chip landing-chip--primary section-kicker">
                   {{ awayAgentCopy.kicker }}
-                </v-chip>
-                <h2 class="text-h4 font-weight-bold mb-3">
+                </span>
+                <h2 class="section-title">
                   {{ awayAgentCopy.title }}
                 </h2>
-                <p class="text-body-1 text-medium-emphasis mb-6">
+                <p class="section-subtitle section-subtitle--spaced">
                   {{ awayAgentCopy.subtitle }}
                 </p>
 
-                <div class="proof-grid mb-6">
+                <div class="proof-grid proof-grid--tight">
                   <div v-for="point in awayAgentCopy.points" :key="point.title" class="proof-point">
                     <div class="proof-point__title">{{ point.title }}</div>
                     <div class="proof-point__body">{{ point.body }}</div>
@@ -129,38 +117,54 @@
                 </div>
 
                 <div class="hero-actions away-agent-actions">
-                  <!-- Authenticated: go directly to settings Away Agent tab -->
                   <template v-if="authStatus === 'authenticated'">
-                    <v-btn color="primary" size="large" class="hero-btn" :to="localPath('/settings') + '?tab=7'">
+                    <NuxtLink
+                      :to="localPath('/settings') + '?tab=7'"
+                      class="landing-button landing-button--primary landing-button--lg hero-btn"
+                    >
                       {{ awayAgentCopy.ctaSetup }}
-                    </v-btn>
-                    <v-btn variant="outlined" size="large" class="hero-btn" :to="localPath('/away-agent')">
+                    </NuxtLink>
+                    <NuxtLink
+                      :to="localPath('/away-agent')"
+                      class="landing-button landing-button--outline landing-button--lg hero-btn"
+                    >
                       {{ awayAgentCopy.ctaLearn }}
-                    </v-btn>
+                    </NuxtLink>
                   </template>
-                  <!-- Anon authenticated: open conversion dialog -->
                   <template v-else-if="authStatus === 'anon_authenticated'">
-                    <v-btn color="primary" size="large" class="hero-btn" @click="awayAgentDialogVisible = true">
+                    <button
+                      type="button"
+                      class="landing-button landing-button--primary landing-button--lg hero-btn"
+                      @click="awayAgentDialogVisible = true"
+                    >
                       {{ awayAgentCopy.ctaActivate }}
-                    </v-btn>
-                    <v-btn variant="outlined" size="large" class="hero-btn" :to="localPath('/away-agent')">
+                    </button>
+                    <NuxtLink
+                      :to="localPath('/away-agent')"
+                      class="landing-button landing-button--outline landing-button--lg hero-btn"
+                    >
                       {{ awayAgentCopy.ctaLearn }}
-                    </v-btn>
+                    </NuxtLink>
                   </template>
-                  <!-- Unauthenticated / guest: funnel to onboarding -->
                   <template v-else>
-                    <v-btn color="primary" size="large" class="hero-btn" :to="localPath('/chat')">
+                    <NuxtLink
+                      :to="localPath('/chat')"
+                      class="landing-button landing-button--primary landing-button--lg hero-btn"
+                    >
                       {{ awayAgentCopy.ctaStart }}
-                    </v-btn>
-                    <v-btn variant="outlined" size="large" class="hero-btn" :to="localPath('/away-agent')">
+                    </NuxtLink>
+                    <NuxtLink
+                      :to="localPath('/away-agent')"
+                      class="landing-button landing-button--outline landing-button--lg hero-btn"
+                    >
                       {{ awayAgentCopy.ctaLearn }}
-                    </v-btn>
+                    </NuxtLink>
                   </template>
                 </div>
               </div>
-            </v-col>
+            </div>
 
-            <v-col cols="12" md="6" class="d-none d-md-flex justify-center align-center">
+            <div class="away-agent-layout__mock">
               <div class="agent-mock">
                 <div class="agent-mock__titlebar">
                   <span class="agent-mock__dot" />
@@ -170,7 +174,7 @@
                 </div>
                 <div class="agent-mock__body">
                   <div class="agent-mock__badge">
-                    <v-icon size="14" class="mr-1">mdi-robot-outline</v-icon>
+                    <i class="mdi mdi-robot-outline agent-mock__inline-icon agent-mock__inline-icon--badge" aria-hidden="true" />
                     {{ awayAgentCopy.mock.badge }}
                   </div>
 
@@ -183,7 +187,7 @@
                   <div class="agent-mock__row agent-mock__row--right">
                     <div class="agent-mock__bubble agent-mock__bubble--agent">
                       <span class="agent-mock__agent-label">
-                        <v-icon size="11" class="mr-1">mdi-robot-outline</v-icon>{{ awayAgentCopy.mock.agentLabel }}
+                        <i class="mdi mdi-robot-outline agent-mock__inline-icon agent-mock__inline-icon--label" aria-hidden="true" />{{ awayAgentCopy.mock.agentLabel }}
                       </span>
                       {{ awayAgentCopy.mock.reply1 }}
                     </div>
@@ -198,93 +202,94 @@
                   <div class="agent-mock__row agent-mock__row--right">
                     <div class="agent-mock__bubble agent-mock__bubble--agent">
                       <span class="agent-mock__agent-label">
-                        <v-icon size="11" class="mr-1">mdi-robot-outline</v-icon>{{ awayAgentCopy.mock.agentLabel }}
+                        <i class="mdi mdi-robot-outline agent-mock__inline-icon agent-mock__inline-icon--label" aria-hidden="true" />{{ awayAgentCopy.mock.agentLabel }}
                       </span>
                       {{ awayAgentCopy.mock.reply2 }}
                     </div>
                   </div>
 
                   <div class="agent-mock__status">
-                    <v-icon size="13" class="mr-1" color="success">mdi-check-circle-outline</v-icon>
+                    <i class="mdi mdi-check-circle-outline agent-mock__status-icon" aria-hidden="true" />
                     {{ awayAgentCopy.mock.status }}
                   </div>
                 </div>
               </div>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-sheet>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="full-bleed language-practice-section">
-      <v-sheet class="language-practice-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
-        <v-container class="py-10 py-md-14">
-          <div class="section-copy text-center">
-            <v-chip color="success" variant="tonal" class="mb-4">
+      <div class="language-practice-surface" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
+        <div class="landing-page__container landing-page__container--section">
+          <div class="section-copy section-copy--center">
+            <span class="landing-chip landing-chip--success section-kicker">
               {{ languagePracticeCopy.kicker }}
-            </v-chip>
-            <h2 class="text-h4 font-weight-bold mb-3">
+            </span>
+            <h2 class="section-title">
               {{ languagePracticeCopy.title }}
             </h2>
-            <p class="text-body-1 text-medium-emphasis language-practice-intro">
+            <p class="section-subtitle language-practice-intro">
               {{ languagePracticeCopy.subtitle }}
             </p>
           </div>
 
-          <v-row class="mt-6" dense>
-            <v-col v-for="card in languagePracticeCopy.cards" :key="card.title" cols="12" md="4">
-              <v-card class="language-practice-card h-100" elevation="0">
-                <div class="language-practice-card__icon">
-                  <v-icon size="20">{{ card.icon }}</v-icon>
-                </div>
-                <div class="text-h6 font-weight-bold mb-2">
-                  {{ card.title }}
-                </div>
-                <p class="text-body-2 text-medium-emphasis mb-0">
-                  {{ card.body }}
-                </p>
-                <div v-if="card.languages" class="language-practice-card__languages">
-                  <v-chip
-                    v-for="language in card.languages"
-                    :key="language"
-                    size="small"
-                    color="success"
-                    variant="tonal"
-                    :to="localPath(languagePracticeLandingHref(language))"
-                    class="language-practice-card__language-link"
-                  >
-                    {{ language }}
-                  </v-chip>
-                </div>
-              </v-card>
-            </v-col>
-          </v-row>
+          <div class="language-practice-grid">
+            <article v-for="card in languagePracticeCopy.cards" :key="card.title" class="language-practice-card">
+              <div class="language-practice-card__icon">
+                <i :class="['mdi', card.icon, 'language-practice-card__icon-glyph']" aria-hidden="true" />
+              </div>
+              <div class="language-practice-card__title">
+                {{ card.title }}
+              </div>
+              <p class="language-practice-card__body">
+                {{ card.body }}
+              </p>
+              <div v-if="card.languages" class="language-practice-card__languages">
+                <NuxtLink
+                  v-for="language in card.languages"
+                  :key="language"
+                  :to="localPath(languagePracticeLandingHref(language))"
+                  class="landing-chip landing-chip--success landing-chip--link language-practice-card__language-link"
+                >
+                  {{ language }}
+                </NuxtLink>
+              </div>
+            </article>
+          </div>
 
           <div class="hero-actions language-practice-actions">
-            <v-btn color="success" size="large" class="hero-btn" :to="localPath('/language-practice')">
+            <NuxtLink
+              :to="localPath('/language-practice')"
+              class="landing-button landing-button--success landing-button--lg hero-btn"
+            >
               {{ languagePracticeCopy.primaryCta }}
-            </v-btn>
-            <v-btn variant="outlined" size="large" class="hero-btn language-practice-secondary" :to="localPath('/language-exchange-chat')">
+            </NuxtLink>
+            <NuxtLink
+              :to="localPath('/language-exchange-chat')"
+              class="landing-button landing-button--outline-success landing-button--lg hero-btn language-practice-secondary"
+            >
               {{ languagePracticeCopy.secondaryCta }}
-            </v-btn>
+            </NuxtLink>
           </div>
-        </v-container>
-      </v-sheet>
+        </div>
+      </div>
     </section>
 
     <section class="full-bleed proof-section">
-      <v-sheet class="proof-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
-        <v-container class="py-10 py-md-14">
-          <v-row align="stretch">
-            <v-col cols="12" md="7">
-              <div class="section-copy">
-                <v-chip color="primary" variant="tonal" class="mb-4">
+      <div class="proof-surface" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
+        <div class="landing-page__container landing-page__container--section">
+          <div class="proof-layout">
+            <div class="proof-layout__copy">
+              <div class="section-copy section-copy--left">
+                <span class="landing-chip landing-chip--primary section-kicker">
                   {{ proofCopy.kicker }}
-                </v-chip>
-                <h2 class="text-h4 font-weight-bold mb-3">
+                </span>
+                <h2 class="section-title">
                   {{ proofCopy.title }}
                 </h2>
-                <p class="text-body-1 text-medium-emphasis mb-6">
+                <p class="section-subtitle section-subtitle--spaced">
                   {{ proofCopy.subtitle }}
                 </p>
               </div>
@@ -295,12 +300,12 @@
                   <div class="proof-point__body">{{ point.body }}</div>
                 </div>
               </div>
-            </v-col>
+            </div>
 
-            <v-col cols="12" md="5">
-              <v-card class="entry-flow-card h-100" rounded="xl" elevation="0">
-                <div class="text-overline mb-2">{{ proofCopy.flowEyebrow }}</div>
-                <div class="text-h5 font-weight-bold mb-3">{{ proofCopy.flowTitle }}</div>
+            <div class="proof-layout__flow">
+              <article class="entry-flow-card">
+                <div class="entry-flow-card__eyebrow">{{ proofCopy.flowEyebrow }}</div>
+                <div class="entry-flow-card__title">{{ proofCopy.flowTitle }}</div>
                 <div class="entry-flow-list">
                   <div v-for="step in proofCopy.flowSteps" :key="step.title" class="entry-flow-step">
                     <div class="entry-flow-step__number">{{ step.number }}</div>
@@ -310,14 +315,17 @@
                     </div>
                   </div>
                 </div>
-                <v-btn color="primary" size="large" block class="mt-6" :to="localPath('/chat')">
+                <NuxtLink
+                  :to="localPath('/chat')"
+                  class="landing-button landing-button--primary landing-button--lg landing-button--block entry-flow-card__cta"
+                >
                   {{ proofCopy.flowCta }}
-                </v-btn>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-sheet>
+                </NuxtLink>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <AuthConvertAccountDialog
@@ -326,73 +334,81 @@
     />
 
     <section class="full-bleed mood-teaser-section">
-      <v-sheet class="mood-teaser-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
-        <v-container class="py-10 py-md-14">
-          <div class="section-copy text-center">
-            <v-chip color="primary" variant="tonal" class="mb-4">
+      <div class="mood-teaser-surface" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
+        <div class="landing-page__container landing-page__container--section">
+          <div class="section-copy section-copy--center">
+            <span class="landing-chip landing-chip--primary section-kicker">
               {{ moodCopy.kicker }}
-            </v-chip>
-            <h2 class="text-h4 font-weight-bold mb-3">
+            </span>
+            <h2 class="section-title">
               {{ moodCopy.title }}
             </h2>
-            <p class="text-body-1 text-medium-emphasis mood-teaser-intro">
+            <p class="section-subtitle mood-teaser-intro">
               {{ moodCopy.subtitle }}
             </p>
           </div>
 
           <div class="mood-chips">
-            <v-chip
+            <button
               v-for="item in moodChipsWithPresets"
               :key="item.preset?.key ?? item.label"
-              size="large"
-              variant="outlined"
-              class="mood-chip-interactive"
+              type="button"
+              class="landing-chip landing-chip--outline mood-chip-interactive"
               @click="onMoodChipClick(item.preset)"
             >
               {{ item.label }}
-            </v-chip>
+            </button>
           </div>
 
-          <div class="text-center mt-6">
-            <v-btn color="primary" size="large" :to="localPath('/feeds')">
+          <div class="mood-teaser-actions">
+            <NuxtLink
+              :to="localPath('/feeds')"
+              class="landing-button landing-button--primary landing-button--lg"
+            >
               {{ moodCopy.cta }}
-            </v-btn>
+            </NuxtLink>
           </div>
-        </v-container>
-      </v-sheet>
+        </div>
+      </div>
     </section>
 
-    <v-container fluid class="mt-6">
+    <div class="landing-page__container landing-page__container--seo">
       <HomeSeoDiscovery />
-    </v-container>
+    </div>
 
-    <section class="full-bleed final-cta-section mt-10">
-      <v-sheet class="final-cta-surface" elevation="0" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
-        <v-container class="py-12 py-md-16">
-          <v-row align="center" class="final-cta-grid">
-            <v-col cols="12" md="5">
+    <section class="full-bleed final-cta-section">
+      <div class="final-cta-surface" @mousemove="updateSpotlight" @mouseleave="clearSpotlight">
+        <div class="landing-page__container landing-page__container--final-cta">
+          <div class="final-cta-grid">
+            <div class="final-cta-grid__copy">
               <div class="final-cta-copy-wrap">
-                <v-chip color="primary" variant="tonal" class="mb-4">
+                <span class="landing-chip landing-chip--primary section-kicker">
                   {{ finalCtaCopy.kicker }}
-                </v-chip>
-                <h2 class="text-h4 font-weight-bold mb-3">
+                </span>
+                <h2 class="section-title">
                   {{ finalCtaCopy.title }}
                 </h2>
-                <p class="text-body-1 final-cta-copy final-cta-subtitle">
+                <p class="section-subtitle final-cta-copy final-cta-subtitle">
                   {{ finalCtaCopy.subtitle }}
                 </p>
-                <div class="hero-actions mt-6">
-                  <v-btn color="primary" size="x-large" class="hero-btn" :to="localPath('/chat')">
+                <div class="hero-actions final-cta-actions">
+                  <NuxtLink
+                    :to="localPath('/chat')"
+                    class="landing-button landing-button--primary landing-button--xl hero-btn"
+                  >
                     {{ finalCtaCopy.primaryCta }}
-                  </v-btn>
-                  <v-btn variant="outlined" size="x-large" class="hero-btn" :to="localPath('/chat-without-signup')">
+                  </NuxtLink>
+                  <NuxtLink
+                    :to="localPath('/chat-without-signup')"
+                    class="landing-button landing-button--outline landing-button--xl hero-btn"
+                  >
                     {{ finalCtaCopy.secondaryCta }}
-                  </v-btn>
+                  </NuxtLink>
                 </div>
               </div>
-            </v-col>
+            </div>
 
-            <v-col cols="12" md="7" class="d-none d-md-flex">
+            <div class="final-cta-grid__media">
               <div class="final-cta-mockup">
                 <div class="final-cta-mockup__frame">
                   <img
@@ -402,37 +418,64 @@
                   >
                 </div>
               </div>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-sheet>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <v-dialog v-if="logoutDialog" v-model="logoutDialog" width="auto">
-      <v-card max-width="400" prepend-icon="mdi-account-remove">
-        <v-card-title>{{
-          $t("pages.home.landing_page.logout_title")
-        }}</v-card-title>
-        <v-card-text>{{
-          $t("pages.home.landing_page.logout_confirm")
-        }}</v-card-text>
-        <template #actions>
-          <v-btn color="primary" text @click="confirmLogout">
-            {{ $t("pages.home.landing_page.logout_confirm_button") }}
-          </v-btn>
-          <v-spacer />
-          <v-btn text @click="logoutDialog = false">
-            {{ $t("pages.home.landing_page.cancel") }}
-          </v-btn>
-        </template>
-      </v-card>
-    </v-dialog>
+    <Teleport to="body">
+      <Transition name="landing-dialog-fade">
+        <div v-if="logoutDialog" class="landing-dialog-layer" role="presentation">
+          <button
+            type="button"
+            class="landing-dialog-backdrop"
+            aria-label="Close logout dialog"
+            @click="logoutDialog = false"
+          />
+          <div
+            class="landing-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="landing-logout-title"
+          >
+            <div class="landing-dialog-card">
+              <div class="landing-dialog-card__header">
+                <i class="mdi mdi-account-remove landing-dialog-card__icon" aria-hidden="true" />
+                <h2 id="landing-logout-title" class="landing-dialog-card__title">
+                  {{ $t("pages.home.landing_page.logout_title") }}
+                </h2>
+              </div>
+              <p class="landing-dialog-card__body">
+                {{ $t("pages.home.landing_page.logout_confirm") }}
+              </p>
+              <div class="landing-dialog-card__actions">
+                <button
+                  type="button"
+                  class="landing-button landing-button--primary landing-button--md"
+                  @click="confirmLogout"
+                >
+                  {{ $t("pages.home.landing_page.logout_confirm_button") }}
+                </button>
+                <button
+                  type="button"
+                  class="landing-button landing-button--ghost landing-button--md"
+                  @click="logoutDialog = false"
+                >
+                  {{ $t("pages.home.landing_page.cancel") }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <AuthConvertAccountDialog
       v-model="linkEmailDialogVisible"
       context="general"
     />
-  </v-container>
+  </div>
 </template>
 
 <script setup>
@@ -665,6 +708,32 @@ const clearSpotlight = (e) => {
   font-family: "Poppins", sans-serif;
 }
 
+.landing-page {
+  width: 100%;
+  padding: 0;
+}
+
+.landing-page__container {
+  width: min(100%, 1200px);
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.landing-page__container--section {
+  padding-top: 40px;
+  padding-bottom: 56px;
+}
+
+.landing-page__container--seo {
+  margin-top: 24px;
+}
+
+.landing-page__container--final-cta {
+  padding-top: 48px;
+  padding-bottom: 64px;
+}
+
 .full-bleed {
   width: 100vw;
   margin-left: calc(50% - 50vw);
@@ -683,6 +752,9 @@ const clearSpotlight = (e) => {
 
 .hero-media {
   min-height: clamp(520px, 82vh, 760px);
+  background:
+    linear-gradient(to bottom, rgba(6, 11, 23, 0.28), rgba(6, 11, 23, 0.82)),
+    url("/images/background2.webp") center / cover no-repeat;
 }
 
 .hero-overlay {
@@ -700,18 +772,20 @@ const clearSpotlight = (e) => {
 }
 
 .hero-title {
+  margin: 0 auto 18px;
+  max-width: 14ch;
+  color: #fff;
   font-size: clamp(2.5rem, 5.6vw, 4.4rem);
   font-weight: 600;
   line-height: 1.08;
   letter-spacing: -0.03em;
   text-wrap: balance;
-  max-width: 14ch;
-  margin: 0 auto 18px;
 }
 
 .hero-subtitle {
   max-width: 52ch;
   margin: 0 auto;
+  color: rgba(255, 255, 255, 0.94);
   font-size: clamp(1.05rem, 2vw, 1.35rem);
   line-height: 1.55;
 }
@@ -726,7 +800,196 @@ const clearSpotlight = (e) => {
 
 .hero-btn {
   min-width: fit-content;
+}
+
+.section-copy {
+  max-width: 760px;
+}
+
+.section-copy--center {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.section-copy--left {
+  margin: 0;
+  text-align: left;
+}
+
+.section-kicker {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  margin: 0 0 12px;
+  color: rgb(var(--color-foreground));
+  font-size: clamp(1.95rem, 4vw, 2.45rem);
+  font-weight: 700;
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.section-subtitle {
+  margin: 0;
+  color: rgb(var(--color-foreground) / 0.74);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.section-subtitle--spaced {
+  margin-bottom: 24px;
+}
+
+.entry-intro,
+.mood-teaser-intro,
+.language-practice-intro,
+.final-cta-copy {
+  max-width: 56ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.section-copy--left .section-subtitle--spaced {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.landing-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.landing-chip--primary {
+  color: rgb(var(--color-primary));
+  background: rgb(var(--color-primary) / 0.1);
+  border-color: rgb(var(--color-primary) / 0.18);
+}
+
+.landing-chip--success {
+  color: rgb(var(--color-success));
+  background: rgb(var(--color-success) / 0.12);
+  border-color: rgb(var(--color-success) / 0.18);
+}
+
+.landing-chip--link {
+  text-decoration: none;
+}
+
+.landing-chip--outline {
+  border-color: rgb(var(--color-border) / 0.78);
+  background: rgb(var(--color-surface) / 0.72);
+  color: rgb(var(--color-foreground));
+  cursor: pointer;
+  font: inherit;
+}
+
+.landing-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.78rem 1.2rem;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: rgb(var(--color-foreground));
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease,
+    background-color 160ms ease, color 160ms ease, opacity 160ms ease;
   white-space: normal;
+}
+
+.landing-button:hover,
+.landing-button:focus-visible,
+.landing-chip--outline:hover,
+.landing-chip--outline:focus-visible,
+.entry-card-link:focus-visible .entry-card,
+.entry-more-link:focus-visible,
+.language-practice-card__language-link:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.landing-button:focus-visible,
+.landing-chip--outline:focus-visible,
+.entry-more-link:focus-visible,
+.language-practice-card__language-link:focus-visible {
+  box-shadow: 0 0 0 3px rgb(var(--color-primary) / 0.18);
+}
+
+.landing-button--primary {
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-primary-foreground, var(--color-background, 255 255 255)));
+  box-shadow: 0 12px 24px rgb(var(--color-shadow) / 0.16);
+}
+
+.landing-button--success {
+  background: rgb(var(--color-success));
+  color: rgb(var(--color-primary-foreground, var(--color-background, 255 255 255)));
+  box-shadow: 0 12px 24px rgb(var(--color-shadow) / 0.16);
+}
+
+.landing-button--outline {
+  border-color: rgb(var(--color-primary) / 0.32);
+  background: rgb(var(--color-surface) / 0.72);
+  color: rgb(var(--color-primary));
+}
+
+.landing-button--outline-success {
+  border-color: rgb(var(--color-success) / 0.36);
+  background: rgb(var(--color-surface) / 0.7);
+  color: rgb(var(--color-success));
+}
+
+.landing-button--hero-secondary {
+  border-color: rgb(255 255 255 / 0.68);
+  background: rgb(255 255 255 / 0.04);
+  color: #fff;
+}
+
+.landing-button--link-email {
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+  color: rgb(15 23 42);
+  box-shadow: 0 12px 24px rgb(15 23 42 / 0.16);
+}
+
+.landing-button--ghost {
+  border-color: rgb(var(--color-border) / 0.72);
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+}
+
+.landing-button--block {
+  width: 100%;
+}
+
+.landing-button--md {
+  min-height: 42px;
+}
+
+.landing-button--lg {
+  min-height: 48px;
+  padding-inline: 1.3rem;
+}
+
+.landing-button--xl {
+  min-height: 52px;
+  padding-inline: 1.45rem;
 }
 
 .away-agent-actions {
@@ -792,6 +1055,15 @@ const clearSpotlight = (e) => {
   border-bottom: 1px solid rgba(34, 197, 94, 0.12);
 }
 
+.away-agent-surface {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(900px 280px at 18% 0%, rgba(99, 102, 241, 0.12), transparent 60%),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
 .final-cta-surface {
   position: relative;
   isolation: isolate;
@@ -804,41 +1076,41 @@ const clearSpotlight = (e) => {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
-.section-copy {
-  max-width: 760px;
-  margin: 0 auto;
+.entry-grid,
+.language-practice-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
 }
 
-.entry-intro,
-.mood-teaser-intro,
-.language-practice-intro,
-.final-cta-copy {
-  max-width: 56ch;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.final-cta-subtitle {
-  color: rgba(51, 65, 85, 0.86);
-}
-
-.final-cta-copy-wrap {
-  max-width: 34rem;
+.away-agent-layout,
+.proof-layout,
+.final-cta-grid {
+  display: grid;
+  gap: 28px;
+  align-items: center;
 }
 
 .entry-card-link {
-  text-decoration: none;
   display: block;
   height: 100%;
+  text-decoration: none;
 }
 
 .entry-more-links {
+  margin-top: 20px;
+  text-align: center;
   font-size: 0.875rem;
   line-height: 1.6;
 }
 
+.entry-more-label {
+  margin-right: 4px;
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
 .entry-more-link {
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--color-primary));
   text-decoration: none;
   font-weight: 500;
 }
@@ -848,41 +1120,66 @@ const clearSpotlight = (e) => {
 }
 
 .entry-more-sep {
-  color: rgba(var(--v-theme-on-surface), 0.35);
+  color: rgb(var(--color-foreground) / 0.35);
   margin: 0 6px;
 }
 
 .entry-card {
+  height: 100%;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.94) 100%);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid rgb(var(--color-border) / 0.65);
+  border-radius: 24px;
   padding: 22px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    0 12px 30px rgba(15, 23, 42, 0.05);
+    0 12px 30px rgb(var(--color-shadow) / 0.05);
   backdrop-filter: blur(8px);
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.entry-card:hover {
+.entry-card:hover,
+.entry-card-link:focus-visible .entry-card {
   transform: translateY(-3px);
-  border-color: rgba(37, 99, 235, 0.28);
+  border-color: rgb(var(--color-primary) / 0.35);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 20px 44px rgba(15, 23, 42, 0.1);
+    0 20px 44px rgb(var(--color-shadow) / 0.1);
 }
 
 .entry-card__eyebrow {
+  margin-bottom: 10px;
+  color: rgb(var(--color-primary));
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #2563eb;
-  margin-bottom: 10px;
+}
+
+.entry-card__title,
+.language-practice-card__title,
+.entry-flow-card__title {
+  margin-bottom: 8px;
+  color: rgb(var(--color-foreground));
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.entry-card__body,
+.language-practice-card__body {
+  margin: 0;
+  color: rgb(var(--color-foreground) / 0.72);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.entry-card__body {
+  margin-bottom: 16px;
 }
 
 .entry-card__cta {
-  color: #1d4ed8;
+  color: rgb(var(--color-primary));
   font-weight: 600;
 }
 
@@ -892,25 +1189,29 @@ const clearSpotlight = (e) => {
   gap: 16px;
 }
 
+.proof-grid--tight {
+  margin-bottom: 24px;
+}
+
 .proof-point {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.92) 100%);
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid rgb(var(--color-border) / 0.55);
   border-radius: 20px;
   padding: 18px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.86),
-    0 10px 26px rgba(15, 23, 42, 0.04);
+    0 10px 26px rgb(var(--color-shadow) / 0.04);
 }
 
 .proof-point__title {
-  font-weight: 700;
   margin-bottom: 8px;
-  color: #0f172a;
+  color: rgb(var(--color-foreground));
+  font-weight: 700;
 }
 
 .proof-point__body {
-  color: #475569;
+  color: rgb(var(--color-foreground) / 0.78);
   line-height: 1.55;
 }
 
@@ -921,7 +1222,22 @@ const clearSpotlight = (e) => {
   color: #e2e8f0;
   padding: 24px;
   border: 1px solid rgba(96, 165, 250, 0.12);
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.24);
+  border-radius: 24px;
+  box-shadow: 0 18px 42px rgb(var(--color-shadow) / 0.24);
+}
+
+.entry-flow-card__eyebrow {
+  margin-bottom: 8px;
+  color: rgba(191, 219, 254, 0.86);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.entry-flow-card__title {
+  color: #fff;
+  margin-bottom: 12px;
 }
 
 .entry-flow-list {
@@ -948,13 +1264,17 @@ const clearSpotlight = (e) => {
 }
 
 .entry-flow-step__title {
-  font-weight: 700;
   margin-bottom: 4px;
+  font-weight: 700;
 }
 
 .entry-flow-step__body {
   color: #cbd5e1;
   line-height: 1.5;
+}
+
+.entry-flow-card__cta {
+  margin-top: 24px;
 }
 
 .mood-chips {
@@ -966,7 +1286,6 @@ const clearSpotlight = (e) => {
 }
 
 .mood-chip-interactive {
-  cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -974,28 +1293,38 @@ const clearSpotlight = (e) => {
   transform: translateY(-2px);
 }
 
+.mood-teaser-actions {
+  margin-top: 24px;
+  text-align: center;
+}
+
 .language-practice-card {
+  height: 100%;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 254, 249, 0.94) 100%);
-  border: 1px solid rgba(34, 197, 94, 0.16);
-  border-radius: 8px;
+  border: 1px solid rgb(var(--color-success) / 0.22);
+  border-radius: 18px;
   padding: 22px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.86),
-    0 12px 30px rgba(15, 23, 42, 0.05);
+    0 12px 30px rgb(var(--color-shadow) / 0.05);
 }
 
 .language-practice-card__icon {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  margin-bottom: 14px;
+  border-radius: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 14px;
-  color: #047857;
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.18);
+  color: rgb(var(--color-success));
+  background: rgb(var(--color-success) / 0.12);
+  border: 1px solid rgb(var(--color-success) / 0.18);
+}
+
+.language-practice-card__icon-glyph {
+  font-size: 20px;
 }
 
 .language-practice-card__languages {
@@ -1013,21 +1342,25 @@ const clearSpotlight = (e) => {
   margin-top: 30px;
 }
 
-.language-practice-secondary {
-  color: #047857;
-  border-color: rgba(4, 120, 87, 0.42);
+.final-cta-copy-wrap {
+  max-width: 34rem;
 }
 
-.final-cta-grid {
-  row-gap: 28px;
+.final-cta-subtitle {
+  color: rgba(51, 65, 85, 0.86);
+}
+
+.final-cta-actions {
+  margin-top: 24px;
 }
 
 .final-cta-surface .hero-btn {
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+  box-shadow: 0 12px 28px rgb(var(--color-shadow) / 0.22);
 }
 
 .final-cta-section {
   position: relative;
+  margin-top: 40px;
 }
 
 .agent-mock {
@@ -1080,12 +1413,27 @@ const clearSpotlight = (e) => {
   align-self: center;
   font-size: 11px;
   font-weight: 500;
-  color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.12);
-  border: 1px solid rgba(var(--v-theme-primary), 0.2);
+  color: rgb(var(--color-primary));
+  background: rgb(var(--color-primary) / 0.12);
+  border: 1px solid rgb(var(--color-primary) / 0.2);
   border-radius: 20px;
   padding: 3px 10px;
   margin-bottom: 4px;
+}
+
+.agent-mock__inline-icon {
+  display: inline-block;
+  line-height: 1;
+}
+
+.agent-mock__inline-icon--badge {
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.agent-mock__inline-icon--label {
+  margin-right: 4px;
+  font-size: 11px;
 }
 
 .agent-mock__row {
@@ -1110,8 +1458,8 @@ const clearSpotlight = (e) => {
 }
 
 .agent-mock__bubble--agent {
-  background: rgba(var(--v-theme-primary), 0.18);
-  border: 1px solid rgba(var(--v-theme-primary), 0.22);
+  background: rgb(var(--color-primary) / 0.18);
+  border: 1px solid rgb(var(--color-primary) / 0.22);
   border-bottom-right-radius: 4px;
   display: flex;
   flex-direction: column;
@@ -1123,7 +1471,7 @@ const clearSpotlight = (e) => {
   align-items: center;
   font-size: 10px;
   font-weight: 600;
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--color-primary));
   opacity: 0.85;
   letter-spacing: 0.03em;
 }
@@ -1133,8 +1481,14 @@ const clearSpotlight = (e) => {
   align-items: center;
   align-self: flex-end;
   font-size: 11px;
-  color: rgba(148, 163, 184, 0.5);
+  color: rgba(148, 163, 184, 0.72);
   margin-top: 2px;
+}
+
+.agent-mock__status-icon {
+  margin-right: 4px;
+  font-size: 13px;
+  color: rgb(var(--color-success));
 }
 
 .final-cta-mockup {
@@ -1157,6 +1511,132 @@ const clearSpotlight = (e) => {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.landing-dialog-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.landing-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.52);
+}
+
+.landing-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(400px, 94vw);
+}
+
+.landing-dialog-card {
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 18px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 24px 48px rgb(var(--color-shadow) / 0.18);
+  padding: 20px;
+}
+
+.landing-dialog-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-dialog-card__icon {
+  font-size: 1.35rem;
+  color: rgb(var(--color-primary));
+}
+
+.landing-dialog-card__title {
+  margin: 0;
+  color: rgb(var(--color-foreground));
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.landing-dialog-card__body {
+  margin: 14px 0 0;
+  color: rgb(var(--color-foreground) / 0.78);
+  line-height: 1.6;
+}
+
+.landing-dialog-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.landing-dialog-card__actions .landing-button--ghost {
+  margin-left: auto;
+}
+
+.landing-dialog-fade-enter-active,
+.landing-dialog-fade-leave-active {
+  transition: opacity 180ms ease;
+}
+
+.landing-dialog-fade-enter-from,
+.landing-dialog-fade-leave-to {
+  opacity: 0;
+}
+
+@media (min-width: 960px) {
+  .landing-page__container {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .landing-page__container--section {
+    padding-top: 56px;
+    padding-bottom: 72px;
+  }
+
+  .landing-page__container--final-cta {
+    padding-top: 64px;
+    padding-bottom: 88px;
+  }
+
+  .entry-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .language-practice-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .away-agent-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  }
+
+  .proof-layout {
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  }
+
+  .final-cta-grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+
+  .away-agent-layout__mock,
+  .final-cta-grid__media {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+@media (min-width: 1280px) {
+  .entry-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 959px) {
@@ -1182,8 +1662,13 @@ const clearSpotlight = (e) => {
     max-width: 100%;
   }
 
-  .final-cta-copy-wrap .hero-actions {
+  .final-cta-actions {
     justify-content: center;
+  }
+
+  .away-agent-layout__mock,
+  .final-cta-grid__media {
+    display: none;
   }
 }
 
@@ -1192,18 +1677,25 @@ const clearSpotlight = (e) => {
     flex-wrap: wrap;
   }
 
-  .away-agent-actions .hero-btn {
+  .away-agent-actions .hero-btn,
+  .landing-dialog-card__actions .landing-button {
     flex-basis: 100%;
+  }
+
+  .landing-dialog-card__actions .landing-button--ghost {
+    margin-left: 0;
   }
 }
 
-:global(.v-theme--dark .entry-surface) {
+:global(html.dark .entry-surface),
+:global(html[data-imchatty-theme="dark"] .entry-surface) {
   background:
     radial-gradient(900px 340px at 4% 0%, rgba(14, 165, 233, 0.16), transparent 62%),
     linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
 }
 
-:global(.v-theme--dark .entry-surface::before) {
+:global(html.dark .entry-surface::before),
+:global(html[data-imchatty-theme="dark"] .entry-surface::before) {
   content: "";
   position: absolute;
   inset: 0;
@@ -1214,13 +1706,15 @@ const clearSpotlight = (e) => {
   transition: opacity 0.5s ease;
 }
 
-:global(.v-theme--dark .proof-surface) {
+:global(html.dark .proof-surface),
+:global(html[data-imchatty-theme="dark"] .proof-surface) {
   background:
     radial-gradient(720px 220px at 96% 0%, rgba(30, 64, 175, 0.12), transparent 60%),
     linear-gradient(180deg, #0b1220 0%, #111827 100%);
 }
 
-:global(.v-theme--dark .proof-surface::before) {
+:global(html.dark .proof-surface::before),
+:global(html[data-imchatty-theme="dark"] .proof-surface::before) {
   content: "";
   position: absolute;
   inset: 0;
@@ -1231,13 +1725,15 @@ const clearSpotlight = (e) => {
   transition: opacity 0.5s ease;
 }
 
-:global(.v-theme--dark .mood-teaser-surface) {
+:global(html.dark .mood-teaser-surface),
+:global(html[data-imchatty-theme="dark"] .mood-teaser-surface) {
   background:
     radial-gradient(780px 280px at 50% 0%, rgba(34, 197, 94, 0.12), transparent 60%),
     linear-gradient(180deg, #111827 0%, #0f172a 100%);
 }
 
-:global(.v-theme--dark .mood-teaser-surface::before) {
+:global(html.dark .mood-teaser-surface::before),
+:global(html[data-imchatty-theme="dark"] .mood-teaser-surface::before) {
   content: "";
   position: absolute;
   inset: 0;
@@ -1248,7 +1744,8 @@ const clearSpotlight = (e) => {
   transition: opacity 0.5s ease;
 }
 
-:global(.v-theme--dark .language-practice-surface) {
+:global(html.dark .language-practice-surface),
+:global(html[data-imchatty-theme="dark"] .language-practice-surface) {
   background:
     radial-gradient(760px 260px at 16% 0%, rgba(34, 197, 94, 0.18), transparent 62%),
     radial-gradient(620px 220px at 88% 100%, rgba(20, 184, 166, 0.12), transparent 56%),
@@ -1256,7 +1753,8 @@ const clearSpotlight = (e) => {
   border-bottom: 1px solid rgba(34, 197, 94, 0.14);
 }
 
-:global(.v-theme--dark .language-practice-surface::before) {
+:global(html.dark .language-practice-surface::before),
+:global(html[data-imchatty-theme="dark"] .language-practice-surface::before) {
   content: "";
   position: absolute;
   inset: 0;
@@ -1267,7 +1765,27 @@ const clearSpotlight = (e) => {
   transition: opacity 0.5s ease;
 }
 
-:global(.v-theme--dark .final-cta-surface) {
+:global(html.dark .away-agent-surface),
+:global(html[data-imchatty-theme="dark"] .away-agent-surface) {
+  background:
+    radial-gradient(900px 280px at 18% 0%, rgba(99, 102, 241, 0.16), transparent 60%),
+    linear-gradient(180deg, #0b1220 0%, #111827 100%);
+}
+
+:global(html.dark .away-agent-surface::before),
+:global(html[data-imchatty-theme="dark"] .away-agent-surface::before) {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(600px circle at var(--sx, -600px) var(--sy, -600px), rgba(99, 102, 241, 0.12), transparent 40%);
+  opacity: var(--sp-opacity, 0);
+  transition: opacity 0.5s ease;
+}
+
+:global(html.dark .final-cta-surface),
+:global(html[data-imchatty-theme="dark"] .final-cta-surface) {
   background:
     radial-gradient(820px 260px at 12% 0%, rgba(59, 130, 246, 0.24), transparent 60%),
     radial-gradient(640px 220px at 88% 100%, rgba(14, 165, 233, 0.16), transparent 55%),
@@ -1277,7 +1795,8 @@ const clearSpotlight = (e) => {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-:global(.v-theme--dark .final-cta-surface::before) {
+:global(html.dark .final-cta-surface::before),
+:global(html[data-imchatty-theme="dark"] .final-cta-surface::before) {
   content: "";
   position: absolute;
   inset: 0;
@@ -1288,26 +1807,60 @@ const clearSpotlight = (e) => {
   transition: opacity 0.5s ease;
 }
 
-:global(.v-theme--dark .entry-card),
-:global(.v-theme--dark .proof-point),
-:global(.v-theme--dark .language-practice-card) {
+:global(html.dark .entry-card),
+:global(html.dark .proof-point),
+:global(html.dark .language-practice-card),
+:global(html[data-imchatty-theme="dark"] .entry-card),
+:global(html[data-imchatty-theme="dark"] .proof-point),
+:global(html[data-imchatty-theme="dark"] .language-practice-card) {
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(17, 24, 39, 0.92) 100%);
   border-color: rgba(148, 163, 184, 0.18);
 }
 
-:global(.v-theme--dark .final-cta-mockup__frame) {
+:global(html.dark .final-cta-mockup__frame),
+:global(html[data-imchatty-theme="dark"] .final-cta-mockup__frame) {
   border-color: rgba(148, 163, 184, 0.18);
 }
 
-:global(.v-theme--dark .final-cta-subtitle) {
+:global(html.dark .final-cta-subtitle),
+:global(html[data-imchatty-theme="dark"] .final-cta-subtitle) {
   color: rgba(226, 232, 240, 0.9);
 }
 
-:global(.v-theme--dark .proof-point__title) {
+:global(html.dark .proof-point__title),
+:global(html[data-imchatty-theme="dark"] .proof-point__title),
+:global(html.dark .entry-card__title),
+:global(html[data-imchatty-theme="dark"] .entry-card__title),
+:global(html.dark .language-practice-card__title),
+:global(html[data-imchatty-theme="dark"] .language-practice-card__title),
+:global(html.dark .section-title),
+:global(html[data-imchatty-theme="dark"] .section-title),
+:global(html.dark .landing-dialog-card__title),
+:global(html[data-imchatty-theme="dark"] .landing-dialog-card__title) {
   color: #f8fafc;
 }
 
-:global(.v-theme--dark .proof-point__body) {
+:global(html.dark .proof-point__body),
+:global(html[data-imchatty-theme="dark"] .proof-point__body),
+:global(html.dark .entry-card__body),
+:global(html[data-imchatty-theme="dark"] .entry-card__body),
+:global(html.dark .language-practice-card__body),
+:global(html[data-imchatty-theme="dark"] .language-practice-card__body),
+:global(html.dark .section-subtitle),
+:global(html[data-imchatty-theme="dark"] .section-subtitle),
+:global(html.dark .landing-dialog-card__body),
+:global(html[data-imchatty-theme="dark"] .landing-dialog-card__body) {
   color: #cbd5e1;
+}
+
+:global(html.dark .landing-button--outline),
+:global(html[data-imchatty-theme="dark"] .landing-button--outline),
+:global(html.dark .landing-button--ghost),
+:global(html[data-imchatty-theme="dark"] .landing-button--ghost),
+:global(html.dark .landing-button--outline-success),
+:global(html[data-imchatty-theme="dark"] .landing-button--outline-success),
+:global(html.dark .landing-chip--outline),
+:global(html[data-imchatty-theme="dark"] .landing-chip--outline) {
+  background: rgb(var(--color-surface) / 0.18);
 }
 </style>

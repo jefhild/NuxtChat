@@ -36,13 +36,23 @@ function resolvedField(profile: any, field: string, locale: string): string | nu
 const ONLINE_WINDOW_MS = 10 * 60 * 1000;
 const RECENT_DAYS = 7;
 const OFFLINE_LIMIT = 20;
+const OFFLINE_FETCH_LIMIT = 120;
 const parseBooleanQuery = (value: unknown) =>
   ["1", "true", "yes", "on"].includes(String(value || "").trim().toLowerCase());
+
+const normalizeSignalQuery = (value: unknown): string | null => {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized || null;
+};
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const locale = normalizeLocale(query.locale);
   const languagePracticeOnly = parseBooleanQuery(query.languagePracticeOnly);
+  const selectedEmotion = normalizeSignalQuery(query.emotion);
+  const selectedIntent = normalizeSignalQuery(query.intent);
+  const selectedEnergy = normalizeSignalQuery(query.energy);
+  const hasSelectedMood = !!(selectedEmotion || selectedIntent || selectedEnergy);
   const supabase = await getServiceRoleClient(event);
 
   const onlineCutoff = new Date(Date.now() - ONLINE_WINDOW_MS).toISOString();
@@ -102,7 +112,7 @@ export default defineEventHandler(async (event) => {
     .eq("is_private", false)
     .gte("last_active", recentCutoff)
     .order("last_active", { ascending: false })
-    .limit(OFFLINE_LIMIT);
+    .limit(OFFLINE_FETCH_LIMIT);
 
   const offlineProfiles = (recentProfiles || []).filter(
     (p: any) => !onlineRealIds.has(p.user_id) && !honeyIds.has(p.user_id)
@@ -170,8 +180,24 @@ export default defineEventHandler(async (event) => {
     };
   }
 
+  const scoreCard = (card: any) => {
+    let score = 0;
+    if (selectedEmotion && card.emotion === selectedEmotion) score += 1;
+    if (selectedIntent && card.intent === selectedIntent) score += 2;
+    if (selectedEnergy && card.energy === selectedEnergy) score += 1;
+    return score;
+  };
+
+  const rankCards = (cards: any[]) => {
+    if (!hasSelectedMood) return cards;
+    const scored = cards.map((card) => ({ card, score: scoreCard(card) }));
+    const positive = scored.filter((entry) => entry.score > 0);
+    const ranked = (positive.length ? positive : scored).sort((a, b) => b.score - a.score);
+    return ranked.map((entry) => entry.card);
+  };
+
   return {
-    online: [...honeyProfiles, ...filteredOnlineRealProfiles].map(toCard).slice(0, 20),
-    offline: filteredOfflineProfiles.map(toCard),
+    online: rankCards([...honeyProfiles, ...filteredOnlineRealProfiles].map(toCard)).slice(0, 20),
+    offline: rankCards(filteredOfflineProfiles.map(toCard)).slice(0, OFFLINE_LIMIT),
   };
 });

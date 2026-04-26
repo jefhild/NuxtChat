@@ -1,23 +1,24 @@
 <template>
-  <v-row class="rowbg rowheight" justify="center" align="center">
-    <v-col class="text-center" v-if="isAuthenticated">
-      <!-- {{ $t("pages.home.homeRow1.onlineUsersOnline") }} -->
-        Free Anonymous Chat - Users Online
-    </v-col>
-    <v-col class="text-center" v-else>
-      {{ $t("pages.home.homeRow1.offlineUsersOnline") }}
-    </v-col>
+  <section class="rowbg rowheight">
+    <div class="rowgrid">
+      <div class="text-center">
+        <template v-if="isAuthenticated">
+          Free Anonymous Chat - Users Online
+        </template>
+        <template v-else>
+          {{ $t("pages.home.homeRow1.offlineUsersOnline") }}
+        </template>
+      </div>
 
-    <v-col class="fill-height d-none d-md-flex">
-      <div class="fill-height d-flex align-center justify-center">
-        <!-- <AdSenseAdBanner ad-slot="2131952668" /> -->
+      <div class="rowgrid__spacer" aria-hidden="true">
         <!-- Put an ad here -->
       </div>
-    </v-col>
-    <v-col class="text-center">{{
-      $t("pages.home.homeRow1.freeAnonymousChat")
-    }}</v-col>
-  </v-row>
+
+      <div class="text-center">
+        {{ $t("pages.home.homeRow1.freeAnonymousChat") }}
+      </div>
+    </div>
+  </section>
 </template>
 
 <script lang="ts" setup>
@@ -31,15 +32,43 @@ const isAuthenticated = computed(() => !!authStore.user);
 .rowbg {
   background-color: #fdfaf6;
 }
+
 .rowheight {
-  height: 80px;
+  min-height: 80px;
 }
-.fill-height {
-  height: 100%;
+
+.rowgrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 1rem;
+  min-height: 80px;
+  padding: 0 1rem;
 }
+
+.rowgrid__spacer {
+  display: none;
+}
+
 .colstyle {
   font-family: "poppins", sans-serif;
   font-size: 1rem;
   font-weight: 400;
+}
+
+@media (min-width: 768px) {
+  .rowgrid__spacer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .rowgrid {
+    grid-template-columns: 1fr;
+    padding: 0.75rem 1rem;
+  }
 }
 </style>

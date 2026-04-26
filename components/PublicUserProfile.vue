@@ -1,50 +1,43 @@
 <template>
-  <v-container fluid>
-    <!-- {{ profile }} -->
-    <v-row justify="center">
-      <v-col cols="12" md="8">
-        <ProfileCard
-          :profile="profile"
-          :avatar-decoration="avatarDecoration"
-          :photo-gallery-photos="photoGalleryPhotos"
-          :photo-gallery-count="photoGalleryCount"
-          :gallery-blurred="!canViewGallery"
-          @likePhoto="handlePhotoVote"
-        />
+  <section class="mx-auto w-full max-w-5xl px-4 pb-8 sm:px-6">
+    <div class="mx-auto w-full max-w-4xl">
+      <ProfileCard
+        :profile="profile"
+        :avatar-decoration="avatarDecoration"
+        :photo-gallery-photos="photoGalleryPhotos"
+        :photo-gallery-count="photoGalleryCount"
+        :gallery-blurred="!canViewGallery"
+        @likePhoto="handlePhotoVote"
+      />
 
-        <v-container v-if="isPublic">
-          <v-row class="mt-2" justify="center" v-if="isAuthenticated"
-            ><v-col cols="auto">
-              <NuxtLink :to="localPath('/settings')">{{
-                $t("components.public-user-profile.back")
-              }}</NuxtLink>
-            </v-col>
-            <v-col cols="auto">
-              <NuxtLink
-                :to="localPath(`/chat?userslug=${profile?.slug}`)"
-                rel="nofollow"
-              >
-                {{ $t("components.public-user-profile.chat") }}
-                {{ localized.displayname }}
-              </NuxtLink>
-            </v-col>
-          </v-row>
-          <v-row class="mt-2" justify="center" v-else>
-            <v-col cols="auto">
-              <NuxtLink :to="localPath('/chat')">{{
-                $t("components.public-user-profile.back-home")
-              }}</NuxtLink>
-            </v-col>
-            <v-col cols="auto">
-              <NuxtLink :to="localPath('/chat')">{{
-                $t("components.public-user-profile.back-chat")
-              }}</NuxtLink>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-col>
-    </v-row>
-  </v-container>
+      <div
+        v-if="isPublic && isAuthenticated"
+        class="mt-2 flex flex-wrap justify-center gap-x-6 gap-y-2"
+      >
+        <NuxtLink :to="localPath('/settings')">{{
+          $t("components.public-user-profile.back")
+        }}</NuxtLink>
+        <NuxtLink
+          :to="localPath(`/chat?userslug=${profile?.slug}`)"
+          rel="nofollow"
+        >
+          {{ $t("components.public-user-profile.chat") }}
+          {{ localized.displayname }}
+        </NuxtLink>
+      </div>
+      <div
+        v-else-if="isPublic"
+        class="mt-2 flex flex-wrap justify-center gap-x-6 gap-y-2"
+      >
+        <NuxtLink :to="localPath('/chat')">{{
+          $t("components.public-user-profile.back-home")
+        }}</NuxtLink>
+        <NuxtLink :to="localPath('/chat')">{{
+          $t("components.public-user-profile.back-chat")
+        }}</NuxtLink>
+      </div>
+    </div>
+  </section>
 
 </template>
 

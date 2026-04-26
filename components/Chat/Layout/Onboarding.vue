@@ -1,40 +1,41 @@
 <template>
-  <div class="onboarding-shell d-flex flex-column h-100">
-    <div ref="scrollEl" class="flex-grow-1 overflow-auto">
+  <div class="onboarding-shell">
+    <div ref="scrollEl" class="onboarding-scroll">
       <!-- Ephemeral onboarding bubbles -->
 
       <!-- {{ consented }} -->
       <div v-if="isPreAuth && isBotSelected" class="px-1 py-2">
         <div
           v-if="isFinalizing"
-          class="d-flex align-center justify-center pa-6 flex-column text-center"
+          class="onboarding-finalizing"
         >
-          <v-progress-circular indeterminate color="primary" class="mb-3" />
-          <div class="text-body-1 font-weight-medium">
+          <span class="onboarding-spinner" aria-hidden="true" />
+          <div class="onboarding-finalizing__title">
             {{ $t("onboarding.finalizingTitle") }}
           </div>
-          <div class="text-body-2 text-medium-emphasis mt-1">
+          <div class="onboarding-finalizing__body">
             {{ $t("onboarding.finalizingBody") }}
           </div>
           <div
             v-if="handoffRevealName"
-            class="handoff-reveal mt-5"
+            class="handoff-reveal"
           >
-            <div class="handoff-reveal__label text-caption text-medium-emphasis mb-2">
+            <div class="handoff-reveal__label">
               {{ $t("onboarding.handoffLabel", "Getting your first chat ready") }}
             </div>
             <div class="handoff-reveal__card">
-              <v-avatar size="72" class="handoff-reveal__avatar">
-                <v-img
+              <span class="handoff-reveal__avatar">
+                <img
                   v-if="handoffRevealAvatar"
                   :src="handoffRevealAvatar"
-                  cover
+                  :alt="handoffRevealName"
+                  class="handoff-reveal__image"
                 />
                 <span v-else class="handoff-reveal__fallback">
                   {{ handoffInitial }}
                 </span>
-              </v-avatar>
-              <div class="text-body-1 font-weight-medium mt-3">
+              </span>
+              <div class="handoff-reveal__name">
                 {{ handoffRevealName }}
               </div>
             </div>
@@ -49,9 +50,7 @@
           >
             <div
               class="px-3 py-2 rounded-xl d-inline-block mb-1"
-              :class="
-                m.from === 'me' ? 'bg-primary text-white' : 'bg-grey-lighten-3'
-              "
+              :class="m.from === 'me' ? 'onboarding-bubble onboarding-bubble--me' : 'onboarding-bubble onboarding-bubble--bot'"
               v-html="(render && render(m.text)) || m.text"
             />
             <div
@@ -61,17 +60,17 @@
                 Array.isArray(m.quickReplies) &&
                 m.quickReplies.length
               "
-              class="mt-2 d-flex flex-wrap gap-2"
+              class="onboarding-chip-row"
             >
-              <v-chip
+              <button
                 v-for="q in m.quickReplies"
                 :key="q"
-                color="primary"
-                variant="outlined"
+                type="button"
+                class="onboarding-chip onboarding-chip--outline"
                 @click="onQuickReply(q)"
               >
                 {{ q }}
-              </v-chip>
+              </button>
             </div>
           </div>
           <!-- {{ botTyping }} -->
@@ -90,40 +89,40 @@
           <!-- Consent action chips (show ONLY until consent) -->
           <div
             v-if="!consented"
-            class="mt-3 d-flex justify-center flex-wrap gap-2"
+            class="onboarding-consent-actions"
           >
-            <v-chip
-              color="primary"
-              variant="elevated"
-              class="mr-3"
+            <button
+              type="button"
+              class="onboarding-chip onboarding-chip--solid"
               :disabled="consentBusy || captchaVerifying"
               @click="onConsentYes"
             >
               {{ $t("onboarding.yes") }}
-            </v-chip>
+            </button>
 
-            <v-chip
-              variant="outlined"
-              class="mr-3"
+            <button
+              type="button"
+              class="onboarding-chip onboarding-chip--outline"
               :disabled="consentBusy || captchaVerifying"
               @click="onConsentNo"
             >
               {{ $t("onboarding.no") }}
-            </v-chip>
+            </button>
 
-            <v-chip
-              variant="outlined"
+            <button
+              type="button"
+              class="onboarding-chip onboarding-chip--outline"
               :disabled="consentBusy || captchaVerifying"
               @click="onLogin"
             >
               {{ $t("onboarding.alreadyAccount") }}
-            </v-chip>
+            </button>
           </div>
 
           <ClientOnly>
             <div
               v-if="showCaptcha"
-              class="mt-3 d-flex flex-column align-center"
+              class="onboarding-captcha"
             >
               <TurnstileWidget
                 :site-key="captchaSiteKey"
@@ -131,10 +130,10 @@
                 @expired="onCaptchaExpired"
                 @error="onCaptchaError"
               />
-              <div class="text-caption text-medium-emphasis mt-2 text-center">
+              <div class="onboarding-caption onboarding-caption--center">
                 {{ $t("onboarding.captchaPrompt") }}
               </div>
-              <div v-if="captchaError" class="text-caption text-error mt-1">
+              <div v-if="captchaError" class="onboarding-caption onboarding-caption--error">
                 {{ captchaError }}
               </div>
             </div>
@@ -143,8 +142,8 @@
       </div>
     </div>
 
-    <div class="mt-2">
-      <div v-if="!canSend" class="text-caption mt-1">
+    <div class="onboarding-footer">
+      <div v-if="!canSend" class="onboarding-caption">
         {{
           authStatus === "guest" || authStatus === "onboarding"
             ? $t("onboarding.finishProfileNotice")
@@ -540,6 +539,9 @@ function onCaptchaError() {
 
 <style scoped>
 .onboarding-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   color: #e2e8f0;
   background: rgba(15, 23, 42, 0.55);
   border: none;
@@ -547,20 +549,138 @@ function onCaptchaError() {
   padding: 4px 6px;
 }
 
-.onboarding-shell .text-caption,
-.onboarding-shell .text-body-1,
-.onboarding-shell .text-body-2 {
-  color: #cbd5e1 !important;
+.onboarding-scroll {
+  flex: 1 1 auto;
+  overflow: auto;
 }
 
-.onboarding-shell :deep(.bg-grey-lighten-3) {
-  background: #334155 !important;
-  color: #e2e8f0 !important;
+.onboarding-finalizing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 1.5rem;
+  text-align: center;
 }
 
-.onboarding-shell :deep(.bg-primary) {
-  background: #2563eb !important;
-  color: #ffffff !important;
+.onboarding-spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 3px solid rgba(96, 165, 250, 0.22);
+  border-top-color: #60a5fa;
+  animation: onboarding-spin 0.85s linear infinite;
+  margin-bottom: 0.75rem;
+}
+
+.onboarding-finalizing__title,
+.handoff-reveal__name {
+  color: #e2e8f0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.onboarding-finalizing__body,
+.handoff-reveal__label,
+.onboarding-caption {
+  color: #cbd5e1;
+  font-size: 0.875rem;
+}
+
+.onboarding-finalizing__body {
+  margin-top: 0.25rem;
+}
+
+.handoff-reveal__label {
+  margin-bottom: 0.5rem;
+}
+
+.handoff-reveal__name {
+  margin-top: 0.75rem;
+}
+
+.onboarding-bubble {
+  color: #e2e8f0;
+}
+
+.onboarding-bubble--bot {
+  background: #334155;
+}
+
+.onboarding-bubble--me {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.onboarding-chip-row,
+.onboarding-consent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.onboarding-chip-row {
+  margin-top: 0.5rem;
+}
+
+.onboarding-consent-actions {
+  margin-top: 0.75rem;
+  justify-content: center;
+}
+
+.onboarding-chip {
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.onboarding-chip:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.onboarding-chip--solid {
+  border: 1px solid transparent;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.onboarding-chip--outline {
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  background: rgba(37, 99, 235, 0.1);
+  color: #bfdbfe;
+}
+
+.onboarding-chip--solid:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.onboarding-chip--outline:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.18);
+}
+
+.onboarding-captcha {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.onboarding-caption--center {
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.onboarding-caption--error {
+  margin-top: 0.25rem;
+  color: #fca5a5;
+}
+
+.onboarding-footer {
+  margin-top: 0.5rem;
 }
 
 .dot {
@@ -637,7 +757,21 @@ function onCaptchaError() {
 }
 
 .handoff-reveal__avatar {
+  width: 72px;
+  height: 72px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 999px;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.3);
+}
+
+.handoff-reveal__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .handoff-reveal__fallback {
@@ -660,6 +794,12 @@ function onCaptchaError() {
   }
   40% {
     opacity: 1;
+  }
+}
+
+@keyframes onboarding-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

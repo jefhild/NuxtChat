@@ -1,74 +1,138 @@
 <template>
-  <v-row dense>
-    <transition-group name="fade">
-      <v-col v-for="profile in displayedProfiles" :key="profile.user_id" cols="6" xs="6" sm="6" md="4" lg="3"
-        class="d-flex justify-center pa-4">
-        <NuxtLink :to="localPath(`/profiles/${profile.gender?.toLowerCase()}/${
-          profile.slug
-        }`)" class="text-decoration-none d-flex justify-center">
-          <v-card :class="[
-            'profile-card text-center d-flex flex-column justify-end',
+  <div class="profile-grid">
+    <TransitionGroup name="fade" tag="div" class="profile-grid__items">
+      <div
+        v-for="profile in displayedProfiles"
+        :key="profile.user_id"
+        class="profile-grid__item"
+      >
+        <article
+          :class="[
+            'profile-grid-card',
             profile.marked_for_deletion_at ? 'marked-for-deletion' : '',
-          ]" elevation="2" :style="{
+          ]"
+          :style="{
             backgroundImage: `url(${
               profile.avatar_url || '/images/avatars/male_placeholder.png'
             })`,
-          }">
-            <div class="overlay mb-2">
-              <v-row class="d-flex justify-center align-center text-center flex-column px-2 mb-2">
-                <div class="font-weight-bold text-white text-truncate">
-                  {{ displayNameFor(profile) }}
-                </div>
-                <div v-if="taglineFor(profile)" class="tagline text-white text-caption mt-1 text-truncate">
-                  {{ taglineFor(profile) }}
-                </div>
-                <div v-if="profile.upvote_count" class="text-white d-flex align-center justify-center mt-1">
-                  <v-icon size="16" class="mr-1" color="yellow">mdi-thumb-up</v-icon>
-                  <span class="text-caption">{{ profile.upvote_count }}</span>
-                </div>
-              </v-row>
+          }"
+        >
+          <NuxtLink
+            :to="profilePath(profile)"
+            class="profile-grid-card__link"
+            :aria-label="displayNameFor(profile)"
+          />
 
-              <v-row class="d-flex justify-center align-center">
-                <div v-if="profile.marked_for_deletion_at" class="mb-5 text-white">
-                  <div>{{ timeLeft(refreshTime) }}</div>
-                  <v-btn size="x-small" color="green" @click.stop.prevent="unmarkDeletion(profile)">
-                    Undo Deletion
-                  </v-btn>
-                </div>
-
-                <v-btn v-if="allowDelete && !profile.marked_for_deletion_at" color="red" class="overlay mb-5"
-                  @click.stop.prevent="openDeleteDialog(profile)">
-                  Delete
-                </v-btn>
-              </v-row>
+          <div class="overlay profile-grid-card__content">
+            <div class="profile-grid-card__summary">
+              <div class="profile-grid-card__name">
+                {{ displayNameFor(profile) }}
+              </div>
+              <div v-if="taglineFor(profile)" class="tagline profile-grid-card__tagline">
+                {{ taglineFor(profile) }}
+              </div>
+              <div
+                v-if="profile.upvote_count"
+                class="profile-grid-card__upvotes"
+              >
+                <i
+                  class="mdi mdi-thumb-up profile-grid-card__upvote-icon"
+                  aria-hidden="true"
+                />
+                <span class="profile-grid-card__upvote-count">
+                  {{ profile.upvote_count }}
+                </span>
+              </div>
             </div>
 
-          </v-card>
-        </NuxtLink>
-      </v-col>
-    </transition-group>
-  </v-row>
+            <div class="profile-grid-card__actions">
+              <div
+                v-if="profile.marked_for_deletion_at"
+                class="profile-grid-card__deletion"
+              >
+                <div>{{ timeLeft(refreshTime) }}</div>
+                <button
+                  type="button"
+                  class="profile-grid-card__action-btn profile-grid-card__action-btn--success"
+                  @click.stop.prevent="unmarkDeletion(profile)"
+                >
+                  Undo Deletion
+                </button>
+              </div>
 
-  <v-row ref="infiniteScrollTrigger" v-if="props.limit && loadedCount < props.profiles.length"/>
+              <button
+                v-else-if="allowDelete"
+                type="button"
+                class="profile-grid-card__action-btn profile-grid-card__action-btn--danger"
+                @click.stop.prevent="openDeleteDialog(profile)"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </TransitionGroup>
 
-  <v-dialog v-model="confirmDeleteDialog" max-width="400px" transition="dialog-transition">
-    <v-card>
-      <v-card-title class="headline">Confirm Deletion</v-card-title>
+    <div
+      v-if="props.limit && loadedCount < props.profiles.length"
+      ref="infiniteScrollTrigger"
+      class="profile-grid__sentinel"
+      aria-hidden="true"
+    />
 
-      <v-card-text>Are you sure you want to delete this user?</v-card-text>
-
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="grey" text @click="confirmDeleteDialog = false">Cancel</v-btn>
-        <v-btn color="red" text @click="confirmDelete">Delete</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="confirmDeleteDialog"
+          class="profile-grid-dialog"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="profile-grid-dialog__scrim"
+            aria-label="Close delete confirmation"
+            @click="confirmDeleteDialog = false"
+          />
+          <div
+            class="profile-grid-dialog__panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profile-grid-delete-title"
+          >
+            <h2 id="profile-grid-delete-title" class="profile-grid-dialog__title">
+              Confirm Deletion
+            </h2>
+            <p class="profile-grid-dialog__body">
+              Are you sure you want to delete this user?
+            </p>
+            <div class="profile-grid-dialog__actions">
+              <button
+                type="button"
+                class="profile-grid-dialog__btn profile-grid-dialog__btn--secondary"
+                @click="confirmDeleteDialog = false"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="profile-grid-dialog__btn profile-grid-dialog__btn--danger"
+                @click="confirmDelete"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
 import { useI18n } from "vue-i18n";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
+
 const localPath = useLocalePath();
 const { locale } = useI18n();
 const props = defineProps({
@@ -82,7 +146,7 @@ const props = defineProps({
   },
   limit: {
     type: Number,
-    default: null, // No limit unless specified
+    default: null,
   },
 });
 
@@ -90,11 +154,10 @@ const emit = defineEmits(["user-deleted"]);
 
 const { markUserForDeletion, unmarkUserForDeletion } = useDb();
 
-const loadedCount = ref(props.limit || 12); // Start with 8
-const batchSize = 12; // How many to load each time
-
+const loadedCount = ref(props.limit || 12);
+const batchSize = 12;
 const displayedProfiles = computed(() =>
-props.limit ? props.profiles.slice(0, loadedCount.value) : props.profiles
+  props.limit ? props.profiles.slice(0, loadedCount.value) : props.profiles
 );
 
 const displayNameFor = (profile) =>
@@ -109,21 +172,28 @@ const taglineFor = (profile) =>
     readerLocale: locale?.value,
   }).tagline || profile?.tagline || "";
 
+const profilePath = (profile) =>
+  localPath(`/profiles/${profile.gender?.toLowerCase()}/${profile.slug}`);
+
 const infiniteScrollTrigger = ref(null);
+const allowDelete = ref(props.delete);
+const confirmDeleteDialog = ref(false);
+const userToDelete = ref(null);
+const refreshTime = ref(Date.now());
+let refreshTimer = null;
+let observer = null;
 
 function loadMoreProfiles() {
   if (loadedCount.value < props.profiles.length) {
-    loadedCount.value = Math.min(loadedCount.value + batchSize, props.profiles.length);
+    loadedCount.value = Math.min(
+      loadedCount.value + batchSize,
+      props.profiles.length
+    );
   }
 }
 
-const allowDelete = ref(props.delete);
-
-const confirmDeleteDialog = ref(false);
-const userToDelete = ref(null);
-
 function timeLeft(refreshTrigger) {
-  const now = new Date(refreshTrigger); // Use the refresh trigger to get the current time and so vue tracks it
+  const now = new Date(refreshTrigger);
   const midnight = new Date(now);
   midnight.setHours(23, 59, 59, 999);
 
@@ -145,9 +215,7 @@ async function confirmDelete() {
   if (!userToDelete.value) return;
 
   await markUserForDeletion(userToDelete.value.user_id);
-
-  emit("user-deleted", userToDelete.value.user_id); // Emit the event to parent component
-
+  emit("user-deleted", userToDelete.value.user_id);
   confirmDeleteDialog.value = false;
 }
 
@@ -155,101 +223,276 @@ async function unmarkDeletion(profile) {
   try {
     await unmarkUserForDeletion(profile.user_id);
     profile.marked_for_deletion_at = null;
-    console.log("User unmarked successfully!");
   } catch (err) {
     console.error("Error unmarking user:", err);
   }
 }
 
-//So that it can be updated every minute
 onMounted(() => {
-  // console.log("Mounted", props.profiles);
-  setInterval(() => {
+  refreshTimer = window.setInterval(() => {
     refreshTime.value = Date.now();
-  }, 60000); // 1 minute
+  }, 60000);
 
-  if(!props.limit) {
-    return;   //so that there isnt infinite for the adlin profilegrid
-  } 
+  if (!props.limit || !infiniteScrollTrigger.value) return;
 
-  const observer = new IntersectionObserver(
+  observer = new IntersectionObserver(
     (entries) => {
-      if (entries[0].isIntersecting) {
+      if (entries[0]?.isIntersecting) {
         loadMoreProfiles();
       }
     },
-    { rootMargin: "100px" } // Trigger a bit before it's in view
+    { rootMargin: "100px" }
   );
 
-  if (infiniteScrollTrigger.value) {
-    observer.observe(infiniteScrollTrigger.value.$el || infiniteScrollTrigger.value);
-  }
-
-  onUnmounted(() => {
-    observer.disconnect();
-  });
+  observer.observe(infiniteScrollTrigger.value);
 });
 
-const refreshTime = ref(Date.now());
+onBeforeUnmount(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+  }
+  observer?.disconnect();
+});
 </script>
 
 <style scoped>
-.profile-card {
+.profile-grid__items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  justify-items: center;
+}
+
+.profile-grid__item {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-grid-card {
   width: 180px;
   max-width: 100%;
   height: 220px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 15px;
   background-size: cover;
   background-position: center;
-  position: relative;
-  cursor: pointer;
   transition: transform 0.2s ease;
-  border-radius: 15px;
+  box-shadow: 0 10px 28px rgb(var(--color-shadow) / 0.18);
 }
 
-/* reduce the width and height of the profile card for mobiles*/
-@media (max-width: 600px) {
-  .profile-card {
-    width: 150px;
-    height: 200px;
-  }
-}
-
-.profile-card:hover {
+.profile-grid-card:hover {
   transform: scale(1.03);
 }
 
-.profile-card::before {
+.profile-grid-card::before {
   content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   background: rgba(0, 0, 0, 0.15);
+}
+
+.profile-grid-card__link {
   position: absolute;
   inset: 0;
   z-index: 1;
-  border-radius: 8px;
 }
 
-.tagline {
-  max-width: 160px;
+.profile-grid-card__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.profile-grid-card__summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-grid-card__name {
+  max-width: 100%;
+  color: #fff;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.overlay {
-  z-index: 2;
-  position: relative;
+.profile-grid-card__tagline {
+  margin-top: 0.25rem;
 }
 
-.clickable-link {
-  cursor: pointer;
-  text-decoration: none;
+.profile-grid-card__upvotes {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  color: #fff;
 }
+
+.profile-grid-card__upvote-icon {
+  color: #facc15;
+  font-size: 1rem;
+}
+
+.profile-grid-card__upvote-count {
+  font-size: 0.75rem;
+}
+
+.profile-grid-card__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+.profile-grid-card__deletion {
+  color: #fff;
+}
+
+.profile-grid-card__action-btn {
+  position: relative;
+  z-index: 3;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.profile-grid-card__action-btn--success {
+  margin-top: 0.4rem;
+  background: #16a34a;
+}
+
+.profile-grid-card__action-btn--danger {
+  background: #dc2626;
+}
+
+.profile-grid__sentinel {
+  height: 1px;
+}
+
+.tagline {
+  max-width: 160px;
+  color: #fff;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .marked-for-deletion {
   border: 2px solid red;
   box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
 }
 
+.profile-grid-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 2600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
 
-/*Transition group*/
+.profile-grid-dialog__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.56);
+}
+
+.profile-grid-dialog__panel {
+  position: relative;
+  z-index: 1;
+  width: min(400px, 94vw);
+  border-radius: 18px;
+  border: 1px solid rgb(var(--color-border) / 0.75);
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  box-shadow: 0 24px 60px rgb(var(--color-shadow) / 0.26);
+  padding: 20px;
+}
+
+.profile-grid-dialog__title {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.profile-grid-dialog__body {
+  margin: 0;
+  color: rgb(var(--color-foreground) / 0.8);
+}
+
+.profile-grid-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.profile-grid-dialog__btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.profile-grid-dialog__btn--secondary {
+  background: rgb(var(--color-foreground) / 0.06);
+  color: rgb(var(--color-foreground));
+}
+
+.profile-grid-dialog__btn--danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+@media (min-width: 960px) {
+  .profile-grid__items {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .profile-grid__items {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-grid__items {
+    gap: 1rem;
+  }
+
+  .profile-grid-card {
+    width: 150px;
+    height: 200px;
+  }
+
+  .profile-grid-dialog__actions {
+    flex-direction: column;
+  }
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.4s ease;

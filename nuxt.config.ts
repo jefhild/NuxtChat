@@ -1,5 +1,4 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 import { getAllDynamicRoutes } from "./composables/useDynamicRoutes";
 import { landingPageSlugs } from "./config/landingPageSlugs";
 
@@ -14,7 +13,11 @@ export default defineNuxtConfig({
     viteEnvironmentApi: false,
   },
 
-  css: ["@mdi/font/css/materialdesignicons.css", "@/assets/css/util.css"],
+  css: [
+    "@mdi/font/css/materialdesignicons.css",
+    "@/assets/css/tailwind.css",
+    "@/assets/css/util.css",
+  ],
 
   app: {
     head: {
@@ -33,21 +36,12 @@ export default defineNuxtConfig({
     },
   },
 
-  build: {
-    transpile: ["vuetify"],
-  },
-
   modules: [
-    (_options, nuxt) => {
-      nuxt.hooks.hook("vite:extendConfig", (config) => {
-        // @ts-expect-error
-        config.plugins.push(vuetify({ autoImport: true }));
-      });
-    },
     "@nuxtjs/supabase",
     "@nuxt/eslint",
     "@pinia/nuxt",
     "@nuxt/image",
+    "@nuxtjs/tailwindcss",
     "@nuxtjs/google-fonts",
     "@nuxtjs/seo",
     // "nuxt-site-config",
@@ -212,14 +206,6 @@ export default defineNuxtConfig({
               process.env.SUPABASE_URL.split("//")[1].split(".")[0]
             }-auth-token`
           : "sb-auth-token",
-      },
-    },
-  },
-
-  vite: {
-    vue: {
-      template: {
-        transformAssetUrls,
       },
     },
   },

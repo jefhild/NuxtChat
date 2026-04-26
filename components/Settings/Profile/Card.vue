@@ -1,57 +1,48 @@
 <template>
-  <v-card
+  <div
     v-if="profile"
-    class="pa-2 mb-2 d-flex align-center"
-    flat
-    hover
-    @click="goToProfile(profile.gender_id, profile.user_id)"
+    class="settings-profile-list-card mb-2 rounded-xl px-3 py-3"
     style="cursor: pointer"
+    @click="goToProfile(profile.gender_id, profile.user_id)"
   >
-    <!-- Avatar with overlaid icon and decoration-->
-    <div class="avatar-wrapper mr-3">
-      <NuxtImg
-        :src="getProfileImage(profile.avatar_url, profile.gender_id)"
-        width="50"
-        height="50"
-        class="rounded-circle cover-image"
-        :alt="`${profile.displayname} image`"
-      />
-      <v-icon
-        :icon="getAvatarIcon(profile.gender_id)"
-        size="17"
-        class="icon-overlay"
-        :style="{ '--profile-card-gender-color': getGenderHexColor(profile.gender_id) }"
-      />
-
-    </div>
-
-    <!-- Info -->
-    <div class="flex-grow-1">
-      <div class="font-weight-medium text-truncate">
-        <span class="text-medium-emphasis font-weight-medium">
-          {{ profile.displayname }} ({{ profile.age }})
-        </span>
-      </div>
-      <div class="text-body-2 text-truncate">
-        {{ profile.country }} {{ profile.country_emoji }}
-      </div>
-    </div>
-    
-    <v-tooltip :text="tooltipText" location="top">
-      <template #activator="{ props: tooltipProps }">
-        <v-btn
-          v-if="hideUn"
-          v-bind="tooltipProps"
-          :icon="icon"
-          variant="plain"
-          color="red"
-          size="small"
-          @click.stop="handleClick()"
-          class="ml-2"
+    <div class="settings-profile-list-row">
+      <div class="avatar-wrapper shrink-0">
+        <NuxtImg
+          :src="getProfileImage(profile.avatar_url, profile.gender_id)"
+          width="50"
+          height="50"
+          class="rounded-circle cover-image"
+          :alt="`${profile.displayname} image`"
         />
-      </template>
-    </v-tooltip>
-  </v-card>
+        <i
+          :class="['mdi', getAvatarIcon(profile.gender_id), 'icon-overlay']"
+          class="icon-overlay"
+          :style="{ '--profile-card-gender-color': getGenderHexColor(profile.gender_id) }"
+          aria-hidden="true"
+        />
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <div class="text-medium-emphasis font-weight-medium text-truncate">
+          {{ profile.displayname }} ({{ profile.age }})
+        </div>
+        <div class="text-body-2 text-truncate">
+          {{ profile.country }} {{ profile.country_emoji }}
+        </div>
+      </div>
+
+      <button
+        v-if="hideUn"
+        type="button"
+        class="profile-card-action shrink-0"
+        :title="tooltipText"
+        :aria-label="tooltipText"
+        @click.stop="handleClick()"
+      >
+        <i :class="['mdi', icon, 'profile-card-action__icon']" aria-hidden="true" />
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -106,14 +97,34 @@ const handleClick = () => {
 </script>
 
 <style scoped>
+.settings-profile-list-card {
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: rgb(var(--color-surface) / 0.96);
+  color: rgb(var(--color-foreground));
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.settings-profile-list-card:hover {
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.settings-profile-list-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+}
+
 .cover-image {
   object-fit: cover;
+  display: block;
 }
 
 .avatar-wrapper {
   position: relative;
   width: 50px;
   height: 50px;
+  display: block;
 }
 
 .icon-overlay {
@@ -121,10 +132,34 @@ const handleClick = () => {
   bottom: 0;
   left: 0;
   transform: translate(-30%, -30%);
-  background-color: white;
+  background-color: rgb(var(--color-surface));
   color: var(--profile-card-gender-color, #a855f7) !important;
   border-radius: 9999px;
   padding: 2px;
   z-index: 2;
+  font-size: 17px;
+  line-height: 1;
 }
+
+.profile-card-action {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--color-danger));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-card-action:hover {
+  background: rgb(var(--color-danger) / 0.08);
+}
+
+.profile-card-action__icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
 </style>

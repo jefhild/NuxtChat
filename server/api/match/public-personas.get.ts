@@ -18,10 +18,21 @@ import {
 
 const parseBooleanQuery = (value: unknown) =>
   ["1", "true", "yes", "on"].includes(String(value || "").trim().toLowerCase());
+const PUBLIC_PERSONA_LIMIT = 24;
+const LANGUAGE_PRACTICE_FETCH_LIMIT = 120;
+
+const normalizeSignalQuery = (value: unknown): string | null => {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized || null;
+};
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const languagePracticeOnly = parseBooleanQuery(query.languagePracticeOnly);
+  const selectedEmotion = normalizeSignalQuery(query.emotion);
+  const selectedIntent = normalizeSignalQuery(query.intent);
+  const selectedEnergy = normalizeSignalQuery(query.energy);
+  const hasSelectedMood = !!(selectedEmotion || selectedIntent || selectedEnergy);
   const supabase = await getServiceRoleClient(event);
 
   let personasQuery = supabase
@@ -40,7 +51,7 @@ export default defineEventHandler(async (event) => {
     `)
     .eq("is_active", true)
     .eq("list_publicly", true)
-    .limit(24);
+    .limit(languagePracticeOnly ? LANGUAGE_PRACTICE_FETCH_LIMIT : PUBLIC_PERSONA_LIMIT);
 
   if (!languagePracticeOnly) {
     personasQuery = personasQuery.eq("honey_enabled", false);
@@ -120,5 +131,23 @@ export default defineEventHandler(async (event) => {
       };
     });
 
-  return { personas };
+  const scorePersona = (persona: any) => {
+    let score = 0;
+    if (selectedEmotion && persona.emotion === selectedEmotion) score += 1;
+    if (selectedIntent && persona.intent === selectedIntent) score += 2;
+    if (selectedEnergy && persona.energy === selectedEnergy) score += 1;
+    return score;
+  };
+
+  const rankedPersonas = hasSelectedMood
+    ? (() => {
+        const scored = personas.map((persona) => ({ persona, score: scorePersona(persona) }));
+        const positive = scored.filter((entry) => entry.score > 0);
+        return (positive.length ? positive : scored)
+          .sort((a, b) => b.score - a.score)
+          .map((entry) => entry.persona);
+      })()
+    : personas;
+
+  return { personas: rankedPersonas.slice(0, PUBLIC_PERSONA_LIMIT) };
 });

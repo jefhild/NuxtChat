@@ -1,75 +1,64 @@
 <template>
-  <div class="chat-layout-root d-flex flex-column flex-grow-1 min-h-0">
-    <v-container fluid class="d-flex flex-column flex-grow-1 min-h-0 pa-0">
+  <div class="chat-layout-root">
+    <div class="chat-layout-shell">
       <!-- Mobile controls: left drawer (Topics) + right drawer (Participants) -->
       <div
-        v-if="showMobileControls"
-        class="d-md-none d-flex align-center justify-space-between px-2 py-1 chat-mobile-controls"
+        v-if="showMobileControls && isMobileLayout"
+        class="chat-mobile-controls"
       >
-        <v-btn
-          icon
-          variant="text"
+        <button
+          type="button"
+          class="chat-mobile-toggle"
           :class="{ 'chat-mobile-toggle--alert': showMobileUnreadAlert }"
           @click="leftOpen = true"
           aria-label="Show online participants"
+          title="Show online participants"
         >
-          <v-icon color="green-darken-2">mdi-account-multiple-outline</v-icon>
-        </v-btn>
-        <v-spacer />
-        <v-btn
-          icon
-          variant="text"
+          <i class="mdi mdi-account-multiple-outline chat-mobile-toggle__icon chat-mobile-toggle__icon--online" aria-hidden="true" />
+        </button>
+        <div class="chat-mobile-controls__spacer" />
+        <button
+          type="button"
+          class="chat-mobile-toggle"
           :class="{ 'chat-mobile-toggle--alert': showMobileActiveAlert }"
           @click="rightOpen = true"
           aria-label="Show active chat participants"
+          title="Show active chat participants"
         >
-          <v-icon color="blue-lighten-2">mdi-chat-processing-outline</v-icon>
-        </v-btn>
+          <i class="mdi mdi-chat-processing-outline chat-mobile-toggle__icon chat-mobile-toggle__icon--active" aria-hidden="true" />
+        </button>
       </div>
       <!-- Desktop / tablet (>= md): 3 columns -->
-      <v-row
+      <div
         v-if="!isMobileLayout"
-        class="chat-grid-row flex-grow-1 overflow-hidden min-h-0 ma-0"
-        no-gutters
+        class="chat-grid-row"
       >
         <!-- LEFT: Topics -->
-          <v-col
-            cols="12"
-            md="3"
-            class="px-2 pt-0 pb-0 d-flex flex-column overflow-hidden min-h-0"
-          >
-          <v-card flat class="chat-pane-card d-flex flex-column flex-grow-1 min-h-0">
-            <div
-              ref="leftScrollRef"
-              class="flex-grow-1 overflow-auto min-h-0 users-scroll"
-              style="flex: 1 1 0"
-            >
-              <ChatLayoutUsers
-                v-if="tabVisibility.online"
-                list-type="online"
-                :users="usersWithPresence"
-                :pinnedId="IMCHATTY_ID"
-                :activeChats="activeChats"
-                :language-practice-chat-ids="languagePracticeSessionUserIds"
-                :selectedUserId="selectedUserId"
-                :isLoading="isLoading"
-                :user-profile="userProfile"
-                :auth-status="auth.authStatus"
-                :disable-filter-toggle="shouldDisableToggle"
-                :show-ai="showAIUsers"
-                :show-language-practice-ai="showLanguagePracticeAIUsers"
-                :suppress-match-strip="suppressMatchStrip"
-                @user-selected="selectUser"
-                @filter-changed="updateFilters"
-                @activate-language-practice="activateLanguagePracticeChat"
-                @update:showAi="showAIUsers = $event"
-                @update:showLanguagePracticeAi="showLanguagePracticeAIUsers = $event"
-              />
-            </div>
-          </v-card>
+        <div class="chat-desktop-col chat-desktop-col--left">
+          <ChatLayoutUsersPane
+            :list-visible="tabVisibility.online"
+            list-type="online"
+            :users="usersWithPresence"
+            :pinned-id="IMCHATTY_ID"
+            :active-chats="activeChats"
+            :language-practice-chat-ids="languagePracticeSessionUserIds"
+            :selected-user-id="selectedUserId"
+            :is-loading="isLoading"
+            :user-profile="userProfile"
+            :auth-status="auth.authStatus"
+            :disable-filter-toggle="shouldDisableToggle"
+            :show-ai="showAIUsers"
+            :show-language-practice-ai="showLanguagePracticeAIUsers"
+            :suppress-match-strip="suppressMatchStrip"
+            @user-selected="selectUser"
+            @filter-changed="updateFilters"
+            @activate-language-practice="activateLanguagePracticeChat"
+            @update:show-ai="showAIUsers = $event"
+            @update:show-language-practice-ai="showLanguagePracticeAIUsers = $event"
+          />
 
           <ClientOnly>
-            <div v-if="consentPanelVisible" class="d-none d-md-block mt-1">
+            <div v-if="consentPanelVisible" class="chat-consent-panel-wrap">
               <ChatLayoutConsentPanel
                 :auth-status="auth.authStatus"
                 :user-profile="userProfile"
@@ -79,381 +68,86 @@
               />
             </div>
           </ClientOnly>
-        </v-col>
+        </div>
 
         <!-- CENTER: Thread messages -->
-        <v-col
-          cols="12"
-          :md="activePanelOpen ? 7 : 9"
-          class="chat-thread-col pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
+        <div
+          class="chat-desktop-col chat-thread-col"
+          :class="activePanelOpen ? 'chat-thread-col--with-active' : 'chat-thread-col--full'"
         >
           <div class="active-panel-rail">
-            <v-tooltip text="Active chats" location="left">
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  icon
-                  variant="text"
-                  size="x-small"
-                  class="active-panel-toggle"
-                  :class="{ 'active-panel-toggle--alert': showActivePanelAlert }"
-                  :aria-expanded="String(activePanelOpen)"
-                  aria-controls="active-panel"
-                  aria-label="Toggle active chats panel"
-                  @click="activePanelOpen = !activePanelOpen"
-                >
-                  <v-icon
-                    :icon="
-                      activePanelOpen ? 'mdi-chevron-right' : 'mdi-chevron-left'
-                    "
-                  />
-                </v-btn>
-              </template>
-            </v-tooltip>
-          </div>
-          <!-- Sticky header -->
-          <div class="messages-sticky-header d-none d-md-block">
             <button
-              class="profile-header profile-header-toggle px-4 py-3 d-flex align-center justify-space-between"
               type="button"
-              :disabled="!selectedUser"
-              :aria-expanded="String(panelOpen)"
-              aria-controls="thread-info-panel"
-              @click="panelOpen = !panelOpen"
+              class="active-panel-toggle"
+              :class="{ 'active-panel-toggle--alert': showActivePanelAlert }"
+              :aria-expanded="String(activePanelOpen)"
+              aria-controls="active-panel"
+              aria-label="Toggle active chats panel"
+              title="Active chats"
+              @click="activePanelOpen = !activePanelOpen"
             >
-              <div class="d-flex align-center profile-header-left">
-                <div class="selected-avatar-wrap">
-                  <v-avatar size="50" color="primary" variant="tonal">
-                    <v-img
-                      v-if="selectedUser && selectedUser.avatar_url"
-                      :src="selectedUser.avatar_url"
-                      cover
-                    />
-                    <span
-                      v-else
-                      class="avatar-fallback text-body-2 font-weight-medium"
-                    >
-                      {{ selectedUserInitial }}
-                    </span>
-                  </v-avatar>
-                  <v-img
-                    v-if="selectedUserAvatarDecorationUrl"
-                    :src="selectedUserAvatarDecorationUrl"
-                    class="selected-avatar-decoration"
-                    contain
-                  />
-                  <span
-                    v-if="selectedUserFlagEmoji"
-                    class="selected-avatar-flag"
-                  >
-                    {{ selectedUserFlagEmoji }}
-                  </span>
-                  <v-icon
-                    v-if="selectedUser"
-                    size="20"
-                    class="selected-avatar-gender"
-                    :class="selectedUserGenderClass"
-                    :style="{ '--selected-gender-color': selectedUserGenderColor }"
-                  >
-                    {{ selectedUserGenderIcon }}
-                  </v-icon>
-                </div>
-                <div class="min-w-0 ml-3">
-                  <div
-                    :class="[
-                      'profile-header-title text-subtitle-1 font-weight-medium',
-                      { 'text-truncate': smAndDown },
-                    ]"
-                  >
-                    {{ selectedUserTitle }}
-                  </div>
-                  <div
-                    :class="[
-                      'profile-header-subtitle text-body-2 text-medium-emphasis',
-                      { 'text-truncate': smAndDown },
-                    ]"
-                  >
-                    {{ selectedUserSubtitle }}
-                  </div>
-                </div>
-              </div>
-
-              <div class="d-flex align-center profile-header-actions">
-                <v-chip
-                  v-if="selectedUser"
-                  size="small"
-                  :color="selectedUserPresenceColor"
-                  variant="flat"
-                  class="font-weight-medium mr-2"
-                >
-                  <v-icon size="14" class="mr-1">
-                    {{ selectedUserPresenceIcon }}
-                  </v-icon>
-                  {{ selectedUserPresenceLabel }}
-                </v-chip>
-                <v-btn
-                  icon
-                  size="x-small"
-                  variant="text"
-                  :disabled="!selectedUser"
-                  :aria-expanded="String(panelOpen)"
-                  aria-controls="thread-info-panel"
-                  @click.stop="panelOpen = !panelOpen"
-                >
-                  <v-icon
-                    :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-                  />
-                </v-btn>
-              </div>
+              <i
+                :class="[
+                  'mdi',
+                  activePanelOpen ? 'mdi-chevron-right' : 'mdi-chevron-left',
+                  'active-panel-toggle__icon'
+                ]"
+                aria-hidden="true"
+              />
             </button>
           </div>
+          <!-- Sticky header -->
+          <div class="messages-sticky-header">
+            <ChatLayoutThreadHeader
+              :panel-open="panelOpen"
+              :selected-user="selectedUser"
+              :selected-user-initial="selectedUserInitial"
+              :selected-user-avatar-decoration-url="selectedUserAvatarDecorationUrl"
+              :selected-user-flag-emoji="selectedUserFlagEmoji"
+              :selected-user-gender-class="selectedUserGenderClass"
+              :selected-user-gender-color="selectedUserGenderColor"
+              :selected-user-gender-icon="selectedUserGenderIcon"
+              :selected-user-title="selectedUserTitle"
+              :selected-user-subtitle="selectedUserSubtitle"
+              :selected-user-presence-color="selectedUserPresenceColor"
+              :selected-user-presence-icon="selectedUserPresenceIcon"
+              :selected-user-presence-label="selectedUserPresenceLabel"
+              :sm-and-down="smAndDown"
+              @toggle="panelOpen = !panelOpen"
+            />
+          </div>
 
-          <!-- Overlay panel that drops over the scrollable list -->
-          <v-expand-transition>
-            <v-card
-              v-if="panelOpen"
-              id="thread-info-panel"
-              class="mx-1 thread-info-panel-card"
-              elevation="6"
-              :aria-hidden="String(!panelOpen)"
-            >
-              <div class="px-4 py-4">
-                <template v-if="selectedUser">
-                  <div
-                    v-if="selectedUserLocalized.tagline"
-                    class="text-body-1 font-italic mb-3 text-truncate profile-tagline"
-                    :title="selectedUserLocalized.tagline"
-                  >
-                    "{{ selectedUserLocalized.tagline }}"
-                  </div>
-
-                  <div
-                    v-if="selectedUserMeta.length"
-                    class="profile-meta-grid text-body-2 mb-3"
-                  >
-                    <div
-                      v-if="selectedUserPrimaryMetaItems.length"
-                      class="d-flex align-center flex-wrap mb-2 profile-meta-primary-row"
-                    >
-                      <div
-                        v-for="item in selectedUserPrimaryMetaItems"
-                        :key="item.key"
-                        class="d-flex align-center profile-meta-primary-item"
-                      >
-                        <v-icon
-                          size="18"
-                          class="mr-2 meta-icon"
-                          :class="item.color ? '' : 'text-medium-emphasis'"
-                          :style="item.color ? { color: item.color } : undefined"
-                        >
-                          {{ item.icon }}
-                        </v-icon>
-                        <span class="mr-1 profile-meta-label">
-                          {{ item.label }}:
-                        </span>
-                        <span class="profile-meta-value">
-                          <template v-if="item.key === 'gender'">
-                            {{ item.value }}
-                            <button
-                              class="profile-photo-count-link"
-                              type="button"
-                              :disabled="!selectedUserPhotoCount"
-                              @click.stop="openSelectedUserPhotosPanel"
-                            >
-                              ({{ selectedUserPhotoCountLabel }})
-                            </button>
-                          </template>
-                          <template v-else>{{ item.value }}</template>
-                        </span>
-                      </div>
-                    </div>
-                    <div
-                      v-for="item in selectedUserSecondaryMetaItems"
-                      :key="item.key"
-                      class="d-flex align-center mb-2"
-                    >
-                      <v-icon
-                        size="18"
-                        class="mr-2 meta-icon"
-                        :class="item.color ? '' : 'text-medium-emphasis'"
-                        :style="item.color ? { color: item.color } : undefined"
-                      >
-                        {{ item.icon }}
-                      </v-icon>
-                      <span class="mr-1 profile-meta-label">
-                        {{ item.label }}:
-                      </span>
-                      <span class="text-truncate profile-meta-value">{{ item.value }}</span>
-                    </div>
-                  </div>
-
-                  <div v-if="selectedUserPanelView === 'photos'" class="profile-photo-view mb-3">
-                    <div class="d-flex align-center justify-space-between mb-2">
-                      <span class="text-caption profile-meta-label">
-                        {{ selectedUserPhotoCount }} photos
-                      </span>
-                      <v-tooltip
-                        :text="t('components.chatheader.back-to-bio')"
-                        location="top"
-                      >
-                        <template #activator="{ props }">
-                          <v-btn
-                            v-bind="props"
-                            icon="mdi-arrow-left-circle-outline"
-                            size="small"
-                            variant="text"
-                            class="profile-photo-back-btn"
-                            :aria-label="t('components.chatheader.back-to-bio')"
-                            @click="selectedUserPanelView = 'bio'"
-                          />
-                        </template>
-                      </v-tooltip>
-                    </div>
-                    <v-skeleton-loader
-                      v-if="selectedUserPhotosLoading"
-                      type="image"
-                      class="profile-photo-skeleton"
-                    />
-                    <div
-                      v-else-if="selectedUserPhotoSlides.length"
-                      class="profile-photo-carousel-wrap"
-                      :class="{ 'is-locked': shouldBlurSelectedUserPhotos }"
-                    >
-                      <v-carousel
-                        height="210"
-                        hide-delimiters
-                        show-arrows="hover"
-                        :cycle="false"
-                      >
-                        <v-carousel-item
-                          v-for="photo in selectedUserPhotoSlides"
-                          :key="photo.id"
-                        >
-                          <v-img
-                            v-if="photo.url"
-                            :src="photo.url"
-                            cover
-                            class="profile-photo-image"
-                          />
-                          <div v-else class="profile-photo-fallback">
-                            No photo preview
-                          </div>
-                        </v-carousel-item>
-                      </v-carousel>
-                      <div
-                        v-if="shouldBlurSelectedUserPhotos"
-                        class="profile-photo-lock-overlay"
-                      >
-                        <v-icon size="18" class="mr-1">mdi-lock</v-icon>
-                        <button
-                          type="button"
-                          class="profile-photo-lock-link"
-                          @click.stop="openPhotoAccessFlow"
-                        >
-                          {{ lockedPhotoCtaLabel }}
-                        </button>
-                      </div>
-                    </div>
-                    <div v-else class="text-body-2 text-medium-emphasis">
-                      No approved photos yet.
-                    </div>
-                  </div>
-                  <div
-                    v-else-if="selectedUserLocalized.bio"
-                    class="profile-bio text-body-2 mb-3"
-                  >
-                    {{ selectedUserLocalized.bio }}
-                  </div>
-
-                  <div
-                    v-if="selectedUserInterests.length"
-                    class="profile-looking-for-row mb-3"
-                  >
-                    <v-chip
-                      v-for="interest in selectedUserInterests"
-                      :key="interest"
-                      size="small"
-                      variant="outlined"
-                      class="profile-looking-for-chip"
-                      :style="getLookingForChipStyle(interest)"
-                    >
-                      {{ interest }}
-                    </v-chip>
-                  </div>
-
-                  <div class="d-flex align-center flex-wrap gap-2">
-                    <v-btn
-                      v-if="selectedUser"
-                      size="small"
-                      variant="tonal"
-                      class="profile-view-btn"
-                      prepend-icon="mdi-account-box-outline"
-                      @click="openProfileDialog(selectedUser)"
-                    >
-                      View full profile
-                    </v-btn>
-                    <div class="d-flex align-center gap-2 ml-auto">
-                      <ButtonUpvote :profile="selectedUser" />
-                      <v-tooltip
-                        :text="t('components.chatheader.favorite-profile')"
-                        location="top"
-                      >
-                        <template #activator="{ props }">
-                          <span v-bind="props">
-                            <ButtonFavorite :profile="selectedUser" />
-                          </span>
-                        </template>
-                      </v-tooltip>
-                      <v-tooltip :text="blockTooltip" location="top">
-                        <template #activator="{ props }">
-                          <span v-bind="props">
-                            <v-btn
-                              :color="
-                                isSelectedUserBlocked
-                                  ? 'red darken-2'
-                                  : 'blue-lighten-2'
-                              "
-                              icon="mdi-cancel"
-                              size="small"
-                              variant="text"
-                              class="profile-action-btn profile-action-btn--block"
-                              :disabled="isBlockDisabled"
-                              aria-label="Block user"
-                              @click="toggleBlockSelectedUser"
-                            ></v-btn>
-                          </span>
-                        </template>
-                      </v-tooltip>
-                      <v-tooltip
-                        :text="t('components.chatheader.share-profile')"
-                        location="top"
-                      >
-                        <template #activator="{ props }">
-                          <span v-bind="props">
-                            <v-btn
-                              color="blue-grey-lighten-2"
-                              icon="mdi-share-variant"
-                              size="small"
-                              variant="text"
-                              class="profile-action-btn profile-action-btn--share"
-                              :disabled="!profileLink"
-                              aria-label="Share profile"
-                              @click="shareProfile"
-                            ></v-btn>
-                          </span>
-                        </template>
-                      </v-tooltip>
-                    </div>
-                  </div>
-                </template>
-                <template v-else>
-                  <div class="text-body-2 profile-empty-state">
-                    Select a user to view profile details.
-                  </div>
-                </template>
-              </div>
-            </v-card>
-          </v-expand-transition>
+            <!-- Overlay panel that drops over the scrollable list -->
+            <Transition name="chat-panel-expand">
+              <ChatLayoutThreadInfoPanel
+                :panel-open="panelOpen"
+                :selected-user="selectedUser"
+               :selected-user-localized="selectedUserLocalized"
+               :selected-user-meta="selectedUserMeta"
+               :selected-user-primary-meta-items="selectedUserPrimaryMetaItems"
+               :selected-user-secondary-meta-items="selectedUserSecondaryMetaItems"
+               :sm-and-down="smAndDown"
+               :selected-user-panel-view="selectedUserPanelView"
+               :selected-user-photo-count="selectedUserPhotoCount"
+               :selected-user-photo-count-label="selectedUserPhotoCountLabel"
+               :selected-user-photos-loading="selectedUserPhotosLoading"
+               :selected-user-photo-slides="selectedUserPhotoSlides"
+               :should-blur-selected-user-photos="shouldBlurSelectedUserPhotos"
+               :locked-photo-cta-label="lockedPhotoCtaLabel"
+               :selected-user-interests="selectedUserInterests"
+               :get-looking-for-chip-style="getLookingForChipStyle"
+               :block-tooltip="blockTooltip"
+               :is-selected-user-blocked="isSelectedUserBlocked"
+               :is-block-disabled="isBlockDisabled"
+               :profile-link="profileLink"
+               @open-photos="openSelectedUserPhotosPanel"
+               @view-bio="selectedUserPanelView = 'bio'"
+               @open-photo-access="openPhotoAccessFlow"
+               @open-profile="openProfileDialog(selectedUser)"
+                @toggle-block="toggleBlockSelectedUser"
+                @share-profile="shareProfile"
+              />
+            </Transition>
 
           <ChatLayoutLanguagePracticeBanner
             v-if="languagePracticeSession && selectedUserId"
@@ -464,17 +158,21 @@
           <!-- Scrollable messages list -->
           <div
             ref="centerScrollRef"
-            class="flex-grow-1 overflow-auto users-scroll min-h-0 px-1 py-2"
+            class="users-scroll chat-thread-scroll"
             style="flex: 1 1 0"
             @scroll.passive="onMobileScroll"
             @touchstart.passive="onMobileTouchStart"
             @touchmove.passive="onMobileTouchMove"
           >
-            <v-skeleton-loader
-              v-if="loadingMsgs"
-              type="list-item@6"
-              class="pa-2 chat-loading-skeleton"
-            />
+            <div v-if="loadingMsgs" class="chat-loading-skeleton" aria-hidden="true">
+              <div v-for="index in 6" :key="index" class="chat-loading-skeleton__row">
+                <span class="chat-loading-skeleton__avatar" />
+                <span class="chat-loading-skeleton__content">
+                  <span class="chat-loading-skeleton__line chat-loading-skeleton__line--primary" />
+                  <span class="chat-loading-skeleton__line chat-loading-skeleton__line--secondary" />
+                </span>
+              </div>
+            </div>
 
             <ChatLayoutOnboarding
               v-if="isPreAuth && isBotSelected"
@@ -486,7 +184,7 @@
               :isBotSelected="isBotSelected"
               :consented="draftStore?.consented ?? false"
               @send="onSend"
-              class="d-flex flex-column flex-grow-1 overflow-hidden"
+              class="chat-thread-fill"
             />
 
             <ChatLayoutRegular
@@ -501,28 +199,22 @@
               :show-quick-replies="showThreadQuickReplies"
               @quick-reply="onThreadQuickReply"
             />
-            <v-alert
+            <div
               v-else
-              type="info"
-              variant="tonal"
-              density="comfortable"
-              class="ma-2"
+              class="chat-inline-alert chat-inline-alert--info"
             >
               {{ t("components.message.composer.sign-in") }}
-            </v-alert>
+            </div>
           </div>
 
           <!-- Composer -->
-          <div class="chat-composer-wrap border-t pt-2" style="flex: 0 0 auto">
-            <v-alert
+          <div class="chat-composer-wrap" style="flex: 0 0 auto">
+            <div
               v-if="isSelectedUserBlocked"
-              type="warning"
-              variant="tonal"
-              density="comfortable"
-              class="mb-2"
+              class="chat-inline-alert chat-inline-alert--warning"
             >
               {{ t("components.message.composer.blocked") }}
-            </v-alert>
+            </div>
             <ChatLayoutMessageComposer
               v-model:draft="messageDraft"
               :peer-id="peerId"
@@ -530,407 +222,101 @@
               :conversation-key="conversationKey"
               :blocked-user-ids="blockedUsers"
               :language-practice-mode="Boolean(languagePracticeSession)"
-              class="w-100 mx-auto"
+              class="chat-composer"
               @send="onSend"
             />
           </div>
-        </v-col>
+        </div>
 
         <!-- RIGHT: Participants -->
-        <v-col
+        <div
           v-if="activePanelOpen"
-          cols="12"
-          md="2"
-          class="px-2 pt-0 pb-0 d-flex flex-column overflow-hidden min-h-0"
+          class="chat-desktop-col chat-desktop-col--right"
         >
-          <v-card
-            id="active-panel"
-            flat
-            class="chat-pane-card d-flex flex-column flex-grow-1 min-h-0 active-panel-card"
-          >
-            <div
-              ref="rightScrollRef"
-              class="flex-grow-1 overflow-auto min-h-0 users-scroll"
-              style="flex: 1 1 0"
-            >
-              <ChatLayoutUsers
-                v-if="tabVisibility.active"
-                list-type="active"
-                :users="usersWithPresence"
-                :pinnedId="IMCHATTY_ID"
-                :activeChats="activeChats"
-                :language-practice-chat-ids="languagePracticeSessionUserIds"
-                :selectedUserId="selectedUserId"
-                :isLoading="isLoading"
-                :user-profile="userProfile"
-                :auth-status="auth.authStatus"
-                :disable-filter-toggle="shouldDisableToggle"
-                :show-filters="false"
-                :show-ai="showAIUsers"
-                :show-language-practice-ai="showLanguagePracticeAIUsers"
-                @user-selected="selectUser"
-                @filter-changed="updateFilters"
-                @delete-chat="openDeleteDialog"
-                @activate-language-practice="activateLanguagePracticeChat"
-                @end-language-practice="endLanguagePracticeChat"
-                @view-profile="openProfileDialog"
-                @update:showAi="showAIUsers = $event"
-                @update:showLanguagePracticeAi="showLanguagePracticeAIUsers = $event"
-              />
-          </div>
-          </v-card>
-        </v-col>
-      </v-row>
+          <ChatLayoutUsersPane
+            pane-id="active-panel"
+            card-class="active-panel-card"
+            :list-visible="tabVisibility.active"
+            list-type="active"
+            :users="usersWithPresence"
+            :pinned-id="IMCHATTY_ID"
+            :active-chats="activeChats"
+            :language-practice-chat-ids="languagePracticeSessionUserIds"
+            :selected-user-id="selectedUserId"
+            :is-loading="isLoading"
+            :user-profile="userProfile"
+            :auth-status="auth.authStatus"
+            :disable-filter-toggle="shouldDisableToggle"
+            :show-filters="false"
+            :show-ai="showAIUsers"
+            :show-language-practice-ai="showLanguagePracticeAIUsers"
+            @user-selected="selectUser"
+            @filter-changed="updateFilters"
+            @delete-chat="openDeleteDialog"
+            @activate-language-practice="activateLanguagePracticeChat"
+            @end-language-practice="endLanguagePracticeChat"
+            @view-profile="openProfileDialog"
+            @update:show-ai="showAIUsers = $event"
+            @update:show-language-practice-ai="showLanguagePracticeAIUsers = $event"
+          />
+        </div>
+      </div>
 
       <!-- Mobile (< md): only the Thread pane -->
-      <v-row
+      <div
         v-if="isMobileLayout"
-        class="chat-grid-row flex-grow-1 overflow-hidden min-h-0 ma-0"
-        no-gutters
+        class="chat-grid-row"
       >
-        <v-col
-          cols="12"
-          class="chat-thread-col pa-2 d-flex flex-column overflow-hidden min-h-0 relative"
-        >
-          <button
-            class="messages-sticky-header messages-sticky-header-button d-flex d-md-none px-3 py-2 align-center justify-space-between"
-            type="button"
-            :disabled="!selectedUser"
-            :aria-expanded="String(panelOpen)"
-            aria-controls="thread-info-panel"
-            @click="panelOpen = !panelOpen"
-          >
-            <div class="d-flex align-center mobile-profile-left">
-              <div class="selected-avatar-wrap mobile-avatar-wrap">
-                <v-avatar size="46" color="primary" variant="tonal">
-                  <v-img
-                    v-if="selectedUser && selectedUser.avatar_url"
-                    :src="selectedUser.avatar_url"
-                    cover
-                  />
-                  <span
-                    v-else
-                    class="avatar-fallback text-body-2 font-weight-medium"
-                  >
-                    {{ selectedUserInitial }}
-                  </span>
-                </v-avatar>
-                <v-img
-                  v-if="selectedUserAvatarDecorationUrl"
-                  :src="selectedUserAvatarDecorationUrl"
-                  class="selected-avatar-decoration mobile-avatar-decoration"
-                  contain
-                />
-                <span
-                  v-if="selectedUserFlagEmoji"
-                  class="selected-avatar-flag"
-                >
-                  {{ selectedUserFlagEmoji }}
-                </span>
-                <v-icon
-                  v-if="selectedUser"
-                  size="20"
-                  class="selected-avatar-gender mobile-gender-icon"
-                  :class="selectedUserGenderClass"
-                  :style="{ '--selected-gender-color': selectedUserGenderColor }"
-                >
-                  {{ selectedUserGenderIcon }}
-                </v-icon>
-              </div>
-              <div class="min-w-0 ml-2 mobile-profile-info">
-                <div
-                  :class="[
-                    'text-subtitle-2 font-weight-medium',
-                    { 'text-truncate': smAndDown },
-                  ]"
-                >
-                  {{ selectedUserTitle }}
-                </div>
-                <div class="text-body-2 text-medium-emphasis mobile-profile-subtitle">
-                  {{ selectedUserSubtitle }}
-                </div>
-              </div>
-            </div>
-
-            <v-chip
-              v-if="selectedUser"
-              size="x-small"
-              :color="selectedUserPresenceColor"
-              variant="flat"
-              class="font-weight-medium mobile-presence-pill"
-            >
-              <v-icon size="12" class="mr-1">
-                {{ selectedUserPresenceIcon }}
-              </v-icon>
-              {{ selectedUserPresenceLabel }}
-            </v-chip>
-
-            <v-btn
-              icon
-              variant="text"
-              :disabled="!selectedUser"
-              :aria-expanded="String(panelOpen)"
-              aria-controls="thread-info-panel"
-              @click.stop="panelOpen = !panelOpen"
-            >
-              <v-icon
-                :icon="panelOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-              />
-            </v-btn>
-          </button>
-          <v-expand-transition>
-            <v-card
-              v-if="panelOpen"
-              id="thread-info-panel"
-              class="mx-1 thread-info-panel-card"
-              elevation="6"
-              :aria-hidden="String(!panelOpen)"
-            >
-              <div class="px-4 py-4">
-                <template v-if="selectedUser">
-                  <div
-                    v-if="selectedUserLocalized.tagline"
-                    :class="[
-                      'text-body-1 font-italic mb-3 profile-tagline',
-                      { 'text-truncate': smAndDown },
-                    ]"
-                    :title="selectedUserLocalized.tagline"
-                  >
-                    "{{ selectedUserLocalized.tagline }}"
-                  </div>
-
-                  <div
-                    v-if="selectedUserMeta.length"
-                    class="profile-meta-grid text-body-2 mb-3"
-                  >
-                    <div
-                      v-if="selectedUserPrimaryMetaItems.length"
-                      class="d-flex align-center flex-wrap mb-2 profile-meta-primary-row"
-                    >
-                      <div
-                        v-for="item in selectedUserPrimaryMetaItems"
-                        :key="item.key"
-                        class="d-flex align-center profile-meta-primary-item"
-                      >
-                        <v-icon
-                          size="18"
-                          class="mr-2 meta-icon"
-                          :class="item.color ? '' : 'text-medium-emphasis'"
-                          :style="item.color ? { color: item.color } : undefined"
-                        >
-                          {{ item.icon }}
-                        </v-icon>
-                        <span class="mr-1 profile-meta-label">
-                          {{ item.label }}:
-                        </span>
-                        <span class="profile-meta-value">
-                          <template v-if="item.key === 'gender'">
-                            {{ item.value }}
-                            <button
-                              class="profile-photo-count-link"
-                              type="button"
-                              :disabled="!selectedUserPhotoCount"
-                              @click.stop="openSelectedUserPhotosPanel"
-                            >
-                              ({{ selectedUserPhotoCountLabel }})
-                            </button>
-                          </template>
-                          <template v-else>{{ item.value }}</template>
-                        </span>
-                      </div>
-                    </div>
-                    <div
-                      v-for="item in selectedUserSecondaryMetaItems"
-                      :key="item.key"
-                      class="d-flex align-center mb-2"
-                    >
-                      <v-icon
-                        size="18"
-                        class="mr-2 meta-icon"
-                        :class="item.color ? '' : 'text-medium-emphasis'"
-                        :style="item.color ? { color: item.color } : undefined"
-                      >
-                        {{ item.icon }}
-                      </v-icon>
-                      <span class="mr-1 profile-meta-label">
-                        {{ item.label }}:
-                      </span>
-                      <span
-                        class="profile-meta-value"
-                        :class="{ 'text-truncate': smAndDown }"
-                      >
-                        {{ item.value }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div v-if="selectedUserPanelView === 'photos'" class="profile-photo-view mb-3">
-                    <div class="d-flex align-center justify-space-between mb-2">
-                      <span class="text-caption profile-meta-label">
-                        {{ selectedUserPhotoCount }} photos
-                      </span>
-                      <v-tooltip
-                        :text="t('components.chatheader.back-to-bio')"
-                        location="top"
-                      >
-                        <template #activator="{ props }">
-                          <v-btn
-                            v-bind="props"
-                            icon="mdi-arrow-left-circle-outline"
-                            size="small"
-                            variant="text"
-                            class="profile-photo-back-btn"
-                            :aria-label="t('components.chatheader.back-to-bio')"
-                            @click="selectedUserPanelView = 'bio'"
-                          />
-                        </template>
-                      </v-tooltip>
-                    </div>
-                    <v-skeleton-loader
-                      v-if="selectedUserPhotosLoading"
-                      type="image"
-                      class="profile-photo-skeleton"
-                    />
-                    <div
-                      v-else-if="selectedUserPhotoSlides.length"
-                      class="profile-photo-carousel-wrap"
-                      :class="{ 'is-locked': shouldBlurSelectedUserPhotos }"
-                    >
-                      <v-carousel
-                        height="210"
-                        hide-delimiters
-                        show-arrows="hover"
-                        :cycle="false"
-                      >
-                        <v-carousel-item
-                          v-for="photo in selectedUserPhotoSlides"
-                          :key="photo.id"
-                        >
-                          <v-img
-                            v-if="photo.url"
-                            :src="photo.url"
-                            cover
-                            class="profile-photo-image"
-                          />
-                          <div v-else class="profile-photo-fallback">
-                            No photo preview
-                          </div>
-                        </v-carousel-item>
-                      </v-carousel>
-                      <div
-                        v-if="shouldBlurSelectedUserPhotos"
-                        class="profile-photo-lock-overlay"
-                      >
-                        <v-icon size="18" class="mr-1">mdi-lock</v-icon>
-                        <button
-                          type="button"
-                          class="profile-photo-lock-link"
-                          @click.stop="openPhotoAccessFlow"
-                        >
-                          {{ lockedPhotoCtaLabel }}
-                        </button>
-                      </div>
-                    </div>
-                    <div v-else class="text-body-2 text-medium-emphasis">
-                      No approved photos yet.
-                    </div>
-                  </div>
-                  <div
-                    v-else-if="selectedUserLocalized.bio"
-                    class="profile-bio text-body-2 mb-3"
-                  >
-                    {{ selectedUserLocalized.bio }}
-                  </div>
-
-                  <div
-                    v-if="selectedUserInterests.length"
-                    class="profile-looking-for-row mb-3"
-                  >
-                    <v-chip
-                      v-for="interest in selectedUserInterests"
-                      :key="interest"
-                      size="small"
-                      variant="outlined"
-                      class="profile-looking-for-chip"
-                      :style="getLookingForChipStyle(interest)"
-                    >
-                      {{ interest }}
-                    </v-chip>
-                  </div>
-
-                  <div class="d-flex align-center flex-wrap gap-2">
-                    <v-btn
-                      v-if="selectedUser"
-                      size="small"
-                      variant="tonal"
-                      class="profile-view-btn"
-                      prepend-icon="mdi-account-box-outline"
-                      @click="openProfileDialog(selectedUser)"
-                    >
-                      View full profile
-                    </v-btn>
-                    <div class="d-flex align-center gap-2 ml-auto">
-                      <ButtonUpvote :profile="selectedUser" />
-                      <v-tooltip
-                        :text="t('components.chatheader.favorite-profile')"
-                        location="top"
-                      >
-                        <template #activator="{ props }">
-                          <span v-bind="props">
-                            <ButtonFavorite :profile="selectedUser" />
-                          </span>
-                        </template>
-                      </v-tooltip>
-                      <v-tooltip :text="blockTooltip" location="top">
-                        <template #activator="{ props }">
-                          <span v-bind="props">
-                            <v-btn
-                              :color="
-                                isSelectedUserBlocked
-                                  ? 'red darken-2'
-                                  : 'blue-lighten-2'
-                              "
-                              icon="mdi-cancel"
-                              size="small"
-                              variant="text"
-                              class="profile-action-btn profile-action-btn--block"
-                              :disabled="isBlockDisabled"
-                              aria-label="Block user"
-                              @click="toggleBlockSelectedUser"
-                            ></v-btn>
-                          </span>
-                        </template>
-                      </v-tooltip>
-                      <v-tooltip
-                        :text="t('components.chatheader.share-profile')"
-                        location="top"
-                      >
-                        <template #activator="{ props }">
-                          <span v-bind="props">
-                            <v-btn
-                              color="blue-grey-lighten-2"
-                              icon="mdi-share-variant"
-                              size="small"
-                              variant="text"
-                              class="profile-action-btn profile-action-btn--share"
-                              :disabled="!profileLink"
-                              aria-label="Share profile"
-                              @click="shareProfile"
-                            ></v-btn>
-                          </span>
-                        </template>
-                      </v-tooltip>
-                    </div>
-                  </div>
-                </template>
-                <template v-else>
-                  <div class="text-body-2 profile-empty-state">
-                    Select a user to view profile details.
-                  </div>
-                </template>
-              </div>
-            </v-card>
-          </v-expand-transition>
+        <div class="chat-thread-col chat-thread-col--mobile">
+          <ChatLayoutThreadHeader
+            mobile
+            :panel-open="panelOpen"
+            :selected-user="selectedUser"
+            :selected-user-initial="selectedUserInitial"
+            :selected-user-avatar-decoration-url="selectedUserAvatarDecorationUrl"
+            :selected-user-flag-emoji="selectedUserFlagEmoji"
+            :selected-user-gender-class="selectedUserGenderClass"
+            :selected-user-gender-color="selectedUserGenderColor"
+            :selected-user-gender-icon="selectedUserGenderIcon"
+            :selected-user-title="selectedUserTitle"
+            :selected-user-subtitle="selectedUserSubtitle"
+            :selected-user-presence-color="selectedUserPresenceColor"
+            :selected-user-presence-icon="selectedUserPresenceIcon"
+            :selected-user-presence-label="selectedUserPresenceLabel"
+            :sm-and-down="smAndDown"
+            @toggle="panelOpen = !panelOpen"
+          />
+          <Transition name="chat-panel-expand">
+            <ChatLayoutThreadInfoPanel
+              mobile
+              :panel-open="panelOpen"
+              :selected-user="selectedUser"
+              :selected-user-localized="selectedUserLocalized"
+              :selected-user-meta="selectedUserMeta"
+              :selected-user-primary-meta-items="selectedUserPrimaryMetaItems"
+              :selected-user-secondary-meta-items="selectedUserSecondaryMetaItems"
+              :sm-and-down="smAndDown"
+              :selected-user-panel-view="selectedUserPanelView"
+              :selected-user-photo-count="selectedUserPhotoCount"
+              :selected-user-photo-count-label="selectedUserPhotoCountLabel"
+              :selected-user-photos-loading="selectedUserPhotosLoading"
+              :selected-user-photo-slides="selectedUserPhotoSlides"
+              :should-blur-selected-user-photos="shouldBlurSelectedUserPhotos"
+              :locked-photo-cta-label="lockedPhotoCtaLabel"
+              :selected-user-interests="selectedUserInterests"
+              :get-looking-for-chip-style="getLookingForChipStyle"
+              :block-tooltip="blockTooltip"
+              :is-selected-user-blocked="isSelectedUserBlocked"
+              :is-block-disabled="isBlockDisabled"
+              :profile-link="profileLink"
+              @open-photos="openSelectedUserPhotosPanel"
+              @view-bio="selectedUserPanelView = 'bio'"
+              @open-photo-access="openPhotoAccessFlow"
+              @open-profile="openProfileDialog(selectedUser)"
+              @toggle-block="toggleBlockSelectedUser"
+              @share-profile="shareProfile"
+            />
+          </Transition>
 
           <ChatLayoutLanguagePracticeBanner
             v-if="languagePracticeSession && selectedUserId"
@@ -940,17 +326,21 @@
 
           <div
             ref="centerScrollRef"
-            class="flex-grow-1 overflow-auto users-scroll min-h-0 px-1 py-2"
+            class="users-scroll chat-thread-scroll"
             style="flex: 1 1 0"
             @scroll.passive="
               panelOpen && autoCloseOnScroll && (panelOpen = false)
             "
           >
-            <v-skeleton-loader
-              v-if="loadingMsgs"
-              type="list-item@6"
-              class="pa-2 chat-loading-skeleton"
-            />
+            <div v-if="loadingMsgs" class="chat-loading-skeleton" aria-hidden="true">
+              <div v-for="index in 6" :key="index" class="chat-loading-skeleton__row">
+                <span class="chat-loading-skeleton__avatar" />
+                <span class="chat-loading-skeleton__content">
+                  <span class="chat-loading-skeleton__line chat-loading-skeleton__line--primary" />
+                  <span class="chat-loading-skeleton__line chat-loading-skeleton__line--secondary" />
+                </span>
+              </div>
+            </div>
             <ChatLayoutOnboarding
               v-if="isPreAuth && isBotSelected"
               ref="onbRef"
@@ -961,7 +351,7 @@
               :isBotSelected="isBotSelected"
               :consented="draftStore?.consented ?? false"
               @send="onSend"
-              class="d-flex flex-column flex-grow-1 overflow-hidden"
+              class="chat-thread-fill"
             />
 
             <ChatLayoutRegular
@@ -976,27 +366,21 @@
               :show-quick-replies="showThreadQuickReplies"
               @quick-reply="onThreadQuickReply"
             />
-            <v-alert
+            <div
               v-else
-              type="info"
-              variant="tonal"
-              density="comfortable"
-              class="ma-2"
+              class="chat-inline-alert chat-inline-alert--info"
             >
               {{ t("components.message.composer.sign-in") }}
-            </v-alert>
+            </div>
           </div>
 
-          <div class="chat-composer-wrap border-t pt-2" style="flex: 0 0 auto">
-            <v-alert
+          <div class="chat-composer-wrap" style="flex: 0 0 auto">
+            <div
               v-if="isSelectedUserBlocked"
-              type="warning"
-              variant="tonal"
-              density="comfortable"
-              class="mb-2"
+              class="chat-inline-alert chat-inline-alert--warning"
             >
               {{ t("components.message.composer.blocked") }}
-            </v-alert>
+            </div>
             <ChatLayoutMessageComposer
               v-model:draft="messageDraft"
               :peer-id="peerId"
@@ -1004,46 +388,40 @@
               :conversation-key="conversationKey"
               :blocked-user-ids="blockedUsers"
               :language-practice-mode="Boolean(languagePracticeSession)"
-              class="w-100 mx-auto"
+              class="chat-composer"
               @send="onSend"
             />
           </div>
-        </v-col>
-      </v-row>
-    </v-container>
+        </div>
+      </div>
+    </div>
 
     <!-- Mobile-only Drawers -->
-    <v-navigation-drawer
-      v-model="leftOpen"
-      location="left"
-      temporary
-      class="d-md-none chat-mobile-drawer"
-      width="320"
-      :mobile="isMobileDrawer"
-      :scrim="true"
-      aria-label="Topics drawer"
-      @click:outside="leftOpen = false"
-    >
+    <Teleport to="body">
       <div
-        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
-        style="height: 100%"
+        v-if="leftOpen && isMobileDrawer"
+        class="chat-mobile-drawer"
       >
-        <v-card flat class="chat-pane-card d-flex flex-column flex-grow-1 min-h-0">
-          <div
-            ref="leftScrollRefMobile"
-            class="flex-grow-1 overflow-auto min-h-0 users-scroll"
-            style="flex: 1 1 0"
-          >
-            <!-- SAME content as desktop Topics column -->
-            <ChatLayoutUsers
-              v-if="tabVisibility.online"
+        <button
+          type="button"
+          class="chat-mobile-drawer__scrim"
+          aria-label="Close topics drawer"
+          @click="leftOpen = false"
+        />
+        <aside
+          class="chat-mobile-drawer__panel chat-mobile-drawer__panel--left"
+          aria-label="Topics drawer"
+        >
+          <div class="chat-mobile-drawer__content">
+            <ChatLayoutUsersPane
+              :list-visible="tabVisibility.online"
               list-type="online"
               :users="usersWithPresence"
-              :pinnedId="IMCHATTY_ID"
-              :activeChats="activeChats"
+              :pinned-id="IMCHATTY_ID"
+              :active-chats="activeChats"
               :language-practice-chat-ids="languagePracticeSessionUserIds"
-              :selectedUserId="selectedUserId"
-              :isLoading="isLoading"
+              :selected-user-id="selectedUserId"
+              :is-loading="isLoading"
               :user-profile="userProfile"
               :auth-status="auth.authStatus"
               :disable-filter-toggle="shouldDisableToggle"
@@ -1053,44 +431,37 @@
               @user-selected="selectUser"
               @filter-changed="updateFilters"
               @activate-language-practice="activateLanguagePracticeChat"
-              @update:showAi="showAIUsers = $event"
-              @update:showLanguagePracticeAi="showLanguagePracticeAIUsers = $event"
+              @update:show-ai="showAIUsers = $event"
+              @update:show-language-practice-ai="showLanguagePracticeAIUsers = $event"
             />
           </div>
-        </v-card>
+        </aside>
       </div>
-    </v-navigation-drawer>
 
-    <v-navigation-drawer
-      v-model="rightOpen"
-      location="right"
-      temporary
-      class="d-md-none chat-mobile-drawer"
-      width="300"
-      :mobile="isMobileDrawer"
-      :scrim="true"
-      aria-label="Participants drawer"
-      @click:outside="rightOpen = false"
-    >
       <div
-        class="pa-2 d-flex flex-column overflow-hidden min-h-0"
-        style="height: 100%"
+        v-if="rightOpen && isMobileDrawer"
+        class="chat-mobile-drawer"
       >
-        <v-card flat class="chat-pane-card d-flex flex-column flex-grow-1 min-h-0">
-          <div
-            ref="rightScrollRefMobile"
-            class="flex-grow-1 overflow-auto min-h-0 users-scroll"
-            style="flex: 1 1 0"
-          >
-            <ChatLayoutUsers
-              v-if="tabVisibility.active"
+        <button
+          type="button"
+          class="chat-mobile-drawer__scrim"
+          aria-label="Close participants drawer"
+          @click="rightOpen = false"
+        />
+        <aside
+          class="chat-mobile-drawer__panel chat-mobile-drawer__panel--right"
+          aria-label="Participants drawer"
+        >
+          <div class="chat-mobile-drawer__content">
+            <ChatLayoutUsersPane
+              :list-visible="tabVisibility.active"
               list-type="active"
               :users="usersWithPresence"
-              :pinnedId="IMCHATTY_ID"
-              :activeChats="activeChats"
+              :pinned-id="IMCHATTY_ID"
+              :active-chats="activeChats"
               :language-practice-chat-ids="languagePracticeSessionUserIds"
-              :selectedUserId="selectedUserId"
-              :isLoading="isLoading"
+              :selected-user-id="selectedUserId"
+              :is-loading="isLoading"
               :user-profile="userProfile"
               :auth-status="auth.authStatus"
               :disable-filter-toggle="shouldDisableToggle"
@@ -1103,128 +474,151 @@
               @activate-language-practice="activateLanguagePracticeChat"
               @end-language-practice="endLanguagePracticeChat"
               @view-profile="openProfileDialog"
-              @update:showAi="showAIUsers = $event"
-              @update:showLanguagePracticeAi="showLanguagePracticeAIUsers = $event"
+              @update:show-ai="showAIUsers = $event"
+              @update:show-language-practice-ai="showLanguagePracticeAIUsers = $event"
             />
           </div>
-        </v-card>
+        </aside>
       </div>
-    </v-navigation-drawer>
+    </Teleport>
 
-    <v-dialog v-model="deleteDialog" max-width="420">
-      <v-card>
-        <v-card-title class="text-h6">
-          {{ $t("components.activeChats.delete-title") }}
-        </v-card-title>
-        <v-card-text>
-          <div class="text-body-2 mb-3">
-            {{ deletePrompt }}
+    <Teleport to="body">
+      <div
+        v-if="deleteDialog"
+        class="chat-overlay"
+        @click="closeDeleteDialog"
+      >
+        <div
+          class="chat-modal chat-modal--delete"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="$t('components.activeChats.delete-title')"
+          @click.stop
+        >
+          <div class="chat-modal__title">
+            {{ $t("components.activeChats.delete-title") }}
           </div>
-          <v-alert
-            v-if="deleteError"
-            type="error"
-            variant="tonal"
-            density="comfortable"
-            class="mb-2"
-          >
-            {{ deleteError }}
-          </v-alert>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="text"
-            :disabled="deletingChat"
-            @click="closeDeleteDialog"
-          >
-            {{ $t("components.activeChats.cancel") }}
-          </v-btn>
-          <v-btn
-            color="red"
-            variant="flat"
-            :loading="deletingChat"
-            @click="confirmDeleteChat"
-          >
-            {{ $t("components.activeChats.confirm") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog v-model="translationPromptOpen" max-width="460">
-      <v-card>
-        <v-card-title class="text-h6">
-          {{ t("components.chatTranslation.promptTitle") }}
-        </v-card-title>
-        <v-card-text>
-          <div class="text-body-2 mb-3">
-            {{ translationPromptBody }}
+          <div class="chat-modal__body">
+            <div class="chat-modal__text">
+              {{ deletePrompt }}
+            </div>
+            <div v-if="deleteError" class="chat-modal__alert chat-modal__alert--error">
+              {{ deleteError }}
+            </div>
           </div>
-          <div class="text-caption text-medium-emphasis mb-2">
-            {{ t("components.chatTranslation.promptHint") }}
+          <div class="chat-modal__actions">
+            <button
+              type="button"
+              class="chat-btn chat-btn--ghost"
+              :disabled="deletingChat"
+              @click="closeDeleteDialog"
+            >
+              {{ $t("components.activeChats.cancel") }}
+            </button>
+            <button
+              type="button"
+              class="chat-btn chat-btn--danger"
+              :disabled="deletingChat"
+              @click="confirmDeleteChat"
+            >
+              {{ deletingChat ? $t("components.activeChats.confirm") + "..." : $t("components.activeChats.confirm") }}
+            </button>
           </div>
-          <v-list density="compact" class="translation-choice-list">
-            <v-list-item
-              link
-              @click="applyTranslationChoice('once')"
-            >
-              <v-list-item-title>
-                {{ t("components.chatTranslation.optionOnce") }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                {{ t("components.chatTranslation.optionOnceDesc") }}
-              </v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item
-              link
-              @click="applyTranslationChoice('always')"
-            >
-              <v-list-item-title>
-                {{ t("components.chatTranslation.optionAlways") }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                {{ t("components.chatTranslation.optionAlwaysDesc") }}
-              </v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item
-              link
-              @click="applyTranslationChoice('never')"
-            >
-              <v-list-item-title>
-                {{ t("components.chatTranslation.optionNever") }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                {{ t("components.chatTranslation.optionNeverDesc") }}
-              </v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="translationPromptOpen = false">
-            {{ t("components.chatTranslation.optionNotNow") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+        </div>
+      </div>
 
-    <v-snackbar
-      v-model="shareToast"
-      :timeout="2500"
-      color="primary"
-      location="top"
-    >
-      {{ t("components.chatheader.profile-copied") }}
-    </v-snackbar>
+      <div
+        v-if="translationPromptOpen"
+        class="chat-overlay"
+        @click="translationPromptOpen = false"
+      >
+        <div
+          class="chat-modal chat-modal--translation"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="t('components.chatTranslation.promptTitle')"
+          @click.stop
+        >
+          <div class="chat-modal__title">
+            {{ t("components.chatTranslation.promptTitle") }}
+          </div>
+          <div class="chat-modal__body">
+            <div class="chat-modal__text">
+              {{ translationPromptBody }}
+            </div>
+            <div class="chat-modal__hint">
+              {{ t("components.chatTranslation.promptHint") }}
+            </div>
+            <div class="translation-choice-list">
+              <button
+                type="button"
+                class="translation-choice-item"
+                @click="applyTranslationChoice('once')"
+              >
+                <span class="translation-choice-item__title">
+                  {{ t("components.chatTranslation.optionOnce") }}
+                </span>
+                <span class="translation-choice-item__subtitle">
+                  {{ t("components.chatTranslation.optionOnceDesc") }}
+                </span>
+              </button>
+              <button
+                type="button"
+                class="translation-choice-item"
+                @click="applyTranslationChoice('always')"
+              >
+                <span class="translation-choice-item__title">
+                  {{ t("components.chatTranslation.optionAlways") }}
+                </span>
+                <span class="translation-choice-item__subtitle">
+                  {{ t("components.chatTranslation.optionAlwaysDesc") }}
+                </span>
+              </button>
+              <button
+                type="button"
+                class="translation-choice-item"
+                @click="applyTranslationChoice('never')"
+              >
+                <span class="translation-choice-item__title">
+                  {{ t("components.chatTranslation.optionNever") }}
+                </span>
+                <span class="translation-choice-item__subtitle">
+                  {{ t("components.chatTranslation.optionNeverDesc") }}
+                </span>
+              </button>
+            </div>
+          </div>
+          <div class="chat-modal__actions">
+            <button
+              type="button"
+              class="chat-btn chat-btn--ghost"
+              @click="translationPromptOpen = false"
+            >
+              {{ t("components.chatTranslation.optionNotNow") }}
+            </button>
+          </div>
+        </div>
+      </div>
 
-    <v-snackbar
-      v-model="languagePracticeToastOpen"
-      :timeout="2500"
-      :color="languagePracticeToastColor"
-      location="top"
-    >
-      {{ languagePracticeToastMessage }}
-    </v-snackbar>
+      <div class="chat-toast-stack">
+        <div
+          v-if="shareToast"
+          class="chat-toast chat-toast--primary"
+          role="status"
+          aria-live="polite"
+        >
+          {{ t("components.chatheader.profile-copied") }}
+        </div>
+        <div
+          v-if="languagePracticeToastOpen"
+          :class="['chat-toast', toastColorClass(languagePracticeToastColor)]"
+          role="status"
+          aria-live="polite"
+        >
+          {{ languagePracticeToastMessage }}
+        </div>
+      </div>
+    </Teleport>
 
     <ProfileDialog
       v-model="isProfileDialogOpen"
@@ -1252,8 +646,8 @@ import { useOnboardingDraftStore } from "@/stores/onboardingDraftStore";
 import { usePresenceStore2 } from "@/stores/presenceStore2"; // the minimal presence we made
 import { useOnboardingAi } from "~/composables/useOnboardingAi";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
-import { useDisplay } from "vuetify";
 import { useDb } from "@/composables/useDB";
+import { useResponsiveDisplay } from "@/composables/useResponsiveDisplay";
 import { useLocalePath, useRoute } from "#imports";
 import { useAiQuota } from "~/composables/useAiQuota";
 import { useTabFilters } from "@/composables/useTabFilters";
@@ -1300,9 +694,9 @@ const suppressMatchStrip = computed(() => {
   return captureActive || nextStepActive;
 });
 
-const { smAndDown } = useDisplay();
+const { smAndDown } = useResponsiveDisplay();
 const hasMounted = ref(false);
-const isMobileLayout = ref(false);
+const isMobileLayout = computed(() => hasMounted.value && smAndDown.value);
 const {
   createScrollHandler: createFooterScrollHandler,
   setTouchStart: setFooterTouchStart,
@@ -1501,15 +895,8 @@ const onMobileTouchMove = (event) => {
   handleFooterTouchMove("chat-mobile", t.clientY);
 };
 
-function updateLayoutMode() {
-  if (typeof window === "undefined") return;
-  isMobileLayout.value = window.innerWidth < 960;
-}
-
 onMounted(() => {
   hasMounted.value = true;
-  updateLayoutMode();
-  window.addEventListener("resize", updateLayoutMode, { passive: true });
   awayNoticeMap.value = loadAwayNoticeMap();
   // ensure drawers don't render mobile server-side then stay off on desktop
   if (!smAndDown.value) {
@@ -1518,6 +905,15 @@ onMounted(() => {
   }
   scheduleConsentAutoHide();
 });
+
+watch(
+  () => smAndDown.value,
+  (isMobileNow) => {
+    if (!hasMounted.value || isMobileNow) return;
+    leftOpen.value = false;
+    rightOpen.value = false;
+  }
+);
 
 onMounted(() => {
   fetchRecentActiveIds();
@@ -1581,6 +977,8 @@ const shareToast = ref(false);
 const languagePracticeToastOpen = ref(false);
 const languagePracticeToastMessage = ref("");
 const languagePracticeToastColor = ref("primary");
+const shareToastTimer = ref(null);
+const languagePracticeToastTimer = ref(null);
 const hasUnreadActiveChats = computed(() => {
   const unread = msgs.unreadByPeer || {};
   return (Array.isArray(activeChats.value) ? activeChats.value : []).some(
@@ -3114,8 +2512,8 @@ function onConsentClose() {
 }
 
 onBeforeUnmount(() => {
-  if (typeof window !== "undefined") {
-    window.removeEventListener("resize", updateLayoutMode);
+  if (typeof document !== "undefined") {
+    document.removeEventListener("keydown", onOverlayKeydown);
   }
   if (consentAutoHideTimer.value) {
     clearTimeout(consentAutoHideTimer.value);
@@ -3128,6 +2526,14 @@ onBeforeUnmount(() => {
   if (moodPromptDeferTimer.value) {
     clearTimeout(moodPromptDeferTimer.value);
     moodPromptDeferTimer.value = null;
+  }
+  if (shareToastTimer.value) {
+    clearTimeout(shareToastTimer.value);
+    shareToastTimer.value = null;
+  }
+  if (languagePracticeToastTimer.value) {
+    clearTimeout(languagePracticeToastTimer.value);
+    languagePracticeToastTimer.value = null;
   }
 });
 
@@ -3380,8 +2786,61 @@ const resetTranslationPromptState = () => {
   pendingTranslatePeerId.value = null;
 };
 
+const toastColorClass = (color) => {
+  if (color === "error" || color === "red") return "chat-toast--danger";
+  if (color === "success" || color === "green") return "chat-toast--success";
+  return "chat-toast--primary";
+};
+
+const startToastTimer = (flagRef, timerRef, timeout = 2500) => {
+  if (timerRef.value) {
+    clearTimeout(timerRef.value);
+  }
+  if (!flagRef.value) {
+    timerRef.value = null;
+    return;
+  }
+  timerRef.value = setTimeout(() => {
+    flagRef.value = false;
+    timerRef.value = null;
+  }, timeout);
+};
+
 watch(translationPromptOpen, (open) => {
   if (!open) resetTranslationPromptState();
+});
+
+watch(shareToast, () => {
+  startToastTimer(shareToast, shareToastTimer);
+});
+
+watch(languagePracticeToastOpen, () => {
+  startToastTimer(languagePracticeToastOpen, languagePracticeToastTimer);
+});
+
+const onOverlayKeydown = (event) => {
+  if (event.key !== "Escape") return;
+  if (leftOpen.value) {
+    leftOpen.value = false;
+    return;
+  }
+  if (rightOpen.value) {
+    rightOpen.value = false;
+    return;
+  }
+  if (deleteDialog.value) {
+    closeDeleteDialog();
+    return;
+  }
+  if (translationPromptOpen.value) {
+    translationPromptOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  if (typeof document !== "undefined") {
+    document.addEventListener("keydown", onOverlayKeydown);
+  }
 });
 
 const maybePromptTranslation = async (text, selectedPeer, toId, sendingToBot) => {
@@ -4991,10 +4450,21 @@ function toggleFilters() {
 
 <style scoped>
 .chat-layout-root {
-  color: rgb(var(--v-theme-on-surface));
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  color: #e2e8f0;
   background: #0f172a;
   border-radius: 0;
   overflow: hidden;
+}
+
+.chat-layout-shell {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
 }
 
 .chat-pane-card {
@@ -5004,10 +4474,52 @@ function toggleFilters() {
   box-shadow: 0 10px 24px rgba(2, 6, 23, 0.45);
 }
 
+.chat-desktop-col {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-desktop-col--left {
+  flex: 0 0 25%;
+  max-width: 25%;
+  padding: 0 0.5rem;
+}
+
+.chat-desktop-col--right {
+  flex: 0 0 16.6667%;
+  max-width: 16.6667%;
+  padding: 0 0.5rem;
+}
+
 .chat-thread-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
   background: #111827;
   border: 1px solid rgba(148, 163, 184, 0.34);
   border-radius: 12px;
+  padding: 0.5rem;
+}
+
+.chat-thread-col--with-active {
+  flex: 0 0 58.3333%;
+  max-width: 58.3333%;
+}
+
+.chat-thread-col--full {
+  flex: 0 0 75%;
+  max-width: 75%;
+}
+
+.chat-thread-col--mobile {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 
 /* Keep the messages header visible while content scrolls */
@@ -5020,7 +4532,7 @@ function toggleFilters() {
   border-radius: 10px;
 }
 
-.messages-sticky-header:not(.messages-sticky-header-button) {
+.messages-sticky-header {
   margin: 0 -8px 0;
 }
 
@@ -5049,26 +4561,66 @@ function toggleFilters() {
 }
 
 .chat-loading-skeleton {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
   background: transparent !important;
 }
 
-.chat-loading-skeleton :deep(.v-skeleton-loader__bone) {
-  background: #1e293b !important;
+.chat-loading-skeleton__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.chat-loading-skeleton :deep(.v-skeleton-loader__bone::after) {
+.chat-loading-skeleton__avatar,
+.chat-loading-skeleton__line {
+  display: block;
   background: linear-gradient(
     90deg,
-    rgba(30, 41, 59, 0) 0%,
-    rgba(51, 65, 85, 0.45) 50%,
-    rgba(30, 41, 59, 0) 100%
-  ) !important;
+    rgba(30, 41, 59, 0.72) 0%,
+    rgba(51, 65, 85, 0.95) 50%,
+    rgba(30, 41, 59, 0.72) 100%
+  );
+  background-size: 200% 100%;
+  animation: chat-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+.chat-loading-skeleton__avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.chat-loading-skeleton__content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.chat-loading-skeleton__line {
+  height: 0.55rem;
+  border-radius: 999px;
+}
+
+.chat-loading-skeleton__line--primary {
+  width: 60%;
+}
+
+.chat-loading-skeleton__line--secondary {
+  width: 38%;
 }
 
 .chat-grid-row {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
   margin: 0 !important;
 }
-
 
 .active-panel-rail {
   --active-rail-width: 34px;
@@ -5085,12 +4637,16 @@ function toggleFilters() {
 }
 
 .active-panel-toggle {
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.18);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
   width: 28px;
   height: 28px;
   pointer-events: auto;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .active-panel-toggle--alert,
@@ -5099,327 +4655,162 @@ function toggleFilters() {
   border-color: rgba(220, 38, 38, 0.6);
   box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45),
     0 0 16px rgba(220, 38, 38, 0.3);
-}
-
-.active-panel-toggle--alert :deep(.v-icon),
-.chat-mobile-toggle--alert :deep(.v-icon) {
   color: rgba(220, 38, 38, 0.95);
 }
 
-.active-panel-toggle :deep(.v-icon) {
-  color: rgba(var(--v-theme-on-surface), 0.8);
+.active-panel-toggle__icon {
+  color: rgba(226, 232, 240, 0.85);
 }
 
 .active-panel-card {
   transition: opacity 0.2s ease, transform 0.25s ease;
 }
 
-.profile-header-title,
-.profile-header-subtitle {
-  color: #e2e8f0 !important;
-}
-
-.header-chevron {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.profile-header {
-  gap: 16px;
-}
-.profile-header-toggle {
-  background: transparent;
-  border: 0;
-  width: 100%;
-  text-align: left;
-}
-.profile-header-toggle:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-.messages-sticky-header-button {
-  background: transparent;
-  border: 0;
-  width: 100%;
-  text-align: left;
-  color: #e2e8f0;
-}
-.messages-sticky-header-button:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-.profile-header-left,
-.mobile-profile-left {
-  gap: 12px;
-}
-.profile-header-actions {
-  gap: 8px;
-}
-
-.profile-header-actions :deep(.v-chip .v-icon) {
-  background: transparent !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-
-.profile-header-actions :deep(.v-btn.v-btn--icon) {
-  background: rgba(30, 41, 59, 0.62) !important;
-  border: 1px solid rgba(148, 163, 184, 0.26);
-  color: #e2e8f0 !important;
-}
-
-.profile-header-actions :deep(.v-btn.v-btn--icon:hover) {
-  background: rgba(51, 65, 85, 0.72) !important;
-}
-.avatar-fallback {
-  width: 100%;
-  height: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-}
-.profile-meta-grid {
-  column-gap: 24px;
-}
-.profile-meta-primary-row {
-  gap: 18px;
-}
-.profile-meta-primary-item {
-  min-width: 0;
-}
-.profile-photo-count-link,
-.profile-photo-back-link {
-  border: 0;
-  background: transparent;
-  color: #7cc2ff;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 4px;
-  text-decoration: underline;
-}
-.profile-photo-count-link:disabled {
-  opacity: 0.5;
-  cursor: default;
-  text-decoration: none;
-}
-.profile-photo-back-btn {
-  color: #7cc2ff !important;
-  opacity: 0.9;
-}
-.profile-photo-back-btn:hover {
-  opacity: 1;
-}
-.profile-photo-view {
-  position: relative;
-}
-.profile-photo-skeleton {
-  border-radius: 12px;
-  overflow: hidden;
-}
-.profile-photo-carousel-wrap {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.32);
-}
-.profile-photo-image {
-  width: 100%;
-  height: 100%;
-}
-.profile-photo-fallback {
-  height: 210px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #cbd5e1;
-  background: rgba(15, 23, 42, 0.75);
-}
-.profile-photo-carousel-wrap.is-locked .profile-photo-image,
-.profile-photo-carousel-wrap.is-locked .profile-photo-fallback {
-  filter: blur(10px);
-  transform: scale(1.02);
-}
-.profile-photo-lock-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #e2e8f0;
-  font-weight: 600;
-  background: rgba(2, 6, 23, 0.38);
-  gap: 6px;
-  pointer-events: none;
-}
-.profile-photo-lock-link {
-  pointer-events: auto;
-  border: 0;
-  background: transparent;
-  color: #e2e8f0;
-  font-weight: 600;
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0;
-}
-.meta-icon {
-  position: relative;
-  top: -2px;
-}
-.profile-bio {
-  white-space: pre-line;
-  color: #cbd5e1;
-}
-
-.profile-looking-for-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.profile-looking-for-chip {
-  color: var(--profile-looking-for-color, #818cf8) !important;
-  background: var(--profile-looking-for-bg, rgba(129, 140, 248, 0.14)) !important;
-  border-color: var(--profile-looking-for-border, rgba(129, 140, 248, 0.5)) !important;
-  font-weight: 500;
-}
-
-.thread-info-panel-card {
-  background: #0f172a !important;
-  border: 1px solid rgba(148, 163, 184, 0.45) !important;
-  color: #e2e8f0 !important;
-}
-
-.profile-tagline {
-  color: #e2e8f0 !important;
-}
-
-.profile-meta-label {
-  color: #94a3b8 !important;
-}
-
-.profile-meta-value {
-  color: #e2e8f0 !important;
-}
-
-.profile-view-btn {
-  background: rgba(59, 130, 246, 0.18) !important;
-  color: #dbeafe !important;
-}
-
-.profile-action-btn {
-  opacity: 0.92;
-}
-
-.profile-action-btn--block :deep(.v-icon) {
-  color: #60a5fa !important;
-}
-
-.profile-action-btn--share :deep(.v-icon) {
-  color: #93c5fd !important;
-}
-
-.profile-empty-state {
-  color: #94a3b8 !important;
-}
 .chat-mobile-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 0;
   margin-bottom: 2px;
   position: sticky;
   top: 0;
   z-index: 5;
   background: rgba(15, 23, 42, 0.96);
+  padding: 0.25rem 0.5rem;
 }
-.mobile-profile-info {
-  min-width: 0;
+
+.chat-mobile-controls__spacer {
+  flex: 1 1 auto;
 }
-.mobile-profile-subtitle {
-  color: #cbd5e1 !important;
-  white-space: normal;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+
+.chat-mobile-toggle {
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-mobile-toggle__icon {
+  font-size: 1.2rem;
+}
+
+.chat-mobile-toggle__icon--online {
+  color: #16a34a;
+}
+
+.chat-mobile-toggle__icon--active {
+  color: #60a5fa;
+}
+
+.chat-mobile-toggle--alert .chat-mobile-toggle__icon {
+  color: rgba(220, 38, 38, 0.95);
+}
+
+.chat-thread-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.5rem 0.25rem;
+}
+
+.chat-thread-fill {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
   overflow: hidden;
 }
-.messages-sticky-header-button :deep(.text-subtitle-2) {
-  color: #e2e8f0 !important;
-}
-.mobile-presence-pill {
-  margin-left: auto;
-  margin-right: 8px;
+
+.chat-inline-alert {
+  margin: 0.5rem;
+  border-radius: 0.85rem;
+  padding: 0.8rem 0.95rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
-.mobile-presence-pill :deep(.v-icon),
-.messages-sticky-header-button :deep(.v-chip .v-icon) {
-  background: transparent !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+.chat-inline-alert--info {
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  background: rgba(30, 64, 175, 0.16);
+  color: #dbeafe;
 }
-.selected-avatar-wrap {
-  position: relative;
-  display: inline-flex;
+
+.chat-inline-alert--warning {
+  margin: 0 0 0.6rem;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  background: rgba(120, 53, 15, 0.22);
+  color: #fde68a;
 }
-.selected-avatar-decoration {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 62px;
-  height: 62px;
-  pointer-events: none;
-  z-index: 2;
+
+.chat-composer-wrap {
+  flex: 0 0 auto;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  padding-top: 0.5rem;
 }
-.mobile-avatar-decoration {
-  width: 56px;
-  height: 56px;
+
+.chat-composer {
+  width: 100%;
+  margin: 0 auto;
 }
-.selected-avatar-flag {
-  position: absolute;
-  right: -6px;
-  top: 2px;
-  font-size: 1.22rem;
-  line-height: 1;
-  text-shadow: 0 1px 3px rgba(2, 6, 23, 0.75);
-  z-index: 3;
+
+.chat-consent-panel-wrap {
+  display: block;
+  margin-top: 0.25rem;
 }
-.selected-avatar-gender {
-  position: absolute;
-  right: -5px;
-  bottom: -5px;
-  background: transparent;
-  border-radius: 999px;
-  padding: 4px;
-  color: var(--selected-gender-color, #1d3b58) !important;
-  z-index: 3;
+
+.chat-panel-expand-enter-active,
+.chat-panel-expand-leave-active {
+  transition: opacity 0.18s ease, transform 0.2s ease;
 }
-.selected-avatar-gender.is-male {
-  color: var(--selected-gender-color, #3b82f6) !important;
-}
-.selected-avatar-gender.is-female {
-  color: var(--selected-gender-color, #ec4899) !important;
-}
-.selected-avatar-gender.is-other {
-  color: var(--selected-gender-color, #a855f7) !important;
+
+.chat-panel-expand-enter-from,
+.chat-panel-expand-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 .chat-mobile-drawer {
-  z-index: 1700 !important;
-}
-.chat-mobile-drawer :deep(.v-overlay__content),
-.chat-mobile-drawer :deep(.v-navigation-drawer) {
-  top: var(--nav2-offset, 0px) !important;
-  height: calc(100vh - var(--nav2-offset, 0px)) !important;
-  background: #0f172a !important;
-  border: none !important;
-  border-inline: 0 !important;
-  box-shadow: none !important;
-  outline: none !important;
+  position: fixed;
+  inset: 0;
+  z-index: 1700;
 }
 
-.chat-mobile-drawer :deep(.v-navigation-drawer__content) {
-  background: #0f172a !important;
-  padding-top: 30px;
+.chat-mobile-drawer__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(2, 6, 23, 0.46);
+}
+
+.chat-mobile-drawer__panel {
+  position: absolute;
+  top: var(--nav2-offset, 0px);
+  height: calc(100vh - var(--nav2-offset, 0px));
+  background: #0f172a;
+  border: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.chat-mobile-drawer__panel--left {
+  left: 0;
+  width: min(320px, 88vw);
+}
+
+.chat-mobile-drawer__panel--right {
+  right: 0;
+  width: min(300px, 84vw);
+}
+
+.chat-mobile-drawer__content {
+  height: 100%;
+  padding: 30px 0.5rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .chat-mobile-drawer :deep(.chat-pane-card) {
@@ -5445,13 +4836,29 @@ function toggleFilters() {
 }
 
 @media (max-width: 959px) {
+  .chat-grid-row {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .chat-consent-panel-wrap {
+    display: none;
+  }
+
+  .chat-thread-col--mobile {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
   .chat-mobile-controls {
     padding-top: 2px !important;
     padding-bottom: 2px !important;
     min-height: 38px;
   }
 
-  .chat-mobile-controls :deep(.v-btn--icon) {
+  .chat-mobile-toggle {
     width: 34px;
     height: 34px;
   }
@@ -5461,11 +4868,178 @@ function toggleFilters() {
   }
 }
 
-.translation-choice-list :deep(.v-list-item) {
-  border-radius: 10px;
+.chat-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(2, 6, 23, 0.6);
+  backdrop-filter: blur(4px);
 }
-.translation-choice-list :deep(.v-list-item:hover) {
+
+.chat-modal {
+  width: min(100%, 28.75rem);
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.42);
+  color: #e2e8f0;
+}
+
+.chat-modal--delete {
+  max-width: 26.25rem;
+}
+
+.chat-modal--translation {
+  max-width: 28.75rem;
+}
+
+.chat-modal__title {
+  padding: 1.1rem 1.25rem 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.chat-modal__body {
+  padding: 0.85rem 1.25rem 0;
+}
+
+.chat-modal__text {
+  margin-bottom: 0.75rem;
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.chat-modal__hint {
+  margin-bottom: 0.6rem;
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.chat-modal__alert {
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.86rem;
+}
+
+.chat-modal__alert--error {
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  background: rgba(127, 29, 29, 0.25);
+  color: #fecaca;
+}
+
+.chat-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem 1.25rem 1.15rem;
+}
+
+.chat-btn {
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.chat-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.chat-btn--ghost {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: transparent;
+  color: #e2e8f0;
+}
+
+.chat-btn--ghost:hover:not(:disabled) {
+  background: rgba(30, 41, 59, 0.7);
+}
+
+.chat-btn--danger {
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: #dc2626;
+  color: #fff;
+}
+
+.chat-btn--danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.translation-choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.translation-choice-item {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-align: left;
+}
+
+.translation-choice-item:hover {
   background: rgba(37, 99, 235, 0.08);
+}
+
+.translation-choice-item__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.translation-choice-item__subtitle {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.chat-toast-stack {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3150;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  pointer-events: none;
+}
+
+.chat-toast {
+  min-width: 13rem;
+  max-width: min(90vw, 28rem);
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.28);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.chat-toast--primary {
+  background: #2563eb;
+}
+
+.chat-toast--success {
+  background: #16a34a;
+}
+
+.chat-toast--danger {
+  background: #dc2626;
 }
 
 @keyframes active-panel-pulse {
@@ -5480,6 +5054,15 @@ function toggleFilters() {
   100% {
     box-shadow: 0 0 0 0 rgba(220, 38, 38, 0),
       0 0 16px rgba(220, 38, 38, 0.25);
+  }
+}
+
+@keyframes chat-skeleton-pulse {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
   }
 }
 

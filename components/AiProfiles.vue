@@ -1,137 +1,91 @@
 <template>
   <div class="ai-profiles">
-    <!-- <v-card class="mb-6" variant="tonal">
-      <v-card-title class="text-h5 font-weight-medium">
-        {{ titleText }}
-      </v-card-title>
-      <v-card-subtitle class="text-body-2">
-        {{ subtitleText }}
-      </v-card-subtitle>
-    </v-card> -->
-
-    <v-skeleton-loader
-      v-if="isLoading"
-      type="heading, list-item-two-line, list-item-two-line"
-      class="mb-6"
-    />
+    <LoadingContainer v-if="isLoading" />
 
     <div
       v-else
       v-for="category in categoryBlocks"
       :key="category.title"
-      class="mb-10 category"
+      class="category"
     >
-      <div class="d-flex align-center justify-space-between mb-3">
-        <div>
-          <div class="text-overline text-medium-emphasis">
-            {{ category.section }}
-          </div>
-          <h3 class="text-h5 font-weight-semibold mb-1">
-            {{ category.title }}
-          </h3>
-          <p class="text-body-2 text-medium-emphasis mb-0">
-            {{ category.description }}
-          </p>
+      <div class="category__header">
+        <div class="category__section">
+          {{ category.section }}
         </div>
+        <h3 class="category__title">
+          {{ category.title }}
+        </h3>
+        <p class="category__description">
+          {{ category.description }}
+        </p>
       </div>
 
-      <v-row dense>
-        <v-col
+      <div class="category__grid">
+        <article
           v-for="profile in category.profiles"
           :key="profile.id || profile.name"
-          cols="12"
-          sm="6"
-          md="4"
-          lg="3"
+          class="ai-card"
         >
-          <!-- {{ profile }} -->
-          <v-card class="ai-card" elevation="2" rounded="xl" variant="outlined">
-            <div class="d-flex align-center mb-3">
-              <v-avatar size="56" class="mr-3" rounded="lg">
+          <div class="ai-card__top">
+            <div class="ai-card__identity">
+              <div class="ai-card__avatar-shell">
                 <NuxtImg
+                  v-if="avatarSource(profile)"
                   :src="avatarSource(profile)"
                   width="56"
                   height="56"
-                  class="rounded-lg avatar-img"
+                  class="ai-card__avatar"
                   :alt="`${profile.name} avatar`"
-                  v-if="avatarSource(profile)"
                 />
-                <span v-else class="text-white text-subtitle-1">
+                <div v-else class="ai-card__avatar ai-card__avatar--fallback">
                   {{ initials(profile.name) }}
-                </span>
-              </v-avatar>
-              <div class="flex-grow-1">
-                <div class="text-subtitle-1 font-weight-medium ai-card-name">
+                </div>
+              </div>
+
+              <div class="ai-card__identity-copy">
+                <div class="ai-card__name">
                   {{ profile.name }}
                 </div>
-                <div class="text-caption ai-card-tagline">
+                <div class="ai-card__tagline">
                   {{ profile.tagline }}
                 </div>
               </div>
-              <v-chip
-                v-if="profile.region"
-                size="x-small"
-                label
-                variant="flat"
-                class="ai-card-region"
-              >
-                {{ profile.region }}
-              </v-chip>
             </div>
 
-            <v-chip
-              v-if="profile.bias"
-              size="small"
-              variant="flat"
-              class="mb-3 font-weight-medium ai-card-bias"
+            <span v-if="profile.region" class="ai-card__badge ai-card__badge--region">
+              {{ profile.region }}
+            </span>
+          </div>
+
+          <span v-if="profile.bias" class="ai-card__badge ai-card__badge--bias">
+            {{ profile.bias }}
+          </span>
+
+          <p class="ai-card__angle">
+            {{ profile.angle }}
+          </p>
+
+          <div v-if="profile.slug && profile.genderPath" class="ai-card__footer">
+            <NuxtLink
+              :to="localPath(`/profiles/${profile.genderPath}/${profile.slug}`)"
+              class="ai-card__link"
             >
-              {{ profile.bias }}
-            </v-chip>
-
-            <p class="text-body-2 ai-card-angle">
-              {{ profile.angle }}
-            </p>
-
-            <div
-              v-if="profile.slug && profile.genderPath"
-              class="mt-4 d-flex align-center"
-            >
-              <NuxtLink
-                :to="
-                  localPath(`/profiles/${profile.genderPath}/${profile.slug}`)
-                "
-                class="text-decoration-none"
-              >
-                <v-btn
-                  size="small"
-                  variant="text"
-                  color="primary"
-                  class="pl-0"
-                  prepend-icon="mdi-open-in-new"
-                >
-                  {{ viewProfileLabel }}
-                </v-btn>
-              </NuxtLink>
-            </div>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <v-divider class="mt-8" />
+              <i class="mdi mdi-open-in-new ai-card__link-icon" aria-hidden="true" />
+              {{ viewProfileLabel }}
+            </NuxtLink>
+          </div>
+        </article>
+      </div>
     </div>
 
-    <v-alert
-      v-if="!isLoading && !categoryBlocks.length"
-      type="info"
-      variant="tonal"
-    >
+    <div v-if="!isLoading && !categoryBlocks.length" class="ai-profiles__empty" role="status">
       {{
         $t(
           "pages.about.page.ai-profiles-empty",
           "AI personas will appear here soon."
         )
       }}
-    </v-alert>
+    </div>
   </div>
 </template>
 
@@ -275,20 +229,6 @@ const isLoading = computed(
 const avatarSource = (profile) =>
   getAvatar(profile.avatarUrl, profile.genderId || undefined);
 
-const titleText = computed(() =>
-  translateFirst(
-    ["pages.about.page.aiProfiles.title", "pages.about.aiProfiles.title"],
-    "Meet the AI newsroom"
-  )
-);
-
-const subtitleText = computed(() =>
-  translateFirst(
-    ["pages.about.page.aiProfiles.subtitle", "pages.about.aiProfiles.subtitle"],
-    "Each category uses a couple of distinct voices so you can see who is shaping the coverage and what lens they bring."
-  )
-);
-
 const viewProfileLabel = computed(() =>
   te("common.view-profile") ? t("common.view-profile") : "View profile"
 );
@@ -303,56 +243,207 @@ if (error.value) {
   margin-top: 8px;
 }
 
-.ai-card {
-  --ai-card-bg: linear-gradient(
-    145deg,
-    rgba(var(--v-theme-surface), 0.96),
-    rgba(var(--v-theme-primary), 0.08)
-  );
-  --ai-card-border: rgba(var(--v-theme-on-surface), 0.2);
-  --ai-card-name: rgba(var(--v-theme-on-surface), 0.96);
-  --ai-card-muted: rgba(var(--v-theme-on-surface), 0.72);
-  --ai-card-region-bg: rgba(var(--v-theme-secondary), 0.2);
-  --ai-card-region-text: rgba(var(--v-theme-secondary), 0.98);
-  --ai-card-bias-bg: rgba(var(--v-theme-primary), 0.2);
-  --ai-card-bias-text: rgba(var(--v-theme-primary), 0.98);
+.category {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgb(var(--color-border) / 0.65);
+}
 
+.category:last-of-type {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.category__header {
+  margin-bottom: 1rem;
+}
+
+.category__section {
+  margin-bottom: 0.2rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-foreground) / 0.58);
+}
+
+.category__title {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  font-weight: 650;
+  line-height: 1.3;
+  color: rgb(var(--color-foreground));
+}
+
+.category__description {
+  margin: 0;
+  max-width: 60rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground) / 0.68);
+}
+
+.category__grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ai-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
   height: 100%;
-  padding: 18px;
-  transition: transform 120ms ease, box-shadow 120ms ease;
-  background: var(--ai-card-bg);
-  border-color: var(--ai-card-border) !important;
+  padding: 1.125rem;
+  border: 1px solid rgb(var(--color-border) / 0.78);
+  border-radius: 1rem;
+  background:
+    linear-gradient(
+      145deg,
+      rgb(var(--color-surface) / 0.96),
+      rgb(var(--color-primary) / 0.08)
+    );
+  box-shadow: 0 10px 24px rgb(var(--color-shadow) / 0.08);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
 }
 
 .ai-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(33, 33, 33, 0.12);
+  border-color: rgb(var(--color-primary) / 0.3);
+  box-shadow: 0 16px 30px rgb(var(--color-shadow) / 0.14);
 }
 
-.ai-card-name {
-  color: var(--ai-card-name);
+.ai-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
-.ai-card-tagline,
-.ai-card-angle {
-  color: var(--ai-card-muted);
+.ai-card__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
 }
 
-.ai-card-region {
-  background: var(--ai-card-region-bg) !important;
-  color: var(--ai-card-region-text) !important;
+.ai-card__avatar-shell {
+  flex: 0 0 auto;
 }
 
-.ai-card-bias {
-  background: var(--ai-card-bias-bg) !important;
-  color: var(--ai-card-bias-text) !important;
-}
-
-.avatar-img {
+.ai-card__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 0.875rem;
   object-fit: cover;
+  background: rgb(var(--color-primary) / 0.12);
+  color: rgb(var(--color-primary));
+  font-size: 1rem;
+  font-weight: 700;
 }
 
-.category:last-of-type .v-divider {
-  display: none;
+.ai-card__avatar--fallback {
+  border: 1px solid rgb(var(--color-primary) / 0.18);
+}
+
+.ai-card__identity-copy {
+  min-width: 0;
+}
+
+.ai-card__name {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgb(var(--color-foreground));
+}
+
+.ai-card__tagline {
+  margin-top: 0.15rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgb(var(--color-foreground) / 0.66);
+}
+
+.ai-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.28rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ai-card__badge--region {
+  background: rgb(var(--color-secondary) / 0.18);
+  color: rgb(var(--color-secondary));
+}
+
+.ai-card__badge--bias {
+  background: rgb(var(--color-primary) / 0.14);
+  color: rgb(var(--color-primary));
+}
+
+.ai-card__angle {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground) / 0.76);
+}
+
+.ai-card__footer {
+  margin-top: auto;
+}
+
+.ai-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: rgb(var(--color-primary));
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ai-card__link:hover {
+  text-decoration: underline;
+}
+
+.ai-card__link-icon {
+  font-size: 0.95rem;
+}
+
+.ai-profiles__empty {
+  padding: 1rem 1.1rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 16px;
+  background: rgb(var(--color-primary) / 0.06);
+  color: rgb(var(--color-foreground) / 0.78);
+}
+
+@media (min-width: 640px) {
+  .category__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .category__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .category__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 </style>

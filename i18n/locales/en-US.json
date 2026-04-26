@@ -966,7 +966,7 @@
     },
     "profiles": {
       "ai": {
-        "title": "Popular AI Profiles",
+        "title": "ai",
         "meta": {
           "title": "Top AI Profiles",
           "description": "Explore the most popular AI chat profiles on ImChatty. Browse engaging bots with unique personalities, tailored responses, and shared interests.",
@@ -1011,7 +1011,7 @@
         }
       },
       "popular": {
-        "title": "Most Popular Profiles",
+        "title": "popular",
         "meta": {
           "title": "Top Profiles",
           "description": "Explore the most popular profiles on ImChatty. Browse real members with authentic bios, personalized interests, and highly rated conversations.",
@@ -1026,7 +1026,7 @@
         }
       },
       "recent": {
-        "title": "Popular Recent Profiles",
+        "title": "recent",
         "meta": {
           "title": "More Popular Recent Profiles",
           "description": "Check out our most popular recent profiles! Browse top-rated members with real profiles, personalized details, and genuine interests.",

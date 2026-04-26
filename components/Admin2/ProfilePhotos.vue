@@ -1,51 +1,74 @@
 <template>
-  <v-card class="pa-6" elevation="3">
-    <v-card-title class="d-flex flex-wrap align-center justify-space-between ga-3">
-      <span>Photo Library Approvals</span>
-      <div class="d-flex align-center ga-2">
-        <v-select
-          v-model="statusFilter"
-          :items="statusOptions"
-          label="Status"
-          variant="outlined"
-          density="comfortable"
-          hide-details
-          class="photo-status-select"
-        />
-        <v-btn variant="text" :loading="loading" @click="loadPhotos">
-          Refresh
-        </v-btn>
+  <section class="admin-assets-card">
+    <div class="admin-assets-card__header">
+      <div>
+        <h2 class="admin-assets-card__title">Photo Library Approvals</h2>
+        <p class="admin-assets-card__subtitle">
+          Review pending uploads, open the profile behind an image, and approve, reject, or remove assets.
+        </p>
       </div>
-    </v-card-title>
-    <v-card-text>
-      <v-alert
+      <div class="admin-assets-toolbar">
+        <label class="admin-assets-field photo-status-select">
+          <span class="admin-assets-field__label">Status</span>
+          <select v-model="statusFilter" class="admin-assets-field__control">
+            <option
+              v-for="option in statusOptions"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.title }}
+            </option>
+          </select>
+        </label>
+        <button
+          type="button"
+          class="admin-assets-button"
+          :disabled="loading"
+          @click="loadPhotos"
+        >
+          <span v-if="loading" class="admin-assets-button__spinner" aria-hidden="true" />
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-assets-card__body">
+      <div
         v-if="errorMessage"
-        type="error"
-        variant="tonal"
-        density="compact"
-        class="mb-4"
+        class="admin-assets-banner admin-assets-banner--error"
+        role="alert"
       >
         {{ errorMessage }}
-      </v-alert>
+      </div>
+
       <LoadingContainer v-if="loading" text="Loading photos..." />
-      <div v-else>
-        <div v-if="!photos.length" class="text-caption text-medium-emphasis">
+
+      <template v-else>
+        <div v-if="!photos.length" class="admin-assets-empty-state">
           No photos found for this filter.
         </div>
+
         <div v-else class="photo-grid">
-          <v-card
+          <article
             v-for="photo in photos"
             :key="photo.id"
-            variant="outlined"
             class="photo-card"
           >
-            <v-img :src="photo.url || photo.public_url" aspect-ratio="4/3" cover />
+            <div class="photo-card__media-wrap">
+              <NuxtImg
+                :src="photo.url || photo.public_url"
+                class="photo-card__media"
+                alt=""
+              />
+            </div>
+
             <div class="photo-meta">
-              <div class="text-caption text-medium-emphasis">
-                {{ formatDate(photo.created_at) }}
+              <div class="photo-meta__row">
+                <span class="photo-meta__label">Uploaded</span>
+                <span>{{ formatDate(photo.created_at) }}</span>
               </div>
-              <div class="text-caption text-medium-emphasis">
-                User:
+              <div class="photo-meta__row">
+                <span class="photo-meta__label">User</span>
                 <button
                   class="photo-user-link"
                   type="button"
@@ -54,70 +77,51 @@
                   {{ photo.displayname || truncateId(photo.user_id) }}
                 </button>
               </div>
-              <v-chip
-                size="x-small"
-                :color="statusColor(photo.status)"
-                variant="tonal"
-                class="mt-2"
+              <span
+                class="photo-status-pill"
+                :class="`photo-status-pill--${statusColor(photo.status)}`"
               >
                 {{ statusLabel(photo.status) }}
-              </v-chip>
+              </span>
             </div>
-            <v-card-actions class="photo-actions">
-              <v-tooltip text="Approve" location="top">
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon
-                    size="small"
-                    color="success"
-                    variant="text"
-                    aria-label="Approve photo"
-                    :loading="actionLoading[photo.id] === 'approve'"
-                    @click="approvePhoto(photo)"
-                  >
-                    <v-icon>mdi-check</v-icon>
-                  </v-btn>
-                </template>
-              </v-tooltip>
-              <v-tooltip text="Reject" location="top">
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon
-                    size="small"
-                    color="warning"
-                    variant="text"
-                    aria-label="Reject photo"
-                    :loading="actionLoading[photo.id] === 'reject'"
-                    @click="rejectPhoto(photo)"
-                  >
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
-                </template>
-              </v-tooltip>
-              <v-tooltip text="Delete" location="top">
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon
-                    size="small"
-                    color="error"
-                    variant="text"
-                    aria-label="Delete photo"
-                    :loading="actionLoading[photo.id] === 'delete'"
-                    @click="deletePhoto(photo)"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
-                </template>
-              </v-tooltip>
-            </v-card-actions>
-          </v-card>
+
+            <div class="photo-actions">
+              <button
+                type="button"
+                class="photo-action-btn photo-action-btn--success"
+                :disabled="Boolean(actionLoading[photo.id])"
+                :aria-label="`Approve photo ${photo.id}`"
+                @click="approvePhoto(photo)"
+              >
+                <span v-if="actionLoading[photo.id] === 'approve'" class="admin-assets-button__spinner" aria-hidden="true" />
+                <i v-else class="mdi mdi-check" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                class="photo-action-btn photo-action-btn--warning"
+                :disabled="Boolean(actionLoading[photo.id])"
+                :aria-label="`Reject photo ${photo.id}`"
+                @click="rejectPhoto(photo)"
+              >
+                <span v-if="actionLoading[photo.id] === 'reject'" class="admin-assets-button__spinner" aria-hidden="true" />
+                <i v-else class="mdi mdi-close" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                class="photo-action-btn photo-action-btn--danger"
+                :disabled="Boolean(actionLoading[photo.id])"
+                :aria-label="`Delete photo ${photo.id}`"
+                @click="deletePhoto(photo)"
+              >
+                <span v-if="actionLoading[photo.id] === 'delete'" class="admin-assets-button__spinner" aria-hidden="true" />
+                <i v-else class="mdi mdi-delete" aria-hidden="true" />
+              </button>
+            </div>
+          </article>
         </div>
-      </div>
-    </v-card-text>
-  </v-card>
+      </template>
+    </div>
+  </section>
 
   <ProfileDialog
     v-model="profileDialogOpen"
@@ -153,7 +157,7 @@ const statusLabel = (status) => {
 
 const statusColor = (status) => {
   if (status === "approved") return "success";
-  if (status === "rejected") return "error";
+  if (status === "rejected") return "danger";
   return "warning";
 };
 
@@ -279,39 +283,271 @@ onMounted(loadPhotos);
 </script>
 
 <style scoped>
+.admin-assets-card {
+  border: 1px solid rgba(var(--color-border), 0.88);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.96), rgba(var(--color-surface), 0.98));
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.admin-assets-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 0;
+}
+
+.admin-assets-card__title {
+  margin: 0;
+  color: rgb(var(--color-heading));
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.admin-assets-card__subtitle {
+  margin: 6px 0 0;
+  color: rgba(var(--color-text), 0.72);
+  font-size: 0.92rem;
+}
+
+.admin-assets-card__body {
+  padding: 20px 22px 22px;
+}
+
+.admin-assets-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.admin-assets-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-assets-field__label {
+  color: rgba(var(--color-text), 0.68);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.admin-assets-field__control {
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--color-border), 0.9);
+  background: rgba(var(--color-surface), 0.94);
+  color: rgb(var(--color-text));
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  color-scheme: light dark;
+}
+
+.admin-assets-field__control:focus {
+  border-color: rgba(var(--color-primary), 0.5);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.12);
+}
+
 .photo-status-select {
   min-width: 160px;
 }
 
+.admin-assets-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-border), 0.86);
+  background: rgba(var(--color-surface), 0.92);
+  color: rgb(var(--color-text));
+  padding: 0 16px;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.admin-assets-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-assets-button__spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(var(--color-text), 0.18);
+  border-top-color: currentColor;
+  animation: admin-assets-spin 0.8s linear infinite;
+}
+
+.admin-assets-banner {
+  margin-bottom: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--color-border), 0.82);
+  padding: 12px 14px;
+  font-size: 0.95rem;
+}
+
+.admin-assets-banner--error {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(185, 28, 28);
+}
+
+.admin-assets-empty-state {
+  color: rgba(var(--color-text), 0.72);
+  font-size: 0.85rem;
+}
+
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
 }
 
 .photo-card {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(var(--color-border), 0.86);
+  border-radius: 20px;
+  background: rgba(var(--color-surface), 0.9);
+}
+
+.photo-card__media-wrap {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: rgba(var(--color-surface-elevated), 0.94);
+}
+
+.photo-card__media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .photo-meta {
-  padding: 10px 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 0;
+}
+
+.photo-meta__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: rgb(var(--color-text));
+  font-size: 0.88rem;
+}
+
+.photo-meta__label {
+  color: rgba(var(--color-text), 0.66);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.photo-status-pill {
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.photo-status-pill--success {
+  background: rgba(34, 197, 94, 0.12);
+  color: rgb(22, 101, 52);
+}
+
+.photo-status-pill--warning {
+  background: rgba(245, 158, 11, 0.14);
+  color: rgb(180, 83, 9);
+}
+
+.photo-status-pill--danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(185, 28, 28);
 }
 
 .photo-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px 14px;
   margin-top: auto;
-  justify-content: flex-start;
-  gap: 6px;
-  padding: 8px 12px 12px;
+}
+
+.photo-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: rgba(var(--color-surface-elevated), 0.98);
+}
+
+.photo-action-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.photo-action-btn--success {
+  color: rgb(22, 101, 52);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.photo-action-btn--warning {
+  color: rgb(180, 83, 9);
+  border-color: rgba(245, 158, 11, 0.24);
+}
+
+.photo-action-btn--danger {
+  color: rgb(185, 28, 28);
+  border-color: rgba(239, 68, 68, 0.22);
 }
 
 .photo-user-link {
-  background: none;
-  border: none;
+  align-self: flex-start;
+  background: transparent;
+  border: 0;
   padding: 0;
-  color: #1e88e5;
+  color: rgb(var(--color-primary));
   cursor: pointer;
   font: inherit;
-  text-decoration: underline;
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .admin-assets-card__header,
+  .admin-assets-toolbar {
+    align-items: stretch;
+  }
+
+  .photo-status-select,
+  .admin-assets-button {
+    width: 100%;
+  }
+}
+
+@keyframes admin-assets-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

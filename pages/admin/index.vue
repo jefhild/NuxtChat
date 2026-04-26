@@ -1,50 +1,62 @@
 <template>
-  <v-container fluid class="admin-shell">
-    <v-navigation-drawer
-      v-model="drawer"
-      temporary
-      location="left"
-      width="280"
-      class="admin-drawer"
-    >
-      <v-list density="compact" class="admin-drawer-list">
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-          :value="item.value"
-          class="admin-drawer-item"
-          @click="
-            selectedSection = item.value;
-            drawer = false;
-          "
-          :active="selectedSection === item.value"
-          color="primary"
-          rounded="shaped"
+  <section class="admin-shell mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+    <Teleport to="body">
+      <Transition name="admin-drawer-fade">
+        <div
+          v-if="drawer"
+          class="admin-drawer-overlay"
+          aria-hidden="true"
         >
-          <template v-slot:prepend>
-            <v-icon :icon="item.icon"></v-icon>
-          </template>
-          <v-list-item-title>{{ item.text }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
+          <button
+            type="button"
+            class="admin-drawer-scrim"
+            aria-label="Close admin menu"
+            @click="drawer = false"
+          />
+          <aside
+            class="admin-drawer"
+            aria-label="Admin navigation"
+          >
+            <div class="admin-drawer-list">
+              <button
+                v-for="(item, i) in items"
+                :key="i"
+                type="button"
+                class="admin-drawer-item"
+                :class="{ 'admin-drawer-item--active': selectedSection === item.value }"
+                @click="
+                  selectedSection = item.value;
+                  drawer = false;
+                "
+              >
+                <i :class="['mdi', item.icon, 'admin-drawer-item__icon']" aria-hidden="true" />
+                <span>{{ item.text }}</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      </Transition>
+    </Teleport>
 
     <div class="admin-header-shell">
       <div class="admin-header-actions">
-        <v-btn icon variant="text" class="admin-menu-btn" @click="drawer = true">
-          <v-icon>mdi-menu</v-icon>
-        </v-btn>
+        <button
+          type="button"
+          class="admin-menu-btn"
+          aria-label="Open admin menu"
+          :aria-expanded="drawer ? 'true' : 'false'"
+          @click="drawer = true"
+        >
+          <i class="mdi mdi-menu" aria-hidden="true" />
+        </button>
       </div>
       <PageHeader :text="`Admin ${currentSectionLabel}`" />
     </div>
 
-    <v-row>
-      <!-- Main Content -->
-      <v-col cols="12">
-        <component :is="getSectionComponent(selectedSection)" />
-      </v-col>
-    </v-row>
-  </v-container>
+    <div class="admin-content-shell">
+      <component :is="getSectionComponent(selectedSection)" />
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -194,49 +206,145 @@ const getSectionComponent = (section) => {
   padding-top: 6px;
 }
 
+.admin-content-shell {
+  width: 100%;
+}
+
 .admin-header-shell {
   position: relative;
   margin-bottom: 8px;
+  padding-top: 4px;
 }
 
 .admin-header-actions {
   position: absolute;
-  top: 6px;
-  left: 0;
+  top: -8px;
+  left: -10px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  z-index: 1;
+  z-index: 2;
 }
 
 .admin-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
   margin: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.38);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #e2e8f0;
+  box-shadow: 0 8px 18px rgba(2, 6, 23, 0.18);
+  cursor: pointer;
 }
 
-.v-list-item--active {
-  background-color: rgba(63, 81, 181, 0.1);
-  /* light blue highlight */
+.admin-menu-btn:hover,
+.admin-menu-btn:focus-visible {
+  background: rgba(15, 23, 42, 0.56);
 }
 
-.v-list-item:hover {
-  background-color: rgba(63, 81, 181, 0.5) !important;
-  transition: background-color 0.2s ease;
+.admin-menu-btn:focus-visible {
+  outline: 2px solid rgb(var(--color-primary) / 0.45);
+  outline-offset: 2px;
 }
+
+.admin-menu-btn .mdi {
+  font-size: 1.5rem;
+}
+
+.admin-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+}
+
+.admin-drawer-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(2, 6, 23, 0.46);
+  cursor: pointer;
+}
+
 .admin-drawer {
-  margin-top: 64px;
-  height: calc(100% - 64px);
+  position: absolute;
+  top: var(--nav2-offset, 64px);
+  left: 0;
+  width: min(280px, calc(100vw - 24px));
+  height: calc(100dvh - var(--nav2-offset, 64px));
   overflow: hidden;
+  border-right: 1px solid rgba(148, 163, 184, 0.16);
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.98));
+  box-shadow: 0 16px 36px rgba(2, 6, 23, 0.32);
 }
 
-.admin-drawer :deep(.v-navigation-drawer__content) {
+.admin-drawer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  height: 100%;
   overflow-y: auto;
+  padding: 0.85rem 0.7rem 1rem;
 }
 
 .admin-drawer-item {
-  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: #e2e8f0;
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  font-size: 0.95rem;
+  cursor: pointer;
 }
 
-.admin-drawer-item :deep(.v-list-item-title) {
-  font-size: 0.9rem;
+.admin-drawer-item:hover,
+.admin-drawer-item:focus-visible {
+  background: rgba(63, 81, 181, 0.18);
+}
+
+.admin-drawer-item:focus-visible {
+  outline: 2px solid rgb(var(--color-primary) / 0.45);
+  outline-offset: 2px;
+}
+
+.admin-drawer-item--active {
+  background: rgba(63, 81, 181, 0.24);
+  color: #fff;
+}
+
+.admin-drawer-item__icon {
+  font-size: 1.15rem;
+}
+
+.admin-drawer-fade-enter-active,
+.admin-drawer-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.admin-drawer-fade-enter-active .admin-drawer,
+.admin-drawer-fade-leave-active .admin-drawer {
+  transition: transform 0.22s ease;
+}
+
+.admin-drawer-fade-enter-from,
+.admin-drawer-fade-leave-to {
+  opacity: 0;
+}
+
+.admin-drawer-fade-enter-from .admin-drawer,
+.admin-drawer-fade-leave-to .admin-drawer {
+  transform: translateX(-14px);
 }
 </style>

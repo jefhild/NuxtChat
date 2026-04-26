@@ -1,15 +1,23 @@
 <template>
-  <v-app>
+  <div class="app-root">
     <NuxtLoadingIndicator color="#4b9cff" :height="4" />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
-  </v-app>
+  </div>
 </template>
 
 <script setup></script>
 
 <style>
+.app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  height: 100%;
+  width: 100%;
+}
+
 .nuxt-loading-indicator {
   position: fixed;
   top: 50%;

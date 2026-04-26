@@ -1,100 +1,87 @@
 <template>
-  <v-card class="candidate-card" :elevation="2" rounded="lg">
-    <!-- Status dot: green=online, purple=away agent, grey=offline -->
+  <article class="candidate-card">
     <span class="status-dot" :class="statusDotClass" />
 
-    <v-card-text class="pa-3">
-      <div class="d-flex align-center gap-3">
-        <!-- Avatar with flag + gender badge overlay (matches HomeProfiles style) -->
+    <div class="candidate-card__body">
+      <div class="candidate-card__top">
         <div class="avatar-stack" @click="onViewProfile">
-          <v-avatar size="48" color="surface-variant" class="cursor-pointer">
-            <v-img v-if="candidate.avatar_url" :src="candidate.avatar_url" :alt="candidate.displayname" />
-            <v-icon v-else icon="mdi-account" />
-          </v-avatar>
+          <div class="candidate-avatar" aria-hidden="true">
+            <img
+              v-if="candidate.avatar_url"
+              :src="candidate.avatar_url"
+              :alt="candidate.displayname"
+              class="candidate-avatar__image"
+            >
+            <i v-else class="mdi mdi-account candidate-avatar__fallback" />
+          </div>
           <span v-if="candidate.country_emoji" class="avatar-flag">
             {{ candidate.country_emoji }}
           </span>
-          <v-avatar size="28" color="transparent" class="gender-badge">
-            <v-icon
-              size="18"
-              class="candidate-gender-icon"
+          <span class="gender-badge" aria-hidden="true">
+            <i
+              :class="['mdi', getAvatarIcon(candidate.gender_id), 'candidate-gender-icon']"
               :style="{ '--candidate-gender-color': getGenderHexColor(candidate.gender_id) }"
-              :icon="getAvatarIcon(candidate.gender_id)"
             />
-          </v-avatar>
+          </span>
         </div>
 
-        <div class="flex-grow-1 overflow-hidden" style="margin-left: 6px;">
-          <div class="d-flex align-center gap-1">
-            <span
-              class="text-body-1 font-weight-medium text-truncate cursor-pointer text-primary"
-              style="text-decoration: underline; text-underline-offset: 2px;"
-              @click="onViewProfile"
-            >
-              {{ candidate.displayname || $t("components.candidateCard.anonymous") }}
-            </span>
-          </div>
+        <div class="candidate-card__identity">
+          <button
+            type="button"
+            class="candidate-card__name"
+            @click="onViewProfile"
+          >
+            {{ candidate.displayname || $t("components.candidateCard.anonymous") }}
+          </button>
           <p
             v-if="candidate.tagline"
-            class="text-body-2 text-medium-emphasis text-truncate mt-0 mb-0"
+            class="candidate-card__tagline"
           >
             {{ candidate.tagline }}
           </p>
         </div>
 
-        <!-- Match score bar -->
-        <div v-if="candidate.score" class="score-wrap text-center">
-          <v-progress-circular
-            :model-value="Math.round(candidate.score * 100)"
-            :color="scoreColor"
-            size="36"
-            width="3"
-          >
-            <span class="text-caption font-weight-bold">{{ Math.round(candidate.score * 100) }}</span>
-          </v-progress-circular>
+        <div
+          v-if="candidate.score"
+          :class="['score-wrap', scoreToneClass]"
+          :style="{ '--candidate-score-progress': `${scorePercent}%` }"
+        >
+          <div class="score-wrap__inner">
+            {{ scorePercent }}
+          </div>
         </div>
       </div>
 
-      <!-- Mood badges -->
-      <div v-if="showMoodBadges" class="d-flex flex-wrap gap-1 mt-2">
-        <v-chip
+      <div v-if="showMoodBadges" class="chip-row chip-row--mood">
+        <span
           v-if="candidate.emotion"
-          size="x-small"
-          variant="tonal"
-          color="secondary"
-          :prepend-icon="emotionIcon(candidate.emotion)"
+          class="candidate-chip candidate-chip--secondary"
         >
+          <i :class="['mdi', emotionIcon(candidate.emotion), 'candidate-chip__icon']" aria-hidden="true" />
           {{ $t(`match.emotion.${candidate.emotion}`, candidate.emotion) }}
-        </v-chip>
-        <v-chip
+        </span>
+        <span
           v-if="candidate.intent"
-          size="x-small"
-          variant="tonal"
-          color="primary"
-          prepend-icon="mdi-forum-outline"
+          class="candidate-chip candidate-chip--primary"
         >
+          <i class="mdi mdi-forum-outline candidate-chip__icon" aria-hidden="true" />
           {{ $t(`match.intent.${candidate.intent}`, candidate.intent) }}
-        </v-chip>
-        <v-chip
+        </span>
+        <span
           v-if="candidate.energy"
-          size="x-small"
-          variant="tonal"
-          color="warning"
-          :prepend-icon="energyIcon(candidate.energy)"
+          class="candidate-chip candidate-chip--warning"
         >
+          <i :class="['mdi', energyIcon(candidate.energy), 'candidate-chip__icon']" aria-hidden="true" />
           {{ $t(`match.energy.${candidate.energy}`, candidate.energy) }}
-        </v-chip>
+        </span>
       </div>
 
-      <!-- Language practice badges -->
-      <div v-if="showLanguageBadges" class="language-chip-row mt-2">
-        <v-chip
+      <div v-if="showLanguageBadges" class="language-chip-row">
+        <span
           v-if="targetLanguageLabel"
-          class="language-chip language-chip--target"
-          size="x-small"
-          variant="tonal"
-          prepend-icon="mdi-translate"
+          class="candidate-chip language-chip language-chip--target"
         >
+          <i class="mdi mdi-translate candidate-chip__icon" aria-hidden="true" />
           {{
             $t(
               isAi
@@ -105,14 +92,12 @@
               }
             )
           }}
-        </v-chip>
-        <v-chip
+        </span>
+        <span
           v-if="nativeLanguageLabel"
-          class="language-chip language-chip--native"
-          size="x-small"
-          variant="tonal"
-          prepend-icon="mdi-account-voice"
+          class="candidate-chip language-chip language-chip--native"
         >
+          <i class="mdi mdi-account-voice candidate-chip__icon" aria-hidden="true" />
           {{
             $t(
               isAi
@@ -123,37 +108,40 @@
               }
             )
           }}
-        </v-chip>
-        <v-chip
+        </span>
+        <span
           v-if="candidate.correction_preference"
-          class="language-chip language-chip--correction"
-          size="x-small"
-          variant="tonal"
-          prepend-icon="mdi-pencil-outline"
+          class="candidate-chip language-chip language-chip--correction"
         >
+          <i class="mdi mdi-pencil-outline candidate-chip__icon" aria-hidden="true" />
           {{
             $t(
               `match.language.correctionPreferences.${candidate.correction_preference}`,
               candidate.correction_preference
             )
           }}
-        </v-chip>
+        </span>
       </div>
-    </v-card-text>
+    </div>
 
-    <v-card-actions class="px-3 pt-0 pb-3">
-      <v-btn
-        color="primary"
-        variant="tonal"
-        size="small"
-        block
-        :prepend-icon="isAi ? 'mdi-robot-outline' : 'mdi-message-text-outline'"
+    <div class="candidate-card__actions">
+      <button
+        type="button"
+        class="candidate-card__cta"
         @click="onChat"
       >
+        <i
+          :class="[
+            'mdi',
+            isAi ? 'mdi-robot-outline' : 'mdi-message-text-outline',
+            'candidate-card__cta-icon',
+          ]"
+          aria-hidden="true"
+        />
         {{ $t("components.candidateCard.chatWith", { name: candidate.displayname || $t("components.candidateCard.anonymous") }) }}
-      </v-btn>
-    </v-card-actions>
-  </v-card>
+      </button>
+    </div>
+  </article>
 </template>
 
 <script setup>
@@ -217,11 +205,15 @@ const statusDotClass = computed(() => {
   return "status-dot--offline";
 });
 
-const scoreColor = computed(() => {
+const scorePercent = computed(() =>
+  Math.max(0, Math.min(100, Math.round((props.candidate.score ?? 0) * 100)))
+);
+
+const scoreToneClass = computed(() => {
   const s = props.candidate.score ?? 0;
-  if (s >= 0.7) return "success";
-  if (s >= 0.4) return "warning";
-  return "default";
+  if (s >= 0.7) return "score-wrap--success";
+  if (s >= 0.4) return "score-wrap--warning";
+  return "score-wrap--neutral";
 });
 
 const hasLanguageBadges = computed(
@@ -276,11 +268,30 @@ function onChat() {
 <style scoped>
 .candidate-card {
   position: relative;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 14px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 10px 24px rgb(var(--color-shadow) / 0.08);
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 }
 
 .candidate-card:hover {
   transform: translateY(-2px);
+  border-color: rgb(var(--color-primary) / 0.24);
+  box-shadow: 0 14px 28px rgb(var(--color-shadow) / 0.12);
+}
+
+.candidate-card__body {
+  padding: 0.9rem;
+}
+
+.candidate-card__top {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
 }
 
 .status-dot {
@@ -294,8 +305,8 @@ function onChat() {
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
 }
 
-.status-dot--online  { background-color: #4caf50; }
-.status-dot--agent   { background-color: #7c3aed; }
+.status-dot--online { background-color: #4caf50; }
+.status-dot--agent { background-color: #7c3aed; }
 .status-dot--offline { background-color: #90a4ae; }
 
 .avatar-stack {
@@ -303,6 +314,28 @@ function onChat() {
   display: inline-flex;
   flex-shrink: 0;
   cursor: pointer;
+}
+
+.candidate-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: rgb(var(--color-surface-2, var(--color-surface)));
+  overflow: hidden;
+}
+
+.candidate-avatar__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.candidate-avatar__fallback {
+  font-size: 1.35rem;
+  color: rgb(var(--color-foreground) / 0.52);
 }
 
 .avatar-flag {
@@ -319,66 +352,181 @@ function onChat() {
   position: absolute;
   left: -8px;
   bottom: -8px;
-  --v-avatar-background: transparent;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.gender-badge :deep(.v-avatar__underlay),
-.gender-badge :deep(.v-avatar__content) {
-  background: transparent !important;
-}
-
-.gender-badge :deep(.v-icon) {
-  background: transparent !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
 }
 
 .candidate-gender-icon {
-  color: var(--candidate-gender-color, #a855f7) !important;
+  font-size: 1.15rem;
+  color: var(--candidate-gender-color, #a855f7);
 }
 
+.candidate-card__identity {
+  min-width: 0;
+  flex: 1;
+  margin-left: 6px;
+}
+
+.candidate-card__name {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--color-primary));
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.candidate-card__tagline {
+  margin: 0.1rem 0 0;
+  overflow: hidden;
+  color: rgb(var(--color-foreground) / 0.68);
+  font-size: 0.92rem;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background:
+    conic-gradient(var(--score-color) var(--candidate-score-progress), rgb(var(--color-border) / 0.5) 0);
+}
+
+.score-wrap__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.score-wrap--success { --score-color: #22c55e; }
+.score-wrap--warning { --score-color: #f59e0b; }
+.score-wrap--neutral { --score-color: rgb(var(--color-foreground) / 0.45); }
+
+.chip-row,
 .language-chip-row {
   display: flex;
   flex-wrap: wrap;
-  column-gap: 7px;
-  row-gap: 6px;
+  gap: 6px 7px;
   align-items: flex-start;
+  margin-top: 0.65rem;
+}
+
+.candidate-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 24px;
+  padding: 0.28rem 0.6rem;
+  border: 1px solid var(--chip-border, rgb(var(--color-border) / 0.4));
+  border-radius: 999px;
+  background: var(--chip-bg, rgb(var(--color-primary) / 0.08));
+  color: var(--chip-text, rgb(var(--color-foreground) / 0.84));
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.candidate-chip__icon {
+  color: var(--chip-icon, currentColor);
+  font-size: 0.82rem;
+}
+
+.candidate-chip--primary {
+  --chip-bg: rgb(var(--color-primary) / 0.14);
+  --chip-border: rgb(var(--color-primary) / 0.28);
+  --chip-text: rgb(var(--color-primary));
+}
+
+.candidate-chip--secondary {
+  --chip-bg: rgb(var(--color-secondary) / 0.14);
+  --chip-border: rgb(var(--color-secondary) / 0.28);
+  --chip-text: rgb(var(--color-secondary));
+}
+
+.candidate-chip--warning {
+  --chip-bg: rgb(245 158 11 / 0.14);
+  --chip-border: rgb(245 158 11 / 0.28);
+  --chip-text: #d97706;
 }
 
 .language-chip {
   flex: 0 1 auto;
-  border: 1px solid var(--language-chip-border, rgba(148, 163, 184, 0.2));
-  background: var(--language-chip-bg, rgba(148, 163, 184, 0.12)) !important;
-  color: var(--language-chip-text, rgba(var(--v-theme-on-surface), 0.84)) !important;
-  min-height: 24px;
-  padding-inline: 8px 10px !important;
-  overflow: visible;
-}
-
-.language-chip :deep(.v-icon) {
-  color: var(--language-chip-icon, currentColor) !important;
-  margin-inline-end: 5px;
 }
 
 .language-chip--target {
-  --language-chip-bg: rgba(34, 197, 94, 0.14);
-  --language-chip-border: rgba(34, 197, 94, 0.34);
-  --language-chip-icon: #22c55e;
+  --chip-bg: rgba(34, 197, 94, 0.14);
+  --chip-border: rgba(34, 197, 94, 0.34);
+  --chip-icon: #22c55e;
 }
 
 .language-chip--native {
-  --language-chip-bg: rgba(56, 189, 248, 0.14);
-  --language-chip-border: rgba(56, 189, 248, 0.34);
-  --language-chip-icon: #38bdf8;
+  --chip-bg: rgba(56, 189, 248, 0.14);
+  --chip-border: rgba(56, 189, 248, 0.34);
+  --chip-icon: #38bdf8;
 }
 
 .language-chip--correction {
-  --language-chip-bg: rgba(129, 140, 248, 0.16);
-  --language-chip-border: rgba(129, 140, 248, 0.36);
-  --language-chip-icon: #a5b4fc;
+  --chip-bg: rgba(129, 140, 248, 0.16);
+  --chip-border: rgba(129, 140, 248, 0.36);
+  --chip-icon: #a5b4fc;
 }
 
-.score-wrap {
-  flex-shrink: 0;
+.candidate-card__actions {
+  padding: 0 0.9rem 0.9rem;
+}
+
+.candidate-card__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 38px;
+  padding: 0.6rem 0.8rem;
+  border: 0;
+  border-radius: 10px;
+  background: rgb(var(--color-primary) / 0.12);
+  color: rgb(var(--color-primary));
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.candidate-card__cta:hover,
+.candidate-card__cta:focus-visible {
+  background: rgb(var(--color-primary) / 0.18);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.candidate-card__cta-icon {
+  font-size: 1rem;
 }
 </style>

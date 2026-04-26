@@ -1,55 +1,61 @@
 <template>
-  <v-container class="signin-shell">
-    <v-row class="mt-3 mb-3">
-      <v-col cols="12" sm="4" order="1" order-sm="1">
-        <v-row no-gutters>
-          <v-col>
-            <p class="text-center green-text-poppins mb-2">
-              <!-- {{ rowCount }} users online -->
-            </p>
-            <v-card class="signin-provider-card">
-              <v-card-title
-                ><h1 class="green--text-h1">
-                  {{ $t("components.home.main.sign-in") }}
-                </h1></v-card-title
+  <section class="signin-shell mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="mb-3 mt-3 grid grid-cols-1 gap-4 sm:grid-cols-12">
+      <div class="order-1 sm:col-span-4">
+        <p class="mb-2 text-center green-text-poppins">
+          <!-- {{ rowCount }} users online -->
+        </p>
+        <article class="signin-provider-card">
+          <div class="signin-provider-card__header">
+            <h1 class="green--text-h1">
+              {{ $t("components.home.main.sign-in") }}
+            </h1>
+          </div>
+          <div class="signin-provider-card__body">
+            <div class="signin-list">
+              <button
+                v-for="provider in providerButtons"
+                :key="provider.component"
+                type="button"
+                class="signin-btn"
+                :class="{ 'signin-btn--active': selectedModel === provider.component }"
+                :style="{ '--provider-icon-color': provider.iconColor }"
+                :aria-label="$t(provider.labelKey)"
+                @click="switchModel(provider.component)"
               >
-              <v-card-text>
-                <div class="signin-list">
-                  <v-btn
-                    v-for="provider in providerButtons"
-                    :key="provider.component"
-                    class="signin-btn"
-                    variant="plain"
-                    :style="{ '--provider-icon-color': provider.iconColor }"
-                    :aria-label="$t(provider.labelKey)"
-                    @click="switchModel(provider.component)"
+                <span class="signin-icon" aria-hidden="true">
+                  <svg
+                    v-if="provider.iconType === 'svg'"
+                    class="signin-icon__svg"
+                    viewBox="0 0 24 24"
+                    focusable="false"
+                    aria-hidden="true"
                   >
-                    <v-icon
-                      :icon="provider.icon"
-                      :style="{ color: provider.iconColor }"
-                      class="signin-icon"
-                    />
-                    <span class="green--text-h2 signin-label">
-                      {{ $t(provider.labelKey) }}
-                    </span>
-                  </v-btn>
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-col>
+                    <path :d="provider.icon" fill="currentColor" />
+                  </svg>
+                  <i
+                    v-else
+                    :class="['mdi', provider.icon]"
+                  />
+                </span>
+                <span class="green--text-h2 signin-label">
+                  {{ $t(provider.labelKey) }}
+                </span>
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
 
-      <!-- Second Column: Main Content -->
-      <v-col cols="12" sm="8" order="2" order-sm="2">
-        <v-card class="signin-detail-card" :class="{ 'highlight-card': highlight }">
-          <v-card-text>
+      <div class="order-2 sm:col-span-8">
+        <article class="signin-detail-card" :class="{ 'highlight-card': highlight }">
+          <div class="signin-detail-card__body">
             <LoginContainer1 :selectedModel="selectedModel" />
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -65,30 +71,35 @@ const providerButtons = [
     labelKey: "components.home.main.google",
     icon: "mdi-google",
     iconColor: "#DB4437",
+    iconType: "mdi",
   },
   {
     component: "LoginFacebook",
     labelKey: "components.home.main.facebook",
     icon: "mdi-facebook",
     iconColor: "#17A9FD",
+    iconType: "mdi",
   },
   {
     component: "LoginGitHub",
     labelKey: "components.home.main.github",
     icon: "mdi-github",
     iconColor: "#8CF2A6",
+    iconType: "mdi",
   },
   {
     component: "LoginDiscord",
     labelKey: "components.home.main.discord",
-    icon: [discordIconPath],
+    icon: discordIconPath,
     iconColor: "#738ADB",
+    iconType: "svg",
   },
   {
     component: "LoginEmail",
     labelKey: "components.home.main.email",
     icon: "mdi-email-outline",
     iconColor: "#4DD4C6",
+    iconType: "mdi",
   },
 ];
 
@@ -114,7 +125,7 @@ const switchModel = (model) => {
   font-family: "poppins", sans-serif;
   font-size: clamp(1.5rem, 2vw + 1rem, 2.2rem);
   font-weight: 400;
-  color: rgba(var(--v-theme-on-surface), 0.92);
+  color: rgb(var(--color-foreground) / 0.92);
 }
 
 .imchattyLogo {
@@ -126,18 +137,18 @@ const switchModel = (model) => {
 
 .green-text-poppins {
   font-family: "poppins", sans-serif;
-  color: rgba(var(--v-theme-on-surface), 0.72);
+  color: rgb(var(--color-foreground) / 0.72);
 }
 
 .green--text-h2 {
   font-family: "poppins", sans-serif;
   font-size: clamp(0.95rem, 1.2vw + 0.6rem, 1.15rem);
   font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.86);
+  color: rgb(var(--color-foreground) / 0.86);
 }
 
 .signin-shell {
-  color: rgba(var(--v-theme-on-surface), 0.92);
+  color: rgb(var(--color-foreground) / 0.92);
   background: transparent;
   border-radius: 12px;
   min-height: calc(100vh - var(--nav2-offset, 0px) - 90px);
@@ -147,24 +158,31 @@ const switchModel = (model) => {
 
 .signin-provider-card,
 .signin-detail-card {
-  background: rgba(var(--v-theme-surface), 0.94) !important;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.15) !important;
-  box-shadow: 0 8px 18px rgba(var(--v-theme-on-surface), 0.08);
+  background: rgb(var(--color-surface) / 0.94);
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgb(var(--color-shadow) / 0.1);
+}
+
+.signin-provider-card__header,
+.signin-provider-card__body,
+.signin-detail-card__body {
+  padding: 1.25rem;
 }
 
 .signin-detail-card :deep(h2),
 .signin-detail-card :deep(.text-h5) {
-  color: rgba(var(--v-theme-on-surface), 0.94) !important;
+  color: rgb(var(--color-foreground) / 0.94) !important;
 }
 
 .signin-detail-card :deep(.v-label),
 .signin-detail-card :deep(.text-caption),
 .signin-detail-card :deep(.text-justify) {
-  color: rgba(var(--v-theme-on-surface), 0.84) !important;
+  color: rgb(var(--color-foreground) / 0.84) !important;
 }
 
 .signin-detail-card :deep(a) {
-  color: rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--color-primary)) !important;
 }
 
 .signin-list {
@@ -174,64 +192,47 @@ const switchModel = (model) => {
 }
 
 .signin-btn {
+  display: inline-flex;
+  align-items: center;
   justify-content: flex-start;
   gap: 0.75rem;
-  padding-inline-start: 0;
-  padding-inline-end: 0;
-  text-transform: none;
+  padding: 0.7rem 0.2rem;
   width: 100%;
-  color: rgba(var(--v-theme-on-surface), 0.86) !important;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.86);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
 }
 
-:global(.v-theme--dark .signin-shell) {
-  color: #e2e8f0;
-  background:
-    radial-gradient(1200px 520px at 20% 0%, rgba(30, 58, 138, 0.2), transparent 60%),
-    linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+.signin-btn:hover,
+.signin-btn:focus-visible {
+  background: rgb(var(--color-primary) / 0.08);
+  color: rgb(var(--color-foreground));
+  outline: none;
 }
 
-:global(.v-theme--dark .signin-provider-card),
-:global(.v-theme--dark .signin-detail-card) {
-  background: rgba(15, 23, 42, 0.72) !important;
-  border: 1px solid rgba(148, 163, 184, 0.2) !important;
-  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.35);
-}
-
-:global(.v-theme--dark .green-text-poppins) {
-  color: #94a3b8;
-}
-
-:global(.v-theme--dark .green--text-h1) {
-  color: #e2e8f0;
-}
-
-:global(.v-theme--dark .green--text-h2) {
-  color: #cbd5e1;
-}
-
-:global(.v-theme--dark .signin-btn) {
-  color: #cbd5e1 !important;
-}
-
-:global(.v-theme--dark .signin-detail-card) :deep(h2),
-:global(.v-theme--dark .signin-detail-card) :deep(.text-h5) {
-  color: #e2e8f0 !important;
-}
-
-:global(.v-theme--dark .signin-detail-card) :deep(.v-label),
-:global(.v-theme--dark .signin-detail-card) :deep(.text-caption),
-:global(.v-theme--dark .signin-detail-card) :deep(.text-justify) {
-  color: #cbd5e1 !important;
-}
-
-:global(.v-theme--dark .signin-detail-card) :deep(a) {
-  color: #93c5fd !important;
+.signin-btn--active {
+  background: rgb(var(--color-primary) / 0.12);
+  color: rgb(var(--color-foreground));
 }
 
 .signin-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
   font-size: 1.5rem;
-  color: var(--provider-icon-color) !important;
-  opacity: 1 !important;
+  color: var(--provider-icon-color);
+}
+
+.signin-icon__svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: block;
 }
 
 @media (max-width: 600px) {
@@ -249,6 +250,12 @@ const switchModel = (model) => {
     height: 3rem;
     padding: 0;
     border-radius: 999px;
+  }
+
+  .signin-provider-card__header,
+  .signin-provider-card__body,
+  .signin-detail-card__body {
+    padding: 1rem;
   }
 
   .signin-label {

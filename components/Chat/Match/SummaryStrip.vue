@@ -49,7 +49,7 @@
       :title="$t('components.matchStrip.refresh')"
       @click="$emit('refresh')"
     >
-      <v-icon size="12" :class="{ spinning: loading }">mdi-refresh</v-icon>
+      <i class="mdi mdi-refresh refresh-btn__icon" :class="{ spinning: loading }" aria-hidden="true" />
     </button>
   </div>
 </template>
@@ -162,6 +162,11 @@ const showStrip = computed(() => props.data !== null && hasIntake.value);
 }
 .refresh-btn:hover { color: #94a3b8; }
 .refresh-btn:disabled { opacity: 0.4; cursor: default; }
+
+.refresh-btn__icon {
+  font-size: 12px;
+  line-height: 1;
+}
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinning { animation: spin 0.7s linear infinite; }

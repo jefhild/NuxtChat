@@ -3,37 +3,42 @@
   <FavoriteToast />
   <UpvoteToast />
   <!-- Main content; let children shrink to create scroll areas -->
-  <v-main
-    class="d-flex flex-column min-h-0"
+  <main
+    class="app-main flex min-h-0 flex-1 flex-col"
     :class="{
       'profiles-route-main': isProfilesRoute,
       'chat-route-main': isChatRoute,
       'feeds-route-main': isFeedsRoute,
+      'match-route-main': isMatchRoute,
+      'admin-route-main': isAdminRoute,
+      'root-landing-route-main': isRootLandingRoute,
     }"
     :style="mainStyle"
   >
     <!-- Optional container; keep min-h-0 so inner flex can shrink -->
-    <v-container
-      fluid
-      class="d-flex flex-column flex-grow-1 min-h-0 pa-0"
-      :class="isProfilesRoute || isChatRoute || isFeedsRoute ? 'px-0' : 'px-sm-6'"
+    <div
+      class="flex min-h-0 flex-grow flex-col px-0"
+      :class="isProfilesRoute || isChatRoute || isFeedsRoute ? 'px-0' : 'sm:px-6'"
     >
       <!-- NuxtPage should be allowed to grow/shrink -->
-      <div class="d-flex flex-column flex-grow-1 min-h-0">
+      <div class="flex min-h-0 flex-grow flex-col">
         <NuxtPage />
       </div>
-    </v-container>
-  </v-main>
+    </div>
+  </main>
 
   <!-- FOOTER must be an app footer to reserve space -->
   <div
     v-if="showAppFooter && !isMobile"
+    ref="footerRef"
     class="app-footer app-footer--desktop"
     :class="{
+      'app-footer--inline': useInlineFooter,
       'app-footer--chat': isChatRoute,
       'app-footer--feeds': isFeedsRoute,
-      'app-footer--collapsible': desktopChatFooter,
-      'app-footer--hidden': desktopChatFooter && !footerVisible,
+      'app-footer--toggleable': desktopFooterToggleEnabled,
+      'app-footer--collapsible': desktopFooterToggleEnabled,
+      'app-footer--hidden': desktopFooterToggleEnabled && !footerVisible,
     }"
   >
     <Footer />
@@ -41,9 +46,10 @@
 
   <div
     v-else-if="showAppFooter"
-    ref="mobileFooterRef"
+    ref="footerRef"
     class="app-footer app-footer--mobile"
     :class="{
+      'app-footer--inline': useInlineFooter,
       'app-footer--hidden': footerToggleEnabled && !footerVisible,
       'app-footer--chat': isChatRoute,
       'app-footer--feeds': isFeedsRoute,
@@ -68,9 +74,14 @@
     aria-label="Show footer"
     @click="toggleFooter"
   >
-    <v-icon size="18">
-      {{ footerVisible ? "mdi-chevron-down" : "mdi-chevron-up" }}
-    </v-icon>
+    <i
+      :class="[
+        'mdi',
+        footerVisible ? 'mdi-chevron-down' : 'mdi-chevron-up',
+        'text-[18px]',
+      ]"
+      aria-hidden="true"
+    />
   </button>
 </template>
 
@@ -82,12 +93,13 @@ import { usePresenceStore2 } from "@/stores/presenceStore2";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useDb } from "@/composables/useDB";
 import { usePrimaryNavigation } from "@/composables/usePrimaryNavigation";
-import { useDisplay } from "vuetify";
+import { useResponsiveDisplay } from "@/composables/useResponsiveDisplay";
 import { useFooterVisibility } from "~/composables/useFooterVisibility";
 import { useHead, useRoute, useRuntimeConfig, useSiteConfig } from "#imports";
 import { useFavoriteNotifications } from "@/composables/useFavoriteNotifications";
 import { useUpvoteNotifications } from "@/composables/useUpvoteNotifications";
 import { FOOTER_TOGGLE_ROUTE_PATHS } from "@/constants/footerLinks";
+import { landingPageSlugs } from "@/config/landingPageSlugs";
 
 const auth = useAuthStore();
 const presence = usePresenceStore2();
@@ -96,7 +108,7 @@ const runtimeConfig = useRuntimeConfig();
 const siteConfig = useSiteConfig();
 const { updateLastActive, touchPresence } = useDb();
 const { primaryNavItems } = usePrimaryNavigation();
-const { smAndDown } = useDisplay();
+const { smAndDown } = useResponsiveDisplay();
 const hasMounted = ref(false);
 const route = useRoute();
 const {
@@ -128,6 +140,7 @@ const isProfilesRoute = computed(() =>
   normalizedPath.value.startsWith("/profiles")
 );
 const isFeedsRoute = computed(() => normalizedPath.value.startsWith("/feeds"));
+const isMatchRoute = computed(() => normalizedPath.value.startsWith("/match"));
 const isLanguagePracticeRoute = computed(() =>
   normalizedPath.value.startsWith("/language-practice")
 );
@@ -147,22 +160,40 @@ const isAdminRoute = computed(() => normalizedPath.value.startsWith("/admin"));
 const isHomeRoute = computed(() => {
   return normalizedPath.value === "/";
 });
+const isRootLandingRoute = computed(() =>
+  landingPageSlugs.some((slug) => normalizedPath.value === `/${slug}`)
+);
+const isInlineFooterRoute = computed(() =>
+  isRootLandingRoute.value ||
+  ["/guides/", "/topics/", "/compare/"].some((prefix) =>
+    normalizedPath.value.startsWith(prefix)
+  )
+);
 const isFooterLinkRoute = computed(() =>
   FOOTER_TOGGLE_ROUTE_PATHS.includes(normalizedPath.value)
 );
+const useInlineFooter = computed(() => isInlineFooterRoute.value);
 const footerToggleEnabled = computed(
   () =>
-    isChatRoute.value ||
-    isHomeRoute.value ||
-    isFooterLinkRoute.value ||
-    isArticlesRoute.value ||
-    isTaxonomyRoute.value ||
-    isFeedsRoute.value ||
-    isLanguagePracticeRoute.value ||
-    isSettingsRoute.value ||
-    isAdminRoute.value
+    !useInlineFooter.value &&
+    (
+      isChatRoute.value ||
+      isHomeRoute.value ||
+      isProfilesRoute.value ||
+      isFooterLinkRoute.value ||
+      isArticlesRoute.value ||
+      isTaxonomyRoute.value ||
+      isFeedsRoute.value ||
+      isMatchRoute.value ||
+      isLanguagePracticeRoute.value ||
+      isSettingsRoute.value ||
+      isAdminRoute.value
+    )
 );
 const desktopChatFooter = computed(() => isChatRoute.value && !isMobile.value);
+const desktopFooterToggleEnabled = computed(
+  () => !isMobile.value && footerToggleEnabled.value
+);
 const hideFooterForActiveChat = computed(
   () =>
     isChatRoute.value &&
@@ -170,19 +201,27 @@ const hideFooterForActiveChat = computed(
 );
 const showAppFooter = computed(() => !hideFooterForActiveChat.value);
 
-const mobileFooterRef = ref(null);
-const mobileFooterHeight = ref(80);
+const footerRef = ref(null);
+const footerHeight = ref(80);
 let footerResizeObserver = null;
 
 onMounted(() => {
   if (typeof ResizeObserver === "undefined") return;
   footerResizeObserver = new ResizeObserver(() => {
-    const el = mobileFooterRef.value;
-    if (el) mobileFooterHeight.value = el.offsetHeight || 80;
+    const el = footerRef.value;
+    if (el) footerHeight.value = el.offsetHeight || 80;
   });
-  watch(mobileFooterRef, (el) => {
-    if (el) footerResizeObserver?.observe(el);
-  }, { immediate: true });
+  watch(
+    footerRef,
+    (el, previousEl) => {
+      if (previousEl) footerResizeObserver?.unobserve(previousEl);
+      if (el) {
+        footerHeight.value = el.offsetHeight || 80;
+        footerResizeObserver?.observe(el);
+      }
+    },
+    { immediate: true }
+  );
 });
 
 onBeforeUnmount(() => {
@@ -197,10 +236,13 @@ const mainStyle = computed(() => {
       : "var(--nav2-offset, 0px)",
   };
   if (!isMobile.value) {
-    if (!isChat) return base;
+    if (!showAppFooter.value) return base;
+    if (useInlineFooter.value) return base;
+    if (!desktopFooterToggleEnabled.value) return base;
     return {
       ...base,
-      paddingBottom: "12px",
+      paddingBottom: footerVisible.value ? `${footerHeight.value}px` : "0px",
+      transition: "padding-bottom 160ms ease",
     };
   }
   if (!showAppFooter.value) {
@@ -210,8 +252,15 @@ const mainStyle = computed(() => {
       transition: "padding-bottom 160ms ease",
     };
   }
+  if (useInlineFooter.value) {
+    return {
+      ...base,
+      paddingBottom: "0px",
+      transition: "padding-bottom 160ms ease",
+    };
+  }
   const padding = footerVisible.value
-    ? mobileFooterHeight.value
+    ? footerHeight.value
     : isChat
       ? 0
       : peekOffset + 12;
@@ -242,7 +291,10 @@ const toggleFooter = () => {
 };
 
 const shouldCollapseFooterByDefault = computed(
-  () => isChatRoute.value || (isMobile.value && isLanguagePracticeRoute.value)
+  () =>
+    isChatRoute.value ||
+    (!isMobile.value && footerToggleEnabled.value) ||
+    (isMobile.value && isLanguagePracticeRoute.value)
 );
 
 // Chat route: collapse footer on both mobile and desktop.
@@ -253,14 +305,14 @@ watch(shouldCollapseFooterByDefault, (shouldCollapse) => {
 }, { immediate: true });
 
 // Also collapse when resizing to large screen while already on chat route
-watch(desktopChatFooter, (active) => {
+watch(desktopFooterToggleEnabled, (active) => {
   if (active) hideFooter();
 });
 
 const showFooterFab = computed(
   () =>
     showAppFooter.value &&
-    (desktopChatFooter.value || (isMobile.value && footerToggleEnabled.value))
+    (desktopFooterToggleEnabled.value || (isMobile.value && footerToggleEnabled.value))
 );
 const unreadCount = computed(() => messages.totalUnread || 0);
 const unreadLabel = computed(() =>
@@ -653,17 +705,34 @@ if (isClient) {
 </script>
 
 <style>
-.app-footer,
-.v-footer.app-footer {
+.app-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.app-footer {
   transition: transform 160ms ease, opacity 160ms ease;
-  background: rgb(var(--v-theme-surface)) !important;
-  background-color: rgb(var(--v-theme-surface)) !important;
+  background: rgb(var(--color-surface)) !important;
+  background-color: rgb(var(--color-surface)) !important;
   border-top: 0;
   flex: 0 0 auto;
   min-height: 0;
   height: auto;
   width: 100%;
   padding: 0;
+}
+
+.app-footer--inline {
+  position: static;
+}
+
+.app-footer--desktop.app-footer--toggleable {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
 }
 
 .app-footer--chat {
@@ -678,6 +747,14 @@ if (isClient) {
 
 .app-footer--hidden {
   transform: translateY(calc(100% - 14px));
+}
+
+.app-footer--desktop.app-footer--hidden {
+  transform: translateY(100%);
+}
+
+.app-footer--desktop .compact-footer {
+  box-shadow: 0 -6px 24px rgb(var(--color-shadow) / 0.12);
 }
 
 .app-footer--collapsible {
@@ -712,7 +789,7 @@ if (isClient) {
 }
 
 .app-footer__handle:focus-visible {
-  outline: 2px solid var(--v-theme-primary);
+  outline: 2px solid rgb(var(--color-primary));
 }
 
 .app-footer__handle:hover {
@@ -742,11 +819,13 @@ if (isClient) {
   bottom: calc(12px + env(safe-area-inset-bottom, 0px));
 }
 
-.v-theme--dark .profiles-route-main {
+html.dark .profiles-route-main,
+html[data-imchatty-theme="dark"] .profiles-route-main {
   background: #0f172a;
 }
 
-.v-theme--dark .v-main {
+html.dark .app-main,
+html[data-imchatty-theme="dark"] .app-main {
   background: #0f172a;
 }
 
@@ -758,6 +837,20 @@ if (isClient) {
   background: #0f172a;
 }
 
+.match-route-main {
+  background: #0f172a;
+}
+
+.admin-route-main {
+  background:
+    linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.96), rgba(var(--color-surface), 0.98));
+}
+
+.root-landing-route-main {
+  flex: 0 0 auto;
+  min-height: auto;
+}
+
 @media (max-width: 960px) {
   .app-footer {
     position: fixed;
@@ -766,16 +859,28 @@ if (isClient) {
     bottom: 0;
     z-index: 1100;
     padding: 0;
-    background: rgb(var(--v-theme-surface));
+    background: rgb(var(--color-surface));
     min-height: 52px;
     max-height: none;
     overflow: visible;
   }
 
+   .app-footer--inline {
+    position: static;
+    min-height: 0;
+    overflow: visible;
+  }
+
   .app-footer .compact-footer {
     border-radius: 12px 12px 0 0;
-    box-shadow: 0 -6px 24px rgba(var(--v-theme-on-surface), 0.12);
+    box-shadow: 0 -6px 24px rgb(var(--color-shadow) / 0.12);
     padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .app-footer--inline .compact-footer {
+    border-radius: 12px;
+    box-shadow: none;
+    padding-bottom: 0;
   }
 
   .app-footer--mobile .compact-footer__content {
@@ -789,8 +894,8 @@ if (isClient) {
   }
 }
 
-.v-theme--dark .app-footer,
-.v-theme--dark .v-footer.app-footer {
+html.dark .app-footer,
+html[data-imchatty-theme="dark"] .app-footer {
   background: #141923 !important;
   border-top-color: transparent;
 }

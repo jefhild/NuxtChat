@@ -1,44 +1,44 @@
 <template>
-  <v-card-text class="settings-profile-form">
-    <v-card class="settings-zone-card settings-zone-card--data" variant="outlined">
-      <v-card-text class="pt-3 pb-2 px-1 px-md-2">
-        <v-row class="ma-0 pa-0" dense>
-          <v-col cols="12" sm="6" md="4" class="px-1 py-0">
+  <div class="settings-profile-form">
+    <section class="settings-zone-card settings-zone-card--data">
+      <div class="settings-zone-card__body settings-zone-card__body--compact">
+        <div class="grid grid-cols-1 gap-x-2 gap-y-0 sm:grid-cols-2 md:grid-cols-3">
+          <div class="px-1 py-0">
             <SettingsProfileDisplayName2
               :displayName="props.userProfile.displayname"
               :isEditable="props.isEditable"
               @updateDisplayName="(val) => emit('update:displayName', val)"
               @validation="(val) => emit('validation', val)"
             />
-          </v-col>
-          <v-col cols="12" sm="6" md="4" class="px-1 py-0">
+          </div>
+          <div class="px-1 py-0">
             <SettingsProfileTagLine
               :tagLine="props.userProfile.tagline ?? '...'"
               :isEditable="props.isEditable"
               :errorMessage="props.tagLineErrorMessage"
               @updateTagLine="(val) => emit('update:tagLine', val)"
             />
-          </v-col>
-          <v-col cols="12" sm="6" md="4" class="px-1 py-0">
+          </div>
+          <div class="px-1 py-0">
             <SettingsProfileLanguage
               :selectedLocale="props.userProfile.preferred_locale ?? 'en'"
               :locales="props.locales"
               :isEditable="props.isEditable"
               @updateLocale="(val) => emit('update:preferredLocale', val)"
             />
-          </v-col>
-        </v-row>
+          </div>
+        </div>
 
-        <v-row class="ma-0 pa-0" dense>
-          <v-col cols="12" sm="6" md="4" class="px-1 py-0">
+        <div class="grid grid-cols-1 gap-x-2 gap-y-0 sm:grid-cols-2 md:grid-cols-3">
+          <div class="px-1 py-0">
             <SettingsProfileStatus
               :selectedStatus="props.userProfile?.status_id ?? 1"
               :statuses="props.statuses"
               :isEditable="props.isEditable"
               @updateStatus="(val) => emit('update:statusId', val)"
             />
-          </v-col>
-          <v-col cols="12" sm="6" md="4" class="px-1 py-0">
+          </div>
+          <div class="px-1 py-0">
             <SettingsProfileGender
               :genderId="props.userProfile.gender_id ?? 1"
               :genders="props.genders"
@@ -46,18 +46,18 @@
               @updateGenderId="(val) => emit('update:genderId', val)"
               @validation="(val) => emit('validation', val)"
             />
-          </v-col>
-          <v-col cols="12" sm="6" md="4" class="px-1 py-0">
+          </div>
+          <div class="px-1 py-0">
             <SettingsProfileAge
               :age="props.userProfile.age ?? 18"
               :isEditable="props.isEditable"
               @updateAge="(val) => emit('update:age', val)"
             />
-          </v-col>
-        </v-row>
+          </div>
+        </div>
 
-        <v-row class="ma-0 pa-0" dense>
-          <v-col cols="12">
+        <div class="grid grid-cols-1">
+          <div>
             <SettingsProfileLocation
               v-bind="locationProps"
               :isEditable="props.isEditable"
@@ -65,38 +65,50 @@
               @updateState="(val) => emit('update:state', val)"
               @updateCity="(val) => emit('update:city', val)"
             />
-          </v-col>
-        </v-row>
+          </div>
+        </div>
 
-        <v-row class="ma-0 pa-0" dense>
-          <v-col cols="12" sm="6" md="6" class="px-1 py-0">
-            <v-select
-              :disabled="props.presenceDisabled"
-              :loading="props.presenceLoading"
-              variant="underlined"
-              :items="presenceOptions"
-              item-title="label"
-              item-value="value"
-              :label="t('components.presence.label')"
-              :model-value="props.presenceStatus"
-              @update:modelValue="(val) => emit('update:presenceStatus', val)"
-            />
-          </v-col>
-          <v-col cols="12" sm="6" md="6" class="px-1 py-0">
+        <div class="grid grid-cols-1 gap-x-2 gap-y-0 sm:grid-cols-2">
+          <div class="px-1 py-0">
+            <label class="settings-field">
+              <span class="settings-field__label">{{ t("components.presence.label") }}</span>
+              <select
+                :disabled="props.presenceDisabled"
+                class="settings-field__control"
+                :value="props.presenceStatus"
+                @change="emit('update:presenceStatus', $event.target.value)"
+              >
+                <option
+                  v-for="option in presenceOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </label>
+            <p
+              v-if="props.presenceLoading"
+              class="settings-field__meta"
+            >
+              {{ t("components.settings-container.loading") }}
+            </p>
+          </div>
+          <div class="px-1 py-0">
             <SettingsProfileSite
               :siteUrl="props.userProfile.site_url ?? ''"
               :isEditable="props.isSiteEditable"
               @updateSite="(val) => emit('update:siteUrl', val)"
             />
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <v-card class="settings-zone-card settings-zone-card--bio mt-3" variant="outlined">
-      <v-card-text class="pt-3 pb-2 px-2 px-md-3">
-        <v-row class="ma-0 pa-0" dense>
-          <v-col cols="12">
+    <section class="settings-zone-card settings-zone-card--bio mt-3">
+      <div class="settings-zone-card__body settings-zone-card__body--bio">
+        <div class="grid grid-cols-1">
+          <div>
             <SettingsProfileBio
               :bio="userProfile.bio ?? ''"
               :isEditable="props.isEditable"
@@ -109,56 +121,71 @@
               @openAiBio="emit('openAiBio')"
               @updateBio="(val) => emit('update:bio', val)"
             />
-          </v-col>
-        </v-row>
-        <v-row class="mt-2" align="center">
-          <v-col cols="12" class="d-flex justify-end">
+          </div>
+        </div>
+        <div class="mt-2 flex justify-end">
+          <div class="flex flex-wrap justify-end gap-2">
             <template v-if="props.isEditable">
-              <v-btn color="primary" @click="emit('save')"> Save </v-btn>
-              <v-btn
-                color="grey"
-                variant="outlined"
-                class="ml-2"
+              <button
+                type="button"
+                class="settings-action-btn settings-action-btn--primary"
+                @click="emit('save')"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                class="settings-action-btn settings-action-btn--secondary"
                 @click="emit('cancelEdit')"
               >
                 Cancel
-              </v-btn>
+              </button>
             </template>
             <template v-else>
-              <v-btn
+              <button
                 v-if="props.showTranslateButton"
-                color="secondary"
-                variant="tonal"
-                :loading="props.translateLoading"
+                type="button"
+                class="settings-action-btn settings-action-btn--ghost"
+                :disabled="props.translateLoading"
                 @click="emit('translateProfile')"
               >
+                <i
+                  v-if="props.translateLoading"
+                  class="mdi mdi-loading settings-action-btn__spinner"
+                  aria-hidden="true"
+                />
                 Translate profile text
-              </v-btn>
-              <v-btn color="primary" @click="emit('startEdit')"> Edit </v-btn>
-              <v-btn color="primary" class="ml-2" to="/chat"> Back To Chat </v-btn>
+              </button>
+              <button
+                type="button"
+                class="settings-action-btn settings-action-btn--primary"
+                @click="emit('startEdit')"
+              >
+                Edit
+              </button>
+              <NuxtLink
+                to="/chat"
+                class="settings-action-btn settings-action-btn--primary"
+              >
+                Back To Chat
+              </NuxtLink>
             </template>
-          </v-col>
-        </v-row>
-        <v-row
+          </div>
+        </div>
+        <div
           v-if="props.translateStatus && !props.isEditable"
           class="mt-2"
-          align="center"
         >
-          <v-col cols="12">
-            <v-alert
-              :type="props.translateError ? 'error' : 'success'"
-              variant="tonal"
-              density="compact"
-            >
-              {{ props.translateStatus }}
-            </v-alert>
-          </v-col>
-        </v-row>
-        <v-row v-if="props.isEditable" class="mt-2" align="center">
-        </v-row>
-      </v-card-text>
-    </v-card>
-  </v-card-text>
+          <div
+            class="settings-status-alert"
+            :class="props.translateError ? 'settings-status-alert--error' : 'settings-status-alert--success'"
+          >
+            {{ props.translateStatus }}
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script setup>
@@ -265,7 +292,6 @@ const emit = defineEmits([
   "translateProfile",
 ]);
 
-const { isEditable } = toRefs(props);
 const { t } = useI18n();
 
 const presenceOptions = [
@@ -295,8 +321,6 @@ const presenceOptions = [
 }
 
 .settings-profile-form {
-  --v-field-label-color: #1e88e5;
-  overflow: hidden;
   padding-top: 0;
   padding-bottom: 0;
   margin-top: 6px;
@@ -304,48 +328,132 @@ const presenceOptions = [
 
 .settings-zone-card {
   border-radius: 12px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.14);
-  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: rgb(var(--color-surface) / 0.96);
+  color: rgb(var(--color-foreground));
 }
 
-:global(.v-theme--dark .settings-zone-card) {
-  border-color: rgba(148, 163, 184, 0.22);
-  background: #0f172a;
+.settings-zone-card__body {
+  padding: 0.75rem 0.5rem 0.6rem;
 }
 
-:global(.settings-profile-form .v-row) {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  margin-top: 0;
-  margin-bottom: 0;
+.settings-zone-card__body--bio {
+  padding-inline: 0.75rem;
 }
 
-:global(.settings-profile-form .v-col) {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+.settings-field {
+  display: grid;
+  gap: 0.35rem;
 }
 
-:global(.settings-profile-form .v-field__input),
-:global(.settings-profile-form .v-select__selection-text),
-:global(.settings-profile-form .v-field__field) {
+.settings-field__label {
+  color: rgb(var(--color-foreground) / 0.82);
   font-size: 0.9rem;
+  font-weight: 600;
 }
 
-:global(.settings-profile-form .v-field__label),
-:global(.settings-profile-form .v-field-label),
-:global(.settings-profile-form .v-label) {
-  color: #1e88e5 !important;
-  opacity: 1 !important;
+.settings-field__control {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid rgb(var(--color-border) / 0.82);
+  border-radius: 12px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  padding: 0.7rem 0.85rem;
+  font-size: 0.95rem;
+  color-scheme: light dark;
 }
 
-:global(.settings-profile-form .v-field--disabled .v-field__label),
-:global(.settings-profile-form .v-field--disabled .v-field-label),
-:global(.settings-profile-form .v-field--disabled .v-label) {
-  color: #1e88e5 !important;
-  opacity: 1 !important;
+.settings-field__control:disabled {
+  opacity: 1;
+  cursor: default;
+  background: rgb(var(--color-surface) / 0.76);
+  color: rgb(var(--color-foreground) / 0.62);
+}
+
+.settings-field__meta {
+  margin-top: 0.35rem;
+  color: rgb(var(--color-foreground) / 0.58);
+  font-size: 0.8rem;
+}
+
+.settings-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  border: 1px solid transparent;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.settings-action-btn:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.settings-action-btn--primary {
+  background: rgb(var(--color-primary));
+  border-color: rgb(var(--color-primary));
+  color: rgb(var(--color-background));
+}
+
+.settings-action-btn--secondary {
+  background: transparent;
+  border-color: rgb(var(--color-border) / 0.72);
+  color: rgb(var(--color-foreground));
+}
+
+.settings-action-btn--ghost {
+  background: rgb(var(--color-primary) / 0.12);
+  border-color: transparent;
+  color: rgb(var(--color-primary));
+}
+
+.settings-action-btn__spinner {
+  animation: settings-spin 0.8s linear infinite;
+}
+
+.settings-status-alert {
+  border-radius: 0.85rem;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.settings-status-alert--success {
+  background: rgb(var(--color-success) / 0.12);
+  border-color: rgb(var(--color-success) / 0.24);
+  color: rgb(var(--color-success));
+}
+
+.settings-status-alert--error {
+  background: rgb(var(--color-danger) / 0.12);
+  border-color: rgb(var(--color-danger) / 0.24);
+  color: rgb(var(--color-danger));
 }
 
 .settings-delete-btn {
   letter-spacing: 0.02em;
+}
+
+@keyframes settings-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 768px) {
+  .settings-zone-card__body {
+    padding-inline: 0.75rem;
+  }
+
+  .settings-zone-card__body--bio {
+    padding-inline: 1rem;
+  }
 }
 </style>

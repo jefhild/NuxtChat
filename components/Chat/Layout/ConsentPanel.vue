@@ -1,35 +1,22 @@
 <template>
-  <v-card
-    :class="['consent-card', `consent-card--${state}`]"
-    :color="cardColor"
-    :rounded="rounded"
-    :flat="flat"
-  >
+  <div :class="['consent-card', `consent-card--${state}`]">
     <div class="card-header">
       <div class="chip">
-        <v-icon size="16" class="mr-1" :color="iconColor">{{ stateIcon }}</v-icon>
+        <i :class="chipIconClass" aria-hidden="true" />
         <span>{{ stateLabel }}</span>
       </div>
-      <div class="ml-auto d-flex align-center gap-1">
-        <v-chip
-          v-if="showStepChip"
-          size="x-small"
-          variant="tonal"
-          color="primary"
-          class="font-weight-semibold"
-        >
+      <div class="ml-auto flex items-center gap-1">
+        <span v-if="showStepChip" class="step-chip">
           {{ stepLabel }}
-        </v-chip>
-        <v-btn
+        </span>
+        <button
           v-if="showClose"
-          icon
-          variant="text"
-          size="small"
+          type="button"
           class="close-btn"
           @click="emit('close')"
         >
-          <v-icon size="16">mdi-close</v-icon>
-        </v-btn>
+          <i class="mdi mdi-close text-base" aria-hidden="true" />
+        </button>
       </div>
     </div>
 
@@ -37,40 +24,48 @@
       <div class="body-title">{{ titleText }}</div>
       <div class="body-sub">{{ subtitleText }}</div>
 
-      <v-progress-linear
+      <div
         v-if="showProgress"
-        :model-value="progress"
-        color="primary"
-        height="4"
-        rounded
-        class="mt-3"
-      />
+        class="consent-progress mt-3"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :aria-valuenow="progress"
+      >
+        <div class="consent-progress__bar" :style="{ width: `${progress}%` }" />
+      </div>
 
-      <v-btn
+      <NuxtLink
+        v-if="showCta && ctaTo"
+        :to="ctaTo"
+        :class="['mt-3 consent-cta consent-cta--link', ctaToneClass]"
+        :aria-disabled="String(ctaDisabled)"
+        @click="ctaDisabled && $event.preventDefault()"
+      >
+        {{ ctaText }}
+      </NuxtLink>
+
+      <button
         v-if="showCta"
         class="mt-3 consent-cta"
-        block
-        :color="ctaColor"
-        :variant="ctaVariant"
-        :to="ctaTo"
+        :class="ctaToneClass"
+        v-show="!ctaTo"
         :disabled="ctaDisabled"
         @click="onPrimary"
       >
         {{ ctaText }}
-      </v-btn>
+      </button>
 
-      <v-btn
+      <button
         v-if="secondaryText"
-        variant="text"
-        color="primary"
-        block
-        class="mt-1"
+        type="button"
+        class="mt-1 consent-secondary"
         @click="emit('action')"
       >
         {{ secondaryText }}
-      </v-btn>
+      </button>
     </div>
-  </v-card>
+  </div>
 </template>
 
 <script setup>
@@ -166,8 +161,6 @@ const stageLabel = computed(() => {
   return map[draft.stage] || "Get started";
 });
 
-const cardColor = computed(() => stateMeta.value.cardColor || props.color);
-const iconColor = computed(() => stateMeta.value.iconColor || "primary");
 const stateIcon = computed(() => stateMeta.value.icon);
 const stateLabel = computed(() => stateMeta.value.label);
 
@@ -247,8 +240,6 @@ const subtitleText = computed(() => {
 });
 
 const ctaText = computed(() => stateMeta.value.ctaText);
-const ctaColor = computed(() => stateMeta.value.ctaColor || "primary");
-const ctaVariant = computed(() => (state.value === "ready" ? "tonal" : "flat"));
 const ctaTo = computed(() =>
   state.value === "ready" || state.value === "linkEmail" ? props.settingsTo : null
 );
@@ -273,6 +264,17 @@ const showProgress = computed(
 const progress = computed(() => stageProgress.value);
 const secondaryText = computed(() => props.actionLabel || "");
 
+const chipIconClass = computed(() => [
+  "mdi",
+  stateIcon.value,
+  "mr-1 text-base",
+  state.value === "ready" ? "consent-icon--success" : "consent-icon--primary",
+]);
+
+const ctaToneClass = computed(() =>
+  state.value === "ready" ? "consent-cta--ready" : "consent-cta--primary"
+);
+
 function onPrimary() {
   if (ctaTo.value) return; // navigation handled by router-link
   emit("action");
@@ -287,6 +289,17 @@ function onPrimary() {
   border: 1px solid rgba(148, 163, 184, 0.38);
   border-radius: 12px;
 }
+
+.consent-card--linkEmail {
+  border-color: rgba(148, 163, 184, 0.44);
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+}
+
+.consent-card--ready {
+  border-color: rgba(34, 197, 94, 0.3);
+  background: linear-gradient(180deg, rgba(21, 128, 61, 0.18), rgba(15, 23, 42, 0.95));
+}
+
 .card-header {
   display: flex;
   align-items: center;
@@ -304,6 +317,18 @@ function onPrimary() {
   font-weight: 600;
   font-size: 13px;
 }
+
+.step-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.16);
+  color: #bfdbfe;
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .card-body {
   margin-top: 4px;
   display: flex;
@@ -323,25 +348,86 @@ function onPrimary() {
   line-height: 1.3;
 }
 .close-btn {
-  min-width: 28px;
+  width: 28px;
   height: 28px;
   align-self: flex-start;
   margin-top: -6px;
   margin-right: -6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.close-btn:hover {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.consent-progress {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(148, 163, 184, 0.22);
+}
+
+.consent-progress__bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #60a5fa, #818cf8);
+}
+
 .consent-cta {
   font-size: clamp(12px, 2.8vw, 14px);
   line-height: 1.2;
   min-height: 36px;
-}
-.consent-cta :deep(.v-btn__content) {
   white-space: normal;
-  line-height: 1.2;
   text-align: center;
+  width: 100%;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
-.consent-card :deep(.v-progress-linear__background),
-.consent-card :deep(.v-progress-linear__buffer) {
-  opacity: 0.22;
+.consent-cta--primary {
+  background: #3b82f6;
+  color: #eff6ff;
+}
+
+.consent-cta--ready {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #dcfce7;
+}
+
+.consent-cta:disabled,
+.consent-cta[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.consent-secondary {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #93c5fd;
+  padding: 0.35rem 0;
+  font-size: 0.875rem;
+}
+
+.consent-icon--primary {
+  color: #93c5fd;
+}
+
+.consent-icon--success {
+  color: #4ade80;
 }
 </style>

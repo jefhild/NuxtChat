@@ -1,8 +1,8 @@
 <template>
-  <v-container fluid class="pa-0">
+  <div class="w-full p-0">
     <HomeRow1 />
     <LogoutHome />
-  </v-container>
+  </div>
 </template>
 
 <script setup>

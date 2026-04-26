@@ -1,41 +1,62 @@
 <template>
-  <v-dialog
-    v-model="isOpen"
-    class="profile-dialog"
-    max-width="920"
-    width="92vw"
-    scrollable
-  >
-    <ProfileCard
-      v-if="profile"
-      :profile="profile"
-      :avatar-decoration="avatarDecoration"
-      :stats="stats"
-      :photo-gallery-photos="photoGalleryPhotos"
-      :photo-gallery-count="photoGalleryCount"
-      :gallery-blurred="!canViewGallery"
-      @likePhoto="handlePhotoVote"
-      @chat-now="isOpen = false"
-      @upvoted="emit('upvoted', $event)"
-    >
-      <template #overlay>
-        <v-btn
-          class="profile-dialog-close"
-          icon="mdi-close"
-          size="small"
-          variant="text"
+  <Teleport to="body">
+    <Transition name="profile-dialog-fade">
+      <div
+        v-if="isOpen"
+        class="profile-dialog"
+        role="presentation"
+      >
+        <button
+          type="button"
+          class="profile-dialog__scrim"
           aria-label="Close profile dialog"
           @click="isOpen = false"
         />
-      </template>
-    </ProfileCard>
-    <v-card v-else class="pa-4" max-width="460">
-      <v-skeleton-loader v-if="isLoading" type="card" />
-      <div v-else class="text-body-2 text-medium-emphasis text-center py-6">
-        Profile unavailable.
+        <div
+          class="profile-dialog__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="profile-dialog-title"
+        >
+          <ProfileCard
+            v-if="profile"
+            :profile="profile"
+            :avatar-decoration="avatarDecoration"
+            :stats="stats"
+            :photo-gallery-photos="photoGalleryPhotos"
+            :photo-gallery-count="photoGalleryCount"
+            :gallery-blurred="!canViewGallery"
+            @likePhoto="handlePhotoVote"
+            @chat-now="isOpen = false"
+            @upvoted="emit('upvoted', $event)"
+          >
+            <template #overlay>
+              <button
+                type="button"
+                class="profile-dialog-close"
+                aria-label="Close profile dialog"
+                @click="isOpen = false"
+              >
+                <i class="mdi mdi-close" aria-hidden="true" />
+              </button>
+            </template>
+          </ProfileCard>
+
+          <div v-else class="profile-dialog__fallback">
+            <div v-if="isLoading" class="profile-dialog__skeleton" aria-hidden="true">
+              <div class="profile-dialog__skeleton-line profile-dialog__skeleton-line--title" />
+              <div class="profile-dialog__skeleton-line" />
+              <div class="profile-dialog__skeleton-line" />
+              <div class="profile-dialog__skeleton-line profile-dialog__skeleton-line--short" />
+            </div>
+            <div v-else class="profile-dialog__empty">
+              Profile unavailable.
+            </div>
+          </div>
+        </div>
       </div>
-    </v-card>
-  </v-dialog>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
@@ -67,9 +88,6 @@ const stats = ref(null);
 const photoGalleryPhotos = ref([]);
 const photoGalleryCount = ref(0);
 
-const isAuthenticated = computed(() =>
-  ["anon_authenticated", "authenticated"].includes(authStore.authStatus)
-);
 const canViewGallery = computed(() => authStore.authStatus === "authenticated");
 
 const resolveProfileAvatar = async (userId) => {
@@ -188,15 +206,120 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.profile-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+}
+
+.profile-dialog__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.72);
+}
+
+.profile-dialog__panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(92vw, 920px);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  transform: translate(-50%, -50%);
+}
+
 .profile-dialog-close {
   position: absolute;
   top: 6px;
   right: 6px;
   z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(15 23 42 / 0.56);
+  color: rgb(226 232 240);
+  cursor: pointer;
 }
 
-.profile-dialog :deep(.v-overlay__content) {
-  max-width: 920px;
-  width: 92vw;
+.profile-dialog-close:hover,
+.profile-dialog-close:focus-visible {
+  background: rgb(15 23 42 / 0.72);
+  outline: none;
+}
+
+.profile-dialog__fallback {
+  width: min(100%, 460px);
+  margin: 0 auto;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: rgb(var(--color-surface));
+  box-shadow: 0 24px 48px rgb(var(--color-shadow) / 0.18);
+}
+
+.profile-dialog__skeleton {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.profile-dialog__skeleton-line {
+  height: 0.9rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.18),
+    rgba(148, 163, 184, 0.34),
+    rgba(148, 163, 184, 0.18)
+  );
+  background-size: 200% 100%;
+  animation: profile-dialog-skeleton 1.1s linear infinite;
+}
+
+.profile-dialog__skeleton-line--title {
+  width: 56%;
+  height: 1.1rem;
+}
+
+.profile-dialog__skeleton-line--short {
+  width: 70%;
+}
+
+.profile-dialog__empty {
+  padding: 1.5rem 0.75rem;
+  text-align: center;
+  color: rgb(var(--color-foreground) / 0.72);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.profile-dialog-fade-enter-active,
+.profile-dialog-fade-leave-active {
+  transition: opacity 160ms ease;
+}
+
+.profile-dialog-fade-enter-from,
+.profile-dialog-fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes profile-dialog-skeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-dialog__panel {
+    width: calc(100vw - 1rem);
+    max-height: calc(100vh - 1rem);
+  }
 }
 </style>

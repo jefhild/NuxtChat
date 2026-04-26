@@ -1,32 +1,38 @@
 <template>
-  <v-row justify="center" align="center" class="mb-2">
-    <v-col cols="12" class="text-center">
-      <div class="page-header-row">
-        <div v-if="$slots.start" class="page-header-action page-header-action--start">
-          <slot name="start" />
-        </div>
-        <div class="page-header-center">
-          <div class="page-header-title">
-            <span v-if="$slots.icon" class="page-header-icon">
-              <slot name="icon" />
-            </span>
-            <h1 class="text-h6 text-sm-h5 text-md-h4 text-lg-h4 page-header-text">
-              {{ text }}
-            </h1>
-          </div>
-        </div>
-        <div v-if="$slots.end" class="page-header-action page-header-action--end">
-          <slot name="end" />
+  <div class="mb-2 text-center">
+    <div class="flex items-center gap-2">
+      <div
+        v-if="$slots.start"
+        class="flex min-w-8 items-center justify-start"
+      >
+        <slot name="start" />
+      </div>
+      <div class="flex flex-1 justify-center">
+        <div class="inline-flex items-center gap-2.5">
+          <span v-if="$slots.icon" class="page-header-icon">
+            <slot name="icon" />
+          </span>
+          <h1
+            class="font-poppins text-xl font-semibold text-foreground sm:text-2xl md:text-3xl"
+          >
+            {{ text }}
+          </h1>
         </div>
       </div>
-      <h2
-        v-if="subtitle"
-        class="d-none d-md-block text-subtitle-1 text-md-h6 page-header-subtitle"
+      <div
+        v-if="$slots.end"
+        class="flex min-w-8 items-center justify-end"
       >
-        {{ subtitle }}
-      </h2>
-    </v-col>
-  </v-row>
+        <slot name="end" />
+      </div>
+    </div>
+    <h2
+      v-if="subtitle"
+      class="mt-0 hidden text-base font-normal text-foreground/70 md:block md:text-xl"
+    >
+      {{ subtitle }}
+    </h2>
+  </div>
 </template>
 
 <script setup>
@@ -43,54 +49,7 @@ defineProps({
 </script>
 
 <style scoped>
-.page-header-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.page-header-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.page-header-center {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.page-header-action {
-  display: flex;
-  align-items: center;
-  min-width: 32px;
-}
-
-.page-header-action--start {
-  justify-content: flex-start;
-}
-
-.page-header-action--end {
-  justify-content: flex-end;
-}
-
 .page-header-icon :deep(.v-icon) {
-  color: #3f51b5;
-}
-
-.page-header-text {
-  font-family: "Poppins", sans-serif;
-  /* font-size: 1.2rem;*/
-  font-weight: 600;
-  color: rgb(var(--v-theme-on-surface));
-  /* margin-bottom: 0.25rem; */
-}
-
-.page-header-subtitle {
-  color: rgba(var(--v-theme-on-surface), 0.72);
-  /* font-size: 1rem;*/
-  font-weight: 400;
-  margin-top: 0;
+  color: rgb(var(--color-primary));
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <v-sheet
+  <div
     class="cmt"
     :class="[
       `cmt--depth-${Math.min(2, Math.max(0, depth))}`,
@@ -8,47 +8,38 @@
         'cmt--system': senderKind === 'system',
       },
     ]"
-    :color="senderKind === 'agent' ? 'surface-variant' : undefined"
-    rounded="lg"
-    elevation="0"
   >
     <div
       class="cmt-inner"
       :class="{ 'has-avatar': !!avatarUrl, 'is-reply': depth > 0 }"
     >
-      <div class="header d-flex align-center mb-1">
+      <div class="header">
         <button
           v-if="avatarUrl && userId"
           type="button"
-          class="cmt-avatar-btn mr-2"
+          class="cmt-avatar-btn"
           @click="onProfileClick"
         >
           <span class="cmt-avatar-wrap">
-            <v-avatar size="28">
-              <v-img :src="avatarUrl" />
-            </v-avatar>
+            <span class="cmt-avatar">
+              <img :src="avatarUrl" alt="" />
+            </span>
             <span v-if="flagEmoji" class="cmt-avatar-flag">{{ flagEmoji }}</span>
-            <v-icon
+            <i
               v-if="genderIcon"
-              size="16"
-              class="cmt-avatar-gender"
-              :class="genderClass"
-            >
-              {{ genderIcon }}
-            </v-icon>
+              :class="['mdi', genderIcon, 'cmt-avatar-gender', genderClass]"
+              aria-hidden="true"
+            />
           </span>
         </button>
-        <span v-else-if="avatarUrl" class="cmt-avatar-wrap mr-2">
-          <v-avatar size="28"><v-img :src="avatarUrl" /></v-avatar>
+        <span v-else-if="avatarUrl" class="cmt-avatar-wrap">
+          <span class="cmt-avatar"><img :src="avatarUrl" alt="" /></span>
           <span v-if="flagEmoji" class="cmt-avatar-flag">{{ flagEmoji }}</span>
-          <v-icon
+          <i
             v-if="genderIcon"
-            size="16"
-            class="cmt-avatar-gender"
-            :class="genderClass"
-          >
-            {{ genderIcon }}
-          </v-icon>
+            :class="['mdi', genderIcon, 'cmt-avatar-gender', genderClass]"
+            aria-hidden="true"
+          />
         </span>
         <div class="cmt-identity">
           <div class="cmt-meta-row">
@@ -69,20 +60,19 @@
             <span
               v-if="translatedFromLabel"
               class="cmt-meta text-caption cmt-translated"
-            >
+              >
               {{ translatedFromLabel }}
             </span>
           </div>
         </div>
-        <v-spacer />
-        <v-btn class="menu-btn" icon variant="plain" density="comfortable" @click="onMenuClick">
-          <v-icon size="18">mdi-dots-horizontal</v-icon>
-        </v-btn>
+        <button type="button" class="menu-btn" @click="onMenuClick">
+          <i class="mdi mdi-dots-horizontal" aria-hidden="true" />
+        </button>
       </div>
 
       <div class="content-row">
         <div class="body text-body-2">
-          <div v-if="parentName" class="cmt-meta text-caption mb-1">
+          <div v-if="parentName" class="cmt-meta text-caption cmt-parent">
             {{ t("pages.feeds.replyingTo", "Replying to") }} @{{ parentName }}
           </div>
           <div v-if="masked" class="text-caption text-disabled">
@@ -105,25 +95,25 @@
           />
 
           <div class="reply-meta">
-            <v-btn
-              class="ml-1 reply-btn"
-              variant="plain"
-              size="small"
+            <button
+              type="button"
+              class="reply-btn"
               :disabled="disabled || senderKind === 'system'"
               @click="canReply ? $emit('reply', id) : $emit('login')"
             >
               {{ t("pages.feeds.replyButton", "Reply") }}
-            </v-btn>
+            </button>
           </div>
         </div>
       </div>
       <slot name="reply-composer"></slot>
     </div>
-  </v-sheet>
+  </div>
 </template>
 
 <script setup>
 import MoodFeedVoteControls from "@/components/MoodFeed/VoteControls.vue";
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 const emit = defineEmits(["reply", "vote", "menu", "login", "profile", "register"]);
@@ -154,7 +144,6 @@ const props = defineProps({
   voteTarget: { type: String, default: "reply" }, // 'entry' | 'reply'
 });
 
-const activatorId = computed(() => `comment-menu-btn-${props.id}`);
 const normalizeLocale = (value) =>
   String(value || "")
     .trim()
@@ -333,6 +322,8 @@ function onProfileClick() {
 }
 
 .cmt .header {
+  display: flex;
+  align-items: center;
   margin-bottom: 1px !important;
 }
 .cmt .body {
@@ -348,38 +339,8 @@ function onProfileClick() {
   white-space: nowrap;
 }
 
-.cmt .actions :deep(.v-btn),
-.cmt .actions :deep(.v-btn__content),
-.cmt .actions :deep(.v-icon),
 .menu-btn {
-  --v-btn-bg: transparent !important;
-  --v-theme-overlay-multiplier: 0 !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-  color: rgba(226, 232, 240, 0.82) !important;
-}
-
-.cmt .actions :deep(.v-btn__overlay),
-.cmt .actions :deep(.v-btn__underlay),
-.menu-btn :deep(.v-btn__overlay),
-.menu-btn :deep(.v-btn__underlay) {
-  background: transparent !important;
-}
-
-.cmt .actions :deep(.v-btn--icon),
-.cmt .actions :deep(.v-btn--variant-plain),
-.cmt .actions :deep(.v-btn--disabled),
-.menu-btn,
-.menu-btn:deep(.v-btn),
-.menu-btn:deep(.v-btn--icon),
-.menu-btn:deep(.v-btn--variant-plain),
-.menu-btn:deep(.v-btn--disabled) {
-  background-color: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
+  margin-left: auto;
 }
 
 .content-row {
@@ -400,12 +361,37 @@ function onProfileClick() {
 
 .reply-btn,
 .menu-btn {
-  color: rgba(226, 232, 240, 0.82) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.9rem;
+  padding: 0.25rem 0.55rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(226, 232, 240, 0.82);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
 }
 
 .reply-btn:hover,
 .menu-btn:hover {
-  color: rgba(241, 245, 249, 0.98) !important;
+  background: rgba(148, 163, 184, 0.16);
+  color: rgba(241, 245, 249, 0.98);
+}
+
+.reply-btn:focus-visible,
+.menu-btn:focus-visible {
+  outline: 2px solid rgba(96, 165, 250, 0.34);
+  outline-offset: 1px;
+}
+
+.reply-btn:disabled,
+.menu-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .cmt .body .text-caption.text-medium-emphasis {
@@ -471,6 +457,21 @@ function onProfileClick() {
   display: inline-flex;
 }
 
+.cmt-avatar {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.cmt-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .cmt-avatar-flag {
   position: absolute;
   right: -6px;
@@ -521,15 +522,6 @@ function onProfileClick() {
 }
 .cmt--system {
   opacity: 0.85;
-}
-
-.v-chip {
-  height: 18px;
-  font-size: 0.7rem;
-  padding: 0 4px;
-}
-.v-avatar {
-  --v-avatar-size: 24px;
 }
 
 @media (max-width: 960px) {

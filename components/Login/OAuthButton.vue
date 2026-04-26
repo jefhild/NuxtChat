@@ -1,16 +1,15 @@
 <template>
-  <v-btn
-    :color="resolvedColor"
-    :prepend-icon="icon"
-    :loading="loading"
+  <button
+    type="button"
     :disabled="loading || disabled"
-    block
-    class="mb-2 oauth-btn"
+    class="oauth-btn"
     :class="`oauth-btn--${provider}`"
     @click="handleOAuth"
   >
+    <span v-if="loading" class="oauth-btn__spinner" aria-hidden="true" />
+    <i v-else-if="icon" :class="['mdi', icon, 'oauth-btn__icon']" aria-hidden="true" />
     Sign in with {{ label }}
-  </v-btn>
+  </button>
 </template>
 
 <script setup>
@@ -54,58 +53,53 @@ async function handleOAuth() {
 
 <style scoped>
 .oauth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.8rem 1rem;
+  border: 0;
+  border-radius: 14px;
+  background: v-bind(resolvedColor);
+  color: #fff;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  font: inherit;
   font-weight: 600;
-  color: #ffffff !important;
+  cursor: pointer;
+  transition: transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease;
 }
 
-.oauth-btn--google {
-  background-color: #c73a2e !important;
+.oauth-btn:hover:not(:disabled),
+.oauth-btn:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgb(var(--color-shadow) / 0.16);
+  outline: none;
 }
 
-.oauth-btn--facebook {
-  background-color: #1388cc !important;
+.oauth-btn:disabled {
+  opacity: 0.72;
+  cursor: default;
 }
 
-.oauth-btn--github {
-  background-color: #2e8b57 !important;
+.oauth-btn__icon {
+  font-size: 1.15rem;
 }
 
-.oauth-btn--discord {
-  background-color: #5b6fd8 !important;
+.oauth-btn__spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: oauth-btn-spin 0.7s linear infinite;
 }
 
-.oauth-btn--email {
-  background-color: #2aa79c !important;
-}
-
-.oauth-btn:deep(.v-icon) {
-  color: #ffffff !important;
-}
-
-.oauth-btn.v-btn--disabled {
-  opacity: 0.72 !important;
-  color: #ffffff !important;
-}
-
-.oauth-btn--google.v-btn--disabled {
-  background-color: #c73a2e !important;
-}
-
-.oauth-btn--facebook.v-btn--disabled {
-  background-color: #1388cc !important;
-}
-
-.oauth-btn--github.v-btn--disabled {
-  background-color: #2e8b57 !important;
-}
-
-.oauth-btn--discord.v-btn--disabled {
-  background-color: #5b6fd8 !important;
-}
-
-.oauth-btn--email.v-btn--disabled {
-  background-color: #2aa79c !important;
+@keyframes oauth-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

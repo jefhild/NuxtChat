@@ -1,385 +1,807 @@
 <template>
-  <v-card class="pa-4 pa-md-6" elevation="0">
-    <div class="d-flex flex-wrap align-center justify-space-between ga-4 mb-5">
+  <section class="seo-admin-card">
+    <div class="seo-admin-card__header">
       <div>
-        <div class="text-overline text-medium-emphasis">SEO Pages</div>
-        <h3 class="text-h6 font-weight-bold">Manage landing, guide, and comparison pages</h3>
-        <p class="text-body-2 text-medium-emphasis">
+        <div class="seo-admin-kicker">SEO Pages</div>
+        <h2 class="seo-admin-title">Manage landing, guide, and comparison pages</h2>
+        <p class="seo-admin-subtitle">
           These pages are indexable search-entry pages that route visitors into chat.
         </p>
       </div>
 
-      <div class="d-flex ga-2">
-        <v-select
-          v-model="selectedType"
-          :items="typeOptions"
-          item-title="label"
-          item-value="value"
-          label="Type"
-          density="compact"
-          hide-details
-          style="min-width: 180px;"
-        />
-        <v-btn color="secondary" variant="tonal" prepend-icon="mdi-code-json" @click="openImportDialog">
+      <div class="seo-admin-toolbar">
+        <label class="seo-admin-field seo-admin-field--toolbar">
+          <span class="seo-admin-field__label">Type</span>
+          <select v-model="selectedType" class="seo-admin-field__control">
+            <option v-for="option in typeOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </label>
+
+        <button
+          type="button"
+          class="seo-admin-button"
+          @click="openImportDialog"
+        >
           Import JSON
-        </v-btn>
-        <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreateDialog">
+        </button>
+
+        <button
+          type="button"
+          class="seo-admin-button seo-admin-button--primary"
+          @click="openCreateDialog"
+        >
           New SEO Page
-        </v-btn>
+        </button>
       </div>
     </div>
 
-    <v-skeleton-loader v-if="loading" type="table-row@6" />
+    <div class="seo-admin-card__body">
+      <div
+        v-if="translationLoading && translationJob?.status && dialog"
+        class="seo-admin-banner seo-admin-banner--info"
+        role="status"
+      >
+        Translation status: {{ translationJob.status }}
+      </div>
 
-    <v-table v-else density="comfortable">
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Type</th>
-          <th>Locales</th>
-          <th>Slug</th>
-          <th>Status</th>
-          <th class="text-right">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="page in filteredPages" :key="page.id">
-          <td>
-            <div class="font-weight-medium">{{ page.title }}</div>
-            <div class="text-body-2 text-medium-emphasis">
-              {{ page.metaDescription || page.subtitle || "No summary yet." }}
-            </div>
-          </td>
-          <td>
-            <v-chip size="small" variant="tonal">{{ page.pageType }}</v-chip>
-          </td>
-          <td>{{ page.localeSummary }}</td>
-          <td>{{ buildAdminPath(page) }}</td>
-          <td>
-            <v-chip
-              size="small"
-              :color="page.isPublished ? 'success' : 'warning'"
-              variant="tonal"
-            >
-              {{ page.isPublished ? "Published" : "Draft" }}
-            </v-chip>
-          </td>
-          <td class="text-right">
-            <v-btn icon="mdi-open-in-new" size="small" variant="text" @click="openPage(page)" />
-            <v-btn icon="mdi-pencil" size="small" variant="text" @click="openEditDialog(page)" />
-            <v-btn
-              icon="mdi-delete"
-              size="small"
-              variant="text"
-              color="error"
-              @click="deletePage(page)"
-            />
-          </td>
-        </tr>
+      <LoadingContainer v-if="loading" text="Loading SEO pages..." />
 
-        <tr v-if="!filteredPages.length">
-          <td colspan="6" class="text-center text-medium-emphasis py-6">
-            No SEO pages match this filter yet.
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
-
-    <v-dialog v-model="dialog" max-width="1100">
-      <v-card>
-        <v-card-title>{{ form.id ? "Edit SEO Page" : "Create SEO Page" }}</v-card-title>
-        <v-card-text>
-          <v-form ref="formRef" @submit.prevent="savePage">
-            <v-row>
-              <v-col cols="12" md="4">
-                <v-select
-                  v-model="form.pageType"
-                  :items="typeOptions"
-                  item-title="label"
-                  item-value="value"
-                  label="Page type"
-                  :rules="[required]"
-                />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-select
-                  :model-value="form.locale"
-                  :items="activeLocaleOptions"
-                  item-title="title"
-                  item-value="value"
-                  label="Locale"
-                  :rules="[required]"
-                  @update:model-value="onLocaleChange"
-                />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-switch
-                  :model-value="form.isPublished"
-                  color="success"
-                  inset
-                  :loading="publishToggling"
-                  label="Published"
-                  @update:model-value="onPublishedToggle"
-                />
-              </v-col>
-              <v-col cols="12" md="4" class="d-flex align-center">
-                <v-btn
-                  class="mr-2"
-                  color="secondary"
-                  variant="outlined"
-                  prepend-icon="mdi-code-json"
-                  @click="openImportDialog"
-                >
-                  Import JSON
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  variant="outlined"
-                  prepend-icon="mdi-translate"
-                  :disabled="!form.id"
-                  :loading="translationLoading"
-                  @click="openTranslationDialog"
-                >
-                  Translate
-                </v-btn>
-              </v-col>
-            </v-row>
-
-            <v-row>
-              <v-col cols="12" md="8">
-                <v-text-field v-model="form.title" label="Title" :rules="[required]" />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field v-model="form.slug" label="Slug" hint="Auto-generated from title if blank." persistent-hint />
-              </v-col>
-            </v-row>
-
-            <v-text-field v-model="form.subtitle" label="Subtitle" />
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="form.metaTitle" label="Meta title" />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="form.metaDescription" label="Meta description" />
-              </v-col>
-            </v-row>
-
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="form.heroTitle" label="Hero title" />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="form.heroBody" label="Hero body" />
-              </v-col>
-            </v-row>
-            <v-text-field v-model="form.heroImageUrl" label="Hero image URL (optional)" />
-            <div class="d-flex flex-wrap align-center ga-3 mb-4">
-              <v-file-input
-                accept="image/png,image/jpeg,image/webp"
-                label="Upload hero image"
-                prepend-icon="mdi-image"
-                density="comfortable"
-                hide-details
-                style="max-width: 360px;"
-                @change="handleHeroImageChange"
-              />
-              <v-btn
-                color="primary"
-                variant="tonal"
-                :loading="heroImageUploading"
-                :disabled="!heroImageDataUrl"
-                @click="uploadHeroImage"
-              >
-                Upload image
-              </v-btn>
-            </div>
-            <v-row v-if="form.heroImageUrl" class="mb-2">
-              <v-col cols="12" md="5">
-                <div class="seo-admin-hero-preview">
-                  <v-img
-                    :src="form.heroImageUrl"
-                    aspect-ratio="16/10"
-                    cover
-                    class="rounded-lg"
-                  />
-                  <div
-                    v-if="form.photoCreditsHtml"
-                    class="seo-admin-hero-credit"
-                    v-html="form.photoCreditsHtml"
-                  />
+      <div v-else class="seo-admin-table-wrap">
+        <table class="seo-admin-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Locales</th>
+              <th>Path</th>
+              <th>Status</th>
+              <th class="seo-admin-table__actions-heading">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="page in filteredPages" :key="page.id">
+              <td>
+                <div class="seo-admin-table__title">{{ page.title }}</div>
+                <div class="seo-admin-table__subtitle">
+                  {{ page.metaDescription || page.subtitle || "No summary yet." }}
                 </div>
-              </v-col>
-              <v-col cols="12" md="7">
-                <v-text-field
-                  v-model="form.photoCreditsUrl"
-                  label="Photo Credit URL"
-                  :rules="[isValidUrl]"
-                />
-                <v-textarea
-                  v-model="form.photoCreditsHtml"
-                  label="Photo Credit HTML"
-                  rows="3"
-                  auto-grow
-                  hint="Example: &lt;a href='...'>Photo: Jane Doe&lt;/a>"
-                  persistent-hint
-                />
-              </v-col>
-            </v-row>
+              </td>
+              <td>
+                <span class="seo-admin-pill seo-admin-pill--type">{{ page.pageType }}</span>
+              </td>
+              <td>
+                <div class="seo-admin-chip-list">
+                  <span
+                    v-for="locale in page.availableLocales"
+                    :key="`${page.id}-${locale}`"
+                    class="seo-admin-pill seo-admin-pill--locale"
+                  >
+                    {{ locale }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <code class="seo-admin-path">{{ buildAdminPath(page) }}</code>
+              </td>
+              <td>
+                <span
+                  class="seo-admin-pill"
+                  :class="page.isPublished ? 'seo-admin-pill--success' : 'seo-admin-pill--warning'"
+                >
+                  {{ page.isPublished ? "Published" : "Draft" }}
+                </span>
+              </td>
+              <td>
+                <div class="seo-admin-action-list">
+                  <button
+                    type="button"
+                    class="seo-admin-button seo-admin-button--small"
+                    @click="openPage(page)"
+                  >
+                    Open
+                  </button>
+                  <button
+                    type="button"
+                    class="seo-admin-button seo-admin-button--small"
+                    @click="openEditDialog(page)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="seo-admin-button seo-admin-button--danger seo-admin-button--small"
+                    @click="promptDeletePage(page)"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
 
-            <v-textarea
-              v-model="form.body"
-              label="Body (Markdown)"
-              rows="10"
-              auto-grow
-            />
+            <tr v-if="!filteredPages.length">
+              <td colspan="6">
+                <div class="seo-admin-empty-state">No SEO pages match this filter yet.</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-            <v-divider class="my-4" />
-            <div class="text-subtitle-2 mb-2">Highlights</div>
-            <div class="d-flex flex-column ga-2 mb-3">
-              <div v-for="(highlight, index) in form.highlights" :key="`highlight-${index}`" class="d-flex ga-2">
-                <v-text-field v-model="form.highlights[index]" label="Highlight" hide-details />
-                <v-btn icon="mdi-delete" variant="text" color="error" @click="removeHighlight(index)" />
+  <Teleport to="body">
+    <Transition name="seo-admin-dialog-fade">
+      <div v-if="dialog" class="seo-admin-dialog-layer" role="presentation">
+        <button
+          type="button"
+          class="seo-admin-dialog-backdrop"
+          aria-label="Close SEO page dialog"
+          @click="closeEditorDialog"
+        />
+        <div
+          class="seo-admin-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="seo-admin-editor-title"
+        >
+          <div class="seo-admin-dialog__card seo-admin-dialog__card--wide">
+            <div class="seo-admin-dialog__header">
+              <div>
+                <h2 id="seo-admin-editor-title" class="seo-admin-dialog__title">
+                  {{ form.id ? "Edit SEO Page" : "Create SEO Page" }}
+                </h2>
+                <p class="seo-admin-dialog__subtitle">
+                  Manage metadata, hero content, FAQ links, related links, and publication state.
+                </p>
               </div>
+              <button
+                type="button"
+                class="seo-admin-icon-button"
+                aria-label="Close SEO page dialog"
+                @click="closeEditorDialog"
+              >
+                ×
+              </button>
             </div>
-            <v-btn variant="tonal" prepend-icon="mdi-plus" @click="addHighlight">
-              Add highlight
-            </v-btn>
 
-            <v-divider class="my-4" />
-            <div class="text-subtitle-2 mb-2">FAQ</div>
-            <v-select
-              v-model="form.faqEntryIds"
-              :items="availableFaqOptions"
-              item-title="label"
-              item-value="value"
-              label="Linked FAQ entries"
-              multiple
-              chips
-              clearable
-              hint="These reuse the existing multilingual FAQ system."
-              persistent-hint
-            />
+            <form class="seo-admin-dialog__body seo-admin-form" @submit.prevent="savePage">
+              <div class="seo-admin-form-grid seo-admin-form-grid--top">
+                <label class="seo-admin-field">
+                  <span class="seo-admin-field__label">Page type</span>
+                  <select
+                    v-model="form.pageType"
+                    class="seo-admin-field__control"
+                    :class="fieldErrors.pageType ? 'is-invalid' : ''"
+                  >
+                    <option v-for="option in typeOptions" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                  <span v-if="fieldErrors.pageType" class="seo-admin-field__error">
+                    {{ fieldErrors.pageType }}
+                  </span>
+                </label>
 
-            <v-divider class="my-4" />
-            <div class="text-subtitle-2 mb-2">Related links</div>
-            <v-autocomplete
-              v-model="selectedRelatedLinkHrefs"
-              :items="availableSeoPageOptions"
-              item-title="title"
-              item-value="href"
-              label="Linked pages"
-              multiple
-              chips
-              closable-chips
-              clearable
-              hint="Select internal landing, guide, topic, or compare pages."
-              persistent-hint
-            >
-              <template #item="{ props, item }">
-                <v-list-item v-bind="props" :subtitle="item.raw.subtitle" />
-              </template>
-            </v-autocomplete>
+                <label class="seo-admin-field">
+                  <span class="seo-admin-field__label">Locale</span>
+                  <select
+                    :value="form.locale"
+                    class="seo-admin-field__control"
+                    :class="fieldErrors.locale ? 'is-invalid' : ''"
+                    @change="onLocaleChange($event.target.value)"
+                  >
+                    <option
+                      v-for="option in activeLocaleOptions"
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      {{ option.title }}
+                    </option>
+                  </select>
+                  <span v-if="fieldErrors.locale" class="seo-admin-field__error">
+                    {{ fieldErrors.locale }}
+                  </span>
+                </label>
 
-            <v-divider class="my-4" />
-            <div class="text-subtitle-2 mb-2">Call to action</div>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="form.ctaLabel" label="CTA label" />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="form.ctaHref" label="CTA href" />
-              </v-col>
-            </v-row>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="dialog = false">Cancel</v-btn>
-          <v-btn color="primary" :loading="saving" @click="savePage">
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+                <div class="seo-admin-field seo-admin-field--toggle">
+                  <span class="seo-admin-field__label">Published</span>
+                  <label class="seo-admin-switch seo-admin-switch--labeled">
+                    <input
+                      :checked="form.isPublished"
+                      :disabled="publishToggling"
+                      type="checkbox"
+                      class="seo-admin-switch__input"
+                      @change="onPublishedToggle($event.target.checked)"
+                    >
+                    <span class="seo-admin-switch__track">
+                      <span class="seo-admin-switch__thumb" />
+                    </span>
+                    <span class="seo-admin-switch__label">
+                      {{ publishToggling ? "Saving…" : form.isPublished ? "Published" : "Draft" }}
+                    </span>
+                  </label>
+                </div>
 
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top">
-      {{ snackbar.message }}
-    </v-snackbar>
+                <div class="seo-admin-inline-actions">
+                  <button
+                    type="button"
+                    class="seo-admin-button"
+                    @click="openImportDialog"
+                  >
+                    Import JSON
+                  </button>
+                  <button
+                    type="button"
+                    class="seo-admin-button"
+                    :disabled="!form.id || translationLoading"
+                    @click="openTranslationDialog"
+                  >
+                    <span v-if="translationLoading" class="seo-admin-button__spinner" aria-hidden="true" />
+                    Translate
+                  </button>
+                </div>
+              </div>
 
-    <v-dialog v-model="translationDialog" max-width="480">
-      <v-card>
-        <v-card-title>Translate SEO Page</v-card-title>
-        <v-card-text>
-          <v-select
-            v-model="translationForm.locales"
-            :items="translationOptions"
-            item-title="label"
-            item-value="value"
-            label="Target languages"
-            multiple
-            chips
-            :disabled="translationForm.translateAll"
-          />
-          <v-checkbox
-            v-model="translationForm.translateAll"
-            label="Translate to all other languages"
-            hide-details
-          />
-          <v-checkbox
-            v-model="translationForm.overwrite"
-            label="Overwrite existing translation"
-            hide-details
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="translationDialog = false">
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            :loading="translationLoading"
-            @click="runTranslation"
-          >
-            Translate
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+              <div class="seo-admin-form-grid">
+                <label class="seo-admin-field seo-admin-field--span-8">
+                  <span class="seo-admin-field__label">Title</span>
+                  <input
+                    v-model="form.title"
+                    type="text"
+                    class="seo-admin-field__control"
+                    :class="fieldErrors.title ? 'is-invalid' : ''"
+                  >
+                  <span v-if="fieldErrors.title" class="seo-admin-field__error">
+                    {{ fieldErrors.title }}
+                  </span>
+                </label>
 
-    <v-dialog v-model="importDialog" max-width="760">
-      <v-card>
-        <v-card-title>Import SEO Page JSON</v-card-title>
-        <v-card-text>
-          <p class="text-body-2 text-medium-emphasis mb-4">
-            Paste the full AI JSON output or upload a `.json` file. This fills the editor form, but FAQ suggestions are not auto-linked to the multilingual FAQ system.
-          </p>
-          <v-file-input
-            accept="application/json,.json"
-            label="Upload JSON file"
-            prepend-icon="mdi-file-code-outline"
-            show-size
-            class="mb-4"
-            @change="handleImportFileChange"
-          />
-          <v-textarea
-            v-model="importJsonText"
-            label="SEO page JSON"
-            rows="14"
-            auto-grow
-            placeholder='{"title":"...","slug":"...","body":"..."}'
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="importDialog = false">Cancel</v-btn>
-          <v-btn color="primary" @click="applyImportedJson">
-            Apply to Form
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-card>
+                <label class="seo-admin-field seo-admin-field--span-4">
+                  <span class="seo-admin-field__label">Slug</span>
+                  <input
+                    v-model="form.slug"
+                    type="text"
+                    class="seo-admin-field__control"
+                  >
+                  <span class="seo-admin-field__hint">Auto-generated from title if blank.</span>
+                </label>
+              </div>
+
+              <div class="seo-admin-preview-grid">
+                <div class="seo-admin-preview-card">
+                  <div class="seo-admin-preview-card__label">Slug preview</div>
+                  <code class="seo-admin-preview-card__value">{{ slugPreview || "—" }}</code>
+                </div>
+                <div class="seo-admin-preview-card">
+                  <div class="seo-admin-preview-card__label">Path preview</div>
+                  <code class="seo-admin-preview-card__value">{{ pathPreview }}</code>
+                </div>
+              </div>
+
+              <label class="seo-admin-field">
+                <span class="seo-admin-field__label">Subtitle</span>
+                <input v-model="form.subtitle" type="text" class="seo-admin-field__control">
+              </label>
+
+              <div class="seo-admin-form-grid">
+                <label class="seo-admin-field">
+                  <span class="seo-admin-field__label">Meta title</span>
+                  <input v-model="form.metaTitle" type="text" class="seo-admin-field__control">
+                </label>
+
+                <label class="seo-admin-field">
+                  <span class="seo-admin-field__label">Meta description</span>
+                  <input v-model="form.metaDescription" type="text" class="seo-admin-field__control">
+                </label>
+              </div>
+
+              <div class="seo-admin-form-grid">
+                <label class="seo-admin-field">
+                  <span class="seo-admin-field__label">Hero title</span>
+                  <input v-model="form.heroTitle" type="text" class="seo-admin-field__control">
+                </label>
+
+                <label class="seo-admin-field">
+                  <span class="seo-admin-field__label">Hero body</span>
+                  <input v-model="form.heroBody" type="text" class="seo-admin-field__control">
+                </label>
+              </div>
+
+              <label class="seo-admin-field">
+                <span class="seo-admin-field__label">Hero image URL (optional)</span>
+                <input v-model="form.heroImageUrl" type="text" class="seo-admin-field__control">
+              </label>
+
+              <div class="seo-admin-upload-panel">
+                <label class="seo-admin-field seo-admin-field--upload">
+                  <span class="seo-admin-field__label">Upload hero image</span>
+                  <input
+                    accept="image/png,image/jpeg,image/webp"
+                    type="file"
+                    class="seo-admin-field__control seo-admin-field__control--file"
+                    @change="handleHeroImageChange"
+                  >
+                  <span class="seo-admin-field__hint">PNG, JPG, or WebP.</span>
+                </label>
+
+                <button
+                  type="button"
+                  class="seo-admin-button seo-admin-button--primary"
+                  :disabled="!heroImageDataUrl || heroImageUploading"
+                  @click="uploadHeroImage"
+                >
+                  <span v-if="heroImageUploading" class="seo-admin-button__spinner" aria-hidden="true" />
+                  Upload image
+                </button>
+              </div>
+
+              <div
+                v-if="heroImagePreviewUrl || form.heroImageUrl"
+                class="seo-admin-hero-grid"
+              >
+                <div class="seo-admin-hero-preview">
+                  <div class="seo-admin-hero-preview__media">
+                    <img
+                      :src="heroImagePreviewUrl || form.heroImageUrl"
+                      alt="SEO page hero preview"
+                      class="seo-admin-hero-preview__image"
+                    >
+                    <div
+                      v-if="!heroImagePreviewUrl && form.photoCreditsHtml"
+                      class="seo-admin-hero-credit"
+                      v-html="form.photoCreditsHtml"
+                    />
+                    <div
+                      v-if="heroImagePreviewUrl"
+                      class="seo-admin-hero-preview__status"
+                    >
+                      Ready to upload
+                    </div>
+                  </div>
+                </div>
+
+                <div class="seo-admin-hero-fields">
+                  <label class="seo-admin-field">
+                    <span class="seo-admin-field__label">Photo Credit URL</span>
+                    <input
+                      v-model="form.photoCreditsUrl"
+                      type="text"
+                      class="seo-admin-field__control"
+                      :class="fieldErrors.photoCreditsUrl ? 'is-invalid' : ''"
+                    >
+                    <span v-if="fieldErrors.photoCreditsUrl" class="seo-admin-field__error">
+                      {{ fieldErrors.photoCreditsUrl }}
+                    </span>
+                  </label>
+
+                  <label class="seo-admin-field">
+                    <span class="seo-admin-field__label">Photo Credit HTML</span>
+                    <textarea
+                      v-model="form.photoCreditsHtml"
+                      rows="3"
+                      class="seo-admin-field__control seo-admin-field__control--textarea"
+                    ></textarea>
+                    <span class="seo-admin-field__hint">
+                      Example: &lt;a href="..."&gt;Photo: Jane Doe&lt;/a&gt;
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <label class="seo-admin-field">
+                <span class="seo-admin-field__label">Body (Markdown)</span>
+                <textarea
+                  v-model="form.body"
+                  rows="10"
+                  class="seo-admin-field__control seo-admin-field__control--textarea"
+                ></textarea>
+              </label>
+
+              <section class="seo-admin-section">
+                <div class="seo-admin-section__header">
+                  <div>
+                    <h3 class="seo-admin-section__title">Highlights</h3>
+                    <p class="seo-admin-section__subtitle">Short value props shown near the hero.</p>
+                  </div>
+                  <button
+                    type="button"
+                    class="seo-admin-button seo-admin-button--small"
+                    @click="addHighlight"
+                  >
+                    Add highlight
+                  </button>
+                </div>
+
+                <div class="seo-admin-highlight-list">
+                  <div
+                    v-for="(highlight, index) in form.highlights"
+                    :key="`highlight-${index}`"
+                    class="seo-admin-highlight-row"
+                  >
+                    <input
+                      v-model="form.highlights[index]"
+                      type="text"
+                      class="seo-admin-field__control"
+                      placeholder="Highlight"
+                    >
+                    <button
+                      type="button"
+                      class="seo-admin-button seo-admin-button--danger seo-admin-button--small"
+                      @click="removeHighlight(index)"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="seo-admin-section">
+                <div class="seo-admin-section__header">
+                  <div>
+                    <h3 class="seo-admin-section__title">FAQ</h3>
+                    <p class="seo-admin-section__subtitle">
+                      Reuse the existing multilingual FAQ system.
+                    </p>
+                  </div>
+                  <span class="seo-admin-pill seo-admin-pill--muted">
+                    {{ form.faqEntryIds.length }} linked
+                  </span>
+                </div>
+
+                <label class="seo-admin-field">
+                  <span class="seo-admin-field__label">Search FAQ entries</span>
+                  <input
+                    v-model="faqSearch"
+                    type="search"
+                    class="seo-admin-field__control"
+                    placeholder="Search by question"
+                  >
+                </label>
+
+                <div v-if="form.faqEntryIds.length" class="seo-admin-chip-list seo-admin-chip-list--selected">
+                  <span
+                    v-for="faqId in form.faqEntryIds"
+                    :key="faqId"
+                    class="seo-admin-chip"
+                  >
+                    {{ faqLabelById[faqId] || faqId }}
+                    <button type="button" class="seo-admin-chip__remove" @click="toggleFaqEntry(faqId)">
+                      ×
+                    </button>
+                  </span>
+                </div>
+
+                <div class="seo-admin-selection-list">
+                  <label
+                    v-for="option in filteredFaqOptions"
+                    :key="option.value"
+                    class="seo-admin-selection-item"
+                  >
+                    <input
+                      :checked="form.faqEntryIds.includes(option.value)"
+                      type="checkbox"
+                      @change="toggleFaqEntry(option.value)"
+                    >
+                    <span>{{ option.label }}</span>
+                  </label>
+                  <div v-if="!filteredFaqOptions.length" class="seo-admin-empty-inline">
+                    No FAQ entries match this search.
+                  </div>
+                </div>
+              </section>
+
+              <section class="seo-admin-section">
+                <div class="seo-admin-section__header">
+                  <div>
+                    <h3 class="seo-admin-section__title">Related links</h3>
+                    <p class="seo-admin-section__subtitle">
+                      Select internal landing, guide, topic, or compare pages.
+                    </p>
+                  </div>
+                  <span class="seo-admin-pill seo-admin-pill--muted">
+                    {{ form.relatedLinks.length }} linked
+                  </span>
+                </div>
+
+                <label class="seo-admin-field">
+                  <span class="seo-admin-field__label">Search linked pages</span>
+                  <input
+                    v-model="relatedLinkSearch"
+                    type="search"
+                    class="seo-admin-field__control"
+                    placeholder="Search by title, path, or type"
+                  >
+                </label>
+
+                <div v-if="form.relatedLinks.length" class="seo-admin-chip-list seo-admin-chip-list--selected">
+                  <span
+                    v-for="link in form.relatedLinks"
+                    :key="link.href"
+                    class="seo-admin-chip"
+                  >
+                    {{ link.label }}
+                    <button type="button" class="seo-admin-chip__remove" @click="toggleRelatedLinkByHref(link.href)">
+                      ×
+                    </button>
+                  </span>
+                </div>
+
+                <div class="seo-admin-selection-list">
+                  <label
+                    v-for="option in filteredSeoPageOptions"
+                    :key="option.href"
+                    class="seo-admin-selection-item seo-admin-selection-item--stacked"
+                  >
+                    <input
+                      :checked="selectedRelatedLinkHrefs.includes(option.href)"
+                      type="checkbox"
+                      @change="toggleRelatedLink(option)"
+                    >
+                    <span>
+                      <span class="seo-admin-selection-item__title">{{ option.title }}</span>
+                      <span class="seo-admin-selection-item__meta">{{ option.pageType }} · {{ option.href }}</span>
+                    </span>
+                  </label>
+                  <div v-if="!filteredSeoPageOptions.length" class="seo-admin-empty-inline">
+                    No related pages match this search.
+                  </div>
+                </div>
+              </section>
+
+              <section class="seo-admin-section">
+                <div class="seo-admin-section__header">
+                  <div>
+                    <h3 class="seo-admin-section__title">Call to action</h3>
+                  </div>
+                </div>
+
+                <div class="seo-admin-form-grid">
+                  <label class="seo-admin-field">
+                    <span class="seo-admin-field__label">CTA label</span>
+                    <input v-model="form.ctaLabel" type="text" class="seo-admin-field__control">
+                  </label>
+
+                  <label class="seo-admin-field">
+                    <span class="seo-admin-field__label">CTA href</span>
+                    <input v-model="form.ctaHref" type="text" class="seo-admin-field__control">
+                  </label>
+                </div>
+              </section>
+            </form>
+
+            <div class="seo-admin-dialog__actions">
+              <button type="button" class="seo-admin-button" @click="closeEditorDialog">
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="seo-admin-button seo-admin-button--primary"
+                :disabled="saving"
+                @click="savePage"
+              >
+                <span v-if="saving" class="seo-admin-button__spinner" aria-hidden="true" />
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <Teleport to="body">
+    <Transition name="seo-admin-dialog-fade">
+      <div v-if="translationDialog" class="seo-admin-dialog-layer" role="presentation">
+        <button
+          type="button"
+          class="seo-admin-dialog-backdrop"
+          aria-label="Close translation dialog"
+          @click="translationDialog = false"
+        />
+        <div
+          class="seo-admin-dialog seo-admin-dialog--compact"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="seo-admin-translation-title"
+        >
+          <div class="seo-admin-dialog__card">
+            <div class="seo-admin-dialog__header">
+              <h2 id="seo-admin-translation-title" class="seo-admin-dialog__title">
+                Translate SEO Page
+              </h2>
+              <button
+                type="button"
+                class="seo-admin-icon-button"
+                aria-label="Close translation dialog"
+                @click="translationDialog = false"
+              >
+                ×
+              </button>
+            </div>
+
+            <div class="seo-admin-dialog__body">
+              <div class="seo-admin-checkbox-list">
+                <label
+                  v-for="option in translationOptions"
+                  :key="option.value"
+                  class="seo-admin-selection-item"
+                  :class="translationForm.translateAll ? 'is-disabled' : ''"
+                >
+                  <input
+                    v-model="translationForm.locales"
+                    :disabled="translationForm.translateAll"
+                    type="checkbox"
+                    :value="option.value"
+                  >
+                  <span>{{ option.label }}</span>
+                </label>
+              </div>
+
+              <label class="seo-admin-selection-item">
+                <input v-model="translationForm.translateAll" type="checkbox">
+                <span>Translate to all other languages</span>
+              </label>
+
+              <label class="seo-admin-selection-item">
+                <input v-model="translationForm.overwrite" type="checkbox">
+                <span>Overwrite existing translation</span>
+              </label>
+            </div>
+
+            <div class="seo-admin-dialog__actions">
+              <button type="button" class="seo-admin-button" @click="translationDialog = false">
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="seo-admin-button seo-admin-button--primary"
+                :disabled="translationLoading"
+                @click="runTranslation"
+              >
+                <span v-if="translationLoading" class="seo-admin-button__spinner" aria-hidden="true" />
+                Translate
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <Teleport to="body">
+    <Transition name="seo-admin-dialog-fade">
+      <div v-if="importDialog" class="seo-admin-dialog-layer" role="presentation">
+        <button
+          type="button"
+          class="seo-admin-dialog-backdrop"
+          aria-label="Close import dialog"
+          @click="importDialog = false"
+        />
+        <div
+          class="seo-admin-dialog seo-admin-dialog--medium"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="seo-admin-import-title"
+        >
+          <div class="seo-admin-dialog__card">
+            <div class="seo-admin-dialog__header">
+              <h2 id="seo-admin-import-title" class="seo-admin-dialog__title">
+                Import SEO Page JSON
+              </h2>
+              <button
+                type="button"
+                class="seo-admin-icon-button"
+                aria-label="Close import dialog"
+                @click="importDialog = false"
+              >
+                ×
+              </button>
+            </div>
+
+            <div class="seo-admin-dialog__body">
+              <div class="seo-admin-banner seo-admin-banner--info" role="status">
+                Paste the full AI JSON output or upload a <code>.json</code> file. FAQ suggestions are not
+                auto-linked to the multilingual FAQ system.
+              </div>
+
+              <label class="seo-admin-field">
+                <span class="seo-admin-field__label">Upload JSON file</span>
+                <input
+                  accept="application/json,.json"
+                  type="file"
+                  class="seo-admin-field__control seo-admin-field__control--file"
+                  @change="handleImportFileChange"
+                >
+              </label>
+
+              <label class="seo-admin-field">
+                <span class="seo-admin-field__label">SEO page JSON</span>
+                <textarea
+                  v-model="importJsonText"
+                  rows="14"
+                  class="seo-admin-field__control seo-admin-field__control--textarea"
+                  placeholder='{"title":"...","slug":"...","body":"..."}'
+                ></textarea>
+              </label>
+            </div>
+
+            <div class="seo-admin-dialog__actions">
+              <button type="button" class="seo-admin-button" @click="importDialog = false">
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="seo-admin-button seo-admin-button--primary"
+                @click="applyImportedJson"
+              >
+                Apply to Form
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <Teleport to="body">
+    <Transition name="seo-admin-dialog-fade">
+      <div v-if="deleteDialog" class="seo-admin-dialog-layer" role="presentation">
+        <button
+          type="button"
+          class="seo-admin-dialog-backdrop"
+          aria-label="Close delete dialog"
+          @click="closeDeleteDialog"
+        />
+        <div
+          class="seo-admin-dialog seo-admin-dialog--compact"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="seo-admin-delete-title"
+        >
+          <div class="seo-admin-dialog__card">
+            <div class="seo-admin-dialog__header">
+              <h2 id="seo-admin-delete-title" class="seo-admin-dialog__title">
+                Delete SEO Page
+              </h2>
+            </div>
+            <div class="seo-admin-dialog__body">
+              Are you sure you want to delete
+              <strong>{{ pagePendingDelete?.title }}</strong>?
+            </div>
+            <div class="seo-admin-dialog__actions">
+              <button type="button" class="seo-admin-button" @click="closeDeleteDialog">
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="seo-admin-button seo-admin-button--danger"
+                @click="confirmDeletePage"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <Teleport to="body">
+    <div class="seo-admin-toast-stack" aria-live="polite" aria-atomic="true">
+      <Transition name="seo-admin-toast-fade">
+        <div
+          v-if="snackbar.show"
+          class="seo-admin-toast"
+          :class="snackbar.color === 'error' ? 'seo-admin-toast--error' : 'seo-admin-toast--success'"
+          role="status"
+        >
+          {{ snackbar.message }}
+        </div>
+      </Transition>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -403,6 +825,7 @@ const dialog = ref(false);
 const editLocaleVariants = ref({});
 const translationDialog = ref(false);
 const importDialog = ref(false);
+const deleteDialog = ref(false);
 const selectedType = ref("landing");
 const pages = ref([]);
 const availableFaqs = ref([]);
@@ -411,13 +834,18 @@ const importJsonText = ref("");
 const heroImageUploading = ref(false);
 const translationLoading = ref(false);
 const translationJob = ref(null);
-let translationPollTimer = null;
-const formRef = ref(null);
+const relatedLinkSearch = ref("");
+const faqSearch = ref("");
+const fieldErrors = ref({});
+const pagePendingDelete = ref(null);
 const snackbar = ref({
   show: false,
   color: "success",
   message: "",
 });
+
+let translationPollTimer = null;
+let snackbarTimer = null;
 
 const emptyForm = () => ({
   id: null,
@@ -450,7 +878,6 @@ const translationForm = ref({
   overwrite: false,
 });
 
-const required = (value) => !!String(value || "").trim() || "Required";
 const normalizeString = (value) => String(value || "").trim();
 const normalizeStringArray = (value) =>
   Array.isArray(value)
@@ -465,6 +892,13 @@ const normalizeRelatedLinks = (value) =>
         }))
         .filter((item) => item.label && item.href)
     : [];
+
+const normalizeSeoSlug = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 
 const localePriority = ["en", "fr", "ru", "zh"];
 
@@ -552,6 +986,17 @@ const availableFaqOptions = computed(() =>
   }))
 );
 
+const faqLabelById = computed(() =>
+  Object.fromEntries(availableFaqOptions.value.map((option) => [option.value, option.label]))
+);
+
+const filteredFaqOptions = computed(() => {
+  const search = normalizeString(faqSearch.value).toLowerCase();
+  return availableFaqOptions.value.filter((option) =>
+    !search || option.label.toLowerCase().includes(search)
+  );
+});
+
 const availableSeoPageOptions = computed(() => {
   const seen = new Set();
   const currentSlug = form.value.slug;
@@ -570,17 +1015,22 @@ const availableSeoPageOptions = computed(() => {
     }));
 });
 
-const selectedRelatedLinkHrefs = computed({
-  get: () => form.value.relatedLinks.map((l) => l.href),
-  set: (hrefs) => {
-    form.value.relatedLinks = hrefs.map((href) => {
-      const existing = form.value.relatedLinks.find((l) => l.href === href);
-      if (existing) return existing;
-      const option = availableSeoPageOptions.value.find((o) => o.href === href);
-      return { label: option?.title || href, href };
-    });
-  },
+const filteredSeoPageOptions = computed(() => {
+  const search = normalizeString(relatedLinkSearch.value).toLowerCase();
+  return availableSeoPageOptions.value.filter((option) => {
+    if (!search) return true;
+    return [option.title, option.subtitle, option.href, option.pageType]
+      .join(" ")
+      .toLowerCase()
+      .includes(search);
+  });
 });
+
+const selectedRelatedLinkHrefs = computed(() => form.value.relatedLinks.map((link) => link.href));
+
+const slugPreview = computed(() => normalizeSeoSlug(form.value.slug || form.value.title));
+const pathPreview = computed(() => buildSeoPagePath(form.value.pageType, slugPreview.value));
+const heroImagePreviewUrl = computed(() => heroImageDataUrl.value || "");
 
 const showMessage = (message, color = "success") => {
   snackbar.value = {
@@ -588,6 +1038,27 @@ const showMessage = (message, color = "success") => {
     color,
     message,
   };
+
+  if (snackbarTimer) {
+    clearTimeout(snackbarTimer);
+  }
+
+  snackbarTimer = setTimeout(() => {
+    snackbar.value.show = false;
+    snackbarTimer = null;
+  }, 3500);
+};
+
+const resetDialogUiState = () => {
+  fieldErrors.value = {};
+  heroImageDataUrl.value = "";
+  relatedLinkSearch.value = "";
+  faqSearch.value = "";
+};
+
+const closeEditorDialog = () => {
+  dialog.value = false;
+  resetDialogUiState();
 };
 
 const loadPages = async () => {
@@ -622,6 +1093,7 @@ const openCreateDialog = () => {
     ...emptyForm(),
     pageType: selectedType.value,
   };
+  resetDialogUiState();
   dialog.value = true;
 };
 
@@ -632,6 +1104,7 @@ const openImportDialog = () => {
       ...emptyForm(),
       pageType: selectedType.value,
     };
+    resetDialogUiState();
     dialog.value = true;
   }
   importDialog.value = true;
@@ -672,11 +1145,15 @@ const openEditDialog = (page) => {
   const allVariants = pages.value.filter((p) => `${p.pageType}:${p.slug}` === key);
   editLocaleVariants.value = Object.fromEntries(allVariants.map((p) => [p.locale, p]));
   populateFormFromPage(page);
+  resetDialogUiState();
   dialog.value = true;
 };
 
 const onLocaleChange = (newLocale) => {
-  // Hero image is shared across all locale variants — preserve it across switches
+  fieldErrors.value = {
+    ...fieldErrors.value,
+    locale: "",
+  };
   const sharedImage = {
     heroImagePath: form.value.heroImagePath,
     heroImageUrl: form.value.heroImageUrl,
@@ -745,6 +1222,7 @@ const applyImportedPayload = (payload) => {
     ctaHref: normalizeString(payload?.ctaHref || payload?.cta_href || form.value.ctaHref) || "/chat",
   };
 
+  fieldErrors.value = {};
   selectedType.value = nextPageType;
   importDialog.value = false;
   const skippedFaqs = Array.isArray(payload?.faqSuggestions) && payload.faqSuggestions.length > 0;
@@ -796,7 +1274,6 @@ const applyTranslationJob = async (job) => {
     if (job.skipped?.length) parts.push(`Skipped: ${job.skipped.join(", ")}`);
     translationDialog.value = false;
     await loadPages();
-    // Refresh locale variants so the switcher immediately reflects newly translated rows
     if (dialog.value && form.value.pageType && form.value.slug) {
       const key = `${form.value.pageType}:${form.value.slug}`;
       const allVariants = pages.value.filter((p) => `${p.pageType}:${p.slug}` === key);
@@ -930,6 +1407,34 @@ const applyPageSaveResponse = (saved) => {
   pages.value = next;
 };
 
+const setFieldError = (name, message = "") => {
+  fieldErrors.value = {
+    ...fieldErrors.value,
+    [name]: message,
+  };
+};
+
+const validateForm = () => {
+  const errors = {};
+
+  if (!normalizeString(form.value.pageType)) errors.pageType = "Required";
+  if (!normalizeString(form.value.locale)) errors.locale = "Required";
+  if (!normalizeString(form.value.title)) errors.title = "Required";
+
+  const photoCreditsUrlState = isValidUrl(form.value.photoCreditsUrl);
+  if (photoCreditsUrlState !== true) {
+    errors.photoCreditsUrl = photoCreditsUrlState;
+  }
+
+  fieldErrors.value = errors;
+  if (Object.keys(errors).length) {
+    showMessage("Please fix the highlighted fields.", "error");
+    return false;
+  }
+
+  return true;
+};
+
 const onPublishedToggle = async (value) => {
   form.value.isPublished = value;
   if (!form.value.id) return;
@@ -951,8 +1456,7 @@ const onPublishedToggle = async (value) => {
 };
 
 const savePage = async () => {
-  const result = await formRef.value?.validate?.();
-  if (result?.valid === false) return;
+  if (!validateForm()) return;
 
   saving.value = true;
   try {
@@ -976,9 +1480,10 @@ const savePage = async () => {
     }
 
     applyPageSaveResponse(saved);
+    selectedType.value = saved.pageType;
     await loadPages();
 
-    dialog.value = false;
+    closeEditorDialog();
     showMessage("SEO page saved.");
   } catch (error) {
     console.error("Failed to save SEO page:", error);
@@ -998,9 +1503,19 @@ const savePage = async () => {
   }
 };
 
-const deletePage = async (page) => {
-  const confirmed = window.confirm(`Delete SEO page "${page.title}"?`);
-  if (!confirmed) return;
+const promptDeletePage = (page) => {
+  pagePendingDelete.value = page;
+  deleteDialog.value = true;
+};
+
+const closeDeleteDialog = () => {
+  deleteDialog.value = false;
+  pagePendingDelete.value = null;
+};
+
+const confirmDeletePage = async () => {
+  const page = pagePendingDelete.value;
+  if (!page?.id) return;
 
   try {
     await $fetch("/api/admin/seo-pages/delete", {
@@ -1008,6 +1523,7 @@ const deletePage = async (page) => {
       body: { id: page.id },
     });
     pages.value = pages.value.filter((item) => item.id !== page.id);
+    closeDeleteDialog();
     showMessage("SEO page deleted.");
   } catch (error) {
     console.error("Failed to delete SEO page:", error);
@@ -1019,12 +1535,49 @@ const openPage = (page) => {
   navigateTo(localePath(page.path, page.locale), { external: true });
 };
 
-const buildAdminPath = (page) => {
-  return buildSeoPagePath(page.pageType, page.slug);
-};
+const buildAdminPath = (page) => buildSeoPagePath(page.pageType, page.slug);
 
 const addHighlight = () => form.value.highlights.push("");
-const removeHighlight = (index) => form.value.highlights.splice(index, 1);
+
+const removeHighlight = (index) => {
+  if (form.value.highlights.length === 1) {
+    form.value.highlights[0] = "";
+    return;
+  }
+  form.value.highlights.splice(index, 1);
+};
+
+const toggleFaqEntry = (faqId) => {
+  const next = new Set(form.value.faqEntryIds);
+  if (next.has(faqId)) {
+    next.delete(faqId);
+  } else {
+    next.add(faqId);
+  }
+  form.value.faqEntryIds = Array.from(next);
+};
+
+const toggleRelatedLink = (option) => {
+  if (!option?.href) return;
+  const exists = form.value.relatedLinks.some((link) => link.href === option.href);
+  if (exists) {
+    form.value.relatedLinks = form.value.relatedLinks.filter((link) => link.href !== option.href);
+    return;
+  }
+  form.value.relatedLinks = [
+    ...form.value.relatedLinks,
+    { label: option.title || option.href, href: option.href },
+  ];
+};
+
+const toggleRelatedLinkByHref = (href) => {
+  const option = availableSeoPageOptions.value.find((entry) => entry.href === href);
+  if (option) {
+    toggleRelatedLink(option);
+    return;
+  }
+  form.value.relatedLinks = form.value.relatedLinks.filter((link) => link.href !== href);
+};
 
 const handleHeroImageChange = async (event) => {
   const file = Array.isArray(event) ? event[0] : event?.target?.files?.[0] || event;
@@ -1077,19 +1630,576 @@ const isValidUrl = (value) => {
   }
 };
 
+watch(
+  () => form.value.pageType,
+  () => setFieldError("pageType")
+);
+
+watch(
+  () => form.value.title,
+  () => setFieldError("title")
+);
+
+watch(
+  () => form.value.photoCreditsUrl,
+  () => setFieldError("photoCreditsUrl")
+);
+
 onMounted(async () => {
   await Promise.all([loadPages(), loadFaqs()]);
 });
 
 onBeforeUnmount(() => {
   stopTranslationPolling();
+  if (snackbarTimer) {
+    clearTimeout(snackbarTimer);
+    snackbarTimer = null;
+  }
 });
 </script>
 
 <style scoped>
-.seo-admin-hero-preview {
+.seo-admin-card {
+  border: 1px solid rgba(var(--color-border), 0.88);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.96), rgba(var(--color-surface), 0.98));
+  box-shadow: 0 24px 54px rgba(15, 23, 42, 0.14);
+  overflow: hidden;
+}
+
+.seo-admin-card__header,
+.seo-admin-card__body {
+  padding: 1.5rem;
+}
+
+.seo-admin-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(var(--color-border), 0.65);
+}
+
+.seo-admin-kicker {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--color-primary));
+}
+
+.seo-admin-title {
+  margin: 0.3rem 0 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: rgb(var(--color-text));
+}
+
+.seo-admin-subtitle,
+.seo-admin-dialog__subtitle,
+.seo-admin-section__subtitle,
+.seo-admin-table__subtitle,
+.seo-admin-selection-item__meta,
+.seo-admin-empty-inline {
+  color: rgba(var(--color-text), 0.68);
+}
+
+.seo-admin-subtitle {
+  margin: 0.55rem 0 0;
+  max-width: 52rem;
+}
+
+.seo-admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.seo-admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.seo-admin-field--toolbar {
+  min-width: 12rem;
+}
+
+.seo-admin-field__label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: rgba(var(--color-text), 0.76);
+}
+
+.seo-admin-field__control {
+  width: 100%;
+  min-height: 2.8rem;
+  border: 1px solid rgba(var(--color-border), 0.9);
+  border-radius: 14px;
+  background: rgba(var(--color-surface), 0.96);
+  color: rgb(var(--color-text));
+  padding: 0.8rem 0.95rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.seo-admin-field__control:focus {
+  outline: none;
+  border-color: rgba(var(--color-primary), 0.7);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.16);
+}
+
+.seo-admin-field__control.is-invalid {
+  border-color: rgba(220, 38, 38, 0.75);
+}
+
+.seo-admin-field__control--textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.seo-admin-field__control--file {
+  padding: 0.7rem 0.9rem;
+}
+
+.seo-admin-field__hint,
+.seo-admin-field__error,
+.seo-admin-preview-card__label {
+  font-size: 0.78rem;
+}
+
+.seo-admin-field__hint {
+  color: rgba(var(--color-text), 0.62);
+}
+
+.seo-admin-field__error {
+  color: #dc2626;
+}
+
+.seo-admin-button,
+.seo-admin-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.7rem;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--color-border), 0.88);
+  background: rgba(var(--color-surface), 0.98);
+  color: rgb(var(--color-text));
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.seo-admin-button:hover,
+.seo-admin-icon-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--color-primary), 0.45);
+}
+
+.seo-admin-button:disabled,
+.seo-admin-icon-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.seo-admin-button--primary {
+  border-color: rgba(var(--color-primary), 0.42);
+  background: rgba(var(--color-primary), 0.14);
+  color: rgb(var(--color-primary));
+}
+
+.seo-admin-button--danger {
+  border-color: rgba(220, 38, 38, 0.28);
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+}
+
+.seo-admin-button--small {
+  min-height: 2.35rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 12px;
+  font-size: 0.84rem;
+}
+
+.seo-admin-icon-button {
+  width: 2.6rem;
+  min-width: 2.6rem;
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+.seo-admin-button__spinner {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: seo-admin-spin 0.8s linear infinite;
+}
+
+.seo-admin-banner {
+  margin-bottom: 1rem;
+  border-radius: 16px;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(var(--color-border), 0.85);
+}
+
+.seo-admin-banner--info {
+  background: rgba(var(--color-primary), 0.1);
+  border-color: rgba(var(--color-primary), 0.25);
+  color: rgba(var(--color-text), 0.88);
+}
+
+.seo-admin-table-wrap {
+  overflow-x: auto;
+}
+
+.seo-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.seo-admin-table th,
+.seo-admin-table td {
+  padding: 1rem 0.9rem;
+  border-bottom: 1px solid rgba(var(--color-border), 0.62);
+  text-align: left;
+  vertical-align: top;
+}
+
+.seo-admin-table th {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(var(--color-text), 0.62);
+}
+
+.seo-admin-table__actions-heading {
+  text-align: right;
+}
+
+.seo-admin-table td:last-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.seo-admin-table__title {
+  font-weight: 700;
+  color: rgb(var(--color-text));
+}
+
+.seo-admin-action-list,
+.seo-admin-chip-list,
+.seo-admin-inline-actions,
+.seo-admin-upload-panel,
+.seo-admin-preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.seo-admin-action-list {
+  justify-content: flex-end;
+}
+
+.seo-admin-chip-list--selected {
+  margin-bottom: 0.9rem;
+}
+
+.seo-admin-pill,
+.seo-admin-chip,
+.seo-admin-path,
+.seo-admin-preview-card__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.seo-admin-pill {
+  padding: 0.35rem 0.7rem;
+  background: rgba(var(--color-border), 0.25);
+  color: rgba(var(--color-text), 0.82);
+}
+
+.seo-admin-pill--type,
+.seo-admin-pill--locale,
+.seo-admin-pill--muted {
+  background: rgba(var(--color-text), 0.06);
+}
+
+.seo-admin-pill--success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #15803d;
+}
+
+.seo-admin-pill--warning {
+  background: rgba(245, 158, 11, 0.16);
+  color: #b45309;
+}
+
+.seo-admin-chip {
+  padding: 0.4rem 0.8rem;
+  background: rgba(var(--color-primary), 0.1);
+  color: rgba(var(--color-text), 0.9);
+}
+
+.seo-admin-chip__remove {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.seo-admin-path,
+.seo-admin-preview-card__value {
+  padding: 0.4rem 0.7rem;
+  background: rgba(var(--color-text), 0.06);
+  color: rgba(var(--color-text), 0.86);
+  white-space: nowrap;
+}
+
+.seo-admin-empty-state {
+  padding: 1.4rem 0;
+  text-align: center;
+  color: rgba(var(--color-text), 0.66);
+}
+
+.seo-admin-dialog-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.seo-admin-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.54);
+}
+
+.seo-admin-dialog {
   position: relative;
-  max-width: 320px;
+  z-index: 1;
+  width: min(100%, 70rem);
+  max-height: calc(100vh - 3rem);
+}
+
+.seo-admin-dialog--medium {
+  width: min(100%, 48rem);
+}
+
+.seo-admin-dialog--compact {
+  width: min(100%, 32rem);
+}
+
+.seo-admin-dialog__card {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 3rem);
+  border: 1px solid rgba(var(--color-border), 0.88);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.98), rgba(var(--color-surface), 1));
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.24);
+  overflow: hidden;
+}
+
+.seo-admin-dialog__card--wide {
+  min-height: min(52rem, calc(100vh - 3rem));
+}
+
+.seo-admin-dialog__header,
+.seo-admin-dialog__body,
+.seo-admin-dialog__actions {
+  padding: 1.25rem 1.35rem;
+}
+
+.seo-admin-dialog__header,
+.seo-admin-dialog__actions,
+.seo-admin-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.seo-admin-dialog__header,
+.seo-admin-dialog__actions {
+  border-bottom: 1px solid rgba(var(--color-border), 0.62);
+}
+
+.seo-admin-dialog__actions {
+  border-top: 1px solid rgba(var(--color-border), 0.62);
+  border-bottom: 0;
+  justify-content: flex-end;
+}
+
+.seo-admin-dialog__title,
+.seo-admin-section__title {
+  margin: 0;
+  font-weight: 700;
+  color: rgb(var(--color-text));
+}
+
+.seo-admin-dialog__title {
+  font-size: 1.2rem;
+}
+
+.seo-admin-dialog__subtitle,
+.seo-admin-section__subtitle {
+  margin: 0.35rem 0 0;
+}
+
+.seo-admin-dialog__body {
+  overflow-y: auto;
+}
+
+.seo-admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.seo-admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.seo-admin-form-grid > * {
+  grid-column: span 6;
+}
+
+.seo-admin-form-grid--top > * {
+  grid-column: span 3;
+}
+
+.seo-admin-field--span-8 {
+  grid-column: span 8;
+}
+
+.seo-admin-field--span-4 {
+  grid-column: span 4;
+}
+
+.seo-admin-field--toggle {
+  justify-content: end;
+}
+
+.seo-admin-preview-grid {
+  gap: 0.75rem;
+}
+
+.seo-admin-preview-card {
+  min-width: 0;
+  flex: 1 1 15rem;
+  border: 1px solid rgba(var(--color-border), 0.72);
+  border-radius: 18px;
+  background: rgba(var(--color-surface), 0.8);
+  padding: 0.85rem 1rem;
+}
+
+.seo-admin-section {
+  border-top: 1px solid rgba(var(--color-border), 0.62);
+  padding-top: 1rem;
+}
+
+.seo-admin-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.seo-admin-switch--labeled {
+  min-height: 2.8rem;
+}
+
+.seo-admin-switch__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.seo-admin-switch__track {
+  position: relative;
+  width: 3rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: rgba(var(--color-text), 0.18);
+  transition: background 0.18s ease;
+}
+
+.seo-admin-switch__thumb {
+  position: absolute;
+  top: 0.18rem;
+  left: 0.18rem;
+  width: 1.39rem;
+  height: 1.39rem;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+  transition: transform 0.18s ease;
+}
+
+.seo-admin-switch__input:checked + .seo-admin-switch__track {
+  background: rgba(34, 197, 94, 0.55);
+}
+
+.seo-admin-switch__input:checked + .seo-admin-switch__track .seo-admin-switch__thumb {
+  transform: translateX(1.24rem);
+}
+
+.seo-admin-switch__label {
+  font-weight: 600;
+  color: rgba(var(--color-text), 0.82);
+}
+
+.seo-admin-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.seo-admin-hero-preview__media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--color-border), 0.72);
+  background: rgba(var(--color-text), 0.04);
+}
+
+.seo-admin-hero-preview__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.seo-admin-hero-preview__status {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(var(--color-primary), 0.82);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .seo-admin-hero-credit {
@@ -1110,5 +2220,154 @@ onBeforeUnmount(() => {
 
 .seo-admin-hero-credit :deep(a) {
   color: inherit;
+}
+
+.seo-admin-highlight-list,
+.seo-admin-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.seo-admin-highlight-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+}
+
+.seo-admin-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.seo-admin-selection-item {
+  display: flex;
+  align-items: start;
+  gap: 0.7rem;
+  border: 1px solid rgba(var(--color-border), 0.62);
+  border-radius: 14px;
+  background: rgba(var(--color-surface), 0.84);
+  padding: 0.75rem 0.85rem;
+}
+
+.seo-admin-selection-item--stacked .seo-admin-selection-item__title {
+  display: block;
+  font-weight: 700;
+  color: rgb(var(--color-text));
+}
+
+.seo-admin-selection-item.is-disabled {
+  opacity: 0.55;
+}
+
+.seo-admin-empty-inline {
+  padding: 0.6rem 0.2rem;
+}
+
+.seo-admin-toast-stack {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 1250;
+}
+
+.seo-admin-toast {
+  min-width: 16rem;
+  max-width: min(26rem, calc(100vw - 2rem));
+  border-radius: 16px;
+  padding: 0.95rem 1rem;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18);
+  color: #fff;
+  font-weight: 600;
+}
+
+.seo-admin-toast--success {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.seo-admin-toast--error {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+}
+
+.seo-admin-dialog-fade-enter-active,
+.seo-admin-dialog-fade-leave-active,
+.seo-admin-toast-fade-enter-active,
+.seo-admin-toast-fade-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.seo-admin-dialog-fade-enter-from,
+.seo-admin-dialog-fade-leave-to,
+.seo-admin-toast-fade-enter-from,
+.seo-admin-toast-fade-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@keyframes seo-admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 960px) {
+  .seo-admin-card__header,
+  .seo-admin-card__body,
+  .seo-admin-dialog__header,
+  .seo-admin-dialog__body,
+  .seo-admin-dialog__actions {
+    padding: 1rem;
+  }
+
+  .seo-admin-form-grid,
+  .seo-admin-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .seo-admin-form-grid > *,
+  .seo-admin-form-grid--top > *,
+  .seo-admin-field--span-8,
+  .seo-admin-field--span-4 {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .seo-admin-dialog-layer {
+    padding: 0.75rem;
+  }
+
+  .seo-admin-dialog,
+  .seo-admin-dialog--compact,
+  .seo-admin-dialog--medium {
+    width: 100%;
+  }
+
+  .seo-admin-action-list,
+  .seo-admin-inline-actions,
+  .seo-admin-upload-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .seo-admin-highlight-row {
+    grid-template-columns: 1fr;
+  }
+
+  .seo-admin-toast-stack {
+    left: 0.75rem;
+    right: 0.75rem;
+    top: auto;
+    bottom: 0.75rem;
+  }
+
+  .seo-admin-toast {
+    min-width: 0;
+    width: 100%;
+  }
 }
 </style>

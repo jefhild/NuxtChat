@@ -1,182 +1,154 @@
 <template>
-  <v-row no-gutters>
-    <v-col class="d-flex flex-column align-center">
-      <v-card class="profile-photo-card" elevation="0" variant="outlined">
-        <div class="photo-hero">
-          <img
-            v-if="heroImage"
-            :src="heroImage"
-            class="photo-hero-image"
-            :style="heroImageStyle"
-            alt="Profile Image"
-            @load="onHeroImageLoad"
-          />
-          <v-img
-            v-if="avatarDecorationUrl"
-            :src="avatarDecorationUrl"
-            class="photo-avatar-decoration"
-            contain
-          />
-          <div v-if="!heroImage" class="photo-hero-placeholder">
-            <v-icon size="40" color="grey-lighten-2">mdi-account</v-icon>
-          </div>
-          <div v-if="editable || showDecorationControl" class="photo-hero-controls">
-            <v-tooltip text="Random photo" location="bottom">
-              <template #activator="{ props: tooltipProps }">
-                <v-btn
-                  v-bind="tooltipProps"
-                  icon
-                  size="x-small"
-                  variant="tonal"
-                  class="photo-control-btn"
-                  :loading="randomLoading"
-                  :disabled="!editable || randomLoading"
-                  @click="$emit('randomAvatar')"
-                >
-                  <v-icon size="14">mdi-dice-5-outline</v-icon>
-                </v-btn>
-              </template>
-            </v-tooltip>
-            <v-tooltip text="Upload photo" location="bottom">
-              <template #activator="{ props: tooltipProps }">
-                <v-btn
-                  v-bind="tooltipProps"
-                  icon
-                  size="x-small"
-                  variant="tonal"
-                  class="photo-control-btn"
-                  :loading="uploadLoading"
-                  :disabled="!editable || uploadLoading"
-                  @click="triggerFilePicker"
-                >
-                  <v-icon size="14">mdi-upload</v-icon>
-                </v-btn>
-              </template>
-            </v-tooltip>
-            <v-tooltip
-              :text="
-                decorationLocked
-                  ? 'Link your email to unlock avatar decorations'
-                  : 'Avatar decoration'
-              "
-              location="bottom"
-            >
-              <template #activator="{ props: tooltipProps }">
-                <v-btn
-                  v-if="showDecorationControl"
-                  v-bind="tooltipProps"
-                  icon
-                  size="x-small"
-                  variant="tonal"
-                  class="photo-control-btn"
-                  @click="$emit('openDecorationPicker')"
-                >
-                  <v-icon size="14">
-                    {{ decorationLocked ? "mdi-lock" : "mdi-image-filter-center-focus" }}
-                  </v-icon>
-                </v-btn>
-              </template>
-            </v-tooltip>
-            <input
-              ref="fileInput"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              class="sr-only"
-              @change="onFileChange"
+  <div class="flex flex-col items-center">
+    <section class="profile-photo-card">
+      <div class="photo-hero">
+        <img
+          v-if="heroImage"
+          :src="heroImage"
+          class="photo-hero-image"
+          :style="heroImageStyle"
+          alt="Profile Image"
+          @load="onHeroImageLoad"
+        >
+        <img
+          v-if="avatarDecorationUrl"
+          :src="avatarDecorationUrl"
+          class="photo-avatar-decoration"
+          alt=""
+        >
+        <div v-if="!heroImage" class="photo-hero-placeholder">
+          <i class="mdi mdi-account photo-hero-placeholder__icon" aria-hidden="true" />
+        </div>
+        <div v-if="editable || showDecorationControl" class="photo-hero-controls">
+          <button
+            type="button"
+            class="photo-control-btn"
+            :disabled="!editable || randomLoading"
+            title="Random photo"
+            @click="$emit('randomAvatar')"
+          >
+            <span v-if="randomLoading" class="photo-control-btn__spinner" aria-hidden="true" />
+            <i v-else class="mdi mdi-dice-5-outline" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            class="photo-control-btn"
+            :disabled="!editable || uploadLoading"
+            title="Upload photo"
+            @click="triggerFilePicker"
+          >
+            <span v-if="uploadLoading" class="photo-control-btn__spinner" aria-hidden="true" />
+            <i v-else class="mdi mdi-upload" aria-hidden="true" />
+          </button>
+          <button
+            v-if="showDecorationControl"
+            type="button"
+            class="photo-control-btn"
+            :title="
+              decorationLocked
+                ? 'Link your email to unlock avatar decorations'
+                : 'Avatar decoration'
+            "
+            @click="$emit('openDecorationPicker')"
+          >
+            <i
+              class="mdi"
+              :class="decorationLocked ? 'mdi-lock' : 'mdi-image-filter-center-focus'"
+              aria-hidden="true"
             />
-          </div>
-          <div class="photo-hero-overlay">
-            <div class="photo-line">
-              <span class="photo-name">{{ userProfile?.displayname }}</span>
-              <span class="photo-dot">•</span>
-              <span class="photo-tagline">{{ userProfile?.tagline }}</span>
-              <a
-                v-if="userProfile?.site_url"
-                class="photo-link"
-                :href="userProfile.site_url"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Open public site"
-              >
-                <v-icon size="18" color="white">mdi-link-variant</v-icon>
-              </a>
-            </div>
+          </button>
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            class="sr-only"
+            @change="onFileChange"
+          >
+        </div>
+        <div class="photo-hero-overlay">
+          <div class="photo-line">
+            <span class="photo-name">{{ userProfile?.displayname }}</span>
+            <span class="photo-dot">•</span>
+            <span class="photo-tagline">{{ userProfile?.tagline }}</span>
+            <a
+              v-if="userProfile?.site_url"
+              class="photo-link"
+              :href="userProfile.site_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open public site"
+            >
+              <i class="mdi mdi-link-variant" aria-hidden="true" />
+            </a>
           </div>
         </div>
+      </div>
 
-        <div class="photo-library-body">
-          <div class="photo-library-strip-wrap">
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              class="photo-library-chevron left"
-              :disabled="loadingGenderOptions || !hasCarousel"
-              @click="scrollThumbs(-1)"
-            >
-              <v-icon size="18">mdi-chevron-left</v-icon>
-            </v-btn>
-            <div ref="thumbsRef" class="photo-library-strip">
-              <div
-                v-for="(item, idx) in photoSlots"
-                :key="`${item?.key || 'slot'}-${idx}`"
-                class="photo-library-slot"
-              >
-                <template v-if="item">
-                  <v-card
-                    variant="outlined"
-                    class="photo-library-thumb"
-                    :class="{ 'photo-library-thumb--active': item.url === heroImage }"
-                    @click="setHeroFromOption(item)"
-                  >
-                    <img :src="item.url" class="photo-library-thumb-image" alt="Photo option" />
-                  </v-card>
-                </template>
-                <div v-else class="photo-library-skeleton" />
-              </div>
-            </div>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              class="photo-library-chevron right"
-              :disabled="loadingGenderOptions || !hasCarousel"
-              @click="scrollThumbs(1)"
-            >
-              <v-icon size="18">mdi-chevron-right</v-icon>
-            </v-btn>
-          </div>
-          <v-alert
-            v-if="errorMessage"
-            type="error"
-            variant="tonal"
-            density="compact"
-            class="mt-2 mb-0"
+      <div class="photo-library-body">
+        <div class="photo-library-strip-wrap">
+          <button
+            type="button"
+            class="photo-library-chevron left"
+            :disabled="loadingGenderOptions || !hasCarousel"
+            @click="scrollThumbs(-1)"
           >
-            {{ errorMessage }}
-          </v-alert>
+            <i class="mdi mdi-chevron-left" aria-hidden="true" />
+          </button>
+          <div ref="thumbsRef" class="photo-library-strip">
+            <div
+              v-for="(item, idx) in photoSlots"
+              :key="`${item?.key || 'slot'}-${idx}`"
+              class="photo-library-slot"
+            >
+              <template v-if="item">
+                <button
+                  type="button"
+                  class="photo-library-thumb"
+                  :class="{ 'photo-library-thumb--active': item.url === heroImage }"
+                  @click="setHeroFromOption(item)"
+                >
+                  <img :src="item.url" class="photo-library-thumb-image" alt="Photo option">
+                </button>
+              </template>
+              <div v-else class="photo-library-skeleton" />
+            </div>
+          </div>
+          <button
+            type="button"
+            class="photo-library-chevron right"
+            :disabled="loadingGenderOptions || !hasCarousel"
+            @click="scrollThumbs(1)"
+          >
+            <i class="mdi mdi-chevron-right" aria-hidden="true" />
+          </button>
         </div>
         <div
-          v-if="userProfile?.user_id"
-          class="photo-lookingfor"
-          :class="{ 'lookingfor-disabled': !editable }"
+          v-if="errorMessage"
+          class="photo-status-alert photo-status-alert--error"
         >
-          <SettingsProfileLookingForMenu
-            :userProfile="userProfile"
-            :refreshLookingForMenu="refreshLookingForMenu"
-            :disabled="!editable"
-            @lookingForUpdated="editable && $emit('lookingForUpdated')"
-          />
-          <div class="lookingfor-icons">
-            <SettingsProfileLookingForDisplay
-              :key="displayKey"
-              :userId="userProfile.user_id"
-            />
-          </div>
+          {{ errorMessage }}
         </div>
-      </v-card>
-    </v-col>
-  </v-row>
+      </div>
+      <div
+        v-if="userProfile?.user_id"
+        class="photo-lookingfor"
+        :class="{ 'lookingfor-disabled': !editable }"
+      >
+        <SettingsProfileLookingForMenu
+          :userProfile="userProfile"
+          :refreshLookingForMenu="refreshLookingForMenu"
+          :disabled="!editable"
+          @lookingForUpdated="editable && $emit('lookingForUpdated')"
+        />
+        <div class="lookingfor-icons">
+          <SettingsProfileLookingForDisplay
+            :key="displayKey"
+            :userId="userProfile.user_id"
+          />
+        </div>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -330,6 +302,8 @@ const setHeroFromOption = (option: CarouselOption) => {
   const url = option?.url || "";
   if (!url) return;
   selectedImage.value = url;
+  loadHeroFocalY(url);
+  persistHeroFocalY();
   if (option?.source === "library" && option.photoId) {
     emit("updateAvatarUrl", {
       source: "library",
@@ -361,8 +335,6 @@ const loadGenderAvatarOptions = async () => {
     const avatars = Array.isArray((res as any)?.avatars) ? (res as any).avatars : [];
     genderAvatarOptions.value = avatars.filter(Boolean);
 
-    // If no avatar is currently set, randomly preselect one from the same pool
-    // used by the random-avatar endpoint so the profile starts with a valid option.
     if (!previewAvatar.value && avatars.length) {
       const randomChoice =
         (res as any)?.selectedAvatar ||
@@ -428,10 +400,10 @@ const onFileChange = async (e: Event) => {
   width: 360px;
   max-width: 100%;
   min-height: 296px;
-  border-radius: 14px;
   overflow: visible;
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 14px;
+  background: rgb(var(--color-surface));
 }
 
 .photo-hero {
@@ -458,12 +430,17 @@ const onFileChange = async (e: Event) => {
 }
 
 .photo-hero-placeholder {
+  display: flex;
   width: 100%;
   height: 100%;
-  display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #1c1c1c, #2a2a2a);
+}
+
+.photo-hero-placeholder__icon {
+  font-size: 40px;
+  color: rgb(226 232 240 / 0.7);
 }
 
 .photo-hero-overlay {
@@ -473,7 +450,7 @@ const onFileChange = async (e: Event) => {
   align-items: flex-end;
   justify-content: center;
   padding: 12px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.75) 100%);
+  background: linear-gradient(180deg, rgb(0 0 0 / 0) 30%, rgb(0 0 0 / 0.75) 100%);
 }
 
 .photo-hero-controls {
@@ -486,15 +463,36 @@ const onFileChange = async (e: Event) => {
 }
 
 .photo-control-btn {
-  background: rgba(15, 23, 42, 0.55) !important;
-  color: #cbd5e1 !important;
-  border: 1px solid rgba(203, 213, 225, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 1px solid rgb(203 213 225 / 0.35);
+  border-radius: 999px;
+  background: rgb(15 23 42 / 0.55);
+  color: #cbd5e1;
+}
+
+.photo-control-btn:disabled {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.photo-control-btn__spinner {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: photo-control-spin 0.7s linear infinite;
 }
 
 .photo-line {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: 100%;
   color: #fff;
   font-size: 0.95rem;
   white-space: nowrap;
@@ -511,7 +509,7 @@ const onFileChange = async (e: Event) => {
 }
 
 .photo-dot {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgb(255 255 255 / 0.6);
 }
 
 .photo-link {
@@ -533,18 +531,25 @@ const onFileChange = async (e: Event) => {
 .photo-library-strip {
   display: flex;
   gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 2px;
   max-width: 260px;
   margin: 0 auto;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 
 .photo-library-chevron {
   position: absolute;
   top: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
   transform: translateY(-50%);
-  background: rgba(var(--v-theme-surface), 0.9);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.2);
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 999px;
+  background: rgb(var(--color-surface) / 0.94);
+  color: rgb(var(--color-foreground));
 }
 
 .photo-library-chevron.left {
@@ -555,6 +560,11 @@ const onFileChange = async (e: Event) => {
   right: -8px;
 }
 
+.photo-library-chevron:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .photo-library-slot {
   flex: 0 0 64px;
 }
@@ -563,15 +573,18 @@ const onFileChange = async (e: Event) => {
   width: 64px;
   height: 64px;
   border-radius: 10px;
-  background: rgba(var(--v-theme-on-surface), 0.12);
+  background: rgb(var(--color-foreground) / 0.12);
 }
 
 .photo-library-thumb {
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
   width: 64px;
   height: 64px;
+  padding: 0;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 10px;
+  background: rgb(var(--color-surface));
   cursor: pointer;
 }
 
@@ -582,19 +595,34 @@ const onFileChange = async (e: Event) => {
 }
 
 .photo-library-thumb--active {
-  border-color: rgba(var(--v-theme-primary), 0.75) !important;
+  border-color: rgb(var(--color-primary));
+  box-shadow: 0 0 0 1px rgb(var(--color-primary) / 0.35);
+}
+
+.photo-status-alert {
+  margin-top: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+.photo-status-alert--error {
+  background: rgb(var(--color-danger) / 0.1);
+  border-color: rgb(var(--color-danger) / 0.22);
+  color: rgb(var(--color-danger));
 }
 
 .photo-lookingfor {
   position: relative;
   z-index: 2;
-  padding: 10px 12px 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.06);
   min-height: 44px;
+  padding: 10px 12px 14px;
+  border-top: 1px solid rgb(var(--color-border) / 0.52);
 }
 
 .menu-disabled {
@@ -604,38 +632,18 @@ const onFileChange = async (e: Event) => {
 
 .lookingfor-disabled {
   opacity: 1;
-  background: rgba(var(--v-theme-primary), 0.08);
+  border: 1px solid rgb(var(--color-primary) / 0.2);
   border-radius: 10px;
-  border: 1px solid rgba(var(--v-theme-primary), 0.2);
-}
-
-.lookingfor-disabled :deep(.v-btn.v-btn--disabled) {
-  opacity: 1 !important;
-  color: rgba(var(--v-theme-primary), 0.86) !important;
-  background: transparent !important;
-}
-
-.lookingfor-disabled :deep(.v-btn.v-btn--disabled .v-btn__append) {
-  opacity: 1 !important;
-}
-
-.lookingfor-disabled :deep(.v-btn.v-btn--disabled .v-btn__overlay),
-.lookingfor-disabled :deep(.v-btn.v-btn--disabled .v-btn__underlay) {
-  background: transparent !important;
-  opacity: 0 !important;
-}
-
-.lookingfor-disabled :deep(.v-icon) {
-  opacity: 1 !important;
-  background: transparent !important;
+  background: rgb(var(--color-primary) / 0.08);
 }
 
 .lookingfor-icons {
-  min-width: 120px;
   display: flex;
   justify-content: center;
+  min-width: 120px;
   filter: saturate(1.15);
 }
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -648,6 +656,12 @@ const onFileChange = async (e: Event) => {
 }
 
 :deep(.text-link-btn) {
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--color-primary));
+}
+
+@keyframes photo-control-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

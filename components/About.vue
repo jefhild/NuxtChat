@@ -1,25 +1,26 @@
 <template>
-  <v-container fluid class="pa-0 mt-3">
-    <v-alert
+  <div class="about-content">
+    <div
       v-if="errorMessage"
-      type="warning"
-      variant="tonal"
-      class="mb-4"
+      class="about-alert"
+      role="status"
     >
       {{ errorMessage }}
-    </v-alert>
+    </div>
 
-    <v-row v-for="section in resolvedSections" :key="section.key">
-      <v-col>
-        <h4 class="about-section-title text-overline text-medium-emphasis">
-          {{ section.title }}
-        </h4>
-        <!-- eslint-disable vue/no-v-html -->
-        <div class="text-body-2 about-section-body" v-html="renderMarkdown(section.body)" />
-        <!-- eslint-enable vue/no-v-html -->
-      </v-col>
-    </v-row>
-  </v-container>
+    <section
+      v-for="section in resolvedSections"
+      :key="section.key"
+      class="about-section"
+    >
+      <h4 class="about-section-title">
+        {{ section.title }}
+      </h4>
+      <!-- eslint-disable vue/no-v-html -->
+      <div class="about-section-body" v-html="renderMarkdown(section.body)" />
+      <!-- eslint-enable vue/no-v-html -->
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -133,8 +134,40 @@ const resolvedSections = computed(() => {
 </script>
 
 <style scoped>
+.about-content {
+  margin-top: 0.75rem;
+}
+
+.about-alert {
+  margin-bottom: 1rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgb(245 158 11 / 0.28);
+  border-radius: 16px;
+  background: rgb(245 158 11 / 0.12);
+  color: rgb(var(--color-foreground) / 0.82);
+}
+
+.about-section {
+  margin-bottom: 1.25rem;
+}
+
+.about-section:last-child {
+  margin-bottom: 0;
+}
+
 .about-section-title {
-  margin-bottom: 6px;
+  margin: 0 0 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-foreground) / 0.58);
+}
+
+.about-section-body {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: rgb(var(--color-foreground) / 0.8);
 }
 
 .about-section-body :deep(p) {
@@ -146,7 +179,7 @@ const resolvedSections = computed(() => {
 }
 
 .about-section-body :deep(a) {
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--color-primary));
   text-decoration: underline;
   text-underline-offset: 2px;
 }

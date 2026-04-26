@@ -1,6 +1,6 @@
 import { useState } from "#imports";
 import { computed, onBeforeUnmount, onMounted, watch } from "vue";
-import { useDisplay } from "vuetify";
+import { useResponsiveDisplay } from "@/composables/useResponsiveDisplay";
 
 type ScrollKey = string;
 
@@ -19,7 +19,7 @@ interface ScrollState {
  * - Shows on upward scroll/drag, focus, or handle tap.
  */
 export function useFooterVisibility() {
-  const { smAndDown } = useDisplay();
+  const { smAndDown } = useResponsiveDisplay();
 
   const visible = useState("footer-visible", () => true);
   const scrollState = useState<ScrollState>("footer-scroll-state", () => ({

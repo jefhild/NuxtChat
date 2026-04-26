@@ -1,137 +1,136 @@
 <template>
-  <v-container fluid class="settings-shell">
-    <v-navigation-drawer
-      v-model="drawer"
-      temporary
-      location="left"
-      width="280"
-      class="settings-drawer"
-    >
-      <v-list density="compact" class="settings-drawer-list">
-        <v-list-subheader>{{ settingsHeading }}</v-list-subheader>
-        <v-list-item
-          v-for="item in menuItems"
-          :key="item.value"
-          class="settings-drawer-item"
-          :active="tab === item.value"
-          color="primary"
-          rounded="shaped"
-          @click="selectTab(item.value)"
+  <div class="settings-shell mx-auto w-full max-w-[1260px] overflow-x-clip px-1 pt-1.5">
+    <Teleport to="body">
+      <div
+        v-if="drawer"
+        class="settings-drawer-overlay"
+        @click="drawer = false"
+      >
+        <aside
+          class="settings-drawer"
+          @click.stop
         >
-          <template #prepend>
-            <v-icon :icon="item.icon" />
-          </template>
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
+          <div class="settings-drawer__header">
+            <p class="settings-drawer__title">{{ settingsHeading }}</p>
+            <button
+              type="button"
+              class="settings-icon-btn"
+              :aria-label="$t('common.close')"
+              @click="drawer = false"
+            >
+              <i class="mdi mdi-close" aria-hidden="true" />
+            </button>
+          </div>
+          <nav class="settings-drawer__nav" :aria-label="settingsHeading">
+            <button
+              v-for="item in menuItems"
+              :key="item.value"
+              type="button"
+              class="settings-drawer-item"
+              :class="{ 'settings-drawer-item--active': tab === item.value }"
+              @click="selectTab(item.value)"
+            >
+              <i class="mdi settings-drawer-item__icon" :class="item.icon" aria-hidden="true" />
+              <span>{{ item.title }}</span>
+            </button>
+          </nav>
+        </aside>
+      </div>
+    </Teleport>
 
     <div class="settings-header-shell">
       <div class="settings-header-actions">
-        <v-btn icon variant="text" class="settings-menu-btn" @click="drawer = true">
-          <v-icon>mdi-menu</v-icon>
-        </v-btn>
+        <button
+          type="button"
+          class="settings-icon-btn settings-menu-btn"
+          :aria-label="settingsHeading"
+          @click="drawer = true"
+        >
+          <i class="mdi mdi-menu" aria-hidden="true" />
+        </button>
       </div>
       <PageHeader :text="pageTitle" :subtitle="settingsSubtitle" />
     </div>
 
-    <v-row>
-      <v-col cols="12">
-        <v-card class="settings-panel-card border-0 elevation-0">
-          <template v-if="!isLoading">
-            <v-row v-if="tab === 1" align="start">
-              <v-col class="settings-content-col">
-                <template v-if="userProfile">
-                  <SettingsProfileForm
-                    :userProfile="userProfile"
-                    @openPhotoLibrary="selectTab(7)"
-                  />
-                </template>
-                <template v-else>
-                  <p>{{ $t("components.settings-container.loading") }}</p>
-                </template>
-              </v-col>
-            </v-row>
+    <div class="mt-2">
+      <div class="settings-panel-card">
+        <template v-if="!isLoading">
+          <div v-if="tab === 1" class="settings-content-col">
+            <template v-if="userProfile">
+              <SettingsProfileForm
+                :userProfile="userProfile"
+                @openPhotoLibrary="selectTab(7)"
+              />
+            </template>
+            <template v-else>
+              <p>{{ $t("components.settings-container.loading") }}</p>
+            </template>
+          </div>
 
-            <v-row v-else-if="tab === 2" align="start">
-              <v-col class="settings-content-col">
-                <v-row>
-                  <v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">
-                    {{ $t("components.settings-container.registered-only") }}
-                  </v-col>
-                </v-row>
-                <template v-if="userProfile?.user_id">
-                  <SettingsFavorites :userId="userProfile.user_id" />
-                </template>
-              </v-col>
-            </v-row>
+          <div v-else-if="tab === 2" class="settings-content-col">
+            <div class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">
+              {{ $t("components.settings-container.registered-only") }}
+            </div>
+            <template v-if="userProfile?.user_id">
+              <SettingsFavorites :userId="userProfile.user_id" />
+            </template>
+          </div>
 
-            <v-row v-else-if="tab === 3" align="start">
-              <v-col class="settings-content-col">
-                <template v-if="user?.id">
-                  <SettingsBlockedUsers :userId="userProfile.user_id" />
-                </template>
-                <template v-else>
-                  <p>{{ $t("components.settings-container.loading") }}</p>
-                </template>
-              </v-col>
-            </v-row>
+          <div v-else-if="tab === 3" class="settings-content-col">
+            <template v-if="user?.id">
+              <SettingsBlockedUsers :userId="userProfile.user_id" />
+            </template>
+            <template v-else>
+              <p>{{ $t("components.settings-container.loading") }}</p>
+            </template>
+          </div>
 
-            <v-row v-else-if="tab === 4" align="start">
-              <v-col class="settings-content-col">
-                <template v-if="user?.id">
-                  <SettingsUpvotes :userId="userProfile.user_id" />
-                </template>
-                <template v-else>
-                  <p>{{ $t("components.settings-container.loading") }}</p>
-                </template>
-              </v-col>
-            </v-row>
+          <div v-else-if="tab === 4" class="settings-content-col">
+            <template v-if="user?.id">
+              <SettingsUpvotes :userId="userProfile.user_id" />
+            </template>
+            <template v-else>
+              <p>{{ $t("components.settings-container.loading") }}</p>
+            </template>
+          </div>
 
-            <v-row v-else-if="tab === 5" align="start">
-              <v-col class="settings-content-col">
-                <SettingsLanguagePractice />
-              </v-col>
-            </v-row>
+          <div v-else-if="tab === 5" class="settings-content-col">
+            <SettingsLanguagePractice />
+          </div>
 
-            <v-row v-else-if="tab === 6" align="start">
-              <v-col class="settings-content-col">
-                <SettingsChatSettings />
-                <SettingsEmailNotifications />
-                <SettingsDeleteAccount />
-              </v-col>
-            </v-row>
+          <div v-else-if="tab === 6" class="settings-content-col">
+            <SettingsChatSettings />
+            <SettingsEmailNotifications />
+            <SettingsDeleteAccount />
+          </div>
 
-            <v-row v-else-if="tab === 7" align="start">
-              <v-col class="settings-content-col">
-                <v-row v-if="!photoLibraryAvailable">
-                  <v-col class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis">
-                    {{ $t("components.settings-container.registered-only") }}
-                  </v-col>
-                </v-row>
-                <template v-else-if="userProfile?.user_id">
-                  <SettingsPhotoLibrary :userId="userProfile.user_id" />
-                </template>
-                <template v-else>
-                  <p>{{ $t("components.settings-container.loading") }}</p>
-                </template>
-              </v-col>
-            </v-row>
-            <v-row v-else-if="tab === 8" align="start">
-              <v-col class="settings-content-col">
-                <SettingsAgentSettings />
-              </v-col>
-            </v-row>
-          </template>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+          <div v-else-if="tab === 7" class="settings-content-col">
+            <div
+              v-if="!photoLibraryAvailable"
+              class="ml-3 mt-3 text-subtitle-2 text-medium-emphasis"
+            >
+              {{ $t("components.settings-container.registered-only") }}
+            </div>
+            <template v-else-if="userProfile?.user_id">
+              <SettingsPhotoLibrary :userId="userProfile.user_id" />
+            </template>
+            <template v-else>
+              <p>{{ $t("components.settings-container.loading") }}</p>
+            </template>
+          </div>
+
+          <div v-else-if="tab === 8" class="settings-content-col">
+            <SettingsAgentSettings />
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { useI18n } from "vue-i18n";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch, onBeforeUnmount } from "vue";
 import { useAuthStore } from "@/stores/authStore1";
 import PageHeader from "~/components/PageHeader.vue";
 
@@ -217,24 +216,34 @@ const selectTab = (value) => {
   drawer.value = false;
 };
 
+const handleEscape = (event) => {
+  if (event.key === "Escape") {
+    drawer.value = false;
+  }
+};
+
 onMounted(async () => {
+  window.addEventListener("keydown", handleEscape);
   await authStore.checkAuth();
   isLoading.value = false;
+});
+
+watch(drawer, (isOpen) => {
+  if (typeof document === "undefined") return;
+  document.body.style.overflow = isOpen ? "hidden" : "";
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", handleEscape);
+  if (typeof document !== "undefined") {
+    document.body.style.overflow = "";
+  }
 });
 </script>
 
 <style scoped>
 .settings-content-col {
-  padding-left: 4px;
-}
-
-:global(.settings-shell) {
-  padding-top: 6px;
-  padding-left: 2px !important;
-  padding-right: 2px !important;
-  max-width: 1260px;
-  margin: 0 auto;
-  overflow-x: clip;
+  padding: 10px 10px 14px;
 }
 
 .settings-header-shell {
@@ -256,69 +265,98 @@ onMounted(async () => {
   margin: 0;
 }
 
-:global(.settings-drawer) {
-  margin-top: 64px;
-  height: calc(100% - 64px);
-  overflow: hidden;
-  z-index: 1700 !important;
+.settings-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  color: inherit;
 }
 
-:global(.settings-drawer .v-navigation-drawer__content) {
-  overflow-y: auto;
+.settings-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1700;
+  background: rgba(15, 23, 42, 0.5);
+  padding-top: 64px;
+}
+
+.settings-drawer {
+  display: flex;
+  flex-direction: column;
+  width: min(280px, calc(100vw - 24px));
+  height: calc(100dvh - 76px);
+  background: rgb(var(--color-surface) / 0.98);
+  border-radius: 0 16px 16px 0;
+  border: 1px solid rgb(var(--color-border) / 0.78);
+  box-shadow: 0 22px 54px rgb(var(--color-shadow) / 0.26);
+  overflow: auto;
+}
+
+.settings-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 0.5rem;
+}
+
+.settings-drawer__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.settings-drawer__nav {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem 1rem;
 }
 
 .settings-drawer-item {
-  min-height: 36px;
-}
-
-.settings-drawer-item :deep(.v-list-item-title) {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 2.5rem;
+  border: 0;
+  border-radius: 0.9rem;
+  background: transparent;
+  color: inherit;
+  padding: 0.65rem 0.8rem;
+  text-align: left;
   font-size: 0.9rem;
 }
 
-:global(.settings-drawer .v-list-item--active) {
-  background-color: rgba(var(--v-theme-primary), 0.12);
+.settings-drawer-item__icon {
+  font-size: 1.05rem;
 }
 
-:global(.settings-drawer .v-list-item:hover) {
-  background-color: rgba(var(--v-theme-primary), 0.2) !important;
-  transition: background-color 0.2s ease;
+.settings-drawer-item--active {
+  background: rgb(var(--color-primary) / 0.16);
+  color: rgb(var(--color-primary));
 }
 
 .settings-panel-card {
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  background: rgb(var(--color-surface) / 0.96);
+  border: 1px solid rgb(var(--color-border) / 0.74);
   border-radius: 14px;
-  overflow: hidden;
+  box-shadow: 0 18px 38px rgb(var(--color-shadow) / 0.14);
 }
 
-:global(.v-theme--dark) .settings-panel-card {
-  background: #0f172a;
-  border-color: rgba(148, 163, 184, 0.16);
+@media (min-width: 640px) {
+  .settings-content-col {
+    padding: 12px 14px 18px;
+  }
 }
 
-:global(.settings-panel-card .v-field__overlay) {
-  background: transparent !important;
-}
-
-:global(.v-theme--dark .settings-panel-card .v-field) {
-  background-color: transparent;
-}
-
-/* Route-scoped hard clamp: prevent Vuetify grid/gutter layers from bleeding
-   across the viewport and creating horizontal seam artifacts on /settings. */
-:global(.settings-shell .v-row) {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
-:global(.settings-shell .v-col) {
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-:global(.settings-shell .v-card),
-:global(.settings-shell .v-card-text),
-:global(.settings-shell .v-sheet) {
-  backdrop-filter: none !important;
+@media (hover: hover) {
+  .settings-icon-btn:hover,
+  .settings-drawer-item:hover {
+    background: rgba(37, 99, 235, 0.16);
+  }
 }
 </style>

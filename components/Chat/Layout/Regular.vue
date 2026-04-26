@@ -1,6 +1,6 @@
 <template>
   <!-- Regular3.vue template -->
-  <div ref="wrapRef" class="d-flex flex-column h-100 overflow-hidden">
+  <div ref="wrapRef" class="chat-regular-wrap">
     <div
       ref="vsRef"
       class="overflow-y-auto"
@@ -25,16 +25,15 @@
               v-if="isLastBotMessage(item)"
               class="chat-quick-replies chat-quick-replies--inline"
             >
-              <v-chip
+              <button
                 v-for="q in quickReplies"
                 :key="q"
-                color="primary"
-                variant="outlined"
-                size="small"
+                type="button"
+                class="chat-quick-reply-btn"
                 @click="$emit('quick-reply', q)"
               >
                 {{ q }}
-              </v-chip>
+              </button>
             </div>
           </div>
         </template>
@@ -524,6 +523,13 @@ watch(
 </script>
 
 <style scoped>
+.chat-regular-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
 .text-2xs {
   font-size: 11px;
 }
@@ -601,6 +607,22 @@ watch(
   margin: 6px 0 8px;
   padding-left: 42px;
 }
+
+.chat-quick-reply-btn {
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  background: rgba(37, 99, 235, 0.12);
+  color: #bfdbfe;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.chat-quick-reply-btn:hover {
+  background: rgba(37, 99, 235, 0.22);
+}
+
 @keyframes blink {
   0%,
   80%,

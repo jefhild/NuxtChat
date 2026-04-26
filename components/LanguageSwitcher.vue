@@ -116,15 +116,19 @@ select {
   padding: 6px 8px 6px 32px;
   font-size: 11px;
   border-radius: 6px;
+  border: 0;
+  background-color: transparent;
   background-repeat: no-repeat;
   background-position: 8px calc(50% - 2px);
   background-size: 20px 15px;
+  box-shadow: none;
   width: 44px;
   color: transparent;
   text-shadow: none;
   height: 28px;
   line-height: 1.1;
   vertical-align: middle;
+  cursor: pointer;
 }
 
 option {
@@ -133,7 +137,6 @@ option {
 
 select:focus {
   outline: none;
-  border-color: #66afe9;
 }
 
 /* background image is provided by inline style bound to selected locale */

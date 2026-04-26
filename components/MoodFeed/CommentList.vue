@@ -1,6 +1,12 @@
 <template>
-  <div>
-    <v-skeleton-loader v-if="loading" type="list-item@6" class="pa-2" />
+  <div class="comment-list">
+    <div v-if="loading" class="comment-list__skeleton" aria-hidden="true">
+      <div v-for="n in 4" :key="`comment-skeleton-${n}`" class="comment-list__skeleton-item">
+        <div class="comment-list__skeleton-line comment-list__skeleton-line--title" />
+        <div class="comment-list__skeleton-line" />
+        <div class="comment-list__skeleton-line comment-list__skeleton-line--short" />
+      </div>
+    </div>
     <template v-else>
       <template v-for="item in flatItems" :key="item.id">
         <MoodFeedCommentItem
@@ -33,19 +39,17 @@
           @register="$emit('register')"
         >
           <template #reply-composer>
-            <v-expand-transition>
-              <div v-if="canReply && activeReplyId === item.id" class="mt-2">
-                <ReplyInline
-                  :model-value="drafts.get(item.id) || ''"
-                  :disabled="!canReply"
-                  :submit-label="t('pages.feeds.replyButton', 'Reply')"
-                  :placeholder="t('pages.feeds.replyPlaceholder', 'Write a reply...')"
-                  @update:modelValue="val => drafts.set(item.id, val)"
-                  @submit="txt => onSubmitReply(item.id, txt)"
-                  @cancel="() => onCancelReply(item.id)"
-                />
-              </div>
-            </v-expand-transition>
+            <div v-if="canReply && activeReplyId === item.id" class="comment-list__reply">
+              <ReplyInline
+                :model-value="drafts.get(item.id) || ''"
+                :disabled="!canReply"
+                :submit-label="t('pages.feeds.replyButton', 'Reply')"
+                :placeholder="t('pages.feeds.replyPlaceholder', 'Write a reply...')"
+                @update:modelValue="val => drafts.set(item.id, val)"
+                @submit="txt => onSubmitReply(item.id, txt)"
+                @cancel="() => onCancelReply(item.id)"
+              />
+            </div>
           </template>
         </MoodFeedCommentItem>
       </template>
@@ -74,6 +78,7 @@ const emit = defineEmits([
   "send-reply",
   "login-request",
   "profile",
+  "register",
 ]);
 const { t } = useI18n();
 
@@ -157,3 +162,45 @@ watch(
   }
 );
 </script>
+
+<style scoped>
+.comment-list__skeleton {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.5rem;
+}
+
+.comment-list__skeleton-item {
+  padding: 0.9rem 1rem;
+  border-radius: 0.95rem;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.comment-list__skeleton-line {
+  height: 0.7rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.18),
+    rgba(226, 232, 240, 0.3),
+    rgba(148, 163, 184, 0.18)
+  );
+}
+
+.comment-list__skeleton-line + .comment-list__skeleton-line {
+  margin-top: 0.55rem;
+}
+
+.comment-list__skeleton-line--title {
+  width: 38%;
+}
+
+.comment-list__skeleton-line--short {
+  width: 62%;
+}
+
+.comment-list__reply {
+  margin-top: 0.5rem;
+}
+</style>

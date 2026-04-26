@@ -1,136 +1,126 @@
 <template>
-  <v-container fluid class="language-practice-page-shell">
+  <div class="language-practice-page-shell mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
     <div class="language-practice-header text-center mb-6">
-      <v-chip color="success" variant="tonal" class="mb-3">
+      <div class="language-practice-kicker">
         {{ $t("pages.languagePractice.kicker") }}
-      </v-chip>
-      <h1 class="text-h4 font-weight-bold mb-2">{{ $t("pages.languagePractice.title") }}</h1>
-      <p class="text-body-1 text-medium-emphasis">{{ $t("pages.languagePractice.subtitle") }}</p>
+      </div>
+      <h1 class="language-practice-title">{{ $t("pages.languagePractice.title") }}</h1>
+      <p class="language-practice-subtitle">{{ $t("pages.languagePractice.subtitle") }}</p>
     </div>
 
     <section class="language-filter-panel mb-6" aria-labelledby="language-filter-heading">
-      <h2 id="language-filter-heading" class="text-subtitle-1 font-weight-bold mb-3">
+      <h2 id="language-filter-heading" class="language-filter-panel__title">
         {{ $t("pages.languagePractice.filtersTitle") }}
       </h2>
-      <p class="text-body-2 text-medium-emphasis mb-4">
+      <p class="language-filter-panel__description">
         {{ $t("pages.languagePractice.filtersExplanation") }}
       </p>
       <div class="language-filter-panel__controls">
-        <v-select
-          v-model="languageFilters.native_language_code"
-          :items="languageOptions"
-          item-title="title"
-          item-value="value"
-          density="compact"
-          variant="outlined"
-          clearable
-          hide-details
-          :label="$t('pages.languagePractice.nativeLanguage')"
-        />
-        <v-select
-          v-model="languageFilters.target_language_code"
-          :items="languageOptions"
-          item-title="title"
-          item-value="value"
-          density="compact"
-          variant="outlined"
-          clearable
-          hide-details
-          :label="$t('pages.languagePractice.targetLanguage')"
-        />
-        <v-select
-          v-model="languageFilters.target_language_level"
-          :items="levelOptions"
-          item-title="title"
-          item-value="value"
-          density="compact"
-          variant="outlined"
-          clearable
-          hide-details
-          :label="$t('pages.languagePractice.level')"
-        />
-        <v-select
-          v-model="languageFilters.correction_preference"
-          :items="correctionOptions"
-          item-title="title"
-          item-value="value"
-          density="compact"
-          variant="outlined"
-          clearable
-          hide-details
-          :label="$t('pages.languagePractice.corrections')"
-        />
-        <v-select
-          v-model="languageFilters.language_exchange_mode"
-          :items="exchangeModeOptions"
-          item-title="title"
-          item-value="value"
-          density="compact"
-          variant="outlined"
-          clearable
-          hide-details
-          :label="$t('pages.languagePractice.mode')"
-        />
+        <label class="language-filter-field">
+          <span class="language-filter-field__label">{{ $t("pages.languagePractice.nativeLanguage") }}</span>
+          <select v-model="languageFilters.native_language_code" class="language-filter-field__control">
+            <option :value="null">{{ $t("components.filter-menu.all") }}</option>
+            <option v-for="option in languageOptions" :key="option.value" :value="option.value">
+              {{ option.title }}
+            </option>
+          </select>
+        </label>
+        <label class="language-filter-field">
+          <span class="language-filter-field__label">{{ $t("pages.languagePractice.targetLanguage") }}</span>
+          <select v-model="languageFilters.target_language_code" class="language-filter-field__control">
+            <option :value="null">{{ $t("components.filter-menu.all") }}</option>
+            <option v-for="option in languageOptions" :key="`target-${option.value}`" :value="option.value">
+              {{ option.title }}
+            </option>
+          </select>
+        </label>
+        <label class="language-filter-field">
+          <span class="language-filter-field__label">{{ $t("pages.languagePractice.level") }}</span>
+          <select v-model="languageFilters.target_language_level" class="language-filter-field__control">
+            <option :value="null">{{ $t("components.filter-menu.all") }}</option>
+            <option v-for="option in levelOptions" :key="option.value" :value="option.value">
+              {{ option.title }}
+            </option>
+          </select>
+        </label>
+        <label class="language-filter-field">
+          <span class="language-filter-field__label">{{ $t("pages.languagePractice.corrections") }}</span>
+          <select v-model="languageFilters.correction_preference" class="language-filter-field__control">
+            <option :value="null">{{ $t("components.filter-menu.all") }}</option>
+            <option v-for="option in correctionOptions" :key="option.value" :value="option.value">
+              {{ option.title }}
+            </option>
+          </select>
+        </label>
+        <label class="language-filter-field">
+          <span class="language-filter-field__label">{{ $t("pages.languagePractice.mode") }}</span>
+          <select v-model="languageFilters.language_exchange_mode" class="language-filter-field__control">
+            <option :value="null">{{ $t("components.filter-menu.all") }}</option>
+            <option v-for="option in exchangeModeOptions" :key="option.value" :value="option.value">
+              {{ option.title }}
+            </option>
+          </select>
+        </label>
       </div>
 
       <div v-if="isAuthenticated" class="language-filter-panel__actions">
-        <v-btn
-          color="primary"
-          variant="flat"
-          :loading="savingPreferences"
+        <button
+          type="button"
+          class="language-filter-panel__save-button"
           :disabled="savingPreferences || !hasSavableLanguageFilters"
           @click="saveCurrentFilters"
         >
+          <span v-if="savingPreferences" class="language-filter-panel__save-spinner" aria-hidden="true" />
           {{ $t("pages.languagePractice.saveSettings") }}
-        </v-btn>
-        <p class="text-caption text-medium-emphasis mb-0">
+        </button>
+        <p class="language-filter-panel__save-hint">
           {{ $t("pages.languagePractice.saveHint") }}
         </p>
       </div>
 
-      <v-alert
+      <div
         v-if="saveError"
-        type="error"
-        variant="tonal"
-        density="compact"
-        class="mt-4"
+        class="language-feedback language-feedback--error mt-4"
+        role="alert"
       >
         {{ saveError }}
-      </v-alert>
+      </div>
 
-      <v-alert
+      <div
         v-else-if="saveSuccess"
-        type="success"
-        variant="tonal"
-        density="compact"
-        class="mt-4"
+        class="language-feedback language-feedback--success mt-4"
+        role="status"
       >
         {{ saveSuccess }}
-      </v-alert>
+      </div>
 
-      <v-alert
+      <div
         v-if="chatStartError"
-        type="error"
-        variant="tonal"
-        density="compact"
-        class="mt-4"
+        class="language-feedback language-feedback--error mt-4"
+        role="alert"
       >
         {{ chatStartError }}
-      </v-alert>
+      </div>
     </section>
 
     <div v-if="isLoading" class="match-grid mt-4">
-      <v-skeleton-loader
+      <div
         v-for="n in 6"
         :key="`sk-${n}`"
-        type="card"
         class="match-skeleton"
-      />
+        aria-hidden="true"
+      >
+        <span class="match-skeleton__line match-skeleton__line--title" />
+        <span class="match-skeleton__line match-skeleton__line--body" />
+        <span class="match-skeleton__line match-skeleton__line--body" />
+        <span class="match-skeleton__line match-skeleton__line--chip" />
+        <span class="match-skeleton__button" />
+      </div>
     </div>
 
-    <div v-else-if="!hasAnyCandidates" class="text-center mt-10">
-      <v-icon size="64" color="surface-variant" class="mb-3">mdi-translate-off</v-icon>
-      <p class="text-body-1 text-medium-emphasis">{{ $t("pages.languagePractice.empty") }}</p>
+    <div v-else-if="!hasAnyCandidates" class="language-empty mt-10">
+      <i class="mdi mdi-translate-off language-empty__icon" aria-hidden="true" />
+      <p class="language-empty__text">{{ $t("pages.languagePractice.empty") }}</p>
     </div>
 
     <template v-else>
@@ -142,12 +132,17 @@
           @click="toggleSection('online')"
         >
           <span class="dot dot-online" />
-          <h2 class="text-subtitle-1 font-weight-bold">
+          <h2 class="language-section-title">
             {{ $t("pages.languagePractice.sections.online") }}
           </h2>
-          <v-icon class="language-section-header__chevron" size="18">
-            {{ isSectionOpen("online") ? "mdi-chevron-up" : "mdi-chevron-down" }}
-          </v-icon>
+          <i
+            :class="[
+              'mdi',
+              isSectionOpen('online') ? 'mdi-chevron-up' : 'mdi-chevron-down',
+              'language-section-header__chevron',
+            ]"
+            aria-hidden="true"
+          />
         </button>
         <div v-show="isSectionOpen('online')" class="match-grid">
           <MatchCandidateCard
@@ -171,12 +166,17 @@
           @click="toggleSection('offline')"
         >
           <span class="dot dot-offline" />
-          <h2 class="text-subtitle-1 font-weight-bold">
+          <h2 class="language-section-title">
             {{ $t("pages.languagePractice.sections.offline") }}
           </h2>
-          <v-icon class="language-section-header__chevron" size="18">
-            {{ isSectionOpen("offline") ? "mdi-chevron-up" : "mdi-chevron-down" }}
-          </v-icon>
+          <i
+            :class="[
+              'mdi',
+              isSectionOpen('offline') ? 'mdi-chevron-up' : 'mdi-chevron-down',
+              'language-section-header__chevron',
+            ]"
+            aria-hidden="true"
+          />
         </button>
         <div v-show="isSectionOpen('offline')" class="match-grid">
           <MatchCandidateCard
@@ -199,13 +199,18 @@
           :aria-expanded="isSectionOpen('ai')"
           @click="toggleSection('ai')"
         >
-          <v-icon size="18" color="secondary">mdi-robot-outline</v-icon>
-          <h2 class="text-subtitle-1 font-weight-bold">
+          <i class="mdi mdi-robot-outline language-section-icon" aria-hidden="true" />
+          <h2 class="language-section-title">
             {{ $t("pages.languagePractice.sections.ai") }}
           </h2>
-          <v-icon class="language-section-header__chevron" size="18">
-            {{ isSectionOpen("ai") ? "mdi-chevron-up" : "mdi-chevron-down" }}
-          </v-icon>
+          <i
+            :class="[
+              'mdi',
+              isSectionOpen('ai') ? 'mdi-chevron-up' : 'mdi-chevron-down',
+              'language-section-header__chevron',
+            ]"
+            aria-hidden="true"
+          />
         </button>
         <div v-show="isSectionOpen('ai')" class="match-grid">
           <MatchCandidateCard
@@ -222,31 +227,59 @@
       </section>
     </template>
 
-    <v-dialog v-model="onboardingDialogOpen" max-width="480">
-      <v-card>
-        <v-card-title class="pt-5 px-5">
-          {{ $t("pages.languagePractice.onboardingDialog.title") }}
-        </v-card-title>
-        <v-card-text class="text-body-2 px-5">
-          {{ $t("pages.languagePractice.onboardingDialog.body") }}
-        </v-card-text>
-        <v-card-actions class="px-5 pb-5">
-          <v-spacer />
-          <v-btn variant="text" @click="onboardingDialogOpen = false">
-            {{ $t("pages.languagePractice.onboardingDialog.cancel") }}
-          </v-btn>
-          <v-btn color="primary" variant="flat" @click="goToOnboarding">
-            {{ $t("pages.languagePractice.onboardingDialog.start") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <Teleport to="body">
+      <Transition name="language-dialog-fade">
+        <div
+          v-if="onboardingDialogOpen"
+          class="language-dialog-layer"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="language-dialog-backdrop"
+            aria-label="Close onboarding dialog"
+            @click="onboardingDialogOpen = false"
+          />
+          <div
+            class="language-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="language-onboarding-title"
+          >
+            <div class="language-dialog-card">
+              <h2 id="language-onboarding-title" class="language-dialog-card__title">
+                {{ $t("pages.languagePractice.onboardingDialog.title") }}
+              </h2>
+              <p class="language-dialog-card__body">
+                {{ $t("pages.languagePractice.onboardingDialog.body") }}
+              </p>
+              <div class="language-dialog-card__actions">
+                <button
+                  type="button"
+                  class="language-dialog-card__button language-dialog-card__button--secondary"
+                  @click="onboardingDialogOpen = false"
+                >
+                  {{ $t("pages.languagePractice.onboardingDialog.cancel") }}
+                </button>
+                <button
+                  type="button"
+                  class="language-dialog-card__button language-dialog-card__button--primary"
+                  @click="goToOnboarding"
+                >
+                  {{ $t("pages.languagePractice.onboardingDialog.start") }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <ProfileDialog
       v-model="profileDialogOpen"
       :user-id="profileDialogUserId"
     />
-  </v-container>
+  </div>
 </template>
 
 <script setup>
@@ -256,7 +289,6 @@ import { useLocalePath } from "#imports";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/authStore1";
 import { useOnboardingDraftStore } from "@/stores/onboardingDraftStore";
-import { useDisplay } from "vuetify";
 import { useLanguagePracticeProfile } from "@/composables/useLanguagePracticeProfile";
 import { useLanguagePracticeSession } from "@/composables/useLanguagePracticeSession";
 
@@ -265,7 +297,6 @@ const route = useRoute();
 const localPath = useLocalePath();
 const auth = useAuthStore();
 const onboardingDraft = useOnboardingDraftStore();
-const { mdAndUp } = useDisplay();
 const {
   fetchLanguagePracticePreference,
   saveLanguagePracticePreference,
@@ -290,8 +321,8 @@ const onboardingDialogOpen = ref(false);
 const pendingOnboardingCandidate = ref(null);
 const profileDialogOpen = ref(false);
 const profileDialogUserId = ref(null);
-const openSections = ref(["online"]);
-const largeScreenDefaultSections = ["online", "offline", "ai"];
+const defaultOpenSections = ["online", "offline", "ai"];
+const openSections = ref([...defaultOpenSections]);
 const savingPreferences = ref(false);
 const saveError = ref("");
 const saveSuccess = ref("");
@@ -532,7 +563,16 @@ async function onChatRequest(candidate) {
       source: "language_directory",
       ...languageFilters.value,
     });
-    navigateTo(localPath(`/chat?userId=${candidate.user_id}&mode=language`));
+    navigateTo(
+      localPath({
+        path: "/chat",
+        query: {
+          ...(candidate?.slug ? { userslug: candidate.slug } : {}),
+          ...(candidate?.user_id ? { userId: candidate.user_id } : {}),
+          mode: "language",
+        },
+      })
+    );
   } catch (err) {
     chatStartError.value =
       err?.data?.statusMessage ||
@@ -693,7 +733,7 @@ async function saveCurrentFilters() {
 }
 
 onMounted(async () => {
-  openSections.value = mdAndUp.value ? largeScreenDefaultSections : ["online"];
+  openSections.value = [...defaultOpenSections];
   hydrateLanguageFiltersFromQuery();
   if (!authResolved.value) {
     await auth.checkAuth();
@@ -731,17 +771,91 @@ useHead({
   margin: 0 auto;
 }
 
+.language-practice-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0.4rem 0.8rem;
+  margin-bottom: 0.75rem;
+  border-radius: 999px;
+  background: rgb(var(--color-success, 34 197 94) / 0.12);
+  color: rgb(var(--color-success, 34 197 94));
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.language-practice-title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(2rem, 2vw + 1.2rem, 2.8rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: rgb(var(--color-foreground));
+}
+
+.language-practice-subtitle {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
 .language-filter-panel {
-  border: 1px solid rgba(var(--v-theme-outline), 0.22);
-  border-radius: 8px;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 16px;
   padding: 16px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 10px 24px rgb(var(--color-shadow) / 0.08);
+}
+
+.language-filter-panel__title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: rgb(var(--color-foreground));
+}
+
+.language-filter-panel__description {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground) / 0.72);
 }
 
 .language-filter-panel__controls {
-  align-items: center;
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(5, minmax(140px, 1fr));
+}
+
+.language-filter-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.language-filter-field__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
+.language-filter-field__control {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgb(var(--color-border) / 0.78);
+  border-radius: 12px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+}
+
+.language-filter-field__control:focus {
+  outline: 2px solid rgb(var(--color-primary) / 0.28);
+  outline-offset: 2px;
 }
 
 .language-filter-panel__actions {
@@ -750,6 +864,70 @@ useHead({
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 16px;
+}
+
+.language-filter-panel__save-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 12px;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-primary-foreground, var(--color-background)));
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.language-filter-panel__save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.language-filter-panel__save-button:not(:disabled):hover,
+.language-filter-panel__save-button:not(:disabled):focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgb(var(--color-shadow) / 0.12);
+  outline: none;
+}
+
+.language-filter-panel__save-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgb(255 255 255 / 0.3);
+  border-top-color: rgb(255 255 255 / 0.92);
+  border-radius: 999px;
+  animation: language-spin 0.8s linear infinite;
+}
+
+.language-filter-panel__save-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: rgb(var(--color-foreground) / 0.62);
+}
+
+.language-feedback {
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.language-feedback--error {
+  border: 1px solid rgb(239 68 68 / 0.22);
+  background: rgb(239 68 68 / 0.1);
+  color: rgb(248 113 113);
+}
+
+.language-feedback--success {
+  border: 1px solid rgb(34 197 94 / 0.22);
+  background: rgb(34 197 94 / 0.1);
+  color: rgb(74 222 128);
 }
 
 .language-section-header {
@@ -769,13 +947,27 @@ useHead({
   margin: 0;
 }
 
+.language-section-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: rgb(var(--color-foreground));
+}
+
+.language-section-icon {
+  font-size: 1rem;
+  color: rgb(var(--color-secondary));
+}
+
 .language-section-header__chevron {
   margin-left: auto;
+  font-size: 1.05rem;
 }
 
 .language-section-header:focus-visible {
   border-radius: 8px;
-  outline: 2px solid rgba(var(--v-theme-primary), 0.8);
+  outline: 2px solid rgb(var(--color-primary) / 0.8);
   outline-offset: 4px;
 }
 
@@ -786,7 +978,47 @@ useHead({
 }
 
 .match-skeleton {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
   border-radius: 12px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 10px 24px rgb(var(--color-shadow) / 0.08);
+}
+
+.match-skeleton__line,
+.match-skeleton__button {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.14) 0%,
+    rgba(148, 163, 184, 0.26) 50%,
+    rgba(148, 163, 184, 0.14) 100%
+  );
+  background-size: 200% 100%;
+  animation: language-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+.match-skeleton__line--title {
+  width: 56%;
+  height: 1.2rem;
+}
+
+.match-skeleton__line--body {
+  width: 100%;
+  height: 0.9rem;
+}
+
+.match-skeleton__line--chip {
+  width: 44%;
+  height: 1.8rem;
+}
+
+.match-skeleton__button {
+  width: 100%;
+  height: 2.5rem;
 }
 
 .dot {
@@ -798,11 +1030,137 @@ useHead({
 }
 
 .dot-online {
-  background: rgb(var(--v-theme-success));
+  background: #4caf50;
 }
 
 .dot-offline {
-  background: rgb(var(--v-theme-surface-variant));
+  background: #90a4ae;
+}
+
+.language-empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.language-empty__icon {
+  font-size: 4rem;
+  color: rgb(var(--color-foreground) / 0.28);
+}
+
+.language-empty__text {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
+.language-dialog-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+}
+
+.language-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.62);
+}
+
+.language-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(100% - 2rem, 480px);
+  transform: translate(-50%, -50%);
+}
+
+.language-dialog-card {
+  padding: 1.4rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 18px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 24px 48px rgb(var(--color-shadow) / 0.18);
+}
+
+.language-dialog-card__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 650;
+  line-height: 1.35;
+  color: rgb(var(--color-foreground));
+}
+
+.language-dialog-card__body {
+  margin: 0.8rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
+.language-dialog-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.language-dialog-card__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.65rem 0.95rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.language-dialog-card__button--secondary {
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.82);
+}
+
+.language-dialog-card__button--primary {
+  border: 0;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-primary-foreground, var(--color-background)));
+}
+
+.language-dialog-card__button:hover,
+.language-dialog-card__button:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.language-dialog-fade-enter-active,
+.language-dialog-fade-leave-active {
+  transition: opacity 160ms ease;
+}
+
+.language-dialog-fade-enter-from,
+.language-dialog-fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes language-skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes language-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 959px) {
@@ -813,6 +1171,14 @@ useHead({
   .language-filter-panel__actions {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .language-dialog-card__actions {
+    flex-direction: column-reverse;
+  }
+
+  .language-dialog-card__button {
+    width: 100%;
   }
 }
 </style>

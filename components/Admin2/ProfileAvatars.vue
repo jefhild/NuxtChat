@@ -1,234 +1,335 @@
 <template>
-  <v-card class="pa-6" elevation="3">
-    <v-card-title>Profile Avatar Library</v-card-title>
-    <v-card-text>
-      <v-form ref="uploadForm" @submit.prevent="handleUpload">
-        <v-select
-          v-model="selectedGender"
-          :items="genderOptions"
-          label="Collection"
-          item-title="title"
-          item-value="value"
-          variant="outlined"
-          density="comfortable"
-        />
-        <v-file-input
-          :key="`avatar-file-${fileInputKey}`"
-          accept="image/*"
-          label="Upload avatar"
-          show-size
-          @update:modelValue="handleFileChange"
-        />
-        <div class="d-flex align-center ga-2 mt-2">
-          <v-btn
-            color="primary"
-            type="submit"
-            :loading="uploading"
-            :disabled="uploading || !selectedFile"
-          >
-            Upload
-          </v-btn>
-          <v-btn variant="text" :loading="loading" @click="loadAvatars">
-            Refresh list
-          </v-btn>
+  <div class="admin-avatar-stack">
+    <section class="admin-avatar-card">
+      <div class="admin-avatar-card__header">
+        <div>
+          <h2 class="admin-avatar-card__title">Profile Avatar Library</h2>
+          <p class="admin-avatar-card__subtitle">
+            Upload shared avatar assets and keep the core collections current.
+          </p>
         </div>
-        <v-alert
-          v-if="errorMessage"
-          type="error"
-          variant="tonal"
-          density="compact"
-          class="mt-3"
-        >
-          {{ errorMessage }}
-        </v-alert>
-        <v-alert
-          v-else-if="successMessage"
-          type="success"
-          variant="tonal"
-          density="compact"
-          class="mt-3"
-        >
-          {{ successMessage }}
-        </v-alert>
-      </v-form>
-    </v-card-text>
-  </v-card>
+      </div>
+      <div class="admin-avatar-card__body">
+        <form class="admin-avatar-form" @submit.prevent="handleUpload">
+          <label class="admin-avatar-field">
+            <span class="admin-avatar-field__label">Collection</span>
+            <select v-model="selectedGender" class="admin-avatar-field__control">
+              <option
+                v-for="option in genderOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.title }}
+              </option>
+            </select>
+          </label>
 
-  <v-card class="pa-6 mt-5" elevation="3">
-    <v-card-title>Current Collections</v-card-title>
-    <LoadingContainer v-if="loading" text="Loading avatars..." />
-    <v-card-text v-else>
-      <div v-for="group in avatarGroups" :key="group.key" class="mb-6">
-        <div class="text-subtitle-2 font-weight-medium mb-2">
-          {{ group.label }} ({{ group.items.length }})
-        </div>
-        <div class="avatar-grid">
-          <div
-            v-if="!group.items.length"
-            class="text-caption text-medium-emphasis"
-          >
-            No images yet.
-          </div>
-          <div
-            v-for="item in group.items"
-            :key="`${group.key}:${item.name}`"
-            class="avatar-item"
-          >
-            <v-avatar size="48">
-              <v-img :src="item.url" :alt="item.name" />
-            </v-avatar>
-            <v-btn
-              icon
-              size="x-small"
-              color="red"
-              variant="flat"
-              class="avatar-delete"
-              @click="openDeleteDialog(group.key, item.name)"
+          <label class="admin-avatar-field">
+            <span class="admin-avatar-field__label">Upload avatar</span>
+            <input
+              :key="`avatar-file-${fileInputKey}`"
+              type="file"
+              accept="image/*"
+              class="admin-avatar-field__control admin-avatar-field__control--file"
+              @change="handleFileChange"
             >
-              <v-icon size="14">mdi-close</v-icon>
-            </v-btn>
+          </label>
+
+          <div class="admin-avatar-actions">
+            <button
+              type="submit"
+              class="admin-avatar-button admin-avatar-button--primary"
+              :disabled="uploading || !selectedFile"
+            >
+              <span v-if="uploading" class="admin-avatar-button__spinner" aria-hidden="true" />
+              Upload
+            </button>
+            <button
+              type="button"
+              class="admin-avatar-button"
+              :disabled="loading"
+              @click="loadAvatars"
+            >
+              <span v-if="loading" class="admin-avatar-button__spinner" aria-hidden="true" />
+              Refresh list
+            </button>
+          </div>
+
+          <div
+            v-if="errorMessage"
+            class="admin-avatar-banner admin-avatar-banner--error"
+            role="alert"
+          >
+            {{ errorMessage }}
+          </div>
+          <div
+            v-else-if="successMessage"
+            class="admin-avatar-banner admin-avatar-banner--success"
+            role="status"
+          >
+            {{ successMessage }}
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="admin-avatar-card">
+      <div class="admin-avatar-card__header">
+        <div>
+          <h2 class="admin-avatar-card__title">Current Collections</h2>
+        </div>
+      </div>
+      <div class="admin-avatar-card__body">
+        <LoadingContainer v-if="loading" text="Loading avatars..." />
+        <div v-else class="admin-avatar-group-list">
+          <section v-for="group in avatarGroups" :key="group.key" class="admin-avatar-group">
+            <header class="admin-avatar-group__header">
+              <h3 class="admin-avatar-group__title">{{ group.label }}</h3>
+              <span class="admin-avatar-group__count">{{ group.items.length }}</span>
+            </header>
+            <div class="avatar-grid">
+              <div
+                v-if="!group.items.length"
+                class="admin-avatar-empty-state"
+              >
+                No images yet.
+              </div>
+              <div
+                v-for="item in group.items"
+                :key="`${group.key}:${item.name}`"
+                class="avatar-item"
+              >
+                <img :src="item.url" :alt="item.name" class="avatar-item__image">
+                <button
+                  type="button"
+                  class="avatar-delete"
+                  aria-label="Delete avatar"
+                  @click="openDeleteDialog(group.key, item.name)"
+                >
+                  <i class="mdi mdi-close" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="admin-avatar-card">
+      <div class="admin-avatar-card__header">
+        <div>
+          <h2 class="admin-avatar-card__title">Avatar Decorations</h2>
+          <p class="admin-avatar-card__subtitle">
+            Manage the decoration library shown in the profile editor.
+          </p>
+        </div>
+      </div>
+      <div class="admin-avatar-card__body">
+        <form class="admin-avatar-form" @submit.prevent="handleDecorationUpload">
+          <label class="admin-avatar-field">
+            <span class="admin-avatar-field__label">Display name</span>
+            <input
+              v-model="decorationDisplayName"
+              type="text"
+              maxlength="80"
+              placeholder="e.g. Neon Halo"
+              class="admin-avatar-field__control"
+            >
+          </label>
+
+          <label class="admin-avatar-field">
+            <span class="admin-avatar-field__label">Upload decoration</span>
+            <input
+              :key="`decoration-file-${decorationFileInputKey}`"
+              type="file"
+              accept="image/*"
+              class="admin-avatar-field__control admin-avatar-field__control--file"
+              @change="handleDecorationFileChange"
+            >
+          </label>
+
+          <div class="admin-avatar-actions">
+            <button
+              type="submit"
+              class="admin-avatar-button admin-avatar-button--primary"
+              :disabled="decorationUploading || !selectedDecorationFile"
+            >
+              <span v-if="decorationUploading" class="admin-avatar-button__spinner" aria-hidden="true" />
+              Upload decoration
+            </button>
+            <button
+              type="button"
+              class="admin-avatar-button"
+              :disabled="decorationsLoading"
+              @click="loadDecorations"
+            >
+              <span v-if="decorationsLoading" class="admin-avatar-button__spinner" aria-hidden="true" />
+              Refresh decorations
+            </button>
+          </div>
+
+          <div
+            v-if="decorationErrorMessage"
+            class="admin-avatar-banner admin-avatar-banner--error"
+            role="alert"
+          >
+            {{ decorationErrorMessage }}
+          </div>
+          <div
+            v-else-if="decorationSuccessMessage"
+            class="admin-avatar-banner admin-avatar-banner--success"
+            role="status"
+          >
+            {{ decorationSuccessMessage }}
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="admin-avatar-card">
+      <div class="admin-avatar-card__header">
+        <div>
+          <h2 class="admin-avatar-card__title">Current Decorations</h2>
+        </div>
+        <span class="admin-avatar-group__count">{{ decorations.length }}</span>
+      </div>
+      <div class="admin-avatar-card__body">
+        <LoadingContainer v-if="decorationsLoading" text="Loading decorations..." />
+        <div v-else class="avatar-grid">
+          <div
+            v-if="!decorations.length"
+            class="admin-avatar-empty-state"
+          >
+            No decoration images yet.
+          </div>
+          <div
+            v-for="item in decorations"
+            :key="`dec:${item.name}`"
+            class="avatar-item decoration-item"
+          >
+            <img :src="item.url" :alt="item.name" class="decoration-preview">
+            <div class="decoration-name">
+              {{ item.label || item.name }}
+            </div>
+            <button
+              type="button"
+              class="avatar-delete"
+              aria-label="Delete decoration"
+              @click="openDecorationDeleteDialog(item.name)"
+            >
+              <i class="mdi mdi-close" aria-hidden="true" />
+            </button>
           </div>
         </div>
       </div>
-    </v-card-text>
-  </v-card>
+    </section>
 
-  <v-card class="pa-6 mt-5" elevation="3">
-    <v-card-title>Avatar Decorations</v-card-title>
-    <v-card-text>
-      <v-form @submit.prevent="handleDecorationUpload">
-        <v-text-field
-          v-model="decorationDisplayName"
-          label="Display name"
-          placeholder="e.g. Neon Halo"
-          variant="outlined"
-          density="comfortable"
-          maxlength="80"
-          counter
-        />
-        <v-file-input
-          :key="`decoration-file-${decorationFileInputKey}`"
-          accept="image/*"
-          label="Upload decoration"
-          show-size
-          @update:modelValue="handleDecorationFileChange"
-        />
-        <div class="d-flex align-center ga-2 mt-2">
-          <v-btn
-            color="primary"
-            type="submit"
-            :loading="decorationUploading"
-            :disabled="decorationUploading || !selectedDecorationFile"
-          >
-            Upload decoration
-          </v-btn>
-          <v-btn
-            variant="text"
-            :loading="decorationsLoading"
-            @click="loadDecorations"
-          >
-            Refresh decorations
-          </v-btn>
-        </div>
-        <v-alert
-          v-if="decorationErrorMessage"
-          type="error"
-          variant="tonal"
-          density="compact"
-          class="mt-3"
-        >
-          {{ decorationErrorMessage }}
-        </v-alert>
-        <v-alert
-          v-else-if="decorationSuccessMessage"
-          type="success"
-          variant="tonal"
-          density="compact"
-          class="mt-3"
-        >
-          {{ decorationSuccessMessage }}
-        </v-alert>
-      </v-form>
-    </v-card-text>
-  </v-card>
-
-  <v-card class="pa-6 mt-5" elevation="3">
-    <v-card-title>Current Decorations ({{ decorations.length }})</v-card-title>
-    <LoadingContainer v-if="decorationsLoading" text="Loading decorations..." />
-    <v-card-text v-else>
-      <div class="avatar-grid">
+    <Teleport to="body">
+      <Transition name="admin-avatar-modal-fade">
         <div
-          v-if="!decorations.length"
-          class="text-caption text-medium-emphasis"
+          v-if="deleteDialog"
+          class="admin-avatar-modal-layer"
+          role="presentation"
         >
-          No decoration images yet.
-        </div>
-        <div
-          v-for="item in decorations"
-          :key="`dec:${item.name}`"
-          class="avatar-item decoration-item"
-        >
-          <v-img :src="item.url" :alt="item.name" class="decoration-preview" />
-          <div class="decoration-name text-caption">
-            {{ item.label || item.name }}
+          <button
+            type="button"
+            class="admin-avatar-modal-backdrop"
+            aria-label="Close avatar delete dialog"
+            @click="closeDeleteDialog"
+          />
+          <div
+            class="admin-avatar-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-avatar-delete-title"
+          >
+            <div class="admin-avatar-modal__card">
+              <div class="admin-avatar-modal__header">
+                <h2 id="admin-avatar-delete-title" class="admin-avatar-modal__title">Delete avatar?</h2>
+              </div>
+              <div class="admin-avatar-modal__body">
+                This will remove the image from the shared collection.
+              </div>
+              <div class="admin-avatar-modal__actions">
+                <button
+                  type="button"
+                  class="admin-avatar-button"
+                  :disabled="deleting"
+                  @click="closeDeleteDialog"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="admin-avatar-button admin-avatar-button--danger"
+                  :disabled="deleting"
+                  @click="confirmDelete"
+                >
+                  <span v-if="deleting" class="admin-avatar-button__spinner" aria-hidden="true" />
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
-          <v-btn
-            icon
-            size="x-small"
-            color="red"
-            variant="flat"
-            class="avatar-delete"
-            @click="openDecorationDeleteDialog(item.name)"
-          >
-            <v-icon size="14">mdi-close</v-icon>
-          </v-btn>
         </div>
-      </div>
-    </v-card-text>
-  </v-card>
+      </Transition>
+    </Teleport>
 
-  <v-dialog v-model="deleteDialog" max-width="420">
-    <v-card>
-      <v-card-title>Delete avatar?</v-card-title>
-      <v-card-text>
-        This will remove the image from the shared collection.
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn variant="text" :disabled="deleting" @click="closeDeleteDialog">
-          Cancel
-        </v-btn>
-        <v-btn color="red" :loading="deleting" @click="confirmDelete">
-          Delete
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-
-  <v-dialog v-model="decorationDeleteDialog" max-width="420">
-    <v-card>
-      <v-card-title>Delete decoration?</v-card-title>
-      <v-card-text>
-        This will remove the image from the shared decoration library.
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn
-          variant="text"
-          :disabled="decorationDeleting"
-          @click="closeDecorationDeleteDialog"
+    <Teleport to="body">
+      <Transition name="admin-avatar-modal-fade">
+        <div
+          v-if="decorationDeleteDialog"
+          class="admin-avatar-modal-layer"
+          role="presentation"
         >
-          Cancel
-        </v-btn>
-        <v-btn color="red" :loading="decorationDeleting" @click="confirmDecorationDelete">
-          Delete
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+          <button
+            type="button"
+            class="admin-avatar-modal-backdrop"
+            aria-label="Close decoration delete dialog"
+            @click="closeDecorationDeleteDialog"
+          />
+          <div
+            class="admin-avatar-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-decoration-delete-title"
+          >
+            <div class="admin-avatar-modal__card">
+              <div class="admin-avatar-modal__header">
+                <h2 id="admin-decoration-delete-title" class="admin-avatar-modal__title">Delete decoration?</h2>
+              </div>
+              <div class="admin-avatar-modal__body">
+                This will remove the image from the shared decoration library.
+              </div>
+              <div class="admin-avatar-modal__actions">
+                <button
+                  type="button"
+                  class="admin-avatar-button"
+                  :disabled="decorationDeleting"
+                  @click="closeDecorationDeleteDialog"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="admin-avatar-button admin-avatar-button--danger"
+                  :disabled="decorationDeleting"
+                  @click="confirmDecorationDelete"
+                >
+                  <span v-if="decorationDeleting" class="admin-avatar-button__spinner" aria-hidden="true" />
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
+import { computed, onMounted, ref } from "vue";
 import LoadingContainer from "../LoadingContainer.vue";
 
 const genderOptions = [
@@ -266,12 +367,13 @@ const avatarGroups = computed(() => [
   { key: "other", label: "Other", items: avatars.value.other || [] },
 ]);
 
-const handleFileChange = (file) => {
-  if (Array.isArray(file)) {
-    selectedFile.value = file[0] || null;
-  } else {
-    selectedFile.value = file || null;
-  }
+const extractSingleFile = (event) => {
+  const files = event?.target?.files;
+  return files?.[0] || null;
+};
+
+const handleFileChange = (event) => {
+  selectedFile.value = extractSingleFile(event);
 };
 
 const readFileAsDataUrl = (file) =>
@@ -343,12 +445,8 @@ const handleUpload = async () => {
   }
 };
 
-const handleDecorationFileChange = (file) => {
-  if (Array.isArray(file)) {
-    selectedDecorationFile.value = file[0] || null;
-  } else {
-    selectedDecorationFile.value = file || null;
-  }
+const handleDecorationFileChange = (event) => {
+  selectedDecorationFile.value = extractSingleFile(event);
 };
 
 const handleDecorationUpload = async () => {
@@ -464,42 +562,252 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.admin-avatar-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-avatar-card {
+  border: 1px solid rgba(var(--color-border), 0.88);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.96), rgba(var(--color-surface), 0.98));
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.admin-avatar-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 22px 0;
+}
+
+.admin-avatar-card__title {
+  margin: 0;
+  color: rgb(var(--color-heading));
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.admin-avatar-card__subtitle {
+  margin: 6px 0 0;
+  color: rgba(var(--color-text), 0.72);
+  font-size: 0.92rem;
+}
+
+.admin-avatar-card__body {
+  padding: 20px 22px 22px;
+}
+
+.admin-avatar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-avatar-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-avatar-field__label {
+  color: rgba(var(--color-text), 0.68);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.admin-avatar-field__control {
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--color-border), 0.9);
+  background: rgba(var(--color-surface), 0.94);
+  color: rgb(var(--color-text));
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  outline: none;
+  color-scheme: light dark;
+}
+
+.admin-avatar-field__control:focus {
+  border-color: rgba(var(--color-primary), 0.5);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.12);
+}
+
+.admin-avatar-field__control--file {
+  padding: 9px 12px;
+}
+
+.admin-avatar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-avatar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-border), 0.86);
+  background: rgba(var(--color-surface), 0.92);
+  color: rgb(var(--color-text));
+  padding: 0 16px;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.admin-avatar-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-avatar-button--primary {
+  border-color: rgba(var(--color-primary), 0.35);
+  background: rgba(var(--color-primary), 0.14);
+  color: rgb(var(--color-primary));
+}
+
+.admin-avatar-button--danger {
+  border-color: rgba(239, 68, 68, 0.32);
+  background: rgba(239, 68, 68, 0.11);
+  color: rgb(185, 28, 28);
+}
+
+.admin-avatar-button__spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(var(--color-text), 0.18);
+  border-top-color: currentColor;
+  animation: admin-avatar-spin 0.8s linear infinite;
+}
+
+.admin-avatar-banner {
+  border-radius: 18px;
+  border: 1px solid rgba(var(--color-border), 0.82);
+  padding: 12px 14px;
+  font-size: 0.95rem;
+}
+
+.admin-avatar-banner--error {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(185, 28, 28);
+}
+
+.admin-avatar-banner--success {
+  border-color: rgba(34, 197, 94, 0.32);
+  background: rgba(34, 197, 94, 0.12);
+  color: rgb(22, 101, 52);
+}
+
+.admin-avatar-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-avatar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-avatar-group__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-avatar-group__title {
+  margin: 0;
+  color: rgb(var(--color-heading));
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.admin-avatar-group__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(var(--color-primary), 0.12);
+  color: rgb(var(--color-primary));
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .avatar-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
+}
+
+.admin-avatar-empty-state {
+  color: rgba(var(--color-text), 0.72);
+  font-size: 0.85rem;
 }
 
 .avatar-item {
   position: relative;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  width: 56px;
+  height: 56px;
+  border: 1px solid rgba(var(--color-border), 0.86);
   border-radius: 999px;
-  padding: 2px;
+  padding: 3px;
+  background: rgba(var(--color-surface), 0.92);
+}
+
+.avatar-item__image {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  display: block;
 }
 
 .avatar-delete {
   position: absolute;
   top: -6px;
   right: -6px;
-  min-width: 20px;
-  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  background: rgba(239, 68, 68, 0.95);
+  color: white;
 }
 
 .decoration-item {
-  border-radius: 10px;
-  padding: 6px 6px 8px;
-  width: 132px;
-  min-height: 96px;
+  width: 136px;
+  min-height: 106px;
+  border-radius: 14px;
+  padding: 8px 8px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .decoration-preview {
   width: 64px;
   height: 64px;
+  object-fit: contain;
+  display: block;
 }
 
 .decoration-name {
@@ -507,5 +815,96 @@ onMounted(async () => {
   line-height: 1.2;
   text-align: center;
   overflow-wrap: anywhere;
+  color: rgba(var(--color-text), 0.74);
+  font-size: 0.8rem;
+}
+
+.admin-avatar-modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.admin-avatar-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.56);
+}
+
+.admin-avatar-modal {
+  position: relative;
+  width: min(100%, 420px);
+}
+
+.admin-avatar-modal__card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(var(--color-border), 0.88);
+  border-radius: 24px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.24);
+}
+
+.admin-avatar-modal__header,
+.admin-avatar-modal__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.admin-avatar-modal__header {
+  border-bottom: 1px solid rgba(var(--color-border), 0.82);
+}
+
+.admin-avatar-modal__body {
+  padding: 20px;
+  color: rgb(var(--color-text));
+  line-height: 1.55;
+}
+
+.admin-avatar-modal__actions {
+  justify-content: flex-end;
+  border-top: 1px solid rgba(var(--color-border), 0.82);
+}
+
+.admin-avatar-modal__title {
+  margin: 0;
+  color: rgb(var(--color-heading));
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.admin-avatar-modal-fade-enter-active,
+.admin-avatar-modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.admin-avatar-modal-fade-enter-from,
+.admin-avatar-modal-fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 640px) {
+  .admin-avatar-actions,
+  .admin-avatar-modal__actions {
+    align-items: stretch;
+  }
+
+  .admin-avatar-button {
+    width: 100%;
+  }
+}
+
+@keyframes admin-avatar-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

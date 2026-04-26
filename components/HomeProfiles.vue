@@ -1,175 +1,173 @@
 <template>
-  <v-container fluid class="pa-0">
+  <div class="home-profiles">
     <LoadingContainer v-if="isLoading" />
 
     <div v-else>
-      <div class="d-flex flex-column flex-md-row align-start align-md-center ga-4 mb-4">
-        <div class="flex-1">
-          <div class="text-h6 font-weight-medium">
-            {{ $t("components.homeProfiles.title") }}
-          </div>
-          <div class="text-body-2 text-medium-emphasis">
-            {{ $t("components.homeProfiles.subtitle") }}
-          </div>
+      <div class="home-profiles__intro">
+        <div class="home-profiles__titles">
+          <h2 class="home-profiles__title">
+            {{ $t(props.titleKey || "components.homeProfiles.title") }}
+          </h2>
+          <p class="home-profiles__subtitle">
+            {{ $t(props.subtitleKey || "components.homeProfiles.subtitle") }}
+          </p>
         </div>
       </div>
 
-      <v-data-table
-        v-if="useTableLayout"
-        :headers="headers"
-        :items="displayedProfiles"
-        :items-per-page="-1"
-        item-value="user_id"
-        class="profiles-table"
-        hover
-        hide-default-footer
-        :sort-by="[{ key: 'created', order: 'desc' }]"
-        :no-data-text="$t('components.homeProfiles.empty')"
-      >
-        <template #item.profile="{ item }">
-          <div class="d-flex align-center ga-3">
-            <div class="avatar-stack">
-              <v-avatar size="44">
-                <v-img
-                  :src="getAvatar(item.avatar_url, item.gender_id)"
-                  :alt="displayNameFor(item) || 'Profile avatar'"
-                />
-              </v-avatar>
-              <span v-if="item.country_emoji" class="avatar-flag">
-                {{ item.country_emoji }}
-              </span>
-              <v-avatar v-if="item.has_email" size="18" class="registered-badge">
-                <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
-              </v-avatar>
-              <v-avatar size="30" color="transparent" class="gender-badge">
-                <v-icon
-                  size="20"
-                  class="profile-gender-icon"
-                  :style="{ '--profile-gender-color': getGenderHexColor(resolveGenderId(item)) }"
-                  :icon="getAvatarIcon(resolveGenderId(item))"
-                />
-              </v-avatar>
-            </div>
-            <div class="d-flex flex-column">
-              <button
-                class="profile-link d-flex align-center ga-2"
-                type="button"
-                @click="openProfileDialog(item)"
+      <div v-if="useTableLayout" class="profiles-table-shell">
+        <table v-if="displayedProfiles.length" class="profiles-table">
+          <thead>
+            <tr>
+              <th
+                v-for="header in headers"
+                :key="header.key"
+                :class="['profiles-table__head', header.numeric ? 'profiles-table__head--numeric' : '']"
+                scope="col"
               >
-                {{ displayNameFor(item) || item.slug || item.user_id }}
-                <v-chip
-                  v-if="isAiProfile(item)"
-                  size="x-small"
-                  color="deep-purple-darken-3"
-                  text-color="white"
-                  variant="tonal"
-                >
-                  <v-icon size="14" class="mr-1">mdi-robot-outline</v-icon>
-                  {{ $t("components.homeProfiles.aiBadge") }}
-                </v-chip>
-              </button>
-            </div>
-          </div>
-        </template>
-
-        <template #item.tagline="{ item }">
-          <span class="text-body-2 text-medium-emphasis">{{ taglineFor(item) || "—" }}</span>
-        </template>
-
-        <template #item.age="{ item }">
-          <span class="text-body-2">{{ item.age ?? "—" }}</span>
-        </template>
-
-        <template #item.upvotes="{ item }">
-          <div class="d-flex align-center justify-end ga-1">
-            <v-icon size="16" class="profile-upvote-icon">mdi-thumb-up</v-icon>
-            <span class="text-body-2">{{ item.upvote_count ?? 0 }}</span>
-          </div>
-        </template>
-      </v-data-table>
-
-      <div v-else>
-        <v-alert
-          v-if="!displayedProfiles.length"
-          variant="tonal"
-          type="info"
-          class="mb-3"
-        >
-          {{ $t("components.homeProfiles.empty") }}
-        </v-alert>
-
-        <v-row dense>
-          <v-col
-            v-for="item in displayedProfiles"
-            :key="item.user_id || item.id"
-            cols="12"
-          >
-            <v-card
-              class="profile-card"
-              elevation="0"
-              border
-              role="button"
-              tabindex="0"
-              @click="openProfileDialog(item)"
-              @keyup.enter="openProfileDialog(item)"
+                {{ header.title }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="item in displayedProfiles"
+              :key="item.user_id || item.id"
+              class="profiles-table__row"
             >
-              <v-card-text class="d-flex align-start ga-3">
-                <div class="avatar-stack">
-                  <v-avatar size="48">
-                    <v-img
+              <td class="profiles-table__cell">
+                <div class="profiles-table__profile">
+                  <div class="avatar-stack avatar-stack--desktop">
+                    <img
+                      class="profile-avatar profile-avatar--desktop"
                       :src="getAvatar(item.avatar_url, item.gender_id)"
                       :alt="displayNameFor(item) || 'Profile avatar'"
                     />
-                  </v-avatar>
-                  <span v-if="item.country_emoji" class="avatar-flag">
-                    {{ item.country_emoji }}
-                  </span>
-                  <v-avatar v-if="item.has_email" size="18" class="registered-badge">
-                    <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
-                  </v-avatar>
-                  <v-avatar size="28" color="transparent" class="gender-badge">
-                    <v-icon
-                      size="18"
-                      class="profile-gender-icon"
-                      :style="{ '--profile-gender-color': getGenderHexColor(resolveGenderId(item)) }"
-                      :icon="getAvatarIcon(resolveGenderId(item))"
-                    />
-                  </v-avatar>
-                </div>
+                    <span v-if="item.country_emoji" class="avatar-flag">
+                      {{ item.country_emoji }}
+                    </span>
+                    <span v-if="item.has_email" class="registered-badge" aria-hidden="true">
+                      <i class="mdi mdi-star registered-badge__icon" />
+                    </span>
+                    <span class="gender-badge" aria-hidden="true">
+                      <i
+                        :class="['mdi', getAvatarIcon(resolveGenderId(item)), 'profile-gender-icon']"
+                        :style="{ '--profile-gender-color': getGenderHexColor(resolveGenderId(item)) }"
+                      />
+                    </span>
+                  </div>
 
-                <div class="flex-1">
-                  <div class="profile-link d-flex align-center ga-2">
-                    {{ displayNameFor(item) || item.slug || item.user_id }}
-                    <v-chip
-                      v-if="isAiProfile(item)"
-                      size="x-small"
-                      color="deep-purple-darken-3"
-                      text-color="white"
-                      variant="tonal"
+                  <div class="profiles-table__profile-content">
+                    <button
+                      class="profile-link"
+                      type="button"
+                      @click="openProfileDialog(item)"
                     >
-                      <v-icon size="14" class="mr-1">mdi-robot-outline</v-icon>
-                      {{ $t("components.homeProfiles.aiBadge") }}
-                    </v-chip>
-                  </div>
-                  <div class="profile-tagline text-body-2 text-medium-emphasis mt-1">
-                    <span v-if="taglineFor(item)">{{ taglineFor(item) }}</span>
-                    <span v-else class="tagline-placeholder">&nbsp;</span>
-                  </div>
-                  <div class="profile-meta-grid mt-2">
-                    <div class="meta-cell">
-                      <v-icon size="16" color="blue-grey-darken-1">mdi-cake-variant</v-icon>
-                      <span>{{ item.age ?? "—" }}</span>
-                    </div>
-                    <div class="meta-cell">
-                      <v-icon size="16" class="profile-upvote-icon">mdi-thumb-up</v-icon>
-                      <span>{{ item.upvote_count ?? 0 }}</span>
-                    </div>
+                      <span>{{ displayNameFor(item) || item.slug || item.user_id }}</span>
+                      <span v-if="isAiProfile(item)" class="ai-badge">
+                        <i class="mdi mdi-robot-outline ai-badge__icon" aria-hidden="true" />
+                        {{ $t("components.homeProfiles.aiBadge") }}
+                      </span>
+                    </button>
                   </div>
                 </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
+              </td>
+
+              <td class="profiles-table__cell profiles-table__cell--muted">
+                {{ taglineFor(item) || "—" }}
+              </td>
+
+              <td class="profiles-table__cell profiles-table__cell--numeric">
+                {{ item.age ?? "—" }}
+              </td>
+
+              <td class="profiles-table__cell profiles-table__cell--numeric">
+                <div class="profiles-table__metric">
+                  <ButtonUpvote
+                    :profile="item"
+                    @upvoted="handleUpvoted"
+                  />
+                  <span>{{ item.upvote_count ?? 0 }}</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div v-else class="profiles-empty" role="status">
+          {{ $t("components.homeProfiles.empty") }}
+        </div>
+      </div>
+
+      <div v-else class="profiles-mobile-list">
+        <div v-if="!displayedProfiles.length" class="profiles-empty" role="status">
+          {{ $t("components.homeProfiles.empty") }}
+        </div>
+
+        <article
+          v-for="item in displayedProfiles"
+          :key="item.user_id || item.id"
+          class="profile-card"
+          role="button"
+          tabindex="0"
+          @click="openProfileDialog(item)"
+          @keyup.enter="openProfileDialog(item)"
+          @keyup.space.prevent="openProfileDialog(item)"
+        >
+          <div class="profile-card__body">
+            <div class="avatar-stack avatar-stack--mobile">
+              <img
+                class="profile-avatar profile-avatar--mobile"
+                :src="getAvatar(item.avatar_url, item.gender_id)"
+                :alt="displayNameFor(item) || 'Profile avatar'"
+              />
+              <span v-if="item.country_emoji" class="avatar-flag">
+                {{ item.country_emoji }}
+              </span>
+              <span v-if="item.has_email" class="registered-badge" aria-hidden="true">
+                <i class="mdi mdi-star registered-badge__icon" />
+              </span>
+              <span class="gender-badge" aria-hidden="true">
+                <i
+                  :class="['mdi', getAvatarIcon(resolveGenderId(item)), 'profile-gender-icon']"
+                  :style="{ '--profile-gender-color': getGenderHexColor(resolveGenderId(item)) }"
+                />
+              </span>
+            </div>
+
+            <div class="profile-card__content">
+              <div class="profile-card__title-row">
+                <span class="profile-link profile-link--static">
+                  {{ displayNameFor(item) || item.slug || item.user_id }}
+                </span>
+                <span v-if="isAiProfile(item)" class="ai-badge">
+                  <i class="mdi mdi-robot-outline ai-badge__icon" aria-hidden="true" />
+                  {{ $t("components.homeProfiles.aiBadge") }}
+                </span>
+              </div>
+
+              <div class="profile-tagline">
+                <span v-if="taglineFor(item)">{{ taglineFor(item) }}</span>
+                <span v-else class="tagline-placeholder">&nbsp;</span>
+              </div>
+
+              <div class="profile-meta-grid">
+                <div class="meta-cell">
+                  <i class="mdi mdi-cake-variant profile-meta-icon" aria-hidden="true" />
+                  <span>{{ item.age ?? "—" }}</span>
+                </div>
+                <div class="meta-cell">
+                  <span class="meta-cell__action" @click.stop>
+                    <ButtonUpvote
+                      :profile="item"
+                      @upvoted="handleUpvoted"
+                    />
+                  </span>
+                  <span>{{ item.upvote_count ?? 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
       </div>
 
       <div
@@ -178,7 +176,7 @@
         class="profiles-scroll-trigger"
       />
     </div>
-  </v-container>
+  </div>
 
   <ProfileDialog
     v-model="isProfileDialogOpen"
@@ -190,8 +188,9 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
-import { useDisplay } from "vuetify";
+import { useResponsiveDisplay } from "@/composables/useResponsiveDisplay";
 import ProfileDialog from "@/components/ProfileDialog.vue";
+import ButtonUpvote from "@/components/Button/Upvote.vue";
 import {
   getAvatar,
   getAvatarIcon,
@@ -200,7 +199,13 @@ import {
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const { t, locale } = useI18n();
-const { getRecentProfilesByGender, getProfileTranslationsForUsers } = useDb();
+const {
+  getMostPopularAiProfiles,
+  getMostPopularProfiles,
+  getRecentProfiles,
+  getRecentProfilesByGender,
+  getProfileTranslationsForUsers,
+} = useDb();
 
 const props = defineProps({
   limit: {
@@ -211,12 +216,25 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  source: {
+    type: String,
+    default: "recent",
+  },
+  titleKey: {
+    type: String,
+    default: "",
+  },
+  subtitleKey: {
+    type: String,
+    default: "",
+  },
 });
 
 const emit = defineEmits(["loaded"]);
-const { smAndDown } = useDisplay();
+const { smAndDown } = useResponsiveDisplay();
 const isMounted = ref(false);
 const useTableLayout = computed(() => !isMounted.value || !smAndDown.value);
+
 onMounted(() => {
   isMounted.value = true;
   initObserver();
@@ -231,10 +249,10 @@ const profileDialogUserId = ref(null);
 const profileDialogSlug = ref(null);
 
 const headers = computed(() => [
-  { title: t("components.homeProfiles.columns.profile"), key: "profile", sortable: false },
-  { title: t("components.homeProfiles.columns.tagline"), key: "tagline", sortable: false },
-  { title: t("components.homeProfiles.columns.age"), key: "age", align: "end", width: 72, sortable: false },
-  { title: t("components.homeProfiles.columns.upvotes"), key: "upvotes", align: "end", width: 100 },
+  { title: t("components.homeProfiles.columns.profile"), key: "profile" },
+  { title: t("components.homeProfiles.columns.tagline"), key: "tagline" },
+  { title: t("components.homeProfiles.columns.age"), key: "age", numeric: true },
+  { title: t("components.homeProfiles.columns.upvotes"), key: "upvotes", numeric: true },
 ]);
 
 const isAiProfile = (profile) => {
@@ -276,9 +294,7 @@ const handleUpvoted = ({ userId, count }) => {
   );
 };
 
-const displayedProfiles = computed(() => {
-  return profiles.value.slice(0, loadedCount.value);
-});
+const displayedProfiles = computed(() => profiles.value.slice(0, loadedCount.value));
 
 const hasMore = computed(() => loadedCount.value < profiles.value.length);
 let observer = null;
@@ -293,7 +309,16 @@ const loadMoreProfiles = () => {
 
 const loadProfiles = async () => {
   const genderId = resolveGenderId({ gender: props.gender });
-  const data = await getRecentProfilesByGender(props.limit, genderId ?? null);
+  let data = [];
+  if (props.source === "popular") {
+    data = await getMostPopularProfiles(props.limit);
+  } else if (props.source === "ai") {
+    data = await getMostPopularAiProfiles(props.limit);
+  } else if (props.gender) {
+    data = await getRecentProfilesByGender(props.limit, genderId ?? null);
+  } else {
+    data = await getRecentProfiles(props.limit);
+  }
   let next = Array.isArray(data) ? data : [];
   const userIds = next.map((p) => p?.user_id).filter(Boolean);
   if (userIds.length) {
@@ -318,7 +343,7 @@ const loadProfiles = async () => {
 };
 
 const { data: profilesData, pending } = await useAsyncData(
-  `home-profiles:${props.gender || "all"}:${props.limit}`,
+  `home-profiles:${props.source}:${props.gender || "all"}:${props.limit}`,
   loadProfiles,
   { default: () => [] }
 );
@@ -353,7 +378,7 @@ const initObserver = async () => {
   await nextTick();
   observer = new IntersectionObserver(
     (entries) => {
-      if (entries[0].isIntersecting) {
+      if (entries[0]?.isIntersecting) {
         loadMoreProfiles();
       }
     },
@@ -382,21 +407,99 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.profiles-table :deep(th) {
+.home-profiles {
+  width: 100%;
+}
+
+.home-profiles__intro {
+  margin-bottom: 1rem;
+}
+
+.home-profiles__title {
+  margin: 0;
+  font-size: 1.125rem;
   font-weight: 600;
+  line-height: 1.4;
+  color: rgb(var(--color-foreground));
 }
 
-.profiles-table :deep(td) {
+.home-profiles__subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgb(var(--color-foreground) / 0.68);
+}
+
+.profiles-table-shell {
+  overflow-x: auto;
+  border: 1px solid rgb(var(--color-border) / 0.78);
+  border-radius: 18px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 16px 38px rgb(var(--color-shadow) / 0.08);
+}
+
+.profiles-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.profiles-table__head {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgb(var(--color-border) / 0.72);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  color: rgb(var(--color-foreground) / 0.62);
+  background: rgb(var(--color-surface) / 0.96);
+}
+
+.profiles-table__head--numeric,
+.profiles-table__cell--numeric {
+  text-align: right;
+}
+
+.profiles-table__row {
+  transition: background-color 160ms ease;
+}
+
+.profiles-table__row:hover {
+  background: rgb(var(--color-foreground) / 0.025);
+}
+
+.profiles-table__row:not(:last-child) .profiles-table__cell {
+  border-bottom: 1px solid rgb(var(--color-border) / 0.5);
+}
+
+.profiles-table__cell {
+  padding: 1rem 1.25rem;
   vertical-align: middle;
+  color: rgb(var(--color-foreground));
 }
 
-.profiles-table :deep(.v-table__wrapper) {
-  overflow: visible;
+.profiles-table__cell--muted {
+  color: rgb(var(--color-foreground) / 0.68);
+}
+
+.profiles-table__profile {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.profiles-table__profile-content {
+  min-width: 0;
 }
 
 .profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
   color: inherit;
   font: inherit;
+  font-weight: 600;
   background: transparent;
   border: none;
   padding: 0;
@@ -408,18 +511,71 @@ onUnmounted(() => {
   text-decoration: underline;
 }
 
-.profile-card {
-  border-radius: 14px;
-  cursor: pointer;
+.profile-link--static {
+  cursor: inherit;
 }
 
-.profile-meta {
-  row-gap: 6px;
+.profile-link--static:hover {
+  text-decoration: none;
+}
+
+.profiles-table__metric {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  min-width: 4rem;
+}
+
+.profiles-mobile-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.profile-card {
+  display: block;
   width: 100%;
+  border: 1px solid rgb(var(--color-border) / 0.78);
+  border-radius: 16px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 12px 30px rgb(var(--color-shadow) / 0.08);
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.profile-card:hover,
+.profile-card:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgb(var(--color-primary) / 0.28);
+  box-shadow: 0 16px 36px rgb(var(--color-shadow) / 0.12);
+  outline: none;
+}
+
+.profile-card__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 1rem;
+}
+
+.profile-card__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .profile-tagline {
-  min-height: 20px;
+  min-height: 1.25rem;
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: rgb(var(--color-foreground) / 0.68);
 }
 
 .tagline-placeholder {
@@ -428,20 +584,44 @@ onUnmounted(() => {
 
 .profile-meta-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: 0.85rem;
+  margin-top: 0.8rem;
 }
 
 .meta-cell {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  gap: 0.4rem;
+  font-size: 0.92rem;
+  color: rgb(var(--color-foreground) / 0.78);
+}
+
+.profile-meta-icon {
+  color: rgb(var(--color-foreground) / 0.52);
 }
 
 .avatar-stack {
   position: relative;
   display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.profile-avatar {
+  display: block;
+  border-radius: 999px;
+  object-fit: cover;
+  background: rgb(var(--color-surface-2, var(--color-surface)));
+}
+
+.profile-avatar--desktop {
+  width: 44px;
+  height: 44px;
+}
+
+.profile-avatar--mobile {
+  width: 48px;
+  height: 48px;
 }
 
 .avatar-flag {
@@ -458,44 +638,83 @@ onUnmounted(() => {
   position: absolute;
   right: -8px;
   bottom: -8px;
-  --v-avatar-background: transparent;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.gender-badge :deep(.v-avatar) {
-  --v-avatar-background: transparent;
-  background: transparent !important;
-}
-
-.gender-badge :deep(.v-avatar__underlay) {
-  background: transparent !important;
-}
-
-.gender-badge :deep(.v-avatar__content) {
-  background: transparent !important;
-}
-
-.gender-badge :deep(.v-icon) {
-  background: transparent !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: transparent;
 }
 
 .profile-gender-icon {
-  color: var(--profile-gender-color, #a855f7) !important;
-}
-
-.profile-upvote-icon {
-  color: #d97706 !important;
+  font-size: 1.25rem;
+  color: var(--profile-gender-color, #a855f7);
 }
 
 .registered-badge {
   position: absolute;
   left: -6px;
   top: -6px;
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 6px 12px rgb(var(--color-shadow) / 0.18);
+}
+
+.registered-badge__icon {
+  font-size: 0.75rem;
+  color: #d97706;
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: rgb(76 29 149 / 0.12);
+  color: rgb(76 29 149);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ai-badge__icon {
+  font-size: 0.82rem;
+}
+
+.profile-upvote-icon {
+  color: #d97706;
+}
+
+.profiles-empty {
+  padding: 1rem 1.1rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 16px;
+  background: rgb(var(--color-primary) / 0.06);
+  color: rgb(var(--color-foreground) / 0.78);
 }
 
 .profiles-scroll-trigger {
   height: 1px;
+}
+
+@media (max-width: 959px) {
+  .home-profiles__intro {
+    margin-bottom: 0.9rem;
+  }
+
+  .home-profiles__title {
+    font-size: 1.05rem;
+  }
+
+  .home-profiles__subtitle {
+    font-size: 0.92rem;
+  }
 }
 </style>

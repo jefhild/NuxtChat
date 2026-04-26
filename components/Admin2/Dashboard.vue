@@ -1,632 +1,892 @@
 <template>
-  <v-container fluid class="admin-dashboard">
+  <section class="admin-dashboard">
     <LoadingContainer v-if="isLoading" />
 
-    <v-row v-else>
-      <v-col cols="12">
-        <v-card>
-          <v-card-text class="admin-dashboard__card-text">
-            <div class="admin-controls">
-              <v-text-field
-                v-model="search"
-                label="Search profiles..."
-                variant="outlined"
-                density="compact"
-                clearable
-                hide-details
-                class="admin-search"
-              />
+    <template v-else>
+      <section class="admin-dashboard-card">
+        <div class="admin-dashboard-card__header">
+          <div class="admin-dashboard-card__heading">
+            <i class="mdi mdi-view-dashboard-outline admin-dashboard-card__icon" aria-hidden="true" />
+            <div>
+              <h2 class="admin-dashboard-card__title">Profiles Dashboard</h2>
+              <p class="admin-dashboard-card__subtitle">
+                Search, review, moderate, and simulate profile activity with server-backed admin tools.
+              </p>
+            </div>
+          </div>
 
-              <div class="admin-select-row">
-                <v-select
-                  v-model="filterSelection"
-                  :items="filterOptions"
-                  label="User filter"
-                  variant="outlined"
-                  density="compact"
-                  hide-details
-                  class="admin-filter"
-                />
-              </div>
+          <div class="admin-dashboard-card__meta">
+            <span class="admin-dashboard-pill admin-dashboard-pill--neutral">
+              {{ totalItems }} total
+            </span>
+            <span
+              v-if="markedCount"
+              class="admin-dashboard-pill admin-dashboard-pill--danger"
+            >
+              {{ markedCount }} marked
+            </span>
+          </div>
+        </div>
 
-              <div v-if="markedCount" class="admin-purge-wrap">
-                <v-btn
-                  color="red"
-                  variant="outlined"
-                  class="admin-purge"
-                  @click="purgeDialogOpen = true"
+        <div class="admin-dashboard-card__body">
+          <div
+            v-if="loadErrorMessage"
+            class="admin-dashboard-banner admin-dashboard-banner--error"
+            role="alert"
+          >
+            {{ loadErrorMessage }}
+          </div>
+
+          <div class="admin-dashboard-toolbar">
+            <label class="admin-dashboard-field admin-dashboard-field--search">
+              <span class="admin-dashboard-field__label admin-dashboard-field__label--sr-only">Search</span>
+              <div class="admin-dashboard-input-wrap">
+                <i class="mdi mdi-magnify admin-dashboard-input-wrap__icon" aria-hidden="true" />
+                <input
+                  v-model="search"
+                  type="search"
+                  class="admin-dashboard-field__control admin-dashboard-field__control--with-icon"
+                  placeholder="Search profiles..."
+                  aria-label="Search profiles"
                 >
-                  Purge marked ({{ markedCount }})
-                </v-btn>
+                <button
+                  v-if="search"
+                  type="button"
+                  class="admin-dashboard-clear-button"
+                  aria-label="Clear profile search"
+                  @click="search = ''"
+                >
+                  <i class="mdi mdi-close" aria-hidden="true" />
+                </button>
               </div>
+            </label>
+
+            <label class="admin-dashboard-field admin-dashboard-field--toolbar-select">
+              <span class="admin-dashboard-field__label admin-dashboard-field__label--sr-only">User filter</span>
+              <select
+                v-model="filterSelection"
+                class="admin-dashboard-field__control"
+                aria-label="User filter"
+              >
+                <option
+                  v-for="option in filterOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.title }}
+                </option>
+              </select>
+            </label>
+
+            <label class="admin-dashboard-field admin-dashboard-field--compact admin-dashboard-field--toolbar-select">
+              <span class="admin-dashboard-field__label admin-dashboard-field__label--sr-only">Rows per page</span>
+              <select
+                :value="itemsPerPage"
+                class="admin-dashboard-field__control"
+                aria-label="Rows per page"
+                @change="handleItemsPerPageChange"
+              >
+                <option
+                  v-for="option in itemsPerPageOptions"
+                  :key="option"
+                  :value="option"
+                >
+                  {{ option }}
+                </option>
+              </select>
+            </label>
+
+            <div class="admin-dashboard-toolbar__actions">
+              <div class="admin-dashboard-toolbar__summary">
+                Showing {{ pageStart }}-{{ pageEnd }} of {{ totalItems }}
+              </div>
+              <button
+                v-if="markedCount"
+                type="button"
+                class="admin-dashboard-button admin-dashboard-button--danger"
+                @click="purgeDialogOpen = true"
+              >
+                <i class="mdi mdi-delete-sweep-outline" aria-hidden="true" />
+                Purge marked ({{ markedCount }})
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-dashboard-table-shell">
+            <div v-if="isTableLoading" class="admin-dashboard-loading-state">
+              <LoadingContainer text="Loading profiles..." />
             </div>
 
-            <v-data-table-server
-              v-model:expanded="expanded"
-              :headers="tableHeaders"
-              :items="activeProfiles"
-              :items-length="totalItems"
-              v-model:page="currentPage"
-              v-model:items-per-page="itemsPerPage"
-              :items-per-page-options="[25, 50, 100]"
-              item-value="user_id"
-              fixed-header
-              height="680"
-              class="admin-table"
-              :loading="isTableLoading"
-              hover
-              @update:options="onTableOptions"
+            <div
+              v-else-if="!activeProfiles.length"
+              class="admin-dashboard-banner admin-dashboard-banner--info"
             >
-              <template #item.profile="{ item }">
-                <div class="d-flex align-center ga-3">
-                  <v-badge
-                    v-if="hasPendingReply(item)"
-                    color="red"
-                    dot
-                    location="bottom end"
-                    offset-x="2"
-                    offset-y="2"
-                  >
-                    <div class="admin-avatar-wrap">
-                      <v-avatar size="40">
-                        <v-img
-                          :src="getAvatar(item.avatar_url, item.gender_id)"
-                          :alt="displayNameFor(item) || 'Profile avatar'"
-                        />
-                      </v-avatar>
-                      <span
-                        v-if="getCountryEmoji(item)"
-                        class="admin-flag-icon"
-                        aria-hidden="true"
-                      >
-                        {{ getCountryEmoji(item) }}
-                      </span>
-                      <v-avatar v-if="item.email" size="18" class="admin-registered-badge">
-                        <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
-                      </v-avatar>
-                      <v-icon
-                        v-if="item?.gender_id"
-                        size="20"
-                        class="admin-gender-icon"
-                        :style="{ '--admin-gender-color': getGenderHexColor(item?.gender_id) }"
-                        :class="{
-                          'is-male': item?.gender_id === 1,
-                          'is-female': item?.gender_id === 2,
-                          'is-other': item?.gender_id !== 1 && item?.gender_id !== 2,
-                        }"
-                      >
-                        {{
-                          item?.gender_id === 1
-                            ? "mdi-gender-male"
-                            : item?.gender_id === 2
-                            ? "mdi-gender-female"
-                            : "mdi-gender-non-binary"
-                        }}
-                      </v-icon>
-                    </div>
-                  </v-badge>
-                  <div v-else class="admin-avatar-wrap">
-                    <v-avatar size="40">
-                      <v-img
-                        :src="getAvatar(item.avatar_url, item.gender_id)"
-                        :alt="displayNameFor(item) || 'Profile avatar'"
-                      />
-                    </v-avatar>
-                    <span
-                      v-if="getCountryEmoji(item)"
-                      class="admin-flag-icon"
-                      aria-hidden="true"
-                    >
-                      {{ getCountryEmoji(item) }}
-                    </span>
-                    <v-avatar v-if="item.email" size="18" class="admin-registered-badge">
-                      <v-icon size="12" color="amber-darken-2">mdi-star</v-icon>
-                    </v-avatar>
-                    <v-icon
-                      v-if="item?.gender_id"
-                      size="20"
-                      class="admin-gender-icon"
-                      :style="{ '--admin-gender-color': getGenderHexColor(item?.gender_id) }"
-                      :class="{
-                        'is-male': item?.gender_id === 1,
-                        'is-female': item?.gender_id === 2,
-                        'is-other': item?.gender_id !== 1 && item?.gender_id !== 2,
-                      }"
-                    >
-                      {{
-                        item?.gender_id === 1
-                          ? "mdi-gender-male"
-                          : item?.gender_id === 2
-                          ? "mdi-gender-female"
-                          : "mdi-gender-non-binary"
-                      }}
-                    </v-icon>
-                  </div>
-                  <div class="d-flex flex-column">
-                    <button
-                      type="button"
-                      class="admin-profile-link font-weight-medium"
-                      :aria-expanded="isExpanded(item.user_id) ? 'true' : 'false'"
-                      @click="toggleExpanded(item.user_id)"
-                    >
-                      {{ displayNameFor(item) }}
-                    </button>
-                    <span
-                      class="text-caption text-medium-emphasis admin-profile-subline admin-profile-subline--desktop"
-                    >
-                      {{ formatDate(item.createdAt) }}
-                    </span>
-                    <span
-                      class="text-caption text-medium-emphasis admin-profile-subline admin-profile-subline--mobile"
-                    >
-                      {{ formatDate(item.createdAt) }}
-                    </span>
-                    <span
-                      v-if="item.marked_for_deletion_at"
-                      class="text-caption text-red"
-                    >
-                      Marked for deletion
-                    </span>
-                  </div>
-                </div>
-              </template>
+              No profiles found for the current search and filter.
+            </div>
 
-              <template #item.tagline="{ item }">
-                <span class="text-caption text-medium-emphasis admin-tagline-cell">
-                  {{ taglineFor(item) || "—" }}
-                </span>
-              </template>
+            <div v-else class="admin-dashboard-table-wrap">
+              <table class="admin-dashboard-table">
+                <thead>
+                  <tr>
+                    <th>Profile</th>
+                    <th>Tagline</th>
+                    <th>Status</th>
+                    <th class="admin-dashboard-table__actions-head">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template v-for="item in activeProfiles" :key="item.user_id">
+                    <tr class="admin-dashboard-table__row">
+                      <td>
+                        <div class="admin-dashboard-profile">
+                          <button
+                            type="button"
+                            class="admin-dashboard-avatar-wrap"
+                            :class="{ 'has-pending-reply': hasPendingReply(item) }"
+                            :aria-label="`Toggle details for ${displayNameFor(item)}`"
+                            :aria-expanded="isExpanded(item.user_id) ? 'true' : 'false'"
+                            @click="toggleExpanded(item.user_id)"
+                          >
+                            <span class="admin-dashboard-avatar">
+                              <img
+                                :src="getAvatar(item.avatar_url, item.gender_id)"
+                                :alt="displayNameFor(item) || 'Profile avatar'"
+                                class="admin-dashboard-avatar__image"
+                              >
+                            </span>
+                            <span
+                              v-if="getCountryEmoji(item)"
+                              class="admin-dashboard-flag-icon"
+                              aria-hidden="true"
+                            >
+                              {{ getCountryEmoji(item) }}
+                            </span>
+                            <span
+                              v-if="item.email"
+                              class="admin-dashboard-registered-badge"
+                              aria-hidden="true"
+                            >
+                              <i class="mdi mdi-star" />
+                            </span>
+                            <i
+                              v-if="item?.gender_id"
+                              class="mdi admin-dashboard-gender-icon"
+                              :class="[
+                                item?.gender_id === 1
+                                  ? 'mdi-gender-male is-male'
+                                  : item?.gender_id === 2
+                                  ? 'mdi-gender-female is-female'
+                                  : 'mdi-gender-non-binary is-other',
+                              ]"
+                              :style="{ '--admin-gender-color': getGenderHexColor(item?.gender_id) }"
+                              aria-hidden="true"
+                            />
+                          </button>
 
-              <template #item.actions="{ item }">
-                <div class="d-flex align-center ga-1 admin-actions">
-                  <v-tooltip text="Mock chat">
-                    <template #activator="{ props }">
-                      <v-btn
-                        v-bind="props"
-                        icon="mdi-message-text-fast"
-                        size="small"
-                        variant="text"
-                        color="deep-purple"
-                        @click="openMockChatDialog(item)"
-                      />
-                    </template>
-                  </v-tooltip>
-                  <v-tooltip text="View profile">
-                    <template #activator="{ props }">
-                      <v-btn
-                        v-bind="props"
-                        icon="mdi-account-eye"
-                        size="small"
-                        variant="text"
-                        color="primary"
-                        @click="goToProfile(item)"
-                      />
-                    </template>
-                  </v-tooltip>
-                  <v-tooltip text="Edit profile">
-                    <template #activator="{ props }">
-                      <v-btn
-                        v-bind="props"
-                        icon="mdi-account-edit"
-                        size="small"
-                        variant="text"
-                        color="blue"
-                        @click="editProfile(item)"
-                      />
-                    </template>
-                  </v-tooltip>
-                  <v-tooltip
-                    v-if="!item.marked_for_deletion_at"
-                    text="Delete profile"
-                  >
-                    <template #activator="{ props }">
-                      <v-btn
-                        v-bind="props"
-                        icon="mdi-delete"
-                        size="small"
-                        variant="text"
-                        color="red"
-                        @click="markForDeletion(item)"
-                      />
-                    </template>
-                  </v-tooltip>
-                  <v-tooltip v-else text="Undo deletion">
-                    <template #activator="{ props }">
-                      <v-btn
-                        v-bind="props"
-                        icon="mdi-undo"
-                        size="small"
-                        variant="text"
-                        color="green"
-                        @click="unmarkDeletion(item)"
-                      />
-                    </template>
-                  </v-tooltip>
-                </div>
-              </template>
+                           <div class="admin-dashboard-profile__content">
+                             <button
+                               type="button"
+                              class="admin-dashboard-profile-link"
+                              :aria-expanded="isExpanded(item.user_id) ? 'true' : 'false'"
+                              @click="toggleExpanded(item.user_id)"
+                             >
+                               {{ displayNameFor(item) }}
+                             </button>
+                             <div class="admin-dashboard-profile__meta">
+                               <span>{{ formatDate(item.createdAt) }}</span>
+                             </div>
+                           </div>
+                         </div>
+                      </td>
 
-              <template #expanded-row="{ columns, item }">
-                <tr>
-                  <td :colspan="columns.length">
-                    <v-card variant="tonal" class="ma-3 pa-4">
-                      <div v-if="isActivityLoading(item.user_id)">
-                        <v-progress-linear indeterminate color="primary" />
-                      </div>
-                      <div v-else class="d-flex flex-column ga-4">
-                        <div class="admin-detail-grid">
-                          <div class="admin-detail-item">
-                            <div class="text-subtitle-2 text-medium-emphasis">
-                              User ID
-                            </div>
-                            <div class="text-body-2 font-weight-medium">
-                              {{ item.user_id || "—" }}
-                            </div>
-                          </div>
-                          <div class="admin-detail-item">
-                            <div class="text-subtitle-2 text-medium-emphasis">
-                              Country
-                            </div>
-                            <div class="text-body-2 font-weight-medium">
-                              {{ getCountryLabel(item) }}
-                              <span v-if="getCountryEmoji(item)">
-                                {{ getCountryEmoji(item) }}
+                       <td>
+                         <div class="admin-dashboard-tagline" :title="taglineFor(item) || ''">
+                           {{ taglineFor(item) || "—" }}
+                         </div>
+                       </td>
+
+                        <td>
+                          <div class="admin-dashboard-status-stack">
+                            <div v-if="primaryStatusPills(item).length" class="admin-dashboard-status-row">
+                              <span
+                                v-for="pill in primaryStatusPills(item)"
+                                :key="`${item.user_id}-${pill.label}`"
+                                class="admin-dashboard-pill"
+                                :class="`admin-dashboard-pill--${pill.tone}`"
+                              >
+                                {{ pill.label }}
                               </span>
                             </div>
-                          </div>
-                          <div class="admin-detail-item">
-                            <div class="text-subtitle-2 text-medium-emphasis">
-                              Joined
-                            </div>
-                            <div class="text-body-2 font-weight-medium">
-                              {{ formatDate(item.createdAt) }}
-                            </div>
-                          </div>
-                          <div class="admin-detail-item">
-                            <div class="text-subtitle-2 text-medium-emphasis">
-                              Email
-                            </div>
-                            <div class="text-body-2 font-weight-medium admin-ellipsis">
-                              {{ item.email || "—" }}
-                            </div>
-                          </div>
-                        </div>
-                        <div class="d-flex flex-column flex-md-row ga-6">
-                          <div class="flex-1">
-                            <div class="text-subtitle-2 text-medium-emphasis">
-                              Chat (messages)
-                            </div>
-                            <div class="text-h6">
-                              <v-btn
-                                variant="text"
-                                color="primary"
-                                size="small"
-                                class="pa-0"
-                                @click="openChatMessages(item.user_id)"
-                              >
-                                {{ getActivity(item.user_id).chatCount || 0 }}
-                              </v-btn>
-                            </div>
-                            <div class="text-caption text-medium-emphasis">
-                              Last message:
-                              {{
-                                formatDateTime(
-                                  getActivity(item.user_id).chatLastAt
-                                )
-                              }}
-                            </div>
-                          </div>
-                          <div class="flex-1">
-                            <div class="text-subtitle-2 text-medium-emphasis">
-                              AI limit hits
-                            </div>
-                            <div class="text-h6">
-                              {{ getActivity(item.user_id).aiLimitHitsCount || 0 }}
-                            </div>
-                            <div class="text-caption text-medium-emphasis">
-                              Last hit:
-                              {{
-                                formatDateTime(
-                                  getActivity(item.user_id).aiLimitLastAt
-                                )
-                              }}
-                            </div>
-                          </div>
-                          <div v-if="item.is_ai" class="flex-1">
-                            <div class="text-subtitle-2 text-medium-emphasis">
-                              Expertise
-                            </div>
-                            <div class="text-h6">
-                              {{ getAiCategoryLabel(item) }}
-                            </div>
-                            <div class="text-caption text-medium-emphasis">
-                              Category setting
-                            </div>
-                          </div>
-                        </div>
-
-                        <div v-if="hasPendingPhotos(item)" class="d-flex align-center ga-2">
-                          <div class="text-subtitle-2 text-medium-emphasis">
-                            Photo library
-                          </div>
-                          <v-btn
-                            size="small"
-                            variant="outlined"
-                            color="primary"
-                            :to="photoReviewLink"
-                          >
-                            Review pending photos
-                          </v-btn>
-                        </div>
-
-                        <div class="d-flex flex-column ga-3">
-                          <div class="text-subtitle-2 text-medium-emphasis">
-                            Simulated user controls
-                          </div>
-                          <div class="d-flex flex-column flex-md-row align-start ga-4">
-                            <v-switch
-                              v-model="getAdminFlags(item).force_online"
-                              label="Force online"
-                              color="primary"
-                              hide-details
-                              @update:model-value="onAdminFlagToggle(item)"
-                            />
-                            <v-switch
-                              v-model="getAdminFlags(item).is_simulated"
-                              label="Simulated user"
-                              color="primary"
-                              hide-details
-                              @update:model-value="onAdminFlagToggle(item)"
-                            />
-                            <span
-                              v-if="adminFlagsStatus(item.user_id)"
-                              class="text-caption"
-                            >
-                              {{ adminFlagsStatus(item.user_id) }}
+                            <span class="admin-dashboard-status-subline">
+                              {{ getCountryLabel(item) }}
+                              <template v-if="item.city || item.state">
+                                • {{ [item.city, item.state].filter(Boolean).join(", ") }}
+                              </template>
                             </span>
                           </div>
-                        </div>
+                        </td>
 
-                        <div>
-                          <div class="text-subtitle-2 text-medium-emphasis mb-2">
-                            Recent AI limit notices
-                          </div>
-                          <div
-                            v-if="getActivity(item.user_id).aiLimitHitsSample?.length"
-                            class="d-flex flex-column ga-2"
-                          >
-                            <div
-                              v-for="hit in getActivity(item.user_id).aiLimitHitsSample.slice(0, 5)"
-                              :key="hit.id"
-                              class="text-caption text-medium-emphasis"
+                      <td>
+                        <div class="admin-dashboard-actions">
+                            <button
+                              type="button"
+                              class="admin-dashboard-icon-button admin-dashboard-icon-button--ghost"
+                              :title="isExpanded(item.user_id) ? 'Collapse details' : 'Expand details'"
+                              :aria-label="isExpanded(item.user_id) ? 'Collapse details' : 'Expand details'"
+                              @click="toggleExpanded(item.user_id)"
                             >
-                              <strong>{{ formatDateTime(hit.created_at) }}</strong>
-                              -
-                              {{ hit.content }}
+                              <i
+                                class="mdi"
+                                :class="isExpanded(item.user_id) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                                aria-hidden="true"
+                              />
+                            </button>
+                            <button
+                              type="button"
+                              class="admin-dashboard-icon-button admin-dashboard-icon-button--accent"
+                              title="Mock chat"
+                              aria-label="Mock chat"
+                            @click="openMockChatDialog(item)"
+                          >
+                            <i class="mdi mdi-message-text-fast" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            class="admin-dashboard-icon-button admin-dashboard-icon-button--primary"
+                            title="View profile"
+                            aria-label="View profile"
+                            @click="goToProfile(item)"
+                          >
+                            <i class="mdi mdi-account-eye" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            class="admin-dashboard-icon-button admin-dashboard-icon-button--info"
+                            title="Edit profile"
+                            aria-label="Edit profile"
+                            @click="editProfile(item)"
+                          >
+                            <i class="mdi mdi-account-edit" aria-hidden="true" />
+                          </button>
+                          <button
+                            v-if="!item.marked_for_deletion_at"
+                            type="button"
+                            class="admin-dashboard-icon-button admin-dashboard-icon-button--danger"
+                            title="Delete profile"
+                            aria-label="Delete profile"
+                            @click="markForDeletion(item)"
+                          >
+                            <i class="mdi mdi-delete" aria-hidden="true" />
+                          </button>
+                          <button
+                            v-else
+                            type="button"
+                            class="admin-dashboard-icon-button admin-dashboard-icon-button--success"
+                            title="Undo deletion"
+                            aria-label="Undo deletion"
+                            @click="unmarkDeletion(item)"
+                          >
+                            <i class="mdi mdi-undo" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr
+                      v-if="isExpanded(item.user_id)"
+                      class="admin-dashboard-table__expanded-row"
+                    >
+                      <td colspan="4">
+                        <section class="admin-dashboard-expanded">
+                          <div
+                            v-if="isActivityLoading(item.user_id)"
+                            class="admin-dashboard-expanded__loading"
+                          >
+                            <span class="admin-dashboard-progress-bar" aria-hidden="true" />
+                          </div>
+
+                          <div v-else class="admin-dashboard-expanded__content">
+                            <div class="admin-dashboard-detail-grid">
+                              <div class="admin-dashboard-detail-item">
+                                <span class="admin-dashboard-detail-item__label">User ID</span>
+                                <span class="admin-dashboard-detail-item__value">
+                                  {{ item.user_id || "—" }}
+                                </span>
+                              </div>
+                              <div class="admin-dashboard-detail-item">
+                                <span class="admin-dashboard-detail-item__label">Auth</span>
+                                <span class="admin-dashboard-detail-item__value">
+                                  {{ authStateLabel(item) }}
+                                </span>
+                              </div>
+                              <div class="admin-dashboard-detail-item">
+                                <span class="admin-dashboard-detail-item__label">Location</span>
+                                <span class="admin-dashboard-detail-item__value">
+                                  {{ getCountryLabel(item) }}
+                                  <template v-if="item.city || item.state">
+                                    • {{ [item.city, item.state].filter(Boolean).join(", ") }}
+                                  </template>
+                                  <span v-if="getCountryEmoji(item)">
+                                    {{ getCountryEmoji(item) }}
+                                  </span>
+                                </span>
+                              </div>
+                              <div class="admin-dashboard-detail-item">
+                                <span class="admin-dashboard-detail-item__label">Joined</span>
+                                <span class="admin-dashboard-detail-item__value">
+                                  {{ formatDate(item.createdAt) }}
+                                </span>
+                              </div>
+                              <div class="admin-dashboard-detail-item">
+                                <span class="admin-dashboard-detail-item__label">Email</span>
+                                <span class="admin-dashboard-detail-item__value admin-dashboard-ellipsis">
+                                  {{ item.email || "—" }}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div class="admin-dashboard-stat-grid">
+                              <div class="admin-dashboard-stat-card">
+                                <span class="admin-dashboard-detail-item__label">Chat (messages)</span>
+                                <button
+                                  type="button"
+                                  class="admin-dashboard-stat-card__value admin-dashboard-stat-card__value--link"
+                                  @click="openChatMessages(item.user_id)"
+                                >
+                                  {{ getActivity(item.user_id).chatCount || 0 }}
+                                </button>
+                                <span class="admin-dashboard-status-subline">
+                                  Last message:
+                                  {{ formatDateTime(getActivity(item.user_id).chatLastAt) }}
+                                </span>
+                              </div>
+
+                              <div class="admin-dashboard-stat-card">
+                                <span class="admin-dashboard-detail-item__label">AI limit hits</span>
+                                <span class="admin-dashboard-stat-card__value">
+                                  {{ getActivity(item.user_id).aiLimitHitsCount || 0 }}
+                                </span>
+                                <span class="admin-dashboard-status-subline">
+                                  Last hit:
+                                  {{ formatDateTime(getActivity(item.user_id).aiLimitLastAt) }}
+                                </span>
+                              </div>
+
+                              <div
+                                v-if="item.is_ai"
+                                class="admin-dashboard-stat-card"
+                              >
+                                <span class="admin-dashboard-detail-item__label">Expertise</span>
+                                <span class="admin-dashboard-stat-card__value">
+                                  {{ getAiCategoryLabel(item) }}
+                                </span>
+                                <span class="admin-dashboard-status-subline">
+                                  Category setting
+                                </span>
+                              </div>
+                            </div>
+
+                            <div
+                              v-if="hasPendingPhotos(item)"
+                              class="admin-dashboard-inline-card"
+                            >
+                              <div>
+                                <div class="admin-dashboard-detail-item__label">Photo library</div>
+                                <div class="admin-dashboard-inline-card__copy">
+                                  Pending photos are waiting for approval.
+                                </div>
+                              </div>
+                              <NuxtLink
+                                :to="photoReviewLink"
+                                class="admin-dashboard-button admin-dashboard-button--ghost"
+                              >
+                                Review pending photos
+                              </NuxtLink>
+                            </div>
+
+                            <div class="admin-dashboard-inline-card admin-dashboard-inline-card--stack">
+                              <div>
+                                <div class="admin-dashboard-detail-item__label">
+                                  Simulated user controls
+                                </div>
+                              </div>
+                              <div class="admin-dashboard-toggle-row">
+                                <label class="admin-dashboard-toggle">
+                                  <input
+                                    v-model="getAdminFlags(item).force_online"
+                                    type="checkbox"
+                                    :disabled="isAdminFlagsSaving(item.user_id)"
+                                    @change="onAdminFlagToggle(item)"
+                                  >
+                                  <span class="admin-dashboard-toggle__track" aria-hidden="true" />
+                                  <span class="admin-dashboard-toggle__label">Force online</span>
+                                </label>
+                                <label class="admin-dashboard-toggle">
+                                  <input
+                                    v-model="getAdminFlags(item).is_simulated"
+                                    type="checkbox"
+                                    :disabled="isAdminFlagsSaving(item.user_id)"
+                                    @change="onAdminFlagToggle(item)"
+                                  >
+                                  <span class="admin-dashboard-toggle__track" aria-hidden="true" />
+                                  <span class="admin-dashboard-toggle__label">Simulated user</span>
+                                </label>
+                                <span
+                                  v-if="adminFlagsStatus(item.user_id)"
+                                  class="admin-dashboard-inline-status"
+                                >
+                                  {{ adminFlagsStatus(item.user_id) }}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div class="admin-dashboard-inline-card admin-dashboard-inline-card--stack">
+                              <div class="admin-dashboard-detail-item__label">
+                                Recent AI limit notices
+                              </div>
+                              <div
+                                v-if="getActivity(item.user_id).aiLimitHitsSample?.length"
+                                class="admin-dashboard-hit-list"
+                              >
+                                <div
+                                  v-for="hit in getActivity(item.user_id).aiLimitHitsSample.slice(0, 5)"
+                                  :key="hit.id"
+                                  class="admin-dashboard-hit-item"
+                                >
+                                  <strong>{{ formatDateTime(hit.created_at) }}</strong>
+                                  <span>{{ hit.content }}</span>
+                                </div>
+                              </div>
+                              <div v-else class="admin-dashboard-status-subline">
+                                No AI limit notices yet.
+                              </div>
                             </div>
                           </div>
-                          <div v-else class="text-caption text-medium-emphasis">
-                            No AI limit notices yet.
-                          </div>
-                        </div>
-                      </div>
-                    </v-card>
-                  </td>
-                </tr>
-              </template>
-            </v-data-table-server>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <v-dialog v-model="purgeDialogOpen" max-width="460px">
-      <v-card>
-        <v-card-title class="headline">Purge marked profiles</v-card-title>
-        <v-card-text>
-          This permanently deletes all profiles marked for deletion, including
-          their Supabase auth users. This cannot be undone.
-          <div v-if="purgeError" class="text-caption text-error mt-2">
-            {{ purgeError }}
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="grey"
-            variant="text"
-            @click="purgeDialogOpen = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="red"
-            variant="text"
-            :loading="purgeBusy"
-            @click="purgeMarkedProfiles"
-          >
-            Purge
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog v-model="mockDialogOpen" max-width="720px" persistent scrollable>
-      <v-card class="admin-mock-dialog">
-        <v-card-title class="headline">Mock chat script</v-card-title>
-        <v-card-text>
-          <div class="d-flex flex-column ga-4">
-            <div class="d-flex flex-column ga-1">
-              <div class="text-caption text-medium-emphasis">User A (impersonated)</div>
-              <div class="text-body-2 font-weight-medium">
-                {{ mockUserA?.displayname || mockUserA?.slug || mockUserA?.user_id || "—" }}
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                {{ mockUserA?.user_id || "" }}
-              </div>
-            </div>
-
-            <v-select
-              v-model="mockUserB"
-              :items="mockUserOptions"
-              label="User B"
-              variant="outlined"
-              density="compact"
-              item-title="label"
-              item-value="value"
-              clearable
-              hide-details
-            />
-
-            <v-file-input
-              label="Upload JSON script"
-              variant="outlined"
-              density="compact"
-              accept=".json,application/json"
-              show-size
-              @update:model-value="onMockFileSelected"
-            />
-
-            <v-textarea
-              v-model="mockJsonText"
-              label="JSON script"
-              variant="outlined"
-              rows="8"
-              auto-grow
-              placeholder='{"userB":"...","delayMs":1200,"messages":[{"from":"A","text":"hi"}]}'
-            />
-
-            <div class="d-flex flex-column flex-md-row ga-4">
-              <v-text-field
-                v-model.number="mockStartDelayMs"
-                label="Start delay (ms)"
-                type="number"
-                variant="outlined"
-                density="compact"
-              />
-              <v-text-field
-                v-model.number="mockDelayMs"
-                label="Delay between messages (ms)"
-                type="number"
-                variant="outlined"
-                density="compact"
-              />
-              <v-switch
-                v-model="mockOpenInNewTab"
-                label="Open chat in new tab"
-                inset
-              />
-            </div>
-
-            <div v-if="mockError" class="text-caption text-error">
-              {{ mockError }}
-            </div>
-
-            <div v-if="mockRunning" class="text-caption text-medium-emphasis">
-              Sending {{ mockProgress.done }} / {{ mockProgress.total }}…
+                        </section>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
             </div>
           </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="text"
-            color="grey"
-            :disabled="mockRunning"
-            @click="closeMockChatDialog"
-          >
-            Close
-          </v-btn>
-          <v-btn
-            variant="text"
-            color="red"
-            v-if="mockRunning"
-            @click="cancelMockChat"
-          >
-            Stop
-          </v-btn>
-          <v-btn
-            variant="text"
-            color="orange"
-            :disabled="mockRunning || !mockInsertedIds.length"
-            @click="deleteLastMockRun"
-          >
-            Delete last run
-          </v-btn>
-          <v-btn
-            variant="text"
-            color="primary"
-            :loading="mockRunning"
-            @click="runMockChat"
-          >
-            Start mock chat
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
 
-    <v-dialog v-model="chatDialogOpen" max-width="980px">
-      <v-card>
-        <v-card-title class="headline">Chat messages</v-card-title>
-        <v-card-text>
-          <v-data-table
-            :headers="chatMessageHeaders"
-            :items="chatMessages"
-            :loading="chatMessagesLoading"
-            item-value="id"
-            class="admin-table"
-            :items-per-page="-1"
-            hide-default-footer
+          <div class="admin-dashboard-pagination">
+            <div class="admin-dashboard-pagination__summary">
+              Showing {{ pageStart }}-{{ pageEnd }} of {{ totalItems }}
+            </div>
+            <div class="admin-dashboard-pagination__controls">
+              <button
+                type="button"
+                class="admin-dashboard-button admin-dashboard-button--ghost"
+                :disabled="currentPage <= 1 || isTableLoading"
+                @click="goToPreviousPage"
+              >
+                Previous
+              </button>
+              <span class="admin-dashboard-pagination__page">
+                Page {{ currentPage }} of {{ totalPages }}
+              </span>
+              <button
+                type="button"
+                class="admin-dashboard-button admin-dashboard-button--ghost"
+                :disabled="currentPage >= totalPages || isTableLoading"
+                @click="goToNextPage"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Teleport to="body">
+        <div class="admin-dashboard-toast-layer" aria-live="polite" aria-atomic="true">
+          <Transition name="admin-dashboard-toast-fade">
+            <div
+              v-if="actionNotice.message"
+              class="admin-dashboard-toast"
+              :class="`admin-dashboard-toast--${actionNotice.type}`"
+              role="status"
+            >
+              <i
+                class="mdi"
+                :class="toastIcon(actionNotice.type)"
+                aria-hidden="true"
+              />
+              <span>{{ actionNotice.message }}</span>
+            </div>
+          </Transition>
+        </div>
+      </Teleport>
+
+      <Teleport to="body">
+        <Transition name="admin-dashboard-modal-fade">
+          <div
+            v-if="purgeDialogOpen"
+            class="admin-dashboard-modal-layer"
+            role="presentation"
           >
-            <template #item.content="{ item }">
-              <span class="text-body-2">{{ item.content || "—" }}</span>
-            </template>
-            <template #item.receiver="{ item }">
-              <span class="text-body-2">
-                {{ item.receiver?.displayname || item.receiver_id || "—" }}
-              </span>
-            </template>
-            <template #item.created_at="{ item }">
-              <span class="text-body-2">
-                {{ formatDateTime(item.created_at) }}
-              </span>
-            </template>
-            <template #item.actions="{ item }">
-              <v-tooltip text="Delete message">
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon="mdi-delete"
-                    size="small"
-                    variant="text"
-                    color="red"
-                    :loading="deletingMessageIds.includes(item.id)"
-                    @click="deleteChatMessage(item)"
+            <button
+              type="button"
+              class="admin-dashboard-modal-backdrop"
+              aria-label="Close purge dialog"
+              @click="closePurgeDialog"
+            />
+            <div
+              class="admin-dashboard-modal admin-dashboard-modal--compact"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="admin-dashboard-purge-title"
+            >
+              <div class="admin-dashboard-modal__card">
+                <div class="admin-dashboard-modal__header">
+                  <h2 id="admin-dashboard-purge-title" class="admin-dashboard-modal__title">
+                    Purge marked profiles
+                  </h2>
+                  <button
+                    type="button"
+                    class="admin-dashboard-icon-button"
+                    aria-label="Close purge dialog"
+                    @click="closePurgeDialog"
+                  >
+                    <i class="mdi mdi-close" aria-hidden="true" />
+                  </button>
+                </div>
+                <div class="admin-dashboard-modal__body">
+                  <p>
+                    This permanently deletes all profiles marked for deletion, including
+                    their Supabase auth users. This cannot be undone.
+                  </p>
+                  <div
+                    v-if="purgeError"
+                    class="admin-dashboard-banner admin-dashboard-banner--error"
+                    role="alert"
+                  >
+                    {{ purgeError }}
+                  </div>
+                </div>
+                <div class="admin-dashboard-modal__actions">
+                  <button
+                    type="button"
+                    class="admin-dashboard-button"
+                    :disabled="purgeBusy"
+                    @click="closePurgeDialog"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-dashboard-button admin-dashboard-button--danger"
+                    :disabled="purgeBusy"
+                    @click="purgeMarkedProfiles"
+                  >
+                    <span
+                      v-if="purgeBusy"
+                      class="admin-dashboard-button__spinner"
+                      aria-hidden="true"
+                    />
+                    Purge
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
+      <Teleport to="body">
+        <Transition name="admin-dashboard-modal-fade">
+          <div
+            v-if="mockDialogOpen"
+            class="admin-dashboard-modal-layer"
+            role="presentation"
+          >
+            <button
+              type="button"
+              class="admin-dashboard-modal-backdrop"
+              aria-label="Close mock chat dialog"
+              :disabled="mockRunning"
+              @click="closeMockChatDialog"
+            />
+            <div
+              class="admin-dashboard-modal admin-dashboard-modal--wide"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="admin-dashboard-mock-title"
+            >
+              <div class="admin-dashboard-modal__card admin-dashboard-modal__card--scrollable">
+                <div class="admin-dashboard-modal__header">
+                  <h2 id="admin-dashboard-mock-title" class="admin-dashboard-modal__title">
+                    Mock chat script
+                  </h2>
+                  <button
+                    type="button"
+                    class="admin-dashboard-icon-button"
+                    aria-label="Close mock chat dialog"
+                    :disabled="mockRunning"
+                    @click="closeMockChatDialog"
+                  >
+                    <i class="mdi mdi-close" aria-hidden="true" />
+                  </button>
+                </div>
+                <div class="admin-dashboard-modal__body admin-dashboard-modal__body--stack">
+                  <div class="admin-dashboard-dialog-copy">
+                    <div class="admin-dashboard-detail-item__label">User A (impersonated)</div>
+                    <div class="admin-dashboard-detail-item__value">
+                      {{ mockUserA ? displayNameFor(mockUserA) : "—" }}
+                    </div>
+                    <div class="admin-dashboard-status-subline">
+                      {{ mockUserA?.user_id || "" }}
+                    </div>
+                  </div>
+
+                  <label class="admin-dashboard-field">
+                    <span class="admin-dashboard-field__label">User B</span>
+                    <select
+                      v-model="mockUserB"
+                      class="admin-dashboard-field__control"
+                    >
+                      <option value="">Select a user</option>
+                      <option
+                        v-for="option in mockUserOptions"
+                        :key="option.value"
+                        :value="option.value"
+                      >
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="admin-dashboard-field">
+                    <span class="admin-dashboard-field__label">Upload JSON script</span>
+                    <input
+                      type="file"
+                      accept=".json,application/json"
+                      class="admin-dashboard-file-input"
+                      @change="onMockFileSelected"
+                    >
+                  </label>
+
+                  <label class="admin-dashboard-field">
+                    <span class="admin-dashboard-field__label">JSON script</span>
+                    <textarea
+                      v-model="mockJsonText"
+                      rows="8"
+                      class="admin-dashboard-field__control admin-dashboard-field__control--textarea"
+                      placeholder='{"userB":"...","delayMs":1200,"messages":[{"from":"A","text":"hi"}]}'
+                    />
+                  </label>
+
+                  <div class="admin-dashboard-modal__grid">
+                    <label class="admin-dashboard-field">
+                      <span class="admin-dashboard-field__label">Start delay (ms)</span>
+                      <input
+                        v-model.number="mockStartDelayMs"
+                        type="number"
+                        class="admin-dashboard-field__control"
+                      >
+                    </label>
+                    <label class="admin-dashboard-field">
+                      <span class="admin-dashboard-field__label">Delay between messages (ms)</span>
+                      <input
+                        v-model.number="mockDelayMs"
+                        type="number"
+                        class="admin-dashboard-field__control"
+                      >
+                    </label>
+                  </div>
+
+                  <label class="admin-dashboard-toggle admin-dashboard-toggle--standalone">
+                    <input v-model="mockOpenInNewTab" type="checkbox">
+                    <span class="admin-dashboard-toggle__track" aria-hidden="true" />
+                    <span class="admin-dashboard-toggle__label">Open chat in new tab</span>
+                  </label>
+
+                  <div
+                    v-if="mockError"
+                    class="admin-dashboard-banner admin-dashboard-banner--error"
+                    role="alert"
+                  >
+                    {{ mockError }}
+                  </div>
+
+                  <div
+                    v-if="mockRunning"
+                    class="admin-dashboard-banner admin-dashboard-banner--info"
+                  >
+                    Sending {{ mockProgress.done }} / {{ mockProgress.total }}…
+                  </div>
+                </div>
+                <div class="admin-dashboard-modal__actions">
+                  <button
+                    type="button"
+                    class="admin-dashboard-button"
+                    :disabled="mockRunning"
+                    @click="closeMockChatDialog"
+                  >
+                    Close
+                  </button>
+                  <button
+                    v-if="mockRunning"
+                    type="button"
+                    class="admin-dashboard-button admin-dashboard-button--danger"
+                    @click="cancelMockChat"
+                  >
+                    Stop
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-dashboard-button admin-dashboard-button--warning"
+                    :disabled="mockRunning || !mockInsertedIds.length"
+                    @click="deleteLastMockRun"
+                  >
+                    Delete last run
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-dashboard-button admin-dashboard-button--primary"
+                    :disabled="mockRunning"
+                    @click="runMockChat"
+                  >
+                    <span
+                      v-if="mockRunning"
+                      class="admin-dashboard-button__spinner"
+                      aria-hidden="true"
+                    />
+                    Start mock chat
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
+      <Teleport to="body">
+        <Transition name="admin-dashboard-modal-fade">
+          <div
+            v-if="chatDialogOpen"
+            class="admin-dashboard-modal-layer"
+            role="presentation"
+          >
+            <button
+              type="button"
+              class="admin-dashboard-modal-backdrop"
+              aria-label="Close chat messages dialog"
+              @click="closeChatDialog"
+            />
+            <div
+              class="admin-dashboard-modal admin-dashboard-modal--xl"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="admin-dashboard-chat-title"
+            >
+              <div class="admin-dashboard-modal__card admin-dashboard-modal__card--scrollable">
+                <div class="admin-dashboard-modal__header">
+                  <h2 id="admin-dashboard-chat-title" class="admin-dashboard-modal__title">
+                    Chat messages
+                  </h2>
+                  <button
+                    type="button"
+                    class="admin-dashboard-icon-button"
+                    aria-label="Close chat messages dialog"
+                    @click="closeChatDialog"
+                  >
+                    <i class="mdi mdi-close" aria-hidden="true" />
+                  </button>
+                </div>
+                <div class="admin-dashboard-modal__body">
+                  <div
+                    v-if="chatMessagesError"
+                    class="admin-dashboard-banner admin-dashboard-banner--error"
+                    role="alert"
+                  >
+                    {{ chatMessagesError }}
+                  </div>
+
+                  <LoadingContainer
+                    v-if="chatMessagesLoading"
+                    text="Loading chat messages..."
                   />
-                </template>
-              </v-tooltip>
-            </template>
-          </v-data-table>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
 
-  </v-container>
+                  <div
+                    v-else-if="!chatMessages.length"
+                    class="admin-dashboard-banner admin-dashboard-banner--info"
+                  >
+                    No chat messages found.
+                  </div>
+
+                  <div v-else class="admin-dashboard-table-wrap admin-dashboard-table-wrap--dialog">
+                    <table class="admin-dashboard-table admin-dashboard-table--dialog">
+                      <thead>
+                        <tr>
+                          <th>Created</th>
+                          <th>To</th>
+                          <th>Message</th>
+                          <th class="admin-dashboard-table__actions-head">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="item in chatMessages" :key="item.id">
+                          <td>{{ formatDateTime(item.created_at) }}</td>
+                          <td>{{ item.receiver?.displayname || item.receiver_id || "—" }}</td>
+                          <td class="admin-dashboard-chat-message">
+                            {{ item.content || "—" }}
+                          </td>
+                          <td>
+                            <div class="admin-dashboard-actions">
+                              <button
+                                type="button"
+                                class="admin-dashboard-icon-button admin-dashboard-icon-button--danger"
+                                title="Delete message"
+                                aria-label="Delete message"
+                                :disabled="deletingMessageIds.includes(item.id)"
+                                @click="deleteChatMessage(item)"
+                              >
+                                <span
+                                  v-if="deletingMessageIds.includes(item.id)"
+                                  class="admin-dashboard-button__spinner"
+                                  aria-hidden="true"
+                                />
+                                <i
+                                  v-else
+                                  class="mdi mdi-delete"
+                                  aria-hidden="true"
+                                />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+    </template>
+  </section>
 </template>
 
 <script setup>
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { getAvatar, getGenderHexColor, getGenderPath } from "@/composables/useUserUtils";
 import { useI18n } from "vue-i18n";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
-import { useDisplay } from "vuetify";
 import { useAuthStore } from "@/stores/authStore1";
 
 const isLoading = ref(true);
 const isTableLoading = ref(false);
+const loadErrorMessage = ref("");
 const serverProfiles = ref([]);
 const allProfilesLight = ref([]);
 const totalItems = ref(0);
 const currentPage = ref(1);
 const itemsPerPage = ref(50);
+const itemsPerPageOptions = [25, 50, 100];
 const search = ref("");
 const expanded = ref([]);
 const filterSelection = ref("registered");
@@ -644,6 +904,7 @@ const purgeError = ref("");
 const chatDialogOpen = ref(false);
 const chatMessages = ref([]);
 const chatMessagesLoading = ref(false);
+const chatMessagesError = ref("");
 const deletingMessageIds = ref([]);
 const activeMessageUserId = ref(null);
 const mockDialogOpen = ref(false);
@@ -657,10 +918,12 @@ const mockRunning = ref(false);
 const mockProgress = ref({ done: 0, total: 0 });
 const mockError = ref("");
 const mockInsertedIds = ref([]);
+const actionNotice = ref({ type: "info", message: "" });
 let mockAbort = false;
+let searchTimer = null;
+let actionNoticeTimer = null;
 
 const { locale } = useI18n();
-const { mdAndUp } = useDisplay();
 const localPath = useLocalePath();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -697,7 +960,6 @@ const toggleExpanded = (userId) => {
   expanded.value = next;
 };
 
-// tiny helper to coerce “maybe array” -> array
 const toArray = (val) => {
   if (Array.isArray(val)) return val;
   if (val && Array.isArray(val.data)) return val.data;
@@ -705,32 +967,32 @@ const toArray = (val) => {
   return [];
 };
 
-onMounted(async () => {
-  await authStore.checkAuth();
-  if (!authStore.userProfile?.is_admin) {
-    console.log("Unauthorized access to admin panel");
-    router.push(localPath("/"));
-    return;
-  }
-  const route = useRoute();
-  const section = route.query?.section;
-  if (section === "profilePhotos") filterSelection.value = "photos_pending";
-  await loadPage();
-  isLoading.value = false;
-  // Load non-blocking background data
-  loadAllProfilesLight();
-  loadPendingPhotoUsers();
-});
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil((totalItems.value || 0) / itemsPerPage.value) || 1)
+);
+
+const pageStart = computed(() =>
+  totalItems.value ? (currentPage.value - 1) * itemsPerPage.value + 1 : 0
+);
+
+const pageEnd = computed(() =>
+  totalItems.value
+    ? Math.min(totalItems.value, currentPage.value * itemsPerPage.value)
+    : 0
+);
 
 const pendingPhotoCount = computed(() => pendingPhotoUserIds.value.length);
+
 const mockUserOptions = computed(() => {
   return allProfilesLight.value
     .map((p) => {
       const labelBase = displayNameFor(p) || p?.slug || p?.user_id || "Unknown";
-      const label = `${labelBase} — ${p?.user_id || "—"}`;
-      return { label, value: p?.user_id || "" };
+      return {
+        label: `${labelBase} — ${p?.user_id || "—"}`,
+        value: p?.user_id || "",
+      };
     })
-    .filter((o) => o.value);
+    .filter((option) => option.value);
 });
 
 const filterOptions = computed(() => [
@@ -759,66 +1021,8 @@ const resolveFilterParams = () => {
 
 const activeProfiles = computed(() => serverProfiles.value.map(buildProfileRow));
 
-const loadPendingPhotoUsers = async () => {
-  try {
-    const result = await $fetch("/api/admin/profile-photos/list", {
-      query: { status: "pending", limit: 500 },
-    });
-    const ids = (result?.photos || [])
-      .map((photo) => photo.user_id)
-      .filter(Boolean);
-    pendingPhotoUserIds.value = Array.from(new Set(ids));
-  } catch (err) {
-    console.warn("[admin] load pending photo users failed:", err);
-    pendingPhotoUserIds.value = [];
-  }
-};
-
-const filteredProfiles = computed(() =>
-  [...profiles.value, ...aiProfiles.value].filter(
-    (p) => matchesSearch(p) && matchesFilter(p)
-  )
-);
-
-const sortOptions = [
-  { title: "Newest", value: "newest" },
-];
-
-const tableHeaders = computed(() => {
-  const headers = [{ title: "Profile", key: "profile", sortable: false }];
-  if (mdAndUp.value) {
-    headers.push({ title: "Tagline", key: "tagline", sortable: false });
-  }
-  headers.push({
-    title: "Actions",
-    key: "actions",
-    sortable: false,
-    align: "center",
-  });
-  return headers;
-});
-
-const chatMessageHeaders = [
-  { title: "Created", key: "created_at" },
-  { title: "To", key: "receiver" },
-  { title: "Message", key: "content", sortable: false },
-  { title: "Actions", key: "actions", sortable: false, align: "end" },
-];
-
-const discussionMessageHeaders = [
-  { title: "Created", key: "created_at" },
-  { title: "Thread", key: "thread" },
-  { title: "Message", key: "content", sortable: false },
-  { title: "Actions", key: "actions", sortable: false, align: "end" },
-];
-
-const getActivity = (userId) => activityByUserId.value[userId] || {};
-const isActivityLoading = (userId) => activityLoadingIds.value.includes(userId);
-const hasPendingReply = (profile) =>
-  !!profile?.is_simulated && !!pendingReplyByUserId.value[profile.user_id];
-
 const markedCount = computed(() =>
-  serverProfiles.value.filter((p) => p?.marked_for_deletion_at).length
+  serverProfiles.value.filter((profile) => profile?.marked_for_deletion_at).length
 );
 
 const photoReviewLink = computed(() =>
@@ -828,24 +1032,107 @@ const photoReviewLink = computed(() =>
 const hasPendingPhotos = (profile) =>
   pendingPhotoUserIds.value.includes(profile?.user_id);
 
-const buildProfileRow = (p) => {
-  const activity = getActivity(p?.user_id);
+const getActivity = (userId) => activityByUserId.value[userId] || {};
+const isActivityLoading = (userId) => activityLoadingIds.value.includes(userId);
+const hasPendingReply = (profile) =>
+  !!profile?.is_simulated && !!pendingReplyByUserId.value[profile.user_id];
+
+const setActionNotice = (type, message) => {
+  actionNotice.value = { type, message };
+  if (actionNoticeTimer && typeof window !== "undefined") {
+    window.clearTimeout(actionNoticeTimer);
+  }
+  if (!import.meta.client || !message) return;
+  actionNoticeTimer = window.setTimeout(() => {
+    actionNotice.value = { type: "info", message: "" };
+    actionNoticeTimer = null;
+  }, 3200);
+};
+
+const toastIcon = (type) => {
+  if (type === "success") return "mdi-check-circle-outline";
+  if (type === "error") return "mdi-alert-circle-outline";
+  if (type === "warning") return "mdi-alert-outline";
+  return "mdi-information-outline";
+};
+
+const authStateLabel = (profile) => {
+  if (profile?.is_ai) return profile?.persona_is_active ? "AI active" : "AI";
+  if (profile?.provider === "anonymous") return "Anon auth";
+  if (profile?.provider) return "Authenticated";
+  return "Guest";
+};
+
+const toneForPresenceText = (value) => {
+  const text = String(value || "").toLowerCase();
+  if (!text) return "neutral";
+  if (["online", "active", "available"].includes(text)) return "success";
+  if (["busy", "away", "idle"].includes(text)) return "warning";
+  if (["offline", "hidden"].includes(text)) return "neutral";
+  return "primary";
+};
+
+const presenceLabel = (profile) =>
+  profile?.manual_status || profile?.status || authStateLabel(profile);
+
+const presenceTone = (profile) => toneForPresenceText(presenceLabel(profile));
+
+const primaryStatusPills = (profile) => {
+  if (profile?.marked_for_deletion_at) {
+    return [{ label: "Marked", tone: "danger" }];
+  }
+
+  const pills = [];
+
+  if (profile?.is_ai) pills.push({ label: authStateLabel(profile), tone: "primary" });
+  if (profile?.force_online) pills.push({ label: "Forced online", tone: "info" });
+  if (hasPendingReply(profile)) pills.push({ label: "Pending reply", tone: "danger" });
+  if (profile?.agent_enabled) pills.push({ label: "Agent enabled", tone: "accent" });
+  if (profile?.is_simulated) pills.push({ label: "Simulated", tone: "warning" });
+  if (hasPendingPhotos(profile)) pills.push({ label: "Photos pending", tone: "warning" });
+  if (!pills.length && profile?.manual_status) {
+    pills.push({ label: profile.manual_status, tone: presenceTone({ manual_status: profile.manual_status }) });
+  }
+
+  return pills.slice(0, 2);
+};
+
+const loadPendingPhotoUsers = async () => {
+  try {
+    const result = await $fetch("/api/admin/profile-photos/list", {
+      query: { status: "pending", limit: 500 },
+    });
+    const ids = (result?.photos || [])
+      .map((photo) => photo.user_id)
+      .filter(Boolean);
+    pendingPhotoUserIds.value = Array.from(new Set(ids));
+  } catch (error) {
+    console.warn("[admin] load pending photo users failed:", error);
+    pendingPhotoUserIds.value = [];
+  }
+};
+
+const buildProfileRow = (profile) => {
+  const activity = getActivity(profile?.user_id);
   const chatCount = Number(
-    activity.chatCount ?? p?.chat_count ?? p?.messages_count ?? 0
+    activity.chatCount ?? profile?.chat_count ?? profile?.messages_count ?? 0
   );
   const discussionCount = Number(
-    activity.discussionCount ?? p?.messages_v2_count ?? p?.discussion_count ?? 0
+    activity.discussionCount ??
+      profile?.messages_v2_count ??
+      profile?.discussion_count ??
+      0
   );
   const createdAt =
-    p?.created ||
-    p?.created_at ||
-    p?.createdAt ||
-    p?.inserted_at ||
-    p?.created_on ||
+    profile?.created ||
+    profile?.created_at ||
+    profile?.createdAt ||
+    profile?.inserted_at ||
+    profile?.created_on ||
     null;
   const createdAtSort = createdAt ? new Date(createdAt).getTime() || 0 : 0;
   return {
-    ...p,
+    ...profile,
     chatCount,
     discussionCount,
     createdAt,
@@ -857,6 +1144,7 @@ const loadPage = async (page, perPage) => {
   if (page !== undefined) currentPage.value = page;
   if (perPage !== undefined) itemsPerPage.value = perPage;
   isTableLoading.value = true;
+  loadErrorMessage.value = "";
   try {
     const { isAi, serverFilter } = resolveFilterParams();
     const result = await getAdminProfiles(isAi, {
@@ -868,20 +1156,32 @@ const loadPage = async (page, perPage) => {
     serverProfiles.value = toArray(result);
     totalItems.value = result.total || 0;
     await loadReplyStatus(serverProfiles.value);
-  } catch (e) {
-    console.error("[admin] loadPage failed:", e);
+  } catch (error) {
+    console.error("[admin] loadPage failed:", error);
     serverProfiles.value = [];
     totalItems.value = 0;
+    loadErrorMessage.value = "Failed to load profiles.";
   } finally {
     isTableLoading.value = false;
   }
 };
 
-const onTableOptions = ({ page, itemsPerPage: perPage }) => {
-  loadPage(page, perPage);
+const handleItemsPerPageChange = (event) => {
+  const nextValue = Number(event?.target?.value || itemsPerPage.value);
+  currentPage.value = 1;
+  loadPage(1, nextValue);
 };
 
-let searchTimer = null;
+const goToPreviousPage = () => {
+  if (currentPage.value <= 1 || isTableLoading.value) return;
+  loadPage(currentPage.value - 1, itemsPerPage.value);
+};
+
+const goToNextPage = () => {
+  if (currentPage.value >= totalPages.value || isTableLoading.value) return;
+  loadPage(currentPage.value + 1, itemsPerPage.value);
+};
+
 watch(search, () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
@@ -903,8 +1203,8 @@ const loadAllProfilesLight = async () => {
   try {
     const result = await getAdminProfiles(null, { limit: 5000, minimal: true });
     allProfilesLight.value = toArray(result);
-  } catch (e) {
-    console.warn("[admin] loadAllProfilesLight failed:", e);
+  } catch (error) {
+    console.warn("[admin] loadAllProfilesLight failed:", error);
     allProfilesLight.value = [];
   }
 };
@@ -913,16 +1213,16 @@ const loadReplyStatus = async (profilesList) => {
   const uniqueIds = Array.from(
     new Set(
       (profilesList || [])
-        .filter((p) => p?.is_simulated)
-        .map((p) => p.user_id)
+        .filter((profile) => profile?.is_simulated)
+        .map((profile) => profile.user_id)
         .filter(Boolean)
     )
   );
   if (!uniqueIds.length) return;
   const batchSize = 80;
   const nextStatus = { ...pendingReplyByUserId.value };
-  for (let i = 0; i < uniqueIds.length; i += batchSize) {
-    const batch = uniqueIds.slice(i, i + batchSize);
+  for (let index = 0; index < uniqueIds.length; index += batchSize) {
+    const batch = uniqueIds.slice(index, index + batchSize);
     try {
       const response = await $fetch("/api/admin/reply-status", {
         query: { user_ids: batch.join(",") },
@@ -961,9 +1261,7 @@ const ensureActivityLoaded = async (userId) => {
   try {
     await refreshActivity(userId);
   } finally {
-    activityLoadingIds.value = activityLoadingIds.value.filter(
-      (id) => id !== userId
-    );
+    activityLoadingIds.value = activityLoadingIds.value.filter((id) => id !== userId);
   }
 };
 
@@ -1001,12 +1299,6 @@ const formatDateTime = (value) => {
     minute: "2-digit",
   }).format(date);
 };
-
-const getGenderLabel = (profile) =>
-  profile?.gender ||
-  profile?.gender_name ||
-  profile?.genders?.name ||
-  (profile?.gender_id ? `Gender ${profile.gender_id}` : "—");
 
 const getCountryLabel = (profile) =>
   profile?.country ||
@@ -1070,17 +1362,21 @@ const closeMockChatDialog = () => {
   mockAbort = false;
 };
 
-const onMockFileSelected = async (files) => {
+const onMockFileSelected = async (payload) => {
   try {
-    const file = Array.isArray(files) ? files[0] : files;
+    const file =
+      payload?.target?.files?.[0] ||
+      (Array.isArray(payload) ? payload[0] : payload);
     if (!file) return;
     const text = await file.text();
     mockJsonText.value = text;
     const parsed = JSON.parse(text);
     if (parsed?.userB) mockUserB.value = String(parsed.userB);
     if (Number.isFinite(parsed?.delayMs)) mockDelayMs.value = Number(parsed.delayMs);
-  } catch (err) {
+  } catch (error) {
     mockError.value = "Invalid JSON file.";
+  } finally {
+    if (payload?.target) payload.target.value = "";
   }
 };
 
@@ -1101,7 +1397,7 @@ const parseMockPayload = () => {
       delayMs: Number.isFinite(payload?.delayMs) ? Number(payload.delayMs) : null,
       messages,
     };
-  } catch (err) {
+  } catch (error) {
     return { error: "Invalid JSON content." };
   }
 };
@@ -1143,41 +1439,50 @@ const runMockChat = async () => {
   mockProgress.value = { done: 0, total: messages.length };
   mockInsertedIds.value = [];
 
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   await sleep(startDelay);
 
-  for (let i = 0; i < messages.length; i++) {
+  for (let index = 0; index < messages.length; index++) {
     if (mockAbort) break;
-    const m = messages[i] || {};
-    const from = String(m.from || "").toUpperCase();
-    const text = String(m.text ?? m.content ?? "").trim();
+    const message = messages[index] || {};
+    const from = String(message.from || "").toUpperCase();
+    const text = String(message.text ?? message.content ?? "").trim();
     if (!text) {
-      mockProgress.value = { done: i + 1, total: messages.length };
+      mockProgress.value = { done: index + 1, total: messages.length };
       continue;
     }
     const sender_id = from === "B" ? userB : userA;
     const receiver_id = from === "B" ? userA : userB;
     try {
-      const res = await $fetch("/api/admin/messages", {
+      const response = await $fetch("/api/admin/messages", {
         method: "POST",
         body: { sender_id, receiver_id, content: text },
       });
-      if (res?.item?.id) {
-        mockInsertedIds.value = [...mockInsertedIds.value, res.item.id];
+      if (response?.item?.id) {
+        mockInsertedIds.value = [...mockInsertedIds.value, response.item.id];
       }
-    } catch (err) {
+    } catch (error) {
       mockError.value =
-        err?.data?.error?.message ||
-        err?.message ||
+        error?.data?.error?.message ||
+        error?.message ||
         "Failed to insert a message.";
       break;
     }
-    mockProgress.value = { done: i + 1, total: messages.length };
-    if (i < messages.length - 1) await sleep(delay);
+    mockProgress.value = { done: index + 1, total: messages.length };
+    if (index < messages.length - 1) await sleep(delay);
   }
 
   mockRunning.value = false;
+  if (mockError.value) return;
+  if (mockAbort) {
+    setActionNotice("warning", "Mock chat stopped.");
+    return;
+  }
+  setActionNotice(
+    "success",
+    `Mock chat sent ${mockProgress.value.done} message${mockProgress.value.done === 1 ? "" : "s"}.`
+  );
 };
 
 const cancelMockChat = () => {
@@ -1192,29 +1497,39 @@ const deleteLastMockRun = async () => {
   for (const id of ids) {
     try {
       await $fetch(`/api/admin/chat-messages/${id}`, { method: "DELETE" });
-    } catch (err) {
+    } catch (error) {
       mockError.value =
-        err?.data?.error?.message ||
-        err?.message ||
+        error?.data?.error?.message ||
+        error?.message ||
         "Failed to delete one or more messages.";
       break;
     }
   }
   if (!mockError.value) {
     mockInsertedIds.value = [];
+    setActionNotice("success", "Deleted messages from the last mock run.");
   }
 };
 
 const openChatMessages = async (userId) => {
   if (!userId) return;
   activeMessageUserId.value = userId;
+  chatMessagesError.value = "";
   chatDialogOpen.value = true;
   await loadChatMessages(userId);
+};
+
+const closeChatDialog = () => {
+  chatDialogOpen.value = false;
+  chatMessages.value = [];
+  chatMessagesError.value = "";
+  activeMessageUserId.value = null;
 };
 
 const loadChatMessages = async (userId) => {
   if (!userId) return;
   chatMessagesLoading.value = true;
+  chatMessagesError.value = "";
   try {
     const response = await $fetch("/api/admin/chat-messages", {
       query: { user_id: userId, limit: 60 },
@@ -1223,6 +1538,7 @@ const loadChatMessages = async (userId) => {
   } catch (error) {
     console.error("[admin] loadChatMessages error:", error);
     chatMessages.value = [];
+    chatMessagesError.value = "Failed to load chat messages.";
   } finally {
     chatMessagesLoading.value = false;
   }
@@ -1235,14 +1551,14 @@ const deleteChatMessage = async (message) => {
     await $fetch(`/api/admin/chat-messages/${message.id}`, {
       method: "DELETE",
     });
-    chatMessages.value = chatMessages.value.filter((m) => m.id !== message.id);
+    chatMessages.value = chatMessages.value.filter((item) => item.id !== message.id);
     await refreshActivity(activeMessageUserId.value);
+    setActionNotice("success", "Message deleted.");
   } catch (error) {
     console.error("[admin] deleteChatMessage error:", error);
+    setActionNotice("error", "Failed to delete message.");
   } finally {
-    deletingMessageIds.value = deletingMessageIds.value.filter(
-      (id) => id !== message.id
-    );
+    deletingMessageIds.value = deletingMessageIds.value.filter((id) => id !== message.id);
   }
 };
 
@@ -1251,30 +1567,36 @@ const markForDeletion = async (profile) => {
   try {
     await markUserForDeletion(profile.user_id);
     handleUserDeleted(profile.user_id);
+    setActionNotice("warning", `${displayNameFor(profile)} marked for deletion.`);
   } catch (error) {
     console.error("[admin] mark user for deletion error:", error);
+    setActionNotice("error", "Failed to mark profile for deletion.");
   }
 };
 
-async function unmarkDeletion(profile) {
+const unmarkDeletion = async (profile) => {
   try {
     await unmarkUserForDeletion(profile.user_id);
     handleUserDeleted(profile.user_id, true);
+    setActionNotice("success", `${displayNameFor(profile)} restored.`);
   } catch (error) {
-    console.error("Error unmarking user:", error);
+    console.error("[admin] Error unmarking user:", error);
+    setActionNotice("error", "Failed to undo profile deletion mark.");
   }
-}
+};
 
-async function handleUserDeleted(userId, undo = false) {
+const handleUserDeleted = (userId, undo = false) => {
   const nextValue = undo ? null : new Date().toISOString();
-  serverProfiles.value = serverProfiles.value.map((p) =>
-    p?.user_id === userId ? { ...p, marked_for_deletion_at: nextValue } : p
+  serverProfiles.value = serverProfiles.value.map((profile) =>
+    profile?.user_id === userId
+      ? { ...profile, marked_for_deletion_at: nextValue }
+      : profile
   );
-}
+};
 
 const syncProfileFlags = (userId, nextFlags) => {
-  serverProfiles.value = serverProfiles.value.map((p) =>
-    p?.user_id === userId ? { ...p, ...nextFlags } : p
+  serverProfiles.value = serverProfiles.value.map((profile) =>
+    profile?.user_id === userId ? { ...profile, ...nextFlags } : profile
   );
 };
 
@@ -1295,8 +1617,7 @@ const getAdminFlags = (profile) => {
   return adminFlagsByUserId.value[userId];
 };
 
-const isAdminFlagsSaving = (userId) =>
-  !!adminFlagsSavingByUserId.value[userId];
+const isAdminFlagsSaving = (userId) => !!adminFlagsSavingByUserId.value[userId];
 
 const adminFlagsStatus = (userId) => adminFlagsStatusByUserId.value[userId] || "";
 
@@ -1313,7 +1634,7 @@ const saveAdminFlagsFor = async (profile) => {
     [userId]: "",
   };
   try {
-    const res = await $fetch("/api/admin/profiles-flags", {
+    const response = await $fetch("/api/admin/profiles-flags", {
       method: "PATCH",
       body: {
         user_id: userId,
@@ -1321,13 +1642,13 @@ const saveAdminFlagsFor = async (profile) => {
         is_simulated: flags.is_simulated,
       },
     });
-    if (res?.item) {
-      syncProfileFlags(userId, res.item);
+    if (response?.item) {
+      syncProfileFlags(userId, response.item);
       adminFlagsByUserId.value = {
         ...adminFlagsByUserId.value,
         [userId]: {
-          force_online: !!res.item.force_online,
-          is_simulated: !!res.item.is_simulated,
+          force_online: !!response.item.force_online,
+          is_simulated: !!response.item.is_simulated,
         },
       };
     } else {
@@ -1386,27 +1707,37 @@ const onAdminFlagToggle = (profile) => {
   };
 };
 
+const closePurgeDialog = () => {
+  if (purgeBusy.value) return;
+  purgeDialogOpen.value = false;
+  purgeError.value = "";
+};
+
 const purgeMarkedProfiles = async () => {
   purgeBusy.value = true;
   purgeError.value = "";
   try {
-    const res = await $fetch("/api/admin/profiles/purge", {
+    const response = await $fetch("/api/admin/profiles/purge", {
       method: "POST",
     });
-    const deletedIds = Array.isArray(res?.deletedUserIds)
-      ? res.deletedUserIds
+    const deletedIds = Array.isArray(response?.deletedUserIds)
+      ? response.deletedUserIds
       : [];
     if (deletedIds.length) {
       const nextPending = { ...pendingReplyByUserId.value };
       deletedIds.forEach((id) => delete nextPending[id]);
       pendingReplyByUserId.value = nextPending;
     }
-    if (res?.failed?.length) {
-      purgeError.value = `Failed to delete ${res.failed.length} user(s).`;
+    if (response?.failed?.length) {
+      purgeError.value = `Failed to delete ${response.failed.length} user(s).`;
       return;
     }
     purgeDialogOpen.value = false;
     await loadPage();
+    setActionNotice(
+      "success",
+      `Purged ${deletedIds.length} marked profile${deletedIds.length === 1 ? "" : "s"}.`
+    );
   } catch (error) {
     console.error("[admin] purgeMarkedProfiles error:", error);
     purgeError.value = "Purge failed.";
@@ -1414,222 +1745,1061 @@ const purgeMarkedProfiles = async () => {
     purgeBusy.value = false;
   }
 };
+
+onMounted(async () => {
+  await authStore.checkAuth();
+  if (!authStore.userProfile?.is_admin) {
+    console.log("Unauthorized access to admin panel");
+    router.push(localPath("/"));
+    return;
+  }
+  const route = useRoute();
+  const section = route.query?.section;
+  if (section === "profilePhotos") filterSelection.value = "photos_pending";
+  await loadPage();
+  isLoading.value = false;
+  loadAllProfilesLight();
+  loadPendingPhotoUsers();
+});
+
+onBeforeUnmount(() => {
+  if (searchTimer) clearTimeout(searchTimer);
+  if (actionNoticeTimer && typeof window !== "undefined") {
+    window.clearTimeout(actionNoticeTimer);
+  }
+  Object.values(adminFlagsSaveTimers.value).forEach((timer) => {
+    if (timer) clearTimeout(timer);
+  });
+});
 </script>
 
 <style scoped>
 .admin-dashboard {
   max-width: 100%;
-  padding-left: 16px;
-  padding-right: 16px;
 }
 
-.admin-dashboard__card-text {
-  padding-top: 12px;
-  padding-bottom: 12px;
+.admin-dashboard-card {
+  border: 1px solid rgba(var(--color-border), 0.88);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.96), rgba(var(--color-surface), 0.98));
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
 }
 
-.admin-controls {
+.admin-dashboard-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 0;
+}
+
+.admin-dashboard-card__heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.admin-dashboard-card__icon {
+  color: rgb(var(--color-primary));
+  font-size: 1.4rem;
+  margin-top: 2px;
+}
+
+.admin-dashboard-card__title {
+  margin: 0;
+  color: rgb(var(--color-heading));
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.admin-dashboard-card__subtitle {
+  margin: 6px 0 0;
+  color: rgba(var(--color-text), 0.72);
+  font-size: 0.92rem;
+}
+
+.admin-dashboard-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-dashboard-card__body {
+  padding: 20px 22px 22px;
+}
+
+.admin-dashboard-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.admin-dashboard-toolbar__actions {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.admin-dashboard-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 6px;
+  min-width: 0;
 }
 
-.admin-select-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+.admin-dashboard-field__label {
+  color: rgba(var(--color-text), 0.68);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.admin-purge-wrap {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.admin-table :deep(thead th) {
+.admin-dashboard-field__label--sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  padding-top: 6px !important;
-  padding-bottom: 6px !important;
-  min-height: 38px !important;
-  height: 38px !important;
-  font-size: 0.88rem;
-  line-height: 1.1;
+  border: 0;
 }
 
-.admin-table :deep(th[data-column="actions"]),
-.admin-table :deep(td[data-column="actions"]) {
-  text-align: center;
+.admin-dashboard-field--search {
+  flex: 1 1 320px;
+}
+
+.admin-dashboard-field--toolbar-select {
+  flex: 0 1 190px;
+}
+
+.admin-dashboard-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-dashboard-input-wrap__icon {
+  position: absolute;
+  left: 12px;
+  color: rgba(var(--color-text), 0.54);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.admin-dashboard-field__control {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(var(--color-border), 0.86);
+  border-radius: 14px;
+  background: rgba(var(--color-surface), 0.96);
+  color: rgb(var(--color-text));
+  padding: 0 14px;
+  font: inherit;
+}
+
+.admin-dashboard-toolbar .admin-dashboard-field__control {
+  min-height: 38px;
+  border-radius: 12px;
+}
+
+.admin-dashboard-field__control--with-icon {
+  padding-left: 36px;
+  padding-right: 36px;
+}
+
+.admin-dashboard-field__control--textarea {
+  min-height: 180px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+.admin-dashboard-file-input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px dashed rgba(var(--color-border), 0.88);
+  border-radius: 14px;
+  background: rgba(var(--color-surface), 0.96);
+  color: rgb(var(--color-text));
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.admin-dashboard-clear-button {
+  position: absolute;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(var(--color-text), 0.54);
+}
+
+.admin-dashboard-button,
+.admin-dashboard-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-border), 0.86);
+  background: rgba(var(--color-surface), 0.94);
+  color: rgb(var(--color-text));
+  padding: 0 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.admin-dashboard-icon-button {
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+}
+
+.admin-dashboard-button:hover,
+.admin-dashboard-icon-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+}
+
+.admin-dashboard-button:disabled,
+.admin-dashboard-icon-button:disabled,
+.admin-dashboard-clear-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.admin-dashboard-button--primary,
+.admin-dashboard-icon-button--primary {
+  border-color: rgba(var(--color-primary), 0.26);
+  background: rgba(var(--color-primary), 0.1);
+  color: rgb(var(--color-primary));
+}
+
+.admin-dashboard-button--danger,
+.admin-dashboard-icon-button--danger {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.1);
+  color: rgb(185, 28, 28);
+}
+
+.admin-dashboard-button--success,
+.admin-dashboard-icon-button--success {
+  border-color: rgba(34, 197, 94, 0.26);
+  background: rgba(34, 197, 94, 0.1);
+  color: rgb(22, 101, 52);
+}
+
+.admin-dashboard-button--warning {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(245, 158, 11, 0.1);
+  color: rgb(180, 83, 9);
+}
+
+.admin-dashboard-button--ghost {
+  background: rgba(var(--color-surface-elevated), 0.92);
+}
+
+.admin-dashboard-icon-button--ghost {
+  background: rgba(var(--color-surface-elevated), 0.92);
+}
+
+.admin-dashboard-icon-button--info {
+  border-color: rgba(59, 130, 246, 0.24);
+  background: rgba(59, 130, 246, 0.1);
+  color: rgb(29, 78, 216);
+}
+
+.admin-dashboard-icon-button--accent {
+  border-color: rgba(124, 58, 237, 0.24);
+  background: rgba(124, 58, 237, 0.1);
+  color: rgb(109, 40, 217);
+}
+
+.admin-dashboard-button__spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(var(--color-text), 0.18);
+  border-top-color: currentColor;
+  animation: admin-dashboard-spin 0.8s linear infinite;
+}
+
+.admin-dashboard-banner {
+  margin-bottom: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--color-border), 0.82);
+  padding: 12px 14px;
+  font-size: 0.95rem;
+}
+
+.admin-dashboard-banner--info {
+  background: rgba(var(--color-primary), 0.1);
+  border-color: rgba(var(--color-primary), 0.24);
+  color: rgb(var(--color-text));
+}
+
+.admin-dashboard-banner--error {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(185, 28, 28);
+}
+
+.admin-dashboard-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-dashboard-pagination--top {
+  margin-bottom: 12px;
+}
+
+.admin-dashboard-toolbar__summary,
+.admin-dashboard-pagination__summary,
+.admin-dashboard-pagination__page,
+.admin-dashboard-status-subline {
+  color: rgba(var(--color-text), 0.68);
+  font-size: 0.84rem;
+}
+
+.admin-dashboard-pagination__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-dashboard-table-shell {
+  min-height: 220px;
+}
+
+.admin-dashboard-loading-state {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.admin-nowrap {
-  white-space: nowrap;
+.admin-dashboard-table-wrap {
+  overflow: auto;
+  max-height: 680px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(var(--color-border), 0.84);
+  border-radius: 20px;
+  background: rgba(var(--color-surface), 0.82);
 }
 
-.admin-ellipsis {
-  max-width: 220px;
-  display: inline-block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: bottom;
+.admin-dashboard-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-.admin-avatar-wrap {
+.admin-dashboard-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgb(var(--color-surface-elevated));
+  color: rgba(var(--color-text), 0.72);
+  text-align: left;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(var(--color-border), 0.82);
+  box-shadow: inset 0 -1px 0 rgba(var(--color-border), 0.82);
+}
+
+.admin-dashboard-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(var(--color-border), 0.7);
+  vertical-align: middle;
+}
+
+.admin-dashboard-table__row:hover td {
+  background: rgba(var(--color-primary), 0.03);
+}
+
+.admin-dashboard-table__actions-head {
+  text-align: center;
+}
+
+.admin-dashboard-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-dashboard-avatar-wrap {
   position: relative;
   display: inline-flex;
-}
-
-.admin-gender-icon {
-  position: absolute;
-  left: -4px;
-  bottom: -4px;
+  flex-shrink: 0;
+  border: 0;
   background: transparent;
-  border-radius: 999px;
   padding: 0;
-  color: var(--admin-gender-color, #a855f7) !important;
 }
 
-.admin-flag-icon {
+.admin-dashboard-avatar-wrap.has-pending-reply::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgb(220, 38, 38);
+  box-shadow: 0 0 0 2px rgba(var(--color-surface), 1);
+}
+
+.admin-dashboard-avatar {
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-border), 0.84);
+  background: rgba(var(--color-surface-elevated), 0.96);
+}
+
+.admin-dashboard-avatar__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-dashboard-flag-icon {
   position: absolute;
   right: -4px;
   top: -4px;
-  background: transparent;
-  border-radius: 999px;
-  padding: 0;
   font-size: 17px;
   line-height: 1;
 }
 
-.admin-registered-badge {
+.admin-dashboard-registered-badge {
   position: absolute;
   left: -6px;
   top: -6px;
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255, 193, 7, 0.16);
+  color: rgb(180, 83, 9);
+  font-size: 0.72rem;
 }
 
-.admin-detail-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px 24px;
+.admin-dashboard-gender-icon {
+  position: absolute;
+  left: -4px;
+  bottom: -4px;
+  color: var(--admin-gender-color, #a855f7);
+  font-size: 20px;
 }
 
-.admin-detail-item {
+.admin-dashboard-gender-icon.is-male {
+  color: var(--admin-gender-color, #3b82f6);
+}
+
+.admin-dashboard-gender-icon.is-female {
+  color: var(--admin-gender-color, #ec4899);
+}
+
+.admin-dashboard-gender-icon.is-other {
+  color: var(--admin-gender-color, #a855f7);
+}
+
+.admin-dashboard-profile__content {
   min-width: 0;
-}
-
-@media (max-width: 1260px) {
-  .admin-detail-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 980px) {
-  .admin-detail-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 680px) {
-  .admin-detail-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.admin-gender-icon.is-male {
-  color: var(--admin-gender-color, #3b82f6) !important;
-}
-
-.admin-gender-icon.is-female {
-  color: var(--admin-gender-color, #ec4899) !important;
-}
-
-.admin-gender-icon.is-other {
-  color: var(--admin-gender-color, #a855f7) !important;
-}
-
-.admin-sort {
-  min-width: 0;
-}
-
-.admin-filter {
-  min-width: 0;
-}
-
-.admin-purge {
-  white-space: nowrap;
-}
-
-.admin-mock-dialog {
-  max-height: 90vh;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
-.admin-mock-dialog :deep(.v-card-text) {
-  overflow-y: auto;
+.admin-dashboard-profile-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: rgb(var(--color-primary));
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
 }
 
-.admin-mock-dialog :deep(.v-card-actions) {
-  flex-shrink: 0;
+.admin-dashboard-profile-link:hover {
+  text-decoration: underline;
 }
 
-.admin-actions {
-  width: 100%;
-  justify-content: center;
+.admin-dashboard-profile-link:focus-visible,
+.admin-dashboard-avatar-wrap:focus-visible,
+.admin-dashboard-button:focus-visible,
+.admin-dashboard-icon-button:focus-visible,
+.admin-dashboard-field__control:focus-visible,
+.admin-dashboard-file-input:focus-visible {
+  outline: 2px solid rgba(var(--color-primary), 0.65);
+  outline-offset: 2px;
 }
 
-.admin-tagline-cell {
-  display: inline-block;
+.admin-dashboard-profile__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: rgba(var(--color-text), 0.66);
+  font-size: 0.78rem;
+}
+
+.admin-dashboard-profile__meta-separator {
+  color: rgba(var(--color-text), 0.42);
+}
+
+.admin-dashboard-actions,
+.admin-dashboard-hit-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-dashboard-tagline {
   max-width: 320px;
+  color: rgba(var(--color-text), 0.78);
+  font-size: 0.84rem;
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.admin-profile-subline--mobile {
-  display: none;
+.admin-dashboard-status-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.admin-profile-link {
-  background: none;
+.admin-dashboard-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.admin-dashboard-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  min-height: 22px;
+  border-radius: 999px;
+  padding: 0 8px;
+  background: rgba(var(--color-surface-elevated), 0.96);
+  color: rgb(var(--color-text));
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.admin-dashboard-pill--neutral {
+  background: rgba(148, 163, 184, 0.14);
+  color: rgb(71, 85, 105);
+}
+
+.admin-dashboard-pill--primary {
+  background: rgba(var(--color-primary), 0.12);
+  color: rgb(var(--color-primary));
+}
+
+.admin-dashboard-pill--success {
+  background: rgba(34, 197, 94, 0.12);
+  color: rgb(22, 101, 52);
+}
+
+.admin-dashboard-pill--warning {
+  background: rgba(245, 158, 11, 0.14);
+  color: rgb(180, 83, 9);
+}
+
+.admin-dashboard-pill--danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(185, 28, 28);
+}
+
+.admin-dashboard-pill--info {
+  background: rgba(59, 130, 246, 0.12);
+  color: rgb(29, 78, 216);
+}
+
+.admin-dashboard-pill--accent {
+  background: rgba(168, 85, 247, 0.12);
+  color: rgb(107, 33, 168);
+}
+
+.admin-dashboard-table__expanded-row td {
+  background: rgba(var(--color-surface-elevated), 0.6);
+}
+
+.admin-dashboard-expanded {
+  padding: 2px 0 0;
+}
+
+.admin-dashboard-expanded__loading {
+  padding: 4px 0;
+}
+
+.admin-dashboard-progress-bar {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(var(--color-primary), 0.14);
+}
+
+.admin-dashboard-progress-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 36%;
+  border-radius: inherit;
+  background: rgb(var(--color-primary));
+  animation: admin-dashboard-progress 1.1s ease-in-out infinite;
+}
+
+.admin-dashboard-expanded__content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-dashboard-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.admin-dashboard-detail-item,
+.admin-dashboard-stat-card {
+  min-width: 0;
+}
+
+.admin-dashboard-detail-item__label {
+  display: block;
+  color: rgba(var(--color-text), 0.66);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.admin-dashboard-detail-item__value,
+.admin-dashboard-stat-card__value {
+  color: rgb(var(--color-text));
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.admin-dashboard-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-dashboard-stat-card,
+.admin-dashboard-inline-card {
+  border: 1px solid rgba(var(--color-border), 0.78);
+  border-radius: 14px;
+  background: rgba(var(--color-surface), 0.8);
+  padding: 10px 12px;
+}
+
+.admin-dashboard-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-dashboard-stat-card__value {
+  font-size: 1.05rem;
+}
+
+.admin-dashboard-stat-card__value--link {
   border: 0;
+  background: transparent;
   padding: 0;
-  color: #1d4ed8;
+  color: rgb(var(--color-primary));
   cursor: pointer;
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 700;
   text-align: left;
 }
 
-.admin-profile-link:hover {
-  text-decoration: underline;
+.admin-dashboard-inline-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.admin-profile-link:focus-visible {
-  outline: 2px solid #1d4ed8;
-  outline-offset: 2px;
-  border-radius: 4px;
+.admin-dashboard-inline-card--stack {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
 }
 
-@media (max-width: 960px) {
-  .admin-profile-subline--desktop {
-    display: none;
+.admin-dashboard-inline-card__copy,
+.admin-dashboard-inline-status {
+  color: rgba(var(--color-text), 0.72);
+  font-size: 0.82rem;
+}
+
+.admin-dashboard-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-dashboard-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.admin-dashboard-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-dashboard-toggle__track {
+  position: relative;
+  display: inline-flex;
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.34);
+  transition: background 0.18s ease;
+}
+
+.admin-dashboard-toggle__track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.18);
+  transition: transform 0.18s ease;
+}
+
+.admin-dashboard-toggle input:checked + .admin-dashboard-toggle__track {
+  background: rgba(var(--color-primary), 0.72);
+}
+
+.admin-dashboard-toggle input:checked + .admin-dashboard-toggle__track::after {
+  transform: translateX(18px);
+}
+
+.admin-dashboard-toggle input:disabled + .admin-dashboard-toggle__track {
+  opacity: 0.5;
+}
+
+.admin-dashboard-toggle__label {
+  color: rgb(var(--color-text));
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.admin-dashboard-toggle--standalone {
+  align-self: flex-start;
+}
+
+.admin-dashboard-hit-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: rgba(var(--color-text), 0.76);
+  font-size: 0.8rem;
+}
+
+.admin-dashboard-ellipsis,
+.admin-dashboard-chat-message {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-dashboard-toast-layer {
+  position: fixed;
+  top: 72px;
+  right: 1rem;
+  z-index: 2100;
+  pointer-events: none;
+}
+
+.admin-dashboard-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(360px, calc(100vw - 2rem));
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.96);
+  box-shadow: 0 24px 40px rgba(15, 23, 42, 0.24);
+  color: rgb(248, 250, 252);
+  pointer-events: auto;
+}
+
+.admin-dashboard-toast--success i {
+  color: rgb(74, 222, 128);
+}
+
+.admin-dashboard-toast--error i {
+  color: rgb(248, 113, 113);
+}
+
+.admin-dashboard-toast--warning i {
+  color: rgb(251, 191, 36);
+}
+
+.admin-dashboard-toast--info i {
+  color: rgb(96, 165, 250);
+}
+
+.admin-dashboard-modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.admin-dashboard-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.54);
+}
+
+.admin-dashboard-modal {
+  position: relative;
+  width: min(100%, 720px);
+  max-height: calc(100vh - 48px);
+}
+
+.admin-dashboard-modal--compact {
+  width: min(100%, 460px);
+}
+
+.admin-dashboard-modal--wide {
+  width: min(100%, 720px);
+}
+
+.admin-dashboard-modal--xl {
+  width: min(100%, 980px);
+}
+
+.admin-dashboard-modal__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+  border: 1px solid rgba(var(--color-border), 0.88);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.98), rgba(var(--color-surface), 0.98));
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.24);
+}
+
+.admin-dashboard-modal__card--scrollable .admin-dashboard-modal__body {
+  overflow-y: auto;
+}
+
+.admin-dashboard-modal__header,
+.admin-dashboard-modal__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.admin-dashboard-modal__header {
+  border-bottom: 1px solid rgba(var(--color-border), 0.78);
+}
+
+.admin-dashboard-modal__title {
+  margin: 0;
+  color: rgb(var(--color-heading));
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.admin-dashboard-modal__body {
+  padding: 18px 20px;
+}
+
+.admin-dashboard-modal__body--stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-dashboard-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-dashboard-modal__actions {
+  justify-content: flex-end;
+  border-top: 1px solid rgba(var(--color-border), 0.78);
+}
+
+.admin-dashboard-dialog-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-dashboard-table-wrap--dialog {
+  max-height: 420px;
+  margin-bottom: 0;
+}
+
+.admin-dashboard-table--dialog {
+  min-width: 720px;
+}
+
+.admin-dashboard-toast-fade-enter-active,
+.admin-dashboard-toast-fade-leave-active,
+.admin-dashboard-modal-fade-enter-active,
+.admin-dashboard-modal-fade-leave-active {
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.admin-dashboard-toast-fade-enter-from,
+.admin-dashboard-toast-fade-leave-to,
+.admin-dashboard-modal-fade-enter-from,
+.admin-dashboard-modal-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+@media (max-width: 1260px) {
+  .admin-dashboard-detail-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .admin-profile-subline--mobile {
-    display: inline;
-  }
-
-  .admin-purge-wrap {
+  .admin-dashboard-toolbar__actions {
     justify-content: flex-start;
   }
+}
 
-  .admin-table :deep(thead th) {
-    padding-top: 5px !important;
-    padding-bottom: 5px !important;
-    min-height: 34px !important;
-    height: 34px !important;
-    font-size: 0.8rem;
-    line-height: 1.15;
+@media (max-width: 980px) {
+  .admin-dashboard-detail-grid,
+  .admin-dashboard-stat-grid,
+  .admin-dashboard-modal__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-dashboard-card__header,
+  .admin-dashboard-pagination,
+  .admin-dashboard-modal__header,
+  .admin-dashboard-modal__actions,
+  .admin-dashboard-inline-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-dashboard-detail-grid,
+  .admin-dashboard-stat-grid,
+  .admin-dashboard-modal__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard-toolbar {
+    align-items: stretch;
+  }
+
+  .admin-dashboard-field--toolbar-select,
+  .admin-dashboard-toolbar__actions {
+    flex-basis: 100%;
+  }
+
+  .admin-dashboard-table {
+    min-width: 760px;
+  }
+
+  .admin-dashboard-modal-layer {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-dashboard-toast-layer {
+    left: 1rem;
+    right: 1rem;
+  }
+
+  .admin-dashboard-toast {
+    max-width: none;
+  }
+}
+
+@keyframes admin-dashboard-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes admin-dashboard-progress {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(320%);
   }
 }
 </style>

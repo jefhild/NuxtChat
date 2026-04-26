@@ -1,23 +1,23 @@
 <template>
-  <v-card class="pa-4 pa-md-5 mood-thread" elevation="0">
-    <div class="mood-thread__header" v-if="promptText || hasExtras">
+  <div class="mood-thread">
+    <div v-if="promptText || hasExtras" class="mood-thread__header">
       <div class="mood-thread__question">
         {{ promptText }}
       </div>
-      <v-spacer />
-      <v-btn
+      <button
         v-if="hasExtras"
+        type="button"
         class="thread-toggle"
-        icon
-        variant="text"
-        density="comfortable"
+        :aria-label="expanded ? 'Collapse thread' : 'Expand thread'"
         @click="expanded = !expanded"
       >
-        <v-icon size="18">
-          {{ expanded ? "mdi-chevron-up" : "mdi-chevron-down" }}
-        </v-icon>
-      </v-btn>
+        <i
+          :class="['mdi', expanded ? 'mdi-chevron-up' : 'mdi-chevron-down']"
+          aria-hidden="true"
+        />
+      </button>
     </div>
+
     <MoodFeedCommentList
       v-if="messagesForUI.length"
       :messages="messagesForUI"
@@ -32,46 +32,65 @@
       @profile="$emit('profile', $event)"
       @register="$emit('register')"
     />
-    <div v-else class="text-body-2 text-medium-emphasis mb-2">
+    <div v-else class="text-body-2 text-medium-emphasis">
       {{ emptyText }}
     </div>
-  </v-card>
+  </div>
 
-  <v-menu
-    v-model="menu.open"
-    :activator="menu.activator"
-    location="bottom end"
-    origin="top end"
-    :close-on-content-click="true"
-    transition="fade-transition"
-  >
-    <v-list density="compact" min-width="180">
-    <v-list-item
-      v-if="isMineSelected"
-      prepend-icon="mdi-delete"
-      @click="onDelete"
-    >
-      <v-list-item-title>{{ t("pages.feeds.deleteButton", "Delete") }}</v-list-item-title>
-    </v-list-item>
-    <v-list-item
-      v-if="isMineSelected && isAnonSelected"
-      prepend-icon="mdi-account-plus"
-      @click="onRegister"
-    >
-      <v-list-item-title>{{ t("pages.feeds.registerCta", "Register now") }}</v-list-item-title>
-    </v-list-item>
-    <v-list-item v-else prepend-icon="mdi-flag" @click="onFlag">
-      <v-list-item-title>{{ t("pages.feeds.flagButton", "Flag") }}</v-list-item-title>
-    </v-list-item>
-    <v-list-item
-      v-if="canAdminDeleteEntrySelected"
-      prepend-icon="mdi-delete"
-      @click="onAdminDeleteEntry"
-    >
-      <v-list-item-title>{{ t("pages.feeds.deleteButton", "Delete") }}</v-list-item-title>
-    </v-list-item>
-    </v-list>
-  </v-menu>
+  <Teleport to="body">
+    <Transition name="mood-thread-menu-fade">
+      <div v-if="menu.open" class="mood-thread-menu-layer" role="presentation">
+        <button
+          type="button"
+          class="mood-thread-menu-layer__scrim"
+          aria-label="Close message menu"
+          @click="menu.open = false"
+        />
+        <div class="mood-thread-menu" :style="menuStyle" role="menu" @click.stop>
+          <button
+            v-if="isMineSelected"
+            type="button"
+            class="mood-thread-menu__item"
+            role="menuitem"
+            @click="onDelete"
+          >
+            <i class="mdi mdi-delete" aria-hidden="true" />
+            <span>{{ t("pages.feeds.deleteButton", "Delete") }}</span>
+          </button>
+          <button
+            v-if="isMineSelected && isAnonSelected"
+            type="button"
+            class="mood-thread-menu__item"
+            role="menuitem"
+            @click="onRegister"
+          >
+            <i class="mdi mdi-account-plus" aria-hidden="true" />
+            <span>{{ t("pages.feeds.registerCta", "Register now") }}</span>
+          </button>
+          <button
+            v-else
+            type="button"
+            class="mood-thread-menu__item"
+            role="menuitem"
+            @click="onFlag"
+          >
+            <i class="mdi mdi-flag" aria-hidden="true" />
+            <span>{{ t("pages.feeds.flagButton", "Flag") }}</span>
+          </button>
+          <button
+            v-if="canAdminDeleteEntrySelected"
+            type="button"
+            class="mood-thread-menu__item"
+            role="menuitem"
+            @click="onAdminDeleteEntry"
+          >
+            <i class="mdi mdi-delete" aria-hidden="true" />
+            <span>{{ t("pages.feeds.deleteButton", "Delete") }}</span>
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
@@ -212,7 +231,13 @@ const messagesForUI = computed(() => {
   return [...roots, ...replyMessages.value];
 });
 
-const menu = reactive({ open: false, activator: null, id: null });
+const menu = reactive({ open: false, id: null, top: 0, left: 0 });
+const MENU_WIDTH = 196;
+const menuStyle = computed(() => ({
+  top: `${menu.top}px`,
+  left: `${menu.left}px`,
+}));
+
 const messageMap = computed(() => {
   const map = new Map();
   for (const msg of messagesForUI.value) map.set(msg.id, msg);
@@ -235,13 +260,23 @@ const canAdminDeleteEntrySelected = computed(() => {
   return !!msg && msg.voteTarget === "entry";
 });
 
+function positionMenu(el) {
+  if (!el?.getBoundingClientRect || typeof window === "undefined") return;
+  const rect = el.getBoundingClientRect();
+  const padding = 12;
+  menu.top = rect.bottom + 8;
+  menu.left = Math.min(
+    Math.max(rect.right - MENU_WIDTH, padding),
+    window.innerWidth - MENU_WIDTH - padding
+  );
+}
+
 function openMessageMenu({ id, el }) {
   menu.open = false;
-  menu.activator = null;
   menu.id = id || null;
   nextTick(() => {
-    menu.activator = el || null;
-    menu.open = !!menu.activator;
+    positionMenu(el);
+    menu.open = !!menu.id;
   });
 }
 
@@ -306,16 +341,15 @@ function handleVote(payload) {
     inset 0 1px 0 rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.08);
   --mf-thread-divider: rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.14);
   --mf-thread-question: color-mix(in oklab, rgb(var(--v-theme-primary)) 82%, rgb(var(--v-theme-on-surface)) 18%);
-  --mf-thread-toggle-bg: color-mix(in oklab, rgb(var(--v-theme-surface)) 88%, rgb(var(--v-theme-primary)) 12%);
   --mf-thread-toggle-border: rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.2);
   --mf-thread-toggle-fg: rgb(var(--v-theme-primary));
-  --mf-thread-toggle-hover: color-mix(in oklab, rgb(var(--v-theme-surface)) 78%, rgb(var(--v-theme-primary)) 22%);
   --mf-thread-item-divider: rgba(var(--v-theme-on-surface-rgb, 15, 23, 42), 0.1);
   border-radius: 16px;
   border: 1px solid var(--mf-thread-border);
   background: var(--mf-thread-bg);
   box-shadow: var(--mf-thread-shadow);
   backdrop-filter: blur(5px);
+  padding: 1.1rem 1.2rem;
 }
 
 .mood-thread__header {
@@ -335,47 +369,25 @@ function handleVote(payload) {
   letter-spacing: 0.012em;
 }
 
-.mood-thread__related {
-  margin-left: 8px;
-  font-size: 0.8em;
-  font-weight: 600;
-  color: color-mix(in oklab, var(--mf-thread-question) 80%, #93c5fd 20%);
-  text-decoration: underline;
-}
-
-.mood-thread__thread-link {
-  margin-left: 8px;
-  font-size: 0.8em;
-  font-weight: 600;
-  color: color-mix(in oklab, var(--mf-thread-question) 88%, #dbeafe 12%);
-  text-decoration: underline;
-}
-
-.mood-thread__related:hover,
-.mood-thread__thread-link:hover {
-  color: #bfdbfe;
-}
-
 .thread-toggle {
-  --v-btn-bg: transparent !important;
-  --v-theme-overlay-multiplier: 0 !important;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
   border: 1px solid var(--mf-thread-toggle-border);
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
+  border-radius: 999px;
+  background: transparent;
   color: var(--mf-thread-toggle-fg);
-  box-shadow: none !important;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease;
 }
 
-.thread-toggle:hover {
-  background: transparent !important;
-}
-
-.thread-toggle :deep(.v-btn__overlay),
-.thread-toggle :deep(.v-btn__underlay),
-.thread-toggle :deep(.v-btn__content),
-.thread-toggle :deep(.v-icon) {
-  background: transparent !important;
+.thread-toggle:hover,
+.thread-toggle:focus-visible {
+  background: rgba(148, 163, 184, 0.14);
+  outline: none;
 }
 
 .mood-thread :deep(.cmt + .cmt) {
@@ -384,9 +396,65 @@ function handleVote(payload) {
   border-top: 1px solid var(--mf-thread-item-divider);
 }
 
+.mood-thread-menu-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2300;
+}
+
+.mood-thread-menu-layer__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+}
+
+.mood-thread-menu {
+  position: fixed;
+  width: 196px;
+  padding: 0.35rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 14px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 24px 48px rgb(var(--color-shadow) / 0.2);
+}
+
+.mood-thread-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: rgb(var(--color-foreground));
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mood-thread-menu__item:hover,
+.mood-thread-menu__item:focus-visible {
+  background: rgb(var(--color-primary) / 0.1);
+  outline: none;
+}
+
+.mood-thread-menu-fade-enter-active,
+.mood-thread-menu-fade-leave-active {
+  transition: opacity 0.16s ease;
+}
+
+.mood-thread-menu-fade-enter-from,
+.mood-thread-menu-fade-leave-to {
+  opacity: 0;
+}
+
 @media (max-width: 960px) {
   .mood-thread {
     border-radius: 12px;
+    padding: 1rem;
   }
 
   .mood-thread__header {

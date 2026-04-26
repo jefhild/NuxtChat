@@ -1,58 +1,61 @@
 <template>
-  <v-card variant="outlined">
-    <v-card-title class="d-flex flex-wrap align-center justify-space-between">
-      <span>{{ t("components.photo-library.title") }}</span>
-      <v-btn
-        size="small"
-        variant="outlined"
-        :loading="loading"
-        @click="loadPhotos"
-      >
-        {{ t("components.photo-library.refresh") }}
-      </v-btn>
-    </v-card-title>
-    <v-card-text>
-      <v-form @submit.prevent="uploadPhoto" class="photo-library-form">
-        <v-file-input
-          :key="fileInputKey"
-          accept="image/*"
-          show-size
-          :label="t('components.photo-library.add')"
-          @update:modelValue="handleFileChange"
-        />
-        <div class="d-flex align-center ga-2">
-          <v-btn
-            color="primary"
+  <div>
+    <section class="photo-library-card">
+      <div class="photo-library-card__header">
+        <h2 class="photo-library-card__title">
+          {{ t("components.photo-library.title") }}
+        </h2>
+        <button
+          type="button"
+          class="photo-library-card__refresh"
+          :disabled="loading"
+          @click="loadPhotos"
+        >
+          <span v-if="loading" class="photo-library-card__spinner" aria-hidden="true" />
+          {{ t("components.photo-library.refresh") }}
+        </button>
+      </div>
+
+      <form class="photo-library-form" @submit.prevent="uploadPhoto">
+        <label class="photo-library-upload">
+          <span class="photo-library-upload__label">
+            {{ t("components.photo-library.add") }}
+          </span>
+          <input
+            :key="fileInputKey"
+            accept="image/*"
+            type="file"
+            class="photo-library-upload__input"
+            @change="handleFileChange($event.target.files)"
+          >
+        </label>
+        <div class="photo-library-form__actions">
+          <button
             type="submit"
-            :loading="uploading"
+            class="photo-library-form__submit"
             :disabled="uploading || !selectedFile"
           >
+            <span v-if="uploading" class="photo-library-card__spinner" aria-hidden="true" />
             {{ t("components.photo-library.upload") }}
-          </v-btn>
-          <span class="text-caption text-medium-emphasis">
+          </button>
+          <span class="photo-library-form__hint">
             {{ t("components.photo-library.requirements") }}
           </span>
         </div>
-      </v-form>
+      </form>
 
-      <v-alert
+      <div
         v-if="errorMessage"
-        type="error"
-        variant="tonal"
-        density="compact"
-        class="mt-3"
+        class="photo-library-status photo-library-status--error"
       >
         {{ errorMessage }}
-      </v-alert>
-      <v-alert
+      </div>
+      <div
         v-else-if="successMessage"
-        type="success"
-        variant="tonal"
-        density="compact"
-        class="mt-3"
+        class="photo-library-status photo-library-status--success"
       >
         {{ successMessage }}
-      </v-alert>
+      </div>
 
       <LoadingContainer
         v-if="loading"
@@ -60,61 +63,81 @@
         class="mt-4"
       />
       <template v-else>
-        <v-row v-if="photos.length" dense class="mt-4">
-          <v-col v-for="photo in photos" :key="photo.id" cols="6" sm="4" md="3">
-            <v-card variant="outlined" class="photo-card">
-              <v-img
-                :src="photo.url || photo.public_url"
-                aspect-ratio="4/3"
-                contain
-                class="photo-card-image"
-              />
-              <div class="d-flex align-center justify-space-between pa-2">
-                <v-chip
-                  size="x-small"
-                  :color="statusColor(photo.status)"
-                  variant="tonal"
-                >
-                  {{ statusLabel(photo.status) }}
-                </v-chip>
-                <v-btn
-                  icon
-                  size="x-small"
-                  variant="text"
-                  color="red"
-                  :disabled="deleting"
-                  @click="openDeleteDialog(photo)"
-                >
-                  <v-icon size="16">mdi-delete</v-icon>
-                </v-btn>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
-        <p v-else class="text-caption text-medium-emphasis mt-4">
+        <div v-if="photos.length" class="photo-library-grid">
+          <article v-for="photo in photos" :key="photo.id" class="photo-card">
+            <img
+              :src="photo.url || photo.public_url"
+              class="photo-card__image"
+              alt=""
+            >
+            <div class="photo-card__footer">
+              <span
+                class="photo-card__status"
+                :class="`photo-card__status--${statusColor(photo.status)}`"
+              >
+                {{ statusLabel(photo.status) }}
+              </span>
+              <button
+                type="button"
+                class="photo-card__delete"
+                :disabled="deleting"
+                @click="openDeleteDialog(photo)"
+              >
+                <i class="mdi mdi-delete" aria-hidden="true" />
+              </button>
+            </div>
+          </article>
+        </div>
+        <p v-else class="photo-library-empty">
           {{ t("components.photo-library.empty") }}
         </p>
       </template>
-    </v-card-text>
-  </v-card>
+    </section>
 
-  <v-dialog v-model="deleteDialog" max-width="420">
-    <v-card>
-      <v-card-title>{{ t("components.photo-library.delete-title") }}</v-card-title>
-      <v-card-text>
-        {{ t("components.photo-library.delete-body") }}
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn variant="text" :disabled="deleting" @click="closeDeleteDialog">
-          {{ t("components.photo-library.cancel") }}
-        </v-btn>
-        <v-btn color="red" :loading="deleting" @click="confirmDelete">
-          {{ t("components.photo-library.confirm") }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <Teleport to="body">
+      <Transition name="photo-library-modal-fade">
+        <div
+          v-if="deleteDialog"
+          class="photo-library-modal"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="photo-library-modal__scrim"
+            aria-label="Close photo delete dialog"
+            @click="closeDeleteDialog"
+          />
+          <div class="photo-library-modal__panel">
+            <h3 class="photo-library-modal__title">
+              {{ t("components.photo-library.delete-title") }}
+            </h3>
+            <p class="photo-library-modal__body">
+              {{ t("components.photo-library.delete-body") }}
+            </p>
+            <div class="photo-library-modal__actions">
+              <button
+                type="button"
+                class="photo-library-modal__btn"
+                :disabled="deleting"
+                @click="closeDeleteDialog"
+              >
+                {{ t("components.photo-library.cancel") }}
+              </button>
+              <button
+                type="button"
+                class="photo-library-modal__btn photo-library-modal__btn--danger"
+                :disabled="deleting"
+                @click="confirmDelete"
+              >
+                <span v-if="deleting" class="photo-library-card__spinner" aria-hidden="true" />
+                {{ t("components.photo-library.confirm") }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
@@ -162,12 +185,9 @@ const statusColor = (status) => {
   return "warning";
 };
 
-const handleFileChange = (file) => {
-  if (Array.isArray(file)) {
-    selectedFile.value = file[0] || null;
-  } else {
-    selectedFile.value = file || null;
-  }
+const handleFileChange = (fileList) => {
+  const file = Array.isArray(fileList) ? fileList[0] : fileList?.[0];
+  selectedFile.value = file || null;
 };
 
 const readFileAsDataUrl = (file) =>
@@ -292,16 +312,272 @@ watch(
 </script>
 
 <style scoped>
+.photo-library-card {
+  padding: 1.25rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 18px;
+  background: rgb(var(--color-surface) / 0.96);
+}
+
+.photo-library-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.photo-library-card__title,
+.photo-library-modal__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  color: rgb(var(--color-foreground));
+}
+
+.photo-library-card__refresh,
+.photo-library-form__submit,
+.photo-library-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.3rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 600;
+}
+
+.photo-library-card__refresh,
+.photo-library-modal__btn {
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.82);
+}
+
+.photo-library-form__submit {
+  border: 0;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-background));
+}
+
+.photo-library-card__refresh:disabled,
+.photo-library-form__submit:disabled,
+.photo-library-modal__btn:disabled,
+.photo-card__delete:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.photo-library-card__spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: photo-library-spin 0.7s linear infinite;
+}
+
 .photo-library-form {
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.photo-library-upload {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.photo-library-upload__label,
+.photo-library-form__hint,
+.photo-library-empty,
+.photo-library-modal__body {
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
+.photo-library-upload__input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid rgb(var(--color-border) / 0.82);
+  border-radius: 12px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+}
+
+.photo-library-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.photo-library-form__hint,
+.photo-library-empty {
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.photo-library-status {
+  margin-top: 0.9rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.photo-library-status--error {
+  background: rgb(var(--color-danger) / 0.1);
+  border-color: rgb(var(--color-danger) / 0.22);
+  color: rgb(var(--color-danger));
+}
+
+.photo-library-status--success {
+  background: rgb(var(--color-success) / 0.12);
+  border-color: rgb(var(--color-success) / 0.22);
+  color: rgb(var(--color-success));
+}
+
+.photo-library-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 640px) {
+  .photo-library-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .photo-library-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .photo-card {
   overflow: hidden;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 14px;
+  background: rgb(var(--color-surface));
 }
 
-.photo-card-image {
+.photo-card__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
   background: #0f172a;
+}
+
+.photo-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem;
+}
+
+.photo-card__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.6rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.photo-card__status--success {
+  background: rgb(var(--color-success) / 0.12);
+  color: rgb(var(--color-success));
+}
+
+.photo-card__status--error {
+  background: rgb(var(--color-danger) / 0.12);
+  color: rgb(var(--color-danger));
+}
+
+.photo-card__status--warning {
+  background: rgb(var(--color-warning) / 0.12);
+  color: rgb(var(--color-warning));
+}
+
+.photo-card__delete {
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--color-danger));
+}
+
+.photo-card__delete:hover,
+.photo-card__delete:focus-visible {
+  outline: none;
+  background: rgb(var(--color-danger) / 0.08);
+}
+
+.photo-library-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+}
+
+.photo-library-modal__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.72);
+}
+
+.photo-library-modal__panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(92vw, 420px);
+  transform: translate(-50%, -50%);
+  padding: 1.2rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 18px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 24px 48px rgb(15 23 42 / 0.28);
+}
+
+.photo-library-modal__body {
+  margin: 0.75rem 0 0;
+  line-height: 1.6;
+}
+
+.photo-library-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.photo-library-modal__btn--danger {
+  border-color: transparent;
+  background: rgb(var(--color-danger));
+  color: white;
+}
+
+.photo-library-modal-fade-enter-active,
+.photo-library-modal-fade-leave-active {
+  transition: opacity 160ms ease;
+}
+
+.photo-library-modal-fade-enter-from,
+.photo-library-modal-fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes photo-library-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

@@ -1,23 +1,16 @@
 <template>
-  <div class="d-flex align-center" style="gap: 6px;">
-    <v-tooltip
+  <div class="looking-for-icons">
+    <i
       v-for="icon in lookingForIcons"
       :key="icon.id"
-      :text="icon.tooltip"
-      location="top"
-      :scrim="false"
-      :open-on-click="false"
-    >
-      <template #activator="{ props: tooltipProps }">
-        <v-icon
-          v-bind="tooltipProps"
-          :icon="icon.icon"
-          :size="iconSize"
-          class="looking-for-icon"
-          :style="{ '--looking-for-icon-color': resolveIconColor(icon.color) }"
-        />
-      </template>
-    </v-tooltip>
+      :class="['mdi', icon.icon, 'looking-for-icon']"
+      :title="icon.tooltip"
+      :aria-label="icon.tooltip"
+      :style="{
+        '--looking-for-icon-color': resolveIconColor(icon.color),
+        '--looking-for-icon-size': `${Number(iconSize) || 20}px`,
+      }"
+    />
   </div>
 </template>
 
@@ -51,7 +44,7 @@ const ICON_COLORS = {
 
 const resolveIconColor = (color) => {
   const normalized = String(color || "").trim().toLowerCase();
-  return ICON_COLORS[normalized] || normalized || "rgba(var(--v-theme-on-surface), 0.72)";
+  return ICON_COLORS[normalized] || normalized || "#94a3b8";
 };
 
 const loadIcons = async (userId) => {
@@ -65,8 +58,18 @@ watch(() => props.userId, (newUserId) => loadIcons(newUserId));
 </script>
 
 <style scoped>
+.looking-for-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
 .looking-for-icon {
-  color: var(--looking-for-icon-color, rgba(var(--v-theme-on-surface), 0.72)) !important;
-  background: transparent !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--looking-for-icon-size, 20px);
+  color: var(--looking-for-icon-color, #94a3b8);
+  background: transparent;
 }
 </style>

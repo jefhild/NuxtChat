@@ -2,102 +2,90 @@
   <section :class="['seo-discovery', { 'seo-discovery--dark': isDarkTheme }]">
     <div class="seo-discovery__header">
       <div>
-        <v-chip size="small" variant="tonal" color="primary" class="mb-3">
+        <span class="seo-discovery-chip seo-discovery-chip--primary mb-3">
           {{ copy.kicker }}
-        </v-chip>
-        <h2 class="text-h4 font-weight-bold mb-3">
+        </span>
+        <h2 class="mb-3 text-3xl font-semibold text-foreground md:text-4xl">
           {{ copy.title }}
         </h2>
-        <p class="text-body-1 text-medium-emphasis seo-discovery__intro">
+        <p class="seo-discovery__intro text-base text-foreground/70">
           {{ copy.description }}
         </p>
       </div>
       <div class="seo-discovery__hub-links">
-        <v-btn
+        <NuxtLink
           v-for="hub in hubs"
           :key="hub.href"
-          variant="outlined"
-          color="primary"
           :to="localPath(hub.href)"
+          class="seo-discovery__hub-link"
         >
           {{ hub.label }}
-        </v-btn>
+        </NuxtLink>
       </div>
     </div>
 
-    <v-row class="mt-2">
-      <v-col v-for="card in featuredCards" :key="card.pageType" cols="12" md="4">
+    <div class="mt-2 grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div v-for="card in featuredCards" :key="card.pageType">
         <NuxtLink
           v-if="card.page"
           :to="localPath(card.page.path)"
           class="seo-discovery__card-link"
         >
-          <v-card
-            :class="['seo-discovery__card h-100', { 'seo-discovery__card--dark': isDarkTheme }]"
-            rounded="xl"
-            elevation="0"
-          >
+          <div :class="['seo-discovery__card h-full', { 'seo-discovery__card--dark': isDarkTheme }]">
             <div class="seo-discovery__card-inner">
-              <div class="d-flex align-center justify-space-between ga-3 mb-4">
-                <v-chip size="small" color="primary" variant="tonal">
+              <div class="mb-4 flex items-center justify-between gap-3">
+                <span class="seo-discovery-chip seo-discovery-chip--primary">
                   {{ card.kicker }}
-                </v-chip>
-                <span class="text-caption text-medium-emphasis">
+                </span>
+                <span class="text-xs text-foreground/65">
                   {{ card.hubLabel }}
                 </span>
               </div>
 
-              <div class="text-h6 font-weight-bold mb-2">
+              <div class="mb-2 text-lg font-semibold text-foreground">
                 {{ card.page.title }}
               </div>
-              <p class="text-body-2 text-medium-emphasis mb-0 seo-discovery__card-copy">
+              <p class="seo-discovery__card-copy mb-0 text-sm text-foreground/70">
                 {{ card.page.subtitle || card.page.heroBody || card.emptyDescription }}
               </p>
             </div>
-          </v-card>
+          </div>
         </NuxtLink>
-        <v-card
+        <div
           v-else
-          :class="['seo-discovery__card h-100', { 'seo-discovery__card--dark': isDarkTheme }]"
-          rounded="xl"
-          elevation="0"
+          :class="['seo-discovery__card h-full', { 'seo-discovery__card--dark': isDarkTheme }]"
         >
           <div class="seo-discovery__card-inner">
-            <div class="d-flex align-center justify-space-between ga-3 mb-4">
-              <v-chip size="small" color="primary" variant="tonal">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <span class="seo-discovery-chip seo-discovery-chip--primary">
                 {{ card.kicker }}
-              </v-chip>
-              <span class="text-caption text-medium-emphasis">
+              </span>
+              <span class="text-xs text-foreground/65">
                 {{ card.hubLabel }}
               </span>
             </div>
 
-            <div class="text-h6 font-weight-bold mb-2">
+            <div class="mb-2 text-lg font-semibold text-foreground">
               {{ card.emptyTitle }}
             </div>
-            <p class="text-body-2 text-medium-emphasis mb-5 seo-discovery__card-copy">
+            <p class="seo-discovery__card-copy mb-5 text-sm text-foreground/70">
               {{ card.emptyDescription }}
             </p>
 
-            <div class="d-flex flex-wrap ga-3 mt-auto">
-              <v-btn
-                variant="text"
-                color="primary"
-                :to="localPath(card.hubHref)"
-              >
+            <div class="mt-auto flex flex-wrap gap-3">
+              <NuxtLink :to="localPath(card.hubHref)" class="seo-discovery__text-link">
                 {{ copy.browseHub }}
-              </v-btn>
+              </NuxtLink>
             </div>
           </div>
-        </v-card>
-      </v-col>
-    </v-row>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useTheme } from "vuetify";
 
 type SeoPageSummary = {
   pageType: "compare" | "guide" | "topic";
@@ -116,8 +104,8 @@ type SeoApiResponse = {
 
 const localPath = useLocalePath();
 const { locale } = useI18n();
-const theme = useTheme();
-const isDarkTheme = computed(() => theme.global.current.value.dark);
+const { resolvedTheme } = useAppTheme();
+const isDarkTheme = computed(() => resolvedTheme.value === "dark");
 const localeCode = computed(() =>
   String(locale.value || "en")
     .trim()
@@ -311,6 +299,24 @@ const featuredCards = computed(() => [
   border-color: rgba(148, 163, 184, 0.2);
 }
 
+.seo-discovery-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.42rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.seo-discovery-chip--primary {
+  background: rgb(var(--color-primary) / 0.12);
+  color: rgb(var(--color-primary));
+}
+
 .seo-discovery__header {
   display: flex;
   justify-content: space-between;
@@ -328,6 +334,37 @@ const featuredCards = computed(() => [
   flex-wrap: wrap;
   gap: 12px;
   justify-content: flex-end;
+}
+
+.seo-discovery__hub-link {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--color-primary) / 0.26);
+  padding: 0.75rem 1.1rem;
+  color: rgb(var(--color-primary));
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.seo-discovery__hub-link:hover,
+.seo-discovery__hub-link:focus-visible {
+  transform: translateY(-1px);
+  background: rgb(var(--color-primary) / 0.08);
+}
+
+.seo-discovery__hub-link:focus-visible {
+  outline: 2px solid rgb(var(--color-primary) / 0.45);
+  outline-offset: 2px;
 }
 
 .seo-discovery__card {
@@ -380,6 +417,17 @@ const featuredCards = computed(() => [
 
 .seo-discovery__card-copy {
   max-width: 40ch;
+}
+
+.seo-discovery__text-link {
+  color: rgb(var(--color-primary));
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.seo-discovery__text-link:hover,
+.seo-discovery__text-link:focus-visible {
+  text-decoration: underline;
 }
 
 @media (max-width: 959px) {

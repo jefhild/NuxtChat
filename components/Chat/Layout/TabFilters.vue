@@ -57,7 +57,7 @@ const forwardFilterChanged = (payload) => {
 
 <template>
   <!-- single inline toolbar -->
-  <div class="d-flex align-center flex-wrap gap-4 text-subtitle-2">
+  <div class="flex flex-wrap items-center gap-4 text-sm">
     <ChatLayoutFilterMenu
       :userProfile="userProfile || null"
       :disableToggle="disableToggle"
@@ -65,40 +65,40 @@ const forwardFilterChanged = (payload) => {
       :showAi="showAi"
       @filter-changed="forwardFilterChanged"
       @update:showAi="updateShowAi"
-      class="ml-2"
+       class="ml-2"
     />
 
     <!-- Online -->
-    <label class="d-flex align-center gap-1 ml-2 text-blue-darken-3">
+    <label class="ml-2 flex items-center gap-1 text-blue-300">
       <input
         type="checkbox"
         :checked="modelValue.online"
         @change="toggle('online')"
         class="accent-green-600"
       />
-      <span class="text-medium-emphasis ml-2">Online</span>
+      <span class="ml-2 text-slate-300">Online</span>
     </label>
 
     <!-- Offline -->
-    <label class="d-flex align-center ml-2 text-red-darken-2">
+    <label class="ml-2 flex items-center text-red-300">
       <input
         type="checkbox"
         :checked="modelValue.offline"
         @change="toggle('offline')"
         class="accent-red-600"
       />
-      <span class="text-medium-emphasis ml-2">Offline</span>
+      <span class="ml-2 text-slate-300">Offline</span>
     </label>
 
     <!-- Active -->
-    <label class="d-flex align-center ml-2">
+    <label class="ml-2 flex items-center">
       <input
         type="checkbox"
         :checked="modelValue.active"
         @change="toggle('active')"
         class="accent-blue-600"
       />
-      <span class="text-medium-emphasis ml-2">Active</span>
+      <span class="ml-2 text-slate-300">Active</span>
 
     </label>
   </div>

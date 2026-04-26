@@ -1,54 +1,115 @@
 <template>
-	<v-dialog v-model="dialog" max-width="500">
-		<v-card>
-			<v-card-title class="headline">{{ $t('components.report-user-modal.title') }}</v-card-title>
-			<v-card-text>
-				<v-select v-model="selectedCategories" :items="categories" item-title="label" item-value="value"
-					:label="$t('components.report-user-modal.select-issues')" multiple chips closable-chips variant="outlined"
-					density="comfortable" required />
-				<v-textarea v-model="reportReason" :label="$t('components.report-user-modal.describe-problem')" auto-grow rows="3" variant="outlined"
-					density="comfortable" required />
+  <Teleport to="body">
+    <div
+      v-if="dialog"
+      class="report-modal"
+      role="dialog"
+      aria-modal="true"
+      @click.self="dialog = false"
+    >
+      <div class="report-modal__card">
+        <div class="report-modal__header">
+          <h2 class="report-modal__title">
+            {{ $t("components.report-user-modal.title") }}
+          </h2>
+        </div>
 
-				<div class="mt-4">
-					<label class="text-subtitle-2 mb-2 d-block">{{ $t('components.report-user-modal.select-message') }}</label>
-					<div class="text-caption text-right mb-1 text-grey-darken-1">
-						{{ $t('components.report-user-modal.selected-messages') }} {{ selectedMessages.length }} / {{ $t('components.report-user-modal.10') }}
-					</div>
-					<v-sheet class="message-scroll-list" elevation="1" max-height="200" rounded style="overflow-y: auto"
-						@scroll.passive="handleScroll">
-						<LoadingContainer v-if="isLoadingMore" />
-						<v-list density="compact">
-							<v-list-item v-for="message in messages" :key="message.id" :value="message"
-								@click="selectMessage(message)"
-								:class="{ 'bg-grey-lighten-1': selectedMessages.some(m => m.id === message.id) }">
-								<v-list-item-title>{{ message.content }}</v-list-item-title>
-								<div class="image-wrapper" v-if="message.file_url">
-									<NuxtImg :src="message.file_url" :alt="message.file_name" class="preview-image"
-										cover />
-								</div>
-								<v-list-item-subtitle class="text-caption">
-									{{ formatDate(message.created_at)}}
-								</v-list-item-subtitle>
+        <div class="report-modal__body">
+          <section class="report-section">
+            <p class="report-label">
+              {{ $t("components.report-user-modal.select-issues") }}
+            </p>
+            <div class="report-category-grid">
+              <label
+                v-for="category in categories"
+                :key="category.value"
+                class="report-category"
+              >
+                <input
+                  :checked="selectedCategories.includes(category.value)"
+                  type="checkbox"
+                  class="report-category__checkbox"
+                  @change="toggleCategory(category.value)"
+                />
+                <span>{{ category.label }}</span>
+              </label>
+            </div>
+          </section>
 
-							</v-list-item>
-						</v-list>
-					</v-sheet>
-				</div>
+          <section class="report-section">
+            <label class="report-label" for="report-reason">
+              {{ $t("components.report-user-modal.describe-problem") }}
+            </label>
+            <textarea
+              id="report-reason"
+              v-model="reportReason"
+              rows="4"
+              class="report-textarea"
+            />
+          </section>
 
-			</v-card-text>
-			<v-card-actions>
-				<v-spacer />
-				<v-btn text @click="dialog = false">{{ $t('components.report-user-modal.cancel') }}</v-btn>
-				<v-btn color="red" variant="flat" :disabled="!canSubmit" @click="submitReport">
-					{{ $t('components.report-user-modal.submit') }}
-				</v-btn>
-			</v-card-actions>
-		</v-card>
-	</v-dialog>
+          <section class="report-section">
+            <div class="report-section__row">
+              <label class="report-label">
+                {{ $t("components.report-user-modal.select-message") }}
+              </label>
+              <div class="report-count">
+                {{ $t("components.report-user-modal.selected-messages") }}
+                {{ selectedMessages.length }} /
+                {{ $t("components.report-user-modal.10") }}
+              </div>
+            </div>
 
-	<v-snackbar v-model="showAlert" :timeout="3000" color="red" location="top">
-		{{ snackbarMessage }}
-	</v-snackbar>
+            <div class="message-scroll-list" @scroll.passive="handleScroll">
+              <LoadingContainer v-if="isLoadingMore" />
+              <button
+                v-for="message in messages"
+                :key="message.id"
+                type="button"
+                class="report-message"
+                :class="{
+                  'report-message--selected': selectedMessages.some(
+                    (selectedMessage) => selectedMessage.id === message.id
+                  ),
+                }"
+                @click="selectMessage(message)"
+              >
+                <span class="report-message__content">{{ message.content }}</span>
+                <div v-if="message.file_url" class="image-wrapper">
+                  <NuxtImg
+                    :src="message.file_url"
+                    :alt="message.file_name"
+                    class="preview-image"
+                  />
+                </div>
+                <span class="report-message__meta">
+                  {{ formatDate(message.created_at) }}
+                </span>
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <div class="report-modal__actions">
+          <button type="button" class="report-action report-action--ghost" @click="dialog = false">
+            {{ $t("components.report-user-modal.cancel") }}
+          </button>
+          <button
+            type="button"
+            class="report-action report-action--danger"
+            :disabled="!canSubmit"
+            @click="submitReport"
+          >
+            {{ $t("components.report-user-modal.submit") }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+
+  <div v-if="showAlert" class="report-toast" role="status" aria-live="polite">
+    {{ snackbarMessage }}
+  </div>
 </template>
 
 <script setup>
@@ -86,6 +147,17 @@ const categories = [
 	{ label: t('components.report-user-modal.descriptors'), value: "descriptors" },
 	{ label: t('components.report-user-modal.actions'), value: "actions" },
 ];
+
+const toggleCategory = (value) => {
+  if (selectedCategories.value.includes(value)) {
+    selectedCategories.value = selectedCategories.value.filter(
+      (category) => category !== value
+    );
+    return;
+  }
+
+  selectedCategories.value = [...selectedCategories.value, value];
+};
 
 const selectMessage = (message) =>
 {
@@ -193,7 +265,7 @@ watch(dialog, async (visible) => {
 
 
 const canSubmit = computed(() =>
-	selectedCategories.value != null && reportReason.value.trim().length > 0
+	selectedCategories.value.length > 0 && reportReason.value.trim().length > 0
 );
 
 const submitReport = () =>
@@ -206,15 +278,113 @@ const submitReport = () =>
 	});
 
 	selectedMessages.value = [];
-	selectedCategories.value = null;
+	selectedCategories.value = [];
 	reportReason.value = "";
 	dialog.value = false;
 };
 </script>
 
 <style scoped>
+.report-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(15 23 42 / 0.72);
+}
+
+.report-modal__card {
+  width: min(100%, 500px);
+  border-radius: 18px;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: rgb(var(--color-surface) / 0.98);
+  color: rgb(var(--color-foreground) / 0.92);
+  box-shadow: 0 28px 60px rgb(var(--color-shadow) / 0.28);
+}
+
+.report-modal__header {
+  padding: 1.2rem 1.25rem 0;
+}
+
+.report-modal__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.report-modal__body {
+  padding: 1rem 1.25rem;
+}
+
+.report-section + .report-section {
+  margin-top: 1rem;
+}
+
+.report-label {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgb(var(--color-foreground) / 0.84);
+}
+
+.report-category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.65rem;
+}
+
+.report-category {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 12px;
+  border: 1px solid rgb(var(--color-border) / 0.78);
+  background: rgb(var(--color-surface) / 0.9);
+  padding: 0.65rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.report-category__checkbox {
+  accent-color: rgb(var(--color-primary));
+}
+
+.report-textarea {
+  width: 100%;
+  min-height: 7rem;
+  resize: vertical;
+  border-radius: 12px;
+  border: 1px solid rgb(var(--color-border) / 0.8);
+  background: rgb(var(--color-surface) / 0.9);
+  color: rgb(var(--color-foreground) / 0.92);
+  padding: 0.8rem 0.9rem;
+  line-height: 1.45;
+}
+
+.report-section__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.report-count {
+  font-size: 0.78rem;
+  color: rgb(var(--color-foreground) / 0.62);
+  text-align: right;
+}
+
 .message-scroll-list {
-	border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+	border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 14px;
+  background: rgb(var(--color-surface) / 0.8);
+  padding: 0.7rem;
 	max-height: 200px;
 	overflow-y: auto;
 }
@@ -235,5 +405,89 @@ const submitReport = () =>
 	height: auto;
 	display: block;
 	border-radius: 20px;
+}
+
+.report-message {
+  width: 100%;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 14px;
+  background: rgb(var(--color-surface) / 0.92);
+  color: inherit;
+  padding: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.report-message:hover,
+.report-message:focus-visible {
+  border-color: rgb(var(--color-primary) / 0.5);
+  background: rgb(var(--color-primary) / 0.08);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.report-message--selected {
+  border-color: rgb(var(--color-primary) / 0.75);
+  background: rgb(var(--color-primary) / 0.14);
+}
+
+.report-message__content {
+  display: block;
+  font-size: 0.92rem;
+  color: rgb(var(--color-foreground) / 0.92);
+}
+
+.report-message__meta {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 0.78rem;
+  color: rgb(var(--color-foreground) / 0.62);
+}
+
+.report-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  padding: 0 1.25rem 1.25rem;
+}
+
+.report-action {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 160ms ease, background-color 160ms ease;
+}
+
+.report-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.report-action--ghost {
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.74);
+}
+
+.report-action--danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.report-toast {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  z-index: 1250;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  padding: 0.7rem 1rem;
+  box-shadow: 0 18px 40px rgb(0 0 0 / 0.25);
 }
 </style>

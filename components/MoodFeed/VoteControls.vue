@@ -1,30 +1,26 @@
 <template>
-  <div class="vote-controls d-flex align-center ga-1">
-    <v-btn
+  <div class="vote-controls">
+    <button
+      type="button"
       class="vote-btn"
-      icon
-      variant="plain"
-      density="comfortable"
+      :class="{ 'is-active': currentVote === 1 }"
       :disabled="disabled || !canVote"
-      :color="currentVote === 1 ? 'primary' : undefined"
       @click="handleVote(1)"
     >
-      <v-icon size="18">mdi-arrow-up-bold</v-icon>
-    </v-btn>
+      <i class="mdi mdi-arrow-up-bold" aria-hidden="true" />
+    </button>
 
-    <span class="text-caption">{{ formatCount(currentScore) }}</span>
+    <span class="vote-count">{{ formatCount(currentScore) }}</span>
 
-    <v-btn
+    <button
+      type="button"
       class="vote-btn"
-      icon
-      variant="plain"
-      density="comfortable"
+      :class="{ 'is-active': currentVote === -1 }"
       :disabled="disabled || !canVote"
-      :color="currentVote === -1 ? 'primary' : undefined"
       @click="handleVote(-1)"
     >
-      <v-icon size="18">mdi-arrow-down-bold</v-icon>
-    </v-btn>
+      <i class="mdi mdi-arrow-down-bold" aria-hidden="true" />
+    </button>
   </div>
 </template>
 
@@ -98,38 +94,48 @@ async function handleVote(value) {
 
 <style scoped>
 .vote-controls {
-  background: transparent !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
   color: rgba(226, 232, 240, 0.82);
 }
 
-.vote-controls :deep(.v-btn),
-.vote-controls :deep(.v-btn__overlay),
-.vote-controls :deep(.v-btn__underlay),
-.vote-controls :deep(.v-btn__content),
-.vote-controls :deep(.v-icon) {
-  background: transparent !important;
-  box-shadow: none !important;
+.vote-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.95rem;
+  height: 1.95rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
 }
 
-.vote-controls :deep(.vote-btn),
-.vote-controls :deep(.vote-btn.v-btn) {
-  --v-btn-bg: transparent !important;
-  --v-theme-overlay-multiplier: 0 !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  border-color: transparent !important;
-  color: rgba(226, 232, 240, 0.82) !important;
+.vote-btn:hover:not(:disabled),
+.vote-btn:focus-visible {
+  background: rgba(148, 163, 184, 0.16);
+  color: rgba(241, 245, 249, 0.98);
+  outline: none;
 }
 
-.vote-controls :deep(.vote-btn.v-btn--icon),
-.vote-controls :deep(.vote-btn.v-btn--variant-plain),
-.vote-controls :deep(.vote-btn.v-btn--disabled) {
-  background-color: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
+.vote-btn.is-active {
+  color: #60a5fa;
 }
 
-.vote-controls :deep(.vote-btn:hover) {
-  color: rgba(241, 245, 249, 0.98) !important;
+.vote-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.vote-btn .mdi {
+  font-size: 1rem;
+}
+
+.vote-count {
+  min-width: 2ch;
+  font-size: 0.76rem;
 }
 </style>

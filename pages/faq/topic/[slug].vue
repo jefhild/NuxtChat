@@ -1,68 +1,91 @@
 <template>
-  <v-container fluid>
-    <v-breadcrumbs :items="breadcrumbs" class="pa-0 mb-2 text-body-2">
-      <template #divider>
-        <v-icon size="x-small" icon="mdi-chevron-right" />
-      </template>
-    </v-breadcrumbs>
+  <div class="mx-auto w-full max-w-6xl px-4 py-4 sm:px-6 lg:px-8">
+    <nav class="faq-topic-breadcrumbs mb-2" aria-label="Breadcrumb">
+      <ol class="faq-topic-breadcrumbs__list">
+        <li
+          v-for="(crumb, index) in breadcrumbs"
+          :key="`${crumb.title}-${index}`"
+          class="faq-topic-breadcrumbs__item"
+        >
+          <NuxtLink
+            v-if="crumb.to && !crumb.disabled"
+            :to="crumb.to"
+            class="faq-topic-breadcrumbs__link"
+          >
+            {{ crumb.title }}
+          </NuxtLink>
+          <span v-else class="faq-topic-breadcrumbs__current">{{ crumb.title }}</span>
+          <i
+            v-if="index < breadcrumbs.length - 1"
+            class="mdi mdi-chevron-right faq-topic-breadcrumbs__divider"
+            aria-hidden="true"
+          />
+        </li>
+      </ol>
+    </nav>
 
     <PageHeader
       :text="topicTitle"
       :subtitle="$t('pages.faq.topic.subtitle', { group: groupTitle })"
     >
       <template #icon>
-        <v-icon icon="mdi-help-circle-outline" />
+        <i class="mdi mdi-help-circle-outline text-primary" aria-hidden="true" />
       </template>
     </PageHeader>
 
-    <v-row class="mt-2">
-      <v-col cols="12" md="8" offset-md="2">
-        <v-card elevation="0" class="faq-topic-card pa-3 pa-md-4">
-          <v-skeleton-loader v-if="pending" type="list-item@4" class="pa-2" />
+    <div class="mt-2">
+      <div class="mx-auto w-full max-w-3xl">
+        <div class="faq-topic-card p-3 md:p-4">
+          <div v-if="pending" class="faq-topic-skeleton" aria-hidden="true">
+            <span v-for="index in 4" :key="index" class="faq-topic-skeleton__row" />
+          </div>
           <div
             v-else-if="!entries.length"
-            class="text-body-2 text-medium-emphasis pa-4"
+            class="p-4 text-sm text-foreground/70"
           >
             {{ $t("pages.faq.topic.empty") }}
           </div>
-          <v-expansion-panels
+          <div
             v-else
-            v-model="expanded"
-            variant="accordion"
             class="faq-topic-panels"
           >
-            <v-expansion-panel
+            <section
               v-for="faq in entries"
               :id="faq.slug || faq.id"
               :key="faq.id"
-              :value="faq.slug || faq.id"
               class="faq-panel"
             >
-              <v-expansion-panel-title>
-                <h3 class="font-weight-medium faq-question-heading">
+              <button
+                type="button"
+                class="faq-panel__trigger"
+                :aria-expanded="expanded === (faq.slug || faq.id) ? 'true' : 'false'"
+                @click="toggleExpanded(faq.slug || faq.id)"
+              >
+                <h3 class="faq-question-heading">
                   {{ faq.question }}
                 </h3>
-              </v-expansion-panel-title>
-              <v-expansion-panel-text>
-                <p class="text-body-2 mb-0">{{ faq.answer }}</p>
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-          </v-expansion-panels>
-        </v-card>
+                <i
+                  class="mdi mdi-chevron-down faq-panel__chevron"
+                  :class="{ 'faq-panel__chevron--open': expanded === (faq.slug || faq.id) }"
+                  aria-hidden="true"
+                />
+              </button>
+              <div v-if="expanded === (faq.slug || faq.id)" class="faq-panel__content">
+                <p class="mb-0 text-sm text-foreground/78">{{ faq.answer }}</p>
+              </div>
+            </section>
+          </div>
+        </div>
 
         <div class="mt-4">
-          <v-btn
-            variant="text"
-            :to="localePath('/faq')"
-            prepend-icon="mdi-arrow-left"
-            size="small"
-          >
+          <NuxtLink :to="localePath('/faq')" class="faq-topic-back-link">
+            <i class="mdi mdi-arrow-left text-sm" aria-hidden="true" />
             {{ $t("pages.faq.topic.back-link") }}
-          </v-btn>
+          </NuxtLink>
         </div>
-      </v-col>
-    </v-row>
-  </v-container>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -100,6 +123,10 @@ const groupTitle = computed(() => topicData.value?.topic?.groupTitle || "");
 const entries = computed(() => topicData.value?.entries || []);
 
 const expanded = ref(null);
+
+const toggleExpanded = (value) => {
+  expanded.value = expanded.value === value ? null : value;
+};
 
 watch(
   () => entries.value,
@@ -210,19 +237,144 @@ useHead(() => {
 .faq-topic-card {
   border-radius: 16px;
   border: 1px solid rgba(99, 109, 129, 0.2);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(244, 247, 251, 0.94));
+}
+
+.faq-topic-breadcrumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.faq-topic-breadcrumbs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.92rem;
+}
+
+.faq-topic-breadcrumbs__link {
+  color: rgb(var(--color-primary));
+  text-decoration: none;
+}
+
+.faq-topic-breadcrumbs__link:hover {
+  text-decoration: underline;
+}
+
+.faq-topic-breadcrumbs__current {
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
+.faq-topic-breadcrumbs__divider {
+  color: rgb(var(--color-foreground) / 0.45);
+  font-size: 0.82rem;
+}
+
+.faq-topic-skeleton {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.5rem;
+}
+
+.faq-topic-skeleton__row {
+  display: block;
+  height: 3rem;
+  border-radius: 14px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.14) 0%,
+    rgba(148, 163, 184, 0.26) 50%,
+    rgba(148, 163, 184, 0.14) 100%
+  );
+  background-size: 200% 100%;
+  animation: faq-topic-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+.faq-topic-panels {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.faq-panel {
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(99, 109, 129, 0.18);
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.faq-panel__trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 0;
+  background: transparent;
+  padding: 0.9rem 1rem;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
 }
 
 .faq-question-heading {
   margin: 0;
-  font-size: inherit;
-  line-height: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 600;
 }
 
-.faq-panel :deep(.v-expansion-panel-title) {
-  padding: 12px 16px;
+.faq-panel__content {
+  padding: 0 1rem 1rem;
 }
 
-.faq-panel :deep(.v-expansion-panel-text__wrapper) {
-  padding: 0 16px 16px;
+.faq-panel__chevron {
+  flex: 0 0 auto;
+  transition: transform 160ms ease;
+}
+
+.faq-panel__chevron--open {
+  transform: rotate(180deg);
+}
+
+.faq-topic-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: rgb(var(--color-primary));
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.faq-topic-back-link:hover {
+  text-decoration: underline;
+}
+
+@keyframes faq-topic-skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+html.dark .faq-topic-card,
+html[data-imchatty-theme="dark"] .faq-topic-card {
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94));
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+html.dark .faq-panel,
+html[data-imchatty-theme="dark"] .faq-panel {
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(148, 163, 184, 0.18);
 }
 </style>

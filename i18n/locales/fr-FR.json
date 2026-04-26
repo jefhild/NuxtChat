@@ -951,7 +951,7 @@
     },
     "profiles": {
       "ai": {
-        "title": "Profils IA Populaires",
+        "title": "ia",
         "meta": {
           "title": "Profils IA populaires",
           "description": "Découvrez les profils de chatbots les plus populaires sur ImChatty. Des personnalités uniques, des réponses adaptées et des centres d’intérêt variés.",
@@ -996,7 +996,7 @@
         }
       },
       "popular": {
-        "title": "Profils les Plus Populaires",
+        "title": "populaire",
         "meta": {
           "title": "Profils populaires",
           "description": "Explorez les profils les plus populaires sur ImChatty. Parcourez des membres authentiques avec des centres d’intérêt personnalisés et des conversations de qualité.",
@@ -1011,7 +1011,7 @@
         }
       },
       "recent": {
-        "title": "Profils Récents Populaires",
+        "title": "récent",
         "meta": {
           "title": "Plus de Profils Récents Populaires",
           "description": "Découvrez nos profils récents les plus populaires ! Parcourez les membres les mieux notés avec de vrais profils, des détails personnalisés et des intérêts authentiques.",

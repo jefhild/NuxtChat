@@ -1,1119 +1,1567 @@
 <template>
-  <div>
+  <div class="admin-ai-bots">
     <LoadingContainer
       v-if="loading"
       text="Loading AI bots..."
-      class="mb-4"
+      class="admin-ai-bots__loading"
     />
 
     <template v-else>
-      <v-alert
+      <div
         v-if="loadError"
-        type="error"
-        variant="tonal"
-        class="mb-4"
-        border="start"
-        border-color="red"
+        class="admin-ai-bots__banner admin-ai-bots__banner--danger"
+        role="alert"
       >
         {{ loadError }}
-      </v-alert>
+      </div>
 
-      <v-card class="pa-4" elevation="3">
-        <v-card-title class="d-flex align-center ga-3">
-          <div class="text-h6">AI Bots</div>
-          <v-chip size="small" color="primary" variant="tonal">
-            {{ bots.length }} total
-          </v-chip>
-          <v-spacer></v-spacer>
-          <v-btn
-            icon="mdi-refresh"
-            variant="text"
-            :disabled="loadingList"
-            @click="loadBots"
-          ></v-btn>
-          <v-btn
-            color="indigo"
-            variant="tonal"
-            :loading="runningHoneyMoltbook"
-            @click="runHoneyMoltbookNow"
-          >
-            <v-icon start icon="mdi-post"></v-icon>
-            Run Honey Moltbook
-          </v-btn>
-          <v-btn
-            color="teal"
-            variant="tonal"
-            :loading="runningLinkedAgents"
-            @click="runLinkedAgentsDailyProfileNow"
-          >
-            <v-icon start icon="mdi-account-broadcast-outline" />
-            Run LinkedAgents
-          </v-btn>
-          <v-btn color="primary" @click="openCreateDialog">
-            <v-icon start icon="mdi-robot-happy-outline"></v-icon>
-            Add Bot
-          </v-btn>
-        </v-card-title>
-        <v-card-subtitle class="text-body-2">
-          Manage personas, prompts, and OpenAI settings for your chat agents.
-        </v-card-subtitle>
-        <v-alert
+      <section class="admin-ai-bots__card">
+        <div class="admin-ai-bots__header">
+          <div>
+            <div class="admin-ai-bots__title-row">
+              <h2 class="admin-ai-bots__title">AI Bots</h2>
+              <span class="admin-ai-bots__count-pill">{{ bots.length }} total</span>
+            </div>
+            <p class="admin-ai-bots__subtitle">
+              Manage personas, prompts, and OpenAI settings for your chat agents.
+            </p>
+          </div>
+
+          <div class="admin-ai-bots__toolbar">
+            <button
+              type="button"
+              class="admin-ai-bots__button"
+              :disabled="loadingList"
+              @click="loadBots"
+            >
+              <span
+                v-if="loadingList"
+                class="admin-ai-bots__spinner"
+                aria-hidden="true"
+              />
+              <i v-else class="mdi mdi-refresh" aria-hidden="true" />
+              Refresh
+            </button>
+            <button
+              type="button"
+              class="admin-ai-bots__button admin-ai-bots__button--info"
+              :disabled="runningHoneyMoltbook"
+              @click="runHoneyMoltbookNow"
+            >
+              <span
+                v-if="runningHoneyMoltbook"
+                class="admin-ai-bots__spinner"
+                aria-hidden="true"
+              />
+              <i v-else class="mdi mdi-post" aria-hidden="true" />
+              Run Honey Moltbook
+            </button>
+            <button
+              type="button"
+              class="admin-ai-bots__button admin-ai-bots__button--success"
+              :disabled="runningLinkedAgents"
+              @click="runLinkedAgentsDailyProfileNow"
+            >
+              <span
+                v-if="runningLinkedAgents"
+                class="admin-ai-bots__spinner"
+                aria-hidden="true"
+              />
+              <i v-else class="mdi mdi-account-broadcast-outline" aria-hidden="true" />
+              Run LinkedAgents
+            </button>
+            <button
+              type="button"
+              class="admin-ai-bots__button admin-ai-bots__button--primary"
+              @click="openCreateDialog"
+            >
+              <i class="mdi mdi-robot-happy-outline" aria-hidden="true" />
+              Add Bot
+            </button>
+          </div>
+        </div>
+
+        <div
           v-if="linkedAgentsRunNotice"
-          class="mt-3"
-          :type="linkedAgentsRunNotice.type"
-          variant="tonal"
-          border="start"
+          class="admin-ai-bots__banner"
+          :class="bannerToneClass(linkedAgentsRunNotice.type)"
+          role="status"
         >
           {{ linkedAgentsRunNotice.message }}
-        </v-alert>
+        </div>
 
-        <v-text-field
-          v-model="search"
-          class="mt-4"
-          label="Search by name, key, or model"
-          prepend-inner-icon="mdi-magnify"
-          clearable
-          hide-details
-        />
-        <v-select
-          v-model="capabilityFilter"
-          class="mt-3"
-          label="Capability filter"
-          :items="capabilityFilterOptions"
-          item-title="label"
-          item-value="value"
-          hide-details
-        />
-        <v-alert
-          v-if="activeFilterNotice"
-          class="mt-3"
-          type="info"
-          variant="tonal"
-          density="compact"
-        >
-          <div class="d-flex align-center ga-2 flex-wrap">
-            <span>{{ activeFilterNotice }}</span>
-            <v-btn size="x-small" variant="text" @click="capabilityFilter = 'all'">
-              Show all
-            </v-btn>
-          </div>
-        </v-alert>
-
-        <v-table class="mt-4" density="comfortable">
-          <thead>
-            <tr>
-              <th class="text-left">Bot</th>
-              <th class="text-left">Model</th>
-              <th class="text-left">Prompt</th>
-              <th class="text-left">Status</th>
-              <th class="text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="bot in filteredBots" :key="bot.id">
-              <td>
-                <div class="d-flex align-center ga-3">
-                  <v-avatar size="40">
-                    <v-img
-                      v-if="bot.profile?.avatar_url"
-                      :src="bot.profile.avatar_url"
-                    />
-                    <span v-else class="avatar-fallback">
-                      {{ avatarInitial(bot) }}
-                    </span>
-                  </v-avatar>
-                  <div>
-                    <div class="font-weight-medium">
-                      {{ bot.profile?.displayname || "Unnamed bot" }}
-                      <v-chip
-                        size="x-small"
-                        color="deep-purple"
-                        class="ml-2"
-                        variant="tonal"
-                      >
-                        {{ bot.role }}
-                      </v-chip>
-                    </div>
-                    <div class="text-caption text-medium-emphasis">
-                      {{ bot.persona_key }}
-                    </div>
-                    <div
-                      v-if="bot.category?.name || bot.category_id"
-                      class="d-flex align-center ga-2 mt-1"
-                    >
-                      <v-chip
-                        size="x-small"
-                        color="primary"
-                        variant="tonal"
-                      >
-                        {{ bot.category?.name || "Unassigned category" }}
-                      </v-chip>
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <div>{{ bot.model }}</div>
-                <div class="text-caption text-medium-emphasis">
-                  Temp {{ bot.temperature }} · Top P {{ bot.top_p }}
-                </div>
-              </td>
-              <td>
-                <div class="text-body-2">
-                  {{ truncate(bot.system_prompt_template) }}
-                </div>
-                <div class="text-caption text-medium-emphasis">
-                  Updated {{ formatTimestamp(bot.updated_at || bot.created_at) }}
-                </div>
-              </td>
-              <td>
-                <v-chip
-                  :color="bot.is_active ? 'success' : 'grey'"
-                  size="small"
-                  variant="tonal"
+        <div class="admin-ai-bots__body">
+          <div class="admin-ai-bots__filters">
+            <label class="admin-ai-bots__field admin-ai-bots__field--search">
+              <span class="admin-ai-bots__field-label">Search</span>
+              <span class="admin-ai-bots__input-wrap">
+                <i class="mdi mdi-magnify admin-ai-bots__input-icon" aria-hidden="true" />
+                <input
+                  v-model="search"
+                  type="search"
+                  class="admin-ai-bots__control admin-ai-bots__control--with-icon"
+                  placeholder="Search by name, key, or model"
                 >
-                  {{ bot.is_active ? "Active" : "Inactive" }}
-                </v-chip>
-                <div class="d-flex flex-wrap ga-1 mt-1">
-                  <v-tooltip
-                    v-for="loc in ['en', 'fr', 'ru', 'zh']"
-                    :key="loc"
-                    :text="angleTranslatedLocales(bot).includes(loc) ? `${loc} angle translated` : `${loc} not translated`"
-                    location="top"
-                  >
-                    <template #activator="{ props: tipProps }">
-                      <v-chip
-                        v-bind="tipProps"
-                        size="x-small"
-                        :variant="angleTranslatedLocales(bot).includes(loc) ? 'tonal' : 'outlined'"
-                        :color="angleTranslatedLocales(bot).includes(loc) ? 'primary' : 'grey'"
-                        :opacity="angleTranslatedLocales(bot).includes(loc) ? 1 : 0.35"
-                        class="text-uppercase"
-                      >{{ loc }}</v-chip>
-                    </template>
-                  </v-tooltip>
-                </div>
-                <div class="d-flex flex-wrap ga-1 mt-2">
-                  <v-chip
-                    v-if="bot.editorial_enabled"
-                    size="x-small"
-                    color="indigo"
-                    variant="tonal"
-                  >
-                    Editorial
-                  </v-chip>
-                  <v-chip
-                    v-if="bot.counterpoint_enabled"
-                    size="x-small"
-                    color="teal"
-                    variant="tonal"
-                  >
-                    Counterpoint
-                  </v-chip>
-                  <v-chip
-                    v-if="bot.honey_enabled"
-                    size="x-small"
-                    color="amber"
-                    variant="tonal"
-                  >
-                    Honey
-                  </v-chip>
-                  <v-chip
-                    v-if="hasLanguagePracticeCapability(bot)"
-                    size="x-small"
-                    color="success"
-                    variant="tonal"
-                  >
-                    Language Practice
-                  </v-chip>
-                  <v-tooltip
-                    v-else
-                    :text="languagePracticeDiagnosticText(bot)"
-                    location="top"
-                  >
-                    <template #activator="{ props: tipProps }">
-                      <v-chip
-                        v-bind="tipProps"
-                        size="x-small"
-                        color="grey"
-                        variant="outlined"
+              </span>
+            </label>
+
+            <label class="admin-ai-bots__field admin-ai-bots__field--compact">
+              <span class="admin-ai-bots__field-label">Capability filter</span>
+              <select
+                v-model="capabilityFilter"
+                class="admin-ai-bots__control"
+              >
+                <option
+                  v-for="option in capabilityFilterOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </label>
+          </div>
+
+          <div
+            v-if="activeFilterNotice"
+            class="admin-ai-bots__banner admin-ai-bots__banner--info"
+            role="status"
+          >
+            <div class="admin-ai-bots__banner-row">
+              <span>{{ activeFilterNotice }}</span>
+              <button
+                type="button"
+                class="admin-ai-bots__button admin-ai-bots__button--ghost"
+                @click="capabilityFilter = 'all'"
+              >
+                Show all
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-ai-bots__table-wrap">
+            <table class="admin-ai-bots__table">
+              <thead>
+                <tr>
+                  <th>Bot</th>
+                  <th>Model</th>
+                  <th>Prompt</th>
+                  <th>Status</th>
+                  <th class="admin-ai-bots__table-actions-head">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="bot in filteredBots" :key="bot.id">
+                  <td>
+                    <div class="admin-ai-bots__identity">
+                      <div class="admin-ai-bots__avatar">
+                        <img
+                          v-if="bot.profile?.avatar_url"
+                          :src="bot.profile.avatar_url"
+                          alt=""
+                          class="admin-ai-bots__avatar-image"
+                        >
+                        <span v-else class="admin-ai-bots__avatar-fallback">
+                          {{ avatarInitial(bot) }}
+                        </span>
+                      </div>
+
+                      <div class="admin-ai-bots__identity-copy">
+                        <div class="admin-ai-bots__identity-name">
+                          <span>{{ bot.profile?.displayname || "Unnamed bot" }}</span>
+                          <span class="admin-ai-bots__pill admin-ai-bots__pill--accent">
+                            {{ bot.role }}
+                          </span>
+                        </div>
+                        <div class="admin-ai-bots__identity-meta">
+                          {{ bot.persona_key }}
+                        </div>
+                        <div
+                          v-if="bot.category?.name || bot.category_id"
+                          class="admin-ai-bots__chip-row"
+                        >
+                          <span class="admin-ai-bots__pill admin-ai-bots__pill--primary">
+                            {{ bot.category?.name || "Unassigned category" }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div class="admin-ai-bots__cell-title">{{ bot.model }}</div>
+                    <div class="admin-ai-bots__muted">
+                      Temp {{ bot.temperature }} · Top P {{ bot.top_p }}
+                    </div>
+                  </td>
+
+                  <td>
+                    <div class="admin-ai-bots__prompt-preview">
+                      {{ truncate(bot.system_prompt_template) }}
+                    </div>
+                    <div class="admin-ai-bots__muted">
+                      Updated {{ formatTimestamp(bot.updated_at || bot.created_at) }}
+                    </div>
+                  </td>
+
+                  <td>
+                    <span
+                      class="admin-ai-bots__pill"
+                      :class="pillToneClass(bot.is_active ? 'success' : 'grey')"
+                    >
+                      {{ bot.is_active ? "Active" : "Inactive" }}
+                    </span>
+
+                    <div class="admin-ai-bots__chip-row admin-ai-bots__chip-row--tight">
+                      <span
+                        v-for="loc in ['en', 'fr', 'ru', 'zh']"
+                        :key="loc"
+                        class="admin-ai-bots__pill admin-ai-bots__pill--locale"
+                        :class="{
+                          'admin-ai-bots__pill--primary': angleTranslatedLocales(bot).includes(loc),
+                          'admin-ai-bots__pill--neutral': !angleTranslatedLocales(bot).includes(loc),
+                          'admin-ai-bots__pill--dim': !angleTranslatedLocales(bot).includes(loc),
+                        }"
+                        :title="angleTranslatedLocales(bot).includes(loc) ? `${loc} angle translated` : `${loc} not translated`"
+                      >
+                        {{ loc }}
+                      </span>
+                    </div>
+
+                    <div class="admin-ai-bots__chip-row">
+                      <span
+                        v-if="bot.editorial_enabled"
+                        class="admin-ai-bots__pill admin-ai-bots__pill--info"
+                      >
+                        Editorial
+                      </span>
+                      <span
+                        v-if="bot.counterpoint_enabled"
+                        class="admin-ai-bots__pill admin-ai-bots__pill--success"
+                      >
+                        Counterpoint
+                      </span>
+                      <span
+                        v-if="bot.honey_enabled"
+                        class="admin-ai-bots__pill admin-ai-bots__pill--warning"
+                      >
+                        Honey
+                      </span>
+                      <span
+                        v-if="hasLanguagePracticeCapability(bot)"
+                        class="admin-ai-bots__pill admin-ai-bots__pill--success"
+                      >
+                        Language Practice
+                      </span>
+                      <span
+                        v-else
+                        class="admin-ai-bots__pill admin-ai-bots__pill--neutral"
+                        :title="languagePracticeDiagnosticText(bot)"
                       >
                         LP off
-                      </v-chip>
-                    </template>
-                  </v-tooltip>
-                  <v-chip
-                    size="x-small"
-                    :color="moltbookStatusColor(bot)"
-                    variant="tonal"
-                  >
-                    Moltbook {{ bot.moltbook?.enabled ? "On" : "Off" }}
-                  </v-chip>
-                </div>
-                <div class="text-caption text-medium-emphasis mt-2">
-                  {{ moltbookUsageLabel(bot) }}
-                </div>
-              </td>
-              <td class="text-right">
-                <v-btn
-                  icon="mdi-post-outline"
-                  variant="text"
-                  color="indigo"
-                  @click="openPostDialog(bot)"
-                  :disabled="!canPostToMoltbook(bot)"
-                  size="small"
-                ></v-btn>
-                <v-btn
-                  icon="mdi-account-edit"
-                  variant="text"
-                  color="secondary"
-                  size="small"
-                  :to="profileEditLink(bot) || undefined"
-                  :disabled="!bot.profile_user_id"
-                ></v-btn>
-                <v-btn
-                  icon="mdi-pencil"
-                  variant="text"
-                  color="primary"
-                  @click="openEditDialog(bot)"
-                  size="small"
-                ></v-btn>
-                <v-btn
-                  icon="mdi-delete"
-                  variant="text"
-                  color="red"
-                  @click="openDeleteDialog(bot)"
-                  size="small"
-                ></v-btn>
-              </td>
-            </tr>
-            <tr v-if="!filteredBots.length">
-              <td colspan="5" class="text-center py-6 text-medium-emphasis">
-                {{ emptyBotsMessage }}
-              </td>
-            </tr>
-          </tbody>
-        </v-table>
-      </v-card>
+                      </span>
+                      <span
+                        class="admin-ai-bots__pill"
+                        :class="pillToneClass(moltbookStatusColor(bot))"
+                      >
+                        Moltbook {{ bot.moltbook?.enabled ? "On" : "Off" }}
+                      </span>
+                    </div>
 
-      <v-card class="pa-4 mt-4" elevation="3">
-        <v-card-title class="d-flex align-center ga-2">
-          <v-icon icon="mdi-thermometer" color="deep-orange" />
-          Match Mood Tester
-        </v-card-title>
-        <v-card-subtitle class="text-body-2">
-          Set a bot's <code>live_mood_states</code> and create a <code>match_intakes</code> snapshot to test the matching pipeline.
-        </v-card-subtitle>
+                    <div class="admin-ai-bots__muted">
+                      {{ moltbookUsageLabel(bot) }}
+                    </div>
+                  </td>
 
-        <v-row dense class="mt-4">
-          <v-col cols="12" md="6">
-            <v-select
-              v-model="moodForm.botUserId"
-              :items="botOptions"
-              item-title="label"
-              item-value="user_id"
-              label="Bot"
-              clearable
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="moodForm.emotion"
-              :items="MOOD_EMOTIONS"
-              label="Emotion"
-              clearable
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="moodForm.intent"
-              :items="MOOD_INTENT_OPTIONS"
-              item-title="label"
-              item-value="value"
-              label="Intent"
-              clearable
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" md="2">
-            <v-select
-              v-model="moodForm.energy"
-              :items="MOOD_ENERGY"
-              label="Energy"
-              clearable
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-select
-              v-model="moodForm.privacy"
-              :items="MOOD_PRIVACY_OPTIONS"
-              item-title="label"
-              item-value="value"
-              label="Privacy"
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="moodForm.timeHorizon"
-              :items="MOOD_TIME_HORIZON_OPTIONS"
-              item-title="label"
-              item-value="value"
-              label="Time horizon"
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-text-field
-              v-model="moodForm.freeText"
-              label="Free text (optional)"
-              hide-details
-            />
-          </v-col>
-        </v-row>
+                  <td>
+                    <div class="admin-ai-bots__actions">
+                      <button
+                        type="button"
+                        class="admin-ai-bots__icon-button admin-ai-bots__icon-button--info"
+                        :disabled="!canPostToMoltbook(bot)"
+                        :title="canPostToMoltbook(bot) ? 'Post to Moltbook' : 'Enable Moltbook posting and configure a matching API key first'"
+                        :aria-label="`Post to Moltbook as ${bot.profile?.displayname || bot.persona_key}`"
+                        @click="openPostDialog(bot)"
+                      >
+                        <i class="mdi mdi-post-outline" aria-hidden="true" />
+                      </button>
 
-        <div class="d-flex ga-2 mt-4">
-          <v-btn
-            color="deep-orange"
-            variant="tonal"
-            :loading="settingMood"
-            :disabled="!moodForm.botUserId"
-            @click="submitBotMood"
-          >
-            <v-icon start icon="mdi-check-circle-outline" />
-            Set Mood
-          </v-btn>
-          <v-btn
-            color="grey"
-            variant="text"
-            :loading="clearingMood"
-            :disabled="!moodForm.botUserId"
-            @click="clearBotMood"
-          >
-            Clear Mood
-          </v-btn>
-          <v-spacer />
-          <v-btn
-            color="red"
-            variant="outlined"
-            :loading="clearingAllIntakes"
-            @click="clearAllBotIntakes"
-          >
-            <v-icon start icon="mdi-delete-sweep-outline" />
-            Clear All Bot Intakes
-          </v-btn>
+                      <NuxtLink
+                        v-if="profileEditLink(bot)"
+                        :to="profileEditLink(bot)"
+                        class="admin-ai-bots__icon-button admin-ai-bots__icon-button--neutral"
+                        :aria-label="`Edit profile for ${bot.profile?.displayname || bot.persona_key}`"
+                        title="Edit attached profile"
+                      >
+                        <i class="mdi mdi-account-edit" aria-hidden="true" />
+                      </NuxtLink>
+                      <button
+                        v-else
+                        type="button"
+                        class="admin-ai-bots__icon-button admin-ai-bots__icon-button--neutral"
+                        disabled
+                        title="No attached profile"
+                        aria-label="No attached profile"
+                      >
+                        <i class="mdi mdi-account-edit" aria-hidden="true" />
+                      </button>
+
+                      <button
+                        type="button"
+                        class="admin-ai-bots__icon-button admin-ai-bots__icon-button--primary"
+                        :aria-label="`Edit ${bot.profile?.displayname || bot.persona_key}`"
+                        title="Edit bot"
+                        @click="openEditDialog(bot)"
+                      >
+                        <i class="mdi mdi-pencil" aria-hidden="true" />
+                      </button>
+
+                      <button
+                        type="button"
+                        class="admin-ai-bots__icon-button admin-ai-bots__icon-button--danger"
+                        :aria-label="`Delete ${bot.profile?.displayname || bot.persona_key}`"
+                        title="Delete bot"
+                        @click="openDeleteDialog(bot)"
+                      >
+                        <i class="mdi mdi-delete" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr v-if="!filteredBots.length">
+                  <td colspan="5" class="admin-ai-bots__empty-row">
+                    {{ emptyBotsMessage }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </v-card>
+      </section>
+
+      <section class="admin-ai-bots__card">
+        <div class="admin-ai-bots__header">
+          <div>
+            <div class="admin-ai-bots__title-row">
+              <h2 class="admin-ai-bots__title">Match Mood Tester</h2>
+            </div>
+            <p class="admin-ai-bots__subtitle">
+              Set a bot's <code>live_mood_states</code> and create a
+              <code>match_intakes</code> snapshot to test the matching pipeline.
+            </p>
+          </div>
+        </div>
+
+        <div class="admin-ai-bots__body">
+          <div class="admin-ai-bots__grid admin-ai-bots__grid--tester">
+            <label class="admin-ai-bots__field">
+              <span class="admin-ai-bots__field-label">Bot</span>
+              <select v-model="moodForm.botUserId" class="admin-ai-bots__control">
+                <option :value="null">Select a bot</option>
+                <option
+                  v-for="option in botOptions"
+                  :key="option.user_id"
+                  :value="option.user_id"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </label>
+
+            <label class="admin-ai-bots__field">
+              <span class="admin-ai-bots__field-label">Emotion</span>
+              <select v-model="moodForm.emotion" class="admin-ai-bots__control">
+                <option :value="null">None</option>
+                <option v-for="emotion in MOOD_EMOTIONS" :key="emotion" :value="emotion">
+                  {{ emotion }}
+                </option>
+              </select>
+            </label>
+
+            <label class="admin-ai-bots__field">
+              <span class="admin-ai-bots__field-label">Intent</span>
+              <select v-model="moodForm.intent" class="admin-ai-bots__control">
+                <option :value="null">None</option>
+                <option
+                  v-for="option in MOOD_INTENT_OPTIONS"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </label>
+
+            <label class="admin-ai-bots__field">
+              <span class="admin-ai-bots__field-label">Energy</span>
+              <select v-model="moodForm.energy" class="admin-ai-bots__control">
+                <option :value="null">None</option>
+                <option v-for="energy in MOOD_ENERGY" :key="energy" :value="energy">
+                  {{ energy }}
+                </option>
+              </select>
+            </label>
+
+            <label class="admin-ai-bots__field">
+              <span class="admin-ai-bots__field-label">Privacy</span>
+              <select v-model="moodForm.privacy" class="admin-ai-bots__control">
+                <option
+                  v-for="option in MOOD_PRIVACY_OPTIONS"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </label>
+
+            <label class="admin-ai-bots__field">
+              <span class="admin-ai-bots__field-label">Time horizon</span>
+              <select v-model="moodForm.timeHorizon" class="admin-ai-bots__control">
+                <option
+                  v-for="option in MOOD_TIME_HORIZON_OPTIONS"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </label>
+
+            <label class="admin-ai-bots__field admin-ai-bots__field--full">
+              <span class="admin-ai-bots__field-label">Free text (optional)</span>
+              <input
+                v-model="moodForm.freeText"
+                type="text"
+                class="admin-ai-bots__control"
+                placeholder="Optional note"
+              >
+            </label>
+          </div>
+
+          <div class="admin-ai-bots__toolbar admin-ai-bots__toolbar--tester">
+            <button
+              type="button"
+              class="admin-ai-bots__button admin-ai-bots__button--warning"
+              :disabled="settingMood || !moodForm.botUserId"
+              @click="submitBotMood"
+            >
+              <span
+                v-if="settingMood"
+                class="admin-ai-bots__spinner"
+                aria-hidden="true"
+              />
+              <i v-else class="mdi mdi-check-circle-outline" aria-hidden="true" />
+              Set Mood
+            </button>
+            <button
+              type="button"
+              class="admin-ai-bots__button"
+              :disabled="clearingMood || !moodForm.botUserId"
+              @click="clearBotMood"
+            >
+              <span
+                v-if="clearingMood"
+                class="admin-ai-bots__spinner"
+                aria-hidden="true"
+              />
+              Clear Mood
+            </button>
+            <div class="admin-ai-bots__toolbar-spacer" />
+            <button
+              type="button"
+              class="admin-ai-bots__button admin-ai-bots__button--danger"
+              :disabled="clearingAllIntakes"
+              @click="clearAllBotIntakes"
+            >
+              <span
+                v-if="clearingAllIntakes"
+                class="admin-ai-bots__spinner"
+                aria-hidden="true"
+              />
+              <i v-else class="mdi mdi-delete-sweep-outline" aria-hidden="true" />
+              Clear All Bot Intakes
+            </button>
+          </div>
+        </div>
+      </section>
     </template>
 
-    <v-dialog v-model="dialog" max-width="960px" scrollable>
-      <v-card>
-        <v-card-title class="text-h6">
-          {{ editingId ? "Edit AI Bot" : "Create AI Bot" }}
-        </v-card-title>
-        <v-card-text>
-          <v-form ref="formRef">
-            <div class="text-subtitle-2 mb-2">Profile</div>
-            <v-row dense>
-              <v-col cols="12">
-                <v-select
-                  v-model="form.persona.profile_user_id"
-                  :items="profileOptions"
-                  item-title="label"
-                  item-value="user_id"
-                  label="Attach existing profile"
-                  :rules="[requiredRule]"
-                  clearable
-                  :disabled="Boolean(editingId)"
-                  hint="Create/edit photos, bio, age, and gender in Profile Admin first, then attach here."
-                  persistent-hint
-                />
-              </v-col>
-              <v-col v-if="selectedProfile" cols="12">
-                <v-alert type="info" variant="tonal" density="comfortable">
-                  <div class="d-flex align-center ga-3">
-                    <v-avatar size="36">
-                      <v-img
-                        v-if="selectedProfile.avatar_url"
-                        :src="selectedProfile.avatar_url"
-                      />
-                      <span v-else class="avatar-fallback">
-                        {{ avatarInitial({ profile: selectedProfile }) }}
-                      </span>
-                    </v-avatar>
-                    <div>
-                      <div class="font-weight-medium">
-                        {{ selectedProfile.displayname || selectedProfile.slug || selectedProfile.user_id }}
+    <Teleport to="body">
+      <Transition name="admin-ai-bots-modal-fade">
+        <div
+          v-if="dialog"
+          class="admin-ai-bots__modal-layer"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="admin-ai-bots__modal-backdrop"
+            aria-label="Close AI bot dialog"
+            :disabled="saving"
+            @click="closeDialog"
+          />
+
+          <div
+            class="admin-ai-bots__modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-ai-bots-dialog-title"
+          >
+            <form class="admin-ai-bots__modal-card" @submit.prevent="handleSubmit">
+              <div class="admin-ai-bots__modal-header">
+                <div>
+                  <h2 id="admin-ai-bots-dialog-title" class="admin-ai-bots__modal-title">
+                    {{ editingId ? "Edit AI Bot" : "Create AI Bot" }}
+                  </h2>
+                  <p class="admin-ai-bots__modal-subtitle">
+                    Configure the persona, prompts, and capability-specific settings.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="admin-ai-bots__icon-button admin-ai-bots__icon-button--neutral"
+                  :disabled="saving"
+                  aria-label="Close AI bot dialog"
+                  @click="closeDialog"
+                >
+                  <i class="mdi mdi-close" aria-hidden="true" />
+                </button>
+              </div>
+
+              <div class="admin-ai-bots__modal-body">
+                <section class="admin-ai-bots__section">
+                  <h3 class="admin-ai-bots__section-title">Profile</h3>
+
+                  <label class="admin-ai-bots__field">
+                    <span class="admin-ai-bots__field-label">Attach existing profile</span>
+                    <select
+                      v-model="form.persona.profile_user_id"
+                      class="admin-ai-bots__control"
+                      :class="{ 'admin-ai-bots__control--error': formErrors.profile_user_id }"
+                      :disabled="Boolean(editingId)"
+                    >
+                      <option value="">Select a profile</option>
+                      <option
+                        v-for="profile in profileOptions"
+                        :key="profile.user_id"
+                        :value="profile.user_id"
+                      >
+                        {{ profile.label }}
+                      </option>
+                    </select>
+                    <span class="admin-ai-bots__help">
+                      Create/edit photos, bio, age, and gender in Profile Admin first, then attach here.
+                    </span>
+                    <span v-if="formErrors.profile_user_id" class="admin-ai-bots__error">
+                      {{ formErrors.profile_user_id }}
+                    </span>
+                  </label>
+
+                  <div
+                    v-if="selectedProfile"
+                    class="admin-ai-bots__info-panel admin-ai-bots__info-panel--info"
+                  >
+                    <div class="admin-ai-bots__profile-preview">
+                      <div class="admin-ai-bots__avatar admin-ai-bots__avatar--large">
+                        <img
+                          v-if="selectedProfile.avatar_url"
+                          :src="selectedProfile.avatar_url"
+                          alt=""
+                          class="admin-ai-bots__avatar-image"
+                        >
+                        <span v-else class="admin-ai-bots__avatar-fallback">
+                          {{ avatarInitial({ profile: selectedProfile }) }}
+                        </span>
                       </div>
-                      <div class="text-caption text-medium-emphasis">
-                        {{ selectedProfile.slug || selectedProfile.user_id }}
+                      <div>
+                        <div class="admin-ai-bots__cell-title">
+                          {{ selectedProfile.displayname || selectedProfile.slug || selectedProfile.user_id }}
+                        </div>
+                        <div class="admin-ai-bots__muted">
+                          {{ selectedProfile.slug || selectedProfile.user_id }}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </v-alert>
-                <v-alert
-                  v-if="!editingId && selectedProfileLinkedPersonaKey"
-                  type="warning"
-                  variant="tonal"
-                  density="compact"
-                  class="mt-2"
-                >
-                  This profile is already linked to AI persona
-                  <strong>{{ selectedProfileLinkedPersonaKey }}</strong>.
-                  Edit that bot instead of creating another one.
-                </v-alert>
-              </v-col>
-            </v-row>
 
-            <v-divider class="my-4" />
-
-            <div class="text-subtitle-2 mb-2">Bot Setup</div>
-            <v-row dense>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="form.persona.persona_key"
-                  label="Persona Key"
-                  :rules="[requiredRule, slugRule]"
-                  @input="personaKeyTouched = true"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="form.persona.model"
-                  label="OpenAI model"
-                  :rules="[requiredRule]"
-                />
-              </v-col>
-              <v-col cols="12" class="pt-0">
-                <div class="d-flex flex-wrap align-center ga-3 capability-toggles">
-                  <v-switch
-                    v-model="form.persona.is_active"
-                    label="Active"
-                    color="success"
-                    density="compact"
-                    hide-details
-                  />
-                  <v-switch
-                    v-model="form.persona.list_publicly"
-                    label="Public listing"
-                    color="primary"
-                    density="compact"
-                    hide-details
-                  />
-                  <v-switch
-                    v-model="form.persona.editorial_enabled"
-                    label="Editorial"
-                    color="indigo"
-                    density="compact"
-                    hide-details
-                  />
-                  <v-switch
-                    v-model="form.persona.counterpoint_enabled"
-                    label="Counterpoint"
-                    color="teal"
-                    density="compact"
-                    hide-details
-                  />
-                  <v-switch
-                    v-model="languagePracticeForm.enabled"
-                    label="Language Practice"
-                    color="success"
-                    density="compact"
-                    hide-details
-                  />
-                  <v-switch
-                    v-model="form.persona.honey_enabled"
-                    label="Honey"
-                    color="amber-darken-2"
-                    density="compact"
-                    hide-details
-                  />
-                </div>
-                <div class="text-caption text-medium-emphasis mt-1">
-                  Role is fixed to <code>assistant</code>.
-                </div>
-                <div
-                  v-if="isStarterPersona"
-                  class="text-caption text-info mt-1"
-                >
-                  Starter bots are onboarding guides. They can keep Editorial,
-                  Counterpoint, and Honey turned off.
-                </div>
-              </v-col>
-              <v-col v-if="form.persona.honey_enabled" cols="12" md="4">
-                <v-text-field
-                  v-model.number="form.persona.honey_delay_min_ms"
-                  label="Honey delay min (ms)"
-                  type="number"
-                  min="0"
-                  :rules="[minRule(0)]"
-                />
-              </v-col>
-              <v-col v-if="form.persona.honey_enabled" cols="12" md="4">
-                <v-text-field
-                  v-model.number="form.persona.honey_delay_max_ms"
-                  label="Honey delay max (ms)"
-                  type="number"
-                  min="0"
-                  :rules="[minRule(0)]"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="form.persona.system_prompt_template"
-                  label="Base system prompt"
-                  :rules="[requiredRule]"
-                  rows="5"
-                  auto-grow
-                  hint="Fallback prompt when capability-specific override is empty."
-                  persistent-hint
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="form.persona.response_style_template"
-                  label="Base response style (optional)"
-                  rows="3"
-                  auto-grow
-                />
-              </v-col>
-              <v-col v-if="enabledCapabilityTabs.length" cols="12">
-                <v-tabs
-                  v-model="selectedCapabilityTab"
-                  density="compact"
-                  color="primary"
-                  class="mb-2"
-                >
-                  <v-tab
-                    v-for="cap in enabledCapabilityTabs"
-                    :key="cap.key"
-                    :value="cap.key"
-                    size="small"
+                  <div
+                    v-if="!editingId && selectedProfileLinkedPersonaKey"
+                    class="admin-ai-bots__info-panel admin-ai-bots__info-panel--warning"
                   >
-                    {{ cap.label }}
-                  </v-tab>
-                </v-tabs>
-                <v-window v-model="selectedCapabilityTab">
-                  <v-window-item value="editorial">
-                    <v-textarea
-                      v-model="form.persona.editorial_system_prompt_template"
-                      label="Editorial prompt override (optional)"
-                      rows="4"
-                      auto-grow
-                    />
-                    <v-textarea
-                      v-model="form.persona.editorial_response_style_template"
-                      label="Editorial response style override (optional)"
-                      rows="3"
-                      auto-grow
-                    />
-                  </v-window-item>
-                  <v-window-item value="counterpoint">
-                    <v-textarea
-                      v-model="form.persona.counterpoint_system_prompt_template"
-                      label="Counterpoint prompt override (optional)"
-                      rows="4"
-                      auto-grow
-                    />
-                    <v-textarea
-                      v-model="form.persona.counterpoint_response_style_template"
-                      label="Counterpoint response style override (optional)"
-                      rows="3"
-                      auto-grow
-                    />
-                  </v-window-item>
-                  <v-window-item value="honey">
-                    <v-textarea
-                      v-model="form.persona.honey_system_prompt_template"
-                      label="Honey prompt override (optional)"
-                      rows="4"
-                      auto-grow
-                    />
-                    <v-textarea
-                      v-model="form.persona.honey_response_style_template"
-                      label="Honey response style override (optional)"
-                      rows="3"
-                      auto-grow
-                    />
-                  </v-window-item>
-                  <v-window-item value="language_practice">
-                    <v-textarea
-                      v-model="languagePracticeForm.system_prompt_template"
-                      label="Language practice prompt override (optional)"
-                      rows="4"
-                      auto-grow
-                      hint="Used when this persona is in an active language-practice session."
-                      persistent-hint
-                    />
-                    <v-textarea
-                      v-model="languagePracticeForm.response_style_template"
-                      label="Language practice response style override (optional)"
-                      rows="3"
-                      auto-grow
-                    />
-                    <v-row dense>
-                      <v-col cols="12" md="4">
-                        <v-select
-                          v-model="languagePracticeForm.assistant_role"
-                          :items="languagePracticeRoleOptions"
-                          item-title="label"
-                          item-value="value"
-                          label="Assistant role"
-                          hide-details
-                        />
-                      </v-col>
-                      <v-col cols="12" md="4">
-                        <v-select
-                          v-model="languagePracticeForm.default_correction_preference"
-                          :items="languagePracticeCorrectionOptions"
-                          item-title="label"
-                          item-value="value"
-                          label="Default correction style"
-                          hide-details
-                        />
-                      </v-col>
-                      <v-col cols="12" md="4">
-                        <v-select
-                          v-model="languagePracticeForm.default_exchange_mode"
-                          :items="languagePracticeExchangeModeOptions"
-                          item-title="label"
-                          item-value="value"
-                          label="Default exchange mode"
-                          hide-details
-                        />
-                      </v-col>
-                      <v-col cols="12" md="4">
-                        <v-select
-                          v-model="languagePracticeForm.supported_target_languages"
-                          :items="languagePracticeLanguageOptions"
-                          item-title="label"
-                          item-value="value"
-                          label="Supported target languages"
-                          multiple
-                          chips
-                        />
-                      </v-col>
-                      <v-col cols="12" md="4">
-                        <v-select
-                          v-model="languagePracticeForm.supported_native_languages"
-                          :items="languagePracticeLanguageOptions"
-                          item-title="label"
-                          item-value="value"
-                          label="Supported support languages"
-                          multiple
-                          chips
-                        />
-                      </v-col>
-                      <v-col cols="12" md="4">
-                        <v-select
-                          v-model="languagePracticeForm.supported_levels"
-                          :items="languagePracticeLevelOptions"
-                          item-title="label"
-                          item-value="value"
-                          label="Supported learner levels"
-                          multiple
-                          chips
-                        />
-                      </v-col>
-                    </v-row>
-                  </v-window-item>
-                </v-window>
-              </v-col>
-            </v-row>
+                    This profile is already linked to AI persona
+                    <strong>{{ selectedProfileLinkedPersonaKey }}</strong>.
+                    Edit that bot instead of creating another one.
+                  </div>
+                </section>
 
-            <v-divider class="my-4" />
+                <section class="admin-ai-bots__section">
+                  <h3 class="admin-ai-bots__section-title">Bot Setup</h3>
 
-            <v-expansion-panels variant="accordion">
-              <v-expansion-panel>
-                <v-expansion-panel-title>Advanced Persona Settings</v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <v-row dense>
-                    <v-col cols="12" md="6">
-                      <v-select
-                        v-model="form.persona.mood_group"
-                        :items="moodGroupOptions"
-                        item-title="label"
-                        item-value="value"
-                        label="Mood group (About page grouping)"
-                        clearable
-                        hint="Which mood section this bot appears under on the About page and match UI"
-                        persistent-hint
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-select
-                        v-model="form.persona.category_id"
-                        :items="categoryOptions"
-                        item-title="name"
-                        item-value="id"
-                        label="Category (editorial / article pipeline)"
-                        clearable
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="form.persona.bias"
-                        label="Bias / stance"
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="form.persona.region"
-                        label="Region"
-                      />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-textarea
+                  <div class="admin-ai-bots__grid">
+                    <label class="admin-ai-bots__field">
+                      <span class="admin-ai-bots__field-label">Persona Key</span>
+                      <input
+                        v-model="form.persona.persona_key"
+                        type="text"
+                        class="admin-ai-bots__control"
+                        :class="{ 'admin-ai-bots__control--error': formErrors.persona_key }"
+                        @input="personaKeyTouched = true"
+                      >
+                      <span v-if="formErrors.persona_key" class="admin-ai-bots__error">
+                        {{ formErrors.persona_key }}
+                      </span>
+                    </label>
+
+                    <label class="admin-ai-bots__field">
+                      <span class="admin-ai-bots__field-label">OpenAI model</span>
+                      <input
+                        v-model="form.persona.model"
+                        type="text"
+                        class="admin-ai-bots__control"
+                        :class="{ 'admin-ai-bots__control--error': formErrors.model }"
+                      >
+                      <span v-if="formErrors.model" class="admin-ai-bots__error">
+                        {{ formErrors.model }}
+                      </span>
+                    </label>
+                  </div>
+
+                  <div class="admin-ai-bots__toggle-grid">
+                    <label class="admin-ai-bots__toggle">
+                      <input v-model="form.persona.is_active" type="checkbox">
+                      <span>Active</span>
+                    </label>
+                    <label class="admin-ai-bots__toggle">
+                      <input v-model="form.persona.list_publicly" type="checkbox">
+                      <span>Public listing</span>
+                    </label>
+                    <label class="admin-ai-bots__toggle">
+                      <input v-model="form.persona.editorial_enabled" type="checkbox">
+                      <span>Editorial</span>
+                    </label>
+                    <label class="admin-ai-bots__toggle">
+                      <input v-model="form.persona.counterpoint_enabled" type="checkbox">
+                      <span>Counterpoint</span>
+                    </label>
+                    <label class="admin-ai-bots__toggle">
+                      <input v-model="languagePracticeForm.enabled" type="checkbox">
+                      <span>Language Practice</span>
+                    </label>
+                    <label class="admin-ai-bots__toggle">
+                      <input v-model="form.persona.honey_enabled" type="checkbox">
+                      <span>Honey</span>
+                    </label>
+                  </div>
+
+                  <div class="admin-ai-bots__help">
+                    Role is fixed to <code>assistant</code>.
+                  </div>
+                  <div
+                    v-if="isStarterPersona"
+                    class="admin-ai-bots__help admin-ai-bots__help--info"
+                  >
+                    Starter bots are onboarding guides. They can keep Editorial, Counterpoint, and Honey turned off.
+                  </div>
+
+                  <div v-if="form.persona.honey_enabled" class="admin-ai-bots__grid">
+                    <label class="admin-ai-bots__field">
+                      <span class="admin-ai-bots__field-label">Honey delay min (ms)</span>
+                      <input
+                        v-model.number="form.persona.honey_delay_min_ms"
+                        type="number"
+                        min="0"
+                        class="admin-ai-bots__control"
+                        :class="{ 'admin-ai-bots__control--error': formErrors.honey_delay_min_ms }"
+                      >
+                      <span
+                        v-if="formErrors.honey_delay_min_ms"
+                        class="admin-ai-bots__error"
+                      >
+                        {{ formErrors.honey_delay_min_ms }}
+                      </span>
+                    </label>
+
+                    <label class="admin-ai-bots__field">
+                      <span class="admin-ai-bots__field-label">Honey delay max (ms)</span>
+                      <input
+                        v-model.number="form.persona.honey_delay_max_ms"
+                        type="number"
+                        min="0"
+                        class="admin-ai-bots__control"
+                        :class="{ 'admin-ai-bots__control--error': formErrors.honey_delay_max_ms }"
+                      >
+                      <span
+                        v-if="formErrors.honey_delay_max_ms"
+                        class="admin-ai-bots__error"
+                      >
+                        {{ formErrors.honey_delay_max_ms }}
+                      </span>
+                    </label>
+                  </div>
+
+                  <label class="admin-ai-bots__field">
+                    <span class="admin-ai-bots__field-label">Base system prompt</span>
+                    <textarea
+                      v-model="form.persona.system_prompt_template"
+                      rows="5"
+                      class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                      :class="{ 'admin-ai-bots__control--error': formErrors.system_prompt_template }"
+                    ></textarea>
+                    <span class="admin-ai-bots__help">
+                      Fallback prompt when capability-specific override is empty.
+                    </span>
+                    <span
+                      v-if="formErrors.system_prompt_template"
+                      class="admin-ai-bots__error"
+                    >
+                      {{ formErrors.system_prompt_template }}
+                    </span>
+                  </label>
+
+                  <label class="admin-ai-bots__field">
+                    <span class="admin-ai-bots__field-label">Base response style (optional)</span>
+                    <textarea
+                      v-model="form.persona.response_style_template"
+                      rows="3"
+                      class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                    ></textarea>
+                  </label>
+
+                  <div v-if="enabledCapabilityTabs.length" class="admin-ai-bots__capability-tabs">
+                    <div class="admin-ai-bots__tab-list" role="tablist" aria-label="Capability settings">
+                      <button
+                        v-for="cap in enabledCapabilityTabs"
+                        :key="cap.key"
+                        type="button"
+                        class="admin-ai-bots__tab"
+                        :class="{ 'admin-ai-bots__tab--active': selectedCapabilityTab === cap.key }"
+                        :aria-selected="selectedCapabilityTab === cap.key"
+                        @click="selectedCapabilityTab = cap.key"
+                      >
+                        {{ cap.label }}
+                      </button>
+                    </div>
+
+                    <div
+                      v-if="selectedCapabilityTab === 'editorial'"
+                      class="admin-ai-bots__tab-panel"
+                    >
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Editorial prompt override (optional)</span>
+                        <textarea
+                          v-model="form.persona.editorial_system_prompt_template"
+                          rows="4"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                        ></textarea>
+                      </label>
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Editorial response style override (optional)</span>
+                        <textarea
+                          v-model="form.persona.editorial_response_style_template"
+                          rows="3"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                        ></textarea>
+                      </label>
+                    </div>
+
+                    <div
+                      v-if="selectedCapabilityTab === 'counterpoint'"
+                      class="admin-ai-bots__tab-panel"
+                    >
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Counterpoint prompt override (optional)</span>
+                        <textarea
+                          v-model="form.persona.counterpoint_system_prompt_template"
+                          rows="4"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                        ></textarea>
+                      </label>
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Counterpoint response style override (optional)</span>
+                        <textarea
+                          v-model="form.persona.counterpoint_response_style_template"
+                          rows="3"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                        ></textarea>
+                      </label>
+                    </div>
+
+                    <div
+                      v-if="selectedCapabilityTab === 'honey'"
+                      class="admin-ai-bots__tab-panel"
+                    >
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Honey prompt override (optional)</span>
+                        <textarea
+                          v-model="form.persona.honey_system_prompt_template"
+                          rows="4"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                        ></textarea>
+                      </label>
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Honey response style override (optional)</span>
+                        <textarea
+                          v-model="form.persona.honey_response_style_template"
+                          rows="3"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                        ></textarea>
+                      </label>
+                    </div>
+
+                    <div
+                      v-if="selectedCapabilityTab === 'language_practice'"
+                      class="admin-ai-bots__tab-panel"
+                    >
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Language practice prompt override (optional)</span>
+                        <textarea
+                          v-model="languagePracticeForm.system_prompt_template"
+                          rows="4"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                        ></textarea>
+                        <span class="admin-ai-bots__help">
+                          Used when this persona is in an active language-practice session.
+                        </span>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Language practice response style override (optional)</span>
+                        <textarea
+                          v-model="languagePracticeForm.response_style_template"
+                          rows="3"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                        ></textarea>
+                      </label>
+
+                      <div class="admin-ai-bots__grid">
+                        <label class="admin-ai-bots__field">
+                          <span class="admin-ai-bots__field-label">Assistant role</span>
+                          <select
+                            v-model="languagePracticeForm.assistant_role"
+                            class="admin-ai-bots__control"
+                          >
+                            <option
+                              v-for="option in languagePracticeRoleOptions"
+                              :key="option.value"
+                              :value="option.value"
+                            >
+                              {{ option.label }}
+                            </option>
+                          </select>
+                        </label>
+
+                        <label class="admin-ai-bots__field">
+                          <span class="admin-ai-bots__field-label">Default correction style</span>
+                          <select
+                            v-model="languagePracticeForm.default_correction_preference"
+                            class="admin-ai-bots__control"
+                          >
+                            <option
+                              v-for="option in languagePracticeCorrectionOptions"
+                              :key="option.value"
+                              :value="option.value"
+                            >
+                              {{ option.label }}
+                            </option>
+                          </select>
+                        </label>
+
+                        <label class="admin-ai-bots__field">
+                          <span class="admin-ai-bots__field-label">Default exchange mode</span>
+                          <select
+                            v-model="languagePracticeForm.default_exchange_mode"
+                            class="admin-ai-bots__control"
+                          >
+                            <option
+                              v-for="option in languagePracticeExchangeModeOptions"
+                              :key="option.value"
+                              :value="option.value"
+                            >
+                              {{ option.label }}
+                            </option>
+                          </select>
+                        </label>
+
+                        <label class="admin-ai-bots__field">
+                          <span class="admin-ai-bots__field-label">Supported target languages</span>
+                          <select
+                            v-model="languagePracticeForm.supported_target_languages"
+                            multiple
+                            class="admin-ai-bots__control admin-ai-bots__control--multiselect"
+                          >
+                            <option
+                              v-for="option in languagePracticeLanguageOptions"
+                              :key="option.value"
+                              :value="option.value"
+                            >
+                              {{ option.label }}
+                            </option>
+                          </select>
+                        </label>
+
+                        <label class="admin-ai-bots__field">
+                          <span class="admin-ai-bots__field-label">Supported support languages</span>
+                          <select
+                            v-model="languagePracticeForm.supported_native_languages"
+                            multiple
+                            class="admin-ai-bots__control admin-ai-bots__control--multiselect"
+                          >
+                            <option
+                              v-for="option in languagePracticeLanguageOptions"
+                              :key="option.value"
+                              :value="option.value"
+                            >
+                              {{ option.label }}
+                            </option>
+                          </select>
+                        </label>
+
+                        <label class="admin-ai-bots__field">
+                          <span class="admin-ai-bots__field-label">Supported learner levels</span>
+                          <select
+                            v-model="languagePracticeForm.supported_levels"
+                            multiple
+                            class="admin-ai-bots__control admin-ai-bots__control--multiselect"
+                          >
+                            <option
+                              v-for="option in languagePracticeLevelOptions"
+                              :key="option.value"
+                              :value="option.value"
+                            >
+                              {{ option.label }}
+                            </option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <details class="admin-ai-bots__details">
+                  <summary class="admin-ai-bots__details-summary">
+                    Advanced Persona Settings
+                  </summary>
+
+                  <div class="admin-ai-bots__details-body">
+                    <div class="admin-ai-bots__grid">
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Mood group (About page grouping)</span>
+                        <select v-model="form.persona.mood_group" class="admin-ai-bots__control">
+                          <option :value="null">None</option>
+                          <option
+                            v-for="option in moodGroupOptions"
+                            :key="option.value"
+                            :value="option.value"
+                          >
+                            {{ option.label }}
+                          </option>
+                        </select>
+                        <span class="admin-ai-bots__help">
+                          Which mood section this bot appears under on the About page and match UI.
+                        </span>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Category (editorial / article pipeline)</span>
+                        <select v-model="form.persona.category_id" class="admin-ai-bots__control">
+                          <option :value="null">None</option>
+                          <option
+                            v-for="option in categoryOptions"
+                            :key="option.id"
+                            :value="option.id"
+                          >
+                            {{ option.name }}
+                          </option>
+                        </select>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Bias / stance</span>
+                        <input v-model="form.persona.bias" type="text" class="admin-ai-bots__control">
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Region</span>
+                        <input v-model="form.persona.region" type="text" class="admin-ai-bots__control">
+                      </label>
+                    </div>
+
+                    <label class="admin-ai-bots__field">
+                      <span class="admin-ai-bots__field-label">Angle / summary</span>
+                      <textarea
                         v-model="form.persona.angle"
-                        label="Angle / summary"
                         rows="2"
-                        auto-grow
-                      />
-                      <div class="d-flex justify-end mt-1">
-                        <v-btn
-                          size="x-small"
-                          variant="tonal"
-                          color="secondary"
-                          :loading="translatingPersona"
-                          :disabled="!form.persona.angle"
-                          prepend-icon="mdi-translate"
-                          @click="translatePersonaFields"
-                        >
-                          Translate angle
-                        </v-btn>
-                      </div>
-                    </v-col>
-                    <v-col cols="12" md="4">
-                      <v-text-field
-                        v-model="form.persona.language_code"
-                        label="Language code"
-                      />
-                    </v-col>
-                    <v-col cols="12" md="3">
-                      <v-text-field
-                        v-model.number="form.persona.temperature"
-                        label="Temperature"
-                        type="number"
-                        step="0.1"
-                        :rules="[makeRangeRule(0, 2)]"
-                      />
-                    </v-col>
-                    <v-col cols="12" md="3">
-                      <v-text-field
-                        v-model.number="form.persona.top_p"
-                        label="Top P"
-                        type="number"
-                        step="0.1"
-                        :rules="[makeRangeRule(0.01, 1)]"
-                      />
-                    </v-col>
-                    <v-col cols="12" md="3">
-                      <v-text-field
-                        v-model.number="form.persona.presence_penalty"
-                        label="Presence Penalty"
-                        type="number"
-                        step="0.1"
-                        :rules="[makeRangeRule(-2, 2, true)]"
-                      />
-                    </v-col>
-                    <v-col cols="12" md="3">
-                      <v-text-field
-                        v-model.number="form.persona.frequency_penalty"
-                        label="Frequency Penalty"
-                        type="number"
-                        step="0.1"
-                        :rules="[makeRangeRule(-2, 2, true)]"
-                      />
-                    </v-col>
-                    <v-col cols="12" md="3">
-                      <v-text-field
-                        v-model.number="form.persona.max_response_tokens"
-                        label="Max tokens"
-                        type="number"
-                        min="1"
-                        :rules="[minRule(1)]"
-                      />
-                    </v-col>
-                    <v-col cols="12" md="3">
-                      <v-text-field
-                        v-model.number="form.persona.max_history_messages"
-                        label="Max history messages"
-                        type="number"
-                        min="0"
-                        :rules="[minRule(0)]"
-                      />
-                    </v-col>
-                  </v-row>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-              <v-expansion-panel>
-                <v-expansion-panel-title>Moltbook Posting</v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <v-row dense>
-                    <v-col cols="12">
-                      <div class="d-flex flex-wrap align-center ga-3">
-                        <v-switch
-                          v-model="moltbookForm.enabled"
-                          label="Enable Moltbook posting"
-                          color="indigo"
-                          density="compact"
-                          hide-details
+                        class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                      ></textarea>
+                    </label>
+
+                    <div class="admin-ai-bots__toolbar admin-ai-bots__toolbar--end">
+                      <button
+                        type="button"
+                        class="admin-ai-bots__button admin-ai-bots__button--neutral"
+                        :disabled="translatingPersona || !form.persona.angle"
+                        @click="translatePersonaFields"
+                      >
+                        <span
+                          v-if="translatingPersona"
+                          class="admin-ai-bots__spinner"
+                          aria-hidden="true"
                         />
-                      </div>
-                      <div class="text-caption text-medium-emphasis mt-1">
-                        Agent API keys stay server-side in <code>MOLTBOOK_AGENT_KEYS_JSON</code>. Match by agent name or persona key.
-                      </div>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="moltbookForm.agent_name"
-                        label="Credential key / agent name"
-                        hint="Optional override. If blank, the persona key is used to find the API key in MOLTBOOK_AGENT_KEYS_JSON."
-                        persistent-hint
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="moltbookForm.default_submolt"
-                        label="Default submolt"
-                        hint="Used as the default target when posting from admin."
-                        persistent-hint
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model.number="moltbookForm.daily_posts"
-                        label="Daily post limit"
-                        type="number"
-                        min="0"
-                        :rules="[minRule(0)]"
-                        hint="0 disables admin posting for that day entirely."
-                        persistent-hint
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model.number="moltbookForm.cooldown_minutes"
-                        label="Cooldown between posts (minutes)"
-                        type="number"
-                        min="0"
-                        :rules="[minRule(0)]"
-                      />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-divider class="my-2" />
-                      <div class="text-subtitle-2 mb-2">Honey Autopost Voice</div>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-switch
-                        v-model="moltbookForm.honey_posting_enabled"
-                        label="Enable autonomous honey Moltbook posts"
-                        color="pink"
-                        density="compact"
-                        hide-details
-                      />
-                      <div class="text-caption text-medium-emphasis mt-1">
-                        When enabled, this honey bot can generate short emotional question posts ending with a soft invitation to talk.
-                      </div>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-textarea
+                        <i v-else class="mdi mdi-translate" aria-hidden="true" />
+                        Translate angle
+                      </button>
+                    </div>
+
+                    <div class="admin-ai-bots__grid admin-ai-bots__grid--metrics">
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Language code</span>
+                        <input
+                          v-model="form.persona.language_code"
+                          type="text"
+                          class="admin-ai-bots__control"
+                        >
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Temperature</span>
+                        <input
+                          v-model.number="form.persona.temperature"
+                          type="number"
+                          step="0.1"
+                          class="admin-ai-bots__control"
+                          :class="{ 'admin-ai-bots__control--error': formErrors.temperature }"
+                        >
+                        <span v-if="formErrors.temperature" class="admin-ai-bots__error">
+                          {{ formErrors.temperature }}
+                        </span>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Top P</span>
+                        <input
+                          v-model.number="form.persona.top_p"
+                          type="number"
+                          step="0.1"
+                          class="admin-ai-bots__control"
+                          :class="{ 'admin-ai-bots__control--error': formErrors.top_p }"
+                        >
+                        <span v-if="formErrors.top_p" class="admin-ai-bots__error">
+                          {{ formErrors.top_p }}
+                        </span>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Presence Penalty</span>
+                        <input
+                          v-model.number="form.persona.presence_penalty"
+                          type="number"
+                          step="0.1"
+                          class="admin-ai-bots__control"
+                          :class="{ 'admin-ai-bots__control--error': formErrors.presence_penalty }"
+                        >
+                        <span
+                          v-if="formErrors.presence_penalty"
+                          class="admin-ai-bots__error"
+                        >
+                          {{ formErrors.presence_penalty }}
+                        </span>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Frequency Penalty</span>
+                        <input
+                          v-model.number="form.persona.frequency_penalty"
+                          type="number"
+                          step="0.1"
+                          class="admin-ai-bots__control"
+                          :class="{ 'admin-ai-bots__control--error': formErrors.frequency_penalty }"
+                        >
+                        <span
+                          v-if="formErrors.frequency_penalty"
+                          class="admin-ai-bots__error"
+                        >
+                          {{ formErrors.frequency_penalty }}
+                        </span>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Max tokens</span>
+                        <input
+                          v-model.number="form.persona.max_response_tokens"
+                          type="number"
+                          min="1"
+                          class="admin-ai-bots__control"
+                          :class="{ 'admin-ai-bots__control--error': formErrors.max_response_tokens }"
+                        >
+                        <span
+                          v-if="formErrors.max_response_tokens"
+                          class="admin-ai-bots__error"
+                        >
+                          {{ formErrors.max_response_tokens }}
+                        </span>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Max history messages</span>
+                        <input
+                          v-model.number="form.persona.max_history_messages"
+                          type="number"
+                          min="0"
+                          class="admin-ai-bots__control"
+                          :class="{ 'admin-ai-bots__control--error': formErrors.max_history_messages }"
+                        >
+                        <span
+                          v-if="formErrors.max_history_messages"
+                          class="admin-ai-bots__error"
+                        >
+                          {{ formErrors.max_history_messages }}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="admin-ai-bots__details">
+                  <summary class="admin-ai-bots__details-summary">
+                    Moltbook Posting
+                  </summary>
+
+                  <div class="admin-ai-bots__details-body">
+                    <label class="admin-ai-bots__toggle">
+                      <input v-model="moltbookForm.enabled" type="checkbox">
+                      <span>Enable Moltbook posting</span>
+                    </label>
+
+                    <div class="admin-ai-bots__help">
+                      Agent API keys stay server-side in
+                      <code>MOLTBOOK_AGENT_KEYS_JSON</code>. Match by agent name or persona key.
+                    </div>
+
+                    <div class="admin-ai-bots__grid">
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Credential key / agent name</span>
+                        <input
+                          v-model="moltbookForm.agent_name"
+                          type="text"
+                          class="admin-ai-bots__control"
+                        >
+                        <span class="admin-ai-bots__help">
+                          Optional override. If blank, the persona key is used to find the API key in MOLTBOOK_AGENT_KEYS_JSON.
+                        </span>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Default submolt</span>
+                        <input
+                          v-model="moltbookForm.default_submolt"
+                          type="text"
+                          class="admin-ai-bots__control"
+                        >
+                        <span class="admin-ai-bots__help">
+                          Used as the default target when posting from admin.
+                        </span>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Daily post limit</span>
+                        <input
+                          v-model.number="moltbookForm.daily_posts"
+                          type="number"
+                          min="0"
+                          class="admin-ai-bots__control"
+                          :class="{ 'admin-ai-bots__control--error': formErrors.daily_posts }"
+                        >
+                        <span class="admin-ai-bots__help">
+                          0 disables admin posting for that day entirely.
+                        </span>
+                        <span v-if="formErrors.daily_posts" class="admin-ai-bots__error">
+                          {{ formErrors.daily_posts }}
+                        </span>
+                      </label>
+
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Cooldown between posts (minutes)</span>
+                        <input
+                          v-model.number="moltbookForm.cooldown_minutes"
+                          type="number"
+                          min="0"
+                          class="admin-ai-bots__control"
+                          :class="{ 'admin-ai-bots__control--error': formErrors.cooldown_minutes }"
+                        >
+                        <span
+                          v-if="formErrors.cooldown_minutes"
+                          class="admin-ai-bots__error"
+                        >
+                          {{ formErrors.cooldown_minutes }}
+                        </span>
+                      </label>
+                    </div>
+
+                    <div class="admin-ai-bots__subsection-title">Honey Autopost Voice</div>
+
+                    <label class="admin-ai-bots__toggle">
+                      <input v-model="moltbookForm.honey_posting_enabled" type="checkbox">
+                      <span>Enable autonomous honey Moltbook posts</span>
+                    </label>
+
+                    <div class="admin-ai-bots__help">
+                      When enabled, this honey bot can generate short emotional question posts ending with a soft invitation to talk.
+                    </div>
+
+                    <label class="admin-ai-bots__field">
+                      <span class="admin-ai-bots__field-label">Bot-specific posting prompt</span>
+                      <textarea
                         v-model="moltbookForm.honey_prompt_template"
-                        label="Bot-specific posting prompt"
                         rows="4"
-                        auto-grow
-                        hint="Describe this bot's unique Moltbook voice, angle, and what emotional territory it should explore."
-                        persistent-hint
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-combobox
-                        v-model="moltbookForm.honey_emotional_themes"
-                        label="Emotional themes"
-                        multiple
-                        chips
-                        closable-chips
-                        clearable
-                        hint="Examples: mixed signals, lonely nights, wanting reassurance."
-                        persistent-hint
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-combobox
-                        v-model="moltbookForm.honey_cta_variants"
-                        label="CTA variants"
-                        multiple
-                        chips
-                        closable-chips
-                        clearable
-                        hint="Short ending questions the post can close with."
-                        persistent-hint
-                      />
-                    </v-col>
-                    <v-col cols="12" v-if="editingId">
-                      <v-alert type="info" variant="tonal" density="comfortable">
-                        {{ moltbookEditSummary }}
-                      </v-alert>
-                    </v-col>
-                  </v-row>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-              <v-expansion-panel>
-                <v-expansion-panel-title>Advanced JSON Fields</v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <v-row dense>
-                    <v-col cols="12" md="6" v-for="field in jsonFieldList" :key="field.key">
-                      <v-textarea
-                        v-model="jsonInputs[field.key]"
-                        :label="field.label"
-                        rows="4"
-                        auto-grow
-                        :hint="field.hint"
-                        persistent-hint
-                        :error-messages="jsonErrors[field.key]"
-                      />
-                    </v-col>
-                  </v-row>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
-          </v-form>
-        </v-card-text>
-        <v-divider />
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="closeDialog" :disabled="saving">
-            Cancel
-          </v-btn>
-          <v-btn color="primary" :loading="saving" @click="handleSubmit">
-            {{ editingId ? "Save Changes" : "Create Bot" }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+                        class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                      ></textarea>
+                      <span class="admin-ai-bots__help">
+                        Describe this bot's unique Moltbook voice, angle, and what emotional territory it should explore.
+                      </span>
+                    </label>
 
-    <v-dialog v-model="deleteDialog" max-width="420px">
-      <v-card>
-        <v-card-title class="text-h6">Delete AI bot</v-card-title>
-        <v-card-text>
-          Are you sure you want to delete
-          <strong>{{ deleteTarget?.profile?.displayname }}</strong>? This
-          removes the AI persona behavior only. The profile/user remains.
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="deleteDialog = false" :disabled="deleting">
-            Cancel
-          </v-btn>
-          <v-btn color="red" :loading="deleting" @click="confirmDelete">
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+                    <div class="admin-ai-bots__grid">
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">Emotional themes</span>
+                        <textarea
+                          v-model="honeyEmotionalThemesText"
+                          rows="4"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                        ></textarea>
+                        <span class="admin-ai-bots__help">
+                          One item per line. Examples: mixed signals, lonely nights, wanting reassurance.
+                        </span>
+                      </label>
 
-    <v-dialog v-model="postDialog" max-width="720px" scrollable>
-      <v-card>
-        <v-card-title class="text-h6">
-          Post To Moltbook
-        </v-card-title>
-        <v-card-text>
-          <v-alert
-            v-if="postTarget"
-            type="info"
-            variant="tonal"
-            density="comfortable"
-            class="mb-4"
-          >
-            Posting as <strong>{{ postTarget.profile?.displayname || postTarget.persona_key }}</strong>
-            using key <code>{{ postTarget.moltbook?.credential_key_label || postTarget.persona_key }}</code>.
-          </v-alert>
-          <v-alert
-            v-if="postTarget?.moltbook?.honey_posting?.enabled"
-            type="info"
-            variant="tonal"
-            density="comfortable"
-            class="mb-4"
-          >
-            This bot has honey autoposting enabled. Use Generate Honey Preview to draft a unique emotional post in its voice.
-          </v-alert>
-          <v-row dense>
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="postForm.submolt_name"
-                label="Submolt"
-                :rules="[requiredRule]"
-              />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="postForm.type"
-                :items="postTypeOptions"
-                label="Post type"
-                item-title="label"
-                item-value="value"
-              />
-            </v-col>
-            <v-col cols="12">
-              <v-text-field
-                v-model="postForm.title"
-                label="Title"
-                :rules="[requiredRule]"
-                counter="300"
-              />
-            </v-col>
-            <v-col cols="12" v-if="postForm.type === 'link'">
-              <v-text-field
-                v-model="postForm.url"
-                label="Link URL"
-                :rules="[requiredRule]"
-              />
-            </v-col>
-            <v-col cols="12">
-              <v-textarea
-                v-model="postForm.content"
-                label="Content"
-                rows="6"
-                auto-grow
-                :hint="postForm.type === 'link' ? 'Optional body for a link post.' : 'Body text for the Moltbook post.'"
-                persistent-hint
-              />
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-divider />
-        <v-card-actions>
-          <v-btn
-            v-if="postTarget?.moltbook?.honey_posting?.enabled"
-            variant="tonal"
-            color="pink"
-            :loading="previewingPost"
-            @click="generateHoneyPreview"
-          >
-            Generate Honey Preview
-          </v-btn>
-          <v-spacer />
-          <v-btn variant="text" @click="postDialog = false" :disabled="posting">
-            Cancel
-          </v-btn>
-          <v-btn color="indigo" :loading="posting" @click="submitMoltbookPost">
-            Publish
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+                      <label class="admin-ai-bots__field">
+                        <span class="admin-ai-bots__field-label">CTA variants</span>
+                        <textarea
+                          v-model="honeyCtaVariantsText"
+                          rows="4"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                        ></textarea>
+                        <span class="admin-ai-bots__help">
+                          One item per line. Short ending questions the post can close with.
+                        </span>
+                      </label>
+                    </div>
 
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      location="bottom"
-      timeout="7000"
-    >
-      {{ snackbar.message }}
-    </v-snackbar>
+                    <div
+                      v-if="editingId"
+                      class="admin-ai-bots__info-panel admin-ai-bots__info-panel--info"
+                    >
+                      {{ moltbookEditSummary }}
+                    </div>
+                  </div>
+                </details>
+
+                <details class="admin-ai-bots__details">
+                  <summary class="admin-ai-bots__details-summary">
+                    Advanced JSON Fields
+                  </summary>
+
+                  <div class="admin-ai-bots__details-body">
+                    <div class="admin-ai-bots__grid">
+                      <label
+                        v-for="field in jsonFieldList"
+                        :key="field.key"
+                        class="admin-ai-bots__field"
+                      >
+                        <span class="admin-ai-bots__field-label">{{ field.label }}</span>
+                        <textarea
+                          v-model="jsonInputs[field.key]"
+                          rows="4"
+                          class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                          :class="{ 'admin-ai-bots__control--error': jsonErrors[field.key] }"
+                        ></textarea>
+                        <span class="admin-ai-bots__help">{{ field.hint }}</span>
+                        <span v-if="jsonErrors[field.key]" class="admin-ai-bots__error">
+                          {{ jsonErrors[field.key] }}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </details>
+              </div>
+
+              <div class="admin-ai-bots__modal-actions">
+                <button
+                  type="button"
+                  class="admin-ai-bots__button"
+                  :disabled="saving"
+                  @click="closeDialog"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="admin-ai-bots__button admin-ai-bots__button--primary"
+                  :disabled="saving"
+                >
+                  <span v-if="saving" class="admin-ai-bots__spinner" aria-hidden="true" />
+                  {{ editingId ? "Save Changes" : "Create Bot" }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="admin-ai-bots-modal-fade">
+        <div
+          v-if="deleteDialog"
+          class="admin-ai-bots__modal-layer"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="admin-ai-bots__modal-backdrop"
+            aria-label="Close delete dialog"
+            :disabled="deleting"
+            @click="deleteDialog = false"
+          />
+
+          <div
+            class="admin-ai-bots__modal admin-ai-bots__modal--compact"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-ai-bots-delete-title"
+          >
+            <div class="admin-ai-bots__modal-card">
+              <div class="admin-ai-bots__modal-header">
+                <h2 id="admin-ai-bots-delete-title" class="admin-ai-bots__modal-title">
+                  Delete AI bot
+                </h2>
+              </div>
+
+              <div class="admin-ai-bots__modal-body">
+                Are you sure you want to delete
+                <strong>{{ deleteTarget?.profile?.displayname }}</strong>?
+                This removes the AI persona behavior only. The profile/user remains.
+              </div>
+
+              <div class="admin-ai-bots__modal-actions">
+                <button
+                  type="button"
+                  class="admin-ai-bots__button"
+                  :disabled="deleting"
+                  @click="deleteDialog = false"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="admin-ai-bots__button admin-ai-bots__button--danger"
+                  :disabled="deleting"
+                  @click="confirmDelete"
+                >
+                  <span v-if="deleting" class="admin-ai-bots__spinner" aria-hidden="true" />
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="admin-ai-bots-modal-fade">
+        <div
+          v-if="postDialog"
+          class="admin-ai-bots__modal-layer"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="admin-ai-bots__modal-backdrop"
+            aria-label="Close Moltbook dialog"
+            :disabled="posting"
+            @click="postDialog = false"
+          />
+
+          <div
+            class="admin-ai-bots__modal admin-ai-bots__modal--medium"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-ai-bots-post-title"
+          >
+            <form class="admin-ai-bots__modal-card" @submit.prevent="submitMoltbookPost">
+              <div class="admin-ai-bots__modal-header">
+                <div>
+                  <h2 id="admin-ai-bots-post-title" class="admin-ai-bots__modal-title">
+                    Post To Moltbook
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  class="admin-ai-bots__icon-button admin-ai-bots__icon-button--neutral"
+                  :disabled="posting"
+                  aria-label="Close Moltbook dialog"
+                  @click="postDialog = false"
+                >
+                  <i class="mdi mdi-close" aria-hidden="true" />
+                </button>
+              </div>
+
+              <div class="admin-ai-bots__modal-body">
+                <div
+                  v-if="postTarget"
+                  class="admin-ai-bots__info-panel admin-ai-bots__info-panel--info"
+                >
+                  Posting as
+                  <strong>{{ postTarget.profile?.displayname || postTarget.persona_key }}</strong>
+                  using key
+                  <code>{{ postTarget.moltbook?.credential_key_label || postTarget.persona_key }}</code>.
+                </div>
+
+                <div
+                  v-if="postTarget?.moltbook?.honey_posting?.enabled"
+                  class="admin-ai-bots__info-panel admin-ai-bots__info-panel--info"
+                >
+                  This bot has honey autoposting enabled. Use Generate Honey Preview to draft a unique emotional post in its voice.
+                </div>
+
+                <div class="admin-ai-bots__grid">
+                  <label class="admin-ai-bots__field">
+                    <span class="admin-ai-bots__field-label">Submolt</span>
+                    <input
+                      v-model="postForm.submolt_name"
+                      type="text"
+                      class="admin-ai-bots__control"
+                      :class="{ 'admin-ai-bots__control--error': postErrors.submolt_name }"
+                    >
+                    <span v-if="postErrors.submolt_name" class="admin-ai-bots__error">
+                      {{ postErrors.submolt_name }}
+                    </span>
+                  </label>
+
+                  <label class="admin-ai-bots__field">
+                    <span class="admin-ai-bots__field-label">Post type</span>
+                    <select v-model="postForm.type" class="admin-ai-bots__control">
+                      <option
+                        v-for="option in postTypeOptions"
+                        :key="option.value"
+                        :value="option.value"
+                      >
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="admin-ai-bots__field admin-ai-bots__field--full">
+                    <span class="admin-ai-bots__field-label">Title</span>
+                    <input
+                      v-model="postForm.title"
+                      type="text"
+                      maxlength="300"
+                      class="admin-ai-bots__control"
+                      :class="{ 'admin-ai-bots__control--error': postErrors.title }"
+                    >
+                    <span v-if="postErrors.title" class="admin-ai-bots__error">
+                      {{ postErrors.title }}
+                    </span>
+                  </label>
+
+                  <label
+                    v-if="postForm.type === 'link'"
+                    class="admin-ai-bots__field admin-ai-bots__field--full"
+                  >
+                    <span class="admin-ai-bots__field-label">Link URL</span>
+                    <input
+                      v-model="postForm.url"
+                      type="url"
+                      class="admin-ai-bots__control"
+                      :class="{ 'admin-ai-bots__control--error': postErrors.url }"
+                    >
+                    <span v-if="postErrors.url" class="admin-ai-bots__error">
+                      {{ postErrors.url }}
+                    </span>
+                  </label>
+
+                  <label class="admin-ai-bots__field admin-ai-bots__field--full">
+                    <span class="admin-ai-bots__field-label">Content</span>
+                    <textarea
+                      v-model="postForm.content"
+                      rows="6"
+                      class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                    ></textarea>
+                    <span class="admin-ai-bots__help">
+                      {{ postForm.type === "link" ? "Optional body for a link post." : "Body text for the Moltbook post." }}
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="admin-ai-bots__modal-actions">
+                <button
+                  v-if="postTarget?.moltbook?.honey_posting?.enabled"
+                  type="button"
+                  class="admin-ai-bots__button admin-ai-bots__button--accent"
+                  :disabled="previewingPost"
+                  @click="generateHoneyPreview"
+                >
+                  <span
+                    v-if="previewingPost"
+                    class="admin-ai-bots__spinner"
+                    aria-hidden="true"
+                  />
+                  Generate Honey Preview
+                </button>
+                <div class="admin-ai-bots__toolbar-spacer" />
+                <button
+                  type="button"
+                  class="admin-ai-bots__button"
+                  :disabled="posting"
+                  @click="postDialog = false"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="admin-ai-bots__button admin-ai-bots__button--info"
+                  :disabled="posting"
+                >
+                  <span v-if="posting" class="admin-ai-bots__spinner" aria-hidden="true" />
+                  Publish
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <div
+        class="admin-ai-bots__toast-stack"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <Transition name="admin-ai-bots-toast-fade">
+          <div
+            v-if="snackbar.show"
+            class="admin-ai-bots__toast"
+            :class="toastToneClass(snackbar.color)"
+            role="status"
+          >
+            <span>{{ snackbar.message }}</span>
+            <button
+              type="button"
+              class="admin-ai-bots__toast-close"
+              aria-label="Dismiss notification"
+              @click="snackbar.show = false"
+            >
+              <i class="mdi mdi-close" aria-hidden="true" />
+            </button>
+          </div>
+        </Transition>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -1154,7 +1602,6 @@ const postDialog = ref(false);
 const deleteTarget = ref(null);
 const postTarget = ref(null);
 const editingId = ref(null);
-const formRef = ref(null);
 const saving = ref(false);
 const deleting = ref(false);
 const posting = ref(false);
@@ -1260,6 +1707,29 @@ const jsonErrors = reactive({
   moderation_config: "",
 });
 
+const formErrors = reactive({
+  profile_user_id: "",
+  persona_key: "",
+  model: "",
+  system_prompt_template: "",
+  honey_delay_min_ms: "",
+  honey_delay_max_ms: "",
+  temperature: "",
+  top_p: "",
+  presence_penalty: "",
+  frequency_penalty: "",
+  max_response_tokens: "",
+  max_history_messages: "",
+  daily_posts: "",
+  cooldown_minutes: "",
+});
+
+const postErrors = reactive({
+  submolt_name: "",
+  title: "",
+  url: "",
+});
+
 const snackbar = reactive({
   show: false,
   message: "",
@@ -1278,13 +1748,13 @@ const postForm = reactive({
 const categoryOptions = computed(() => categories.value || []);
 
 const moodGroupOptions = [
-  { label: "Feeling Bored",      value: "bored" },
-  { label: "Can't Sleep",        value: "cant-sleep" },
-  { label: "Need Some Advice",   value: "want-advice" },
-  { label: "Up for Light Chat",  value: "light-chat" },
-  { label: "Feeling Lonely",     value: "lonely" },
-  { label: "Sad or Processing",  value: "sad" },
-  { label: "Calm & Reflective",  value: "calm" },
+  { label: "Feeling Bored", value: "bored" },
+  { label: "Can't Sleep", value: "cant-sleep" },
+  { label: "Need Some Advice", value: "want-advice" },
+  { label: "Up for Light Chat", value: "light-chat" },
+  { label: "Feeling Lonely", value: "lonely" },
+  { label: "Sad or Processing", value: "sad" },
+  { label: "Calm & Reflective", value: "calm" },
   { label: "Restless & Curious", value: "curious" },
 ];
 const postTypeOptions = [
@@ -1318,6 +1788,7 @@ const languagePracticeExchangeModeOptions =
     value,
   }));
 const selectedCapabilityTab = ref("honey");
+
 const enabledCapabilityTabs = computed(() => {
   const tabs = [];
   if (form.persona.honey_enabled) tabs.push({ key: "honey", label: "Honey" });
@@ -1488,6 +1959,107 @@ const minRule = (min) => (value) => {
   return true;
 };
 
+const clearErrors = (target) => {
+  Object.keys(target).forEach((key) => {
+    target[key] = "";
+  });
+};
+
+const firstRuleError = (rules, value) => {
+  for (const rule of rules) {
+    const result = rule(value);
+    if (result !== true) return result;
+  }
+  return "";
+};
+
+const normalizeStringList = (value) =>
+  String(value || "")
+    .split(/\n|,/)
+    .map((item) => String(item || "").trim())
+    .filter(Boolean);
+
+const honeyEmotionalThemesText = computed({
+  get: () => moltbookForm.honey_emotional_themes.join("\n"),
+  set: (value) => {
+    moltbookForm.honey_emotional_themes = normalizeStringList(value);
+  },
+});
+
+const honeyCtaVariantsText = computed({
+  get: () => moltbookForm.honey_cta_variants.join("\n"),
+  set: (value) => {
+    moltbookForm.honey_cta_variants = normalizeStringList(value);
+  },
+});
+
+const validateMainForm = () => {
+  clearErrors(formErrors);
+
+  formErrors.profile_user_id = firstRuleError(
+    [requiredRule],
+    form.persona.profile_user_id
+  );
+  formErrors.persona_key = firstRuleError(
+    [requiredRule, slugRule],
+    form.persona.persona_key
+  );
+  formErrors.model = firstRuleError([requiredRule], form.persona.model);
+  formErrors.system_prompt_template = firstRuleError(
+    [requiredRule],
+    form.persona.system_prompt_template
+  );
+  formErrors.temperature = firstRuleError(
+    [makeRangeRule(0, 2)],
+    form.persona.temperature
+  );
+  formErrors.top_p = firstRuleError([makeRangeRule(0.01, 1)], form.persona.top_p);
+  formErrors.presence_penalty = firstRuleError(
+    [makeRangeRule(-2, 2, true)],
+    form.persona.presence_penalty
+  );
+  formErrors.frequency_penalty = firstRuleError(
+    [makeRangeRule(-2, 2, true)],
+    form.persona.frequency_penalty
+  );
+  formErrors.max_response_tokens = firstRuleError(
+    [minRule(1)],
+    form.persona.max_response_tokens
+  );
+  formErrors.max_history_messages = firstRuleError(
+    [minRule(0)],
+    form.persona.max_history_messages
+  );
+  formErrors.daily_posts = firstRuleError([minRule(0)], moltbookForm.daily_posts);
+  formErrors.cooldown_minutes = firstRuleError(
+    [minRule(0)],
+    moltbookForm.cooldown_minutes
+  );
+
+  if (form.persona.honey_enabled) {
+    formErrors.honey_delay_min_ms = firstRuleError(
+      [minRule(0)],
+      form.persona.honey_delay_min_ms
+    );
+    formErrors.honey_delay_max_ms = firstRuleError(
+      [minRule(0)],
+      form.persona.honey_delay_max_ms
+    );
+  }
+
+  return !Object.values(formErrors).some(Boolean);
+};
+
+const validatePostForm = () => {
+  clearErrors(postErrors);
+  postErrors.submolt_name = firstRuleError([requiredRule], postForm.submolt_name);
+  postErrors.title = firstRuleError([requiredRule], postForm.title);
+  if (postForm.type === "link") {
+    postErrors.url = firstRuleError([requiredRule], postForm.url);
+  }
+  return !Object.values(postErrors).some(Boolean);
+};
+
 const slugifyLocal = (value) =>
   String(value || "")
     .trim()
@@ -1562,6 +2134,23 @@ const moltbookUsageLabel = (bot) => {
 const canPostToMoltbook = (bot) =>
   Boolean(bot?.moltbook?.enabled && bot?.moltbook?.credential_configured);
 
+const resolveUiTone = (value) => {
+  const tone = String(value || "").trim().toLowerCase();
+  if (["red", "error", "danger"].includes(tone)) return "danger";
+  if (["success", "teal"].includes(tone)) return "success";
+  if (["amber", "amber-darken-2", "deep-orange", "warning"].includes(tone)) {
+    return "warning";
+  }
+  if (tone === "pink") return "accent";
+  if (["indigo", "info"].includes(tone)) return "info";
+  if (["grey", "gray", "neutral"].includes(tone)) return "neutral";
+  return "primary";
+};
+
+const bannerToneClass = (value) => `admin-ai-bots__banner--${resolveUiTone(value)}`;
+const toastToneClass = (value) => `admin-ai-bots__toast--${resolveUiTone(value)}`;
+const pillToneClass = (value) => `admin-ai-bots__pill--${resolveUiTone(value)}`;
+
 const resetForm = () => {
   Object.assign(form.persona, {
     profile_user_id: "",
@@ -1622,11 +2211,10 @@ const resetForm = () => {
     system_prompt_template: "",
     response_style_template: "",
   });
-  Object.keys(jsonErrors).forEach((key) => {
-    jsonErrors[key] = "";
-  });
+  clearErrors(jsonErrors);
+  clearErrors(formErrors);
+  clearErrors(postErrors);
   personaKeyTouched.value = false;
-  nextTick(() => formRef.value?.resetValidation());
 };
 
 const avatarInitial = (bot) => {
@@ -1716,9 +2304,9 @@ const populateForm = (bot) => {
     languagePracticeForm.system_prompt_template || "";
   languagePracticeForm.response_style_template =
     languagePracticeForm.response_style_template || "";
-  Object.keys(jsonErrors).forEach((key) => {
-    jsonErrors[key] = "";
-  });
+  clearErrors(jsonErrors);
+  clearErrors(formErrors);
+  clearErrors(postErrors);
 };
 
 const parseJsonInputs = () => {
@@ -1806,6 +2394,7 @@ const openPostDialog = (bot) => {
     return;
   }
   postTarget.value = bot;
+  clearErrors(postErrors);
   Object.assign(postForm, {
     submolt_name: bot.moltbook?.default_submolt || "",
     title: "",
@@ -1852,8 +2441,12 @@ const translatePersonaFields = async () => {
 };
 
 const handleSubmit = async () => {
-  const validation = await formRef.value?.validate?.();
-  if (validation && !validation.valid) return;
+  if (!validateMainForm()) {
+    snackbar.show = true;
+    snackbar.color = "red";
+    snackbar.message = "Fix the highlighted fields before saving.";
+    return;
+  }
 
   const jsonPayload = parseJsonInputs();
   if (!jsonPayload) {
@@ -2011,22 +2604,10 @@ async function revealExistingPersonaFromError(message = "") {
 
 const submitMoltbookPost = async () => {
   if (!postTarget.value) return;
-  if (!String(postForm.submolt_name || "").trim()) {
+  if (!validatePostForm()) {
     snackbar.show = true;
     snackbar.color = "red";
-    snackbar.message = "Submolt is required.";
-    return;
-  }
-  if (!String(postForm.title || "").trim()) {
-    snackbar.show = true;
-    snackbar.color = "red";
-    snackbar.message = "Title is required.";
-    return;
-  }
-  if (postForm.type === "link" && !String(postForm.url || "").trim()) {
-    snackbar.show = true;
-    snackbar.color = "red";
-    snackbar.message = "Link posts require a URL.";
+    snackbar.message = "Complete the required Moltbook fields.";
     return;
   }
 
@@ -2205,6 +2786,8 @@ const confirmDelete = async () => {
 watch(dialog, (isOpen) => {
   if (!isOpen) {
     editingId.value = null;
+    clearErrors(formErrors);
+    clearErrors(jsonErrors);
   }
 });
 
@@ -2212,6 +2795,28 @@ watch(postDialog, (isOpen) => {
   if (!isOpen) {
     postTarget.value = null;
     previewingPost.value = false;
+    clearErrors(postErrors);
+  }
+});
+
+let snackbarTimer = null;
+watch(
+  () => snackbar.show,
+  (isOpen) => {
+    if (snackbarTimer) {
+      clearTimeout(snackbarTimer);
+      snackbarTimer = null;
+    }
+    if (!isOpen) return;
+    snackbarTimer = setTimeout(() => {
+      snackbar.show = false;
+    }, 7000);
+  }
+);
+
+onBeforeUnmount(() => {
+  if (snackbarTimer) {
+    clearTimeout(snackbarTimer);
   }
 });
 
@@ -2337,17 +2942,837 @@ const clearAllBotIntakes = async () => {
 </script>
 
 <style scoped>
-.avatar-fallback {
-  width: 100%;
-  height: 100%;
+.admin-ai-bots {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-ai-bots__loading {
+  margin-bottom: 0;
+}
+
+.admin-ai-bots__card {
+  border: 1px solid rgba(var(--color-border), 0.88);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.96), rgba(var(--color-surface), 0.98));
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.admin-ai-bots__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 22px 22px 0;
+}
+
+.admin-ai-bots__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 22px 22px;
+}
+
+.admin-ai-bots__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-ai-bots__title {
+  margin: 0;
+  color: rgb(var(--color-heading));
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.admin-ai-bots__subtitle {
+  margin: 6px 0 0;
+  color: rgba(var(--color-text), 0.72);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.admin-ai-bots__subtitle code,
+.admin-ai-bots__help code,
+.admin-ai-bots__info-panel code {
+  border-radius: 8px;
+  background: rgba(var(--color-primary), 0.1);
+  padding: 2px 6px;
+}
+
+.admin-ai-bots__count-pill,
+.admin-ai-bots__pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-border), 0.78);
+  background: rgba(var(--color-surface), 0.84);
+  color: rgb(var(--color-text));
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.admin-ai-bots__count-pill,
+.admin-ai-bots__pill--primary {
+  border-color: rgba(var(--color-primary), 0.24);
+  background: rgba(var(--color-primary), 0.12);
+  color: rgb(var(--color-primary));
+}
+
+.admin-ai-bots__pill--info {
+  border-color: rgba(99, 102, 241, 0.28);
+  background: rgba(99, 102, 241, 0.12);
+  color: rgb(67, 56, 202);
+}
+
+.admin-ai-bots__pill--success {
+  border-color: rgba(34, 197, 94, 0.28);
+  background: rgba(34, 197, 94, 0.12);
+  color: rgb(21, 128, 61);
+}
+
+.admin-ai-bots__pill--warning {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(245, 158, 11, 0.12);
+  color: rgb(180, 83, 9);
+}
+
+.admin-ai-bots__pill--danger {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(185, 28, 28);
+}
+
+.admin-ai-bots__pill--neutral {
+  border-color: rgba(var(--color-border), 0.82);
+  background: rgba(var(--color-surface), 0.88);
+  color: rgba(var(--color-text), 0.72);
+}
+
+.admin-ai-bots__pill--accent {
+  border-color: rgba(168, 85, 247, 0.28);
+  background: rgba(168, 85, 247, 0.12);
+  color: rgb(126, 34, 206);
+}
+
+.admin-ai-bots__pill--dim {
+  opacity: 0.5;
+}
+
+.admin-ai-bots__pill--locale {
   text-transform: uppercase;
+}
+
+.admin-ai-bots__toolbar,
+.admin-ai-bots__actions,
+.admin-ai-bots__banner-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-ai-bots__toolbar {
+  align-items: center;
+}
+
+.admin-ai-bots__toolbar--tester {
+  margin-top: 4px;
+}
+
+.admin-ai-bots__toolbar--end {
+  justify-content: flex-end;
+}
+
+.admin-ai-bots__toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.admin-ai-bots__button,
+.admin-ai-bots__icon-button,
+.admin-ai-bots__toast-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-border), 0.86);
+  background: rgba(var(--color-surface), 0.92);
+  color: rgb(var(--color-text));
+  padding: 0 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-ai-bots__icon-button {
+  width: 38px;
+  min-height: 38px;
+  padding: 0;
+}
+
+.admin-ai-bots__button:disabled,
+.admin-ai-bots__icon-button:disabled,
+.admin-ai-bots__toast-close:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-ai-bots__button--primary,
+.admin-ai-bots__icon-button--primary {
+  border-color: rgba(var(--color-primary), 0.32);
+  background: rgba(var(--color-primary), 0.14);
+  color: rgb(var(--color-primary));
+}
+
+.admin-ai-bots__button--info,
+.admin-ai-bots__icon-button--info {
+  border-color: rgba(99, 102, 241, 0.28);
+  background: rgba(99, 102, 241, 0.12);
+  color: rgb(67, 56, 202);
+}
+
+.admin-ai-bots__button--success {
+  border-color: rgba(20, 184, 166, 0.28);
+  background: rgba(20, 184, 166, 0.12);
+  color: rgb(13, 148, 136);
+}
+
+.admin-ai-bots__button--warning {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(245, 158, 11, 0.12);
+  color: rgb(180, 83, 9);
+}
+
+.admin-ai-bots__button--danger,
+.admin-ai-bots__icon-button--danger {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(185, 28, 28);
+}
+
+.admin-ai-bots__button--neutral,
+.admin-ai-bots__icon-button--neutral,
+.admin-ai-bots__button--ghost {
+  color: rgba(var(--color-text), 0.8);
+}
+
+.admin-ai-bots__button--accent {
+  border-color: rgba(236, 72, 153, 0.28);
+  background: rgba(236, 72, 153, 0.12);
+  color: rgb(190, 24, 93);
+}
+
+.admin-ai-bots__spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(var(--color-text), 0.18);
+  border-top-color: currentColor;
+  animation: admin-ai-bots-spin 0.8s linear infinite;
+}
+
+.admin-ai-bots__filters,
+.admin-ai-bots__grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-ai-bots__grid--tester {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.admin-ai-bots__grid--metrics {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.admin-ai-bots__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.admin-ai-bots__field--search {
+  grid-column: span 2;
+}
+
+.admin-ai-bots__field--compact {
+  max-width: 260px;
+}
+
+.admin-ai-bots__field--full {
+  grid-column: span 2;
+}
+
+.admin-ai-bots__field-label {
+  color: rgba(var(--color-text), 0.68);
+  font-size: 0.82rem;
   font-weight: 600;
 }
 
-.capability-toggles :deep(.v-label) {
-  font-size: 0.85rem;
+.admin-ai-bots__input-wrap {
+  position: relative;
+}
+
+.admin-ai-bots__input-icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: rgba(var(--color-text), 0.52);
+  font-size: 1rem;
+}
+
+.admin-ai-bots__control {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--color-border), 0.9);
+  background: rgba(var(--color-surface), 0.94);
+  color: rgb(var(--color-text));
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  outline: none;
+  color-scheme: light dark;
+}
+
+.admin-ai-bots__control--with-icon {
+  padding-left: 38px;
+}
+
+.admin-ai-bots__control--textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.admin-ai-bots__control--multiselect {
+  min-height: 132px;
+}
+
+.admin-ai-bots__control:focus {
+  border-color: rgba(var(--color-primary), 0.5);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.12);
+}
+
+.admin-ai-bots__control--error {
+  border-color: rgba(239, 68, 68, 0.48);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.admin-ai-bots__help,
+.admin-ai-bots__muted {
+  color: rgba(var(--color-text), 0.72);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.admin-ai-bots__help--info {
+  color: rgb(var(--color-primary));
+}
+
+.admin-ai-bots__error {
+  color: rgb(185, 28, 28);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.admin-ai-bots__banner,
+.admin-ai-bots__info-panel {
+  border-radius: 18px;
+  border: 1px solid rgba(var(--color-border), 0.82);
+  padding: 12px 14px;
+  font-size: 0.92rem;
+}
+
+.admin-ai-bots__banner--primary,
+.admin-ai-bots__banner--info,
+.admin-ai-bots__info-panel--info {
+  background: rgba(var(--color-primary), 0.1);
+  border-color: rgba(var(--color-primary), 0.24);
+  color: rgb(var(--color-text));
+}
+
+.admin-ai-bots__banner--success {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.28);
+  color: rgb(21, 128, 61);
+}
+
+.admin-ai-bots__banner--warning,
+.admin-ai-bots__info-panel--warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.28);
+  color: rgb(180, 83, 9);
+}
+
+.admin-ai-bots__banner--danger {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.32);
+  color: rgb(185, 28, 28);
+}
+
+.admin-ai-bots__table-wrap {
+  border: 1px solid rgba(var(--color-border), 0.88);
+  border-radius: 20px;
+  background: rgba(var(--color-surface), 0.92);
+  overflow: auto;
+}
+
+.admin-ai-bots__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 880px;
+}
+
+.admin-ai-bots__table th,
+.admin-ai-bots__table td {
+  padding: 16px 14px;
+  border-bottom: 1px solid rgba(var(--color-border), 0.72);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-ai-bots__table th {
+  color: rgba(var(--color-text), 0.66);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: rgba(var(--color-surface-elevated), 0.9);
+}
+
+.admin-ai-bots__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-ai-bots__table-actions-head {
+  text-align: right;
+}
+
+.admin-ai-bots__empty-row {
+  color: rgba(var(--color-text), 0.72);
+  text-align: center;
+  padding: 28px 18px;
+}
+
+.admin-ai-bots__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.admin-ai-bots__identity-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.admin-ai-bots__identity-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: rgb(var(--color-heading));
+  font-weight: 700;
+}
+
+.admin-ai-bots__identity-meta,
+.admin-ai-bots__prompt-preview {
+  color: rgb(var(--color-text));
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.admin-ai-bots__cell-title {
+  color: rgb(var(--color-heading));
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.admin-ai-bots__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--color-border), 0.82);
+  background: rgba(var(--color-primary), 0.12);
+  flex: 0 0 auto;
+}
+
+.admin-ai-bots__avatar--large {
+  width: 44px;
+  height: 44px;
+}
+
+.admin-ai-bots__avatar-image,
+.admin-ai-bots__avatar-fallback {
+  width: 100%;
+  height: 100%;
+}
+
+.admin-ai-bots__avatar-image {
+  display: block;
+  object-fit: cover;
+}
+
+.admin-ai-bots__avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgb(var(--color-primary));
+}
+
+.admin-ai-bots__chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.admin-ai-bots__chip-row--tight {
+  margin-top: 10px;
+}
+
+.admin-ai-bots__modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.admin-ai-bots__modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(15, 23, 42, 0.52);
+}
+
+.admin-ai-bots__modal {
+  position: relative;
+  width: min(100%, 980px);
+  max-height: calc(100vh - 48px);
+  z-index: 1;
+}
+
+.admin-ai-bots__modal--medium {
+  width: min(100%, 760px);
+}
+
+.admin-ai-bots__modal--compact {
+  width: min(100%, 420px);
+}
+
+.admin-ai-bots__modal-card {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 48px);
+  border: 1px solid rgba(var(--color-border), 0.88);
+  border-radius: 24px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+.admin-ai-bots__modal-header,
+.admin-ai-bots__modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.admin-ai-bots__modal-header {
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(var(--color-border), 0.82);
+}
+
+.admin-ai-bots__modal-title {
+  margin: 0;
+  color: rgb(var(--color-heading));
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.admin-ai-bots__modal-subtitle {
+  margin: 4px 0 0;
+  color: rgba(var(--color-text), 0.68);
+  font-size: 0.84rem;
+}
+
+.admin-ai-bots__modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
+  overflow: auto;
+}
+
+.admin-ai-bots__modal-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  border-top: 1px solid rgba(var(--color-border), 0.82);
+}
+
+.admin-ai-bots__section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-ai-bots__section-title,
+.admin-ai-bots__subsection-title {
+  margin: 0;
+  color: rgb(var(--color-heading));
+  font-weight: 700;
+}
+
+.admin-ai-bots__subsection-title {
+  font-size: 0.95rem;
+  margin-top: 6px;
+}
+
+.admin-ai-bots__profile-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-ai-bots__toggle-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-ai-bots__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-border), 0.84);
+  background: rgba(var(--color-surface), 0.9);
+  padding: 0 14px;
+  color: rgb(var(--color-text));
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.admin-ai-bots__toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: rgb(var(--color-primary));
+}
+
+.admin-ai-bots__capability-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-ai-bots__tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-ai-bots__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-border), 0.84);
+  background: rgba(var(--color-surface), 0.92);
+  color: rgba(var(--color-text), 0.76);
+  padding: 0 12px;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.admin-ai-bots__tab--active {
+  border-color: rgba(var(--color-primary), 0.34);
+  background: rgba(var(--color-primary), 0.14);
+  color: rgb(var(--color-primary));
+}
+
+.admin-ai-bots__tab-panel,
+.admin-ai-bots__details-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-ai-bots__details {
+  border: 1px solid rgba(var(--color-border), 0.82);
+  border-radius: 18px;
+  background: rgba(var(--color-surface), 0.9);
+  overflow: hidden;
+}
+
+.admin-ai-bots__details-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 16px 18px;
+  color: rgb(var(--color-heading));
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.admin-ai-bots__details-summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-ai-bots__details-summary::after {
+  content: "▾";
+  float: right;
+  color: rgba(var(--color-text), 0.6);
+}
+
+.admin-ai-bots__details[open] .admin-ai-bots__details-summary::after {
+  content: "▴";
+}
+
+.admin-ai-bots__details-body {
+  border-top: 1px solid rgba(var(--color-border), 0.76);
+  padding: 0 18px 18px;
+}
+
+.admin-ai-bots__toast-stack {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1300;
+}
+
+.admin-ai-bots__toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 280px;
+  max-width: min(420px, calc(100vw - 40px));
+  border-radius: 18px;
+  border: 1px solid rgba(var(--color-border), 0.86);
+  background: rgba(var(--color-surface), 0.98);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  padding: 12px 14px;
+  color: rgb(var(--color-text));
+}
+
+.admin-ai-bots__toast--primary,
+.admin-ai-bots__toast--info {
+  border-color: rgba(var(--color-primary), 0.24);
+}
+
+.admin-ai-bots__toast--success {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.admin-ai-bots__toast--warning {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.admin-ai-bots__toast--danger {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.admin-ai-bots__toast--accent {
+  border-color: rgba(236, 72, 153, 0.3);
+}
+
+.admin-ai-bots__toast-close {
+  margin-left: auto;
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+  background: transparent;
+}
+
+.admin-ai-bots-modal-fade-enter-active,
+.admin-ai-bots-modal-fade-leave-active,
+.admin-ai-bots-toast-fade-enter-active,
+.admin-ai-bots-toast-fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.admin-ai-bots-modal-fade-enter-from,
+.admin-ai-bots-modal-fade-leave-to,
+.admin-ai-bots-toast-fade-enter-from,
+.admin-ai-bots-toast-fade-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@keyframes admin-ai-bots-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 959px) {
+  .admin-ai-bots__filters,
+  .admin-ai-bots__grid,
+  .admin-ai-bots__grid--tester {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-ai-bots__field--search,
+  .admin-ai-bots__field--full {
+    grid-column: span 1;
+  }
+
+  .admin-ai-bots__field--compact {
+    max-width: none;
+  }
+
+  .admin-ai-bots__header {
+    align-items: stretch;
+  }
+
+  .admin-ai-bots__toolbar-spacer {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-ai-bots__body,
+  .admin-ai-bots__modal-body,
+  .admin-ai-bots__modal-header,
+  .admin-ai-bots__modal-actions {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .admin-ai-bots__modal-layer {
+    padding: 12px;
+  }
+
+  .admin-ai-bots__toast-stack {
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+  }
+
+  .admin-ai-bots__toast {
+    min-width: 0;
+    max-width: 100%;
+  }
 }
 </style>

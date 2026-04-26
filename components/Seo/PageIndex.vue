@@ -1,7 +1,9 @@
 <template>
-  <v-container
-    fluid
-    :class="['seo-index-shell', { 'seo-index-shell--dark': isDarkTheme }]"
+  <section
+    :class="[
+      'seo-index-shell mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8',
+      { 'seo-index-shell--dark': isDarkTheme },
+    ]"
   >
     <div class="seo-index-header-shell">
       <PageHeader :text="title" :subtitle="description" />
@@ -9,33 +11,31 @@
 
     <div class="seo-index-hero">
       <div class="seo-index-hero__copy">
-        <v-chip size="small" variant="tonal" color="primary" class="mb-3">
+        <span class="seo-index-chip seo-index-chip--primary mb-3">
           {{ kicker }}
-        </v-chip>
-        <p class="text-body-1 text-medium-emphasis mb-5">
+        </span>
+        <p class="mb-5 text-base text-foreground/70">
           {{ intro }}
         </p>
-        <div class="d-flex flex-wrap ga-3">
-          <v-btn color="primary" size="large" :to="localPath('/chat')">
+        <div class="flex flex-wrap gap-3">
+          <NuxtLink :to="localPath('/chat')" class="seo-index-btn seo-index-btn--primary">
             {{ uiCopy.startChatting }}
-          </v-btn>
-          <v-btn variant="outlined" size="large" :to="localPath('/faq')">
+          </NuxtLink>
+          <NuxtLink :to="localPath('/faq')" class="seo-index-btn seo-index-btn--secondary">
             {{ uiCopy.readFaq }}
-          </v-btn>
+          </NuxtLink>
         </div>
       </div>
 
-      <v-card
-        :class="['seo-index-summary pa-5', { 'seo-index-card--dark': isDarkTheme }]"
-        rounded="xl"
-        elevation="0"
-      >
-        <div class="text-overline mb-3">{{ uiCopy.sectionOverview }}</div>
-        <div class="text-h5 font-weight-bold mb-2">{{ summaryTitle(pages.length) }}</div>
-        <p class="text-body-2 text-medium-emphasis mb-4">
+      <div :class="['seo-index-summary p-5', { 'seo-index-card--dark': isDarkTheme }]">
+        <div class="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/65">
+          {{ uiCopy.sectionOverview }}
+        </div>
+        <div class="mb-2 text-2xl font-semibold text-foreground">{{ summaryTitle(pages.length) }}</div>
+        <p class="mb-4 text-sm text-foreground/70">
           {{ uiCopy.supportText }}
         </p>
-        <div class="d-flex flex-column ga-2">
+        <div class="flex flex-col gap-2">
           <NuxtLink
             v-for="hub in siblingHubs"
             :key="hub.href"
@@ -45,68 +45,59 @@
             {{ hub.label }}
           </NuxtLink>
         </div>
-      </v-card>
+      </div>
     </div>
 
-    <div class="text-overline mb-3 mt-6">{{ uiCopy.browsePages }}</div>
-    <v-row>
-      <v-col v-for="page in pages" :key="`${page.locale}-${page.slug}`" cols="12" md="6">
+    <div class="mb-3 mt-6 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/65">
+      {{ uiCopy.browsePages }}
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div v-for="page in pages" :key="`${page.locale}-${page.slug}`">
         <NuxtLink :to="localPath(page.path)" class="seo-index-page-link">
-          <v-card
-            :class="['pa-4 h-100 seo-index-page-card', { 'seo-index-card--dark': isDarkTheme }]"
-            rounded="xl"
-            elevation="0"
-          >
+          <div :class="['seo-index-page-card h-full p-4', { 'seo-index-card--dark': isDarkTheme }]">
             <div class="seo-index-page-card__top mb-3">
               <div class="seo-index-page-card__meta">
-                <div class="d-flex align-center ga-2 mb-2 flex-wrap">
-                  <v-chip size="x-small" variant="tonal" color="primary">
+                <div class="mb-2 flex flex-wrap items-center gap-2">
+                  <span class="seo-index-chip seo-index-chip--primary seo-index-chip--small">
                     {{ kicker }}
-                  </v-chip>
-                  <v-chip
-                    size="x-small"
-                    variant="outlined"
-                    class="seo-index-locale-chip"
-                  >
+                  </span>
+                  <span class="seo-index-chip seo-index-chip--outline seo-index-chip--small seo-index-locale-chip">
                     {{ formatLocaleShort(page.locale) }}
-                  </v-chip>
+                  </span>
                 </div>
-                <div class="text-h6 font-weight-bold mb-2">{{ page.title }}</div>
+                <div class="mb-2 text-lg font-semibold text-foreground">{{ page.title }}</div>
               </div>
               <div
                 v-if="page.heroImageUrl"
                 class="seo-index-page-card__thumb"
               >
-                <v-img
-                  :src="page.heroImageUrl"
-                  :alt="page.title"
-                  cover
-                  class="seo-index-page-card__thumb-image"
-                  aspect-ratio="1"
-                >
+                <div class="seo-index-page-card__thumb-image-wrap">
+                  <img
+                    :src="page.heroImageUrl"
+                    :alt="page.title"
+                    class="seo-index-page-card__thumb-image"
+                  >
                   <div class="seo-index-page-card__image-overlay" />
-                </v-img>
+                </div>
               </div>
             </div>
-            <p class="text-body-2 text-medium-emphasis mb-0">
+            <p class="mb-0 text-sm text-foreground/70">
               {{ page.subtitle || page.metaDescription || page.heroBody || uiCopy.explorePage }}
             </p>
-          </v-card>
+          </div>
         </NuxtLink>
-      </v-col>
+      </div>
 
-      <v-col v-if="!pages.length" cols="12">
-        <v-alert type="info" variant="tonal">
+      <div v-if="!pages.length">
+        <div class="seo-index-empty-state" role="status">
           {{ uiCopy.noPages }}
-        </v-alert>
-      </v-col>
-    </v-row>
-  </v-container>
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { useTheme } from "vuetify";
-
 type SeoIndexPage = {
   locale: string;
   slug: string;
@@ -130,8 +121,8 @@ const props = defineProps<{
 
 const localPath = useLocalePath();
 const { locale } = useI18n();
-const theme = useTheme();
-const isDarkTheme = computed(() => theme.global.current.value.dark);
+const { resolvedTheme } = useAppTheme();
+const isDarkTheme = computed(() => resolvedTheme.value === "dark");
 const currentLocale = computed(() =>
   String(locale.value || "en")
     .split("-")[0]
@@ -253,6 +244,87 @@ const formatLocaleShort = (localeCode: string) =>
   color: #e2e8f0;
 }
 
+.seo-index-btn {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.seo-index-btn:hover,
+.seo-index-btn:focus-visible {
+  transform: translateY(-1px);
+}
+
+.seo-index-btn:focus-visible {
+  outline: 2px solid rgb(var(--color-primary) / 0.45);
+  outline-offset: 2px;
+}
+
+.seo-index-btn--primary {
+  background: rgb(var(--color-primary));
+  border: 1px solid rgb(var(--color-primary));
+  color: #fff;
+  box-shadow: 0 10px 22px rgb(var(--color-primary) / 0.2);
+}
+
+.seo-index-btn--primary:hover,
+.seo-index-btn--primary:focus-visible {
+  background: rgb(var(--color-primary) / 0.92);
+}
+
+.seo-index-btn--secondary {
+  border: 1px solid rgb(var(--color-primary) / 0.26);
+  background: transparent;
+  color: rgb(var(--color-primary));
+}
+
+.seo-index-btn--secondary:hover,
+.seo-index-btn--secondary:focus-visible {
+  background: rgb(var(--color-primary) / 0.08);
+}
+
+.seo-index-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.42rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.seo-index-chip--small {
+  padding: 0.28rem 0.6rem;
+  font-size: 0.67rem;
+}
+
+.seo-index-chip--primary {
+  background: rgb(var(--color-primary) / 0.12);
+  color: rgb(var(--color-primary));
+}
+
+.seo-index-chip--outline {
+  border: 1px solid rgb(var(--color-border) / 0.8);
+  background: transparent;
+  color: rgb(var(--color-muted));
+}
+
 .seo-index-header-shell {
   margin-bottom: 18px;
 }
@@ -287,14 +359,8 @@ const formatLocaleShort = (localeCode: string) =>
   color: #e2e8f0;
 }
 
-.seo-index-shell--dark :deep(.text-medium-emphasis),
-.seo-index-shell--dark :deep(.text-body-2),
-.seo-index-shell--dark :deep(.text-body-1) {
-  color: #cbd5e1 !important;
-}
-
 .seo-index-sibling {
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--color-primary));
   text-decoration: none;
   font-weight: 600;
 }
@@ -348,10 +414,22 @@ const formatLocaleShort = (localeCode: string) =>
 }
 
 .seo-index-page-card__thumb-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   background: rgba(15, 23, 42, 0.12);
 }
 
+.seo-index-page-card__thumb-image-wrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
 .seo-index-page-card__image-overlay {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   background:
@@ -391,6 +469,20 @@ const formatLocaleShort = (localeCode: string) =>
 
 .seo-index-page-link:focus-visible {
   outline: none;
+}
+
+.seo-index-empty-state {
+  border-radius: 18px;
+  border: 1px solid rgb(59 130 246 / 0.18);
+  background: rgb(59 130 246 / 0.1);
+  padding: 1rem 1.1rem;
+  color: rgb(30 64 175);
+}
+
+.seo-index-shell--dark .seo-index-empty-state {
+  border-color: rgb(125 211 252 / 0.22);
+  background: rgb(14 116 144 / 0.18);
+  color: #dbeafe;
 }
 
 @media (max-width: 959px) {

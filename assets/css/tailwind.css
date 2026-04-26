@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --color-background: 247 248 252;
+    --color-surface: 255 255 255;
+    --color-surface-elevated: 255 255 255;
+    --color-foreground: 20 24 31;
+    --color-text: 20 24 31;
+    --color-heading: 20 24 31;
+    --color-muted: 100 116 139;
+    --color-border: 203 213 225;
+    --color-primary: 63 81 181;
+    --color-secondary: 92 107 192;
+    --color-success: 46 125 50;
+    --color-warning: 237 108 2;
+    --color-danger: 211 47 47;
+    --color-info: 2 136 209;
+    --color-shadow: 15 23 42;
+  }
+
+  html.dark,
+  html[data-imchatty-theme="dark"] {
+    color-scheme: dark;
+    --color-background: 18 20 24;
+    --color-surface: 27 31 39;
+    --color-surface-elevated: 15 23 42;
+    --color-foreground: 230 237 245;
+    --color-text: 230 237 245;
+    --color-heading: 230 237 245;
+    --color-muted: 186 199 213;
+    --color-border: 71 85 105;
+    --color-primary: 63 81 181;
+    --color-secondary: 179 157 219;
+    --color-success: 102 187 106;
+    --color-warning: 255 183 77;
+    --color-danger: 239 83 80;
+    --color-info: 79 195 247;
+    --color-shadow: 2 6 23;
+  }
+
+  html,
+  body {
+    background: rgb(var(--color-background));
+    color: rgb(var(--color-foreground));
+  }
+}

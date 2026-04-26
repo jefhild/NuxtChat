@@ -1,5 +1,5 @@
 <template>
-  <v-card flat class="chat-users-container pa-1 d-flex flex-column h-100">
+  <div class="chat-users-container">
     <div class="users-header px-1 py-1 mb-0">
       <div class="header-left">
         <span class="header-text">
@@ -35,154 +35,184 @@
 
     <div class="users-section flex-grow-1 overflow-hidden min-h-0">
       <template v-if="isLoading">
-        <v-skeleton-loader type="list-item@6" class="pa-2" />
+        <div class="users-skeleton" aria-hidden="true">
+          <div v-for="index in 6" :key="index" class="users-skeleton-row">
+            <span class="users-skeleton-avatar" />
+            <span class="users-skeleton-lines">
+              <span class="users-skeleton-line users-skeleton-line--primary" />
+              <span class="users-skeleton-line users-skeleton-line--secondary" />
+            </span>
+          </div>
+        </div>
       </template>
       <template v-else>
-        <div class="users-content d-flex flex-column flex-grow-1 min-h-0">
+        <div class="users-content">
           <div
             v-if="!displayUsers.length"
-            class="pa-3 text-body-2 users-empty-state"
+            class="users-empty-state"
           >
             {{ $t(emptyStateKey) }}
           </div>
-          <v-virtual-scroll
+          <div
             v-else
+            ref="virtualScrollRef"
             class="users-virtual"
-            :items="flatItems"
-            :item-height="32"
-            item-key="id"
           >
-            <template #default="{ item }">
+            <div
+              class="users-virtual__inner"
+              :style="{ height: `${virtualTotalSize}px` }"
+            >
               <div
-                v-if="item.type === 'group'"
-                class="group-row"
-                @click="toggleGroup(item.id)"
+                v-for="row in virtualRows"
+                :key="row.key"
+                class="users-virtual__item"
+                :class="{
+                  'users-virtual__item--menu-open':
+                    row.item.type === 'user' && isActionMenuOpen(row.item.user),
+                }"
+                :style="{
+                  height: `${row.size}px`,
+                  transform: `translateY(${row.start}px)`,
+                }"
               >
-                <v-icon size="16" class="group-caret">
-                  {{ isGroupOpen(item.id) ? "mdi-chevron-down" : "mdi-chevron-right" }}
-                </v-icon>
-                <span class="group-label">{{ item.title }}</span>
-                <span v-if="showCount" class="group-count">
-                  {{ item.count }}
-                </span>
-              </div>
-              <div
-                v-else
-                class="user-row"
-                :class="{ selected: isSelected(item.user) }"
-                @click="emit('user-selected', item.user)"
-              >
-                <span class="avatar-wrap">
-                  <v-avatar size="26">
-                    <v-img v-if="item.user.avatar_url" :src="item.user.avatar_url" cover />
-                    <span v-else class="avatar-fallback">{{
-                      displayNameFor(item.user).slice(0, 1).toUpperCase()
-                    }}</span>
-                  </v-avatar>
-                  <span
-                    class="presence-dot"
-                    :class="presenceClass(item.user)"
-                  />
-                  <span v-if="item.unread > 0" class="unread-badge">
-                    <span class="unread-dot"></span>
-                    <span class="unread-count">{{ item.unread }}</span>
-                  </span>
-                </span>
-                <span class="user-title">
-                  <v-tooltip
-                    v-if="taglineFor(item.user)"
-                    :text="taglineFor(item.user)"
-                    location="top"
-                  >
-                    <template #activator="{ props: tooltipProps }">
-                      <span v-bind="tooltipProps" class="displayname">
-                        {{ displayNameFor(item.user) }}
-                      </span>
-                    </template>
-                  </v-tooltip>
-                  <span v-else class="displayname">
-                    {{ displayNameFor(item.user) }}
-                  </span>
-                </span>
-                <span class="flag-wrap">
-                  <v-icon
-                    size="14"
-                    class="gender-icon"
-                    :style="{ '--chat-gender-color': genderColorFor(item.user.gender_id) }"
-                  >
-                    {{ genderIconFor(item.user.gender_id) }}
-                  </v-icon>
-                  <span class="flag" v-if="item.user.country_emoji">
-                    {{ item.user.country_emoji }}
-                  </span>
-                  <button
-                    v-if="hasLanguagePracticeChat(item.user)"
-                    type="button"
-                    class="language-practice-marker language-practice-marker--chat"
-                    :title="t('components.users.languagePracticeChat')"
-                    :aria-label="t('components.users.languagePracticeChat')"
-                    @click.stop="emit('activate-language-practice', item.user)"
-                  >
-                    <v-icon size="13">mdi-translate</v-icon>
-                  </button>
+                <template v-if="row.item.type === 'group'">
                   <div
-                    v-if="showActions"
-                    class="actions"
-                    @click.stop
-                    @mousedown.stop
-                    @pointerdown.stop
+                    class="group-row"
+                    @click="toggleGroup(row.item.id)"
                   >
-                    <v-btn
-                      icon="mdi-dots-horizontal"
-                      size="x-small"
-                      density="compact"
-                      variant="plain"
-                      class="action-menu-btn"
-                      @click.stop.prevent="toggleActionMenu(item.user)"
+                    <i
+                      :class="[
+                        'mdi',
+                        isGroupOpen(row.item.id) ? 'mdi-chevron-down' : 'mdi-chevron-right',
+                        'group-caret'
+                      ]"
+                      aria-hidden="true"
                     />
-                    <v-menu
-                      :model-value="isActionMenuOpen(item.user)"
-                      activator="parent"
-                      location="start"
-                      offset="6"
-                      content-class="chat-user-actions-menu"
-                      @update:model-value="setActionMenuOpen(item.user, $event)"
-                    >
-                      <v-list density="compact">
-                      <v-list-item
-                        value="view-profile"
-                        :title="$t('components.activeChats.profile-title')"
-                        prepend-icon="mdi-card-account-details-outline"
-                        @click.stop="onActionMenuClick('view-profile', item.user)"
-                      />
-                      <v-list-item
-                        v-if="hasLanguagePracticeChat(item.user)"
-                        value="activate-language-practice"
-                        :title="$t('components.activeChats.activate-language-practice-title')"
-                        prepend-icon="mdi-translate"
-                        @click.stop="onActionMenuClick('activate-language-practice', item.user)"
-                      />
-                      <v-list-item
-                        value="delete-chat"
-                        :title="$t('components.activeChats.delete-title')"
-                        prepend-icon="mdi-trash-can-outline"
-                          @click.stop="onActionMenuClick('delete-chat', item.user)"
-                        />
-                      </v-list>
-                    </v-menu>
+                    <span class="group-label">{{ row.item.title }}</span>
+                    <span v-if="showCount" class="group-count">
+                      {{ row.item.count }}
+                    </span>
                   </div>
-                </span>
+                </template>
+                <div
+                  v-else
+                  class="user-row"
+                  :class="{ selected: isSelected(row.item.user) }"
+                  @click="emit('user-selected', row.item.user)"
+                >
+                  <span class="avatar-wrap">
+                    <span class="avatar-shell">
+                      <img
+                        v-if="row.item.user.avatar_url"
+                        :src="row.item.user.avatar_url"
+                        :alt="displayNameFor(row.item.user)"
+                        class="avatar-image"
+                      />
+                      <span v-else class="avatar-fallback">{{
+                        displayNameFor(row.item.user).slice(0, 1).toUpperCase()
+                      }}</span>
+                    </span>
+                    <span
+                      class="presence-dot"
+                      :class="presenceClass(row.item.user)"
+                    />
+                    <span v-if="row.item.unread > 0" class="unread-badge">
+                      <span class="unread-dot"></span>
+                      <span class="unread-count">{{ row.item.unread }}</span>
+                    </span>
+                  </span>
+                  <span class="user-title">
+                    <span
+                      class="displayname"
+                      :title="taglineFor(row.item.user) || undefined"
+                    >
+                      {{ displayNameFor(row.item.user) }}
+                    </span>
+                  </span>
+                  <span class="flag-wrap">
+                    <i
+                      :style="{ '--chat-gender-color': genderColorFor(row.item.user.gender_id) }"
+                      :class="['mdi', genderIconFor(row.item.user.gender_id), 'gender-icon']"
+                      aria-hidden="true"
+                    />
+                    <span class="flag" v-if="row.item.user.country_emoji">
+                      {{ row.item.user.country_emoji }}
+                    </span>
+                    <button
+                      v-if="hasLanguagePracticeChat(row.item.user)"
+                      type="button"
+                      class="language-practice-marker language-practice-marker--chat"
+                      :title="t('components.users.languagePracticeChat')"
+                      :aria-label="t('components.users.languagePracticeChat')"
+                      @click.stop="emit('activate-language-practice', row.item.user)"
+                    >
+                      <i class="mdi mdi-translate" aria-hidden="true" />
+                    </button>
+                    <div
+                      v-if="showActions"
+                      class="actions"
+                      @click.stop
+                      @mousedown.stop
+                      @pointerdown.stop
+                    >
+                      <button
+                        type="button"
+                        class="action-menu-btn"
+                        :aria-expanded="String(isActionMenuOpen(row.item.user))"
+                        aria-haspopup="menu"
+                        @click.stop.prevent="toggleActionMenu(row.item.user)"
+                      >
+                        <i class="mdi mdi-dots-horizontal" aria-hidden="true" />
+                      </button>
+                      <div
+                        v-if="isActionMenuOpen(row.item.user)"
+                        class="action-menu"
+                        role="menu"
+                      >
+                        <button
+                          type="button"
+                          class="action-menu__item"
+                          role="menuitem"
+                          @click.stop="onActionMenuClick('view-profile', row.item.user)"
+                        >
+                          <i class="mdi mdi-card-account-details-outline action-menu__icon" aria-hidden="true" />
+                          <span>{{ $t('components.activeChats.profile-title') }}</span>
+                        </button>
+                        <button
+                          v-if="hasLanguagePracticeChat(row.item.user)"
+                          type="button"
+                          class="action-menu__item"
+                          role="menuitem"
+                          @click.stop="onActionMenuClick('activate-language-practice', row.item.user)"
+                        >
+                          <i class="mdi mdi-translate action-menu__icon" aria-hidden="true" />
+                          <span>{{ $t('components.activeChats.activate-language-practice-title') }}</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="action-menu__item action-menu__item--danger"
+                          role="menuitem"
+                          @click.stop="onActionMenuClick('delete-chat', row.item.user)"
+                        >
+                          <i class="mdi mdi-trash-can-outline action-menu__icon" aria-hidden="true" />
+                          <span>{{ $t('components.activeChats.delete-title') }}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </span>
+                </div>
               </div>
-            </template>
-          </v-virtual-scroll>
+            </div>
+          </div>
         </div>
       </template>
     </div>
-  </v-card>
+  </div>
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useVirtualizer } from "@tanstack/vue-virtual";
 import { useI18n } from "vue-i18n";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useMatchCandidates, setMatchFilter } from "@/composables/useMatchCandidates";
@@ -230,6 +260,8 @@ const emit = defineEmits([
 
 const msgs = useMessagesStore();
 const { t, locale } = useI18n();
+const USER_ROW_HEIGHT = 32;
+const USERS_OVERSCAN = 10;
 
 // ── Match candidates ──────────────────────────────────────────────────────────
 const { data: matchData, loading: matchLoading, refreshPending: matchRefreshPending, matchFilter, fetchCandidates } = useMatchCandidates();
@@ -442,7 +474,6 @@ const displayUsers = computed(() => {
   }
 });
 
-const hideTagline = computed(() => normalizedListType.value === "active");
 const showActions = computed(() => normalizedListType.value === "active");
 
 const headingKey = computed(() => {
@@ -574,6 +605,29 @@ const flatItems = computed(() => {
   return items;
 });
 
+const virtualScrollRef = ref(null);
+const rowVirtualizer = useVirtualizer(
+  computed(() => ({
+    count: flatItems.value.length,
+    getScrollElement: () => virtualScrollRef.value,
+    estimateSize: () => USER_ROW_HEIGHT,
+    overscan: USERS_OVERSCAN,
+    getItemKey: (index) => flatItems.value[index]?.id ?? index,
+  }))
+);
+
+const virtualRows = computed(() =>
+  rowVirtualizer.value
+    .getVirtualItems()
+    .map((row) => ({
+      ...row,
+      item: flatItems.value[row.index],
+    }))
+    .filter((row) => row.item)
+);
+
+const virtualTotalSize = computed(() => rowVirtualizer.value.getTotalSize());
+
 watch(
   () => treeItems.value.map((g) => [g.id, g.count]),
   (items) => {
@@ -589,6 +643,13 @@ watch(
     }
   },
   { immediate: true, deep: true }
+);
+
+watch(
+  () => flatItems.value.length,
+  () => {
+    rowVirtualizer.value.measure();
+  }
 );
 
 const isSelected = (u) =>
@@ -609,6 +670,9 @@ function toggleActionMenu(u) {
   if (!id) return;
   const next = !actionMenuById.value[id];
   actionMenuById.value = { [id]: next };
+}
+function closeActionMenus() {
+  actionMenuById.value = {};
 }
 function onActionMenuClick(action, u) {
   const id = menuId(u);
@@ -635,6 +699,19 @@ function onActionMenuClick(action, u) {
   }
 }
 
+function onDocumentPointerDown(event) {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  if (target.closest(".actions")) return;
+  closeActionMenus();
+}
+
+function onDocumentKeydown(event) {
+  if (event.key === "Escape") {
+    closeActionMenus();
+  }
+}
+
 const isGroupOpen = (id) => openedGroups.value.includes(id);
 function toggleGroup(id) {
   manualOpened.value = true;
@@ -644,12 +721,25 @@ function toggleGroup(id) {
     openedGroups.value = [...openedGroups.value, id];
   }
 }
+
+onMounted(() => {
+  document.addEventListener("pointerdown", onDocumentPointerDown);
+  document.addEventListener("keydown", onDocumentKeydown);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("pointerdown", onDocumentPointerDown);
+  document.removeEventListener("keydown", onDocumentKeydown);
+});
 </script>
 
 <style scoped>
 .chat-users-container {
   height: 100%;
   background: transparent !important;
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem;
 }
 .users-header {
   display: flex;
@@ -688,14 +778,8 @@ function toggleGroup(id) {
   display: flex;
   align-items: center;
 }
-.filter-trigger :deep(.v-btn) {
-  color: #5c677d;
-  font-size: 16px;
-  min-height: 26px;
-  height: 26px;
-  width: 26px;
-  padding: 0;
-  margin-bottom: 0 !important;
+.filter-trigger :deep(.filter-menu-trigger) {
+  margin-bottom: 0;
 }
 .users-section {
   display: flex;
@@ -707,15 +791,87 @@ function toggleGroup(id) {
 }
 .users-content {
   flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
 }
 
 .users-virtual {
   flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  position: relative;
+}
+
+.users-virtual__inner {
+  position: relative;
+  width: 100%;
+}
+
+.users-virtual__item {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  z-index: 0;
+}
+
+.users-virtual__item--menu-open {
+  z-index: 80;
 }
 
 .users-empty-state {
+  padding: 0.75rem;
   color: #cbd5e1 !important;
+  font-size: 0.875rem;
+}
+
+.users-skeleton {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.users-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.users-skeleton-avatar,
+.users-skeleton-line {
+  display: block;
+  background: linear-gradient(90deg, rgba(51, 65, 85, 0.7), rgba(71, 85, 105, 0.95), rgba(51, 65, 85, 0.7));
+  background-size: 200% 100%;
+  animation: users-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+.users-skeleton-avatar {
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.users-skeleton-lines {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.users-skeleton-line {
+  height: 0.5rem;
+  border-radius: 999px;
+}
+
+.users-skeleton-line--primary {
+  width: 55%;
+}
+
+.users-skeleton-line--secondary {
+  width: 32%;
 }
 
 .group-row {
@@ -735,6 +891,7 @@ function toggleGroup(id) {
 
 .group-caret {
   color: #94a3b8;
+  font-size: 1rem;
 }
 
 .group-label {
@@ -788,6 +945,22 @@ function toggleGroup(id) {
   color: rgba(var(--v-theme-on-surface), 0.82);
   font-weight: 600;
   font-size: 12px;
+}
+
+.avatar-shell {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.88);
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .presence-dot {
@@ -888,6 +1061,10 @@ function toggleGroup(id) {
   line-height: 1;
 }
 
+.language-practice-marker i {
+  font-size: 0.8125rem;
+}
+
 .language-practice-marker--chat {
   border-color: rgba(114, 230, 126, 0.9);
   background: rgba(114, 230, 126, 0.22);
@@ -904,30 +1081,81 @@ function toggleGroup(id) {
 .actions {
   display: inline-flex;
   align-items: center;
+  position: relative;
 }
 
-.actions :deep(.action-menu-btn) {
-  background: transparent !important;
-  box-shadow: none !important;
-  color: rgba(148, 163, 184, 0.92) !important;
-  --v-btn-overlay-opacity: 0 !important;
+.action-menu-btn {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(148, 163, 184, 0.92);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.actions :deep(.action-menu-btn .v-btn__overlay),
-.actions :deep(.action-menu-btn .v-btn__underlay) {
-  background: transparent !important;
-  opacity: 0 !important;
+.action-menu-btn:hover {
+  background: rgba(30, 41, 59, 0.45);
 }
 
-.actions :deep(.action-menu-btn .v-btn__content) {
-  background: transparent !important;
+.action-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  min-width: 12rem;
+  padding: 0.35rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgb(var(--color-border) / 0.9);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface)),
+    rgb(var(--color-surface) / 0.98)
+  );
+  box-shadow:
+    0 18px 36px rgb(2 6 23 / 0.42),
+    0 0 0 1px rgb(255 255 255 / 0.03);
+  overflow: hidden;
+  z-index: 30;
 }
 
-.actions :deep(.action-menu-btn:hover) {
-  background: rgba(30, 41, 59, 0.45) !important;
+.action-menu__item {
+  width: 100%;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: rgb(var(--color-foreground));
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.action-menu__item:hover {
+  background: rgb(var(--color-foreground) / 0.08);
+}
+
+.action-menu__item--danger {
+  color: rgb(var(--color-danger));
+}
+
+.action-menu__icon {
+  flex: 0 0 auto;
 }
 
 .flag {
   font-size: 14px;
+}
+
+@keyframes users-skeleton-pulse {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
 }
 </style>

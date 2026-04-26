@@ -1,199 +1,166 @@
 <template>
-  <v-card class="agent-settings-card elevation-0 border-0">
-    <v-card-text class="pa-0">
-
-      <!-- Section header -->
+  <div>
+    <section class="agent-settings-card">
       <div class="agent-section-header mb-4">
-        <div class="d-flex align-center gap-3">
-          <v-icon color="primary" size="28">mdi-robot-outline</v-icon>
+        <div class="flex items-center gap-3">
+          <i class="mdi mdi-robot-outline agent-section-header__icon" aria-hidden="true" />
           <div>
             <div class="text-subtitle-1 font-weight-bold">Away Agent</div>
             <div class="text-caption text-medium-emphasis">
               Let an AI agent represent you while you're offline
             </div>
           </div>
-          <v-spacer />
-          <div class="flex-0">
-            <v-switch
-              v-model="agentEnabled"
-              class="agent-toggle"
-              color="primary"
-              hide-details
-              inset
-              :loading="toggling"
-              :disabled="toggling || saving"
-              @update:model-value="onToggle"
-            />
+          <div class="ml-auto flex-none">
+            <label class="agent-toggle">
+              <input
+                v-model="agentEnabled"
+                type="checkbox"
+                :disabled="toggling || saving"
+                @change="onToggle(agentEnabled)"
+              >
+            </label>
           </div>
         </div>
       </div>
 
-      <v-divider class="mb-5" />
+      <hr class="agent-divider">
 
-      <!-- Status chip -->
       <div class="mb-5">
-        <v-chip
-          :color="statusChip.color"
-          :variant="statusChip.variant"
-          size="small"
-          :prepend-icon="statusChip.icon"
+        <span
+          class="agent-status-chip"
+          :class="`agent-status-chip--${statusChip.color}`"
         >
+          <i :class="['mdi', statusChip.icon, 'agent-status-chip__icon']" aria-hidden="true" />
           {{ statusChip.label }}
-        </v-chip>
+        </span>
       </div>
 
-      <!-- Config form — only shown to authenticated users -->
       <template v-if="authStore.authStatus === 'authenticated'">
-
-        <!-- Persona preset -->
         <div class="agent-field mb-5">
           <div class="text-body-2 font-weight-medium mb-2">Agent personality</div>
-          <v-btn-toggle
-            v-model="config.prompt_preset_key"
-            color="primary"
-            variant="outlined"
-            divided
-            density="compact"
-            class="flex-wrap"
-          >
-            <v-btn value="friendly" size="small" variant="outlined">Friendly</v-btn>
-            <v-btn value="curious" size="small" variant="outlined">Curious</v-btn>
-            <v-btn value="playful" size="small" variant="outlined">Playful</v-btn>
-            <v-btn value="professional" size="small" variant="outlined">Professional</v-btn>
-            <v-btn value="custom" size="small" variant="outlined">Custom</v-btn>
-          </v-btn-toggle>
+          <div class="agent-choice-group">
+            <button type="button" class="agent-choice-btn" :class="{ 'is-active': config.prompt_preset_key === 'friendly' }" @click="config.prompt_preset_key = 'friendly'">Friendly</button>
+            <button type="button" class="agent-choice-btn" :class="{ 'is-active': config.prompt_preset_key === 'curious' }" @click="config.prompt_preset_key = 'curious'">Curious</button>
+            <button type="button" class="agent-choice-btn" :class="{ 'is-active': config.prompt_preset_key === 'playful' }" @click="config.prompt_preset_key = 'playful'">Playful</button>
+            <button type="button" class="agent-choice-btn" :class="{ 'is-active': config.prompt_preset_key === 'professional' }" @click="config.prompt_preset_key = 'professional'">Professional</button>
+            <button type="button" class="agent-choice-btn" :class="{ 'is-active': config.prompt_preset_key === 'custom' }" @click="config.prompt_preset_key = 'custom'">Custom</button>
+          </div>
           <div class="text-caption text-medium-emphasis mt-1">
             {{ presetDescription }}
           </div>
         </div>
 
-        <!-- Custom prompt — only when 'custom' selected -->
         <div v-if="config.prompt_preset_key === 'custom'" class="agent-field mb-5">
           <div class="text-body-2 font-weight-medium mb-2">Custom instructions</div>
-          <v-textarea
+          <textarea
             v-model="config.system_prompt_addition"
+            class="agent-textarea"
             placeholder="Describe how you want your agent to represent you. E.g. 'I'm a night owl who loves deep conversations about science and philosophy. I prefer slow, thoughtful exchanges.'"
             rows="3"
-            variant="outlined"
-            density="compact"
-            counter="400"
             maxlength="400"
-            hide-details="auto"
           />
+          <div class="agent-counter">
+            {{ (config.system_prompt_addition || '').length }}/400
+          </div>
         </div>
 
-        <!-- Greeting template -->
         <div class="agent-field mb-5">
           <div class="text-body-2 font-weight-medium mb-2">
             Opening message
-            <v-chip size="x-small" variant="tonal" color="secondary" class="ml-1">optional</v-chip>
+            <span class="agent-optional-chip">optional</span>
           </div>
-          <v-textarea
+          <textarea
             v-model="config.greeting_template"
+            class="agent-textarea"
             placeholder="Leave blank to let the agent generate a greeting based on your bio. Or write your own: e.g. 'Hey — I'm away right now but wanted to say hi. What's on your mind?'"
             rows="2"
-            variant="outlined"
-            density="compact"
-            counter="200"
             maxlength="200"
-            hide-details="auto"
           />
+          <div class="agent-counter">
+            {{ (config.greeting_template || '').length }}/200
+          </div>
         </div>
 
-        <!-- Limits row -->
-        <v-row class="mb-5" dense>
-          <v-col cols="12" sm="6">
+        <div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
             <div class="text-body-2 font-weight-medium mb-2">Exchanges per conversation</div>
-            <v-select
+            <select
               v-model="config.max_exchanges_per_conversation"
-              :items="[3, 5, 10, 20]"
-              variant="outlined"
-              density="compact"
-              hide-details
-            />
+              class="agent-select"
+            >
+              <option v-for="count in [3, 5, 10, 20]" :key="count" :value="count">
+                {{ count }}
+              </option>
+            </select>
             <div class="text-caption text-medium-emphasis mt-1">
               Max back-and-forth messages before agent pauses
             </div>
-          </v-col>
-          <v-col cols="12" sm="6">
+          </div>
+          <div>
             <div class="text-body-2 font-weight-medium mb-2">Max simultaneous conversations</div>
-            <v-select
+            <select
               v-model="config.max_conversations_per_session"
-              :items="AWAY_AGENT_SIMULTANEOUS_CONVERSATION_OPTIONS"
-              variant="outlined"
-              density="compact"
-              hide-details
-            />
+              class="agent-select"
+            >
+              <option
+                v-for="count in AWAY_AGENT_SIMULTANEOUS_CONVERSATION_OPTIONS"
+                :key="count"
+                :value="count"
+              >
+                {{ count }}
+              </option>
+            </select>
             <div class="text-caption text-medium-emphasis mt-1">
               Limit how many people your agent contacts at once
             </div>
-          </v-col>
-        </v-row>
+          </div>
+        </div>
 
-        <!-- Save button -->
-        <v-btn
-          color="primary"
-          variant="tonal"
-          :loading="saving"
+        <button
+          type="button"
+          class="agent-save-btn"
           :disabled="saving || toggling"
           @click="saveConfig"
         >
+          <span v-if="saving" class="agent-save-btn__spinner" aria-hidden="true" />
           Save agent settings
-        </v-btn>
+        </button>
 
-        <!-- Info note -->
-        <v-alert
-          type="info"
-          variant="tonal"
-          density="compact"
-          class="mt-5"
-          icon="mdi-information-outline"
-        >
+        <div class="agent-note agent-note--info mt-5">
           Your agent will introduce itself as your representative and messages it sends will be
           labeled <strong>Away Agent</strong> so other users know. It pauses while you are online
           and resumes the next time you are away.
-        </v-alert>
-
+        </div>
       </template>
 
-      <!-- Anon-authenticated upsell: has a profile but no email yet -->
       <template v-else-if="authStore.authStatus === 'anon_authenticated'">
-        <v-alert
-          type="info"
-          variant="tonal"
-          density="compact"
-          class="mt-4"
-          icon="mdi-robot-outline"
-        >
+        <div class="agent-note agent-note--info mt-4">
           <strong>Almost there.</strong> Away Agent needs a registered account so it knows who
           you are when you return. It only takes your email.
-        </v-alert>
-        <v-btn
-          color="primary"
-          variant="tonal"
-          class="mt-4"
-          prepend-icon="mdi-email-outline"
+        </div>
+        <button
+          type="button"
+          class="agent-save-btn mt-4"
           @click="showConvertDialog = true"
         >
+          <i class="mdi mdi-email-outline" aria-hidden="true" />
           Activate Away Agent
-        </v-btn>
+        </button>
       </template>
 
-      <!-- Fully unauthenticated gate -->
       <template v-else>
-        <v-alert type="warning" variant="tonal" density="compact" class="mt-4">
+        <div class="agent-note agent-note--warning mt-4">
           Away Agent is only available to registered users.
-        </v-alert>
+        </div>
       </template>
+    </section>
 
-    </v-card-text>
-  </v-card>
-
-  <AuthConvertAccountDialog
-    v-model="showConvertDialog"
-    context="away-agent"
-    @converted="onConverted"
-  />
+    <AuthConvertAccountDialog
+      v-model="showConvertDialog"
+      context="away-agent"
+      @converted="onConverted"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -312,7 +279,7 @@ async function onToggle(value) {
       await fetchStatus();
     }
   } catch {
-    agentEnabled.value = !value; // revert
+    agentEnabled.value = !value;
   } finally {
     toggling.value = false;
   }
@@ -344,33 +311,128 @@ onMounted(() => {
 
 <style scoped>
 .agent-settings-card {
-  background: transparent;
+  padding: 1.25rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 18px;
+  background: rgb(var(--color-surface) / 0.96);
 }
 
 .agent-section-header {
-  background: rgba(var(--v-theme-on-surface), 0.06);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  background: rgb(var(--color-foreground) / 0.04);
+  border: 1px solid rgb(var(--color-border) / 0.72);
   border-radius: 10px;
   padding: 14px 16px;
 }
 
-.agent-section-header :deep(.v-switch .v-selection-control) {
-  background: transparent !important;
+.agent-section-header__icon {
+  font-size: 28px;
+  color: rgb(var(--color-primary));
 }
 
 .agent-toggle {
-  background: transparent !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
-  padding: 0;
+  padding: 0.1rem;
 }
 
-.agent-toggle :deep(.v-input__control),
-.agent-toggle :deep(.v-input__details),
-.agent-toggle :deep(.v-selection-control),
-.agent-toggle :deep(.v-selection-control__wrapper),
-.agent-toggle :deep(.v-switch__loader) {
-  background: transparent !important;
-  box-shadow: none !important;
+.agent-toggle input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: rgb(var(--color-primary));
+}
+
+.agent-divider {
+  margin: 0 0 1.25rem;
+  border: 0;
+  border-top: 1px solid rgb(var(--color-border) / 0.72);
+}
+
+.agent-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.agent-status-chip--primary {
+  background: rgb(var(--color-primary) / 0.1);
+  border-color: rgb(var(--color-primary) / 0.22);
+  color: rgb(var(--color-primary));
+}
+
+.agent-status-chip--success {
+  background: rgb(var(--color-success) / 0.12);
+  border-color: rgb(var(--color-success) / 0.22);
+  color: rgb(var(--color-success));
+}
+
+.agent-status-chip--amber {
+  background: rgb(var(--color-warning) / 0.12);
+  border-color: rgb(var(--color-warning) / 0.22);
+  color: rgb(var(--color-warning));
+}
+
+.agent-choice-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.agent-choice-btn,
+.agent-save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.25rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.agent-choice-btn {
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.82);
+}
+
+.agent-choice-btn.is-active {
+  border-color: rgb(var(--color-primary) / 0.4);
+  background: rgb(var(--color-primary) / 0.12);
+  color: rgb(var(--color-foreground));
+}
+
+.agent-textarea,
+.agent-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgb(var(--color-border) / 0.82);
+  border-radius: 12px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  font: inherit;
+}
+
+.agent-textarea {
+  resize: vertical;
+}
+
+.agent-counter {
+  margin-top: 0.35rem;
+  color: rgb(var(--color-foreground) / 0.56);
+  font-size: 0.78rem;
+  text-align: right;
 }
 
 .flex-0 {
@@ -379,5 +441,63 @@ onMounted(() => {
 
 .agent-field {
   max-width: 600px;
+}
+
+.agent-optional-chip {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgb(var(--color-secondary) / 0.12);
+  color: rgb(var(--color-secondary));
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.agent-save-btn {
+  border: 0;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-primary-foreground, var(--color-background)));
+}
+
+.agent-save-btn:disabled,
+.agent-choice-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.agent-save-btn__spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: agent-spin 0.7s linear infinite;
+}
+
+.agent-note {
+  padding: 0.9rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  line-height: 1.6;
+}
+
+.agent-note--info {
+  background: rgb(var(--color-info) / 0.12);
+  border-color: rgb(var(--color-info) / 0.22);
+  color: rgb(var(--color-info));
+}
+
+.agent-note--warning {
+  background: rgb(var(--color-warning) / 0.12);
+  border-color: rgb(var(--color-warning) / 0.22);
+  color: rgb(var(--color-warning));
+}
+
+@keyframes agent-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

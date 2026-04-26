@@ -1,18 +1,23 @@
 <template>
-  <div>
-    <v-text-field
-      :disabled="!props.isEditable"
+  <label class="profile-field">
+    <span class="profile-field__label">{{ $t('components.profile-displayname.display-name') }}</span>
+    <input
       v-model="localDisplayName"
-      :label="$t('components.profile-displayname.display-name')"
-      :rules="displayNameRules"
-      variant="underlined"
-    ></v-text-field>
-    <!-- <span v-else>{{ displayName }}</span> -->
-  </div>
+      :disabled="!props.isEditable"
+      type="text"
+      class="profile-field__control"
+    >
+    <span
+      v-if="props.isEditable && displayNameError"
+      class="profile-field__error"
+    >
+      {{ displayNameError }}
+    </span>
+  </label>
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 // Props
@@ -60,6 +65,11 @@ const displayNameRules = [
   specialCharsRule,
 ];
 
+const displayNameError = computed(() => {
+  const failedRule = displayNameRules.find((rule) => rule(localDisplayName.value) !== true);
+  return failedRule ? failedRule(localDisplayName.value) : "";
+});
+
 // Emit validation result
 const validateDisplayName = () => {
   const isValid = displayNameRules.every((rule) => rule(localDisplayName.value) === true);
@@ -88,3 +98,39 @@ onMounted(() => {
   validateDisplayName(); // Trigger validation immediately when mounted
 });
 </script>
+
+<style scoped>
+.profile-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.profile-field__label {
+  color: rgb(var(--color-foreground) / 0.82);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.profile-field__control {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid rgb(var(--color-border) / 0.82);
+  border-radius: 12px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  padding: 0.7rem 0.85rem;
+  font-size: 1rem;
+}
+
+.profile-field__control:disabled {
+  opacity: 1;
+  cursor: default;
+  background: rgb(var(--color-surface) / 0.76);
+  color: rgb(var(--color-foreground) / 0.62);
+}
+
+.profile-field__error {
+  color: rgb(var(--color-danger));
+  font-size: 0.8rem;
+}
+</style>

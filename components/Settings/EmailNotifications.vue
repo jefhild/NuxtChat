@@ -1,52 +1,46 @@
 <template>
-  <v-card class="mx-auto mt-4" flat>
-    <v-card-text>
-      <div class="text-subtitle-1 font-weight-medium mb-2">
+  <section class="settings-section-card mx-auto mt-4">
+      <div class="settings-section-card__title">
         {{ $t("pages.settings.emailNotifications.title") }}
       </div>
-      <p class="text-body-2 text-medium-emphasis mb-4">
+      <p class="settings-section-card__subtitle">
         {{ $t("pages.settings.emailNotifications.subtitle") }}
       </p>
 
-      <v-alert v-if="authStore.authStatus !== 'authenticated'" type="info" variant="tonal">
+      <div v-if="authStore.authStatus !== 'authenticated'" class="settings-status-alert settings-status-alert--info">
         {{ $t("components.settings-container.registered-only") }}
-      </v-alert>
+      </div>
 
       <div v-else>
-        <div class="d-flex align-center">
-          <v-icon class="mr-3 text-medium-emphasis">mdi-calendar-week</v-icon>
-          <v-switch
-            v-model="digestEnabled"
-            inset
-            class="mt-2"
-            color="primary"
-            :label="$t('pages.settings.emailNotifications.weekly_digest_label')"
-            :disabled="saving"
-            hide-details
-            @update:model-value="savePreference"
-          />
+        <div class="settings-toggle-row">
+          <i class="mdi mdi-calendar-week settings-toggle-row__icon" aria-hidden="true" />
+          <label class="settings-switch">
+            <input
+              v-model="digestEnabled"
+              type="checkbox"
+              :disabled="saving"
+              @change="savePreference(digestEnabled)"
+            >
+            <span>{{ $t('pages.settings.emailNotifications.weekly_digest_label') }}</span>
+          </label>
         </div>
-        <p class="text-caption text-medium-emphasis ml-9 mt-n2 mb-2">
+        <p class="settings-helper-text">
           {{ $t("pages.settings.emailNotifications.weekly_digest_description") }}
         </p>
 
-        <v-alert
+        <div
           v-if="saveError"
-          type="error"
-          variant="tonal"
-          class="mt-3"
-          density="compact"
+          class="settings-status-alert settings-status-alert--error mt-3"
         >
           {{ saveError }}
-        </v-alert>
+        </div>
 
-        <p class="text-caption text-medium-emphasis mt-4">
+        <p class="settings-footnote">
           {{ $t("pages.settings.emailNotifications.email_on_file") }}
           <strong>{{ maskedEmail }}</strong>
         </p>
       </div>
-    </v-card-text>
-  </v-card>
+  </section>
 </template>
 
 <script setup>
@@ -93,3 +87,86 @@ async function savePreference(value) {
   }
 }
 </script>
+
+<style scoped>
+.settings-section-card {
+  padding: 1.25rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 18px;
+  background: rgb(var(--color-surface) / 0.96);
+}
+
+.settings-section-card__title {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 650;
+  color: rgb(var(--color-foreground));
+}
+
+.settings-section-card__subtitle,
+.settings-helper-text,
+.settings-footnote {
+  color: rgb(var(--color-foreground) / 0.72);
+  line-height: 1.6;
+}
+
+.settings-section-card__subtitle {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.settings-toggle-row__icon {
+  margin-top: 0.2rem;
+  color: rgb(var(--color-foreground) / 0.6);
+}
+
+.settings-switch {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: rgb(var(--color-foreground) / 0.86);
+}
+
+.settings-switch input {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.2rem;
+  accent-color: rgb(var(--color-primary));
+}
+
+.settings-helper-text {
+  margin: 0.25rem 0 0;
+  padding-left: 2rem;
+  font-size: 0.8rem;
+}
+
+.settings-footnote {
+  margin: 1rem 0 0;
+  font-size: 0.8rem;
+}
+
+.settings-status-alert {
+  padding: 0.8rem 0.95rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.settings-status-alert--info {
+  background: rgb(var(--color-info) / 0.12);
+  border-color: rgb(var(--color-info) / 0.22);
+  color: rgb(var(--color-info));
+}
+
+.settings-status-alert--error {
+  background: rgb(var(--color-danger) / 0.1);
+  border-color: rgb(var(--color-danger) / 0.22);
+  color: rgb(var(--color-danger));
+}
+</style>

@@ -1,63 +1,61 @@
 <template>
-  <v-container fluid class="match-page-shell">
-
-    <!-- Header -->
+  <div class="match-page-shell mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
     <div class="match-header text-center mb-6">
-      <v-chip color="primary" variant="tonal" class="mb-3">
+      <div class="match-kicker">
         {{ $t("pages.match.kicker") }}
-      </v-chip>
-      <h1 class="text-h4 font-weight-bold mb-2">{{ $t("pages.match.title") }}</h1>
-      <p class="text-body-1 text-medium-emphasis">{{ $t("pages.match.subtitle") }}</p>
+      </div>
+      <h1 class="match-title">{{ $t("pages.match.title") }}</h1>
+      <p class="match-subtitle">{{ $t("pages.match.subtitle") }}</p>
     </div>
 
-    <!-- Mood chips -->
     <div class="match-chips-wrap mb-6">
       <MatchMoodChipsBar :selected-key="activePreset?.key ?? null" @select="onPresetSelect" />
     </div>
 
-    <!-- Active mood banner (when preset is set) -->
-    <v-alert
-      v-if="activePreset"
-      type="info"
-      variant="tonal"
-      closable
-      class="mb-6"
-      @click:close="clearPreset"
-    >
-      <span>
-        {{ $t("pages.match.moodSet", { mood: $t(activePreset.labelKey) }) }}
-        <template v-if="!isAuthenticated">
-          &mdash;
-          <a href="#" @click.prevent="goSignIn">{{ $t("pages.match.signInToSave") }}</a>
-        </template>
-      </span>
-    </v-alert>
-
-    <!-- Loading skeleton -->
-    <div v-if="loading || publicLoading" class="match-grid mt-4">
-      <v-skeleton-loader
-        v-for="n in 6"
-        :key="`sk-${n}`"
-        type="card"
-        class="match-skeleton"
-      />
+    <div v-if="activePreset" class="match-alert mb-6" role="status">
+      <div class="match-alert__content">
+        <i class="mdi mdi-information-outline match-alert__icon" aria-hidden="true" />
+        <span>
+          {{ $t("pages.match.moodSet", { mood: $t(activePreset.labelKey) }) }}
+          <template v-if="!isAuthenticated">
+            &mdash;
+            <a href="#" class="match-alert__link" @click.prevent="goSignIn">{{ $t("pages.match.signInToSave") }}</a>
+          </template>
+        </span>
+      </div>
+      <button type="button" class="match-alert__close" aria-label="Clear preset" @click="clearPreset">
+        <i class="mdi mdi-close" aria-hidden="true" />
+      </button>
     </div>
 
-    <!-- No candidates empty state (only for authenticated with real data) -->
+    <div v-if="loading || publicLoading" class="match-grid mt-4">
+      <div
+        v-for="n in 6"
+        :key="`sk-${n}`"
+        class="match-skeleton"
+        aria-hidden="true"
+      >
+        <span class="match-skeleton__line match-skeleton__line--title" />
+        <span class="match-skeleton__line match-skeleton__line--body" />
+        <span class="match-skeleton__line match-skeleton__line--body" />
+        <span class="match-skeleton__line match-skeleton__line--chip" />
+        <span class="match-skeleton__button" />
+      </div>
+    </div>
+
     <div
       v-else-if="!hasAnyCandidates"
-      class="text-center mt-10"
+      class="match-empty mt-10"
     >
-      <v-icon size="64" color="surface-variant" class="mb-3">mdi-account-search-outline</v-icon>
-      <p class="text-body-1 text-medium-emphasis">{{ $t("pages.match.empty") }}</p>
+      <i class="mdi mdi-account-search-outline match-empty__icon" aria-hidden="true" />
+      <p class="match-empty__text">{{ $t("pages.match.empty") }}</p>
     </div>
 
     <template v-else>
-      <!-- Online section (authenticated users only) -->
       <section v-if="onlineCandidates.length" class="mb-8">
-        <div class="d-flex align-center gap-2 mb-3">
+        <div class="mb-3 flex items-center gap-2">
           <span class="dot dot-online" />
-          <h2 class="text-subtitle-1 font-weight-bold">
+          <h2 class="match-section-title">
             {{ $t("pages.match.sections.online") }}
           </h2>
         </div>
@@ -74,11 +72,10 @@
         </div>
       </section>
 
-      <!-- Offline / recently connected section -->
       <section v-if="offlineCandidates.length" class="mb-8">
-        <div class="d-flex align-center gap-2 mb-3">
+        <div class="mb-3 flex items-center gap-2">
           <span class="dot dot-offline" />
-          <h2 class="text-subtitle-1 font-weight-bold">
+          <h2 class="match-section-title">
             {{ $t("pages.match.sections.offline") }}
           </h2>
         </div>
@@ -95,11 +92,10 @@
         </div>
       </section>
 
-      <!-- AI section (authenticated: scored | unauthenticated: public personas) -->
       <section v-if="displayAiCandidates.length" class="mb-8">
-        <div class="d-flex align-center gap-2 mb-3">
-          <v-icon size="18" color="secondary">mdi-robot-outline</v-icon>
-          <h2 class="text-subtitle-1 font-weight-bold">
+        <div class="mb-3 flex items-center gap-2">
+          <i class="mdi mdi-robot-outline match-section-icon" aria-hidden="true" />
+          <h2 class="match-section-title">
             {{ $t("pages.match.sections.ai") }}
           </h2>
         </div>
@@ -117,34 +113,59 @@
       </section>
     </template>
 
-    <!-- Onboarding dialog (unauthenticated users who click a card) -->
-    <v-dialog v-model="onboardingDialogOpen" max-width="480">
-      <v-card>
-        <v-card-title class="pt-5 px-5">
-          {{ $t("pages.match.onboardingDialog.title") }}
-        </v-card-title>
-        <v-card-text class="text-body-2 px-5">
-          {{ $t("pages.match.onboardingDialog.body") }}
-        </v-card-text>
-        <v-card-actions class="px-5 pb-5">
-          <v-spacer />
-          <v-btn variant="text" @click="onboardingDialogOpen = false">
-            {{ $t("pages.match.onboardingDialog.cancel") }}
-          </v-btn>
-          <v-btn color="primary" variant="flat" @click="goToOnboarding">
-            {{ $t("pages.match.onboardingDialog.start") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <Teleport to="body">
+      <Transition name="match-dialog-fade">
+        <div
+          v-if="onboardingDialogOpen"
+          class="match-dialog-layer"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="match-dialog-backdrop"
+            aria-label="Close onboarding dialog"
+            @click="onboardingDialogOpen = false"
+          />
+          <div
+            class="match-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="match-onboarding-title"
+          >
+            <div class="match-dialog-card">
+              <h2 id="match-onboarding-title" class="match-dialog-card__title">
+                {{ $t("pages.match.onboardingDialog.title") }}
+              </h2>
+              <p class="match-dialog-card__body">
+                {{ $t("pages.match.onboardingDialog.body") }}
+              </p>
+              <div class="match-dialog-card__actions">
+                <button
+                  type="button"
+                  class="match-dialog-card__button match-dialog-card__button--secondary"
+                  @click="onboardingDialogOpen = false"
+                >
+                  {{ $t("pages.match.onboardingDialog.cancel") }}
+                </button>
+                <button
+                  type="button"
+                  class="match-dialog-card__button match-dialog-card__button--primary"
+                  @click="goToOnboarding"
+                >
+                  {{ $t("pages.match.onboardingDialog.start") }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
-    <!-- Profile viewer (all auth states) -->
     <ProfileDialog
       v-model="profileDialogOpen"
       :user-id="profileDialogUserId"
     />
-
-  </v-container>
+  </div>
 </template>
 
 <script setup>
@@ -226,7 +247,7 @@ const hasAnyCandidates = computed(
 // ----------------------------------------------------------
 async function onPresetSelect(preset) {
   if (activePreset.value?.key === preset.key) {
-    clearPreset();
+    await clearPreset();
     return;
   }
 
@@ -236,8 +257,10 @@ async function onPresetSelect(preset) {
     await applyPresetToMoodState(preset);
     bustMatchCache();
     fetchCandidates(true);
+    return;
   }
-  // Unauthenticated: preset is visual-only — public personas stay fixed
+
+  await loadPublicPersonas(preset);
 }
 
 async function applyPresetToMoodState(preset) {
@@ -260,8 +283,12 @@ async function applyPresetToMoodState(preset) {
   }
 }
 
-function clearPreset() {
+async function clearPreset() {
   activePreset.value = null;
+
+  if (!isAuthenticated.value) {
+    await loadPublicPersonas();
+  }
 }
 
 // ----------------------------------------------------------
@@ -272,7 +299,15 @@ function onChatRequest(_candidate) {
     onboardingDialogOpen.value = true;
     return;
   }
-  navigateTo(localPath(`/chat?userId=${_candidate.user_id}`));
+  navigateTo(
+    localPath({
+      path: "/chat",
+      query: {
+        ...( _candidate?.slug ? { userslug: _candidate.slug } : {}),
+        ...( _candidate?.user_id ? { userId: _candidate.user_id } : {}),
+      },
+    })
+  );
 }
 
 function goToOnboarding() {
@@ -281,16 +316,29 @@ function goToOnboarding() {
   navigateTo(localPath("/chat"));
 }
 
+function buildPublicMatchQuery(preset = activePreset.value) {
+  const query = { locale: locale.value };
+  if (!preset) return query;
+  return {
+    ...query,
+    emotion: preset.emotion,
+    intent: preset.intent,
+    energy: preset.energy,
+  };
+}
+
 // ----------------------------------------------------------
 // Public personas (unauthenticated path)
 // ----------------------------------------------------------
-async function loadPublicPersonas() {
+async function loadPublicPersonas(preset = activePreset.value) {
   publicLoading.value = true;
   try {
     const [personasRes, candidatesRes] = await Promise.all([
-      $fetch("/api/match/public-personas"),
+      $fetch("/api/match/public-personas", {
+        query: buildPublicMatchQuery(preset),
+      }),
       $fetch("/api/match/public-candidates", {
-        query: { locale: locale.value },
+        query: buildPublicMatchQuery(preset),
       }),
     ]);
     publicPersonas.value = personasRes?.personas ?? [];
@@ -309,16 +357,17 @@ async function loadPublicPersonas() {
 // Lifecycle
 // ----------------------------------------------------------
 onMounted(async () => {
-  // Always pre-load public personas so unauthenticated visitors see content
-  await loadPublicPersonas();
-
   const queryPreset = getPreset(route.query.preset);
   if (queryPreset) {
     activePreset.value = queryPreset;
-    if (isAuthenticated.value) {
-      await applyPresetToMoodState(queryPreset);
-      bustMatchCache();
-    }
+  }
+
+  // Always pre-load public personas so unauthenticated visitors see content
+  await loadPublicPersonas(activePreset.value);
+
+  if (queryPreset && isAuthenticated.value) {
+    await applyPresetToMoodState(queryPreset);
+    bustMatchCache();
   }
 
   if (isAuthenticated.value) {
@@ -334,7 +383,7 @@ watch(
     if (p && p.key !== activePreset.value?.key) {
       await onPresetSelect(p);
     } else if (!p) {
-      clearPreset();
+      await clearPreset();
     }
   }
 );
@@ -371,9 +420,89 @@ useHead({
   margin: 0 auto;
 }
 
+.match-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0.4rem 0.8rem;
+  margin-bottom: 0.75rem;
+  border-radius: 999px;
+  background: rgb(var(--color-primary) / 0.12);
+  color: rgb(var(--color-primary));
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.match-title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(2rem, 2vw + 1.2rem, 2.8rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: rgb(var(--color-foreground));
+}
+
+.match-subtitle {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
 .match-chips-wrap {
   display: flex;
   justify-content: center;
+}
+
+.match-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgb(56 189 248 / 0.24);
+  border-radius: 14px;
+  background: rgb(56 189 248 / 0.12);
+  color: rgb(var(--color-foreground) / 0.88);
+}
+
+.match-alert__content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.match-alert__icon {
+  color: rgb(56 189 248);
+  font-size: 1.2rem;
+  flex: 0 0 auto;
+}
+
+.match-alert__link {
+  color: rgb(var(--color-primary));
+  text-decoration: underline;
+}
+
+.match-alert__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.68);
+  cursor: pointer;
+}
+
+.match-alert__close:hover,
+.match-alert__close:focus-visible {
+  background: rgb(var(--color-foreground) / 0.08);
+  outline: none;
 }
 
 .match-grid {
@@ -383,7 +512,79 @@ useHead({
 }
 
 .match-skeleton {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
   border-radius: 12px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 10px 24px rgb(var(--color-shadow) / 0.08);
+}
+
+.match-skeleton__line,
+.match-skeleton__button {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.14) 0%,
+    rgba(148, 163, 184, 0.26) 50%,
+    rgba(148, 163, 184, 0.14) 100%
+  );
+  background-size: 200% 100%;
+  animation: match-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+.match-skeleton__line--title {
+  width: 56%;
+  height: 1.2rem;
+}
+
+.match-skeleton__line--body {
+  width: 100%;
+  height: 0.9rem;
+}
+
+.match-skeleton__line--chip {
+  width: 44%;
+  height: 1.8rem;
+}
+
+.match-skeleton__button {
+  width: 100%;
+  height: 2.5rem;
+}
+
+.match-empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.match-empty__icon {
+  font-size: 4rem;
+  color: rgb(var(--color-foreground) / 0.28);
+}
+
+.match-empty__text {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
+.match-section-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: rgb(var(--color-foreground));
+}
+
+.match-section-icon {
+  font-size: 1rem;
+  color: rgb(var(--color-secondary));
 }
 
 .dot {
@@ -395,11 +596,129 @@ useHead({
 }
 
 .dot-online {
-  background: rgb(var(--v-theme-success));
+  background: #4caf50;
 }
 
 .dot-offline {
-  background: rgb(var(--v-theme-surface-variant));
+  background: #90a4ae;
 }
 
+.match-dialog-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+}
+
+.match-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.62);
+}
+
+.match-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(100% - 2rem, 480px);
+  transform: translate(-50%, -50%);
+}
+
+.match-dialog-card {
+  padding: 1.4rem;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 18px;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 24px 48px rgb(var(--color-shadow) / 0.18);
+}
+
+.match-dialog-card__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 650;
+  line-height: 1.35;
+  color: rgb(var(--color-foreground));
+}
+
+.match-dialog-card__body {
+  margin: 0.8rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
+.match-dialog-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.match-dialog-card__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.65rem 0.95rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.match-dialog-card__button--secondary {
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.82);
+}
+
+.match-dialog-card__button--primary {
+  border: 0;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-primary-foreground, var(--color-background)));
+}
+
+.match-dialog-card__button:hover,
+.match-dialog-card__button:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.match-dialog-fade-enter-active,
+.match-dialog-fade-leave-active {
+  transition: opacity 160ms ease;
+}
+
+.match-dialog-fade-enter-from,
+.match-dialog-fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes match-skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .match-alert {
+    align-items: flex-start;
+  }
+
+  .match-alert__content {
+    align-items: flex-start;
+  }
+
+  .match-dialog-card__actions {
+    flex-direction: column-reverse;
+  }
+
+  .match-dialog-card__button {
+    width: 100%;
+  }
+}
 </style>

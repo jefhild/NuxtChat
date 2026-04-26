@@ -1,9 +1,8 @@
 <template>
   <div class="language-practice-banner mb-2">
-    <v-icon
-      icon="mdi-translate"
-      size="18"
-      class="language-practice-banner__icon"
+    <i
+      class="mdi mdi-translate language-practice-banner__icon"
+      aria-hidden="true"
     />
     <div class="language-practice-banner__content">
       <div class="language-practice-banner__title">{{ title }}</div>
@@ -11,15 +10,13 @@
         {{ metaLine }}
       </div>
     </div>
-    <v-btn
+    <button
+      type="button"
       class="language-practice-banner__action"
-      size="small"
-      variant="text"
-      color="success"
       @click="$emit('deactivate')"
     >
       {{ t("components.activeChats.end-language-practice-title") }}
-    </v-btn>
+    </button>
   </div>
 </template>
 
@@ -87,6 +84,8 @@ const metaLine = computed(() =>
 .language-practice-banner__icon {
   color: #72e67e;
   margin-top: 2px;
+  font-size: 18px;
+  line-height: 1;
 }
 
 .language-practice-banner__content {
@@ -112,5 +111,15 @@ const metaLine = computed(() =>
   flex: 0 0 auto;
   align-self: center;
   border-radius: 8px;
+  border: 1px solid rgba(114, 230, 126, 0.28);
+  background: transparent;
+  color: #72e67e;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.45rem 0.7rem;
+}
+
+.language-practice-banner__action:hover {
+  background: rgba(114, 230, 126, 0.1);
 }
 </style>

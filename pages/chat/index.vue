@@ -1,7 +1,6 @@
 <template>
-  <v-container
-    fluid
-    class="chat-page-shell d-flex flex-column flex-grow-1 min-h-0"
+  <div
+    class="chat-page-shell flex min-h-0 flex-1 flex-col"
     :class="{ 'chat-page-shell--loading': isLoading }"
   >
     <LoadingContainer
@@ -16,20 +15,19 @@
       </h1>
       <ChatLayout
         ref="chatLayoutRef"
-        class="flex-grow-1 min-h-0"
+        class="min-h-0 flex-grow-1"
         :user="authStore.user"
         :userProfile="authStore.userProfile"
         :authStatus="authStore.authStatus"
         :show-mobile-controls="true"
       />
     </template>
-  </v-container>
+  </div>
 </template>
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore1";
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { useTheme } from "vuetify";
+import { computed, onMounted, ref } from "vue";
 
 const authStore = useAuthStore();
 const isLoading = ref(true);
@@ -39,9 +37,6 @@ const router = useRouter();
 const localPath = useLocalePath();
 const config = useRuntimeConfig();
 const siteConfig = useSiteConfig();
-const vuetifyTheme = useTheme();
-const previousThemeName = ref(null);
-const previousColorScheme = ref("");
 const chatSeoQueryKeys = ["userslug", "slug", "userId", "id", "imchatty"];
 const hasEntryQuery = computed(() =>
   chatSeoQueryKeys.some((key) => {
@@ -61,30 +56,12 @@ const chatRobots = computed(() =>
   hasEntryQuery.value ? "noindex,follow" : undefined
 );
 
-function setThemeNameSafe(nextThemeName) {
-  if (!nextThemeName) return;
-  if (typeof vuetifyTheme?.change === "function") {
-    vuetifyTheme.change(nextThemeName);
-    return;
-  }
-  if (typeof vuetifyTheme?.global?.change === "function") {
-    vuetifyTheme.global.change(nextThemeName);
-  }
-}
-
 useSeoI18nMeta("chat.index", {
   overrideUrl: chatCanonicalPath,
   robots: chatRobots,
 });
 onMounted(async () => {
   try {
-    if (vuetifyTheme?.global?.name?.value) {
-      previousThemeName.value = vuetifyTheme.global.name.value;
-      if (typeof document !== "undefined") {
-        previousColorScheme.value = document.documentElement.style.colorScheme || "";
-      }
-    }
-
     // console.log("[chat] onMounted: checking auth...");
     await authStore.checkAuth(); // safe getSession-based check
     if (
@@ -103,24 +80,11 @@ onMounted(async () => {
     isLoading.value = false;
   }
 });
-
-onBeforeUnmount(() => {
-  if (vuetifyTheme?.global?.name?.value && previousThemeName.value) {
-    setThemeNameSafe(previousThemeName.value);
-  }
-  if (typeof document !== "undefined") {
-    if (previousColorScheme.value) {
-      document.documentElement.style.colorScheme = previousColorScheme.value;
-    } else {
-      document.documentElement.style.removeProperty("color-scheme");
-    }
-  }
-});
 </script>
 
 <style scoped>
 .chat-page-shell {
-  color: rgb(var(--v-theme-on-surface));
+  color: rgb(var(--color-foreground));
   background: transparent;
   border-radius: 0;
   flex: 1 1 auto;

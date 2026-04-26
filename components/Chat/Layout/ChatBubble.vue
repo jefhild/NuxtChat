@@ -4,9 +4,9 @@
     :class="fromMe ? 'bubble-row--me' : 'bubble-row--them'"
   >
     <div v-if="showMeta && (nameToShow || time || avatar)" class="bubble-meta">
-      <v-avatar v-if="avatar" size="26" class="bubble-avatar">
-        <v-img :src="avatar" cover />
-      </v-avatar>
+      <span v-if="avatar" class="bubble-avatar" aria-hidden="true">
+        <img :src="avatar" alt="" class="bubble-avatar__image" />
+      </span>
       <div class="bubble-meta__text">
         <div v-if="nameToShow" class="bubble-name">
           {{ nameToShow }}
@@ -127,7 +127,19 @@ const nameToShow = computed(() =>
   opacity: 0.9;
 }
 
-.bubble-avatar :deep(img) {
+.bubble-avatar {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  overflow: hidden;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.bubble-avatar__image {
+  width: 100%;
+  height: 100%;
+  display: block;
   object-fit: cover;
 }
 

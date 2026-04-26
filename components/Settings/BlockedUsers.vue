@@ -1,60 +1,77 @@
 <template>
-  <v-container>
-    <v-row>
-      <template v-if="blockedProfiles.length > 0">
-        <v-col v-for="profile in blockedProfiles" :key="profile.profile_id" cols="12" sm="6" md="4">
-          <!-- <v-card hover :to="`/profiles/${profile.user_id}`"> -->
-          <v-card v-if="genderMap[profile.gender_id]" hover @click="goToProfile(profile)">
-            <v-row>
-              <v-col cols="12">
-                <div class="avatar-wrapper">
-                  <NuxtImg :src="getProfileImage(profile.avatar_url, profile.gender_id)" height="200" width="200"
-                    class="rounded-circle cover-image mx-auto d-block ma-4" :alt="`${displayNameFor(profile)}'s image`"/>
+  <div class="w-full px-2 sm:px-3 lg:px-4">
+    <div
+      v-if="blockedProfiles.length > 0"
+      class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+    >
+      <div v-for="profile in blockedProfiles" :key="profile.profile_id">
+        <div
+          v-if="genderMap[profile.gender_id]"
+          class="blocked-user-card rounded-xl px-3 py-3"
+          @click="goToProfile(profile)"
+        >
+          <div class="flex items-start gap-3">
+            <div class="avatar-wrapper shrink-0">
+              <NuxtImg
+                :src="getProfileImage(profile.avatar_url, profile.gender_id)"
+                height="56"
+                width="56"
+                class="blocked-avatar-image cover-image rounded-circle"
+                :alt="`${displayNameFor(profile)}'s image`"
+              />
+              <NuxtImg
+                v-if="avatarDecorations[profile.user_id]"
+                :src="avatarDecorations[profile.user_id]"
+                class="avatar-decoration"
+              />
+            </div>
 
-                  <NuxtImg v-if="avatarDecorations[profile.user_id]" :src="avatarDecorations[profile.user_id]"
-                    class="avatar-decoration" />
-                </div>
-              </v-col>
-              <v-col class="text-right mr-3">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <button
+                  v-if="genderMap[profile.gender_id]"
+                  class="blocked-name-btn"
+                  type="button"
+                  @click.stop="goToProfile(profile)"
+                >
+                  {{ displayNameFor(profile) }} ({{ profile.age }})
+                </button>
+                <i
+                  class="profile-gender-icon"
+                  :style="{ '--profile-gender-color': getGenderHexColor(profile.gender_id) }"
+                  :class="['mdi', getAvatarIcon(profile.gender_id)]"
+                  aria-hidden="true"
+                />
+              </div>
+              <div class="text-body-2 text-medium-emphasis">
                 {{ profile.country }} {{ profile.country_emoji }}
-              </v-col>
-            </v-row>
-            <v-card-title>
-              <v-row>
-                <v-col cols="8">
-                  <v-btn variant="plain"
-                    v-if="genderMap[profile.gender_id]"
-                    :to="profilePathFor(profile) || undefined">
-                      {{ displayNameFor(profile) }} ({{ profile.age }})
-                    </v-btn>
-                    <v-icon
-                      class="profile-gender-icon"
-                      :style="{ '--profile-gender-color': getGenderHexColor(profile.gender_id) }"
-                      :icon="getAvatarIcon(profile.gender_id)"
-                    />
-                </v-col>
-                <v-spacer />
-                <v-col>
-                  <v-tooltip text="Unblock user?">
-                    <template v-slot:activator="{ props }">
-                      <v-btn v-bind="props" icon="mdi-block-helper" variant="plain" color="red" size="small"
-                        @click.stop="handleUnblock(profile.user_id)"></v-btn>
-                    </template>
-                  </v-tooltip>
-                </v-col>
-              </v-row>
-            </v-card-title>
-            <v-card-subtitle>{{ taglineFor(profile) }}</v-card-subtitle>
-          </v-card>
-        </v-col>
-      </template>
-      <v-col v-else cols="12">
-        <v-card class="d-flex flex-column align-center">
-          <v-card-title>{{ $t("components.blockedUsers.no-blocked-users") }}</v-card-title>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+              </div>
+              <div v-if="taglineFor(profile)" class="mt-1 text-caption text-medium-emphasis">
+                {{ taglineFor(profile) }}
+              </div>
+            </div>
+
+            <div class="shrink-0">
+              <button
+                type="button"
+                class="blocked-action-btn"
+                title="Unblock user?"
+                aria-label="Unblock user?"
+                @click.stop="handleUnblock(profile.user_id)"
+              >
+                <i class="mdi mdi-block-helper" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else>
+      <div class="settings-empty-card flex min-h-28 items-center justify-center px-4 text-center">
+        <p>{{ $t("components.blockedUsers.no-blocked-users") }}</p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -162,19 +179,79 @@ watch(blockedProfiles, async (newProfiles) =>
   position: relative;
 }
 
+.blocked-user-card {
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: rgb(var(--color-surface) / 0.88);
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+}
+
+.blocked-user-card:hover {
+  border-color: rgb(var(--color-primary) / 0.32);
+  background: rgb(var(--color-surface));
+  transform: translateY(-1px);
+}
+
+.blocked-avatar-image {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+}
+
 .avatar-decoration {
   position: absolute;
-  top: -20px;
+  top: -6px;
   left: 50%;
   transform: translateX(-50%);
-  width: 241px;
+  width: 72px;
   pointer-events: none;
   z-index: 1;
   object-fit: contain;
 }
 
+.blocked-name-btn {
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--color-foreground) / 0.86);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-empty-card {
+  border: 1px solid rgb(var(--color-border) / 0.64);
+  background: rgb(var(--color-surface));
+  border-radius: 12px;
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
 .profile-gender-icon {
-  color: var(--profile-gender-color, #a855f7) !important;
-  background: transparent !important;
+  color: var(--profile-gender-color, #a855f7);
+  background: transparent;
+}
+
+.blocked-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+}
+
+.blocked-action-btn:hover,
+.blocked-action-btn:focus-visible,
+.blocked-name-btn:hover,
+.blocked-name-btn:focus-visible {
+  outline: none;
+  text-decoration: underline;
 }
 </style>

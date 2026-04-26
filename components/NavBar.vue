@@ -16,7 +16,7 @@
           />
         </div>
 
-        <nav class="nav2__links d-none d-md-flex" aria-label="Primary navigation">
+        <nav class="nav2__links nav2__links--desktop" aria-label="Primary navigation">
           <ul class="nav2__list">
             <li v-for="item in primaryNavItems" :key="item.id">
               <NuxtLink
@@ -59,7 +59,7 @@
             </li>
           </ul>
 
-          <div class="nav2__lang d-none d-md-flex" aria-label="Language selector">
+          <div class="nav2__lang nav2__lang--desktop" aria-label="Language selector">
             <LanguageSwitcher />
             <NuxtLink
               v-if="isImpersonating"
@@ -70,7 +70,7 @@
           </div>
         </nav>
 
-        <div class="d-flex d-md-none align-center nav2__mobile-actions">
+        <div class="nav2__mobile-actions">
           <div class="nav2__lang nav2__lang--mobile" aria-label="Language selector">
             <LanguageSwitcher />
             <NuxtLink
@@ -80,159 +80,218 @@
               aria-label="Return to admin"
             />
           </div>
-          <v-menu v-model="mobileMenuOpen" :close-on-content-click="false">
-            <template #activator="{ props }">
-              <button
-                class="nav2__menu"
-                type="button"
-                aria-label="Menu"
-                v-bind="props"
-              >
-                <span class="nav2__menu-bar" />
-                <span class="nav2__menu-bar" />
-                <span class="nav2__menu-bar" />
-              </button>
-            </template>
-
-            <v-list aria-label="Mobile Navigation">
-              <v-list-item
-                v-for="item in primaryNavItems"
-                :key="item.id"
-                :to="item.path"
-                link
-                @click="closeMobileMenu"
-              >
-                <v-list-item-title class="nav2__mobile-title">
-                  {{ item.name }}
-                  <span
-                    v-if="item.id === 'chat' && hasUnread"
-                    class="nav2__badge nav2__badge--inline"
-                    aria-hidden="true"
-                  >
-                    {{ unreadLabel }}
-                  </span>
-                </v-list-item-title>
-              </v-list-item>
-              <v-list-item
-                v-if="userProfile?.is_admin && !isImpersonating"
-                :to="localPath('/admin')"
-                link
-                @click="closeMobileMenu"
-              >
-                <v-list-item-title>{{ $t("components.navbar.admin") }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item
-                v-if="showResolvedAuthLinks && isAuthenticated"
-                :to="localPath('/settings')"
-                link
-                @click="closeMobileMenu"
-              >
-                <v-list-item-title>{{ $t("components.navbar.settings") }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item v-if="showResolvedAuthLinks && isAuthenticated" @click="handleMobileLogout">
-                <v-list-item-title>{{ $t("components.navbar.logout") }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item
-                v-else-if="showResolvedAuthLinks"
-                :to="localPath('/signin')"
-                link
-                @click="closeMobileMenu"
-              >
-                <v-list-item-title>{{ $t("components.navbar.signin") }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+          <button
+            class="nav2__menu"
+            type="button"
+            aria-label="Menu"
+            :aria-expanded="mobileMenuOpen ? 'true' : 'false'"
+            aria-controls="nav2-mobile-menu"
+            @click="toggleMobileMenu"
+          >
+            <span class="nav2__menu-bar" />
+            <span class="nav2__menu-bar" />
+            <span class="nav2__menu-bar" />
+          </button>
         </div>
       </div>
     </header>
 
-    <v-dialog v-model="logoutDialog" width="auto" :scrim="!isLoggingOut">
-      <v-card max-width="420" class="logout-dialog-card" prepend-icon="mdi-account-remove">
-        <template #title>
-          {{
-            isLoggingOut
-              ? $t("components.navbar.logout")
-              : $t("components.navbar.logout_dialog_title")
-          }}
-        </template>
+    <Teleport to="body">
+      <Transition name="nav2-fade">
+        <button
+          v-if="mobileMenuOpen"
+          type="button"
+          class="nav2__scrim"
+          aria-label="Close mobile menu"
+          @click="closeMobileMenu"
+        />
+      </Transition>
+      <Transition name="nav2-slide-down">
+        <div
+          v-if="mobileMenuOpen"
+          id="nav2-mobile-menu"
+          class="nav2__mobile-panel"
+          :style="mobileMenuStyle"
+          aria-label="Mobile Navigation"
+        >
+          <nav class="nav2__mobile-nav">
+            <NuxtLink
+              v-for="item in primaryNavItems"
+              :key="item.id"
+              :to="item.path"
+              class="nav2__mobile-item"
+              @click="closeMobileMenu"
+            >
+              <span class="nav2__mobile-title">
+                {{ item.name }}
+                <span
+                  v-if="item.id === 'chat' && hasUnread"
+                  class="nav2__badge nav2__badge--inline"
+                  aria-hidden="true"
+                >
+                  {{ unreadLabel }}
+                </span>
+              </span>
+            </NuxtLink>
+            <NuxtLink
+              v-if="userProfile?.is_admin && !isImpersonating"
+              :to="localPath('/admin')"
+              class="nav2__mobile-item"
+              @click="closeMobileMenu"
+            >
+              <span class="nav2__mobile-title">{{ $t("components.navbar.admin") }}</span>
+            </NuxtLink>
+            <NuxtLink
+              v-if="showResolvedAuthLinks && isAuthenticated"
+              :to="localPath('/settings')"
+              class="nav2__mobile-item"
+              @click="closeMobileMenu"
+            >
+              <span class="nav2__mobile-title">{{ $t("components.navbar.settings") }}</span>
+            </NuxtLink>
+            <button
+              v-if="showResolvedAuthLinks && isAuthenticated"
+              type="button"
+              class="nav2__mobile-item nav2__mobile-item--button"
+              @click="handleMobileLogout"
+            >
+              <span class="nav2__mobile-title">{{ $t("components.navbar.logout") }}</span>
+            </button>
+            <NuxtLink
+              v-else-if="showResolvedAuthLinks"
+              :to="localPath('/signin')"
+              class="nav2__mobile-item"
+              @click="closeMobileMenu"
+            >
+              <span class="nav2__mobile-title">{{ $t("components.navbar.signin") }}</span>
+            </NuxtLink>
+          </nav>
+        </div>
+      </Transition>
 
-        <v-card-text>
-          <v-row justify="center">
-            <v-col class="text-center">
-              <template v-if="!isLoggingOut">
-                <template v-if="isAnonAuthenticated">
-                  <div class="text-body-2">
+      <Transition name="nav2-fade">
+        <div
+          v-if="logoutDialog"
+          class="nav2__dialog-layer"
+          role="presentation"
+        >
+          <button
+            type="button"
+            class="nav2__dialog-backdrop"
+            :class="{ 'nav2__dialog-backdrop--transparent': isLoggingOut && !logoutError }"
+            aria-label="Close logout dialog"
+            @click="dismissLogoutDialog"
+          />
+          <div
+            class="nav2__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="nav2-logout-title"
+          >
+            <div class="logout-dialog-card">
+              <div class="logout-dialog-card__header">
+                <i class="mdi mdi-account-remove logout-dialog-card__icon" aria-hidden="true" />
+                <h2 id="nav2-logout-title" class="logout-dialog-card__title">
+                  {{
+                    isLoggingOut
+                      ? $t("components.navbar.logout")
+                      : $t("components.navbar.logout_dialog_title")
+                  }}
+                </h2>
+              </div>
+
+              <div class="logout-dialog-card__body">
+                <template v-if="!isLoggingOut">
+                  <div v-if="isAnonAuthenticated" class="logout-dialog-card__message">
                     {{ $t("components.navbar.logout_email_prompt") }}
                   </div>
+                  <div v-else class="logout-dialog-card__message">
+                    {{ $t("pages.home.landing_page.logout_confirm") }}
+                  </div>
                 </template>
+
                 <template v-else>
-                  {{ $t("pages.home.landing_page.logout_confirm") }}
+                  <div class="logout-dialog-card__loading">
+                    <span class="logout-dialog-card__spinner" aria-hidden="true" />
+                    <div class="logout-dialog-card__status">
+                      {{ currentLogoutLine }}
+                    </div>
+                    <div v-if="logoutError" class="logout-dialog-card__error">
+                      {{ logoutError }}
+                    </div>
+                  </div>
                 </template>
-              </template>
-
-              <template v-else>
-                <div class="d-flex flex-column align-center py-3">
-                  <v-progress-circular indeterminate size="36" class="mb-3" />
-                  <div class="text-medium-emphasis">
-                    {{ currentLogoutLine }}
-                  </div>
-                  <div v-if="logoutError" class="text-error mt-3">
-                    {{ logoutError }}
-                  </div>
-                </div>
-              </template>
-            </v-col>
-          </v-row>
-        </v-card-text>
-
-        <template #actions>
-          <template v-if="!isLoggingOut">
-            <template v-if="isAnonAuthenticated">
-              <div class="logout-actions-stack">
-                <v-btn
-                  color="primary"
-                  variant="flat"
-                  block
-                  @click="goToLinkEmail"
-                >
-                  {{ $t("components.navbar.logout_add_email_now") }}
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  variant="text"
-                  block
-                  @click="confirmLogout"
-                >
-                  {{ $t("components.navbar.logout_anyway") }}
-                </v-btn>
-                <v-btn variant="text" block @click="logoutDialog = false">
-                  {{ $t("pages.home.landing_page.cancel") }}
-                </v-btn>
               </div>
-            </template>
-            <template v-else>
-              <v-btn color="primary" text @click="confirmLogout">
-                {{ $t("pages.home.landing_page.logout_confirm_button") }}
-              </v-btn>
-              <v-spacer />
-              <v-btn class="ms-auto" @click="logoutDialog = false">
-                {{ $t("pages.home.landing_page.cancel") }}
-              </v-btn>
-            </template>
-          </template>
 
-          <template v-else>
-            <v-btn v-if="logoutError" color="primary" variant="text" @click="confirmLogout">
-              {{ $t("common.try_again") || "Try again" }}
-            </v-btn>
-            <v-spacer />
-            <v-btn :disabled="!logoutError" class="ms-auto" @click="logoutDialog = false">
-              {{ $t("pages.home.landing_page.cancel") }}
-            </v-btn>
-          </template>
-        </template>
-      </v-card>
-    </v-dialog>
+              <div class="logout-dialog-card__actions">
+                <template v-if="!isLoggingOut">
+                  <template v-if="isAnonAuthenticated">
+                    <div class="logout-actions-stack">
+                      <button
+                        type="button"
+                        class="nav2__action-btn nav2__action-btn--primary nav2__action-btn--block"
+                        @click="goToLinkEmail"
+                      >
+                        {{ $t("components.navbar.logout_add_email_now") }}
+                      </button>
+                      <button
+                        type="button"
+                        class="nav2__action-btn nav2__action-btn--ghost nav2__action-btn--block"
+                        @click="confirmLogout"
+                      >
+                        {{ $t("components.navbar.logout_anyway") }}
+                      </button>
+                      <button
+                        type="button"
+                        class="nav2__action-btn nav2__action-btn--plain nav2__action-btn--block"
+                        @click="logoutDialog = false"
+                      >
+                        {{ $t("pages.home.landing_page.cancel") }}
+                      </button>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <button
+                      type="button"
+                      class="nav2__action-btn nav2__action-btn--ghost"
+                      @click="confirmLogout"
+                    >
+                      {{ $t("pages.home.landing_page.logout_confirm_button") }}
+                    </button>
+                    <button
+                      type="button"
+                      class="nav2__action-btn nav2__action-btn--plain"
+                      @click="logoutDialog = false"
+                    >
+                      {{ $t("pages.home.landing_page.cancel") }}
+                    </button>
+                  </template>
+                </template>
+
+                <template v-else>
+                  <button
+                    v-if="logoutError"
+                    type="button"
+                    class="nav2__action-btn nav2__action-btn--ghost"
+                    @click="confirmLogout"
+                  >
+                    {{ $t("common.try_again") || "Try again" }}
+                  </button>
+                  <button
+                    type="button"
+                    class="nav2__action-btn nav2__action-btn--plain"
+                    :disabled="!logoutError"
+                    @click="logoutDialog = false"
+                  >
+                    {{ $t("pages.home.landing_page.cancel") }}
+                  </button>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -297,6 +356,7 @@ const normalizePath = (p = "") => {
 const isHome = ref(false);
 const isScrolled = ref(false);
 const mobileMenuOpen = ref(false);
+const navHeight = ref(72);
 const NAV_OFFSET_VAR = "--nav2-offset";
 
 const computeIsHome = () => {
@@ -325,9 +385,17 @@ const applyNavOffsetVar = () => {
   if (!isClient) return;
   const rawHeight = Number(navRef.value?.offsetHeight || 72);
   const safeHeight = Math.min(Math.max(rawHeight, 56), 96);
+  navHeight.value = safeHeight;
+  if (window.innerWidth >= 960) {
+    mobileMenuOpen.value = false;
+  }
   const value = isHome.value ? "0px" : `${safeHeight}px`;
   document.documentElement.style.setProperty(NAV_OFFSET_VAR, value);
 };
+
+const mobileMenuStyle = computed(() => ({
+  top: `${navHeight.value + 8}px`,
+}));
 
 function startLogoutAnimation() {
   stopLogoutAnimation();
@@ -356,8 +424,17 @@ const handleMobileLogout = () => {
   showLogoutDialog();
 };
 
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+};
+
 const closeMobileMenu = () => {
   mobileMenuOpen.value = false;
+};
+
+const dismissLogoutDialog = () => {
+  if (isLoggingOut.value && !logoutError.value) return;
+  logoutDialog.value = false;
 };
 
 const goToLinkEmail = async () => {
@@ -399,14 +476,32 @@ watch(
     isScrolled.value = false;
     updateScrollState();
     applyNavOffsetVar();
+    closeMobileMenu();
   }
 );
+
+const onGlobalKeydown = (event) => {
+  if (event.key !== "Escape") return;
+  if (mobileMenuOpen.value) {
+    closeMobileMenu();
+    return;
+  }
+  if (logoutDialog.value) {
+    dismissLogoutDialog();
+  }
+};
 
 onBeforeUnmount(() => {
   if (!isClient) return;
   window.removeEventListener("scroll", updateScrollState);
   window.removeEventListener("resize", applyNavOffsetVar);
+  document.removeEventListener("keydown", onGlobalKeydown);
   document.documentElement.style.setProperty(NAV_OFFSET_VAR, "0px");
+});
+
+onMounted(() => {
+  if (!isClient) return;
+  document.addEventListener("keydown", onGlobalKeydown);
 });
 </script>
 
@@ -476,6 +571,12 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 
+.nav2__links--desktop {
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
 .nav2__list {
   display: flex;
   align-items: center;
@@ -509,7 +610,7 @@ onBeforeUnmount(() => {
   padding: 0 4px;
   border-radius: 9999px;
   background: #ff3b30;
-  box-shadow: 0 0 0 2px rgba(var(--v-theme-surface), 0.95);
+  box-shadow: 0 0 0 2px rgb(var(--color-surface) / 0.95);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -536,21 +637,26 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
-.nav2__lang :deep(.v-field__input) {
-  min-height: 34px;
-}
-
 .nav2__mobile-actions {
+  display: none;
+  align-items: center;
   gap: 10px;
 }
 
-.nav2__lang--mobile :deep(.v-field__input) {
-  min-height: 32px;
+.nav2__lang--desktop {
+  display: inline-flex;
+  align-items: center;
 }
 
 .logout-dialog-card {
   width: min(440px, 94vw);
   max-width: 94vw;
+  border-radius: 20px;
+  border: 1px solid rgb(var(--color-border) / 0.7);
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  box-shadow: 0 24px 60px rgb(var(--color-shadow) / 0.24);
+  padding: 20px;
 }
 
 .logout-actions-stack {
@@ -568,6 +674,7 @@ onBeforeUnmount(() => {
   background: none;
   border: none;
   cursor: pointer;
+  color: inherit;
 }
 
 .nav2__menu-bar {
@@ -601,18 +708,264 @@ onBeforeUnmount(() => {
 }
 
 .nav2--solid {
-  background: rgba(var(--v-theme-surface), 0.92);
-  color: rgb(var(--v-theme-on-surface));
+  background: rgb(var(--color-surface) / 0.92);
+  color: rgb(var(--color-foreground));
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 28px rgba(var(--v-theme-on-surface), 0.14);
+  box-shadow: 0 8px 28px rgb(var(--color-shadow) / 0.14);
+}
+
+.nav2__scrim {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.28);
+  z-index: 2090;
+}
+
+.nav2__mobile-panel {
+  position: fixed;
+  right: 10px;
+  width: min(320px, calc(100vw - 20px));
+  border-radius: 18px;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-foreground));
+  box-shadow: 0 20px 48px rgb(var(--color-shadow) / 0.22);
+  z-index: 2105;
+  overflow: hidden;
+}
+
+.nav2__mobile-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.nav2__mobile-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  text-decoration: none;
+  text-align: left;
+}
+
+.nav2__mobile-item--button {
+  cursor: pointer;
+  font: inherit;
+}
+
+.nav2__mobile-item:hover,
+.nav2__mobile-item:focus-visible {
+  background: rgb(var(--color-foreground) / 0.06);
+  outline: none;
+}
+
+.nav2__mobile-title {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.96rem;
+  font-weight: 600;
+}
+
+.nav2__dialog-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.nav2__dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.52);
+}
+
+.nav2__dialog-backdrop--transparent {
+  background: transparent;
+}
+
+.nav2__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(440px, 94vw);
+}
+
+.logout-dialog-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.logout-dialog-card__icon {
+  font-size: 1.35rem;
+  color: rgb(var(--color-primary));
+}
+
+.logout-dialog-card__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.logout-dialog-card__body {
+  text-align: center;
+}
+
+.logout-dialog-card__message {
+  color: rgb(var(--color-foreground) / 0.84);
+  line-height: 1.55;
+}
+
+.logout-dialog-card__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0 4px;
+}
+
+.logout-dialog-card__spinner {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 12px;
+  border: 3px solid rgb(var(--color-border));
+  border-top-color: rgb(var(--color-primary));
+  border-radius: 999px;
+  animation: nav2-spin 0.8s linear infinite;
+}
+
+.logout-dialog-card__status {
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
+.logout-dialog-card__error {
+  margin-top: 12px;
+  color: rgb(var(--color-danger));
+}
+
+.logout-dialog-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.nav2__action-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease,
+    opacity 160ms ease;
+}
+
+.nav2__action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.nav2__action-btn--block {
+  width: 100%;
+}
+
+.nav2__action-btn--primary {
+  background: rgb(var(--color-primary));
+  color: #fff;
+}
+
+.nav2__action-btn--primary:hover,
+.nav2__action-btn--primary:focus-visible {
+  background: rgb(var(--color-primary) / 0.9);
+}
+
+.nav2__action-btn--ghost {
+  color: rgb(var(--color-primary));
+}
+
+.nav2__action-btn--ghost:hover,
+.nav2__action-btn--ghost:focus-visible {
+  background: rgb(var(--color-primary) / 0.08);
+}
+
+.nav2__action-btn--plain:hover,
+.nav2__action-btn--plain:focus-visible {
+  background: rgb(var(--color-foreground) / 0.06);
+}
+
+.nav2-fade-enter-active,
+.nav2-fade-leave-active,
+.nav2-slide-down-enter-active,
+.nav2-slide-down-leave-active {
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.nav2-fade-enter-from,
+.nav2-fade-leave-to,
+.nav2-slide-down-enter-from,
+.nav2-slide-down-leave-to {
+  opacity: 0;
+}
+
+.nav2-slide-down-enter-from,
+.nav2-slide-down-leave-to {
+  transform: translateY(-8px);
+}
+
+@keyframes nav2-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 960px) {
+  .nav2__links--desktop {
+    display: none;
+  }
+
+  .nav2__mobile-actions {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
   .nav2 {
     padding: 8px 10px;
   }
+
+  .nav2__inner {
+    gap: 12px;
+  }
+
   .nav2__brand {
     font-size: 1.6rem;
+  }
+
+  .nav2__dialog-layer {
+    padding: 14px;
+  }
+
+  .logout-dialog-card {
+    padding: 18px;
+  }
+
+  .logout-dialog-card__actions {
+    flex-direction: column;
   }
 }
 </style>

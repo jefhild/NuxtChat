@@ -43,7 +43,7 @@ usePresenceHeartbeat — every 5min
 - **Component**: `components/Chat/Layout/index.vue` (computed `usersWithPresence`, lines 2501–2650)
 - **Presence priority**: manual_status → AI always-online → isRealtimeOnline → isRecentActive (away) → offline
 - **Recent active poll**: `/api/presence/recent?minutes=10` — runs every **5 minutes**
-- **User list render**: `components/Chat/Layout/UserList.vue`
+- **User list render**: `components/Chat/Layout/Users.vue`
 
 ---
 
@@ -98,7 +98,7 @@ usePresenceHeartbeat — every 5min
 | `composables/useDB.js:1168–1185` | `touchPresence()` — upserts both tables |
 | `composables/useDB.js:1451–1461` | `updateLastActive()` — profiles table only |
 | `components/Chat/Layout/index.vue:2501–2650` | `usersWithPresence` computed — status priority logic |
-| `components/Chat/Layout/UserList.vue` | Renders presence dot |
+| `components/Chat/Layout/Users.vue` | Renders presence dot |
 | `server/api/presence/recent.get.js` | Recent active API — blends presence + profiles |
 | `SQL/create.sql:215–223` | `presence` table schema |
 
