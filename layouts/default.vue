@@ -11,6 +11,7 @@
       'feeds-route-main': isFeedsRoute,
       'match-route-main': isMatchRoute,
       'admin-route-main': isAdminRoute,
+      'inline-footer-route-main': useInlineFooter,
       'root-landing-route-main': isRootLandingRoute,
     }"
     :style="mainStyle"
@@ -847,6 +848,11 @@ html[data-imchatty-theme="dark"] .app-main {
 }
 
 .root-landing-route-main {
+  flex: 0 0 auto;
+  min-height: auto;
+}
+
+.inline-footer-route-main {
   flex: 0 0 auto;
   min-height: auto;
 }

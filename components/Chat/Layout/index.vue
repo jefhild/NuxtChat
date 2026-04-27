@@ -657,6 +657,10 @@ import { bustMatchCache, setMatchFilter, useMatchCandidates } from "@/composable
 import { useLanguagePracticeSession } from "@/composables/useLanguagePracticeSession";
 import ProfileDialog from "@/components/ProfileDialog.vue";
 import {
+  markMoodFeedPromptShown,
+  shouldSuppressMoodFeedPrompt,
+} from "@/utils/moodFeedPromptState";
+import {
   resolveProfileLocalization,
   normalizeLocale,
 } from "@/composables/useProfileLocalization";
@@ -4212,6 +4216,7 @@ async function maybeTriggerMoodPrompt() {
   if (moodPromptBusy.value) return;
   if (!["authenticated", "anon_authenticated"].includes(auth.authStatus)) return;
   if (!meId.value) return;
+  if (shouldSuppressMoodFeedPrompt(meId.value)) return;
   if (draftStore.moodFeedStage === "prompt" || draftStore.moodFeedStage === "confirm")
     return;
   if (draftStore.liveMoodPersonaUserId)
@@ -4228,6 +4233,7 @@ async function maybeTriggerMoodPrompt() {
     draftStore.setField?.("moodFeedRefined", "");
     draftStore.setField?.("moodFeedDeferUntil", 0);
     await pushMoodBotMessage(formatMoodPrompt(promptText));
+    markMoodFeedPromptShown(meId.value);
     try {
       await $fetch("/api/mood-feed/prompted", { method: "POST" });
     } catch (err) {

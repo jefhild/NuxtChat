@@ -184,10 +184,13 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/authStore1";
 import { useDb } from "@/composables/useDB";
+import { useOnboardingDraftStore } from "@/stores/onboardingDraftStore";
 import ProfileCard from "@/components/ProfileCard.vue";
+import { syncMoodFeedPromptPreferences } from "@/utils/moodFeedPromptState";
 
 const { t } = useI18n();
 const authStore = useAuthStore();
+const draftStore = useOnboardingDraftStore();
 const { getUserProfileFromId, updateProfile } = useDb();
 const { mode: themeModeState, applyThemeMode } = useAppTheme();
 
@@ -277,6 +280,10 @@ const loadProfile = async () => {
     if (!profile.value?.profile_card_theme) {
       profile.value.profile_card_theme = "trading";
     }
+    syncMoodFeedPromptPreferences(userId, {
+      enabled: profile.value?.mood_feed_prompt_enabled !== false,
+      snoozeUntil: profile.value?.mood_feed_prompt_snooze_until || null,
+    });
     cardThemeSelection.value = profile.value.profile_card_theme;
   } catch (err) {
     console.warn("[chat-settings] load profile failed:", err);
@@ -346,9 +353,28 @@ const savePrefs = async (nextEnabled, nextSnoozeUntil) => {
       undefined,
       nextEnabled,
       nextSnoozeUntil
-    );
-    profile.value.mood_feed_prompt_enabled = nextEnabled;
-    profile.value.mood_feed_prompt_snooze_until = nextSnoozeUntil;
+     );
+     profile.value.mood_feed_prompt_enabled = nextEnabled;
+     profile.value.mood_feed_prompt_snooze_until = nextSnoozeUntil;
+      syncMoodFeedPromptPreferences(profile.value.user_id, {
+        enabled: nextEnabled,
+        snoozeUntil: nextSnoozeUntil,
+      });
+      const nextDeferUntil = nextSnoozeUntil
+        ? new Date(nextSnoozeUntil).getTime()
+        : 0;
+      if (
+        nextEnabled === false ||
+        (Number.isFinite(nextDeferUntil) && nextDeferUntil > Date.now())
+      ) {
+        draftStore.setField?.("moodFeedStage", "done");
+        draftStore.setField?.("moodFeedAnswer", "");
+        draftStore.setField?.("moodFeedRefined", "");
+        draftStore.setField?.("moodFeedAttempts", 0);
+        draftStore.setField?.("moodFeedDeferUntil", nextDeferUntil || 0);
+      } else {
+        draftStore.setField?.("moodFeedDeferUntil", 0);
+      }
   } catch (err) {
     console.error("[chat-settings] save failed:", err);
   } finally {

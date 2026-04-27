@@ -306,9 +306,10 @@
                           </div>
 
                           <div v-else class="admin-dashboard-expanded__content">
-                            <div class="admin-dashboard-expanded__layout">
-                              <div class="admin-dashboard-expanded__aside">
-                                <div class="admin-dashboard-detail-grid">
+                            <div class="admin-dashboard-expanded__panel">
+                              <div class="admin-dashboard-expanded__layout">
+                                <div class="admin-dashboard-expanded__aside">
+                                  <div class="admin-dashboard-detail-grid">
                                   <div class="admin-dashboard-detail-item">
                                     <span class="admin-dashboard-detail-item__label">User ID</span>
                                     <span
@@ -350,9 +351,10 @@
                                     >
                                       {{ item.email || "—" }}
                                     </span>
-                                  </div>
                                 </div>
                               </div>
+                            </div>
+                          </div>
 
                               <div class="admin-dashboard-expanded__main">
                                 <div class="admin-dashboard-stat-grid">
@@ -422,7 +424,10 @@
                                       </div>
                                     </div>
                                     <div class="admin-dashboard-toggle-row">
-                                      <label class="admin-dashboard-toggle">
+                                      <label
+                                        class="admin-dashboard-toggle"
+                                        :class="{ 'is-checked': getAdminFlags(item).force_online }"
+                                      >
                                         <input
                                           v-model="getAdminFlags(item).force_online"
                                           type="checkbox"
@@ -430,9 +435,24 @@
                                           @change="onAdminFlagToggle(item)"
                                         >
                                         <span class="admin-dashboard-toggle__track" aria-hidden="true" />
-                                        <span class="admin-dashboard-toggle__label">Force online</span>
+                                        <span class="admin-dashboard-toggle__copy">
+                                          <span class="admin-dashboard-toggle__label">Force online</span>
+                                          <span
+                                            class="admin-dashboard-toggle__state"
+                                            :class="
+                                              getAdminFlags(item).force_online
+                                                ? 'admin-dashboard-toggle__state--on'
+                                                : 'admin-dashboard-toggle__state--off'
+                                            "
+                                          >
+                                            {{ getAdminFlags(item).force_online ? "On" : "Off" }}
+                                          </span>
+                                        </span>
                                       </label>
-                                      <label class="admin-dashboard-toggle">
+                                      <label
+                                        class="admin-dashboard-toggle"
+                                        :class="{ 'is-checked': getAdminFlags(item).is_simulated }"
+                                      >
                                         <input
                                           v-model="getAdminFlags(item).is_simulated"
                                           type="checkbox"
@@ -440,7 +460,19 @@
                                           @change="onAdminFlagToggle(item)"
                                         >
                                         <span class="admin-dashboard-toggle__track" aria-hidden="true" />
-                                        <span class="admin-dashboard-toggle__label">Simulated user</span>
+                                        <span class="admin-dashboard-toggle__copy">
+                                          <span class="admin-dashboard-toggle__label">Simulated user</span>
+                                          <span
+                                            class="admin-dashboard-toggle__state"
+                                            :class="
+                                              getAdminFlags(item).is_simulated
+                                                ? 'admin-dashboard-toggle__state--on'
+                                                : 'admin-dashboard-toggle__state--off'
+                                            "
+                                          >
+                                            {{ getAdminFlags(item).is_simulated ? "On" : "Off" }}
+                                          </span>
+                                        </span>
                                       </label>
                                       <span
                                         v-if="adminFlagsStatus(item.user_id)"
@@ -2379,7 +2411,9 @@ onBeforeUnmount(() => {
 }
 
 .admin-dashboard-table__expanded-row td {
-  background: rgba(var(--color-surface-elevated), 0.6);
+  padding: 8px 12px 12px;
+  background: transparent;
+  border-bottom: 0;
 }
 
 .admin-dashboard-expanded {
@@ -2414,9 +2448,18 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
+.admin-dashboard-expanded__panel {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--color-border), 0.84);
+  border-radius: 20px;
+  background: rgb(var(--color-surface-elevated));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
 .admin-dashboard-expanded__layout {
   display: grid;
-  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   gap: 10px 14px;
   align-items: start;
 }
@@ -2432,13 +2475,21 @@ onBeforeUnmount(() => {
 
 .admin-dashboard-detail-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 12px;
 }
 
 .admin-dashboard-detail-item,
 .admin-dashboard-stat-card {
   min-width: 0;
+}
+
+.admin-dashboard-detail-item {
+  padding: 10px 12px;
+  border: 1px solid rgba(var(--color-border), 0.78);
+  border-radius: 14px;
+  background: rgb(var(--color-surface));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .admin-dashboard-detail-item__label {
@@ -2474,8 +2525,9 @@ onBeforeUnmount(() => {
 .admin-dashboard-inline-card {
   border: 1px solid rgba(var(--color-border), 0.78);
   border-radius: 14px;
-  background: rgba(var(--color-surface), 0.8);
+  background: rgb(var(--color-surface));
   padding: 10px 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .admin-dashboard-stat-card {
@@ -2524,10 +2576,14 @@ onBeforeUnmount(() => {
   font-size: 0.82rem;
 }
 
+.admin-dashboard-toggle-row > .admin-dashboard-inline-status {
+  grid-column: 1 / -1;
+}
+
 .admin-dashboard-toggle-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
   gap: 10px;
 }
 
@@ -2535,8 +2591,23 @@ onBeforeUnmount(() => {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(var(--color-border), 0.8);
+  border-radius: 14px;
+  background: rgba(var(--color-surface-elevated), 0.72);
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.admin-dashboard-toggle.is-checked {
+  border-color: rgba(var(--color-primary), 0.4);
+  background: rgba(var(--color-primary), 0.1);
+  box-shadow: inset 0 0 0 1px rgba(var(--color-primary), 0.08);
 }
 
 .admin-dashboard-toggle input {
@@ -2548,11 +2619,15 @@ onBeforeUnmount(() => {
 .admin-dashboard-toggle__track {
   position: relative;
   display: inline-flex;
+  flex: 0 0 auto;
   width: 42px;
   height: 24px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.34);
-  transition: background 0.18s ease;
+  background: rgba(100, 116, 139, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.2);
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .admin-dashboard-toggle__track::after {
@@ -2565,25 +2640,59 @@ onBeforeUnmount(() => {
   border-radius: 999px;
   background: #fff;
   box-shadow: 0 3px 8px rgba(15, 23, 42, 0.18);
-  transition: transform 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
 }
 
 .admin-dashboard-toggle input:checked + .admin-dashboard-toggle__track {
-  background: rgba(var(--color-primary), 0.72);
+  background: rgb(var(--color-primary));
+  box-shadow: inset 0 0 0 1px rgba(var(--color-primary), 0.16);
 }
 
 .admin-dashboard-toggle input:checked + .admin-dashboard-toggle__track::after {
   transform: translateX(18px);
+  background: rgb(255, 255, 255);
 }
 
 .admin-dashboard-toggle input:disabled + .admin-dashboard-toggle__track {
   opacity: 0.5;
 }
 
+.admin-dashboard-toggle__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
 .admin-dashboard-toggle__label {
   color: rgb(var(--color-text));
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+.admin-dashboard-toggle__state {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.admin-dashboard-toggle__state--on {
+  background: rgba(34, 197, 94, 0.14);
+  color: rgb(22, 101, 52);
+}
+
+.admin-dashboard-toggle__state--off {
+  background: rgba(148, 163, 184, 0.16);
+  color: rgba(var(--color-text), 0.72);
 }
 
 .admin-dashboard-toggle--standalone {
@@ -2770,10 +2879,6 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 1260px) {
-  .admin-dashboard-expanded__layout {
-    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
-  }
-
   .admin-dashboard-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2784,19 +2889,10 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 980px) {
-  .admin-dashboard-expanded__layout,
   .admin-dashboard-expanded__supplemental,
   .admin-dashboard-detail-grid,
   .admin-dashboard-stat-grid,
   .admin-dashboard-modal__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .admin-dashboard-expanded__layout {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-dashboard-detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -2814,6 +2910,7 @@ onBeforeUnmount(() => {
   .admin-dashboard-detail-grid,
   .admin-dashboard-expanded__supplemental,
   .admin-dashboard-stat-grid,
+  .admin-dashboard-toggle-row,
   .admin-dashboard-modal__grid {
     grid-template-columns: 1fr;
   }
