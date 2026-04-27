@@ -306,159 +306,173 @@
                           </div>
 
                           <div v-else class="admin-dashboard-expanded__content">
-                            <div class="admin-dashboard-detail-grid">
-                              <div class="admin-dashboard-detail-item">
-                                <span class="admin-dashboard-detail-item__label">User ID</span>
-                                <span class="admin-dashboard-detail-item__value">
-                                  {{ item.user_id || "—" }}
-                                </span>
-                              </div>
-                              <div class="admin-dashboard-detail-item">
-                                <span class="admin-dashboard-detail-item__label">Auth</span>
-                                <span class="admin-dashboard-detail-item__value">
-                                  {{ authStateLabel(item) }}
-                                </span>
-                              </div>
-                              <div class="admin-dashboard-detail-item">
-                                <span class="admin-dashboard-detail-item__label">Location</span>
-                                <span class="admin-dashboard-detail-item__value">
-                                  {{ getCountryLabel(item) }}
-                                  <template v-if="item.city || item.state">
-                                    • {{ [item.city, item.state].filter(Boolean).join(", ") }}
-                                  </template>
-                                  <span v-if="getCountryEmoji(item)">
-                                    {{ getCountryEmoji(item) }}
-                                  </span>
-                                </span>
-                              </div>
-                              <div class="admin-dashboard-detail-item">
-                                <span class="admin-dashboard-detail-item__label">Joined</span>
-                                <span class="admin-dashboard-detail-item__value">
-                                  {{ formatDate(item.createdAt) }}
-                                </span>
-                              </div>
-                              <div class="admin-dashboard-detail-item">
-                                <span class="admin-dashboard-detail-item__label">Email</span>
-                                <span class="admin-dashboard-detail-item__value admin-dashboard-ellipsis">
-                                  {{ item.email || "—" }}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div class="admin-dashboard-stat-grid">
-                              <div class="admin-dashboard-stat-card">
-                                <span class="admin-dashboard-detail-item__label">Chat (messages)</span>
-                                <button
-                                  type="button"
-                                  class="admin-dashboard-stat-card__value admin-dashboard-stat-card__value--link"
-                                  @click="openChatMessages(item.user_id)"
-                                >
-                                  {{ getActivity(item.user_id).chatCount || 0 }}
-                                </button>
-                                <span class="admin-dashboard-status-subline">
-                                  Last message:
-                                  {{ formatDateTime(getActivity(item.user_id).chatLastAt) }}
-                                </span>
-                              </div>
-
-                              <div class="admin-dashboard-stat-card">
-                                <span class="admin-dashboard-detail-item__label">AI limit hits</span>
-                                <span class="admin-dashboard-stat-card__value">
-                                  {{ getActivity(item.user_id).aiLimitHitsCount || 0 }}
-                                </span>
-                                <span class="admin-dashboard-status-subline">
-                                  Last hit:
-                                  {{ formatDateTime(getActivity(item.user_id).aiLimitLastAt) }}
-                                </span>
-                              </div>
-
-                              <div
-                                v-if="item.is_ai"
-                                class="admin-dashboard-stat-card"
-                              >
-                                <span class="admin-dashboard-detail-item__label">Expertise</span>
-                                <span class="admin-dashboard-stat-card__value">
-                                  {{ getAiCategoryLabel(item) }}
-                                </span>
-                                <span class="admin-dashboard-status-subline">
-                                  Category setting
-                                </span>
-                              </div>
-                            </div>
-
-                            <div
-                              v-if="hasPendingPhotos(item)"
-                              class="admin-dashboard-inline-card"
-                            >
-                              <div>
-                                <div class="admin-dashboard-detail-item__label">Photo library</div>
-                                <div class="admin-dashboard-inline-card__copy">
-                                  Pending photos are waiting for approval.
+                            <div class="admin-dashboard-expanded__layout">
+                              <div class="admin-dashboard-expanded__aside">
+                                <div class="admin-dashboard-detail-grid">
+                                  <div class="admin-dashboard-detail-item">
+                                    <span class="admin-dashboard-detail-item__label">User ID</span>
+                                    <span
+                                      class="admin-dashboard-detail-item__value admin-dashboard-ellipsis"
+                                      :title="item.user_id || '—'"
+                                    >
+                                      {{ item.user_id || "—" }}
+                                    </span>
+                                  </div>
+                                  <div class="admin-dashboard-detail-item">
+                                    <span class="admin-dashboard-detail-item__label">Auth</span>
+                                    <span class="admin-dashboard-detail-item__value">
+                                      {{ authStateLabel(item) }}
+                                    </span>
+                                  </div>
+                                  <div class="admin-dashboard-detail-item">
+                                    <span class="admin-dashboard-detail-item__label">Location</span>
+                                    <span class="admin-dashboard-detail-item__value">
+                                      {{ getCountryLabel(item) }}
+                                      <template v-if="item.city || item.state">
+                                        • {{ [item.city, item.state].filter(Boolean).join(", ") }}
+                                      </template>
+                                      <span v-if="getCountryEmoji(item)">
+                                        {{ getCountryEmoji(item) }}
+                                      </span>
+                                    </span>
+                                  </div>
+                                  <div class="admin-dashboard-detail-item">
+                                    <span class="admin-dashboard-detail-item__label">Joined</span>
+                                    <span class="admin-dashboard-detail-item__value">
+                                      {{ formatDate(item.createdAt) }}
+                                    </span>
+                                  </div>
+                                  <div class="admin-dashboard-detail-item">
+                                    <span class="admin-dashboard-detail-item__label">Email</span>
+                                    <span
+                                      class="admin-dashboard-detail-item__value admin-dashboard-ellipsis"
+                                      :title="item.email || '—'"
+                                    >
+                                      {{ item.email || "—" }}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                              <NuxtLink
-                                :to="photoReviewLink"
-                                class="admin-dashboard-button admin-dashboard-button--ghost"
-                              >
-                                Review pending photos
-                              </NuxtLink>
-                            </div>
 
-                            <div class="admin-dashboard-inline-card admin-dashboard-inline-card--stack">
-                              <div>
-                                <div class="admin-dashboard-detail-item__label">
-                                  Simulated user controls
-                                </div>
-                              </div>
-                              <div class="admin-dashboard-toggle-row">
-                                <label class="admin-dashboard-toggle">
-                                  <input
-                                    v-model="getAdminFlags(item).force_online"
-                                    type="checkbox"
-                                    :disabled="isAdminFlagsSaving(item.user_id)"
-                                    @change="onAdminFlagToggle(item)"
+                              <div class="admin-dashboard-expanded__main">
+                                <div class="admin-dashboard-stat-grid">
+                                  <div class="admin-dashboard-stat-card">
+                                    <span class="admin-dashboard-detail-item__label">Chat (messages)</span>
+                                    <button
+                                      type="button"
+                                      class="admin-dashboard-stat-card__value admin-dashboard-stat-card__value--link"
+                                      @click="openChatMessages(item.user_id)"
+                                    >
+                                      {{ getActivity(item.user_id).chatCount || 0 }}
+                                    </button>
+                                    <span class="admin-dashboard-status-subline">
+                                      Last message:
+                                      {{ formatDateTime(getActivity(item.user_id).chatLastAt) }}
+                                    </span>
+                                  </div>
+
+                                  <div class="admin-dashboard-stat-card">
+                                    <span class="admin-dashboard-detail-item__label">AI limit hits</span>
+                                    <span class="admin-dashboard-stat-card__value">
+                                      {{ getActivity(item.user_id).aiLimitHitsCount || 0 }}
+                                    </span>
+                                    <span class="admin-dashboard-status-subline">
+                                      Last hit:
+                                      {{ formatDateTime(getActivity(item.user_id).aiLimitLastAt) }}
+                                    </span>
+                                  </div>
+
+                                  <div
+                                    v-if="item.is_ai"
+                                    class="admin-dashboard-stat-card"
                                   >
-                                  <span class="admin-dashboard-toggle__track" aria-hidden="true" />
-                                  <span class="admin-dashboard-toggle__label">Force online</span>
-                                </label>
-                                <label class="admin-dashboard-toggle">
-                                  <input
-                                    v-model="getAdminFlags(item).is_simulated"
-                                    type="checkbox"
-                                    :disabled="isAdminFlagsSaving(item.user_id)"
-                                    @change="onAdminFlagToggle(item)"
-                                  >
-                                  <span class="admin-dashboard-toggle__track" aria-hidden="true" />
-                                  <span class="admin-dashboard-toggle__label">Simulated user</span>
-                                </label>
-                                <span
-                                  v-if="adminFlagsStatus(item.user_id)"
-                                  class="admin-dashboard-inline-status"
-                                >
-                                  {{ adminFlagsStatus(item.user_id) }}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div class="admin-dashboard-inline-card admin-dashboard-inline-card--stack">
-                              <div class="admin-dashboard-detail-item__label">
-                                Recent AI limit notices
-                              </div>
-                              <div
-                                v-if="getActivity(item.user_id).aiLimitHitsSample?.length"
-                                class="admin-dashboard-hit-list"
-                              >
-                                <div
-                                  v-for="hit in getActivity(item.user_id).aiLimitHitsSample.slice(0, 5)"
-                                  :key="hit.id"
-                                  class="admin-dashboard-hit-item"
-                                >
-                                  <strong>{{ formatDateTime(hit.created_at) }}</strong>
-                                  <span>{{ hit.content }}</span>
+                                    <span class="admin-dashboard-detail-item__label">Expertise</span>
+                                    <span class="admin-dashboard-stat-card__value">
+                                      {{ getAiCategoryLabel(item) }}
+                                    </span>
+                                    <span class="admin-dashboard-status-subline">
+                                      Category setting
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
-                              <div v-else class="admin-dashboard-status-subline">
-                                No AI limit notices yet.
+
+                                <div class="admin-dashboard-expanded__supplemental">
+                                  <div
+                                    v-if="hasPendingPhotos(item)"
+                                    class="admin-dashboard-inline-card admin-dashboard-inline-card--wide"
+                                  >
+                                    <div>
+                                      <div class="admin-dashboard-detail-item__label">Photo library</div>
+                                      <div class="admin-dashboard-inline-card__copy">
+                                        Pending photos are waiting for approval.
+                                      </div>
+                                    </div>
+                                    <NuxtLink
+                                      :to="photoReviewLink"
+                                      class="admin-dashboard-button admin-dashboard-button--ghost"
+                                    >
+                                      Review pending photos
+                                    </NuxtLink>
+                                  </div>
+
+                                  <div class="admin-dashboard-inline-card admin-dashboard-inline-card--stack">
+                                    <div>
+                                      <div class="admin-dashboard-detail-item__label">
+                                        Simulated user controls
+                                      </div>
+                                    </div>
+                                    <div class="admin-dashboard-toggle-row">
+                                      <label class="admin-dashboard-toggle">
+                                        <input
+                                          v-model="getAdminFlags(item).force_online"
+                                          type="checkbox"
+                                          :disabled="isAdminFlagsSaving(item.user_id)"
+                                          @change="onAdminFlagToggle(item)"
+                                        >
+                                        <span class="admin-dashboard-toggle__track" aria-hidden="true" />
+                                        <span class="admin-dashboard-toggle__label">Force online</span>
+                                      </label>
+                                      <label class="admin-dashboard-toggle">
+                                        <input
+                                          v-model="getAdminFlags(item).is_simulated"
+                                          type="checkbox"
+                                          :disabled="isAdminFlagsSaving(item.user_id)"
+                                          @change="onAdminFlagToggle(item)"
+                                        >
+                                        <span class="admin-dashboard-toggle__track" aria-hidden="true" />
+                                        <span class="admin-dashboard-toggle__label">Simulated user</span>
+                                      </label>
+                                      <span
+                                        v-if="adminFlagsStatus(item.user_id)"
+                                        class="admin-dashboard-inline-status"
+                                      >
+                                        {{ adminFlagsStatus(item.user_id) }}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div class="admin-dashboard-inline-card admin-dashboard-inline-card--stack">
+                                    <div class="admin-dashboard-detail-item__label">
+                                      Recent AI limit notices
+                                    </div>
+                                    <div
+                                      v-if="getActivity(item.user_id).aiLimitHitsSample?.length"
+                                      class="admin-dashboard-hit-list"
+                                    >
+                                      <div
+                                        v-for="hit in getActivity(item.user_id).aiLimitHitsSample.slice(0, 5)"
+                                        :key="hit.id"
+                                        class="admin-dashboard-hit-item"
+                                      >
+                                        <strong>{{ formatDateTime(hit.created_at) }}</strong>
+                                        <span>{{ hit.content }}</span>
+                                      </div>
+                                    </div>
+                                    <div v-else class="admin-dashboard-status-subline">
+                                      No AI limit notices yet.
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -2287,6 +2301,11 @@ onBeforeUnmount(() => {
   gap: 6px;
 }
 
+.admin-dashboard-hit-list {
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .admin-dashboard-tagline {
   max-width: 320px;
   color: rgba(var(--color-text), 0.78);
@@ -2392,15 +2411,29 @@ onBeforeUnmount(() => {
 }
 
 .admin-dashboard-expanded__content {
+  min-width: 0;
+}
+
+.admin-dashboard-expanded__layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: 10px 14px;
+  align-items: start;
+}
+
+.admin-dashboard-expanded__aside,
+.admin-dashboard-expanded__main,
+.admin-dashboard-expanded__supplemental {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
 }
 
 .admin-dashboard-detail-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px 16px;
+  grid-template-columns: 1fr;
+  gap: 8px;
 }
 
 .admin-dashboard-detail-item,
@@ -2420,6 +2453,7 @@ onBeforeUnmount(() => {
 
 .admin-dashboard-detail-item__value,
 .admin-dashboard-stat-card__value {
+  display: block;
   color: rgb(var(--color-text));
   font-size: 0.9rem;
   font-weight: 600;
@@ -2429,6 +2463,11 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+}
+
+.admin-dashboard-expanded__supplemental {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .admin-dashboard-stat-card,
@@ -2473,6 +2512,10 @@ onBeforeUnmount(() => {
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
+}
+
+.admin-dashboard-inline-card--wide {
+  grid-column: 1 / -1;
 }
 
 .admin-dashboard-inline-card__copy,
@@ -2550,6 +2593,7 @@ onBeforeUnmount(() => {
 .admin-dashboard-hit-item {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 2px;
   color: rgba(var(--color-text), 0.76);
   font-size: 0.8rem;
@@ -2557,7 +2601,8 @@ onBeforeUnmount(() => {
 
 .admin-dashboard-ellipsis,
 .admin-dashboard-chat-message {
-  max-width: 320px;
+  display: block;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2725,8 +2770,12 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 1260px) {
-  .admin-dashboard-detail-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .admin-dashboard-expanded__layout {
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  }
+
+  .admin-dashboard-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .admin-dashboard-toolbar__actions {
@@ -2735,9 +2784,19 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 980px) {
+  .admin-dashboard-expanded__layout,
+  .admin-dashboard-expanded__supplemental,
   .admin-dashboard-detail-grid,
   .admin-dashboard-stat-grid,
   .admin-dashboard-modal__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-dashboard-expanded__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard-detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -2753,6 +2812,7 @@ onBeforeUnmount(() => {
   }
 
   .admin-dashboard-detail-grid,
+  .admin-dashboard-expanded__supplemental,
   .admin-dashboard-stat-grid,
   .admin-dashboard-modal__grid {
     grid-template-columns: 1fr;

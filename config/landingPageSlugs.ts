@@ -7,9 +7,11 @@
  */
 export const landingPageSlugs: string[] = [
   "anonymous-chat",
+  "anonymous-chat-for-women",
   "mood-based-chat",
   "chat-without-signup",
   "meet-new-people-online",
+  "real-person-online-chat",
   "talk-to-strangers-online",
   "need-someone-to-talk-to",
   "cant-sleep-chat",

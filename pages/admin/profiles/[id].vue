@@ -92,20 +92,35 @@
               v-for="msg in inboxMessages"
               :key="msg.id"
               class="admin-inbox-item"
+              :class="{ 'admin-inbox-item--unread': !msg.read }"
             >
-              <div class="admin-inbox-item__header">
-                <div class="admin-inbox-item__sender">
-                  <span v-if="!msg.read" class="inbox-dot" />
-                  <span>
-                    {{ msg.sender?.translated_displayname || msg.sender?.displayname || msg.sender_id }}
-                  </span>
-                  <span
-                    v-if="msg.sender?.translated_displayname"
-                    class="admin-inbox-item__sender-original"
-                  >
-                    ({{ msg.sender.displayname }})
-                  </span>
+              <div class="admin-inbox-item__sender">
+                <span v-if="!msg.read" class="inbox-dot" />
+                <span class="admin-inbox-item__sender-name">
+                  {{ msg.sender?.translated_displayname || msg.sender?.displayname || msg.sender_id }}
+                </span>
+                <span
+                  v-if="msg.sender?.translated_displayname"
+                  class="admin-inbox-item__sender-original"
+                >
+                  ({{ msg.sender.displayname }})
+                </span>
+              </div>
+
+              <div class="admin-inbox-item__content">
+                <div class="admin-inbox-item__body">
+                  {{ msg.translated_content || msg.content }}
                 </div>
+                <div
+                  v-if="msg.translated_content"
+                  class="admin-inbox-item__original-message"
+                >
+                  <span class="admin-inbox-item__message-label">Original:</span>
+                  <span>{{ msg.content }}</span>
+                </div>
+              </div>
+
+              <div class="admin-inbox-item__side">
                 <div class="admin-inbox-item__meta">
                   <span
                     class="admin-inbox-status"
@@ -117,34 +132,23 @@
                     {{ formatTimestamp(msg.created_at) }}
                   </span>
                 </div>
-              </div>
-
-              <div class="admin-inbox-item__body">
-                {{ msg.translated_content || msg.content }}
-                <span
-                  v-if="msg.translated_content"
-                  class="admin-inbox-item__original-message"
-                >
-                  {{ msg.content }}
-                </span>
-              </div>
-
-              <div class="admin-inbox-item__actions">
-                <button
-                  v-if="!msg.read"
-                  type="button"
-                  class="admin-profile-text-button"
-                  @click="markMessageRead(msg)"
-                >
-                  Mark read
-                </button>
-                <button
-                  type="button"
-                  class="admin-profile-text-button admin-profile-text-button--primary"
-                  @click="prefillReply(msg)"
-                >
-                  Reply
-                </button>
+                <div class="admin-inbox-item__actions">
+                  <button
+                    v-if="!msg.read"
+                    type="button"
+                    class="admin-profile-text-button admin-profile-text-button--muted"
+                    @click="markMessageRead(msg)"
+                  >
+                    Mark read
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-profile-text-button admin-profile-text-button--primary"
+                    @click="prefillReply(msg)"
+                  >
+                    Reply
+                  </button>
+                </div>
               </div>
             </article>
           </div>
@@ -840,54 +844,77 @@ onMounted(async () => {
 .admin-inbox-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .admin-inbox-item {
-  border: 1px solid rgba(var(--color-border), 0.8);
-  border-radius: 18px;
-  background: rgba(var(--color-surface), 0.88);
-  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 14px;
+  border: 1px solid rgba(var(--color-border), 0.62);
+  border-radius: 14px;
+  background: rgba(var(--color-surface), 0.62);
+  padding: 10px 12px;
 }
 
-.admin-inbox-item__header,
-.admin-inbox-item__actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.admin-inbox-item--unread {
+  border-color: rgba(var(--color-primary), 0.22);
+  box-shadow: inset 3px 0 0 rgba(var(--color-primary), 0.72);
 }
 
 .admin-inbox-item__sender {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+  gap: 6px;
   color: rgb(var(--color-heading));
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 600;
+}
+
+.admin-inbox-item__sender-name {
+  color: rgb(var(--color-heading));
+}
+
+.admin-inbox-item__content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .admin-inbox-item__sender-original,
 .admin-inbox-item__timestamp,
-.admin-inbox-item__original-message,
 .admin-profile-empty-state,
 .admin-profile-copy {
   color: rgba(var(--color-text), 0.7);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
+}
+
+.admin-inbox-item__side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px 14px;
 }
 
 .admin-inbox-item__meta {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .admin-inbox-status {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  padding: 4px 8px;
-  font-size: 0.72rem;
+  padding: 3px 8px;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
@@ -902,34 +929,77 @@ onMounted(async () => {
 }
 
 .admin-inbox-item__body {
-  margin-top: 10px;
   color: rgb(var(--color-text));
-  font-size: 0.94rem;
-  line-height: 1.55;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .admin-inbox-item__original-message {
-  display: block;
-  margin-top: 6px;
+  margin: 0;
+}
+
+.admin-inbox-item__original-message {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  color: rgba(var(--color-text), 0.74);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.admin-inbox-item__message-label {
+  color: rgba(var(--color-text), 0.56);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .admin-inbox-item__actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
   justify-content: flex-end;
-  margin-top: 12px;
+  gap: 6px;
 }
 
 .admin-profile-text-button {
-  border: 0;
-  background: transparent;
-  color: rgba(var(--color-text), 0.66);
-  font-size: 0.82rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-border), 0.82);
+  background: rgba(var(--color-surface-elevated), 0.54);
+  color: rgba(var(--color-text), 0.72);
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 0;
+  padding: 0 10px;
   cursor: pointer;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.admin-profile-text-button:hover {
+  border-color: rgba(var(--color-primary), 0.34);
+  background: rgba(var(--color-primary), 0.06);
 }
 
 .admin-profile-text-button--primary {
   color: rgb(var(--color-primary));
+  border-color: rgba(var(--color-primary), 0.24);
+  background: rgba(var(--color-primary), 0.1);
+}
+
+.admin-profile-text-button--muted {
+  color: rgba(var(--color-text), 0.7);
 }
 
 .admin-profile-divider {
@@ -1050,12 +1120,23 @@ onMounted(async () => {
     align-items: stretch !important;
   }
 
-  .admin-inbox-item__header,
+  .admin-inbox-item {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
   .admin-inbox-item__actions,
   .admin-inbox-item__meta,
+  .admin-inbox-item__side,
   .admin-profile-modal__header,
   .admin-profile-modal__actions {
     flex-wrap: wrap;
+  }
+
+  .admin-inbox-item__side,
+  .admin-inbox-item__meta,
+  .admin-inbox-item__actions {
+    justify-content: flex-start;
   }
 
   .admin-profile-modal-layer {

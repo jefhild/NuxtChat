@@ -290,7 +290,8 @@ const featuredCards = computed(() => [
   border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
-:global(.dark) .seo-discovery {
+:global(html.dark .seo-discovery),
+:global(html[data-imchatty-theme="dark"] .seo-discovery) {
   background:
     radial-gradient(900px 320px at 0% 0%, rgba(56, 189, 248, 0.14), transparent 58%),
     linear-gradient(180deg, rgba(11, 18, 32, 0.98), rgba(15, 23, 42, 0.96));
@@ -376,7 +377,8 @@ const featuredCards = computed(() => [
     box-shadow 160ms ease;
 }
 
-:global(.dark) .seo-discovery__card {
+:global(html.dark .seo-discovery__card),
+:global(html[data-imchatty-theme="dark"] .seo-discovery__card) {
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94));
   border-color: rgba(148, 163, 184, 0.18);
@@ -396,8 +398,10 @@ const featuredCards = computed(() => [
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
 }
 
-:global(.dark) .seo-discovery__card-link:hover .seo-discovery__card,
-:global(.dark) .seo-discovery__card-link:focus-visible .seo-discovery__card {
+:global(html.dark .seo-discovery__card-link:hover .seo-discovery__card),
+:global(html.dark .seo-discovery__card-link:focus-visible .seo-discovery__card),
+:global(html[data-imchatty-theme="dark"] .seo-discovery__card-link:hover .seo-discovery__card),
+:global(html[data-imchatty-theme="dark"] .seo-discovery__card-link:focus-visible .seo-discovery__card) {
   border-color: rgba(125, 211, 252, 0.32);
   box-shadow: 0 18px 42px rgba(2, 6, 23, 0.32);
 }

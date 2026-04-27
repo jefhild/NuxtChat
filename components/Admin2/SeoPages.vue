@@ -1977,18 +1977,20 @@ onBeforeUnmount(() => {
 .seo-admin-dialog-layer {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: 3000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
+  isolation: isolate;
 }
 
 .seo-admin-dialog-backdrop {
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgba(15, 23, 42, 0.54);
+  background: rgba(2, 6, 23, 0.78);
+  backdrop-filter: blur(6px);
 }
 
 .seo-admin-dialog {
@@ -2012,10 +2014,15 @@ onBeforeUnmount(() => {
   max-height: calc(100vh - 3rem);
   border: 1px solid rgba(var(--color-border), 0.88);
   border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.98), rgba(var(--color-surface), 1));
+  background-color: rgb(var(--color-surface-elevated));
+  background-image: linear-gradient(
+    180deg,
+    rgb(var(--color-surface-elevated) / 0.99),
+    rgb(var(--color-surface) / 1)
+  );
   box-shadow: 0 30px 60px rgba(15, 23, 42, 0.24);
   overflow: hidden;
+  isolation: isolate;
 }
 
 .seo-admin-dialog__card--wide {
@@ -2066,6 +2073,12 @@ onBeforeUnmount(() => {
 
 .seo-admin-dialog__body {
   overflow-y: auto;
+  background: rgb(var(--color-surface));
+}
+
+.seo-admin-dialog__header,
+.seo-admin-dialog__actions {
+  background: rgb(var(--color-surface-elevated));
 }
 
 .seo-admin-form {
