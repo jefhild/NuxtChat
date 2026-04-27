@@ -46,12 +46,11 @@
             v-for="m in ephemeralThread"
             :key="m.id"
             class="my-1"
-            :class="m.from === 'me' ? 'text-right' : 'text-left'"
           >
-            <div
-              class="px-3 py-2 rounded-xl d-inline-block mb-1"
-              :class="m.from === 'me' ? 'onboarding-bubble onboarding-bubble--me' : 'onboarding-bubble onboarding-bubble--bot'"
-              v-html="(render && render(m.text)) || m.text"
+            <ChatLayoutChatBubble
+              :from-me="m.from === 'me'"
+              :html="(render && render(m.text)) || m.text"
+              :show-meta="false"
             />
             <div
               v-if="
@@ -75,15 +74,8 @@
           </div>
           <!-- {{ botTyping }} -->
           <!-- 🔹 Single trailing typing bubble (never duplicates) -->
-          <div v-if="botTyping" class="my-1 text-left">
-            <div
-              class="px-3 py-2 rounded-xl d-inline-block mb-1 typing-chip"
-            >
-              <span class="dot"></span>
-              <span class="dot"></span>
-              <span class="dot"></span>
-              <span class="typing-label">{{ $t("onboarding.typing") }}</span>
-            </div>
+          <div v-if="botTyping" class="my-1">
+            <ChatLayoutTypingBubble />
           </div>
 
           <!-- Consent action chips (show ONLY until consent) -->
@@ -402,8 +394,9 @@ watch(
     if (!v || prev) return;
 
     // remove consent prompts
-    ephemeralThread.value = ephemeralThread.value.filter(
-      (m) => !isConsentPrompt(m.text)
+    draft.setField?.(
+      "thread",
+      ephemeralThread.value.filter((m) => !isConsentPrompt(m.text))
     );
 
     // client only + only once
@@ -502,8 +495,11 @@ async function submitConsent(token) {
   captchaVerifying.value = true;
   try {
     // Optimistically remove the consent bubble(s) from the merged stream
-    ephemeralThread.value = ephemeralThread.value.filter(
-      (m) => !(m.from === "imchatty" && isConsentPrompt(m.text))
+    draft.setField?.(
+      "thread",
+      ephemeralThread.value.filter(
+        (m) => !(m.from === "imchatty" && isConsentPrompt(m.text))
+      )
     );
 
     // Let the server drive: it will emit set_consent + first question

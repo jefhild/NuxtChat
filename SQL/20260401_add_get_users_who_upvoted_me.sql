@@ -33,7 +33,6 @@ BEGIN
   WHERE v.profile_id = (
     SELECT id FROM profiles WHERE user_id = input_user_id LIMIT 1
   )
-    AND v.vote_type = 'upvote'
-    AND p.provider != 'anonymous';
+    AND v.vote_type = 'upvote';
 END;
 $$ LANGUAGE plpgsql;

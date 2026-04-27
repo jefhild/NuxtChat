@@ -200,7 +200,7 @@ const sendAIResponse = async (userMessage, aiUserId, userId, isAnon) => {
 
     const fromUserId = authStore.user?.id;
     const data = await getMessagesBetweenUsers(fromUserId, toUserId);
-    messages.value = data.reverse();
+    messages.value = data;
   };
 
   const clearMessages = () => {

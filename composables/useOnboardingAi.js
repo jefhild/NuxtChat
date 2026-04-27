@@ -20,7 +20,7 @@ export function setOnboardingBotMessageHandler(fn) {
 }
 
 export function useOnboardingAi() {
-  const { locale, t } = useI18n();
+  const { locale, t, tm, rt } = useI18n();
   const localePath = useLocalePath();
   const draft = useOnboardingDraftStore(); 
   const auth = useAuthStore();
@@ -316,14 +316,20 @@ export function useOnboardingAi() {
       "How's your mood right now?",
       "What feels closest to your mood right now?",
     ];
-    const translated = t("onboarding.liveMoodOpeners", fallbacks);
+    const translated = tm("onboarding.liveMoodOpeners");
     const options = Array.isArray(translated)
       ? translated
       : Array.isArray(fallbacks)
       ? fallbacks
       : [fallbacks];
     const cleaned = options
-      .map((entry) => String(entry || "").trim())
+      .map((entry) => {
+        if (entry == null) return "";
+        if (typeof entry === "string" || typeof entry === "number") {
+          return String(entry).trim();
+        }
+        return String(rt(entry)).trim();
+      })
       .filter(Boolean);
     if (!cleaned.length) return fallbacks[0];
     const index = Math.floor(Math.random() * cleaned.length);

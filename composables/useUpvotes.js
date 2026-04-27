@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { ref, unref } from "vue";
 
 // Remove the TypeScript interface, as it's not needed in JavaScript
 
@@ -8,34 +8,38 @@ export function useUpvotes(userId) {
   const upvotedMeProfiles = ref([]);
 
   const {
-    getUserUpvotedProfiles,
-    getUserUpvotedMeProfiles,
     deleteUpvoteFromUser,
   } = useDb();
 
-  // Function to fetch upvoted profiles from db
-  const fetchUpvotes = async () => {
-    if (userId) {
-      const data = await getUserUpvotedProfiles(userId);
+  const resolveUserId = () => unref(userId);
 
-      if (data) {
-        upvotedProfiles.value = data; // Type assertion is not needed in JavaScript
-        // console.log("Upvoted profiles:", upvotedProfiles.value);
-      }
+  const fetchAllUpvotes = async () => {
+    if (!resolveUserId()) {
+      upvotedProfiles.value = [];
+      upvotedMeProfiles.value = [];
+      return { upvotedProfiles: [], upvotedMeProfiles: [] };
+    }
+
+    try {
+      const data = await $fetch("/api/votes/settings");
+      upvotedProfiles.value = Array.isArray(data?.upvotedProfiles)
+        ? data.upvotedProfiles
+        : [];
+      upvotedMeProfiles.value = Array.isArray(data?.upvotedMeProfiles)
+        ? data.upvotedMeProfiles
+        : [];
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch upvote settings:", error);
+      upvotedProfiles.value = [];
+      upvotedMeProfiles.value = [];
+      return { upvotedProfiles: [], upvotedMeProfiles: [] };
     }
   };
 
-  // Function to fetch upvoted profiles from db
-  const fetchMyUpvotes = async () => {
-    if (userId) {
-      const data = await getUserUpvotedMeProfiles(userId);
+  const fetchUpvotes = async () => (await fetchAllUpvotes()).upvotedProfiles;
 
-      if (data) {
-        upvotedMeProfiles.value = data; // Type assertion is not needed in JavaScript
-        // console.log("Upvoted me:", upvotedProfiles.value);
-      }
-    }
-  };
+  const fetchMyUpvotes = async () => (await fetchAllUpvotes()).upvotedMeProfiles;
 
   // Function to remove a user from the upvoted profiles
   // const unupvoteUser = async (upvotedProfileId) => {
@@ -54,13 +58,13 @@ export function useUpvotes(userId) {
   const unupvoteUser = async (upvotedProfileId) => {
     console.log(
       "Attempting to unupvote, userId:",
-      userId,
+      resolveUserId(),
       " profileId: ",
       upvotedProfileId
     );
 
     const { error, data } = await deleteUpvoteFromUser(
-      userId,
+      resolveUserId(),
       upvotedProfileId
     );
     console.log("Supabase delete result:", { error, data });
@@ -74,14 +78,11 @@ export function useUpvotes(userId) {
     }
   };
 
-  // Fetch profiles initially when the composable is used
-  fetchUpvotes();
-  fetchMyUpvotes();
-
   // Return the reactive data and methods
   return {
     upvotedProfiles,
     upvotedMeProfiles,
+    fetchAllUpvotes,
     fetchUpvotes,
     fetchMyUpvotes,
     unupvoteUser,

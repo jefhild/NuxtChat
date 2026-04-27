@@ -52,12 +52,11 @@
 </template>
 
 <script setup>
-import { useI18n } from "vue-i18n";
-import { onMounted, ref } from "vue";
+import { ref, toRef, watch } from "vue";
 import { useUpvotes } from "@/composables/useUpvotes";
 
-const { t } = useI18n();
 const props = defineProps(["userId"]);
+const userId = toRef(props, "userId");
 
 const isLoading = ref(true);
 
@@ -65,18 +64,26 @@ const {
   upvotedProfiles,
   upvotedMeProfiles,
   unupvoteUser,
-  fetchUpvotes, // You’ll need to expose this from the composable
-} = useUpvotes(props.userId);
+  fetchAllUpvotes,
+} = useUpvotes(userId);
 
 const loadUpvotes = async () => {
+  if (!userId.value) {
+    upvotedProfiles.value = [];
+    upvotedMeProfiles.value = [];
+    isLoading.value = false;
+    return;
+  }
+
   isLoading.value = true;
-  await fetchUpvotes();
-  isLoading.value = false;
+  try {
+    await fetchAllUpvotes();
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-onMounted(() => {
-  loadUpvotes();
-});
+watch(userId, loadUpvotes, { immediate: true });
 
 const handleUnupvote = async (profileId) => {
   await unupvoteUser(profileId);

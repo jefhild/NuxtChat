@@ -825,8 +825,7 @@ BEGIN
   JOIN profiles p ON v.profile_id = p.id
   LEFT JOIN countries c ON p.country_id = c.id
   WHERE v.user_id = upvoter_id 
-	AND v.vote_type = 'upvote'
-	AND p.provider != 'anonymous';
+	AND v.vote_type = 'upvote';
 END;
 $$ LANGUAGE plpgsql;
 

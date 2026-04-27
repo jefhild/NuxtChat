@@ -262,19 +262,21 @@ export const useDb = () => {
       )
       .or(
         `and(sender_id.eq.${senderUserId},receiver_id.eq.${receiverUserId}),and(sender_id.eq.${receiverUserId},receiver_id.eq.${senderUserId})`
-      )
-      .order("created_at", { ascending: true })
-      .order("id", { ascending: true })
-      .limit(limit);
+      );
 
     if (before) {
       query = query.lt("created_at", before);
     }
 
+    query = query
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(limit);
+
     const { data, error } = await query;
 
     if (error) throw error;
-    return data;
+    return Array.isArray(data) ? data.slice().reverse() : data;
   };
 
   const getMessagesOfAUserWithUser = async (

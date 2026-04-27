@@ -124,19 +124,39 @@ export default defineEventHandler(async (event) => {
   // 2️⃣ Scoped Supabase client (uses user's JWT; respects RLS)
   const client = await serverSupabaseClient(event);
 
-  // 3️⃣ Check if profile already exists
+  // 3️⃣ Gather auth provider metadata
+  const { provider, idData } = pickIdentity(user);
+  console.log("Picked identity:", { provider, idData });
+
+  // 4️⃣ Check if profile already exists
   const { data: existing, error: selErr } = await client
     .from("profiles")
-    .select("user_id")
+    .select("user_id, provider, is_ai")
     .eq("user_id", user.id)
     .maybeSingle();
 
   if (selErr && selErr.code !== "PGRST116") throw selErr;
-  if (existing) return { ok: true, created: false };
+  if (existing) {
+    const shouldRefreshProvider =
+      !existing.is_ai &&
+      provider &&
+      provider !== "anonymous" &&
+      (!existing.provider || existing.provider === "anonymous") &&
+      existing.provider !== provider;
 
-  // 4️⃣ Gather metadata for new profile
-  const { provider, idData } = pickIdentity(user);
-    console.log("Picked identity:", { provider, idData });
+    if (shouldRefreshProvider) {
+      const { error: updateErr } = await client
+        .from("profiles")
+        .update({ provider })
+        .eq("user_id", user.id);
+
+      if (updateErr) throw updateErr;
+    }
+
+    return { ok: true, created: false, providerUpdated: shouldRefreshProvider };
+  }
+
+  // 5️⃣ Gather metadata for new profile
 
   const { displayname, avatar_url } = extractDisplayAvatar(user, idData);
 
@@ -178,7 +198,7 @@ export default defineEventHandler(async (event) => {
     preferred_locale,
   };
 
-  // 5️⃣ Insert (idempotent, safe with unique index on user_id)
+  // 6️⃣ Insert (idempotent, safe with unique index on user_id)
   const { data: ins, error: upErr } = await client
     .from("profiles")
     .upsert(payload, { onConflict: "user_id", ignoreDuplicates: false })
@@ -226,7 +246,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // 6️⃣ Optional defaults (non-fatal)
+  // 7️⃣ Optional defaults (non-fatal)
   const defaultFavoriteId = "7d20548d-8a9d-4190-bce5-90c8d74c4a56";
   const defaultLookingForId = 1;
   try {
