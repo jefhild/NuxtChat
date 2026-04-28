@@ -25,6 +25,12 @@ const compressToWebp = async (inputBuffer) => {
   return output;
 };
 
+const withAvatarVersion = (url) => {
+  const cleanUrl = String(url || "").split("?")[0];
+  if (!cleanUrl) return "";
+  return `${cleanUrl}?v=${Date.now()}`;
+};
+
 export default defineEventHandler(async (event) => {
   const authUser = await serverSupabaseUser(event);
   if (!authUser?.id) {
@@ -100,10 +106,11 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Failed to resolve avatar URL",
     });
   }
+  const versionedAvatarUrl = withAvatarVersion(avatarUrl);
 
   const { error: updateError } = await supabase
     .from("profiles")
-    .update({ avatar_url: avatarUrl })
+    .update({ avatar_url: versionedAvatarUrl })
     .eq("user_id", authUser.id);
 
   if (updateError) {
@@ -113,5 +120,5 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return { success: true, avatarUrl };
+  return { success: true, avatarUrl: versionedAvatarUrl };
 });

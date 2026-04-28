@@ -39,6 +39,12 @@ const compressToWebp = async (inputBuffer) => {
   return output;
 };
 
+const withAvatarVersion = (url) => {
+  const cleanUrl = String(url || "").split("?")[0];
+  if (!cleanUrl) return "";
+  return `${cleanUrl}?v=${Date.now()}`;
+};
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
   const { userId, displayname, gender, age, bio } = body || {};
@@ -217,10 +223,11 @@ ${chosenStyle.scaffold}
       statusMessage: "Failed to resolve public URL",
     });
   }
+  const versionedAvatarUrl = withAvatarVersion(publicUrl);
 
   const { error: updateError } = await supabase
     .from("profiles")
-    .update({ avatar_url: publicUrl })
+    .update({ avatar_url: versionedAvatarUrl })
     .eq("user_id", userId);
 
   if (updateError) {
@@ -230,5 +237,5 @@ ${chosenStyle.scaffold}
     });
   }
 
-  return { success: true, avatarUrl: publicUrl };
+  return { success: true, avatarUrl: versionedAvatarUrl };
 });

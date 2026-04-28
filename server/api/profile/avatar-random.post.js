@@ -14,6 +14,12 @@ const resolveGenderFolder = (genderId) => {
   return GENDER_FOLDERS[id] || "other";
 };
 
+const withAvatarVersion = (url) => {
+  const cleanUrl = String(url || "").split("?")[0];
+  if (!cleanUrl) return "";
+  return `${cleanUrl}?v=${Date.now()}`;
+};
+
 export default defineEventHandler(async (event) => {
   const authUser = await serverSupabaseUser(event);
   if (!authUser?.id) {
@@ -90,10 +96,11 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Failed to resolve public URL",
     });
   }
+  const versionedAvatarUrl = withAvatarVersion(publicUrl);
 
   const { error: updateError } = await supabase
     .from("profiles")
-    .update({ avatar_url: publicUrl })
+    .update({ avatar_url: versionedAvatarUrl })
     .eq("user_id", resolvedUserId);
 
   if (updateError) {
@@ -103,5 +110,5 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return { success: true, avatarUrl: publicUrl };
+  return { success: true, avatarUrl: versionedAvatarUrl };
 });
