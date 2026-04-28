@@ -1,9 +1,28 @@
 <template>
-  <div class="settings-profile-form">
+  <div
+    class="settings-profile-form"
+    :class="props.isEditable ? 'settings-profile-form--editing' : 'settings-profile-form--readonly'"
+  >
+    <div class="settings-mode-bar">
+      <div
+        class="settings-mode-pill"
+        :class="props.isEditable ? 'settings-mode-pill--editing' : 'settings-mode-pill--readonly'"
+      >
+        <i
+          class="mdi settings-mode-pill__icon"
+          :class="props.isEditable ? 'mdi-pencil' : 'mdi-eye-outline'"
+          aria-hidden="true"
+        />
+        {{ props.isEditable ? t("components.profile-form.mode-editing") : t("components.profile-form.mode-readonly") }}
+      </div>
+      <p class="settings-mode-copy">
+        {{ props.isEditable ? t("components.profile-form.mode-editing-copy") : t("components.profile-form.mode-readonly-copy") }}
+      </p>
+    </div>
     <section class="settings-zone-card settings-zone-card--data">
       <div class="settings-zone-card__body settings-zone-card__body--compact">
-        <div class="grid grid-cols-1 gap-x-2 gap-y-0 sm:grid-cols-2 md:grid-cols-3">
-          <div class="px-1 py-0">
+        <div class="grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-2 md:grid-cols-3">
+          <div class="px-1 py-1">
             <SettingsProfileDisplayName2
               :displayName="props.userProfile.displayname"
               :isEditable="props.isEditable"
@@ -11,7 +30,7 @@
               @validation="(val) => emit('validation', val)"
             />
           </div>
-          <div class="px-1 py-0">
+          <div class="px-1 py-1">
             <SettingsProfileTagLine
               :tagLine="props.userProfile.tagline ?? '...'"
               :isEditable="props.isEditable"
@@ -19,7 +38,7 @@
               @updateTagLine="(val) => emit('update:tagLine', val)"
             />
           </div>
-          <div class="px-1 py-0">
+          <div class="px-1 py-1">
             <SettingsProfileLanguage
               :selectedLocale="props.userProfile.preferred_locale ?? 'en'"
               :locales="props.locales"
@@ -29,8 +48,8 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-x-2 gap-y-0 sm:grid-cols-2 md:grid-cols-3">
-          <div class="px-1 py-0">
+        <div class="grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-2 md:grid-cols-3">
+          <div class="px-1 py-1">
             <SettingsProfileStatus
               :selectedStatus="props.userProfile?.status_id ?? 1"
               :statuses="props.statuses"
@@ -38,7 +57,7 @@
               @updateStatus="(val) => emit('update:statusId', val)"
             />
           </div>
-          <div class="px-1 py-0">
+          <div class="px-1 py-1">
             <SettingsProfileGender
               :genderId="props.userProfile.gender_id ?? 1"
               :genders="props.genders"
@@ -47,7 +66,7 @@
               @validation="(val) => emit('validation', val)"
             />
           </div>
-          <div class="px-1 py-0">
+          <div class="px-1 py-1">
             <SettingsProfileAge
               :age="props.userProfile.age ?? 18"
               :isEditable="props.isEditable"
@@ -68,13 +87,13 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-x-2 gap-y-0 sm:grid-cols-2">
-          <div class="px-1 py-0">
-            <label class="settings-field">
-              <span class="settings-field__label">{{ t("components.presence.label") }}</span>
+        <div class="grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-2">
+          <div class="px-1 py-1">
+            <label class="ui-settings-field">
+              <span class="ui-settings-field__label">{{ t("components.presence.label") }}</span>
               <select
                 :disabled="props.presenceDisabled"
-                class="settings-field__control"
+                class="ui-settings-field__control"
                 :value="props.presenceStatus"
                 @change="emit('update:presenceStatus', $event.target.value)"
               >
@@ -89,12 +108,12 @@
             </label>
             <p
               v-if="props.presenceLoading"
-              class="settings-field__meta"
+              class="ui-settings-field__meta"
             >
               {{ t("components.settings-container.loading") }}
             </p>
           </div>
-          <div class="px-1 py-0">
+          <div class="px-1 py-1">
             <SettingsProfileSite
               :siteUrl="props.userProfile.site_url ?? ''"
               :isEditable="props.isSiteEditable"
@@ -128,14 +147,14 @@
             <template v-if="props.isEditable">
               <button
                 type="button"
-                class="settings-action-btn settings-action-btn--primary"
+                class="ui-settings-btn ui-settings-btn--primary"
                 @click="emit('save')"
               >
                 Save
               </button>
               <button
                 type="button"
-                class="settings-action-btn settings-action-btn--secondary"
+                class="ui-settings-btn ui-settings-btn--secondary"
                 @click="emit('cancelEdit')"
               >
                 Cancel
@@ -145,7 +164,7 @@
               <button
                 v-if="props.showTranslateButton"
                 type="button"
-                class="settings-action-btn settings-action-btn--ghost"
+                class="ui-settings-btn ui-settings-btn--ghost"
                 :disabled="props.translateLoading"
                 @click="emit('translateProfile')"
               >
@@ -158,14 +177,14 @@
               </button>
               <button
                 type="button"
-                class="settings-action-btn settings-action-btn--primary"
+                class="ui-settings-btn ui-settings-btn--primary"
                 @click="emit('startEdit')"
               >
                 Edit
               </button>
               <NuxtLink
                 to="/chat"
-                class="settings-action-btn settings-action-btn--primary"
+                class="ui-settings-btn ui-settings-btn--primary"
               >
                 Back To Chat
               </NuxtLink>
@@ -326,92 +345,122 @@ const presenceOptions = [
   margin-top: 6px;
 }
 
+.settings-mode-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.8rem;
+  padding: 0 0.35rem 0.75rem;
+}
+
+.settings-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.settings-mode-pill--editing {
+  background: rgb(var(--color-primary) / 0.14);
+  border-color: rgb(var(--color-secondary) / 0.28);
+  color: rgb(var(--color-secondary));
+}
+
+.settings-mode-pill--readonly {
+  background: rgb(var(--color-surface-elevated) / 0.72);
+  border-color: rgb(var(--color-border) / 0.7);
+  color: rgb(var(--color-muted));
+}
+
+.settings-mode-pill__icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.settings-mode-copy {
+  margin: 0;
+  color: rgb(var(--color-muted));
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .settings-zone-card {
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid rgb(var(--color-border) / 0.72);
-  background: rgb(var(--color-surface) / 0.96);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface) / 0.98),
+    rgb(var(--color-surface-elevated) / 0.94)
+  );
   color: rgb(var(--color-foreground));
+  box-shadow: 0 14px 32px rgb(var(--color-shadow) / 0.08);
+}
+
+.settings-profile-form--editing .settings-zone-card {
+  border-color: rgb(var(--color-secondary) / 0.38);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface-elevated) / 0.98),
+    rgb(var(--color-surface-elevated) / 0.94)
+  );
+  box-shadow:
+    0 18px 36px rgb(var(--color-shadow) / 0.12),
+    0 0 0 1px rgb(var(--color-secondary) / 0.16);
+}
+
+.settings-profile-form--readonly .settings-zone-card {
+  background: rgb(var(--color-surface) / 0.94);
+}
+
+.settings-profile-form--readonly :deep(.ui-settings-field__label) {
+  color: rgb(var(--color-muted) / 0.76);
+}
+
+.settings-profile-form--readonly :deep(.ui-settings-field__control) {
+  background: rgb(var(--color-surface) / 0.5);
+  border-color: rgb(var(--color-border) / 0.52);
+  color: rgb(var(--color-foreground) / 0.72);
+}
+
+.settings-profile-form--editing :deep(.ui-settings-field__label) {
+  color: rgb(var(--color-secondary));
+}
+
+.settings-profile-form--editing :deep(.ui-settings-field__control) {
+  background: rgb(var(--color-surface-elevated) / 0.96);
+  border-color: rgb(var(--color-secondary) / 0.34);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.04),
+    0 8px 18px rgb(var(--color-shadow) / 0.1);
+}
+
+.settings-profile-form--editing .settings-mode-pill--editing {
+  background: rgb(var(--color-primary) / 0.22);
+  border-color: rgb(var(--color-secondary) / 0.44);
+  color: rgb(var(--color-heading));
+  box-shadow:
+    0 10px 22px rgb(var(--color-shadow) / 0.12),
+    0 0 0 1px rgb(var(--color-secondary) / 0.12);
+}
+
+.settings-profile-form--editing .settings-mode-copy {
+  color: rgb(var(--color-secondary) / 0.92);
 }
 
 .settings-zone-card__body {
-  padding: 0.75rem 0.5rem 0.6rem;
+  padding: 0.85rem 0.55rem 0.65rem;
 }
 
 .settings-zone-card__body--bio {
-  padding-inline: 0.75rem;
-}
-
-.settings-field {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.settings-field__label {
-  color: rgb(var(--color-foreground) / 0.82);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.settings-field__control {
-  width: 100%;
-  min-height: 2.75rem;
-  border: 1px solid rgb(var(--color-border) / 0.82);
-  border-radius: 12px;
-  background: rgb(var(--color-surface));
-  color: rgb(var(--color-foreground));
-  padding: 0.7rem 0.85rem;
-  font-size: 0.95rem;
-  color-scheme: light dark;
-}
-
-.settings-field__control:disabled {
-  opacity: 1;
-  cursor: default;
-  background: rgb(var(--color-surface) / 0.76);
-  color: rgb(var(--color-foreground) / 0.62);
-}
-
-.settings-field__meta {
-  margin-top: 0.35rem;
-  color: rgb(var(--color-foreground) / 0.58);
-  font-size: 0.8rem;
-}
-
-.settings-action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  border-radius: 999px;
-  padding: 0.6rem 1rem;
-  border: 1px solid transparent;
-  font-size: 0.92rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.settings-action-btn:disabled {
-  opacity: 0.65;
-  cursor: default;
-}
-
-.settings-action-btn--primary {
-  background: rgb(var(--color-primary));
-  border-color: rgb(var(--color-primary));
-  color: rgb(var(--color-background));
-}
-
-.settings-action-btn--secondary {
-  background: transparent;
-  border-color: rgb(var(--color-border) / 0.72);
-  color: rgb(var(--color-foreground));
-}
-
-.settings-action-btn--ghost {
-  background: rgb(var(--color-primary) / 0.12);
-  border-color: transparent;
-  color: rgb(var(--color-primary));
+  padding-inline: 0.85rem;
 }
 
 .settings-action-btn__spinner {
@@ -449,11 +498,11 @@ const presenceOptions = [
 
 @media (min-width: 768px) {
   .settings-zone-card__body {
-    padding-inline: 0.75rem;
+    padding: 0.95rem 0.75rem 0.8rem;
   }
 
   .settings-zone-card__body--bio {
-    padding-inline: 1rem;
+    padding-inline: 0.95rem;
   }
 }
 </style>

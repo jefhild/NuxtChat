@@ -538,11 +538,11 @@ function onCaptchaError() {
   display: flex;
   flex-direction: column;
   height: 100%;
-  color: #e2e8f0;
-  background: rgba(15, 23, 42, 0.55);
-  border: none;
-  border-radius: 10px;
-  padding: 4px 6px;
+  color: rgb(var(--color-foreground));
+  background: rgba(var(--color-surface), 0.42);
+  border: 1px solid rgba(var(--color-border), 0.2);
+  border-radius: 0.875rem;
+  padding: 0.25rem 0.35rem;
 }
 
 .onboarding-scroll {
@@ -555,44 +555,47 @@ function onCaptchaError() {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  padding: 1.5rem;
+  padding: 1rem 0.9rem 0.85rem;
   text-align: center;
 }
 
 .onboarding-spinner {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.8rem;
+  height: 1.8rem;
   border-radius: 999px;
-  border: 3px solid rgba(96, 165, 250, 0.22);
-  border-top-color: #60a5fa;
+  border: 2px solid rgba(var(--color-secondary), 0.24);
+  border-top-color: rgb(var(--color-secondary));
   animation: onboarding-spin 0.85s linear infinite;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
 }
 
 .onboarding-finalizing__title,
 .handoff-reveal__name {
-  color: #e2e8f0;
-  font-size: 1rem;
+  color: rgb(var(--color-heading));
+  font-size: 0.95rem;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .onboarding-finalizing__body,
 .handoff-reveal__label,
 .onboarding-caption {
-  color: #cbd5e1;
-  font-size: 0.875rem;
+  color: rgb(var(--color-muted));
+  font-size: 0.8rem;
+  line-height: 1.45;
 }
 
 .onboarding-finalizing__body {
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
+  max-width: 20rem;
 }
 
 .handoff-reveal__label {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
 }
 
 .handoff-reveal__name {
-  margin-top: 0.75rem;
+  margin-top: 0.55rem;
 }
 
 .onboarding-bubble {
@@ -612,24 +615,25 @@ function onCaptchaError() {
 .onboarding-consent-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .onboarding-chip-row {
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
 }
 
 .onboarding-consent-actions {
-  margin-top: 0.75rem;
+  margin-top: 0.55rem;
   justify-content: center;
 }
 
 .onboarding-chip {
   border-radius: 999px;
-  padding: 0.45rem 0.9rem;
-  font-size: 0.875rem;
-  font-weight: 600;
+  padding: 0.38rem 0.78rem;
+  font-size: 0.8rem;
+  font-weight: 500;
   line-height: 1.2;
+  min-height: 2.1rem;
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
@@ -640,43 +644,44 @@ function onCaptchaError() {
 
 .onboarding-chip--solid {
   border: 1px solid transparent;
-  background: #2563eb;
-  color: #ffffff;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-primary-foreground));
 }
 
 .onboarding-chip--outline {
-  border: 1px solid rgba(96, 165, 250, 0.45);
-  background: rgba(37, 99, 235, 0.1);
-  color: #bfdbfe;
+  border: 1px solid rgba(var(--color-secondary), 0.38);
+  background: rgba(var(--color-secondary), 0.08);
+  color: rgb(var(--color-secondary));
 }
 
 .onboarding-chip--solid:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: rgba(var(--color-primary), 0.88);
 }
 
 .onboarding-chip--outline:hover:not(:disabled) {
-  background: rgba(37, 99, 235, 0.18);
+  background: rgba(var(--color-secondary), 0.14);
 }
 
 .onboarding-captcha {
-  margin-top: 0.75rem;
+  margin-top: 0.6rem;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .onboarding-caption--center {
-  margin-top: 0.5rem;
+  margin-top: 0.45rem;
   text-align: center;
 }
 
 .onboarding-caption--error {
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
   color: #fca5a5;
 }
 
 .onboarding-footer {
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
+  padding: 0 0.15rem 0.15rem;
 }
 
 .dot {
@@ -738,29 +743,29 @@ function onCaptchaError() {
 
 .handoff-reveal {
   width: 100%;
-  max-width: 280px;
+  max-width: 238px;
 }
 
 .handoff-reveal__card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(148, 163, 184, 0.32);
-  border-radius: 20px;
-  padding: 18px 20px;
+  background: rgba(var(--color-surface-elevated), 0.74);
+  border: 1px solid rgba(var(--color-border), 0.34);
+  border-radius: 1rem;
+  padding: 0.95rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+  box-shadow: 0 14px 30px rgba(var(--color-shadow), 0.2);
 }
 
 .handoff-reveal__avatar {
-  width: 72px;
-  height: 72px;
+  width: 3.35rem;
+  height: 3.35rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border-radius: 999px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.3);
+  box-shadow: 0 10px 22px rgba(var(--color-shadow), 0.26);
 }
 
 .handoff-reveal__image {
@@ -772,14 +777,29 @@ function onCaptchaError() {
 
 .handoff-reveal__fallback {
   align-items: center;
-  background: rgba(59, 130, 246, 0.2);
-  color: #e2e8f0;
+  background: rgba(var(--color-primary), 0.18);
+  color: rgb(var(--color-foreground));
   display: inline-flex;
-  font-size: 1.4rem;
+  font-size: 1.05rem;
   font-weight: 700;
   height: 100%;
   justify-content: center;
   width: 100%;
+}
+
+@media (max-width: 640px) {
+  .onboarding-finalizing {
+    padding: 0.8rem 0.75rem 0.7rem;
+  }
+
+  .onboarding-chip {
+    padding-inline: 0.72rem;
+    min-height: 2rem;
+  }
+
+  .handoff-reveal {
+    max-width: 212px;
+  }
 }
 
 @keyframes blink {

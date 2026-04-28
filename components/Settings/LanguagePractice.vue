@@ -174,7 +174,7 @@
       <div class="language-practice-settings__actions">
         <button
           type="button"
-          class="language-practice-settings__save-button"
+          class="ui-settings-btn ui-settings-btn--primary language-practice-settings__save-button"
           :disabled="loading || saving || !isDirty"
           @click="savePreferences"
         >
@@ -476,24 +476,13 @@ onMounted(loadPreferences);
 }
 
 .language-practice-settings__save-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
   min-width: 8.5rem;
   min-height: 2.75rem;
-  padding: 0.7rem 1.1rem;
-  border: none;
-  border-radius: 999px;
   background: linear-gradient(
     135deg,
     rgb(var(--color-primary)),
     rgb(var(--color-primary) / 0.82)
   );
-  color: rgb(var(--color-background));
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
@@ -510,8 +499,8 @@ onMounted(loadPreferences);
 .language-practice-settings__spinner {
   width: 0.95rem;
   height: 0.95rem;
-  border: 2px solid rgb(var(--color-background) / 0.35);
-  border-top-color: rgb(var(--color-background));
+  border: 2px solid rgb(var(--color-primary-foreground) / 0.35);
+  border-top-color: rgb(var(--color-primary-foreground));
   border-radius: 999px;
   animation: language-practice-settings-spin 0.7s linear infinite;
 }

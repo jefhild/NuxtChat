@@ -22,18 +22,18 @@
         />
       </button>
     </div>
-    <label class="bio-field">
-      <span class="bio-field__label">{{ $t('components.profile-bio.bio') }}</span>
+    <label class="ui-settings-field">
+      <span class="ui-settings-field__label">{{ $t('components.profile-bio.bio') }}</span>
       <textarea
         v-model="internalBio"
         :disabled="!props.isEditable"
         rows="5"
-        class="bio-field__control"
+        class="ui-settings-field__control ui-settings-field__control--textarea"
       />
-      <span v-if="props.errorMessage" class="bio-field__error">
+      <span v-if="props.errorMessage" class="ui-settings-field__error">
         {{ props.errorMessage }}
       </span>
-      <span v-else-if="props.minLength" class="bio-field__meta">
+      <span v-else-if="props.minLength" class="ui-settings-field__meta">
         {{ internalBio.length }} / {{ props.minLength }}
       </span>
     </label>
@@ -134,48 +134,6 @@ watch(internalBio, (newVal) => {
 
 .bio-ai-btn__icon--spinning {
   animation: bio-spin 0.8s linear infinite;
-}
-
-.bio-field {
-  display: grid;
-  gap: 0.4rem;
-}
-
-.bio-field__label {
-  color: rgb(var(--color-foreground) / 0.82);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.bio-field__control {
-  width: 100%;
-  min-height: 9rem;
-  border-radius: 0.85rem;
-  border: 1px solid rgb(var(--color-border) / 0.82);
-  background: rgb(var(--color-surface));
-  color: rgb(var(--color-foreground));
-  padding: 0.8rem 0.9rem;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  resize: vertical;
-}
-
-.bio-field__control:disabled {
-  opacity: 1;
-  cursor: default;
-  background: rgb(var(--color-surface) / 0.76);
-  color: rgb(var(--color-foreground) / 0.62);
-}
-
-.bio-field__error {
-  color: rgb(var(--color-danger));
-  font-size: 0.8rem;
-}
-
-.bio-field__meta {
-  color: rgb(var(--color-foreground) / 0.58);
-  font-size: 0.8rem;
-  justify-self: end;
 }
 
 .bio-paragraph {

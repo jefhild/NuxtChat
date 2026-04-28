@@ -15,18 +15,19 @@
         :class="{ 'is-active': mode === 'otp' }"
         @click="mode = 'otp'"
       >
-        Email code
+        {{ $t("components.loginEmail.email-code") }}
       </button>
     </div>
 
-    <label class="login-email-card__field">
-      <span>Email</span>
+    <label class="ui-settings-field login-email-card__field">
+      <span class="ui-settings-field__label">{{ $t("components.loginEmail.email-label") }}</span>
       <input
         v-model="email"
         type="email"
         required
         :disabled="loading || otpSent"
         autocomplete="email"
+        class="ui-settings-field__control login-email-card__input"
       >
     </label>
 
@@ -41,12 +42,12 @@
 
     <button
       type="submit"
-      class="login-email-card__submit"
+      class="ui-settings-btn ui-settings-btn--primary login-email-card__submit"
       :class="{ 'is-loading': loading }"
       :disabled="loading || !isFormValid"
     >
       <span v-if="loading" class="login-email-card__spinner" aria-hidden="true" />
-      <span>{{ mode === "magic" ? "Send magic link" : "Send code" }}</span>
+      <span>{{ mode === "magic" ? $t("components.loginEmail.send-magic-link") : $t("components.loginEmail.send-code") }}</span>
     </button>
 
     <div v-if="successMessage" class="login-email-card__notice login-email-card__notice--success">
@@ -55,25 +56,26 @@
     </div>
 
     <template v-if="otpSent">
-      <label class="login-email-card__field">
-        <span>6-digit code</span>
+      <label class="ui-settings-field login-email-card__field">
+        <span class="ui-settings-field__label">{{ $t("components.loginEmail.code-label") }}</span>
         <input
           v-model="otpCode"
           inputmode="numeric"
           maxlength="6"
           autocomplete="one-time-code"
+          class="ui-settings-field__control login-email-card__input"
         >
       </label>
 
       <button
         type="button"
-        class="login-email-card__submit"
+        class="ui-settings-btn ui-settings-btn--primary login-email-card__submit"
         :class="{ 'is-loading': loading }"
         :disabled="loading || !isOtpValid"
         @click="handleVerifyOtp"
       >
         <span v-if="loading" class="login-email-card__spinner" aria-hidden="true" />
-        <span>Verify code</span>
+        <span>{{ $t("components.loginEmail.verify-code") }}</span>
       </button>
     </template>
 
@@ -131,7 +133,7 @@ const handleLogin = async () => {
       otpSent.value = true;
     }
   } catch (error) {
-    errorMessage.value = error?.error_description || error?.message || "Login failed.";
+    errorMessage.value = error?.error_description || error?.message || t("components.loginEmail.login-failed");
   } finally {
     loading.value = false;
   }
@@ -145,7 +147,7 @@ const handleVerifyOtp = async () => {
     if (error) throw error;
     router.replace(localPath("/callback?next=/chat"));
   } catch (error) {
-    errorMessage.value = error?.error_description || error?.message || "Invalid code.";
+    errorMessage.value = error?.error_description || error?.message || t("components.loginEmail.invalid-code");
   } finally {
     loading.value = false;
   }
@@ -194,28 +196,11 @@ watch(mode, () => {
 }
 
 .login-email-card__field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  color: rgb(var(--color-foreground) / 0.82);
-  font-size: 0.9rem;
-  font-weight: 500;
+  margin: 0;
 }
 
-.login-email-card__field input {
-  width: 100%;
-  min-height: 46px;
-  padding: 0.8rem 0.95rem;
-  border: 1px solid rgb(var(--color-border) / 0.82);
-  border-radius: 12px;
-  background: rgb(var(--color-surface));
-  color: rgb(var(--color-foreground));
-  font: inherit;
-}
-
-.login-email-card__field input:focus-visible {
-  outline: 2px solid rgb(var(--color-primary) / 0.28);
-  outline-offset: 1px;
+.login-email-card__input {
+  min-height: 2.9rem;
 }
 
 .login-email-card__check {
@@ -235,18 +220,8 @@ watch(mode, () => {
 }
 
 .login-email-card__submit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-  min-height: 46px;
-  border: 0;
-  border-radius: 12px;
-  background: rgb(var(--color-primary));
-  color: rgb(var(--color-primary-foreground, var(--color-background)));
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
+  min-height: 2.9rem;
   transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
 }
 

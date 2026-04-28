@@ -157,6 +157,9 @@ const isTaxonomyRoute = computed(
 const isSettingsRoute = computed(() =>
   normalizedPath.value.startsWith("/settings")
 );
+const isSigninRoute = computed(() =>
+  normalizedPath.value.startsWith("/signin")
+);
 const isAdminRoute = computed(() => normalizedPath.value.startsWith("/admin"));
 const isHomeRoute = computed(() => {
   return normalizedPath.value === "/";
@@ -189,6 +192,7 @@ const footerToggleEnabled = computed(
       isFeedsRoute.value ||
       isMatchRoute.value ||
       isLanguagePracticeRoute.value ||
+      isSigninRoute.value ||
       isSettingsRoute.value ||
       isAdminRoute.value
     )
@@ -296,6 +300,7 @@ const toggleFooter = () => {
 const shouldCollapseFooterByDefault = computed(
   () =>
     isChatRoute.value ||
+    (isMobile.value && isSigninRoute.value) ||
     (!isMobile.value && footerToggleEnabled.value) ||
     (isMobile.value && isLanguagePracticeRoute.value)
 );

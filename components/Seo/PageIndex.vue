@@ -11,7 +11,7 @@
 
     <div class="seo-index-hero">
       <div class="seo-index-hero__copy">
-        <span class="seo-index-chip seo-index-chip--primary mb-3">
+        <span class="seo-index-chip seo-index-chip--primary type-eyebrow mb-3">
           {{ kicker }}
         </span>
         <p class="mb-5 text-base text-foreground/70">
@@ -31,7 +31,7 @@
         <div class="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/65">
           {{ uiCopy.sectionOverview }}
         </div>
-        <div class="mb-2 text-2xl font-semibold text-foreground">{{ summaryTitle(pages.length) }}</div>
+        <div class="type-section-title seo-index-summary-title mb-2 text-foreground">{{ summaryTitle(pages.length) }}</div>
         <p class="mb-4 text-sm text-foreground/70">
           {{ uiCopy.supportText }}
         </p>
@@ -58,14 +58,14 @@
             <div class="seo-index-page-card__top mb-3">
               <div class="seo-index-page-card__meta">
                 <div class="mb-2 flex flex-wrap items-center gap-2">
-                  <span class="seo-index-chip seo-index-chip--primary seo-index-chip--small">
+                  <span class="seo-index-chip seo-index-chip--primary seo-index-chip--small type-eyebrow">
                     {{ kicker }}
                   </span>
-                  <span class="seo-index-chip seo-index-chip--outline seo-index-chip--small seo-index-locale-chip">
+                  <span class="seo-index-chip seo-index-chip--outline seo-index-chip--small seo-index-locale-chip type-eyebrow">
                     {{ formatLocaleShort(page.locale) }}
                   </span>
                 </div>
-                <div class="mb-2 text-lg font-semibold text-foreground">{{ page.title }}</div>
+                <div class="type-card-title mb-2 text-foreground">{{ page.title }}</div>
               </div>
               <div
                 v-if="page.heroImageUrl"
@@ -302,16 +302,16 @@ const formatLocaleShort = (localeCode: string) =>
   justify-content: center;
   border-radius: 999px;
   padding: 0.42rem 0.8rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
   line-height: 1;
-  text-transform: uppercase;
 }
 
 .seo-index-chip--small {
   padding: 0.28rem 0.6rem;
   font-size: 0.67rem;
+}
+
+.seo-index-summary-title {
+  font-size: clamp(1.45rem, 1.2vw + 1.15rem, 1.95rem);
 }
 
 .seo-index-chip--primary {

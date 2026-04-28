@@ -106,7 +106,7 @@ const stateMeta = computed(() => {
   switch (state.value) {
     case "consent":
       return {
-        label: "Consent needed",
+        label: t("components.consentPanel.state.consent"),
         icon: "mdi-lock",
         iconColor: "primary",
         cardColor: "primary-lighten-5",
@@ -115,26 +115,26 @@ const stateMeta = computed(() => {
       };
     case "onboarding":
       return {
-        label: "Finish onboarding",
+        label: t("components.consentPanel.state.onboarding"),
         icon: "mdi-rocket-launch-outline",
         iconColor: "primary",
         cardColor: "primary-lighten-5",
-        ctaText: "Resume onboarding",
+        ctaText: t("components.consentPanel.cta.resume"),
         ctaColor: "primary",
       };
     case "linkEmail":
       return {
-        label: "Link your email",
+        label: t("components.consentPanel.state.linkEmail"),
         icon: "mdi-email-plus-outline",
         iconColor: "primary",
         cardColor: "blue-grey-lighten-5",
-        ctaText: "Link email",
+        ctaText: t("components.consentPanel.cta.linkEmail"),
         ctaColor: "primary",
       };
     case "ready":
     default:
       return {
-        label: "All set",
+        label: t("components.consentPanel.state.ready"),
         icon: "mdi-check-circle-outline",
         iconColor: "success",
         cardColor: "green-lighten-5",
@@ -151,14 +151,14 @@ const stageProgress = computed(() => {
 });
 const stageLabel = computed(() => {
   const map = {
-    idle: "Get started",
-    consent: "Consent",
-    collecting: "Basics",
-    confirm: "Confirm",
-    finalizing: "Saving",
-    done: "Done",
+    idle: t("components.consentPanel.stage.idle"),
+    consent: t("components.consentPanel.stage.consent"),
+    collecting: t("components.consentPanel.stage.collecting"),
+    confirm: t("components.consentPanel.stage.confirm"),
+    finalizing: t("components.consentPanel.stage.finalizing"),
+    done: t("components.consentPanel.stage.done"),
   };
-  return map[draft.stage] || "Get started";
+  return map[draft.stage] || t("components.consentPanel.stage.idle");
 });
 
 const stateIcon = computed(() => stateMeta.value.icon);
@@ -283,54 +283,63 @@ function onPrimary() {
 
 <style scoped>
 .consent-card {
-  padding: 6px 8px;
-  background: #1e293b !important;
-  color: #e2e8f0 !important;
-  border: 1px solid rgba(148, 163, 184, 0.38);
-  border-radius: 12px;
+  padding: 0.45rem 0.5rem;
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface) / 0.96),
+    rgb(var(--color-surface-elevated) / 0.94)
+  ) !important;
+  color: rgb(var(--color-foreground)) !important;
+  border: 1px solid rgb(var(--color-border) / 0.48);
+  border-radius: 14px;
+  box-shadow: 0 10px 22px rgb(var(--color-shadow) / 0.1);
 }
 
 .consent-card--linkEmail {
-  border-color: rgba(148, 163, 184, 0.44);
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+  border-color: rgb(var(--color-secondary) / 0.26);
 }
 
 .consent-card--ready {
-  border-color: rgba(34, 197, 94, 0.3);
-  background: linear-gradient(180deg, rgba(21, 128, 61, 0.18), rgba(15, 23, 42, 0.95));
+  border-color: rgb(var(--color-success) / 0.28);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-success) / 0.12),
+    rgb(var(--color-surface-elevated) / 0.95)
+  ) !important;
 }
 
 .card-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
   position: relative;
 }
 .chip {
   display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 0.22rem 0.55rem;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.18);
-  color: #e2e8f0;
+  background: rgb(var(--color-surface-elevated) / 0.72);
+  color: rgb(var(--color-foreground));
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.72rem;
+  border: 1px solid rgb(var(--color-border) / 0.55);
 }
 
 .step-chip {
   display: inline-flex;
   align-items: center;
-  padding: 3px 8px;
+  padding: 0.2rem 0.48rem;
   border-radius: 999px;
-  background: rgba(59, 130, 246, 0.16);
-  color: #bfdbfe;
-  font-size: 11px;
+  background: rgb(var(--color-primary) / 0.14);
+  color: rgb(var(--color-secondary));
+  font-size: 0.64rem;
   font-weight: 600;
 }
 
 .card-body {
-  margin-top: 4px;
+  margin-top: 2px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -338,57 +347,57 @@ function onPrimary() {
 }
 .body-title {
   font-weight: 700;
-  font-size: 14px;
-  color: #f8fafc;
+  font-size: 0.82rem;
+  color: rgb(var(--color-heading));
   margin-bottom: 0;
 }
 .body-sub {
-  font-size: 13px;
-  color: #cbd5e1;
-  line-height: 1.3;
+  font-size: 0.74rem;
+  color: rgb(var(--color-muted));
+  line-height: 1.35;
 }
 .close-btn {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   align-self: flex-start;
   margin-top: -6px;
   margin-right: -6px;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #cbd5e1;
+  color: rgb(var(--color-muted));
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .close-btn:hover {
-  background: rgba(148, 163, 184, 0.12);
+  background: rgb(var(--color-primary) / 0.08);
 }
 
 .consent-progress {
   width: 100%;
-  height: 4px;
+  height: 3px;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(148, 163, 184, 0.22);
+  background: rgb(var(--color-border) / 0.28);
 }
 
 .consent-progress__bar {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #60a5fa, #818cf8);
+  background: linear-gradient(90deg, rgb(var(--color-secondary)), rgb(var(--color-primary)));
 }
 
 .consent-cta {
-  font-size: clamp(12px, 2.8vw, 14px);
+  font-size: clamp(11px, 2.4vw, 13px);
   line-height: 1.2;
-  min-height: 36px;
+  min-height: 32px;
   white-space: normal;
   text-align: center;
   width: 100%;
   border-radius: 10px;
-  padding: 0.7rem 0.9rem;
+  padding: 0.52rem 0.8rem;
   font-weight: 600;
   border: 1px solid transparent;
   display: inline-flex;
@@ -398,14 +407,14 @@ function onPrimary() {
 }
 
 .consent-cta--primary {
-  background: #3b82f6;
-  color: #eff6ff;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-primary-foreground));
 }
 
 .consent-cta--ready {
-  background: rgba(34, 197, 94, 0.16);
-  border-color: rgba(34, 197, 94, 0.3);
-  color: #dcfce7;
+  background: rgb(var(--color-success) / 0.14);
+  border-color: rgb(var(--color-success) / 0.28);
+  color: rgb(var(--color-success));
 }
 
 .consent-cta:disabled,
@@ -418,16 +427,16 @@ function onPrimary() {
   width: 100%;
   border: 0;
   background: transparent;
-  color: #93c5fd;
-  padding: 0.35rem 0;
-  font-size: 0.875rem;
+  color: rgb(var(--color-secondary));
+  padding: 0.2rem 0;
+  font-size: 0.78rem;
 }
 
 .consent-icon--primary {
-  color: #93c5fd;
+  color: rgb(var(--color-secondary));
 }
 
 .consent-icon--success {
-  color: #4ade80;
+  color: rgb(var(--color-success));
 }
 </style>

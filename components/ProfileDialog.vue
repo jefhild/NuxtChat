@@ -227,6 +227,7 @@ onMounted(async () => {
   max-height: calc(100vh - 2rem);
   overflow: auto;
   transform: translate(-50%, -50%);
+  padding: 0.35rem;
 }
 
 .profile-dialog-close {
@@ -237,28 +238,33 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 0;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 1px solid rgba(191, 219, 254, 0.18);
   border-radius: 999px;
-  background: rgb(15 23 42 / 0.56);
+  background: rgb(15 23 42 / 0.62);
   color: rgb(226 232 240);
   cursor: pointer;
 }
 
 .profile-dialog-close:hover,
 .profile-dialog-close:focus-visible {
-  background: rgb(15 23 42 / 0.72);
+  background: rgb(15 23 42 / 0.82);
+  border-color: rgba(191, 219, 254, 0.3);
   outline: none;
 }
 
 .profile-dialog__fallback {
   width: min(100%, 460px);
   margin: 0 auto;
-  padding: 1rem;
-  border-radius: 18px;
+  padding: 1.1rem;
+  border-radius: 20px;
   border: 1px solid rgb(var(--color-border) / 0.72);
-  background: rgb(var(--color-surface));
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface) / 0.98),
+    rgb(var(--color-surface-elevated) / 0.96)
+  );
   box-shadow: 0 24px 48px rgb(var(--color-shadow) / 0.18);
 }
 

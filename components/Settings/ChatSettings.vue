@@ -1,14 +1,14 @@
 <template>
   <div>
     <section class="settings-chat-card mx-auto">
-      <div class="settings-chat-card__title">
-        {{ t("components.chat-settings.title", "Site Settings") }}
+      <div class="settings-chat-card__title type-card-title">
+        {{ t("components.chat-settings.title", "Chat Settings") }}
       </div>
       <p class="settings-chat-card__subtitle">
         {{
           t(
             "components.chat-settings.subtitle",
-            "Control your site and chat preferences."
+            "Control how ImChatty interacts with you in chat."
           )
         }}
       </p>
@@ -28,7 +28,7 @@
           <div class="settings-choice-group">
             <button
               type="button"
-              class="settings-choice-btn"
+              class="ui-settings-btn ui-settings-btn--secondary settings-choice-btn"
               :class="{ 'is-active': themeMode === 'system' }"
               @click="setThemeMode('system')"
             >
@@ -36,7 +36,7 @@
             </button>
             <button
               type="button"
-              class="settings-choice-btn"
+              class="ui-settings-btn ui-settings-btn--secondary settings-choice-btn"
               :class="{ 'is-active': themeMode === 'light' }"
               @click="setThemeMode('light')"
             >
@@ -44,7 +44,7 @@
             </button>
             <button
               type="button"
-              class="settings-choice-btn"
+              class="ui-settings-btn ui-settings-btn--secondary settings-choice-btn"
               :class="{ 'is-active': themeMode === 'dark' }"
               @click="setThemeMode('dark')"
             >
@@ -52,7 +52,7 @@
             </button>
           </div>
           <span
-            class="settings-info-icon"
+            class="ui-settings-icon-btn settings-info-icon"
             :title="t('components.chat-settings.theme-helper', 'Pick System to follow your device, or force Light/Dark for this browser.')"
             :aria-label="t('components.chat-settings.theme-helper', 'Pick System to follow your device, or force Light/Dark for this browser.')"
           >
@@ -66,7 +66,7 @@
           </div>
           <select
             v-model="cardThemeSelection"
-            class="profile-card-theme-select"
+            class="ui-settings-field__control profile-card-theme-select"
             :disabled="saving || loading || !profile"
             @change="saveProfileCardTheme(cardThemeSelection)"
           >
@@ -80,7 +80,7 @@
           </select>
           <button
             type="button"
-            class="settings-outline-btn"
+            class="ui-settings-btn ui-settings-btn--secondary settings-outline-btn"
             :disabled="loading || !profile"
             @click="previewOpen = true"
           >
@@ -97,10 +97,10 @@
               :disabled="saving || loading || !profile"
               @change="toggleMoodFeed($event.target.checked)"
             >
-            <span>{{ t('components.chat-settings.mood-question', 'Daily mood question') }}</span>
+            <span class="settings-switch__label">{{ t('components.chat-settings.mood-question', 'Daily mood question') }}</span>
           </label>
           <span
-            class="settings-info-icon"
+            class="ui-settings-icon-btn settings-info-icon"
             :title="t('components.chat-settings.mood-question-helper', 'Let ImChatty ask you a daily mood question in chat.')"
             :aria-label="t('components.chat-settings.mood-question-helper', 'Let ImChatty ask you a daily mood question in chat.')"
           >
@@ -114,7 +114,7 @@
 
         <button
           type="button"
-          class="settings-outline-btn mt-2"
+          class="ui-settings-btn ui-settings-btn--secondary settings-outline-btn mt-2"
           :disabled="saving || loading || !profile || !moodFeedPromptEnabled"
           @click="snoozeMoodFeed"
         >
@@ -129,10 +129,10 @@
               :disabled="saving || loading || !profile"
               @change="toggleProfilePrivacy($event.target.checked)"
             >
-            <span>{{ t('components.profile-language.private_label') }}</span>
+            <span class="settings-switch__label">{{ t('components.profile-language.private_label') }}</span>
           </label>
           <span
-            class="settings-info-icon"
+            class="ui-settings-icon-btn settings-info-icon"
             :title="t('components.profile-language.private_helper')"
             :aria-label="t('components.profile-language.private_helper')"
           >
@@ -165,7 +165,7 @@
                 <button
                   type="button"
                   aria-label="Close profile preview"
-                  class="profile-preview-close"
+                  class="ui-settings-icon-btn profile-preview-close"
                   @click="previewOpen = false"
                 >
                   <i class="mdi mdi-close" aria-hidden="true" />
@@ -494,16 +494,19 @@ watch(
 
 <style scoped>
 .settings-chat-card {
-  padding: 1.25rem;
+  padding: 1.1rem;
   border: 1px solid rgb(var(--color-border) / 0.72);
   border-radius: 18px;
-  background: rgb(var(--color-surface) / 0.96);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface) / 0.98),
+    rgb(var(--color-surface-elevated) / 0.95)
+  );
+  box-shadow: 0 14px 32px rgb(var(--color-shadow) / 0.08);
 }
 
 .settings-chat-card__title {
   margin-bottom: 0.5rem;
-  font-size: 1rem;
-  font-weight: 650;
   color: rgb(var(--color-foreground));
 }
 
@@ -531,9 +534,11 @@ watch(
 }
 
 .settings-row__label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: rgb(var(--color-foreground) / 0.86);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
 }
 
 .settings-row__helper {
@@ -547,54 +552,14 @@ watch(
   gap: 0.5rem;
 }
 
-.settings-choice-btn,
-.settings-outline-btn,
-.profile-preview-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  min-height: 2.25rem;
-  padding: 0.55rem 0.8rem;
-  border-radius: 10px;
-  font: inherit;
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .settings-choice-btn {
-  border: 1px solid rgb(var(--color-border) / 0.72);
-  background: transparent;
-  color: rgb(var(--color-foreground) / 0.82);
+  min-width: 5.2rem;
 }
 
 .settings-choice-btn.is-active {
-  border-color: rgb(var(--color-primary) / 0.4);
-  background: rgb(var(--color-primary) / 0.12);
-  color: rgb(var(--color-foreground));
-}
-
-.settings-outline-btn {
-  border: 1px solid rgb(var(--color-border) / 0.72);
-  background: transparent;
-  color: rgb(var(--color-foreground) / 0.82);
-}
-
-.settings-choice-btn:hover,
-.settings-choice-btn:focus-visible,
-.settings-outline-btn:hover,
-.settings-outline-btn:focus-visible,
-.profile-preview-close:hover,
-.profile-preview-close:focus-visible {
-  outline: none;
-  background: rgb(var(--color-primary) / 0.08);
-}
-
-.settings-choice-btn:disabled,
-.settings-outline-btn:disabled {
-  opacity: 0.6;
-  cursor: default;
+  border-color: rgb(var(--color-secondary) / 0.4);
+  background: rgb(var(--color-primary) / 0.16);
+  color: rgb(var(--color-heading));
 }
 
 .settings-switch {
@@ -602,6 +567,11 @@ watch(
   align-items: flex-start;
   gap: 0.75rem;
   color: rgb(var(--color-foreground) / 0.86);
+}
+
+.settings-switch__label {
+  font-size: 0.94rem;
+  line-height: 1.45;
 }
 
 .settings-switch input {
@@ -612,21 +582,13 @@ watch(
 }
 
 .settings-info-icon {
-  display: inline-flex;
-  align-items: center;
-  color: rgb(var(--color-foreground) / 0.52);
+  width: 2rem;
+  height: 2rem;
 }
 
 .profile-card-theme-select {
   min-width: 220px;
   max-width: 300px;
-  min-height: 40px;
-  padding: 0.55rem 0.8rem;
-  border: 1px solid rgb(var(--color-border) / 0.72);
-  border-radius: 10px;
-  background: rgb(var(--color-surface));
-  color: rgb(var(--color-foreground));
-  font: inherit;
 }
 
 .settings-status-alert {
@@ -670,12 +632,6 @@ watch(
   top: 6px;
   right: 6px;
   z-index: 2;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
 }
 
 .profile-preview-fade-enter-active,

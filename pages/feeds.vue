@@ -20,7 +20,7 @@
     <MoodFeedHomeQuestionBar variant="feeds" @posted="loadEntries" />
 
     <section class="feeds-list" aria-labelledby="feeds-latest-heading">
-      <h2 id="feeds-latest-heading" class="feeds-section-title">
+      <h2 id="feeds-latest-heading" class="feeds-section-title type-list-heading">
         {{ t("pages.feeds.streamHeading", "Latest mood entries") }}
       </h2>
       <nav class="feeds-pagination-links" aria-label="Feed pages">
@@ -106,7 +106,7 @@
             aria-labelledby="feeds-consent-title"
           >
             <div class="feeds-dialog-card">
-              <h2 id="feeds-consent-title" class="feeds-dialog-card__title">
+              <h2 id="feeds-consent-title" class="feeds-dialog-card__title type-card-title">
                 {{ t("pages.feeds.consentTitle", "Continue as guest?") }}
               </h2>
               <p class="feeds-dialog-card__body">
@@ -179,7 +179,7 @@
             aria-labelledby="feeds-limit-title"
           >
             <div class="feeds-dialog-card">
-              <h2 id="feeds-limit-title" class="feeds-dialog-card__title">
+              <h2 id="feeds-limit-title" class="feeds-dialog-card__title type-card-title">
                 {{ t("pages.feeds.limitTitle", "Keep using Mood Feed") }}
               </h2>
               <p class="feeds-dialog-card__body">
@@ -227,7 +227,7 @@
             aria-labelledby="feeds-register-title"
           >
             <div class="feeds-dialog-card">
-              <h2 id="feeds-register-title" class="feeds-dialog-card__title">
+              <h2 id="feeds-register-title" class="feeds-dialog-card__title type-card-title">
                 {{ t("pages.feeds.registerTitle", "Create your profile") }}
               </h2>
               <p class="feeds-dialog-card__body">
@@ -968,10 +968,6 @@ watch(submitNoticeOpen, (open) => {
 }
 
 .feeds-section-title {
-  font-size: 1.05rem;
-  line-height: 1.35;
-  font-weight: 600;
-  letter-spacing: 0.01em;
   margin: 0 0 10px;
   color: rgb(var(--color-foreground));
 }
@@ -1074,9 +1070,6 @@ watch(submitNoticeOpen, (open) => {
 
 .feeds-dialog-card__title {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 650;
-  line-height: 1.35;
   color: rgb(var(--color-foreground));
 }
 

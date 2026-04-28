@@ -1,7 +1,7 @@
 <template>
   <section class="login-provider-card">
     <header class="login-provider-card__header">
-      <h2 class="login-provider-card__title">{{ t(titleKey) }}</h2>
+      <h2 class="login-provider-card__title type-card-title">{{ t(titleKey) }}</h2>
     </header>
 
     <div class="login-provider-card__body">
@@ -56,8 +56,6 @@ const isAgeConfirmed = ref(false);
 .login-provider-card__title {
   margin: 0;
   text-align: center;
-  font-size: clamp(1.25rem, 1vw + 1rem, 1.5rem);
-  font-weight: 650;
   color: rgb(var(--color-foreground) / 0.94);
 }
 

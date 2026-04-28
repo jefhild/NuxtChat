@@ -32,7 +32,11 @@
     >
       <div
         class="photo-library-card"
-        :class="{ 'photo-library-card--disabled': photoLibraryDisabled }"
+        :class="{
+          'photo-library-card--disabled': photoLibraryDisabled,
+          'photo-library-card--readonly': photoLibraryDisabled || !isEditable,
+          'photo-library-card--editing': !photoLibraryDisabled && isEditable
+        }"
       >
         <div class="photo-library-hero">
           <div
@@ -106,7 +110,7 @@
         <div class="photo-library-footer">
           <button
             type="button"
-            class="photo-library-link-btn"
+            class="ui-settings-text-link photo-library-link-btn"
             :disabled="photoLibraryDisabled"
             @click="$emit('openPhotoLibrary')"
           >
@@ -256,15 +260,31 @@ watch(
   width: 360px;
   max-width: 100%;
   min-height: 296px;
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: visible;
-  background: rgb(var(--color-surface));
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface) / 0.98),
+    rgb(var(--color-surface-elevated) / 0.94)
+  );
   border: 1px solid rgb(var(--color-border) / 0.72);
+  box-shadow: 0 14px 32px rgb(var(--color-shadow) / 0.08);
+}
+
+.photo-library-card--editing {
+  border-color: rgb(var(--color-secondary) / 0.38);
+  box-shadow:
+    0 18px 36px rgb(var(--color-shadow) / 0.12),
+    0 0 0 1px rgb(var(--color-secondary) / 0.16);
+}
+
+.photo-library-card--readonly {
+  background: rgb(var(--color-surface) / 0.94);
 }
 
 .photo-library-card--disabled {
-  border-color: rgb(var(--color-primary) / 0.32);
-  box-shadow: inset 0 0 0 1px rgb(var(--color-primary) / 0.12);
+  border-color: rgb(var(--color-border) / 0.72);
+  box-shadow: 0 14px 32px rgb(var(--color-shadow) / 0.08);
 }
 
 .photo-library-hero {
@@ -304,7 +324,7 @@ watch(
   border-radius: 999px;
   font-size: 0.72rem;
   color: rgb(var(--color-foreground) / 0.94);
-  background: rgb(var(--color-surface) / 0.9);
+  background: rgb(var(--color-surface-elevated) / 0.9);
   border: 1px solid rgb(var(--color-border) / 0.72);
 }
 
@@ -359,6 +379,13 @@ watch(
   align-items: center;
   justify-content: center;
   color: rgb(var(--color-foreground));
+}
+
+.photo-library-chevron:hover:not(:disabled),
+.photo-library-chevron:focus-visible {
+  border-color: rgb(var(--color-secondary) / 0.28);
+  color: rgb(var(--color-heading));
+  outline: none;
 }
 
 .photo-library-chevron:disabled {
@@ -427,10 +454,6 @@ watch(
   gap: 8px;
 }
 
-.photo-library-link {
-  letter-spacing: 0.02em;
-}
-
 .photo-library-hint {
   font-size: 13px;
   color: rgb(var(--color-foreground) / 0.72);
@@ -443,7 +466,7 @@ watch(
 }
 
 .photo-library-card--disabled .photo-library-link-btn {
-  color: rgb(var(--color-primary) / 0.8) !important;
+  color: rgb(var(--color-secondary)) !important;
 }
 
 .photo-library-card--disabled .photo-library-hint-link {
@@ -451,12 +474,6 @@ watch(
 }
 
 .photo-library-link-btn {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  color: #60a5fa;
-  font-size: 0.92rem;
-  font-weight: 500;
   display: inline-flex;
   align-items: center;
 }

@@ -69,10 +69,10 @@
             </div>
 
             <div class="looking-for-panel__actions">
-              <button type="button" class="looking-for-panel__btn" @click="menu = false">
+              <button type="button" class="ui-settings-btn ui-settings-btn--secondary looking-for-panel__btn" @click="menu = false">
                 {{ $t("components.lookingFor.cancel") }}
               </button>
-              <button type="button" class="looking-for-panel__btn looking-for-panel__btn--primary" @click="saveChanges">
+              <button type="button" class="ui-settings-btn ui-settings-btn--primary looking-for-panel__btn looking-for-panel__btn--primary" @click="saveChanges">
                 {{ $t("components.lookingFor.save") }}
               </button>
             </div>
@@ -321,18 +321,11 @@ const saveChanges = () => {
 .looking-for-panel__btn {
   min-height: 2.25rem;
   padding: 0.5rem 0.85rem;
-  border: 1px solid rgb(var(--color-border) / 0.72);
-  border-radius: 10px;
-  background: transparent;
-  color: rgb(var(--color-foreground) / 0.82);
   font: inherit;
-  font-weight: 600;
 }
 
 .looking-for-panel__btn--primary {
-  border-color: transparent;
-  background: rgb(var(--color-primary));
-  color: rgb(var(--color-background));
+  color: rgb(var(--color-primary-foreground));
 }
 
 .looking-for-panel-fade-enter-active,

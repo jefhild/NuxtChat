@@ -1,6 +1,9 @@
 <template>
   <div class="flex flex-col items-center">
-    <section class="profile-photo-card">
+    <section
+      class="profile-photo-card"
+      :class="editable ? 'profile-photo-card--editing' : 'profile-photo-card--readonly'"
+    >
       <div class="photo-hero">
         <img
           v-if="heroImage"
@@ -22,9 +25,9 @@
         <div v-if="editable || showDecorationControl" class="photo-hero-controls">
           <button
             type="button"
-            class="photo-control-btn"
+            class="ui-settings-icon-btn photo-control-btn"
             :disabled="!editable || randomLoading"
-            title="Random photo"
+            :title="$t('components.profile-photo.random-title')"
             @click="$emit('randomAvatar')"
           >
             <span v-if="randomLoading" class="photo-control-btn__spinner" aria-hidden="true" />
@@ -32,9 +35,9 @@
           </button>
           <button
             type="button"
-            class="photo-control-btn"
+            class="ui-settings-icon-btn photo-control-btn"
             :disabled="!editable || uploadLoading"
-            title="Upload photo"
+            :title="$t('components.profile-photo.upload-title')"
             @click="triggerFilePicker"
           >
             <span v-if="uploadLoading" class="photo-control-btn__spinner" aria-hidden="true" />
@@ -43,11 +46,11 @@
           <button
             v-if="showDecorationControl"
             type="button"
-            class="photo-control-btn"
+            class="ui-settings-icon-btn photo-control-btn"
             :title="
               decorationLocked
-                ? 'Link your email to unlock avatar decorations'
-                : 'Avatar decoration'
+                ? $t('components.profile-photo.decoration-locked-title')
+                : $t('components.profile-photo.decoration-title')
             "
             @click="$emit('openDecorationPicker')"
           >
@@ -402,8 +405,24 @@ const onFileChange = async (e: Event) => {
   min-height: 296px;
   overflow: visible;
   border: 1px solid rgb(var(--color-border) / 0.72);
-  border-radius: 14px;
-  background: rgb(var(--color-surface));
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface) / 0.98),
+    rgb(var(--color-surface-elevated) / 0.94)
+  );
+  box-shadow: 0 14px 32px rgb(var(--color-shadow) / 0.08);
+}
+
+.profile-photo-card--editing {
+  border-color: rgb(var(--color-secondary) / 0.38);
+  box-shadow:
+    0 18px 36px rgb(var(--color-shadow) / 0.12),
+    0 0 0 1px rgb(var(--color-secondary) / 0.16);
+}
+
+.profile-photo-card--readonly {
+  background: rgb(var(--color-surface) / 0.94);
 }
 
 .photo-hero {
@@ -463,20 +482,14 @@ const onFileChange = async (e: Event) => {
 }
 
 .photo-control-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  border: 1px solid rgb(203 213 225 / 0.35);
-  border-radius: 999px;
-  background: rgb(15 23 42 / 0.55);
-  color: #cbd5e1;
+  width: 1.95rem;
+  height: 1.95rem;
+  background: rgb(var(--color-surface) / 0.32);
+  color: rgb(var(--color-heading));
 }
 
 .photo-control-btn:disabled {
-  opacity: 0.75;
-  cursor: default;
+  background: rgb(var(--color-surface) / 0.2);
 }
 
 .photo-control-btn__spinner {
@@ -632,9 +645,9 @@ const onFileChange = async (e: Event) => {
 
 .lookingfor-disabled {
   opacity: 1;
-  border: 1px solid rgb(var(--color-primary) / 0.2);
+  border: 1px solid rgb(var(--color-border) / 0.58);
   border-radius: 10px;
-  background: rgb(var(--color-primary) / 0.08);
+  background: rgb(var(--color-surface) / 0.52);
 }
 
 .lookingfor-icons {

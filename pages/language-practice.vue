@@ -1,15 +1,15 @@
 <template>
   <div class="language-practice-page-shell mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
     <div class="language-practice-header text-center mb-6">
-      <div class="language-practice-kicker">
+      <div class="language-practice-kicker type-eyebrow">
         {{ $t("pages.languagePractice.kicker") }}
       </div>
-      <h1 class="language-practice-title">{{ $t("pages.languagePractice.title") }}</h1>
-      <p class="language-practice-subtitle">{{ $t("pages.languagePractice.subtitle") }}</p>
+      <h1 class="language-practice-title type-page-title">{{ $t("pages.languagePractice.title") }}</h1>
+      <p class="language-practice-subtitle type-page-subtitle">{{ $t("pages.languagePractice.subtitle") }}</p>
     </div>
 
     <section class="language-filter-panel mb-6" aria-labelledby="language-filter-heading">
-      <h2 id="language-filter-heading" class="language-filter-panel__title">
+      <h2 id="language-filter-heading" class="language-filter-panel__title type-card-title">
         {{ $t("pages.languagePractice.filtersTitle") }}
       </h2>
       <p class="language-filter-panel__description">
@@ -132,7 +132,7 @@
           @click="toggleSection('online')"
         >
           <span class="dot dot-online" />
-          <h2 class="language-section-title">
+          <h2 class="language-section-title type-list-heading">
             {{ $t("pages.languagePractice.sections.online") }}
           </h2>
           <i
@@ -166,7 +166,7 @@
           @click="toggleSection('offline')"
         >
           <span class="dot dot-offline" />
-          <h2 class="language-section-title">
+          <h2 class="language-section-title type-list-heading">
             {{ $t("pages.languagePractice.sections.offline") }}
           </h2>
           <i
@@ -200,7 +200,7 @@
           @click="toggleSection('ai')"
         >
           <i class="mdi mdi-robot-outline language-section-icon" aria-hidden="true" />
-          <h2 class="language-section-title">
+          <h2 class="language-section-title type-list-heading">
             {{ $t("pages.languagePractice.sections.ai") }}
           </h2>
           <i
@@ -247,7 +247,7 @@
             aria-labelledby="language-onboarding-title"
           >
             <div class="language-dialog-card">
-              <h2 id="language-onboarding-title" class="language-dialog-card__title">
+              <h2 id="language-onboarding-title" class="language-dialog-card__title type-card-title">
                 {{ $t("pages.languagePractice.onboardingDialog.title") }}
               </h2>
               <p class="language-dialog-card__body">
@@ -781,24 +781,15 @@ useHead({
   border-radius: 999px;
   background: rgb(var(--color-success, 34 197 94) / 0.12);
   color: rgb(var(--color-success, 34 197 94));
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .language-practice-title {
   margin: 0 0 0.5rem;
-  font-size: clamp(2rem, 2vw + 1.2rem, 2.8rem);
-  font-weight: 700;
-  line-height: 1.15;
   color: rgb(var(--color-foreground));
 }
 
 .language-practice-subtitle {
   margin: 0;
-  font-size: 1rem;
-  line-height: 1.6;
   color: rgb(var(--color-foreground) / 0.72);
 }
 
@@ -812,9 +803,6 @@ useHead({
 
 .language-filter-panel__title {
   margin: 0 0 0.75rem;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.35;
   color: rgb(var(--color-foreground));
 }
 
@@ -949,9 +937,6 @@ useHead({
 
 .language-section-title {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.35;
   color: rgb(var(--color-foreground));
 }
 
@@ -1087,9 +1072,6 @@ useHead({
 
 .language-dialog-card__title {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 650;
-  line-height: 1.35;
   color: rgb(var(--color-foreground));
 }
 

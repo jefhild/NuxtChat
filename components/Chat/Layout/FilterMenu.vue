@@ -21,27 +21,27 @@
         class="filter-menu-popover"
         :style="popoverStyle"
       >
-        <div class="filter-menu-panel p-4">
+        <div class="filter-menu-panel p-3">
       <!-- AI toggle -->
-      <div class="filter-inline-control mb-2 flex items-center">
+      <div class="filter-inline-control mb-1.5 flex items-center">
         <label class="filter-checkbox">
           <input
             :checked="includeAiModel"
             type="checkbox"
             class="filter-checkbox__input"
             :disabled="!isAllowed"
-            aria-label="Include AI chatbots"
+            :aria-label="t('components.filter-menu.include-ai-chatbots')"
             @change="includeAiModel = ($event.target).checked"
           >
           <span class="filter-checkbox__box" aria-hidden="true">
             <i class="mdi mdi-check filter-checkbox__check" />
           </span>
           <span class="filter-checkbox__label">
-            Include AI chatbots
+            {{ t("components.filter-menu.include-ai-chatbots") }}
           </span>
         </label>
       </div>
-      <div class="filter-inline-control mb-2 flex items-center">
+      <div class="filter-inline-control mb-1.5 flex items-center">
         <label class="filter-checkbox">
           <input
             :checked="includeLanguagePracticeAiModel"
@@ -61,12 +61,23 @@
       </div>
 
       <!-- User Info -->
-      <div class="filter-user-summary mb-1 mt-2">
-        <div class="flex flex-col justify-center">
-          <span class="text-body-1 font-weight-medium">{{
+      <div class="filter-user-summary mb-1 mt-1.5">
+        <div class="filter-user-summary__avatar" aria-hidden="true">
+          <img
+            v-if="userProfile?.avatar_url"
+            :src="userProfile.avatar_url"
+            alt=""
+            class="filter-user-summary__image"
+          >
+          <span v-else class="filter-user-summary__fallback">
+            {{ profileInitial }}
+          </span>
+        </div>
+        <div class="filter-user-summary__copy">
+          <span class="filter-user-summary__name">{{
             localized.displayname || userProfile.displayname
           }}</span>
-          <span class="text-caption text-grey">{{
+          <span class="filter-user-summary__tagline">{{
             localized.tagline || userProfile.tagline
           }}</span>
         </div>
@@ -74,53 +85,59 @@
 
       <div class="filter-menu-divider" />
 
-      <!-- Gender -->
-      <div class="filter-menu-section-heading">
-        <i class="mdi mdi-gender-male-female mr-1 text-[18px]" aria-hidden="true" />
-        {{ $t("components.filter-menu.gender") }}
-      </div>
-      <label class="filter-native-select">
-        <span class="sr-only">{{ $t("components.filter-menu.gender") }}</span>
-        <select
-          :value="selectedGenderValue"
-          class="filter-native-select__control"
-          :disabled="!isAllowed"
-          @change="onGenderChange"
-        >
-          <option
-            v-for="option in genders"
-            :key="String(option.value)"
-            :value="option.value === null ? '' : String(option.value)"
-          >
-            {{ option.text }}
-          </option>
-        </select>
-        <i class="mdi mdi-chevron-down filter-native-select__chevron" aria-hidden="true" />
-      </label>
+      <div class="filter-two-up">
+        <!-- Gender -->
+        <div class="filter-two-up__field">
+          <div class="filter-menu-section-heading">
+            <i class="mdi mdi-gender-male-female mr-1 text-[18px]" aria-hidden="true" />
+            {{ $t("components.filter-menu.gender") }}
+          </div>
+          <label class="filter-native-select">
+            <span class="sr-only">{{ $t("components.filter-menu.gender") }}</span>
+            <select
+              :value="selectedGenderValue"
+              class="filter-native-select__control"
+              :disabled="!isAllowed"
+              @change="onGenderChange"
+            >
+              <option
+                v-for="option in genders"
+                :key="String(option.value)"
+                :value="option.value === null ? '' : String(option.value)"
+              >
+                {{ option.text }}
+              </option>
+            </select>
+            <i class="mdi mdi-chevron-down filter-native-select__chevron" aria-hidden="true" />
+          </label>
+        </div>
 
-      <!-- Statuses -->
-      <div class="filter-menu-section-heading">
-        <i class="mdi mdi-ring mr-1 text-[18px]" aria-hidden="true" />
-        {{ $t("components.filter-menu.status") }}
+        <!-- Statuses -->
+        <div class="filter-two-up__field">
+          <div class="filter-menu-section-heading">
+            <i class="mdi mdi-ring mr-1 text-[18px]" aria-hidden="true" />
+            {{ $t("components.filter-menu.status") }}
+          </div>
+          <label class="filter-native-select">
+            <span class="sr-only">{{ $t("components.filter-menu.status") }}</span>
+            <select
+              :value="selectedStatusValue"
+              class="filter-native-select__control"
+              :disabled="!isAllowed"
+              @change="onStatusChange"
+            >
+              <option
+                v-for="option in statuses"
+                :key="String(option.id)"
+                :value="option.id === null ? '' : String(option.id)"
+              >
+                {{ option.name }}
+              </option>
+            </select>
+            <i class="mdi mdi-chevron-down filter-native-select__chevron" aria-hidden="true" />
+          </label>
+        </div>
       </div>
-      <label class="filter-native-select">
-        <span class="sr-only">{{ $t("components.filter-menu.status") }}</span>
-        <select
-          :value="selectedStatusValue"
-          class="filter-native-select__control"
-          :disabled="!isAllowed"
-          @change="onStatusChange"
-        >
-          <option
-            v-for="option in statuses"
-            :key="String(option.id)"
-            :value="option.id === null ? '' : String(option.id)"
-          >
-            {{ option.name }}
-          </option>
-        </select>
-        <i class="mdi mdi-chevron-down filter-native-select__chevron" aria-hidden="true" />
-      </label>
 
       <!-- Age Range -->
       <div class="filter-menu-section-heading">
@@ -323,6 +340,12 @@ const localized = computed(() =>
     profile: props.userProfile,
     readerLocale: locale?.value,
   })
+);
+const profileInitial = computed(() =>
+  String(localized.value.displayname || props.userProfile?.displayname || "?")
+    .trim()
+    .charAt(0)
+    .toUpperCase() || "?"
 );
 
 const emit = defineEmits([
@@ -582,10 +605,7 @@ const applyFilters = () => {
   const countryName = chosen?.name ?? null;
 
   // if "All Countries" or empty → null
-  const normalizedCountryName =
-    countryName && countryName.toLowerCase() !== "all countries"
-      ? countryName
-      : null;
+  const normalizedCountryName = selectedCountry.value != null ? countryName : null;
 
   emit("filter-changed", {
     gender_id: selectedGender.value,
@@ -620,11 +640,18 @@ onMounted(async () => {
   // selectedInterests.value = null;
 
   const rawCountries = await getCountries();
-  countries.value = [{ id: null, name: "All Countries" }, ...rawCountries];
+  countries.value = [
+    { id: null, name: t("components.filter-menu.all-countries") },
+    ...rawCountries,
+  ];
 
   const rawStatuses = await getStatuses();
   statuses.value = [
-    { id: null, name: "All Statuses", icon: "mdi-account-question" },
+    {
+      id: null,
+      name: t("components.filter-menu.all-statuses"),
+      icon: "mdi-account-question",
+    },
     ...rawStatuses,
   ];
 });
@@ -696,27 +723,32 @@ watch(
   width: 100%;
   max-height: inherit;
   overflow-y: auto;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  background: linear-gradient(180deg, #223047 0%, #1e293b 100%);
-  box-shadow: 0 16px 36px rgba(2, 6, 23, 0.32);
+  border-radius: 0.82rem;
+  border: 1px solid rgb(var(--color-border) / 0.24);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface-elevated) / 0.985) 0%,
+    rgb(var(--color-surface) / 0.985) 100%
+  );
+  box-shadow: 0 16px 34px rgb(var(--color-shadow) / 0.22);
 }
 
 .filter-menu-trigger {
   position: relative;
   width: 2rem;
   height: 2rem;
-  border: 0;
+  border: 1px solid rgb(var(--color-border) / 0.18);
   border-radius: 999px;
-  background: transparent;
-  color: #cbd5e1;
+  background: rgb(var(--color-surface) / 0.76);
+  color: rgb(var(--color-muted));
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .filter-menu-trigger:hover:not(:disabled) {
-  background: rgba(148, 163, 184, 0.12);
+  background: rgb(var(--color-surface-elevated) / 0.92);
+  border-color: rgb(var(--color-secondary) / 0.24);
 }
 
 .filter-menu-trigger:disabled {
@@ -737,47 +769,115 @@ watch(
 .filter-user-summary {
   display: flex;
   align-items: center;
+  gap: 0.65rem;
+  padding: 0.2rem 0 0.35rem;
+  min-width: 0;
+}
+
+.filter-user-summary__avatar {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-border) / 0.2);
+  background: rgb(var(--color-surface-elevated) / 0.92);
+  box-shadow: 0 8px 18px rgb(var(--color-shadow) / 0.16);
+}
+
+.filter-user-summary__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.filter-user-summary__fallback {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(var(--color-foreground) / 0.88);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.filter-user-summary__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.filter-user-summary__name {
+  color: rgb(var(--color-foreground) / 0.96);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.filter-user-summary__tagline {
+  color: rgb(var(--color-muted));
+  font-size: 0.75rem;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .filter-menu-divider {
   width: 100%;
   height: 1px;
-  background: rgba(148, 163, 184, 0.18);
+  background: rgb(var(--color-border) / 0.18);
 }
 
 .filter-menu-section-heading {
   display: flex;
   align-items: center;
-  margin-top: 0.85rem;
-  margin-bottom: 0.35rem;
-  color: #cbd5e1;
-  font-size: 0.9rem;
-  font-weight: 500;
+  margin-top: 0.55rem;
+  margin-bottom: 0.22rem;
+  color: rgb(var(--color-muted));
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.filter-two-up {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+}
+
+.filter-two-up__field {
+  min-width: 0;
 }
 
 .filter-inline-control,
 .filter-slider-shell {
-  border-radius: 0.75rem;
-  border: 1px solid rgba(71, 85, 105, 0.45);
-  background: rgba(15, 23, 42, 0.54);
-  padding: 0.35rem 0.75rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(var(--color-border) / 0.18);
+  background: rgb(var(--color-background) / 0.5);
+  padding: 0.26rem 0.58rem;
 }
 
 .filter-slider-shell {
-  padding: 0.75rem 0.85rem 0.85rem;
+  padding: 0.48rem 0.58rem 0.58rem;
 }
 
 .filter-slider-values {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
+  gap: 0.5rem;
+  margin-bottom: 0.48rem;
 }
 
 .filter-range {
   position: relative;
-  height: 1.5rem;
+  height: 1.35rem;
 }
 
 .filter-range--disabled {
@@ -796,11 +896,15 @@ watch(
 .filter-range__track {
   left: 0;
   right: 0;
-  background: rgba(71, 85, 105, 0.78);
+  background: rgb(var(--color-border) / 0.7);
 }
 
 .filter-range__active {
-  background: linear-gradient(90deg, rgba(129, 140, 248, 0.95), rgba(168, 85, 247, 0.95));
+  background: linear-gradient(
+    90deg,
+    rgb(var(--color-secondary) / 0.95),
+    rgb(var(--color-primary) / 0.95)
+  );
 }
 
 .filter-range__input {
@@ -831,9 +935,9 @@ watch(
   height: 1rem;
   margin-top: -0.33rem;
   border-radius: 999px;
-  border: 2px solid rgba(15, 23, 42, 0.95);
-  background: #c4b5fd;
-  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.18);
+  border: 2px solid rgb(var(--color-background) / 0.95);
+  background: rgb(var(--color-secondary));
+  box-shadow: 0 0 0 2px rgb(var(--color-secondary) / 0.18);
   cursor: pointer;
   pointer-events: auto;
 }
@@ -842,9 +946,9 @@ watch(
   width: 1rem;
   height: 1rem;
   border-radius: 999px;
-  border: 2px solid rgba(15, 23, 42, 0.95);
-  background: #c4b5fd;
-  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.18);
+  border: 2px solid rgb(var(--color-background) / 0.95);
+  background: rgb(var(--color-secondary));
+  box-shadow: 0 0 0 2px rgb(var(--color-secondary) / 0.18);
   cursor: pointer;
   pointer-events: auto;
 }
@@ -852,8 +956,8 @@ watch(
 .filter-checkbox {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  color: #e2e8f0;
+  gap: 0.58rem;
+  color: rgb(var(--color-foreground) / 0.92);
   cursor: pointer;
 }
 
@@ -864,11 +968,11 @@ watch(
 }
 
 .filter-checkbox__box {
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.1rem;
+  height: 1.1rem;
   border-radius: 0.3rem;
-  border: 1px solid rgba(148, 163, 184, 0.38);
-  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgb(var(--color-border) / 0.34);
+  background: rgb(var(--color-background) / 0.82);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -876,14 +980,14 @@ watch(
 }
 
 .filter-checkbox__check {
-  color: #c7d2fe;
-  font-size: 0.95rem;
+  color: rgb(var(--color-secondary));
+  font-size: 0.82rem;
   opacity: 0;
 }
 
 .filter-checkbox__input:checked + .filter-checkbox__box {
-  border-color: rgba(99, 102, 241, 0.52);
-  background: rgba(59, 130, 246, 0.18);
+  border-color: rgb(var(--color-secondary) / 0.52);
+  background: rgb(var(--color-secondary) / 0.16);
 }
 
 .filter-checkbox__input:checked + .filter-checkbox__box .filter-checkbox__check {
@@ -896,20 +1000,20 @@ watch(
 }
 
 .filter-checkbox__label {
-  font-size: 0.95rem;
-  line-height: 1.25rem;
+  font-size: 0.77rem;
+  line-height: 1.08rem;
 }
 
 .age-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.5rem;
-  height: 2rem;
-  padding: 0 0.75rem;
+  min-width: 1.95rem;
+  height: 1.62rem;
+  padding: 0 0.55rem;
   border-radius: 999px;
-  background: rgba(51, 65, 85, 0.95);
-  color: #e2e8f0;
+  background: rgb(var(--color-surface-elevated) / 0.95);
+  color: rgb(var(--color-foreground) / 0.92);
 }
 
 .filter-menu-actions {
@@ -923,9 +1027,9 @@ watch(
   align-items: center;
   border: 0;
   background: transparent;
-  color: #fca5a5;
+  color: rgb(var(--color-secondary));
   padding: 0;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 
 .filter-native-select {
@@ -935,13 +1039,13 @@ watch(
 
 .filter-native-select__control {
   width: 100%;
-  min-height: 2.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  background: rgba(15, 23, 42, 0.76);
-  color: #e2e8f0;
-  padding: 0.7rem 2.6rem 0.7rem 0.9rem;
-  font-size: 0.9rem;
+  min-height: 2.05rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(var(--color-border) / 0.18);
+  background: rgb(var(--color-background) / 0.72);
+  color: rgb(var(--color-foreground) / 0.92);
+  padding: 0.42rem 2rem 0.42rem 0.7rem;
+  font-size: 0.79rem;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -954,11 +1058,12 @@ watch(
 
 .filter-native-select__chevron {
   position: absolute;
-  right: 0.85rem;
+  right: 0.72rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #cbd5e1;
+  color: rgb(var(--color-muted));
   pointer-events: none;
+  font-size: 1rem;
 }
 
 .sr-only {
@@ -976,20 +1081,20 @@ watch(
 .filter-multi-select {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.42rem;
 }
 
 .filter-multi-select__trigger {
   width: 100%;
-  min-height: 2.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  background: rgba(15, 23, 42, 0.76);
-  color: #e2e8f0;
-  padding: 0.7rem 0.9rem;
+  min-height: 2.05rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(var(--color-border) / 0.18);
+  background: rgb(var(--color-background) / 0.72);
+  color: rgb(var(--color-foreground) / 0.92);
+  padding: 0.42rem 0.7rem;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.5rem;
   text-align: left;
 }
 
@@ -1001,7 +1106,7 @@ watch(
 .filter-multi-select__summary {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: 0.9rem;
+  font-size: 0.79rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1009,12 +1114,12 @@ watch(
 
 .filter-multi-select__badge {
   flex: 0 0 auto;
-  min-width: 1.5rem;
-  height: 1.5rem;
-  padding: 0 0.45rem;
+  min-width: 1.28rem;
+  height: 1.28rem;
+  padding: 0 0.35rem;
   border-radius: 999px;
-  background: rgba(79, 70, 229, 0.22);
-  color: #c7d2fe;
+  background: rgb(var(--color-secondary) / 0.16);
+  color: rgb(var(--color-secondary));
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1024,30 +1129,30 @@ watch(
 
 .filter-multi-select__chevron {
   flex: 0 0 auto;
-  color: #cbd5e1;
+  color: rgb(var(--color-muted));
 }
 
 .filter-multi-select__panel {
-  border-radius: 0.85rem;
-  border: 1px solid rgba(71, 85, 105, 0.45);
-  background: rgba(15, 23, 42, 0.48);
-  padding: 0.8rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(var(--color-border) / 0.22);
+  background: rgb(var(--color-background) / 0.42);
+  padding: 0.55rem;
 }
 
 .filter-multi-select__actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: 0.4rem;
+  margin-bottom: 0.42rem;
 }
 
 .filter-multi-select__action-btn {
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  background: rgba(30, 41, 59, 0.88);
-  color: #e2e8f0;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.75rem;
+  border: 1px solid rgb(var(--color-border) / 0.22);
+  background: rgb(var(--color-surface) / 0.88);
+  color: rgb(var(--color-foreground) / 0.9);
+  padding: 0.28rem 0.62rem;
+  font-size: 0.72rem;
   font-weight: 600;
 }
 
@@ -1059,21 +1164,21 @@ watch(
 .filter-multi-select__options {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  max-height: 15rem;
+  gap: 0.3rem;
+  max-height: 10.5rem;
   overflow-y: auto;
 }
 
 .filter-interest-option {
   width: 100%;
-  border-radius: 0.8rem;
-  border: 1px solid rgba(71, 85, 105, 0.4);
-  background: rgba(15, 23, 42, 0.82);
-  color: #e2e8f0;
-  padding: 0.65rem 0.75rem;
+  border-radius: 0.72rem;
+  border: 1px solid rgb(var(--color-border) / 0.24);
+  background: rgb(var(--color-surface) / 0.82);
+  color: rgb(var(--color-foreground) / 0.92);
+  padding: 0.42rem 0.55rem;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.5rem;
   text-align: left;
 }
 
@@ -1083,15 +1188,15 @@ watch(
 }
 
 .filter-interest-option--selected {
-  border-color: rgba(129, 140, 248, 0.42);
-  background: rgba(49, 46, 129, 0.28);
+  border-color: rgb(var(--color-secondary) / 0.36);
+  background: rgb(var(--color-secondary) / 0.12);
 }
 
 .filter-interest-option__check {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 0.95rem;
+  height: 0.95rem;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  border: 1px solid rgb(var(--color-border) / 0.3);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1100,9 +1205,9 @@ watch(
 }
 
 .filter-interest-option--selected .filter-interest-option__check {
-  border-color: rgba(129, 140, 248, 0.45);
-  background: rgba(129, 140, 248, 0.22);
-  color: #c7d2fe;
+  border-color: rgb(var(--color-secondary) / 0.45);
+  background: rgb(var(--color-secondary) / 0.18);
+  color: rgb(var(--color-secondary));
 }
 
 .filter-interest-option__icon,
@@ -1112,7 +1217,14 @@ watch(
 
 .filter-interest-option__label {
   min-width: 0;
-  font-size: 0.9rem;
+  font-size: 0.77rem;
+}
+
+@media (min-width: 640px) {
+  .filter-two-up {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.6rem;
+  }
 }
 
 </style>

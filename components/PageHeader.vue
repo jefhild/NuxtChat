@@ -13,7 +13,7 @@
             <slot name="icon" />
           </span>
           <h1
-            class="font-poppins text-xl font-semibold text-foreground sm:text-2xl md:text-3xl"
+            class="type-page-title text-foreground"
           >
             {{ text }}
           </h1>
@@ -28,7 +28,7 @@
     </div>
     <h2
       v-if="subtitle"
-      class="mt-0 hidden text-base font-normal text-foreground/70 md:block md:text-xl"
+      class="type-page-subtitle mt-0 hidden text-foreground/70 md:block"
     >
       {{ subtitle }}
     </h2>

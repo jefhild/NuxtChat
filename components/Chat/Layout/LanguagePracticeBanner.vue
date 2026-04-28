@@ -75,16 +75,21 @@ const metaLine = computed(() =>
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 0.72rem 0.82rem;
   border: 1px solid rgba(114, 230, 126, 0.24);
-  border-radius: 12px;
-  background: rgba(42, 96, 58, 0.12);
+  border-radius: 0.85rem;
+  background: linear-gradient(
+    180deg,
+    rgba(42, 96, 58, 0.14),
+    rgba(var(--color-surface), 0.92)
+  );
+  box-shadow: 0 10px 24px rgba(var(--color-shadow), 0.12);
 }
 
 .language-practice-banner__icon {
   color: #72e67e;
   margin-top: 2px;
-  font-size: 18px;
+  font-size: 1rem;
   line-height: 1;
 }
 
@@ -95,31 +100,43 @@ const metaLine = computed(() =>
 
 .language-practice-banner__title {
   color: #72e67e;
-  font-size: 0.98rem;
+  font-size: 0.92rem;
   font-weight: 600;
   line-height: 1.25;
 }
 
 .language-practice-banner__meta {
   margin-top: 2px;
-  color: rgba(226, 232, 240, 0.88);
-  font-size: 0.9rem;
-  line-height: 1.35;
+  color: rgb(var(--color-muted));
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .language-practice-banner__action {
   flex: 0 0 auto;
   align-self: center;
-  border-radius: 8px;
+  border-radius: 0.75rem;
   border: 1px solid rgba(114, 230, 126, 0.28);
-  background: transparent;
+  background: rgba(42, 96, 58, 0.08);
   color: #72e67e;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  padding: 0.45rem 0.7rem;
+  padding: 0.42rem 0.68rem;
 }
 
 .language-practice-banner__action:hover {
-  background: rgba(114, 230, 126, 0.1);
+  background: rgba(114, 230, 126, 0.14);
+}
+
+@media (max-width: 640px) {
+  .language-practice-banner {
+    gap: 0.55rem;
+    padding: 0.65rem 0.72rem;
+  }
+
+  .language-practice-banner__action {
+    padding-inline: 0.6rem;
+    font-size: 0.76rem;
+  }
 }
 </style>

@@ -1,15 +1,15 @@
 <template>
-  <label class="profile-field">
-    <span class="profile-field__label">{{ $t('components.profile-tagline.label') }}</span>
+  <label class="ui-settings-field">
+    <span class="ui-settings-field__label">{{ $t('components.profile-tagline.label') }}</span>
     <input
       v-model="tagLine"
       :disabled="!props.isEditable"
       type="text"
-      class="profile-field__control"
+      class="ui-settings-field__control"
     >
     <span
       v-if="props.errorMessage || validationError"
-      class="profile-field__error"
+      class="ui-settings-field__error"
     >
       {{ props.errorMessage || validationError }}
     </span>
@@ -89,39 +89,3 @@ watch(tagLine, (newTagLine) => {
   emits("updateTagLine", newTagLine);
 });
 </script>
-
-<style scoped>
-.profile-field {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.profile-field__label {
-  color: rgb(var(--color-foreground) / 0.82);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.profile-field__control {
-  width: 100%;
-  min-height: 2.75rem;
-  border: 1px solid rgb(var(--color-border) / 0.82);
-  border-radius: 12px;
-  background: rgb(var(--color-surface));
-  color: rgb(var(--color-foreground));
-  padding: 0.7rem 0.85rem;
-  font-size: 1rem;
-}
-
-.profile-field__control:disabled {
-  opacity: 1;
-  cursor: default;
-  background: rgb(var(--color-surface) / 0.76);
-  color: rgb(var(--color-foreground) / 0.62);
-}
-
-.profile-field__error {
-  color: rgb(var(--color-danger));
-  font-size: 0.8rem;
-}
-</style>

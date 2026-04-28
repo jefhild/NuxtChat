@@ -1394,6 +1394,11 @@
       "action-label": "打开同意信息或开始聊天",
       "consent-cta": "接受条款并开始",
       "back-to-bio": "返回简介",
+      "photos": "照片",
+      "no-photo-preview": "没有照片预览",
+      "no-approved-photos": "暂时还没有已批准的照片。",
+      "full-profile": "查看完整资料",
+      "empty-profile-details": "选择一个用户以查看资料详情。",
       "settings": "设置",
       "settings-disabled": "设置（匿名模式下不可用）",
       "settings-aria-label": "打开设置窗口以更新您的账户偏好和个人信息"
@@ -1433,6 +1438,9 @@
       "all": "全部",
       "registered": "仅注册用户",
       "anony": "仅匿名用户",
+      "include-ai-chatbots": "显示 AI 聊天机器人",
+      "all-countries": "所有国家",
+      "all-statuses": "所有状态",
       "include-language-practice-ai": "显示语言练习 AI 聊天机器人"
     },
     "finish-profile": {
@@ -1456,13 +1464,21 @@
     },
     "loginEmail": {
       "sign-in": "使用电子邮件登录",
+      "email-code": "邮箱验证码",
+      "email-label": "电子邮件",
+      "code-label": "6位验证码",
       "18years": "我已年满18岁并同意服务条款",
+      "send-magic-link": "发送魔法链接",
+      "send-code": "发送验证码",
+      "verify-code": "验证验证码",
       "checkmail1": "检查您的电子邮件以获取登录链接！",
       "checkmail2": "（可能在您的垃圾邮件文件夹中。）",
       "registeredInfo": "注册用户可以联系离线用户、保存收藏、分享照片和许多其他功能。通过创建账户，您同意我们的",
       "terms": "服务条款",
       "invalid-email": "无效的电子邮件地址",
-      "confirmAge": "您必须确认您的年龄"
+      "confirmAge": "您必须确认您的年龄",
+      "login-failed": "登录失败。",
+      "invalid-code": "验证码无效。"
     },
     "loginFacebook": {
       "sign-in": "使用Facebook登录",
@@ -1593,12 +1609,31 @@
       "add-photo": "添加照片",
       "add-avatar-deco": "添加头像装饰",
       "upload-photo": "上传个人资料照片",
+      "random-title": "随机照片",
+      "upload-title": "上传照片",
+      "decoration-title": "头像装饰",
+      "decoration-locked-title": "绑定邮箱后即可解锁头像装饰",
       "upload": "上传",
       "cancel": "取消"
     },
     "profile-site": {
       "label": "公开网站URL",
       "valid": "需要有效的URL"
+    },
+    "profile-form": {
+      "mode-editing": "编辑模式",
+      "mode-readonly": "查看模式",
+      "mode-editing-copy": "在保存或取消之前，表单中的更改会保持为当前编辑状态。",
+      "mode-readonly-copy": "字段已锁定，进入编辑模式后才可修改。",
+      "decoration-locked-copy": "绑定邮箱后即可解锁头像装饰。",
+      "ai-bio-title": "生成简介",
+      "ai-bio-copy": "请输入至少 4 个描述你的词语。AI 会生成一段可供你编辑的简短简介。",
+      "ai-bio-keywords-label": "关键词",
+      "ai-bio-placeholder": "好奇、乐观、徒步、浓缩咖啡",
+      "ai-bio-remaining": "剩余次数：{count}",
+      "ai-bio-submit": "生成",
+      "ai-bio-min-words": "请至少输入 4 个描述你的词语。",
+      "ai-bio-generic-error": "暂时无法生成简介，请重试。"
     },
     "profile-tagline": {
       "label": "标语",
@@ -1672,6 +1707,7 @@
       "site-settings": "站点设置",
       "chat-settings": "聊天设置",
       "photo-library": "照片库",
+      "agent-settings": "离线代理",
       "menu": {
         "profile": "我的档案",
         "favorites": "我的收藏",
@@ -1680,7 +1716,8 @@
         "language-practice": "语言练习",
         "site-settings": "站点设置",
         "chat-settings": "聊天设置",
-        "photo-library": "照片库"
+        "photo-library": "照片库",
+        "agent-settings": "离线代理"
       },
       "loading": "加载中...",
       "registered-only": "仅限注册用户"
@@ -1789,6 +1826,26 @@
       "translated": "已翻译",
       "someone": "该用户",
       "theirLanguage": "对方的语言"
+    },
+    "consentPanel": {
+      "state": {
+        "consent": "需要同意",
+        "onboarding": "完成引导",
+        "linkEmail": "绑定邮箱",
+        "ready": "一切就绪"
+      },
+      "cta": {
+        "resume": "继续引导",
+        "linkEmail": "绑定邮箱"
+      },
+      "stage": {
+        "idle": "开始",
+        "consent": "同意",
+        "collecting": "基础信息",
+        "confirm": "确认",
+        "finalizing": "保存中",
+        "done": "完成"
+      }
     },
     "matchStrip": {
       "label": "匹配",

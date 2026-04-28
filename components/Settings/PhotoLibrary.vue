@@ -7,7 +7,7 @@
         </h2>
         <button
           type="button"
-          class="photo-library-card__refresh"
+          class="ui-settings-btn ui-settings-btn--secondary photo-library-card__refresh"
           :disabled="loading"
           @click="loadPhotos"
         >
@@ -32,7 +32,7 @@
         <div class="photo-library-form__actions">
           <button
             type="submit"
-            class="photo-library-form__submit"
+            class="ui-settings-btn ui-settings-btn--primary photo-library-form__submit"
             :disabled="uploading || !selectedFile"
           >
             <span v-if="uploading" class="photo-library-card__spinner" aria-hidden="true" />
@@ -117,7 +117,7 @@
             <div class="photo-library-modal__actions">
               <button
                 type="button"
-                class="photo-library-modal__btn"
+                class="ui-settings-btn ui-settings-btn--secondary photo-library-modal__btn"
                 :disabled="deleting"
                 @click="closeDeleteDialog"
               >
@@ -125,7 +125,7 @@
               </button>
               <button
                 type="button"
-                class="photo-library-modal__btn photo-library-modal__btn--danger"
+                class="ui-settings-btn ui-settings-btn--secondary photo-library-modal__btn photo-library-modal__btn--danger"
                 :disabled="deleting"
                 @click="confirmDelete"
               >
@@ -336,30 +336,14 @@ watch(
 }
 
 .photo-library-card__refresh,
-.photo-library-form__submit,
 .photo-library-modal__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
   min-height: 2.3rem;
-  padding: 0.55rem 0.9rem;
-  border-radius: 10px;
-  font: inherit;
-  font-weight: 600;
-}
-
-.photo-library-card__refresh,
-.photo-library-modal__btn {
-  border: 1px solid rgb(var(--color-border) / 0.72);
-  background: transparent;
-  color: rgb(var(--color-foreground) / 0.82);
 }
 
 .photo-library-form__submit {
-  border: 0;
+  min-height: 2.3rem;
   background: rgb(var(--color-primary));
-  color: rgb(var(--color-background));
+  color: rgb(var(--color-primary-foreground));
 }
 
 .photo-library-card__refresh:disabled,

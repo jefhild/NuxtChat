@@ -14,7 +14,7 @@
             <p class="settings-drawer__title">{{ settingsHeading }}</p>
             <button
               type="button"
-              class="settings-icon-btn"
+              class="ui-settings-icon-btn settings-icon-btn"
               :aria-label="$t('common.close')"
               @click="drawer = false"
             >
@@ -42,7 +42,7 @@
       <div class="settings-header-actions">
         <button
           type="button"
-          class="settings-icon-btn settings-menu-btn"
+          class="ui-settings-icon-btn settings-menu-btn"
           :aria-label="settingsHeading"
           @click="drawer = true"
         >
@@ -196,8 +196,8 @@ const menuItems = computed(() => [
     },
     {
       value: 8,
-      label: "Away Agent",
-      title: "Away Agent",
+      label: t("components.settings-container.agent-settings", "Away Agent"),
+      title: t("components.settings-container.menu.agent-settings", "Away Agent"),
       icon: "mdi-robot-outline",
     },
   ]);
@@ -265,18 +265,6 @@ onBeforeUnmount(() => {
   margin: 0;
 }
 
-.settings-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.12);
-  color: inherit;
-}
-
 .settings-drawer-overlay {
   position: fixed;
   inset: 0;
@@ -290,10 +278,16 @@ onBeforeUnmount(() => {
   flex-direction: column;
   width: min(280px, calc(100vw - 24px));
   height: calc(100dvh - 76px);
-  background: rgb(var(--color-surface) / 0.98);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface) / 0.98),
+    rgb(var(--color-surface-elevated) / 0.96)
+  );
   border-radius: 0 16px 16px 0;
-  border: 1px solid rgb(var(--color-border) / 0.78);
-  box-shadow: 0 22px 54px rgb(var(--color-shadow) / 0.26);
+  border: 1px solid rgb(var(--color-secondary) / 0.24);
+  box-shadow:
+    0 24px 56px rgb(var(--color-shadow) / 0.28),
+    0 0 0 1px rgb(var(--color-secondary) / 0.08);
   overflow: auto;
 }
 
@@ -325,7 +319,7 @@ onBeforeUnmount(() => {
   border: 0;
   border-radius: 0.9rem;
   background: transparent;
-  color: inherit;
+  color: rgb(var(--color-foreground) / 0.84);
   padding: 0.65rem 0.8rem;
   text-align: left;
   font-size: 0.9rem;
@@ -337,13 +331,17 @@ onBeforeUnmount(() => {
 
 .settings-drawer-item--active {
   background: rgb(var(--color-primary) / 0.16);
-  color: rgb(var(--color-primary));
+  color: rgb(var(--color-heading));
 }
 
 .settings-panel-card {
-  background: rgb(var(--color-surface) / 0.96);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface) / 0.98),
+    rgb(var(--color-surface-elevated) / 0.96)
+  );
   border: 1px solid rgb(var(--color-border) / 0.74);
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: 0 18px 38px rgb(var(--color-shadow) / 0.14);
 }
 
@@ -354,9 +352,8 @@ onBeforeUnmount(() => {
 }
 
 @media (hover: hover) {
-  .settings-icon-btn:hover,
   .settings-drawer-item:hover {
-    background: rgba(37, 99, 235, 0.16);
+    background: rgb(var(--color-primary) / 0.12);
   }
 }
 </style>

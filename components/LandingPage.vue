@@ -54,7 +54,7 @@
             <span class="landing-chip landing-chip--primary section-kicker">
               {{ entryCopy.kicker }}
             </span>
-            <h2 class="section-title">
+            <h2 class="section-title type-section-title">
               {{ entryCopy.title }}
             </h2>
             <p class="section-subtitle entry-intro">
@@ -69,7 +69,7 @@
                   <div class="entry-card__eyebrow">
                     {{ card.eyebrow }}
                   </div>
-                  <div class="entry-card__title">
+                  <div class="entry-card__title type-card-title">
                     {{ card.title }}
                   </div>
                   <p class="entry-card__body">
@@ -102,7 +102,7 @@
                 <span class="landing-chip landing-chip--primary section-kicker">
                   {{ awayAgentCopy.kicker }}
                 </span>
-                <h2 class="section-title">
+                <h2 class="section-title type-section-title">
                   {{ awayAgentCopy.title }}
                 </h2>
                 <p class="section-subtitle section-subtitle--spaced">
@@ -111,7 +111,7 @@
 
                 <div class="proof-grid proof-grid--tight">
                   <div v-for="point in awayAgentCopy.points" :key="point.title" class="proof-point">
-                    <div class="proof-point__title">{{ point.title }}</div>
+                    <div class="proof-point__title type-card-title">{{ point.title }}</div>
                     <div class="proof-point__body">{{ point.body }}</div>
                   </div>
                 </div>
@@ -227,7 +227,7 @@
             <span class="landing-chip landing-chip--success section-kicker">
               {{ languagePracticeCopy.kicker }}
             </span>
-            <h2 class="section-title">
+            <h2 class="section-title type-section-title">
               {{ languagePracticeCopy.title }}
             </h2>
             <p class="section-subtitle language-practice-intro">
@@ -286,7 +286,7 @@
                 <span class="landing-chip landing-chip--primary section-kicker">
                   {{ proofCopy.kicker }}
                 </span>
-                <h2 class="section-title">
+                <h2 class="section-title type-section-title">
                   {{ proofCopy.title }}
                 </h2>
                 <p class="section-subtitle section-subtitle--spaced">
@@ -296,7 +296,7 @@
 
               <div class="proof-grid">
                 <div v-for="point in proofCopy.points" :key="point.title" class="proof-point">
-                  <div class="proof-point__title">{{ point.title }}</div>
+                  <div class="proof-point__title type-card-title">{{ point.title }}</div>
                   <div class="proof-point__body">{{ point.body }}</div>
                 </div>
               </div>
@@ -305,7 +305,7 @@
             <div class="proof-layout__flow">
               <article class="entry-flow-card">
                 <div class="entry-flow-card__eyebrow">{{ proofCopy.flowEyebrow }}</div>
-                <div class="entry-flow-card__title">{{ proofCopy.flowTitle }}</div>
+                <div class="entry-flow-card__title type-card-title">{{ proofCopy.flowTitle }}</div>
                 <div class="entry-flow-list">
                   <div v-for="step in proofCopy.flowSteps" :key="step.title" class="entry-flow-step">
                     <div class="entry-flow-step__number">{{ step.number }}</div>
@@ -340,7 +340,7 @@
             <span class="landing-chip landing-chip--primary section-kicker">
               {{ moodCopy.kicker }}
             </span>
-            <h2 class="section-title">
+            <h2 class="section-title type-section-title">
               {{ moodCopy.title }}
             </h2>
             <p class="section-subtitle mood-teaser-intro">
@@ -385,7 +385,7 @@
                 <span class="landing-chip landing-chip--primary section-kicker">
                   {{ finalCtaCopy.kicker }}
                 </span>
-                <h2 class="section-title">
+                <h2 class="section-title type-section-title">
                   {{ finalCtaCopy.title }}
                 </h2>
                 <p class="section-subtitle final-cta-copy final-cta-subtitle">
@@ -823,11 +823,6 @@ const clearSpotlight = (e) => {
 .section-title {
   margin: 0 0 12px;
   color: rgb(var(--color-foreground));
-  font-size: clamp(1.95rem, 4vw, 2.45rem);
-  font-weight: 700;
-  line-height: 1.14;
-  letter-spacing: -0.03em;
-  text-wrap: balance;
 }
 
 .section-subtitle {
@@ -870,9 +865,9 @@ const clearSpotlight = (e) => {
 }
 
 .landing-chip--primary {
-  color: rgb(var(--color-primary));
-  background: rgb(var(--color-primary) / 0.1);
-  border-color: rgb(var(--color-primary) / 0.18);
+  color: rgb(var(--color-secondary));
+  background: rgb(var(--color-secondary) / 0.12);
+  border-color: rgb(var(--color-secondary) / 0.2);
 }
 
 .landing-chip--success {
@@ -905,8 +900,9 @@ const clearSpotlight = (e) => {
   color: rgb(var(--color-foreground));
   cursor: pointer;
   font: inherit;
-  font-weight: 600;
-  line-height: 1.3;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
   text-align: center;
   text-decoration: none;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease,
@@ -934,7 +930,7 @@ const clearSpotlight = (e) => {
 
 .landing-button--primary {
   background: rgb(var(--color-primary));
-  color: rgb(var(--color-primary-foreground, var(--color-background, 255 255 255)));
+  color: #fff;
   box-shadow: 0 12px 24px rgb(var(--color-shadow) / 0.16);
 }
 
@@ -945,9 +941,9 @@ const clearSpotlight = (e) => {
 }
 
 .landing-button--outline {
-  border-color: rgb(var(--color-primary) / 0.32);
+  border-color: rgb(var(--color-secondary) / 0.42);
   background: rgb(var(--color-surface) / 0.72);
-  color: rgb(var(--color-primary));
+  color: rgb(var(--color-secondary));
 }
 
 .landing-button--outline-success {
@@ -984,12 +980,12 @@ const clearSpotlight = (e) => {
 
 .landing-button--lg {
   min-height: 48px;
-  padding-inline: 1.3rem;
+  padding-inline: 1.45rem;
 }
 
 .landing-button--xl {
   min-height: 52px;
-  padding-inline: 1.45rem;
+  padding-inline: 1.65rem;
 }
 
 .away-agent-actions {
@@ -1110,7 +1106,7 @@ const clearSpotlight = (e) => {
 }
 
 .entry-more-link {
-  color: rgb(var(--color-primary));
+  color: rgb(var(--color-secondary));
   text-decoration: none;
   font-weight: 500;
 }
@@ -1149,7 +1145,7 @@ const clearSpotlight = (e) => {
 
 .entry-card__eyebrow {
   margin-bottom: 10px;
-  color: rgb(var(--color-primary));
+  color: rgb(var(--color-secondary));
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -1161,9 +1157,6 @@ const clearSpotlight = (e) => {
 .entry-flow-card__title {
   margin-bottom: 8px;
   color: rgb(var(--color-foreground));
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 1.35;
 }
 
 .entry-card__body,
@@ -1179,7 +1172,7 @@ const clearSpotlight = (e) => {
 }
 
 .entry-card__cta {
-  color: rgb(var(--color-primary));
+  color: rgb(var(--color-secondary));
   font-weight: 600;
 }
 
@@ -1207,7 +1200,6 @@ const clearSpotlight = (e) => {
 .proof-point__title {
   margin-bottom: 8px;
   color: rgb(var(--color-foreground));
-  font-weight: 700;
 }
 
 .proof-point__body {

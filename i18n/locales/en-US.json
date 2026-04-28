@@ -1409,6 +1409,11 @@
       "action-label": "Open consent information or start chat",
       "consent-cta": "Accept terms & start",
       "back-to-bio": "Back to bio",
+      "photos": "photos",
+      "no-photo-preview": "No photo preview",
+      "no-approved-photos": "No approved photos yet.",
+      "full-profile": "View full profile",
+      "empty-profile-details": "Select a user to view profile details.",
       "settings": "Settings",
       "settings-disabled": "Settings (Disabled in Anonymous Mode)",
       "settings-aria-label": "Open settings modal to update your account preferences and personal information"
@@ -1448,6 +1453,9 @@
       "all": "All",
       "registered": "Only Registered Users",
       "anony": "Only Anonymous Users",
+      "include-ai-chatbots": "Include AI chatbots",
+      "all-countries": "All Countries",
+      "all-statuses": "All Statuses",
       "include-language-practice-ai": "Include language practice AI chatbots"
     },
     "finish-profile": {
@@ -1471,13 +1479,21 @@
     },
     "loginEmail": {
       "sign-in": "Sign In with Email",
+      "email-code": "Email code",
+      "email-label": "Email",
+      "code-label": "6-digit code",
       "18years": "I am 18 years or older and agree to the Terms of Service",
+      "send-magic-link": "Send magic link",
+      "send-code": "Send code",
+      "verify-code": "Verify code",
       "checkmail1": "Check your email for the login link!",
       "checkmail2": "(It may be in your spam folder.)",
       "registeredInfo": "Registered users can contact offline users, save favorites, share photos and a bunch of other stuff. By creating an account, you agree to our",
       "terms": "Terms of Service",
       "invalid-email": "Invalid email address",
-      "confirmAge": "You must confirm your age"
+      "confirmAge": "You must confirm your age",
+      "login-failed": "Login failed.",
+      "invalid-code": "Invalid code."
     },
     "loginFacebook": {
       "sign-in": "Sign In with Facebook",
@@ -1615,12 +1631,31 @@
       "add-photo": "Add Photo",
       "add-avatar-deco": "Add Avatar Decoration",
       "upload-photo": "Upload Profile Photo",
+      "random-title": "Random photo",
+      "upload-title": "Upload photo",
+      "decoration-title": "Avatar decoration",
+      "decoration-locked-title": "Link your email to unlock avatar decorations",
       "upload": "Upload",
       "cancel": "Cancel"
     },
     "profile-site": {
       "label": "Public Site URL",
       "valid": "Valid URL is required"
+    },
+    "profile-form": {
+      "mode-editing": "Edit mode",
+      "mode-readonly": "View mode",
+      "mode-editing-copy": "Changes are live in the form until you save or cancel.",
+      "mode-readonly-copy": "Fields are locked until you enter edit mode.",
+      "decoration-locked-copy": "Link your email to unlock avatar decorations.",
+      "ai-bio-title": "Generate a bio",
+      "ai-bio-copy": "Enter at least 4 words that describe you. The AI will craft a short bio you can edit.",
+      "ai-bio-keywords-label": "Keywords",
+      "ai-bio-placeholder": "curious, optimistic, hiking, espresso",
+      "ai-bio-remaining": "Remaining uses: {count}",
+      "ai-bio-submit": "Generate",
+      "ai-bio-min-words": "Please enter at least 4 words that describe you.",
+      "ai-bio-generic-error": "Could not generate a bio. Please try again."
     },
     "profile-tagline": {
       "label": "Tagline",
@@ -1694,6 +1729,7 @@
       "site-settings": "Site Settings",
       "chat-settings": "Chat Settings",
       "photo-library": "Photo Library",
+      "agent-settings": "Away Agent",
       "menu": {
         "profile": "My Profile",
         "favorites": "My Favorites",
@@ -1702,7 +1738,8 @@
         "language-practice": "Language Practice",
         "site-settings": "Site Settings",
         "chat-settings": "Chat Settings",
-        "photo-library": "Photo Library"
+        "photo-library": "Photo Library",
+        "agent-settings": "Away Agent"
       },
       "loading": "Loading...",
       "registered-only": "Registered users only"
@@ -1811,6 +1848,26 @@
       "translated": "Translated",
       "someone": "This user",
       "theirLanguage": "their language"
+    },
+    "consentPanel": {
+      "state": {
+        "consent": "Consent needed",
+        "onboarding": "Finish onboarding",
+        "linkEmail": "Link your email",
+        "ready": "All set"
+      },
+      "cta": {
+        "resume": "Resume onboarding",
+        "linkEmail": "Link email"
+      },
+      "stage": {
+        "idle": "Get started",
+        "consent": "Consent",
+        "collecting": "Basics",
+        "confirm": "Confirm",
+        "finalizing": "Saving",
+        "done": "Done"
+      }
     },
     "matchStrip": {
       "label": "matches",

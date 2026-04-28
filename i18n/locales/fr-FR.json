@@ -1394,6 +1394,11 @@
       "action-label": "Ouvrir les informations de consentement ou démarrer le chat",
       "consent-cta": "Accepter les conditions",
       "back-to-bio": "Retour à la bio",
+      "photos": "photos",
+      "no-photo-preview": "Aucun aperçu de photo",
+      "no-approved-photos": "Aucune photo approuvée pour le moment.",
+      "full-profile": "Voir le profil complet",
+      "empty-profile-details": "Sélectionnez un utilisateur pour voir les détails du profil.",
       "settings": "Paramètres",
       "settings-disabled": "Paramètres (désactivés en mode anonyme)",
       "settings-aria-label": "Ouvrir la fenêtre des paramètres pour mettre à jour vos préférences de compte et vos informations personnelles"
@@ -1433,6 +1438,9 @@
       "all": "Tous",
       "registered": "Utilisateurs Enregistrés Uniquement",
       "anony": "Utilisateurs Anonymes Uniquement",
+      "include-ai-chatbots": "Inclure les chatbots IA",
+      "all-countries": "Tous les pays",
+      "all-statuses": "Tous les statuts",
       "include-language-practice-ai": "Inclure les IA de pratique des langues"
     },
     "finish-profile": {
@@ -1456,13 +1464,21 @@
     },
     "loginEmail": {
       "sign-in": "Se Connecter avec E-mail",
+      "email-code": "Code par e-mail",
+      "email-label": "E-mail",
+      "code-label": "Code à 6 chiffres",
       "18years": "J'ai 18 ans ou plus et j'accepte les Conditions de Service",
+      "send-magic-link": "Envoyer le lien magique",
+      "send-code": "Envoyer le code",
+      "verify-code": "Vérifier le code",
       "checkmail1": "Vérifiez votre e-mail pour le lien de connexion !",
       "checkmail2": "(Il peut être dans votre dossier spam.)",
       "registeredInfo": "Les utilisateurs enregistrés peuvent contacter les utilisateurs hors ligne, sauvegarder les favoris, partager des photos et plein d'autres choses. En créant un compte, vous acceptez nos",
       "terms": "Conditions de Service",
       "invalid-email": "Adresse e-mail invalide",
-      "confirmAge": "Vous devez confirmer votre âge"
+      "confirmAge": "Vous devez confirmer votre âge",
+      "login-failed": "Échec de la connexion.",
+      "invalid-code": "Code invalide."
     },
     "loginFacebook": {
       "sign-in": "Se Connecter avec Facebook",
@@ -1594,12 +1610,31 @@
       "add-photo": "Ajouter une Photo",
       "add-avatar-deco": "Ajouter une Décoration d'Avatar",
       "upload-photo": "Télécharger une Photo de Profil",
+      "random-title": "Photo aléatoire",
+      "upload-title": "Télécharger une photo",
+      "decoration-title": "Décoration d’avatar",
+      "decoration-locked-title": "Liez votre e-mail pour débloquer les décorations d’avatar",
       "upload": "Télécharger",
       "cancel": "Annuler"
     },
     "profile-site": {
       "label": "URL du Site Public",
       "valid": "URL valide requise"
+    },
+    "profile-form": {
+      "mode-editing": "Mode édition",
+      "mode-readonly": "Mode lecture",
+      "mode-editing-copy": "Les changements sont actifs dans le formulaire jusqu’à l’enregistrement ou l’annulation.",
+      "mode-readonly-copy": "Les champs sont verrouillés jusqu’à l’activation du mode édition.",
+      "decoration-locked-copy": "Liez votre e-mail pour débloquer les décorations d’avatar.",
+      "ai-bio-title": "Générer une bio",
+      "ai-bio-copy": "Entrez au moins 4 mots qui vous décrivent. L’IA rédigera une courte bio que vous pourrez modifier.",
+      "ai-bio-keywords-label": "Mots-clés",
+      "ai-bio-placeholder": "curieux, optimiste, randonnée, espresso",
+      "ai-bio-remaining": "Utilisations restantes : {count}",
+      "ai-bio-submit": "Générer",
+      "ai-bio-min-words": "Veuillez entrer au moins 4 mots qui vous décrivent.",
+      "ai-bio-generic-error": "Impossible de générer une bio pour le moment. Veuillez réessayer."
     },
     "profile-tagline": {
       "label": "Slogan",
@@ -1673,6 +1708,7 @@
       "site-settings": "Paramètres du site",
       "chat-settings": "Paramètres du chat",
       "photo-library": "Bibliothèque de photos",
+      "agent-settings": "Agent d’absence",
       "menu": {
         "profile": "Mon Profil",
         "favorites": "Mes Favoris",
@@ -1681,7 +1717,8 @@
         "language-practice": "Pratique linguistique",
         "site-settings": "Paramètres du site",
         "chat-settings": "Paramètres du chat",
-        "photo-library": "Bibliothèque de photos"
+        "photo-library": "Bibliothèque de photos",
+        "agent-settings": "Agent d’absence"
       },
       "loading": "Chargement...",
       "registered-only": "Utilisateurs enregistrés seulement"
@@ -1790,6 +1827,26 @@
       "translated": "Traduit",
       "someone": "Cet utilisateur",
       "theirLanguage": "sa langue"
+    },
+    "consentPanel": {
+      "state": {
+        "consent": "Consentement requis",
+        "onboarding": "Terminer l’inscription",
+        "linkEmail": "Liez votre e-mail",
+        "ready": "Tout est prêt"
+      },
+      "cta": {
+        "resume": "Reprendre l’inscription",
+        "linkEmail": "Lier l’e-mail"
+      },
+      "stage": {
+        "idle": "Commencer",
+        "consent": "Consentement",
+        "collecting": "Essentiels",
+        "confirm": "Confirmer",
+        "finalizing": "Enregistrement",
+        "done": "Terminé"
+      }
     },
     "matchStrip": {
       "label": "correspondances",

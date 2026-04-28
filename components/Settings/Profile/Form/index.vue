@@ -108,29 +108,29 @@
             @click="closeLinkEmailDialog"
           />
           <div class="settings-modal__panel settings-modal__panel--sm">
-            <h2 class="settings-modal__title">
+            <h2 class="settings-modal__title type-card-title">
               {{ t("components.profile-email-link.dialog-title") }}
             </h2>
             <p class="settings-modal__body">
               {{ t("components.profile-email-link.dialog-description") }}
             </p>
 
-            <label class="settings-modal__field">
-              <span>{{ t("components.profile-email-link.email-label") }}</span>
+            <label class="ui-settings-field settings-modal__field">
+              <span class="ui-settings-field__label">{{ t("components.profile-email-link.email-label") }}</span>
               <input
                 v-model="linkEmailForm.email"
                 type="email"
                 autocomplete="email"
-                class="settings-modal__input"
+                class="ui-settings-field__control settings-modal__input"
               >
             </label>
-            <label class="settings-modal__field">
-              <span>{{ t("components.profile-email-link.confirm-label") }}</span>
+            <label class="ui-settings-field settings-modal__field">
+              <span class="ui-settings-field__label">{{ t("components.profile-email-link.confirm-label") }}</span>
               <input
                 v-model="linkEmailForm.confirmEmail"
                 type="email"
                 autocomplete="email"
-                class="settings-modal__input"
+                class="ui-settings-field__control settings-modal__input"
               >
             </label>
 
@@ -150,14 +150,14 @@
             <div class="settings-modal__actions">
               <button
                 type="button"
-                class="settings-modal__btn"
+                class="ui-settings-btn ui-settings-btn--secondary settings-modal__btn"
                 @click="closeLinkEmailDialog"
               >
                 {{ t("components.profile-email-link.cancel") }}
               </button>
               <button
                 type="button"
-                class="settings-modal__btn settings-modal__btn--primary"
+                class="ui-settings-btn ui-settings-btn--primary settings-modal__btn"
                 :disabled="linkEmailSubmitting"
                 @click="submitLinkEmail"
               >
@@ -211,23 +211,23 @@
             @click="decorationLockedDialogVisible = false"
           />
           <div class="settings-modal__panel settings-modal__panel--sm">
-            <h2 class="settings-modal__title">
+            <h2 class="settings-modal__title type-card-title">
               {{ t("components.select-avatar-decoration.title") }}
             </h2>
             <p class="settings-modal__body">
-              Link your email to unlock avatar decorations.
+              {{ t("components.profile-form.decoration-locked-copy") }}
             </p>
             <div class="settings-modal__actions">
               <button
                 type="button"
-                class="settings-modal__btn"
+                class="ui-settings-btn ui-settings-btn--secondary settings-modal__btn"
                 @click="decorationLockedDialogVisible = false"
               >
                 {{ t("components.profile-email-link.cancel") }}
               </button>
               <button
                 type="button"
-                class="settings-modal__btn settings-modal__btn--primary"
+                class="ui-settings-btn ui-settings-btn--primary settings-modal__btn"
                 @click="openLinkEmailFromDecorationLock"
               >
                 {{ t("components.profile-email-link.cta") }}
@@ -252,22 +252,21 @@
             @click="closeAiBioDialog"
           />
           <div class="settings-modal__panel settings-modal__panel--md">
-            <h2 class="settings-modal__title">Generate a bio</h2>
+            <h2 class="settings-modal__title type-card-title">{{ t("components.profile-form.ai-bio-title") }}</h2>
             <p class="settings-modal__body">
-              Enter at least 4 words that describe you. The AI will craft a short
-              bio you can edit.
+              {{ t("components.profile-form.ai-bio-copy") }}
             </p>
-            <label class="settings-modal__field">
-              <span>Keywords</span>
+            <label class="ui-settings-field settings-modal__field">
+              <span class="ui-settings-field__label">{{ t("components.profile-form.ai-bio-keywords-label") }}</span>
               <textarea
                 v-model="aiBioKeywords"
                 rows="3"
-                class="settings-modal__input settings-modal__textarea"
-                placeholder="curious, optimistic, hiking, espresso"
+                class="ui-settings-field__control ui-settings-field__control--textarea settings-modal__input settings-modal__textarea"
+                :placeholder="t('components.profile-form.ai-bio-placeholder')"
               ></textarea>
             </label>
             <div class="settings-modal__caption">
-              Remaining uses: {{ aiBioRemaining }}
+              {{ t("components.profile-form.ai-bio-remaining", { count: aiBioRemaining }) }}
             </div>
             <div
               v-if="aiBioError"
@@ -276,17 +275,17 @@
               {{ aiBioError }}
             </div>
             <div class="settings-modal__actions">
-              <button type="button" class="settings-modal__btn" @click="closeAiBioDialog">
-                Cancel
+              <button type="button" class="ui-settings-btn ui-settings-btn--secondary settings-modal__btn" @click="closeAiBioDialog">
+                {{ t("components.profile-email-link.cancel") }}
               </button>
               <button
                 type="button"
-                class="settings-modal__btn settings-modal__btn--primary"
+                class="ui-settings-btn ui-settings-btn--primary settings-modal__btn"
                 :disabled="aiBioLoading || aiBioDisabled"
                 @click="generateAiBio"
               >
                 <span v-if="aiBioLoading" class="settings-modal__spinner" aria-hidden="true" />
-                Generate
+                {{ t("components.profile-form.ai-bio-submit") }}
               </button>
             </div>
           </div>
@@ -626,7 +625,7 @@ const generateAiBio = async () => {
   aiBioError.value = "";
   const words = parseKeywords(aiBioKeywords.value);
   if (words.length < 4) {
-    aiBioError.value = "Please enter at least 4 words that describe you.";
+    aiBioError.value = t("components.profile-form.ai-bio-min-words");
     return;
   }
 
@@ -649,11 +648,11 @@ const generateAiBio = async () => {
       saveAiBioUses();
       aiBioDialogVisible.value = false;
     } else {
-      aiBioError.value = "Could not generate a bio. Please try again.";
+      aiBioError.value = t("components.profile-form.ai-bio-generic-error");
     }
   } catch (err) {
     console.error("[settings] ai bio failed:", err);
-    aiBioError.value = "Could not generate a bio. Please try again.";
+    aiBioError.value = t("components.profile-form.ai-bio-generic-error");
   } finally {
     aiBioLoading.value = false;
   }
@@ -1407,11 +1406,17 @@ onMounted(async () => {
   max-height: calc(100vh - 2rem);
   overflow: auto;
   transform: translate(-50%, -50%);
-  padding: 1.25rem;
-  border: 1px solid rgb(var(--color-border) / 0.72);
-  border-radius: 18px;
-  background: rgb(var(--color-surface));
-  box-shadow: 0 24px 48px rgb(15 23 42 / 0.28);
+  padding: 1.15rem;
+  border: 1px solid rgb(var(--color-secondary) / 0.26);
+  border-radius: 20px;
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-surface) / 0.98),
+    rgb(var(--color-surface-elevated) / 0.96)
+  );
+  box-shadow:
+    0 28px 56px rgb(15 23 42 / 0.32),
+    0 0 0 1px rgb(var(--color-secondary) / 0.1);
 }
 
 .settings-modal__panel--sm {
@@ -1428,42 +1433,29 @@ onMounted(async () => {
 
 .settings-modal__title {
   margin: 0;
-  font-size: 1.125rem;
-  font-weight: 700;
   color: rgb(var(--color-foreground));
 }
 
 .settings-modal__body,
 .settings-modal__caption {
-  color: rgb(var(--color-foreground) / 0.72);
+  color: rgb(var(--color-muted));
   line-height: 1.6;
 }
 
 .settings-modal__body {
-  margin: 0.75rem 0 1rem;
+  margin: 0.7rem 0 0.95rem;
 }
 
 .settings-modal__field {
-  display: grid;
-  gap: 0.4rem;
-  margin-top: 0.85rem;
-  color: rgb(var(--color-foreground) / 0.82);
-  font-size: 0.9rem;
+  margin-top: 0.8rem;
 }
 
 .settings-modal__input {
-  width: 100%;
-  min-height: 44px;
-  padding: 0.75rem 0.9rem;
-  border: 1px solid rgb(var(--color-border) / 0.82);
-  border-radius: 12px;
-  background: rgb(var(--color-surface));
-  color: rgb(var(--color-foreground));
   font: inherit;
 }
 
 .settings-modal__textarea {
-  resize: vertical;
+  min-height: 7rem;
 }
 
 .settings-modal__caption {
@@ -1479,24 +1471,7 @@ onMounted(async () => {
 }
 
 .settings-modal__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  min-height: 2.35rem;
-  padding: 0.55rem 0.95rem;
-  border: 1px solid rgb(var(--color-border) / 0.72);
-  border-radius: 10px;
-  background: transparent;
-  color: rgb(var(--color-foreground) / 0.82);
   font: inherit;
-  font-weight: 600;
-}
-
-.settings-modal__btn--primary {
-  border-color: transparent;
-  background: rgb(var(--color-primary));
-  color: rgb(var(--color-background));
 }
 
 .settings-modal__btn:disabled {

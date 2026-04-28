@@ -127,7 +127,7 @@
     <div class="candidate-card__actions">
       <button
         type="button"
-        class="candidate-card__cta"
+        class="candidate-card__cta ui-card-cta"
         @click="onChat"
       >
         <i
@@ -501,28 +501,11 @@ function onChat() {
 }
 
 .candidate-card__cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  width: 100%;
-  min-height: 38px;
-  padding: 0.6rem 0.8rem;
-  border: 0;
-  border-radius: 10px;
-  background: rgb(var(--color-primary) / 0.12);
-  color: rgb(var(--color-primary));
-  font-size: 0.88rem;
-  font-weight: 600;
-  line-height: 1.3;
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.15s ease;
 }
 
 .candidate-card__cta:hover,
 .candidate-card__cta:focus-visible {
-  background: rgb(var(--color-primary) / 0.18);
-  transform: translateY(-1px);
   outline: none;
 }
 

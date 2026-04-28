@@ -87,7 +87,7 @@
         <div v-if="selectedUserPanelView === 'photos'" class="profile-photo-view mb-3">
           <div class="mb-2 flex items-center justify-between">
             <span class="profile-meta-label text-xs">
-              {{ selectedUserPhotoCount }} photos
+              {{ selectedUserPhotoCount }} {{ t("components.chatheader.photos") }}
             </span>
             <button
               type="button"
@@ -121,14 +121,14 @@
                   class="profile-photo-image"
                 >
                 <div v-else class="profile-photo-fallback">
-                  No photo preview
+                  {{ t("components.chatheader.no-photo-preview") }}
                 </div>
               </template>
               <div
                 v-else
                 class="profile-photo-fallback"
               >
-                No photo preview
+                {{ t("components.chatheader.no-photo-preview") }}
               </div>
 
               <button
@@ -187,7 +187,7 @@
             </div>
           </div>
           <div v-else class="text-sm text-medium-emphasis">
-            No approved photos yet.
+            {{ t("components.chatheader.no-approved-photos") }}
           </div>
         </div>
         <div
@@ -212,14 +212,14 @@
           <button
             type="button"
             class="profile-view-btn"
-            title="View full profile"
+            :title="t('components.chatheader.full-profile')"
             @click="$emit('open-profile')"
           >
             <i
               :class="iconClass('mdi-account-box-outline', 'mr-1 text-[18px]')"
               aria-hidden="true"
             />
-            View full profile
+            {{ t("components.chatheader.full-profile") }}
           </button>
           <div class="ml-auto flex items-center gap-2">
             <ButtonUpvote :profile="selectedUser" />
@@ -257,7 +257,7 @@
       </template>
       <template v-else>
         <div class="profile-empty-state text-sm">
-          Select a user to view profile details.
+          {{ t("components.chatheader.empty-profile-details") }}
         </div>
       </template>
     </div>
@@ -360,11 +360,11 @@ watch(
 
 <style scoped>
 .profile-meta-grid {
-  column-gap: 24px;
+  column-gap: 1rem;
 }
 
 .profile-meta-primary-row {
-  gap: 18px;
+  gap: 0.85rem;
 }
 
 .profile-meta-primary-item {
@@ -375,7 +375,7 @@ watch(
 .profile-photo-back-link {
   border: 0;
   background: transparent;
-  color: #7cc2ff;
+  color: rgb(var(--color-secondary));
   cursor: pointer;
   padding: 0;
   margin-left: 4px;
@@ -389,12 +389,12 @@ watch(
 }
 
 .profile-photo-back-btn {
-  color: #7cc2ff !important;
+  color: rgb(var(--color-secondary)) !important;
   opacity: 0.9;
   width: 2rem;
   height: 2rem;
-  border: 0;
-  background: transparent;
+  border: 1px solid rgba(var(--color-border), 0.24);
+  background: rgba(var(--color-surface), 0.78);
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
@@ -411,13 +411,13 @@ watch(
 
 .profile-photo-skeleton {
   height: 210px;
-  border-radius: 12px;
+  border-radius: 0.9rem;
   overflow: hidden;
   background: linear-gradient(
     90deg,
-    rgba(30, 41, 59, 0.45) 0%,
-    rgba(51, 65, 85, 0.72) 50%,
-    rgba(30, 41, 59, 0.45) 100%
+    rgba(var(--color-surface), 0.56) 0%,
+    rgba(var(--color-surface-elevated), 0.82) 50%,
+    rgba(var(--color-surface), 0.56) 100%
   );
   background-size: 200% 100%;
   animation: profile-photo-skeleton-shimmer 1.4s ease-in-out infinite;
@@ -425,9 +425,10 @@ watch(
 
 .profile-photo-carousel-wrap {
   position: relative;
-  border-radius: 12px;
+  border-radius: 0.9rem;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.32);
+  border: 1px solid rgba(var(--color-border), 0.3);
+  background: rgba(var(--color-surface), 0.55);
 }
 
 .profile-photo-stage {
@@ -446,8 +447,8 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #cbd5e1;
-  background: rgba(15, 23, 42, 0.75);
+  color: rgb(var(--color-muted));
+  background: rgba(var(--color-surface-elevated), 0.72);
 }
 
 .profile-photo-nav {
@@ -456,10 +457,10 @@ watch(
   transform: translateY(-50%);
   width: 2rem;
   height: 2rem;
-  border: 1px solid rgba(148, 163, 184, 0.28);
+  border: 1px solid rgba(var(--color-border), 0.28);
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.72);
-  color: #e2e8f0;
+  background: rgba(var(--color-surface-elevated), 0.82);
+  color: rgb(var(--color-foreground));
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -473,7 +474,7 @@ watch(
 }
 
 .profile-photo-nav:hover:not(:disabled) {
-  background: rgba(30, 41, 59, 0.88);
+  background: rgba(var(--color-surface-elevated), 0.96);
 }
 
 .profile-photo-nav:disabled {
@@ -496,8 +497,8 @@ watch(
   transform: translateX(-50%);
   border-radius: 999px;
   padding: 0.2rem 0.55rem;
-  background: rgba(2, 6, 23, 0.7);
-  color: #e2e8f0;
+  background: rgba(var(--color-background), 0.72);
+  color: rgb(var(--color-foreground));
   font-size: 0.75rem;
   line-height: 1rem;
 }
@@ -516,9 +517,9 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #e2e8f0;
+  color: rgb(var(--color-foreground));
   font-weight: 600;
-  background: rgba(2, 6, 23, 0.38);
+  background: rgba(var(--color-background), 0.4);
   gap: 6px;
   pointer-events: none;
 }
@@ -527,7 +528,7 @@ watch(
   pointer-events: auto;
   border: 0;
   background: transparent;
-  color: #e2e8f0;
+  color: rgb(var(--color-foreground));
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
@@ -541,7 +542,8 @@ watch(
 
 .profile-bio {
   white-space: pre-line;
-  color: #cbd5e1;
+  color: rgb(var(--color-muted));
+  line-height: 1.58;
 }
 
 .profile-looking-for-row {
@@ -566,43 +568,48 @@ watch(
 }
 
 .thread-info-panel-card {
-  background: #0f172a !important;
-  border: 1px solid rgba(148, 163, 184, 0.45) !important;
-  color: #e2e8f0 !important;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 20px rgba(2, 6, 23, 0.28);
+  background: rgba(var(--color-surface), 0.92) !important;
+  border: 1px solid rgba(var(--color-border), 0.32) !important;
+  color: rgb(var(--color-foreground)) !important;
+  border-radius: 0.85rem;
+  box-shadow: 0 14px 30px rgba(var(--color-shadow), 0.18);
 }
 
 .profile-tagline {
-  color: #e2e8f0 !important;
+  color: rgb(var(--color-foreground)) !important;
+  line-height: 1.5;
 }
 
 .profile-meta-label {
-  color: #94a3b8 !important;
+  color: rgb(var(--color-muted)) !important;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .profile-meta-value {
-  color: #e2e8f0 !important;
+  color: rgb(var(--color-foreground)) !important;
 }
 
 .profile-view-btn {
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(96, 165, 250, 0.24);
+  border: 1px solid rgba(var(--color-secondary), 0.24);
   border-radius: 999px;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.875rem;
+  padding: 0.42rem 0.82rem;
+  font-size: 0.84rem;
   font-weight: 500;
-  background: rgba(59, 130, 246, 0.18) !important;
-  color: #dbeafe !important;
+  background: rgba(var(--color-secondary), 0.14) !important;
+  color: rgb(var(--color-secondary)) !important;
 }
 
 .profile-action-btn {
   width: 2rem;
   height: 2rem;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(var(--color-border), 0.22);
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.42);
+  background: rgba(var(--color-surface), 0.56);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -623,15 +630,15 @@ watch(
 }
 
 .profile-action-btn--block :deep(.mdi) {
-  color: #60a5fa !important;
+  color: rgb(var(--color-secondary)) !important;
 }
 
 .profile-action-btn--share :deep(.mdi) {
-  color: #93c5fd !important;
+  color: rgb(var(--color-secondary)) !important;
 }
 
 .profile-empty-state {
-  color: #94a3b8 !important;
+  color: rgb(var(--color-muted)) !important;
 }
 
 @keyframes profile-photo-skeleton-shimmer {

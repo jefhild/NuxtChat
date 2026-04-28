@@ -1,11 +1,11 @@
 <template>
   <div class="match-page-shell mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
     <div class="match-header text-center mb-6">
-      <div class="match-kicker">
+      <div class="match-kicker type-eyebrow">
         {{ $t("pages.match.kicker") }}
       </div>
-      <h1 class="match-title">{{ $t("pages.match.title") }}</h1>
-      <p class="match-subtitle">{{ $t("pages.match.subtitle") }}</p>
+      <h1 class="match-title type-page-title">{{ $t("pages.match.title") }}</h1>
+      <p class="match-subtitle type-page-subtitle">{{ $t("pages.match.subtitle") }}</p>
     </div>
 
     <div class="match-chips-wrap mb-6">
@@ -55,7 +55,7 @@
       <section v-if="onlineCandidates.length" class="mb-8">
         <div class="mb-3 flex items-center gap-2">
           <span class="dot dot-online" />
-          <h2 class="match-section-title">
+          <h2 class="match-section-title type-list-heading">
             {{ $t("pages.match.sections.online") }}
           </h2>
         </div>
@@ -75,7 +75,7 @@
       <section v-if="offlineCandidates.length" class="mb-8">
         <div class="mb-3 flex items-center gap-2">
           <span class="dot dot-offline" />
-          <h2 class="match-section-title">
+          <h2 class="match-section-title type-list-heading">
             {{ $t("pages.match.sections.offline") }}
           </h2>
         </div>
@@ -95,7 +95,7 @@
       <section v-if="displayAiCandidates.length" class="mb-8">
         <div class="mb-3 flex items-center gap-2">
           <i class="mdi mdi-robot-outline match-section-icon" aria-hidden="true" />
-          <h2 class="match-section-title">
+          <h2 class="match-section-title type-list-heading">
             {{ $t("pages.match.sections.ai") }}
           </h2>
         </div>
@@ -133,7 +133,7 @@
             aria-labelledby="match-onboarding-title"
           >
             <div class="match-dialog-card">
-              <h2 id="match-onboarding-title" class="match-dialog-card__title">
+              <h2 id="match-onboarding-title" class="match-dialog-card__title type-card-title">
                 {{ $t("pages.match.onboardingDialog.title") }}
               </h2>
               <p class="match-dialog-card__body">
@@ -430,24 +430,15 @@ useHead({
   border-radius: 999px;
   background: rgb(var(--color-primary) / 0.12);
   color: rgb(var(--color-primary));
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .match-title {
   margin: 0 0 0.5rem;
-  font-size: clamp(2rem, 2vw + 1.2rem, 2.8rem);
-  font-weight: 700;
-  line-height: 1.15;
   color: rgb(var(--color-foreground));
 }
 
 .match-subtitle {
   margin: 0;
-  font-size: 1rem;
-  line-height: 1.6;
   color: rgb(var(--color-foreground) / 0.72);
 }
 
@@ -576,9 +567,6 @@ useHead({
 
 .match-section-title {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.35;
   color: rgb(var(--color-foreground));
 }
 
@@ -634,9 +622,6 @@ useHead({
 
 .match-dialog-card__title {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 650;
-  line-height: 1.35;
   color: rgb(var(--color-foreground));
 }
 
