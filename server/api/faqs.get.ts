@@ -158,7 +158,7 @@ export default defineEventHandler(async (event) => {
         slug: string;
         sortOrder: number;
         title: string;
-        topics: Array<{ id: string; slug: string; title: string }>;
+        topics: Array<{ id: string; slug: string; groupSlug: string; title: string }>;
       }
     >();
 
@@ -184,6 +184,7 @@ export default defineEventHandler(async (event) => {
       group.topics.push({
         id: topic.id,
         slug: topic.slug,
+        groupSlug: group.slug,
         title: topic.title,
       });
     });
@@ -209,8 +210,10 @@ export default defineEventHandler(async (event) => {
           question: translation?.question || "",
           answer: translation?.answer || "",
           topicId: topic.id,
+          topicSlug: topic.slug,
           topicTitle: topic.title,
           groupId: group.id,
+          groupSlug: group.slug,
           groupTitle: group.title,
           groupSort: group.sortOrder,
           topicSort: topic.sortOrder,
@@ -222,8 +225,10 @@ export default defineEventHandler(async (event) => {
       question: string;
       answer: string;
       topicId: string;
+      topicSlug: string;
       topicTitle: string;
       groupId: string;
+      groupSlug: string;
       groupTitle: string;
       groupSort: number;
       topicSort: number;

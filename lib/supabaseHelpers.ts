@@ -97,29 +97,83 @@ export async function getUserSlugFromDisplayName(displayName: string){
 }
 
 export async function getFaqTopicSlugs(): Promise<
-  { slug: string; updatedAt: string }[]
+  { groupSlug: string; slug: string; updatedAt: string }[]
 > {
-  const { data, error } = await supabase
-    .from("faq_topics")
-    .select("slug, updated_at")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
+  const [topicsResponse, entriesResponse] = await Promise.all([
+    supabase
+      .from("faq_topics")
+      .select("id, group_id, slug, updated_at")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("faq_entries")
+      .select("topic_id, updated_at")
+      .eq("is_active", true),
+  ]);
 
-  if (error) {
-    console.error("Error fetching FAQ topic slugs:", error.message);
+  if (topicsResponse.error) {
+    console.error("Error fetching FAQ topic slugs:", topicsResponse.error.message);
     return [];
   }
 
+  if (entriesResponse.error) {
+    console.error(
+      "Error fetching FAQ entry metadata for sitemap:",
+      entriesResponse.error.message
+    );
+    return [];
+  }
+
+  const { data: groupsData, error: groupsError } = await supabase
+    .from("faq_groups")
+    .select("id, slug")
+    .eq("is_active", true);
+
+  if (groupsError) {
+    console.error("Error fetching FAQ group slugs:", groupsError.message);
+    return [];
+  }
+
+  const groupSlugMap = new Map(
+    (groupsData || []).map((group) => [
+      String(group.id || "").trim(),
+      String(group.slug || "").trim(),
+    ])
+  );
+
+  const topicMeta = new Map<string, { count: number; updatedAt: string }>();
+  (entriesResponse.data || []).forEach((row) => {
+    const topicId = String(row.topic_id || "").trim();
+    if (!topicId) return;
+    const updatedAt = String(row.updated_at || "").trim();
+    const existing = topicMeta.get(topicId);
+    if (!existing) {
+      topicMeta.set(topicId, { count: 1, updatedAt });
+      return;
+    }
+    existing.count += 1;
+    if (updatedAt && (!existing.updatedAt || updatedAt > existing.updatedAt)) {
+      existing.updatedAt = updatedAt;
+    }
+  });
+
   const seen = new Set<string>();
-  return (data || [])
+  return (topicsResponse.data || [])
     .filter((row) => {
+      const groupSlug = groupSlugMap.get(String(row.group_id || "").trim());
+      const meta = topicMeta.get(String(row.id || "").trim());
       const slug = String(row.slug || "").trim();
-      if (!slug || seen.has(slug)) return false;
-      seen.add(slug);
+      const key = `${groupSlug || ""}::${slug}`;
+      if (!groupSlug || !slug || seen.has(key) || !meta?.count) return false;
+      seen.add(key);
       return true;
     })
     .map((row) => ({
+      groupSlug: groupSlugMap.get(String(row.group_id || "").trim()) || "",
       slug: String(row.slug).trim(),
-      updatedAt: row.updated_at || new Date().toISOString(),
+      updatedAt:
+        topicMeta.get(String(row.id || "").trim())?.updatedAt ||
+        row.updated_at ||
+        new Date().toISOString(),
     }));
 }

@@ -729,6 +729,35 @@
                     ></textarea>
                   </label>
 
+                  <label class="admin-ai-bots__field">
+                    <span class="admin-ai-bots__field-label">Angle / summary</span>
+                    <textarea
+                      v-model="form.persona.angle"
+                      rows="2"
+                      class="admin-ai-bots__control admin-ai-bots__control--textarea"
+                    ></textarea>
+                    <span class="admin-ai-bots__help">
+                      Short summary used in admin surfaces and translation coverage.
+                    </span>
+                  </label>
+
+                  <div class="admin-ai-bots__toolbar admin-ai-bots__toolbar--end">
+                    <button
+                      type="button"
+                      class="admin-ai-bots__button admin-ai-bots__button--neutral"
+                      :disabled="translatingPersona || !form.persona.angle"
+                      @click="translatePersonaFields"
+                    >
+                      <span
+                        v-if="translatingPersona"
+                        class="admin-ai-bots__spinner"
+                        aria-hidden="true"
+                      />
+                      <i v-else class="mdi mdi-translate" aria-hidden="true" />
+                      Translate angle
+                    </button>
+                  </div>
+
                   <div v-if="enabledCapabilityTabs.length" class="admin-ai-bots__capability-tabs">
                     <div class="admin-ai-bots__tab-list" role="tablist" aria-label="Capability settings">
                       <button
@@ -886,53 +915,125 @@
 
                         <label class="admin-ai-bots__field">
                           <span class="admin-ai-bots__field-label">Supported target languages</span>
-                          <select
-                            v-model="languagePracticeForm.supported_target_languages"
-                            multiple
-                            class="admin-ai-bots__control admin-ai-bots__control--multiselect"
-                          >
-                            <option
+                          <div class="admin-ai-bots__multi-select">
+                            <button
                               v-for="option in languagePracticeLanguageOptions"
                               :key="option.value"
-                              :value="option.value"
+                              type="button"
+                              class="admin-ai-bots__multi-option"
+                              :class="{
+                                'is-selected': isLanguagePracticeOptionSelected(
+                                  languagePracticeForm.supported_target_languages,
+                                  option.value
+                                ),
+                              }"
+                              @click="
+                                toggleLanguagePracticeOption(
+                                  'supported_target_languages',
+                                  option.value
+                                )
+                              "
                             >
+                              <i
+                                class="mdi"
+                                :class="
+                                  isLanguagePracticeOptionSelected(
+                                    languagePracticeForm.supported_target_languages,
+                                    option.value
+                                  )
+                                    ? 'mdi-check-circle'
+                                    : 'mdi-checkbox-blank-circle-outline'
+                                "
+                                aria-hidden="true"
+                              />
                               {{ option.label }}
-                            </option>
-                          </select>
+                            </button>
+                          </div>
+                          <span class="admin-ai-bots__help">
+                            {{ languagePracticeSelectionSummary(languagePracticeForm.supported_target_languages, languagePracticeLanguageOptions) }}
+                          </span>
                         </label>
 
                         <label class="admin-ai-bots__field">
                           <span class="admin-ai-bots__field-label">Supported support languages</span>
-                          <select
-                            v-model="languagePracticeForm.supported_native_languages"
-                            multiple
-                            class="admin-ai-bots__control admin-ai-bots__control--multiselect"
-                          >
-                            <option
+                          <div class="admin-ai-bots__multi-select">
+                            <button
                               v-for="option in languagePracticeLanguageOptions"
                               :key="option.value"
-                              :value="option.value"
+                              type="button"
+                              class="admin-ai-bots__multi-option"
+                              :class="{
+                                'is-selected': isLanguagePracticeOptionSelected(
+                                  languagePracticeForm.supported_native_languages,
+                                  option.value
+                                ),
+                              }"
+                              @click="
+                                toggleLanguagePracticeOption(
+                                  'supported_native_languages',
+                                  option.value
+                                )
+                              "
                             >
+                              <i
+                                class="mdi"
+                                :class="
+                                  isLanguagePracticeOptionSelected(
+                                    languagePracticeForm.supported_native_languages,
+                                    option.value
+                                  )
+                                    ? 'mdi-check-circle'
+                                    : 'mdi-checkbox-blank-circle-outline'
+                                "
+                                aria-hidden="true"
+                              />
                               {{ option.label }}
-                            </option>
-                          </select>
+                            </button>
+                          </div>
+                          <span class="admin-ai-bots__help">
+                            {{ languagePracticeSelectionSummary(languagePracticeForm.supported_native_languages, languagePracticeLanguageOptions) }}
+                          </span>
                         </label>
 
                         <label class="admin-ai-bots__field">
                           <span class="admin-ai-bots__field-label">Supported learner levels</span>
-                          <select
-                            v-model="languagePracticeForm.supported_levels"
-                            multiple
-                            class="admin-ai-bots__control admin-ai-bots__control--multiselect"
-                          >
-                            <option
+                          <div class="admin-ai-bots__multi-select">
+                            <button
                               v-for="option in languagePracticeLevelOptions"
                               :key="option.value"
-                              :value="option.value"
+                              type="button"
+                              class="admin-ai-bots__multi-option"
+                              :class="{
+                                'is-selected': isLanguagePracticeOptionSelected(
+                                  languagePracticeForm.supported_levels,
+                                  option.value
+                                ),
+                              }"
+                              @click="
+                                toggleLanguagePracticeOption(
+                                  'supported_levels',
+                                  option.value
+                                )
+                              "
                             >
+                              <i
+                                class="mdi"
+                                :class="
+                                  isLanguagePracticeOptionSelected(
+                                    languagePracticeForm.supported_levels,
+                                    option.value
+                                  )
+                                    ? 'mdi-check-circle'
+                                    : 'mdi-checkbox-blank-circle-outline'
+                                "
+                                aria-hidden="true"
+                              />
                               {{ option.label }}
-                            </option>
-                          </select>
+                            </button>
+                          </div>
+                          <span class="admin-ai-bots__help">
+                            {{ languagePracticeSelectionSummary(languagePracticeForm.supported_levels, languagePracticeLevelOptions) }}
+                          </span>
                         </label>
                       </div>
                     </div>
@@ -986,32 +1087,6 @@
                         <span class="admin-ai-bots__field-label">Region</span>
                         <input v-model="form.persona.region" type="text" class="admin-ai-bots__control">
                       </label>
-                    </div>
-
-                    <label class="admin-ai-bots__field">
-                      <span class="admin-ai-bots__field-label">Angle / summary</span>
-                      <textarea
-                        v-model="form.persona.angle"
-                        rows="2"
-                        class="admin-ai-bots__control admin-ai-bots__control--textarea"
-                      ></textarea>
-                    </label>
-
-                    <div class="admin-ai-bots__toolbar admin-ai-bots__toolbar--end">
-                      <button
-                        type="button"
-                        class="admin-ai-bots__button admin-ai-bots__button--neutral"
-                        :disabled="translatingPersona || !form.persona.angle"
-                        @click="translatePersonaFields"
-                      >
-                        <span
-                          v-if="translatingPersona"
-                          class="admin-ai-bots__spinner"
-                          aria-hidden="true"
-                        />
-                        <i v-else class="mdi mdi-translate" aria-hidden="true" />
-                        Translate angle
-                      </button>
                     </div>
 
                     <div class="admin-ai-bots__grid admin-ai-bots__grid--metrics">
@@ -1787,6 +1862,25 @@ const languagePracticeExchangeModeOptions =
     label: value.replace(/_/g, " "),
     value,
   }));
+const isLanguagePracticeOptionSelected = (selectedValues, value) =>
+  Array.isArray(selectedValues) && selectedValues.includes(value);
+const toggleLanguagePracticeOption = (field, value) => {
+  const current = Array.isArray(languagePracticeForm[field])
+    ? [...languagePracticeForm[field]]
+    : [];
+  languagePracticeForm[field] = current.includes(value)
+    ? current.filter((item) => item !== value)
+    : [...current, value];
+};
+const languagePracticeSelectionSummary = (selectedValues, options) => {
+  if (!Array.isArray(selectedValues) || !selectedValues.length) {
+    return "No values selected.";
+  }
+  const labels = options
+    .filter((option) => selectedValues.includes(option.value))
+    .map((option) => option.label);
+  return labels.length ? labels.join(", ") : "No values selected.";
+};
 const selectedCapabilityTab = ref("honey");
 
 const enabledCapabilityTabs = computed(() => {
@@ -3257,10 +3351,6 @@ const clearAllBotIntakes = async () => {
   resize: vertical;
 }
 
-.admin-ai-bots__control--multiselect {
-  min-height: 132px;
-}
-
 .admin-ai-bots__control:focus {
   border-color: rgba(var(--color-primary), 0.5);
   box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.12);
@@ -3280,6 +3370,51 @@ const clearAllBotIntakes = async () => {
 
 .admin-ai-bots__help--info {
   color: rgb(var(--color-primary));
+}
+
+.admin-ai-bots__multi-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(var(--color-border), 0.9);
+  border-radius: 14px;
+  background: rgba(var(--color-surface), 0.94);
+}
+
+.admin-ai-bots__multi-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  border: 1px solid rgba(var(--color-border), 0.82);
+  border-radius: 999px;
+  background: rgba(var(--color-surface-elevated), 0.92);
+  color: rgb(var(--color-text));
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.admin-ai-bots__multi-option.is-selected {
+  border-color: rgba(var(--color-primary), 0.4);
+  background: rgba(var(--color-primary), 0.1);
+  color: rgb(var(--color-primary));
+}
+
+.admin-ai-bots__multi-option:hover {
+  transform: translateY(-1px);
+}
+
+.admin-ai-bots__multi-option:focus-visible {
+  outline: 2px solid rgba(var(--color-primary), 0.65);
+  outline-offset: 2px;
 }
 
 .admin-ai-bots__error {

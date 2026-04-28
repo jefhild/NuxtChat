@@ -7,6 +7,11 @@ import {
   type WeeklyDigestData,
   type InteractionSummary,
 } from "@/server/utils/emailTemplates/weeklyDigest";
+import {
+  buildWeeklyDigestRenderedBlock,
+  fetchWeeklyDigestContent,
+  normalizeWeeklyDigestLocale,
+} from "@/server/utils/weeklyDigestContent";
 
 interface InteractionRow {
   actor_id: string | null;
@@ -41,7 +46,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event);
-  const { userId, type = "weekly_digest" } = body ?? {};
+  const { userId, type = "weekly_digest", localeOverride } = body ?? {};
 
   if (!userId) {
     setResponseStatus(event, 400);
@@ -75,7 +80,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const email = authUser.user.email;
-  const locale = profile.preferred_locale ?? "en";
+  const locale = normalizeWeeklyDigestLocale(
+    localeOverride || profile.preferred_locale || "en"
+  );
 
   // Fetch all pending (unsent) interactions — preview does NOT mark them sent
   const { data: rows } = await supa
@@ -146,7 +153,10 @@ export default defineEventHandler(async (event) => {
     siteUrl,
   };
 
-  const html = renderWeeklyDigest(digestData, locale);
+  const digestContent = await fetchWeeklyDigestContent(supa, locale);
+  const html = renderWeeklyDigest(digestData, locale, {
+    customBlock: buildWeeklyDigestRenderedBlock(digestContent.content),
+  });
 
   await sendDigestEmail(
     {

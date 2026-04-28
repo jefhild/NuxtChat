@@ -9,9 +9,17 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  validate: (route) => {
+    const slug = String(route.params.slug || "").trim();
+
+    // Never treat Nuxt internals or reserved underscored paths as SEO landing pages.
+    return Boolean(slug) && !slug.startsWith("_");
+  },
+});
+
 const route = useRoute();
 const { locale } = useI18n();
-const switchLocalePath = useSwitchLocalePath();
 
 const { data, error } = await useAsyncData(
   () => `seo-page-landing-${route.params.slug}-${locale.value}`,

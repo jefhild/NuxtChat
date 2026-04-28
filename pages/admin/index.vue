@@ -71,6 +71,7 @@ import AdminMoodFeedAdmin from "~/components/Admin2/MoodFeedAdmin.vue";
 import AdminSeoPages from "~/components/Admin2/SeoPages.vue";
 import AdminSeoIntelligence from "~/components/Admin2/SeoIntelligence.vue";
 import AdminAboutContent from "~/components/Admin2/AboutContent.vue";
+import AdminWeeklyDigest from "~/components/Admin2/WeeklyDigest.vue";
 import PageHeader from "~/components/PageHeader.vue";
 import { useAuthStore } from "@/stores/authStore1";
 
@@ -103,6 +104,11 @@ const items = computed(() => [
     text: "About Content",
     icon: "mdi-card-text-outline",
     value: "aboutContent",
+  },
+  {
+    text: "Weekly Digest",
+    icon: "mdi-email-newsletter",
+    value: "weeklyDigest",
   },
   {
     text: t("pages.admin.sections.reports"),
@@ -175,6 +181,8 @@ const getSectionComponent = (section) => {
       return AdminSeoIntelligence;
     case "aboutContent":
       return AdminAboutContent;
+    case "weeklyDigest":
+      return AdminWeeklyDigest;
     case "reports":
       return AdminReports;
     case "aiBots":

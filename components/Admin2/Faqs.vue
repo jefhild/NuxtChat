@@ -124,11 +124,11 @@
                   <button
                     type="button"
                     class="faq-admin-icon-button"
-                    title="Edit translations"
-                    aria-label="Edit translations"
+                    title="Edit group title"
+                    aria-label="Edit group title"
                     @click.stop="openTranslationDialog(group)"
                   >
-                    Tr
+                    Edit
                   </button>
                 </div>
               </div>
@@ -156,11 +156,11 @@
                     <button
                       type="button"
                       class="faq-admin-icon-button"
-                      title="Edit translations"
-                      aria-label="Edit translations"
+                      title="Edit topic title and slug"
+                      aria-label="Edit topic title and slug"
                       @click.stop="openTranslationDialog(topic)"
                     >
-                      Tr
+                      Topic
                     </button>
                     <button
                       type="button"
@@ -943,6 +943,27 @@
                 </span>
               </label>
 
+              <label
+                v-if="translationForm.type === 'group' || translationForm.type === 'topic'"
+                class="faq-admin-field"
+              >
+                <span class="faq-admin-field__label">
+                  {{ translationForm.type === "group" ? "Group slug" : "Canonical slug" }}
+                </span>
+                <input
+                  v-model="translationForm.slug"
+                  type="text"
+                  class="faq-admin-field__control"
+                >
+                <div class="faq-admin-note">
+                  {{
+                    translationForm.type === "group"
+                      ? "This controls the group segment in grouped FAQ URLs, for example /faq/chat-tools/1-on-1-chat."
+                      : "One stable sitemap URL per topic. Keep this aligned with the primary visible topic name."
+                  }}
+                </div>
+              </label>
+
               <div class="faq-admin-dialog__actions">
                 <button
                   type="button"
@@ -985,6 +1006,7 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
+import { buildFaqTopicPath } from "~/utils/faqPaths";
 
 const {
   getFaqGroups,
@@ -997,6 +1019,8 @@ const {
   insertFaqGroupTranslation,
   insertFaqTopic,
   insertFaqTopicTranslation,
+  updateFaqGroup,
+  updateFaqTopic,
   updateFaqTopicTranslation,
   updateFaqGroupTranslation,
   insertFaqEntry,
@@ -1073,6 +1097,7 @@ const translationForm = ref({
   type: "topic",
   locale: "en-US",
   title: "",
+  slug: "",
 });
 
 const formErrors = ref({
@@ -1200,6 +1225,7 @@ const treeItems = computed(() => {
       .map((topic) => ({
         id: topic.id,
         title: topic.title,
+        slug: topic.slug,
         type: "topic",
       }));
 
@@ -1212,6 +1238,7 @@ const treeItems = computed(() => {
     items.push({
       id: group.id,
       title: group.title,
+      slug: group.slug,
       icon: groupIconMap[group.slug] || "📁",
       type: "group",
       children,
@@ -1247,6 +1274,9 @@ const tableRows = computed(() => {
     const topic = topicsWithTitles.value.find(
       (item) => item.id === entry.topic_id
     );
+    const group = topic
+      ? groupsWithTitles.value.find((item) => item.id === topic.group_id)
+      : null;
     const translationLocales =
       entryTranslationMap.value.get(entry.id) || {};
     return {
@@ -1255,6 +1285,8 @@ const tableRows = computed(() => {
       question: pickTranslation(entryTranslationMap.value, entry.id, "question"),
       answer: pickTranslation(entryTranslationMap.value, entry.id, "answer"),
       topicTitle: topic?.title || "Unknown",
+      topicSlug: topic?.slug || "",
+      groupSlug: group?.slug || "",
       slug: entry.slug || "",
       isActive: entry.is_active,
       sortOrder: entry.sort_order ?? 0,
@@ -1268,8 +1300,8 @@ const tableRows = computed(() => {
 
 const translationDialogTitle = computed(() =>
   translationForm.value.type === "group"
-    ? "Edit group translation"
-    : "Edit topic translation"
+    ? "Edit group title and slug"
+    : "Edit topic title and slug"
 );
 
 const slugify = (value = "") =>
@@ -1766,16 +1798,19 @@ const removeTopic = async (item) => {
 };
 
 const copyFaqLink = async (row) => {
-  const slug = row.slug;
-  if (!slug) {
-    showMessage("Add a slug to generate a link.", "error");
+  if (!row.topicSlug || !row.groupSlug) {
+    showMessage("This FAQ is missing a topic or group slug, so no public URL can be generated.", "error");
     return;
   }
   if (typeof window === "undefined") return;
-  const link = `${window.location.origin}/faq#${slug}`;
+  const topicPath = buildFaqTopicPath(row.groupSlug, row.topicSlug);
+  const hasItemSlug = Boolean(row.slug);
+  const link = hasItemSlug
+    ? `${window.location.origin}${topicPath}#${row.slug}`
+    : `${window.location.origin}${topicPath}`;
   try {
     await navigator.clipboard.writeText(link);
-    showMessage("FAQ link copied.");
+    showMessage(hasItemSlug ? "FAQ item link copied." : "Topic page link copied. This FAQ item does not have its own anchor slug yet.");
   } catch {
     showMessage(link);
   }
@@ -1791,6 +1826,7 @@ const openTranslationDialog = (item) => {
     type: isGroup ? "group" : "topic",
     locale: "en-US",
     title: pickTitle(translationMap, item.id, item.title),
+    slug: String(item.slug || ""),
   };
   resetFormErrors("translation");
   translationDialog.value = true;
@@ -1802,6 +1838,11 @@ const saveTranslation = async () => {
   saving.value = true;
   try {
     if (translationForm.value.type === "group") {
+      const groupError = await updateFaqGroup(translationForm.value.id, {
+        slug: translationForm.value.slug || slugify(translationForm.value.title),
+      });
+      if (groupError) throw groupError;
+
       const error = await updateFaqGroupTranslation(
         translationForm.value.id,
         translationForm.value.locale,
@@ -1809,6 +1850,11 @@ const saveTranslation = async () => {
       );
       if (error) throw error;
     } else {
+      const topicError = await updateFaqTopic(translationForm.value.id, {
+        slug: translationForm.value.slug || slugify(translationForm.value.title),
+      });
+      if (topicError) throw topicError;
+
       const error = await updateFaqTopicTranslation(
         translationForm.value.id,
         translationForm.value.locale,
@@ -2343,7 +2389,9 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   border: none;
-  background: rgba(15, 23, 42, 0.46);
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
 }
 
@@ -2355,10 +2403,10 @@ onBeforeUnmount(() => {
 
 .faq-admin-dialog__card {
   border-radius: 24px;
-  border: 1px solid rgba(var(--color-border), 0.9);
-  background:
-    linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.98), rgba(var(--color-surface), 0.98));
-  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: #0f172a;
+  color: #e5e7eb;
+  box-shadow: 0 30px 70px rgba(2, 6, 23, 0.5);
   overflow: hidden;
 }
 
@@ -2380,7 +2428,7 @@ onBeforeUnmount(() => {
 
 .faq-admin-dialog__title {
   margin: 0;
-  color: rgb(var(--color-heading));
+  color: #f8fafc;
   font-size: 1.06rem;
   font-weight: 700;
 }
@@ -2420,11 +2468,31 @@ onBeforeUnmount(() => {
 
 .faq-admin-note {
   border-radius: 16px;
-  border: 1px solid rgba(var(--color-primary), 0.24);
-  background: rgba(var(--color-primary), 0.08);
-  color: rgba(var(--color-text), 0.82);
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background: rgba(30, 41, 59, 0.92);
+  color: rgba(226, 232, 240, 0.92);
   padding: 12px 14px;
   font-size: 0.88rem;
+}
+
+.faq-admin-dialog :deep(.faq-admin-field__label) {
+  color: rgba(226, 232, 240, 0.76);
+}
+
+.faq-admin-dialog :deep(.faq-admin-field__control) {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+}
+
+.faq-admin-dialog :deep(.faq-admin-checkbox) {
+  color: #e5e7eb;
+}
+
+.faq-admin-dialog :deep(.faq-admin-pill) {
+  background: rgba(30, 41, 59, 0.92);
+  color: rgba(226, 232, 240, 0.86);
+  border-color: rgba(148, 163, 184, 0.2);
 }
 
 .faq-admin-note code {
@@ -2434,9 +2502,9 @@ onBeforeUnmount(() => {
 
 .faq-admin-toast-stack {
   position: fixed;
-  top: 20px;
+  top: 88px;
   left: 50%;
-  z-index: 1500;
+  z-index: 3200;
   transform: translateX(-50%);
   pointer-events: none;
 }

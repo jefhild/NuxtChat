@@ -2033,6 +2033,55 @@ export const useDb = () => {
     return null;
   };
 
+  const updateFaqTopic = async (topicId, updates) => {
+    const supabase = getClient();
+    const payload = {};
+    if (updates.group_id !== undefined) payload.group_id = updates.group_id;
+    if (updates.slug !== undefined) payload.slug = updates.slug;
+    if (updates.sort_order !== undefined) payload.sort_order = updates.sort_order;
+    if (updates.is_active !== undefined) payload.is_active = updates.is_active;
+
+    if (!Object.keys(payload).length) {
+      return null;
+    }
+
+    const { error } = await supabase
+      .from("faq_topics")
+      .update(payload)
+      .eq("id", topicId);
+
+    if (error) {
+      console.error("Error updating faq topic:", error);
+      return error;
+    }
+
+    return null;
+  };
+
+  const updateFaqGroup = async (groupId, updates) => {
+    const supabase = getClient();
+    const payload = {};
+    if (updates.slug !== undefined) payload.slug = updates.slug;
+    if (updates.sort_order !== undefined) payload.sort_order = updates.sort_order;
+    if (updates.is_active !== undefined) payload.is_active = updates.is_active;
+
+    if (!Object.keys(payload).length) {
+      return null;
+    }
+
+    const { error } = await supabase
+      .from("faq_groups")
+      .update(payload)
+      .eq("id", groupId);
+
+    if (error) {
+      console.error("Error updating faq group:", error);
+      return error;
+    }
+
+    return null;
+  };
+
   const updateFaqGroupTranslation = async (groupId, locale, updates) => {
     const supabase = getClient();
     const { error } = await supabase
@@ -3363,6 +3412,8 @@ const verifyEmailOtp = async (email, token) => {
     insertFaqGroupTranslation,
     insertFaqTopic,
     insertFaqTopicTranslation,
+    updateFaqGroup,
+    updateFaqTopic,
     updateFaqTopicTranslation,
     updateFaqGroupTranslation,
     insertFaqEntry,

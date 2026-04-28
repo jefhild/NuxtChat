@@ -23,6 +23,13 @@ export interface WeeklyDigestData {
   siteUrl: string;
 }
 
+export interface WeeklyDigestCustomBlock {
+  title: string;
+  bodyHtml: string;
+  ctaLabel: string;
+  ctaUrl: string;
+}
+
 function renderAttributionList(
   summary: InteractionSummary,
   locale: string,
@@ -86,8 +93,10 @@ function escapeHtml(str: string): string {
 
 export function renderWeeklyDigest(
   data: WeeklyDigestData,
-  locale: string
+  locale: string,
+  options: { customBlock?: WeeklyDigestCustomBlock | null } = {}
 ): string {
+  const customBlock = options.customBlock || null;
   const profileUrl = `${data.siteUrl}/profiles/${data.slug}`;
   const chatUrl = `${data.siteUrl}/chat`;
   const hasActivity =
@@ -133,6 +142,19 @@ export function renderWeeklyDigest(
     ? t("emails.digest.cta_chat", locale)
     : t("emails.digest.view_profile", locale);
 
+  const customBlockHtml = customBlock
+    ? `
+              <div style="margin:0 0 24px;padding:18px 18px 6px;border:1px solid #e5e7eb;border-radius:14px;background:#f8fafc;">
+                ${customBlock.title ? `<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#111827;">${escapeHtml(customBlock.title)}</p>` : ""}
+                ${customBlock.bodyHtml || ""}
+                ${
+                  customBlock.ctaLabel && customBlock.ctaUrl
+                    ? `<p style="margin:4px 0 12px;"><a href="${customBlock.ctaUrl}" style="display:inline-block;background:#eef2ff;color:#4338ca;text-decoration:none;font-size:13px;font-weight:700;padding:10px 16px;border-radius:999px;">${escapeHtml(customBlock.ctaLabel)}</a></p>`
+                    : ""
+                }
+              </div>`
+    : "";
+
   return `<!DOCTYPE html>
 <html lang="${locale}">
 <head>
@@ -164,6 +186,8 @@ export function renderWeeklyDigest(
               <p style="margin:0 0 24px;font-size:14px;color:#6b7280;">
                 ${t("emails.digest.intro", locale)}
               </p>
+
+              ${customBlockHtml}
 
               ${activityContent}
 

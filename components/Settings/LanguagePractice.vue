@@ -48,7 +48,7 @@
             :disabled="loading || saving || !form.is_active"
           >
             <option value="">
-              {{ $t("components.filter-menu.all", "All") }}
+              {{ $t("pages.settings.languagePractice.useSiteLanguage", "Use my site language") }}
             </option>
             <option
               v-for="option in languageOptions"
@@ -62,7 +62,7 @@
 
         <label class="language-practice-settings__field">
           <span class="language-practice-settings__field-label">
-            {{ $t("pages.languagePractice.targetLanguage") }}
+            {{ $t("pages.settings.languagePractice.primaryTargetLanguage", "Main language I want to practice") }}
           </span>
           <select
             v-model="form.target_language_code"
@@ -70,7 +70,7 @@
             :disabled="loading || saving || !form.is_active"
           >
             <option value="">
-              {{ $t("components.filter-menu.all", "All") }}
+              {{ $t("pages.settings.languagePractice.anyTargetLanguage", "No specific preference") }}
             </option>
             <option
               v-for="option in languageOptions"
@@ -80,6 +80,14 @@
               {{ option.title }}
             </option>
           </select>
+          <span class="language-practice-settings__hint">
+            {{
+              $t(
+                "pages.settings.languagePractice.targetLanguageHint",
+                "Choose one main practice language here, or leave it blank if you're open to any supported language."
+              )
+            }}
+          </span>
         </label>
 
         <label class="language-practice-settings__field">
@@ -92,7 +100,7 @@
             :disabled="loading || saving || !form.is_active"
           >
             <option value="">
-              {{ $t("components.filter-menu.all", "All") }}
+              {{ $t("pages.settings.languagePractice.levelUnset", "Not set") }}
             </option>
             <option
               v-for="option in levelOptions"

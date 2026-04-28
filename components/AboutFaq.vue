@@ -78,16 +78,27 @@
               </button>
 
               <div v-if="isGroupOpen(group.id)" class="faq-tree-group__children">
-                <button
+                <div
                   v-for="topic in group.topics || []"
                   :key="topic.id"
-                  type="button"
-                  class="faq-tree-topic__button"
-                  :class="{ 'faq-tree-topic__button--active': isFilterActive(topic.id) }"
-                  @click="selectFilter(topic.id, group.id)"
+                  class="faq-tree-topic"
                 >
-                  {{ topic.title }}
-                </button>
+                  <button
+                    type="button"
+                    class="faq-tree-topic__button"
+                    :class="{ 'faq-tree-topic__button--active': isFilterActive(topic.id) }"
+                    @click="selectFilter(topic.id, group.id)"
+                  >
+                    {{ topic.title }}
+                  </button>
+                  <NuxtLink
+                    :to="localePath(buildFaqTopicPath(topic.groupSlug, topic.slug))"
+                    class="faq-tree-topic__link"
+                    :aria-label="topic.title"
+                  >
+                    <i class="mdi mdi-open-in-new" aria-hidden="true" />
+                  </NuxtLink>
+                </div>
               </div>
             </section>
           </div>
@@ -123,8 +134,8 @@
           >
             <section
               v-for="faq in filteredFaqs"
-              :key="faq.id"
               :id="faq.slug || faq.id"
+              :key="faq.id"
               class="faq-panel"
             >
               <button
@@ -149,6 +160,15 @@
                 <p class="mb-0 text-sm text-foreground/78">
                   {{ faq.answer }}
                 </p>
+                <div class="faq-panel__footer">
+                  <NuxtLink
+                    :to="buildTopicEntryPath(faq)"
+                    class="faq-panel__topic-link"
+                  >
+                    <i class="mdi mdi-link-variant" aria-hidden="true" />
+                    <span>{{ faq.topicTitle }}</span>
+                  </NuxtLink>
+                </div>
               </div>
             </section>
           </div>
@@ -161,9 +181,11 @@
 <script setup>
 import { nextTick } from "vue";
 import { useI18n } from "vue-i18n";
+import { buildFaqTopicPath } from "~/utils/faqPaths";
 
-const { t, locale, localeProperties } = useI18n();
+const { locale, localeProperties } = useI18n();
 const route = useRoute();
+const localePath = useLocalePath();
 
 const search = ref("");
 const opened = ref([]);
@@ -211,6 +233,13 @@ const clearFilters = () => {
 
 const toggleExpanded = (value) => {
   expanded.value = expanded.value === value ? null : value;
+};
+
+const buildTopicEntryPath = (faq) => {
+  if (!faq?.topicSlug || !faq?.groupSlug) return localePath("/faq");
+  const path = localePath(buildFaqTopicPath(faq.groupSlug, faq.topicSlug));
+  const hash = faq.slug || faq.id;
+  return hash ? `${path}#${hash}` : path;
 };
 
 const isGroupOpen = (id) => opened.value.includes(id);
@@ -531,6 +560,29 @@ watch(
   gap: 0.25rem;
 }
 
+.faq-tree-topic {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.faq-tree-topic__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  color: rgb(var(--color-primary));
+  text-decoration: none;
+}
+
+.faq-tree-topic__link:hover,
+.faq-tree-topic__link:focus-visible {
+  background: rgb(var(--color-primary) / 0.08);
+  outline: none;
+}
+
 .faq-tree-group__chevron {
   transition: transform 160ms ease;
 }
@@ -582,6 +634,26 @@ watch(
 
 .faq-panel__content {
   padding: 0 1rem 1rem;
+}
+
+.faq-panel__footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.85rem;
+}
+
+.faq-panel__topic-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: rgb(var(--color-primary));
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.faq-panel__topic-link:hover {
+  text-decoration: underline;
 }
 
 .faq-panel__chevron {

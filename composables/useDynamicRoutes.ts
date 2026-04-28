@@ -1,8 +1,5 @@
-import {
-  getPublishedSeoPageRoutes,
-  getFaqTopicSlugs,
-} from "../lib/supabaseHelpers";
 import { buildSeoPagePath } from "../utils/seoPagePaths";
+import { buildFaqTopicPath } from "../utils/faqPaths";
 
 /**
  * Returns an array of dynamic route strings.
@@ -34,6 +31,9 @@ function normalizeIndexableSlug(value?: string | null) {
 
 export async function getAllDynamicRoutes(): Promise<string[]> {
   try {
+    const { getPublishedSeoPageRoutes, getFaqTopicSlugs } = await import(
+      "../lib/supabaseHelpers"
+    );
     const [seoPageData, faqTopics] = await Promise.all([
       getPublishedSeoPageRoutes(),
       getFaqTopicSlugs(),
@@ -73,7 +73,7 @@ export async function getAllDynamicRoutes(): Promise<string[]> {
 
     const localizedFaqTopicRoutes = (faqTopics || []).flatMap((topic) =>
       SUPPORTED_LOCALES.map((locale) =>
-        localizePath(`/faq/topic/${topic.slug}`, locale)
+        localizePath(buildFaqTopicPath(topic.groupSlug, topic.slug), locale)
       )
     );
 
@@ -98,6 +98,9 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
   { loc: string; lastmod: string; images?: { loc: string }[] }[]
 > {
   try {
+    const { getPublishedSeoPageRoutes, getFaqTopicSlugs } = await import(
+      "../lib/supabaseHelpers"
+    );
     const [seoPageData, faqTopics] = await Promise.all([
       getPublishedSeoPageRoutes(),
       getFaqTopicSlugs(),
@@ -162,7 +165,7 @@ export async function getAllDynamicRoutesWithMetadata(): Promise<
     (faqTopics || []).forEach((topic) => {
       SUPPORTED_LOCALES.forEach((locale) => {
         localizedRoutes.push({
-          loc: localizePath(`/faq/topic/${topic.slug}`, locale),
+          loc: localizePath(buildFaqTopicPath(topic.groupSlug, topic.slug), locale),
           lastmod: topic.updatedAt || fallbackLastmod,
         });
       });

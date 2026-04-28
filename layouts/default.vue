@@ -166,6 +166,8 @@ const isRootLandingRoute = computed(() =>
 );
 const isInlineFooterRoute = computed(() =>
   isRootLandingRoute.value ||
+  normalizedPath.value === "/faq" ||
+  normalizedPath.value.startsWith("/faq/") ||
   ["/guides/", "/topics/", "/compare/"].some((prefix) =>
     normalizedPath.value.startsWith(prefix)
   )

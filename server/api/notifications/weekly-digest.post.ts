@@ -6,6 +6,11 @@ import {
   type WeeklyDigestData,
   type InteractionSummary,
 } from "@/server/utils/emailTemplates/weeklyDigest";
+import {
+  buildWeeklyDigestRenderedBlock,
+  fetchWeeklyDigestContent,
+  normalizeWeeklyDigestLocale,
+} from "@/server/utils/weeklyDigestContent";
 
 interface InteractionRow {
   actor_id: string | null;
@@ -84,11 +89,24 @@ export default defineEventHandler(async (event) => {
 
   const siteUrl = cfg.public.SITE_URL || "https://imchatty.com";
   const results = { sent: 0, skipped: 0, errors: [] as string[] };
+  const customBlockCache = new Map<string, Awaited<ReturnType<typeof getCustomBlockForLocale>>>();
+
+  async function getCustomBlockForLocale(locale: string) {
+    const normalizedLocale = normalizeWeeklyDigestLocale(locale);
+    if (customBlockCache.has(normalizedLocale)) {
+      return customBlockCache.get(normalizedLocale) ?? null;
+    }
+
+    const response = await fetchWeeklyDigestContent(supa, normalizedLocale);
+    const block = buildWeeklyDigestRenderedBlock(response.content);
+    customBlockCache.set(normalizedLocale, block);
+    return block;
+  }
 
   for (const recipient of eligibleRecipients) {
     try {
       const email = confirmedMap.get(recipient.user_id)!;
-      const locale = recipient.preferred_locale ?? "en";
+      const locale = normalizeWeeklyDigestLocale(recipient.preferred_locale ?? "en");
 
       // Fetch pending interactions for this recipient
       const { data: rows, error: rowsErr } = await supa
@@ -187,7 +205,9 @@ export default defineEventHandler(async (event) => {
         siteUrl,
       };
 
-      const html = renderWeeklyDigest(digestData, locale);
+      const html = renderWeeklyDigest(digestData, locale, {
+        customBlock: await getCustomBlockForLocale(locale),
+      });
 
       await sendDigestEmail(
         {

@@ -28,7 +28,8 @@ const pickTranslation = (
 export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event);
-    const slug = String(query.slug || "").trim().toLowerCase();
+    const slug = String(query.slug || query.topic || "").trim().toLowerCase();
+    const groupSlug = String(query.group || "").trim().toLowerCase();
 
     if (!slug) {
       setResponseStatus(event, 400);
@@ -42,11 +43,32 @@ export default defineEventHandler(async (event) => {
 
     const supabase = await getServiceRoleClient(event);
 
-    const { data: topicRow, error: topicError } = await supabase
+    let topicQuery = supabase
       .from("faq_topics")
       .select("id, group_id, slug, sort_order")
       .eq("slug", slug)
-      .eq("is_active", true)
+      .eq("is_active", true);
+
+    if (groupSlug) {
+      const { data: groupRowBySlug, error: groupLookupError } = await supabase
+        .from("faq_groups")
+        .select("id")
+        .eq("slug", groupSlug)
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+
+      if (groupLookupError) throw groupLookupError;
+
+      if (!groupRowBySlug?.id) {
+        setResponseStatus(event, 404);
+        return { success: false, error: "Topic not found", data: null };
+      }
+
+      topicQuery = topicQuery.eq("group_id", groupRowBySlug.id);
+    }
+
+    const { data: topicRow, error: topicError } = await topicQuery
       .order("sort_order", { ascending: true })
       .limit(1)
       .maybeSingle();
@@ -63,6 +85,7 @@ export default defineEventHandler(async (event) => {
       groupResponse,
       groupTranslationsResponse,
       entriesResponse,
+      siblingTopicsResponse,
     ] = await Promise.all([
       supabase
         .from("faq_topic_translations")
@@ -85,6 +108,12 @@ export default defineEventHandler(async (event) => {
         .eq("topic_id", topicRow.id)
         .eq("is_active", true)
         .order("sort_order", { ascending: true }),
+      supabase
+        .from("faq_topics")
+        .select("id, slug, sort_order")
+        .eq("group_id", topicRow.group_id)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true }),
     ]);
 
     for (const res of [
@@ -92,21 +121,45 @@ export default defineEventHandler(async (event) => {
       groupResponse,
       groupTranslationsResponse,
       entriesResponse,
+      siblingTopicsResponse,
     ]) {
       if (res.error) throw res.error;
     }
 
     const entryIds = (entriesResponse.data || []).map((e: any) => String(e.id));
+    const siblingTopics = siblingTopicsResponse.data || [];
+    const siblingTopicIds = siblingTopics.map((topic: any) => String(topic.id));
 
-    const entryTranslationsResponse = entryIds.length
-      ? await supabase
-          .from("faq_translations")
-          .select("entry_id, locale, question, answer")
-          .in("entry_id", entryIds)
-          .in("locale", localeList)
-      : { data: [], error: null };
+    const [entryTranslationsResponse, siblingTopicTranslationsResponse, siblingEntriesResponse] =
+      await Promise.all([
+        entryIds.length
+          ? supabase
+              .from("faq_translations")
+              .select("entry_id, locale, question, answer")
+              .in("entry_id", entryIds)
+              .in("locale", localeList)
+          : Promise.resolve({ data: [], error: null }),
+        siblingTopicIds.length
+          ? supabase
+              .from("faq_topic_translations")
+              .select("topic_id, locale, title")
+              .in("topic_id", siblingTopicIds)
+              .in("locale", localeList)
+          : Promise.resolve({ data: [], error: null }),
+        siblingTopicIds.length
+          ? supabase
+              .from("faq_entries")
+              .select("topic_id")
+              .in("topic_id", siblingTopicIds)
+              .eq("is_active", true)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
 
     if (entryTranslationsResponse.error) throw entryTranslationsResponse.error;
+    if (siblingTopicTranslationsResponse.error) {
+      throw siblingTopicTranslationsResponse.error;
+    }
+    if (siblingEntriesResponse.error) throw siblingEntriesResponse.error;
 
     const topicTitleMap: Record<string, string> = {};
     (topicTranslationsResponse.data || []).forEach((t: any) => {
@@ -155,6 +208,39 @@ export default defineEventHandler(async (event) => {
       })
       .filter(Boolean);
 
+    const siblingTitleMap = new Map<string, Record<string, string>>();
+    (siblingTopicTranslationsResponse.data || []).forEach((translation: any) => {
+      if (!siblingTitleMap.has(translation.topic_id)) {
+        siblingTitleMap.set(translation.topic_id, {});
+      }
+      siblingTitleMap.get(translation.topic_id)![translation.locale] =
+        translation.title;
+    });
+
+    const siblingEntryCount = new Map<string, number>();
+    (siblingEntriesResponse.data || []).forEach((entry: any) => {
+      const topicId = String(entry.topic_id || "").trim();
+      if (!topicId) return;
+      siblingEntryCount.set(topicId, (siblingEntryCount.get(topicId) || 0) + 1);
+    });
+
+    const relatedTopics = siblingTopics
+      .map((topic: any) => ({
+        id: topic.id,
+        slug: topic.slug,
+        sortOrder: topic.sort_order ?? 0,
+        title:
+          pickTranslation(
+            siblingTitleMap.get(topic.id),
+            locale,
+            fallbackLocale
+          ) || topic.slug,
+        groupSlug: groupRow?.slug || groupSlug || null,
+        entryCount: siblingEntryCount.get(topic.id) || 0,
+        current: topic.id === topicRow.id,
+      }))
+      .filter((topic) => topic.entryCount > 0);
+
     return {
       success: true,
       data: {
@@ -167,6 +253,7 @@ export default defineEventHandler(async (event) => {
           groupTitle,
         },
         entries,
+        relatedTopics,
       },
     };
   } catch (error) {

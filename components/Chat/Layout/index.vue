@@ -9,23 +9,31 @@
         <button
           type="button"
           class="chat-mobile-toggle"
-          :class="{ 'chat-mobile-toggle--alert': showMobileUnreadAlert }"
-          @click="leftOpen = true"
+          :class="{
+            'chat-mobile-toggle--alert': showMobileUnreadAlert,
+            'chat-mobile-toggle--open': leftOpen,
+          }"
+          @click="leftOpen = !leftOpen"
           aria-label="Show online participants"
           title="Show online participants"
         >
           <i class="mdi mdi-account-multiple-outline chat-mobile-toggle__icon chat-mobile-toggle__icon--online" aria-hidden="true" />
+          <span class="chat-mobile-toggle__label">Online</span>
         </button>
         <div class="chat-mobile-controls__spacer" />
         <button
           type="button"
           class="chat-mobile-toggle"
-          :class="{ 'chat-mobile-toggle--alert': showMobileActiveAlert }"
-          @click="rightOpen = true"
+          :class="{
+            'chat-mobile-toggle--alert': showMobileActiveAlert,
+            'chat-mobile-toggle--open': rightOpen,
+          }"
+          @click="rightOpen = !rightOpen"
           aria-label="Show active chat participants"
           title="Show active chat participants"
         >
           <i class="mdi mdi-chat-processing-outline chat-mobile-toggle__icon chat-mobile-toggle__icon--active" aria-hidden="true" />
+          <span class="chat-mobile-toggle__label">Active</span>
         </button>
       </div>
       <!-- Desktop / tablet (>= md): 3 columns -->
@@ -413,6 +421,17 @@
           aria-label="Topics drawer"
         >
           <div class="chat-mobile-drawer__content">
+            <div class="chat-mobile-drawer__header">
+              <span class="chat-mobile-drawer__title">Online</span>
+              <button
+                type="button"
+                class="chat-mobile-drawer__close"
+                aria-label="Close online drawer"
+                @click="leftOpen = false"
+              >
+                <i class="mdi mdi-close" aria-hidden="true" />
+              </button>
+            </div>
             <ChatLayoutUsersPane
               :list-visible="tabVisibility.online"
               list-type="online"
@@ -453,6 +472,17 @@
           aria-label="Participants drawer"
         >
           <div class="chat-mobile-drawer__content">
+            <div class="chat-mobile-drawer__header">
+              <span class="chat-mobile-drawer__title">Active chats</span>
+              <button
+                type="button"
+                class="chat-mobile-drawer__close"
+                aria-label="Close active chats drawer"
+                @click="rightOpen = false"
+              >
+                <i class="mdi mdi-close" aria-hidden="true" />
+              </button>
+            </div>
             <ChatLayoutUsersPane
               :list-visible="tabVisibility.active"
               list-type="active"
@@ -4690,18 +4720,27 @@ function toggleFilters() {
 }
 
 .chat-mobile-toggle {
-  width: 2.1rem;
-  height: 2.1rem;
-  border: 0;
+  min-height: 2.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 999px;
-  background: transparent;
+  background: rgba(15, 23, 42, 0.94);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4rem;
+  padding: 0 0.8rem;
 }
 
 .chat-mobile-toggle__icon {
   font-size: 1.2rem;
+}
+
+.chat-mobile-toggle__label {
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .chat-mobile-toggle__icon--online {
@@ -4714,6 +4753,11 @@ function toggleFilters() {
 
 .chat-mobile-toggle--alert .chat-mobile-toggle__icon {
   color: rgba(220, 38, 38, 0.95);
+}
+
+.chat-mobile-toggle--open {
+  border-color: rgba(96, 165, 250, 0.38);
+  background: rgba(30, 41, 59, 0.98);
 }
 
 .chat-thread-scroll {
@@ -4813,15 +4857,43 @@ function toggleFilters() {
 
 .chat-mobile-drawer__content {
   height: 100%;
-  padding: 30px 0.5rem 0.5rem;
+  padding: 10px 0.5rem 0.5rem;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
+.chat-mobile-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.25rem 0.35rem 0.5rem;
+}
+
+.chat-mobile-drawer__title {
+  color: rgba(226, 232, 240, 0.96);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.chat-mobile-drawer__close {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.94);
+  color: rgba(226, 232, 240, 0.92);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .chat-mobile-drawer :deep(.chat-pane-card) {
   border-top: none !important;
-  margin-top: 18px;
+  margin-top: 0;
 }
 
 .chat-mobile-drawer :deep(.users-scroll) {
@@ -4865,8 +4937,12 @@ function toggleFilters() {
   }
 
   .chat-mobile-toggle {
-    width: 34px;
-    height: 34px;
+    min-height: 34px;
+    padding: 0 0.65rem;
+  }
+
+  .chat-mobile-toggle__label {
+    font-size: 0.75rem;
   }
 
   .chat-composer-wrap {
