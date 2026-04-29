@@ -33,7 +33,10 @@
 </template>
 
 <script setup>
+import heroBackgroundUrl from "@/assets/images/background2.webp";
+
 const localPath = useLocalePath();
+const heroBackground = `linear-gradient(rgb(15 23 42 / 0.3), rgb(15 23 42 / 0.3)), url("${heroBackgroundUrl}") center / cover no-repeat`;
 
 const joke = ref("");
 
@@ -72,9 +75,7 @@ onMounted(() => {
 }
 
 .logout-hero__background {
-  background:
-    linear-gradient(rgb(15 23 42 / 0.3), rgb(15 23 42 / 0.3)),
-    url("/images/background2.webp") center / cover no-repeat;
+  background: v-bind(heroBackground);
   transform: scale(1.02);
 }
 

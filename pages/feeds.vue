@@ -9,13 +9,43 @@
       </div>
     </div>
 
-    <!-- Mood matching strip -->
     <div class="feeds-mood-match-strip mb-4">
       <p class="feeds-mood-match-copy">
         {{ $t("pages.feeds.findSomeone") }}
       </p>
       <MatchMoodChipsBar @select="onFeedsMoodSelect" />
     </div>
+
+    <section class="feeds-intro-panel" aria-labelledby="feeds-intro-title">
+      <div class="feeds-intro-panel__copy">
+        <p class="feeds-intro-panel__eyebrow">{{ feedsLandingCopy.kicker }}</p>
+        <h2 id="feeds-intro-title" class="feeds-intro-panel__title">
+          {{ feedsLandingCopy.title }}
+        </h2>
+        <p class="feeds-intro-panel__body">
+          {{ feedsLandingCopy.body }}
+        </p>
+      </div>
+      <div class="feeds-intro-panel__actions">
+        <NuxtLink :to="localPath('/chat')" class="feeds-cta feeds-cta--primary">
+          {{ feedsLandingCopy.primaryCta }}
+        </NuxtLink>
+        <NuxtLink :to="`${localPath('/match')}#match-cards`" class="feeds-cta feeds-cta--secondary">
+          {{ feedsLandingCopy.secondaryCta }}
+        </NuxtLink>
+      </div>
+    </section>
+
+    <section class="feeds-value-grid" aria-label="Why use the mood feed">
+      <article
+        v-for="item in feedsLandingCopy.highlights"
+        :key="item.title"
+        class="feeds-value-card"
+      >
+        <h2 class="feeds-value-card__title">{{ item.title }}</h2>
+        <p class="feeds-value-card__body">{{ item.body }}</p>
+      </article>
+    </section>
 
     <MoodFeedHomeQuestionBar variant="feeds" @posted="loadEntries" />
 
@@ -281,6 +311,26 @@
         </Transition>
       </div>
     </Teleport>
+
+    <section class="feeds-explainer" aria-labelledby="feeds-explainer-title">
+      <div class="feeds-explainer__header">
+        <p class="feeds-explainer__eyebrow">{{ feedsLandingCopy.explainerKicker }}</p>
+        <h2 id="feeds-explainer-title" class="feeds-explainer__title">
+          {{ feedsLandingCopy.explainerTitle }}
+        </h2>
+      </div>
+      <div class="feeds-explainer__grid">
+        <article
+          v-for="step in feedsLandingCopy.steps"
+          :key="step.title"
+          class="feeds-explainer__card"
+        >
+          <p class="feeds-explainer__step">{{ step.step }}</p>
+          <h3 class="feeds-explainer__card-title">{{ step.title }}</h3>
+          <p class="feeds-explainer__card-body">{{ step.body }}</p>
+        </article>
+      </div>
+    </section>
   </section>
 </template>
 
@@ -302,7 +352,7 @@ const siteConfig = useSiteConfig();
 const PAGE_SIZE = 30;
 
 function onFeedsMoodSelect(preset) {
-  navigateTo(localPath(`/match?preset=${preset.key}`));
+  navigateTo(`${localPath(`/match?preset=${preset.key}`)}#match-cards`);
 }
 
 const infiniteSentinel = ref(null);
@@ -330,6 +380,95 @@ const toAbsolute = (path) => {
 const canonicalPageHref = computed(() => toAbsolute(pagePath(initialPage.value)));
 
 useSeoI18nMeta("feeds", { overrideUrl: canonicalPageHref.value });
+
+const feedsLandingCopy = computed(() => {
+  const localized = {
+    en: {
+      kicker: "A calmer way into conversation",
+      title: "See what people are feeling before you decide how to join in.",
+      body:
+        "Mood Feed is where the product stops feeling abstract. People post short, honest snapshots about how they feel, what is on their mind, or what kind of conversation they want. You can read the tone of the room, reply to a specific feeling, and move into matching or direct chat when the moment feels right.",
+      primaryCta: "Open Chat",
+      secondaryCta: "See Matches",
+      explainerKicker: "How Mood Feed works",
+      explainerTitle: "From ambient feeling to a real conversation.",
+      highlights: [
+        {
+          title: "Start with emotional context",
+          body: "Instead of throwing people into a blank chat box, the feed lets them react to boredom, loneliness, stress, curiosity, late-night restlessness, or a very specific state of mind.",
+        },
+        {
+          title: "Every post creates a softer opener",
+          body: "A short reply to a feeling is easier than inventing a cold opener from scratch. That lowers the social pressure for hesitant visitors and makes the first exchange feel more natural.",
+        },
+        {
+          title: "The feed feeds matching",
+          body: "Over time, mood signals can become matching signals. Someone who wants advice, quiet company, or a light chat can move toward people in that same lane instead of being dropped into a random room.",
+        },
+      ],
+      steps: [
+        {
+          step: "01",
+          title: "Read the emotional landscape",
+          body: "Scroll the feed to see what people are carrying right now: maybe they are bored, anxious, overthinking, wound up, or just looking for a lighter conversation.",
+        },
+        {
+          step: "02",
+          title: "Reply to a mood, not a profile",
+          body: "You are not guessing who someone is from a polished bio. You are responding to a moment, which makes the first interaction more specific and less performative.",
+        },
+        {
+          step: "03",
+          title: "Keep chatting",
+          body: "If the tone clicks, let the conversation roll for as long as the vibe works. And as time goes on, your matching will only get better.",
+        },
+      ],
+    },
+    ru: {
+      kicker: "Более спокойный вход в разговор",
+      title: "Сначала увидьте, что чувствуют люди, и только потом решайте, как подключиться.",
+      body:
+        "Лента настроения делает продукт понятным без холодного старта. Люди публикуют короткие, честные заметки о своём состоянии, теме на уме или типе разговора, который им сейчас нужен. Можно почувствовать атмосферу, ответить на конкретное настроение и перейти в подбор или прямой чат, когда момент подходит.",
+      primaryCta: "Открыть чат",
+      secondaryCta: "Смотреть подбор",
+      explainerKicker: "Как работает лента",
+      explainerTitle: "От настроения в фоне к настоящему разговору.",
+      highlights: [
+        {
+          title: "Сначала эмоциональный контекст",
+          body: "Вместо пустого окна чата человек видит реальные состояния: скуку, одиночество, тревогу, ночную бессонницу, желание совета или более лёгкий настрой.",
+        },
+        {
+          title: "Каждый пост даёт мягкий повод ответить",
+          body: "Короткий отклик на чьё-то состояние проще, чем придумывать первое сообщение с нуля. Это снижает давление и делает начало разговора естественнее.",
+        },
+        {
+          title: "Лента помогает будущему матчингу",
+          body: "Сигналы из ленты можно превращать в сигналы для подбора: кому нужен совет, кому нужна тихая компания, а кто хочет просто лёгкий разговор.",
+        },
+      ],
+      steps: [
+        {
+          step: "01",
+          title: "Почувствуйте эмоциональную карту",
+          body: "Прокрутите ленту и сразу увидите, что люди несут с собой прямо сейчас: скуку, усталость, перегруз, мысли по конкретной теме или желание просто выговориться.",
+        },
+        {
+          step: "02",
+          title: "Отвечайте на настроение, а не на витрину профиля",
+          body: "Здесь вы реагируете не на отполированную анкету, а на живой момент. Поэтому первый контакт получается более конкретным и менее наигранным.",
+        },
+        {
+          step: "03",
+          title: "Переходите в подбор или чат",
+          body: "Когда тон совпал, дальше всё просто: продолжайте ветку, открывайте прямой чат или используйте это настроение как сигнал для более точного подбора собеседников.",
+        },
+      ],
+    },
+  };
+
+  return localized[locale.value] || localized.en;
+});
 
 const threads = ref([]);
 const loading = ref(false);
@@ -921,6 +1060,11 @@ watch(submitNoticeOpen, (open) => {
     radial-gradient(1200px 240px at 8% 0%, rgba(59, 130, 246, 0.16), transparent 62%),
     linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.72));
   --mf-panel-text: #dbe6ff;
+  --mf-soft-card-bg: rgba(15, 23, 42, 0.54);
+  --mf-soft-card-border: rgba(148, 163, 184, 0.22);
+  --mf-secondary-bg: rgba(15, 23, 42, 0.48);
+  --mf-secondary-border: rgba(148, 163, 184, 0.24);
+  --mf-secondary-text: rgba(226, 232, 240, 0.94);
   --mf-divider: rgba(148, 163, 184, 0.26);
   --mf-input-bg: rgba(2, 6, 23, 0.6);
   --mf-input-border: rgba(148, 163, 184, 0.34);
@@ -939,6 +1083,11 @@ watch(submitNoticeOpen, (open) => {
     radial-gradient(1400px 240px at 8% 0%, rgba(59, 130, 246, 0.08), transparent 62%),
     linear-gradient(135deg, rgba(241, 245, 249, 0.98), rgba(226, 232, 240, 0.92));
   --mf-panel-text: #1e293b;
+  --mf-soft-card-bg: rgba(255, 255, 255, 0.84);
+  --mf-soft-card-border: rgba(100, 116, 139, 0.18);
+  --mf-secondary-bg: rgba(255, 255, 255, 0.82);
+  --mf-secondary-border: rgba(100, 116, 139, 0.18);
+  --mf-secondary-text: rgb(15 23 42);
   --mf-divider: rgba(100, 116, 139, 0.24);
   --mf-input-bg: rgba(255, 255, 255, 0.9);
   --mf-input-border: rgba(100, 116, 139, 0.34);
@@ -950,9 +1099,89 @@ watch(submitNoticeOpen, (open) => {
   margin-bottom: 16px;
 }
 
+.feeds-intro-panel {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--mf-panel-border);
+  border-radius: 20px;
+  background: var(--mf-panel-bg);
+  color: var(--mf-panel-text);
+}
+
+.feeds-intro-panel__eyebrow,
+.feeds-explainer__eyebrow,
+.feeds-explainer__step {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+.feeds-intro-panel__title,
+.feeds-value-card__title,
+.feeds-explainer__title,
+.feeds-explainer__card-title {
+  margin: 0;
+  color: rgb(var(--color-foreground));
+}
+
+.feeds-intro-panel__body,
+.feeds-value-card__body,
+.feeds-explainer__card-body {
+  margin: 0;
+  color: rgb(var(--color-foreground) / 0.78);
+}
+
+.feeds-intro-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.feeds-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.feeds-cta--primary {
+  background: rgb(var(--color-primary));
+  color: white;
+}
+
+.feeds-cta--secondary {
+  border: 1px solid var(--mf-secondary-border);
+  background: var(--mf-secondary-bg);
+  color: var(--mf-secondary-text);
+}
+
 .feeds-mood-match-strip {
   max-width: 680px;
   margin: 0 auto 8px;
+}
+
+.feeds-value-grid,
+.feeds-explainer__grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.feeds-value-card,
+.feeds-explainer__card {
+  padding: 1rem;
+  border: 1px solid var(--mf-soft-card-border);
+  border-radius: 18px;
+  background: var(--mf-soft-card-bg);
 }
 
 .feeds-mood-match-copy {
@@ -1153,6 +1382,14 @@ watch(submitNoticeOpen, (open) => {
   animation: feeds-spinner-spin 0.7s linear infinite;
 }
 
+.feeds-explainer {
+  margin-top: 1.5rem;
+}
+
+.feeds-explainer__header {
+  margin-bottom: 1rem;
+}
+
 .feeds-toast-stack {
   position: fixed;
   top: 1rem;
@@ -1249,6 +1486,18 @@ watch(submitNoticeOpen, (open) => {
   .feeds-toast-stack {
     left: 1rem;
     right: 1rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .feeds-intro-panel {
+    grid-template-columns: minmax(0, 1.8fr) minmax(260px, 0.9fr);
+    align-items: center;
+  }
+
+  .feeds-value-grid,
+  .feeds-explainer__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 </style>

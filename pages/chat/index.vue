@@ -37,13 +37,6 @@ const router = useRouter();
 const localPath = useLocalePath();
 const config = useRuntimeConfig();
 const siteConfig = useSiteConfig();
-const chatSeoQueryKeys = ["userslug", "slug", "userId", "id", "imchatty"];
-const hasEntryQuery = computed(() =>
-  chatSeoQueryKeys.some((key) => {
-    const value = route.query?.[key];
-    return Array.isArray(value) ? value.length > 0 : value != null && `${value}` !== "";
-  })
-);
 const baseUrl = String(siteConfig?.url || config.public?.SITE_URL || "").replace(
   /\/+$/,
   ""
@@ -52,13 +45,9 @@ const chatCanonicalPath = computed(() => {
   const localizedPath = localPath("/chat");
   return `${baseUrl}${localizedPath === "/" ? "" : localizedPath}`;
 });
-const chatRobots = computed(() =>
-  hasEntryQuery.value ? "noindex,follow" : undefined
-);
-
 useSeoI18nMeta("chat.index", {
   overrideUrl: chatCanonicalPath,
-  robots: chatRobots,
+  robots: "noindex,follow",
 });
 onMounted(async () => {
   try {

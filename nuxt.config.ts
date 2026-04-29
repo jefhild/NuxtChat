@@ -326,6 +326,12 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-03-13",
 
   routeRules: {
+    "/chat": {
+      robots: "noindex, follow",
+    },
+    "/*/chat": {
+      robots: "noindex, follow",
+    },
     "/settings": {
       headers: { "x-robots-tag": "noindex, nofollow, noarchive" },
     },
@@ -439,6 +445,8 @@ export default defineNuxtConfig({
   sitemap: {
     sources: ["/api/sitemap/urls"],
     exclude: [
+      "/chat",
+      "/**/chat",
       "/login",
       "/signin",
       "/logout",

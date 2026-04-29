@@ -479,6 +479,7 @@
 </template>
 
 <script setup>
+import heroBackgroundUrl from "@/assets/images/background2.webp";
 import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
@@ -492,6 +493,7 @@ const router = useRouter();
 const localPath = useLocalePath();
 const authStore = useAuthStore();
 const { hasEmail } = useDb();
+const heroBackground = `linear-gradient(to bottom, rgba(6, 11, 23, 0.28), rgba(6, 11, 23, 0.82)), url("${heroBackgroundUrl}") center / cover no-repeat`;
 
 const logoutDialog = ref(false);
 const authStatus = computed(() => authStore.authStatus);
@@ -752,9 +754,7 @@ const clearSpotlight = (e) => {
 
 .hero-media {
   min-height: clamp(520px, 82vh, 760px);
-  background:
-    linear-gradient(to bottom, rgba(6, 11, 23, 0.28), rgba(6, 11, 23, 0.82)),
-    url("/images/background2.webp") center / cover no-repeat;
+  background: v-bind(heroBackground);
 }
 
 .hero-overlay {

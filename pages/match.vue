@@ -12,6 +12,40 @@
       <MatchMoodChipsBar :selected-key="activePreset?.key ?? null" @select="onPresetSelect" />
     </div>
 
+    <section class="match-intro-panel mb-6" aria-labelledby="match-intro-title">
+      <div class="match-intro-panel__copy">
+        <p class="match-intro-panel__eyebrow">{{ matchLandingCopy.kicker }}</p>
+        <h2 id="match-intro-title" class="match-intro-panel__title">
+          {{ matchLandingCopy.title }}
+        </h2>
+        <p class="match-intro-panel__body">
+          {{ matchLandingCopy.body }}
+        </p>
+      </div>
+      <div class="match-intro-panel__actions">
+        <a href="#match-cards" class="match-cta match-cta--primary">
+          {{ matchLandingCopy.primaryCta }}
+        </a>
+        <NuxtLink :to="localPath('/feeds')" class="match-cta match-cta--secondary">
+          {{ matchLandingCopy.secondaryCta }}
+        </NuxtLink>
+      </div>
+    </section>
+
+    <div id="match-results">
+    <section class="match-value-grid mb-6" aria-label="Why use mood matching">
+      <article
+        v-for="item in matchLandingCopy.highlights"
+        :key="item.title"
+        class="match-value-card"
+      >
+        <h2 class="match-value-card__title">{{ item.title }}</h2>
+        <p class="match-value-card__body">{{ item.body }}</p>
+      </article>
+    </section>
+
+    <div id="match-cards" />
+
     <div v-if="activePreset" class="match-alert mb-6" role="status">
       <div class="match-alert__content">
         <i class="mdi mdi-information-outline match-alert__icon" aria-hidden="true" />
@@ -49,6 +83,14 @@
     >
       <i class="mdi mdi-account-search-outline match-empty__icon" aria-hidden="true" />
       <p class="match-empty__text">{{ $t("pages.match.empty") }}</p>
+      <div class="match-empty__actions">
+        <NuxtLink :to="localPath('/chat')" class="match-cta match-cta--primary">
+          {{ matchLandingCopy.emptyPrimaryCta }}
+        </NuxtLink>
+        <NuxtLink :to="localPath('/guides')" class="match-cta match-cta--secondary">
+          {{ matchLandingCopy.emptySecondaryCta }}
+        </NuxtLink>
+      </div>
     </div>
 
     <template v-else>
@@ -112,6 +154,7 @@
         </div>
       </section>
     </template>
+    </div>
 
     <Teleport to="body">
       <Transition name="match-dialog-fade">
@@ -165,11 +208,31 @@
       v-model="profileDialogOpen"
       :user-id="profileDialogUserId"
     />
+
+    <section class="match-explainer mt-10" aria-labelledby="match-explainer-title">
+      <div class="match-explainer__header">
+        <p class="match-explainer__eyebrow">{{ matchLandingCopy.explainerKicker }}</p>
+        <h2 id="match-explainer-title" class="match-explainer__title">
+          {{ matchLandingCopy.explainerTitle }}
+        </h2>
+      </div>
+      <div class="match-explainer__grid">
+        <article
+          v-for="step in matchLandingCopy.steps"
+          :key="step.title"
+          class="match-explainer__card"
+        >
+          <p class="match-explainer__step">{{ step.step }}</p>
+          <h3 class="match-explainer__card-title">{{ step.title }}</h3>
+          <p class="match-explainer__card-body">{{ step.body }}</p>
+        </article>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, nextTick, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useLocalePath } from "#imports";
 import { useI18n } from "vue-i18n";
@@ -202,6 +265,14 @@ const publicPersonas = ref([]);
 const publicOnline = ref([]);
 const publicOffline = ref([]);
 const publicLoading = ref(false);
+
+function scrollToMatchCards() {
+  if (typeof document === "undefined") return;
+  document.getElementById("match-cards")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+}
 
 const isAuthenticated = computed(() =>
   auth.authStatus !== "unauthenticated"
@@ -242,6 +313,99 @@ const hasAnyCandidates = computed(
     displayAiCandidates.value.length > 0
 );
 
+const matchLandingCopy = computed(() => {
+  const localized = {
+    en: {
+      kicker: "Matching with a little emotional context",
+      title: "Find people who fit the conversation you want right now.",
+      body:
+        "Mood matching is built for moments when the usual random-chat opener feels too blunt. Choose the tone you are in, whether that is bored, restless, looking for advice, or just open to something light, then browse people and personas that make sense for that state of mind.",
+      primaryCta: "Open Chat",
+      secondaryCta: "Browse Mood Feed",
+      emptyPrimaryCta: "Go To Chat",
+      emptySecondaryCta: "Read Guides",
+      explainerKicker: "How matching works",
+      explainerTitle: "Mood is the filter before the first message.",
+      highlights: [
+        {
+          title: "The opener gets easier",
+          body: "When you already know the tone, the first message does not have to do all the work. You are not entering blind or pretending to be in a different mood than you are.",
+        },
+        {
+          title: "Different moods need different people",
+          body: "Someone who wants advice should not be dropped into the same lane as someone who only wants banter. Mood helps separate those intents before the conversation starts.",
+        },
+        {
+          title: "It works with people and personas",
+          body: "The system can surface real users, quieter matches, or AI personas that fit the same emotional lane, which makes the page useful even when live supply shifts hour to hour.",
+        },
+      ],
+      steps: [
+        {
+          step: "01",
+          title: "Choose the state you are in",
+          body: "Start with what is true in the moment: bored, can’t sleep, want advice, or just want a lighter chat with less pressure.",
+        },
+        {
+          step: "02",
+          title: "See better-fit candidates",
+          body: "The page narrows the field toward people or personas who make more sense for that emotional lane, instead of treating every conversation as interchangeable.",
+        },
+        {
+          step: "03",
+          title: "Carry that context into chat",
+          body: "When a person looks right, you move straight into chat with a shared tone already established, which makes the conversation less awkward from the first line.",
+        },
+      ],
+    },
+    ru: {
+      kicker: "Подбор с эмоциональным контекстом",
+      title: "Находите людей под тот разговор, который нужен вам именно сейчас.",
+      body:
+        "Подбор по настроению нужен для тех моментов, когда случайный чат кажется слишком грубым входом. Выберите своё состояние: скучно, не спится, нужен совет или хочется чего-то лёгкого, а затем посмотрите людей и персонажей, которые лучше подходят под этот настрой.",
+      primaryCta: "Открыть чат",
+      secondaryCta: "Открыть ленту",
+      emptyPrimaryCta: "Открыть чат",
+      emptySecondaryCta: "Читать гайды",
+      explainerKicker: "Как работает подбор",
+      explainerTitle: "Настроение становится фильтром ещё до первого сообщения.",
+      highlights: [
+        {
+          title: "Начинать проще",
+          body: "Когда тон уже понятен, первому сообщению не нужно делать всю работу. Вы не входите вслепую и не изображаете другое состояние, чем чувствуете на самом деле.",
+        },
+        {
+          title: "Разным состояниям нужны разные собеседники",
+          body: "Человеку, который ищет совет, не нужен тот же тип контакта, что человеку, который хочет только лёгкий обмен фразами. Настроение помогает развести эти сценарии заранее.",
+        },
+        {
+          title: "Подходит и для людей, и для AI-персонажей",
+          body: "Страница может показать живых пользователей, более спокойные варианты или AI-персонажей в той же эмоциональной полосе, поэтому она остаётся полезной даже при меняющемся онлайне.",
+        },
+      ],
+      steps: [
+        {
+          step: "01",
+          title: "Выберите своё состояние",
+          body: "Начните с правды момента: скучно, не спится, нужен совет или хочется более лёгкого разговора без лишнего давления.",
+        },
+        {
+          step: "02",
+          title: "Смотрите более подходящих кандидатов",
+          body: "Страница сужает выбор до людей и персонажей, которые лучше соответствуют вашему эмоциональному каналу, а не делает все разговоры одинаковыми.",
+        },
+        {
+          step: "03",
+          title: "Уносите этот контекст в чат",
+          body: "Если человек подходит, вы сразу переходите в чат с уже понятным тоном, поэтому разговор стартует менее неловко и более по делу.",
+        },
+      ],
+    },
+  };
+
+  return localized[locale.value] || localized.en;
+});
+
 // ----------------------------------------------------------
 // Preset selection
 // ----------------------------------------------------------
@@ -257,10 +421,14 @@ async function onPresetSelect(preset) {
     await applyPresetToMoodState(preset);
     bustMatchCache();
     fetchCandidates(true);
+    await nextTick();
+    scrollToMatchCards();
     return;
   }
 
   await loadPublicPersonas(preset);
+  await nextTick();
+  scrollToMatchCards();
 }
 
 async function applyPresetToMoodState(preset) {
@@ -410,9 +578,28 @@ useHead({
 
 <style scoped>
 .match-page-shell {
+  --match-panel-border: rgba(148, 163, 184, 0.2);
+  --match-panel-bg:
+    linear-gradient(135deg, rgb(var(--color-primary) / 0.12), rgba(15, 23, 42, 0.68));
+  --match-soft-card-bg: rgba(15, 23, 42, 0.52);
+  --match-soft-card-border: rgba(148, 163, 184, 0.18);
+  --match-secondary-bg: rgba(15, 23, 42, 0.5);
+  --match-secondary-border: rgba(148, 163, 184, 0.22);
+  --match-secondary-text: rgba(226, 232, 240, 0.94);
   max-width: 1100px;
   margin: 0 auto;
   padding: 32px 16px 64px;
+}
+
+:global(.v-theme--light) .match-page-shell {
+  --match-panel-border: rgba(59, 130, 246, 0.18);
+  --match-panel-bg:
+    linear-gradient(135deg, rgb(var(--color-primary) / 0.12), rgb(255 255 255 / 0.92));
+  --match-soft-card-bg: rgba(255, 255, 255, 0.88);
+  --match-soft-card-border: rgba(15, 23, 42, 0.08);
+  --match-secondary-bg: rgba(255, 255, 255, 0.8);
+  --match-secondary-border: rgba(15, 23, 42, 0.14);
+  --match-secondary-text: rgb(var(--color-foreground));
 }
 
 .match-header {
@@ -445,6 +632,84 @@ useHead({
 .match-chips-wrap {
   display: flex;
   justify-content: center;
+}
+
+.match-intro-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--match-panel-border);
+  border-radius: 20px;
+  background: var(--match-panel-bg);
+}
+
+.match-intro-panel__eyebrow,
+.match-explainer__eyebrow,
+.match-explainer__step {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-primary));
+}
+
+.match-intro-panel__title,
+.match-explainer__title,
+.match-value-card__title,
+.match-explainer__card-title {
+  margin: 0;
+  color: rgb(var(--color-foreground));
+}
+
+.match-intro-panel__body,
+.match-value-card__body,
+.match-explainer__card-body {
+  margin: 0;
+  color: rgb(var(--color-foreground) / 0.78);
+}
+
+.match-intro-panel__actions,
+.match-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.match-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.match-cta--primary {
+  background: rgb(var(--color-primary));
+  color: white;
+}
+
+.match-cta--secondary {
+  border: 1px solid var(--match-secondary-border);
+  background: var(--match-secondary-bg);
+  color: var(--match-secondary-text);
+}
+
+.match-value-grid,
+.match-explainer__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.match-value-card,
+.match-explainer__card {
+  padding: 1rem;
+  border: 1px solid var(--match-soft-card-border);
+  border-radius: 18px;
+  background: var(--match-soft-card-bg);
 }
 
 .match-alert {
@@ -573,6 +838,10 @@ useHead({
 .match-section-icon {
   font-size: 1rem;
   color: rgb(var(--color-secondary));
+}
+
+.match-explainer__header {
+  margin-bottom: 1rem;
 }
 
 .dot {
@@ -704,6 +973,18 @@ useHead({
 
   .match-dialog-card__button {
     width: 100%;
+  }
+}
+
+@media (min-width: 900px) {
+  .match-intro-panel {
+    grid-template-columns: minmax(0, 1.8fr) minmax(260px, 0.9fr);
+    align-items: center;
+  }
+
+  .match-value-grid,
+  .match-explainer__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 </style>

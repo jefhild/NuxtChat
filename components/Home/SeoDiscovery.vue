@@ -210,34 +210,51 @@ const copy = computed(
   () => copyByLocale[localeCode.value as keyof typeof copyByLocale] || copyByLocale.en
 );
 
+const emptyDiscoveryState = () => ({
+  compare: null,
+  guide: null,
+  topic: null,
+});
+
+const fetchSeoPage = async (
+  type: SeoPageSummary["pageType"],
+  currentLocale: string
+) => {
+  try {
+    const response = await $fetch<SeoApiResponse>("/api/seo-pages", {
+      query: { type, locale: currentLocale, limit: 1 },
+    });
+
+    return Array.isArray(response?.pages) ? response.pages[0] || null : null;
+  } catch (error) {
+    console.error("[HomeSeoDiscovery] failed to load SEO page", {
+      type,
+      locale: currentLocale,
+      error,
+    });
+    return null;
+  }
+};
+
 const { data } = await useAsyncData(
-  "home-seo-discovery",
+  () => `home-seo-discovery-${localeCode.value || "en"}`,
   async () => {
     const currentLocale = localeCode.value || "en";
-    const [compare, guide, topic] = await Promise.all([
-      $fetch<SeoApiResponse>("/api/seo-pages", {
-        query: { type: "compare", locale: currentLocale, limit: 1 },
-      }),
-      $fetch<SeoApiResponse>("/api/seo-pages", {
-        query: { type: "guide", locale: currentLocale, limit: 1 },
-      }),
-      $fetch<SeoApiResponse>("/api/seo-pages", {
-        query: { type: "topic", locale: currentLocale, limit: 1 },
-      }),
+
+    const [compare, guide, topic] = await Promise.allSettled([
+      fetchSeoPage("compare", currentLocale),
+      fetchSeoPage("guide", currentLocale),
+      fetchSeoPage("topic", currentLocale),
     ]);
 
     return {
-      compare: Array.isArray(compare?.pages) ? compare.pages[0] || null : null,
-      guide: Array.isArray(guide?.pages) ? guide.pages[0] || null : null,
-      topic: Array.isArray(topic?.pages) ? topic.pages[0] || null : null,
+      compare: compare.status === "fulfilled" ? compare.value : null,
+      guide: guide.status === "fulfilled" ? guide.value : null,
+      topic: topic.status === "fulfilled" ? topic.value : null,
     };
   },
   {
-    default: () => ({
-      compare: null,
-      guide: null,
-      topic: null,
-    }),
+    default: emptyDiscoveryState,
     watch: [localeCode],
   }
 );
