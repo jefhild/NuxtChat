@@ -437,7 +437,7 @@
             <ChatLayoutUsersPane
               :list-visible="tabVisibility.online"
               list-type="online"
-              :users="activePanelUsersWithPresence"
+              :users="usersWithPresence"
               :pinned-id="IMCHATTY_ID"
               :active-chats="activeChats"
               :language-practice-chat-ids="languagePracticeSessionUserIds"
@@ -728,7 +728,7 @@ const PREAUTH_STATUSES = ["anonymous", "unauthenticated", "guest", "onboarding"]
 // "matched" stage is excluded — that's when we *want* the strip to appear
 const suppressMatchStrip = computed(() => {
   const captureActive = ["prompt", "confirm", "clarify"].includes(draft.liveMoodStage || "");
-  const nextStepActive = ["choose", "dormant"].includes(draft.liveMoodNextStepStage || "");
+  const nextStepActive = ["choose"].includes(draft.liveMoodNextStepStage || "");
   return captureActive || nextStepActive;
 });
 
@@ -1035,7 +1035,7 @@ const showMobileUnreadAlert = computed(
 );
 
 function mergeActiveChatIds(ids = []) {
-  const incoming = (Array.isArray(ids) ? ids : [])
+  const incoming = chat.filterDismissedActivePeerIds((Array.isArray(ids) ? ids : []))
     .map((id) => String(id || "").trim())
     .filter(Boolean);
   if (!incoming.length) return;
@@ -2680,11 +2680,10 @@ async function confirmDeleteChat() {
 
     // update active list + unread counts locally
     const peerIdStr = String(peerId);
-    chat.activeChats = (chat.activeChats || []).filter(
-      (id) => String(id) !== peerIdStr
-    );
+    const dismissedIds = Array.from(new Set([peerIdStr, ...candidatePeerIds]));
+    chat.dismissActivePeers(dismissedIds);
     activeChats.value = (activeChats.value || []).filter(
-      (id) => String(id) !== peerIdStr
+      (id) => !dismissedIds.includes(String(id))
     );
     if (msgs?.clearUnreadForPeers) {
       msgs.clearUnreadForPeers([peerIdStr, ...candidatePeerIds]);
@@ -4459,9 +4458,9 @@ async function refreshActiveChats() {
   if (error) return console.error("[activeChats] rpc error", error);
 
   // normalize to array of IDs, but preserve locally promoted active peers
-  const fetchedIds = (data || [])
+  const fetchedIds = chat.filterDismissedActivePeerIds((data || [])
     .map((r) => String(r.peer_id ?? r.user_id ?? r.id ?? ""))
-    .filter(Boolean);
+    .filter(Boolean));
   const localIds = (Array.isArray(chat.activeChats) ? chat.activeChats : [])
     .map((id) => String(id || "").trim())
     .filter(Boolean);

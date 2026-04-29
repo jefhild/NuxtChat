@@ -14,6 +14,7 @@ const RESUME_CHAT_STATUSES = ["authenticated", "anon_authenticated"];
 export const useChatStore = defineStore("chatStore", () => {
   const users = ref([]); // directory (real + AI)
   const activeChats = ref([]); // array of peer IDs (strings)
+  const dismissedActivePeerIds = ref([]);
   const loading = ref(false);
   const error = ref(null);
   const selectedUser = ref(null);
@@ -29,6 +30,15 @@ export const useChatStore = defineStore("chatStore", () => {
   const getStableId = (u) =>
     u?.user_id || u?.id ? String(u.user_id || u.id) : null;
   const normalizeId = (v) => String(v ?? "").trim();
+  const dismissedSet = () =>
+    new Set(
+      (Array.isArray(dismissedActivePeerIds.value)
+        ? dismissedActivePeerIds.value
+        : []
+      )
+        .map((id) => normalizeId(id))
+        .filter(Boolean)
+    );
   const getStableSlug = (u) =>
     String(u?.slug ?? u?.profile_slug ?? u?.username_slug ?? "")
       .trim()
@@ -340,10 +350,40 @@ function isAiId(id) {
       .filter(Boolean);
   }
 
+  function filterDismissedActivePeerIds(ids = []) {
+    const hidden = dismissedSet();
+    if (!hidden.size) return Array.isArray(ids) ? ids : [];
+    return (Array.isArray(ids) ? ids : []).filter(
+      (id) => !hidden.has(normalizeId(id))
+    );
+  }
+
+  function dismissActivePeers(peerIds = []) {
+    const next = new Set([
+      ...dismissedSet(),
+      ...(Array.isArray(peerIds) ? peerIds : [peerIds])
+        .map((id) => normalizeId(id))
+        .filter(Boolean),
+    ]);
+    dismissedActivePeerIds.value = Array.from(next);
+    activeChats.value = activeChats.value.filter(
+      (id) => !next.has(normalizeId(id))
+    );
+  }
+
+  function restoreDismissedActivePeer(peerId) {
+    const id = normalizeId(peerId);
+    if (!id) return;
+    dismissedActivePeerIds.value = dismissedActivePeerIds.value.filter(
+      (value) => normalizeId(value) !== id
+    );
+  }
+
   // ✅ merge helper (put newest first, dedupe)
   function mergeActiveChatsHead(ids) {
+    const visibleIds = filterDismissedActivePeerIds(ids);
     const set = new Set(activeChats.value);
-    const merged = [...ids.filter((id) => !set.has(id)), ...activeChats.value];
+    const merged = [...visibleIds.filter((id) => !set.has(id)), ...activeChats.value];
     activeChats.value = merged;
   }
 
@@ -351,7 +391,7 @@ function isAiId(id) {
     try {
       const { data, error: dbError } = await db.getActiveChats(userId);
       if (dbError) throw dbError;
-      const ids = normalizeActiveIds(data);
+      const ids = filterDismissedActivePeerIds(normalizeActiveIds(data));
       activeChats.value = ids;
       await ensureUsersPresentByIds(ids);
       cleanupHiddenHoneyState();
@@ -386,6 +426,7 @@ function isAiId(id) {
   function addActivePeer(peerId) {
     const id = String(peerId || "");
     if (!id) return;
+    restoreDismissedActivePeer(id);
     const peer = getUserById(id);
     if (peer && isHiddenHoneyForCurrentAuth(peer)) return;
     if (!activeChats.value.includes(id)) {
@@ -479,12 +520,15 @@ function isAiId(id) {
     // state
     users,
     activeChats,
+    dismissedActivePeerIds,
     loading,
     error,
     selectedUser,
     // helpers
     getUserById,
     addActivePeer, //  NEW (public)
+    dismissActivePeers,
+    filterDismissedActivePeerIds,
     // actions
     fetchChatUsers,
     fetchActiveChats,

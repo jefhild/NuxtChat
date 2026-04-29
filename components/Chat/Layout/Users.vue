@@ -275,7 +275,7 @@ const shouldFetchMatches = computed(() =>
 const showMatchStrip = computed(
   () => shouldFetchMatches.value &&
     !props.suppressMatchStrip &&
-    (!!matchData.value?.intake || matchRefreshPending.value)
+    (!!matchData.value?.intake || matchRefreshPending.value || !!matchFilter.value)
 );
 
 watch(shouldFetchMatches, (val) => { if (val) fetchCandidates(); }, { immediate: true });
@@ -463,14 +463,16 @@ const activeUsers = computed(() =>
 );
 
 const displayUsers = computed(() => {
-  // Offline/AI match filter: bypass presence split — show API candidates directly
-  if (matchFilter.value === "offline" || matchFilter.value === "ai") return sortWithPin(filteredUsers.value);
   switch (normalizedListType.value) {
     case "active":
       return activeUsers.value;
     case "offline":
       return offlineUsers.value;
     default:
+      // Offline/AI match filter: bypass presence split — show API candidates directly
+      if (matchFilter.value === "offline" || matchFilter.value === "ai") {
+        return sortWithPin(filteredUsers.value);
+      }
       return onlineUsers.value;
   }
 });
@@ -505,6 +507,11 @@ const featuredUser = computed(
 const isHoneySimulatedUser = (u) =>
   !!u?.is_ai && !!u?.honey_enabled && !!u?.is_simulated;
 const aiUsers = computed(() => {
+  if (normalizedListType.value === "active") {
+    return displayUsers.value.filter(
+      (u) => u.is_ai && !isHoneySimulatedUser(u) && !u.hidden && !isPinned(u)
+    );
+  }
   // Only show mood-matched AI personas when a filter pill is active
   if (matchFilter.value && matchData.value?.ai?.length) {
     // Build a lookup from the full props.users list to preserve gender/country/etc.
