@@ -230,11 +230,12 @@ form {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.32rem;
-  border: 1px solid rgba(var(--color-border), 0.22);
+  padding: 0.42rem;
+  border: 1px solid rgba(var(--color-border), 0.14);
   border-radius: 1rem;
-  background: rgba(var(--color-surface), 0.7);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  background: rgba(var(--color-surface), 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 input {
@@ -248,22 +249,26 @@ button {
 .chat-composer-input {
   min-height: 2.55rem;
   border-radius: 0.8rem;
-  border: 1px solid rgba(var(--color-border), 0.2) !important;
-  background: rgba(var(--color-background), 0.56);
+  border: 1px solid rgba(148, 163, 184, 0.42) !important;
+  background: rgba(15, 23, 42, 0.98);
   color: rgb(var(--color-foreground));
   padding: 0.68rem 0.85rem;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
+  font-weight: 500;
   line-height: 1.35;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .chat-composer-input::placeholder {
-  color: rgb(var(--color-muted));
+  color: rgba(226, 232, 240, 0.72);
 }
 
 .chat-composer-input:focus {
   outline: none;
-  border-color: rgba(var(--color-secondary), 0.68) !important;
-  box-shadow: 0 0 0 3px rgba(var(--color-secondary), 0.16);
+  border-color: rgba(96, 165, 250, 0.88) !important;
+  box-shadow:
+    0 0 0 3px rgba(96, 165, 250, 0.16),
+    0 0 0 1px rgba(96, 165, 250, 0.22);
 }
 
 .chat-composer-input--language {
@@ -276,8 +281,10 @@ button {
 }
 
 .chat-composer-input:disabled {
-  background: rgba(var(--color-background), 0.36);
-  color: rgb(var(--color-muted));
+  border-color: rgba(148, 163, 184, 0.34) !important;
+  background: rgba(15, 23, 42, 0.88);
+  color: rgba(226, 232, 240, 0.78);
+  -webkit-text-fill-color: rgba(226, 232, 240, 0.78);
 }
 
 .chat-composer-send {
