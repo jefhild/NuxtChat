@@ -397,6 +397,10 @@ const sourceUsers = computed(() => {
   return props.users || [];
 });
 
+const activeSet = computed(
+  () => new Set((props.activeChats || []).map((id) => String(id)))
+);
+
 const filteredUsers = computed(() => {
   const src = sourceUsers.value.filter((u) => !isInactiveAi(u));
 
@@ -450,12 +454,9 @@ const offlineUsers = computed(() =>
   )
 );
 
-const activeSet = computed(
-  () => new Set((props.activeChats || []).map((id) => String(id)))
-);
 const activeUsers = computed(() =>
   sortWithPin(
-    filteredUsers.value.filter(
+    (props.users || []).filter(
       (u) => activeSet.value.has(idStr(u)) && !u.hidden
     )
   )

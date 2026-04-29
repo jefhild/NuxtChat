@@ -246,7 +246,7 @@
             card-class="active-panel-card"
             :list-visible="tabVisibility.active"
             list-type="active"
-            :users="usersWithPresence"
+            :users="activePanelUsersWithPresence"
             :pinned-id="IMCHATTY_ID"
             :active-chats="activeChats"
             :language-practice-chat-ids="languagePracticeSessionUserIds"
@@ -437,7 +437,7 @@
             <ChatLayoutUsersPane
               :list-visible="tabVisibility.online"
               list-type="online"
-              :users="usersWithPresence"
+              :users="activePanelUsersWithPresence"
               :pinned-id="IMCHATTY_ID"
               :active-chats="activeChats"
               :language-practice-chat-ids="languagePracticeSessionUserIds"
@@ -490,7 +490,7 @@
             <ChatLayoutUsersPane
               :list-visible="tabVisibility.active"
               list-type="active"
-              :users="usersWithPresence"
+              :users="activePanelUsersWithPresence"
               :pinned-id="IMCHATTY_ID"
               :active-chats="activeChats"
               :language-practice-chat-ids="languagePracticeSessionUserIds"
@@ -1654,6 +1654,10 @@ async function loadLanguagePracticeSession() {
         (learnerId === selectedPeerId && partnerId === ownerId));
 
     languagePracticeSession.value = matchesSelectedPair ? session : null;
+    if (matchesSelectedPair) {
+      chat.addActivePeer(selectedPeerId);
+      mergeActiveChatIds([selectedPeerId]);
+    }
   } catch (error) {
     console.warn("[chat][language-practice] session load failed:", error);
     if (String(selectedUserId.value || "") === selectedPeerId) {
@@ -2145,7 +2149,7 @@ function onThreadQuickReply(label) {
   onSend(label, { bypassTranslationPrompt: true });
 }
 
-const usersWithPresence = computed(() => {
+function buildUsersWithPresence({ includeLanguagePracticeAi = false } = {}) {
   // ——— presence dependency (reactive) ———
   // console.log('[usersWithPresence] src len =', Array.isArray(chat.users) ? chat.users.length : 'n/a');
 
@@ -2264,7 +2268,7 @@ const usersWithPresence = computed(() => {
       .filter((u) => {
         if (isImchattyUser(u)) return true;
         if (!u?.is_ai || !showAIUsers.value) return true;
-        if (showLanguagePracticeAIUsers.value) return true;
+        if (includeLanguagePracticeAi) return true;
         return !u?.language_practice_enabled;
       })
     // gender filter
@@ -2312,7 +2316,15 @@ const usersWithPresence = computed(() => {
       return (a.displayname || "").localeCompare(b.displayname || "");
     }),
   ];
-});
+}
+
+const usersWithPresence = computed(() =>
+  buildUsersWithPresence({ includeLanguagePracticeAi: showLanguagePracticeAIUsers.value })
+);
+
+const activePanelUsersWithPresence = computed(() =>
+  buildUsersWithPresence({ includeLanguagePracticeAi: true })
+);
 
 const preauthBotDefaultApplied = ref(false);
 
@@ -2462,18 +2474,36 @@ watch(
   { immediate: true }
 );
 
-function selectUser(u) {
-  chat.setSelectedUser(u);
-  if (smAndDown.value) {
-    leftOpen.value = false;
-    rightOpen.value = false;
-  }
-}
-
 function chatUserId(u) {
   const id = u?.user_id ?? u?.id ?? u?.auth_user_id ?? u?.uid;
   const normalized = String(id ?? "").trim();
   return normalized || null;
+}
+
+function isKnownLanguagePracticePeer(user) {
+  const peerId = chatUserId(user);
+  if (!peerId) return false;
+  return languagePracticeSessionUserIds.value.some(
+    (id) => String(id) === String(peerId)
+  );
+}
+
+function promotePeerToActive(peerId) {
+  if (!peerId) return;
+  chat.addActivePeer(peerId);
+  mergeActiveChatIds([peerId]);
+}
+
+function selectUser(u) {
+  chat.setSelectedUser(u);
+  const peerId = chatUserId(u);
+  if (peerId && isKnownLanguagePracticePeer(u)) {
+    promotePeerToActive(peerId);
+  }
+  if (smAndDown.value) {
+    leftOpen.value = false;
+    rightOpen.value = false;
+  }
 }
 
 async function setLanguagePracticeRouteMode(enabled, user = null) {
@@ -2495,6 +2525,7 @@ async function setLanguagePracticeRouteMode(enabled, user = null) {
   await router.replace({ path: route.path, query });
 
   if (enabled) {
+    promotePeerToActive(peerId);
     await nextTick();
     await loadLanguagePracticeSession();
     return;

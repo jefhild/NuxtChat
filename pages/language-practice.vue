@@ -288,6 +288,7 @@ import { useRoute } from "vue-router";
 import { useLocalePath } from "#imports";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/authStore1";
+import { useChatStore } from "@/stores/chatStore";
 import { useOnboardingDraftStore } from "@/stores/onboardingDraftStore";
 import { useLanguagePracticeProfile } from "@/composables/useLanguagePracticeProfile";
 import { useLanguagePracticeSession } from "@/composables/useLanguagePracticeSession";
@@ -296,6 +297,7 @@ const { t, locale } = useI18n();
 const route = useRoute();
 const localPath = useLocalePath();
 const auth = useAuthStore();
+const chat = useChatStore();
 const onboardingDraft = useOnboardingDraftStore();
 const {
   fetchLanguagePracticePreference,
@@ -563,6 +565,8 @@ async function onChatRequest(candidate) {
       source: "language_directory",
       ...languageFilters.value,
     });
+    chat.addActivePeer(candidate.user_id);
+    chat.setSelectedUser(candidate);
     navigateTo(
       localPath({
         path: "/chat",

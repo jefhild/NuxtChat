@@ -124,6 +124,52 @@ const isLikelyIncoherentMessage = (value) => {
   );
 };
 
+const escapeRegExp = (value) =>
+  String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const isLikelyTranslationRequest = ({
+  message,
+  targetLanguageCode,
+  targetLanguageLabel,
+}) => {
+  const text = String(message || "").trim().toLowerCase();
+  if (!text) return false;
+
+  const targetCode = normalizeLanguagePracticeCode(targetLanguageCode);
+  const targetLabel = String(targetLanguageLabel || describeLanguageCode(targetCode))
+    .trim()
+    .toLowerCase();
+  const languageTokens = Array.from(
+    new Set(
+      [targetCode, targetLabel]
+        .filter(Boolean)
+        .flatMap((token) => String(token).split(/\s+/))
+        .filter(Boolean)
+    )
+  );
+  const languagePattern = languageTokens.length
+    ? languageTokens.map((token) => escapeRegExp(token)).join("|")
+    : "language";
+
+  const translationPatterns = [
+    new RegExp(`\\bhow do i say\\b`, "i"),
+    new RegExp(`\\bhow to say\\b`, "i"),
+    new RegExp(`\\bhow would you say\\b`, "i"),
+    new RegExp(`\\bwhat(?:'s| is) .*\\bin (${languagePattern})\\b`, "i"),
+    new RegExp(`\\btranslate .*\\binto (${languagePattern})\\b`, "i"),
+    new RegExp(`\\btranslate .*\\bto (${languagePattern})\\b`, "i"),
+    new RegExp(`\\bwhat do i want to say in (${languagePattern})\\b`, "i"),
+  ];
+
+  if (translationPatterns.some((pattern) => pattern.test(text))) return true;
+
+  const shortQuestion =
+    text.endsWith("?") &&
+    text.split(/\s+/).filter(Boolean).length <= 8 &&
+    /^[a-z0-9\s,'".?!-]+$/i.test(text);
+  return shortQuestion;
+};
+
 const normalizeCapability = (value) => {
   const v = String(value || "").trim().toLowerCase();
   return ["editorial", "counterpoint", "honey", "language_practice"].includes(v)
@@ -523,12 +569,30 @@ Behavior requirements:
   3. your natural reply or follow-up in the target language
 - Avoid generic reflective prompts such as "Does that feel right?", "Does that sound right?", or emotion-coaching responses unless the learner is explicitly talking about feelings.
 - If the learner writes in the support language instead of the target language, gently guide them back into the target language.
+- If the learner writes in the support language asking what they want to say in the target language, treat it as a translation request, not a normal content question.
+- For translation-style requests, give the target-language phrase first. Do not answer the literal topic question unless the learner separately asks for that information.
+- Example: if the learner practicing French writes "how do I make butter?", reply with the French phrasing for that idea, not instructions for making butter.
 - Prefer continuing the conversation over turning every reply into a lesson.`;
       if (resolvedAssistantTurn === 1) {
         promptBase = `${promptBase}
 - This is your first reply in this language-practice session. Briefly introduce the practice in ${describeLanguageCode(
           languagePracticeSession.target_language_code
         )} and invite the learner to continue in that language.`;
+      }
+      if (
+        isLikelyTranslationRequest({
+          message: userMessage,
+          targetLanguageCode: languagePracticeSession.target_language_code,
+          targetLanguageLabel: describeLanguageCode(
+            languagePracticeSession.target_language_code
+          ),
+        })
+      ) {
+        promptBase = `${promptBase}
+- The learner's latest message looks like a translation request written in the support language.
+- Your first line must be the target-language phrasing they can say.
+- After that, you may add one short variant or one brief note, still in the target language.
+- Do not answer the underlying factual question unless the learner explicitly asks for that after the translation.`;
       }
     }
     if (isHoneyMode) {

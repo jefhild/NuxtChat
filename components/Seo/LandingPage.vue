@@ -1,10 +1,5 @@
 <template>
-  <section
-    :class="[
-      'seo-page-shell mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8',
-      { 'seo-page-shell--dark': isDarkTheme },
-    ]"
-  >
+  <section class="seo-page-shell mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
     <div class="seo-layout">
       <div class="seo-main-stack">
         <div class="seo-hero__copy">
@@ -24,10 +19,7 @@
           </div>
         </div>
 
-        <div
-          :class="['p-5 md:p-8', { 'seo-card--dark': isDarkTheme }]"
-          class="seo-card"
-        >
+        <div class="seo-card p-5 md:p-8">
           <!-- eslint-disable vue/no-v-html -->
           <div
             class="seo-richtext"
@@ -90,7 +82,6 @@
 
         <div
           v-if="page.relatedLinks?.length"
-          :class="[{ 'seo-card--dark': isDarkTheme }]"
           class="seo-card p-4"
         >
           <div class="mb-3 text-lg font-semibold text-foreground">Related pages</div>
@@ -108,8 +99,7 @@
 
         <div
           v-if="page.faqs?.length"
-          :class="['seo-faq-card p-3 md:p-4', { 'seo-card--dark': isDarkTheme }]"
-          class="seo-card"
+          class="seo-card seo-faq-card p-3 md:p-4"
         >
           <div class="mb-3 text-2xl font-semibold text-foreground">FAQ</div>
           <div class="seo-faq-panels">
@@ -130,10 +120,7 @@
           </div>
         </div>
 
-        <div
-          :class="[{ 'seo-card--dark': isDarkTheme }]"
-          class="seo-card p-4"
-        >
+        <div class="seo-card p-4">
           <div class="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/65">
             {{ ctaCardCopy.eyebrow }}
           </div>
@@ -205,8 +192,6 @@ const props = defineProps<{
 const { t } = useI18n();
 const localPath = useLocalePath();
 const switchLocalePath = useSwitchLocalePath();
-const { resolvedTheme } = useAppTheme();
-const isDarkTheme = computed(() => resolvedTheme.value === "dark");
 
 const md = new MarkdownIt({
   html: true,
@@ -428,7 +413,8 @@ const selectLocale = (localeCode: string) => {
   padding: 12px 10px 32px;
 }
 
-.seo-page-shell--dark {
+:global(html.dark .seo-page-shell),
+:global(html[data-imchatty-theme="dark"] .seo-page-shell) {
   color: #e2e8f0;
 }
 
@@ -459,16 +445,20 @@ const selectLocale = (localeCode: string) => {
   padding: 32px;
 }
 
-.seo-page-shell--dark .seo-hero__copy,
-.seo-page-shell--dark .seo-hero__panel,
-.seo-card--dark {
+:global(html.dark .seo-hero__copy),
+:global(html.dark .seo-hero__panel),
+:global(html.dark .seo-card),
+:global(html[data-imchatty-theme="dark"] .seo-hero__copy),
+:global(html[data-imchatty-theme="dark"] .seo-hero__panel),
+:global(html[data-imchatty-theme="dark"] .seo-card) {
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94));
   border: 1px solid rgba(148, 163, 184, 0.18);
   color: #e2e8f0;
 }
 
-.seo-page-shell--dark .seo-cta-point {
+:global(html.dark .seo-cta-point),
+:global(html[data-imchatty-theme="dark"] .seo-cta-point) {
   color: #cbd5e1;
 }
 
@@ -546,7 +536,8 @@ const selectLocale = (localeCode: string) => {
   background: rgb(255 255 255 / 0.46);
 }
 
-.seo-page-shell--dark .seo-faq-item {
+:global(html.dark .seo-faq-item),
+:global(html[data-imchatty-theme="dark"] .seo-faq-item) {
   background: rgb(15 23 42 / 0.72);
   color: #e2e8f0;
 }
@@ -631,7 +622,8 @@ const selectLocale = (localeCode: string) => {
   box-shadow: 0 16px 36px rgb(var(--color-shadow) / 0.18);
 }
 
-.seo-page-shell--dark .seo-language-menu__panel {
+:global(html.dark .seo-language-menu__panel),
+:global(html[data-imchatty-theme="dark"] .seo-language-menu__panel) {
   background: rgb(15 23 42 / 0.98);
   border-color: rgb(148 163 184 / 0.22);
 }
@@ -649,7 +641,8 @@ const selectLocale = (localeCode: string) => {
   text-align: left;
 }
 
-.seo-page-shell--dark .seo-language-menu__item {
+:global(html.dark .seo-language-menu__item),
+:global(html[data-imchatty-theme="dark"] .seo-language-menu__item) {
   color: #e2e8f0;
 }
 
@@ -709,8 +702,10 @@ const selectLocale = (localeCode: string) => {
   font-weight: 600;
 }
 
-.seo-page-shell--dark .seo-richtext :deep(a),
-.seo-page-shell--dark .seo-related-link {
+:global(html.dark .seo-richtext :deep(a)),
+:global(html.dark .seo-related-link),
+:global(html[data-imchatty-theme="dark"] .seo-richtext :deep(a)),
+:global(html[data-imchatty-theme="dark"] .seo-related-link) {
   color: #7dd3fc;
 }
 

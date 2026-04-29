@@ -102,9 +102,98 @@ export const useChatStore = defineStore("chatStore", () => {
     return users.value.find((u) => getStableId(u) === id);
   }
 
+  function mergeUsersByStableId(incomingUsers = []) {
+    const incoming = Array.isArray(incomingUsers)
+      ? incomingUsers.filter((u) => getStableId(u))
+      : [];
+    if (!incoming.length) return;
+
+    const existingById = new Map(
+      users.value.map((user, index) => [getStableId(user), { user, index }])
+    );
+    const nextUsers = [...users.value];
+
+    incoming.forEach((user) => {
+      const id = getStableId(user);
+      const existing = existingById.get(id);
+      if (existing) {
+        nextUsers[existing.index] = {
+          ...existing.user,
+          ...user,
+        };
+      } else {
+        existingById.set(id, { user, index: nextUsers.length });
+        nextUsers.push(user);
+      }
+    });
+
+    users.value = filterActiveAiUsers(nextUsers);
+    ensureImchattyPresent();
+  }
+
+  async function attachProfileTranslations(list = []) {
+    const userIds = (Array.isArray(list) ? list : [])
+      .map((u) => u?.user_id)
+      .filter(Boolean);
+    if (!userIds.length || !db.getProfileTranslationsForUsers) return list;
+
+    try {
+      const { data: translations } = await db.getProfileTranslationsForUsers(userIds);
+      const map = new Map();
+      (translations || []).forEach((row) => {
+        const key = row.user_id;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(row);
+      });
+      return list.map((u) => ({
+        ...u,
+        profile_translations: map.get(u.user_id) || u.profile_translations || [],
+      }));
+    } catch (err) {
+      console.warn("[chatStore] translations failed:", err);
+      return list;
+    }
+  }
+
+  async function ensureUsersPresentByIds(userIds = []) {
+    const ids = Array.from(
+      new Set(
+        (Array.isArray(userIds) ? userIds : [])
+          .map((id) => normalizeId(id))
+          .filter(Boolean)
+      )
+    );
+    const missingIds = ids.filter((id) => !getUserById(id));
+    if (!missingIds.length || !db.getUsersFromIds) return;
+
+    try {
+      const { data, error: dbError } = await db.getUsersFromIds(
+        missingIds,
+        null,
+        18,
+        99,
+        null,
+        null,
+        null,
+        null,
+        auth.user?.id || null
+      );
+      if (dbError) throw dbError;
+      const enrichedUsers = await attachProfileTranslations(
+        filterActiveAiUsers(data || [])
+      );
+      mergeUsersByStableId(enrichedUsers);
+    } catch (err) {
+      console.warn("[chatStore] ensureUsersPresentByIds failed:", err);
+    }
+  }
+
   /** Persist + set selection (accepts user object OR id) */
   function setSelectedUser(input) {
-    const user = typeof input === "object" ? input : getUserById(input);
+    if (input && typeof input === "object") {
+      mergeUsersByStableId([input]);
+    }
+    const user = typeof input === "object" ? getUserById(getStableId(input)) || input : getUserById(input);
     selectedUser.value = user || null;
     if (isClient()) {
       const id = getStableId(user) || "";
@@ -216,25 +305,7 @@ function isAiId(id) {
           if (!u.honey_enabled) return true;
           return canSeeHoneyBots;
         });
-      const userIds = nextUsers.map((u) => u?.user_id).filter(Boolean);
-      if (userIds.length && db.getProfileTranslationsForUsers) {
-        try {
-          const { data: translations } =
-            await db.getProfileTranslationsForUsers(userIds);
-          const map = new Map();
-          (translations || []).forEach((row) => {
-            const key = row.user_id;
-            if (!map.has(key)) map.set(key, []);
-            map.get(key).push(row);
-          });
-          nextUsers = nextUsers.map((u) => ({
-            ...u,
-            profile_translations: map.get(u.user_id) || [],
-          }));
-        } catch (err) {
-          console.warn("[chatStore] translations failed:", err);
-        }
-      }
+      nextUsers = await attachProfileTranslations(nextUsers);
       users.value = nextUsers;
       ensureImchattyPresent();
 
@@ -282,6 +353,7 @@ function isAiId(id) {
       if (dbError) throw dbError;
       const ids = normalizeActiveIds(data);
       activeChats.value = ids;
+      await ensureUsersPresentByIds(ids);
       cleanupHiddenHoneyState();
     } catch (err) {
       console.error("[chatStore] fetchActiveChats error:", err);
@@ -318,6 +390,9 @@ function isAiId(id) {
     if (peer && isHiddenHoneyForCurrentAuth(peer)) return;
     if (!activeChats.value.includes(id)) {
       activeChats.value = [id, ...activeChats.value]; // newest first
+    }
+    if (!peer) {
+      ensureUsersPresentByIds([id]);
     }
   }
 
