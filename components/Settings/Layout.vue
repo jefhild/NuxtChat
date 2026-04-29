@@ -141,6 +141,8 @@ const drawer = ref(false);
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 const userProfile = computed(() => authStore.userProfile);
+const route = useRoute();
+const router = useRouter();
 
 const isLoading = ref(true);
 
@@ -202,6 +204,29 @@ const menuItems = computed(() => [
     },
   ]);
 
+const SECTION_QUERY_TO_TAB = {
+  profile: 1,
+  favorites: 2,
+  blocked: 3,
+  upvotes: 4,
+  "language-practice": 5,
+  "site-settings": 6,
+  "photo-library": 7,
+  agent: 8,
+  "away-agent": 8,
+};
+
+const TAB_TO_SECTION_QUERY = {
+  1: "profile",
+  2: "favorites",
+  3: "blocked",
+  4: "upvotes",
+  5: "language-practice",
+  6: "site-settings",
+  7: "photo-library",
+  8: "agent",
+};
+
 const currentSectionLabel = computed(() => {
   const match = menuItems.value.find((item) => item.value === tab.value);
   return match?.label || t("components.settings-container.profile");
@@ -211,9 +236,54 @@ const pageTitle = computed(
   () => `${settingsHeading.value} ${currentSectionLabel.value}`
 );
 
-const selectTab = (value) => {
+const resolveRouteTab = () => {
+  const section = String(route.query.section || "").trim().toLowerCase();
+  if (SECTION_QUERY_TO_TAB[section]) {
+    return SECTION_QUERY_TO_TAB[section];
+  }
+
+  const rawTab = Number.parseInt(String(route.query.tab || ""), 10);
+  return menuItems.value.some((item) => item.value === rawTab) ? rawTab : null;
+};
+
+const syncRouteForTab = async (value, { replace = true } = {}) => {
+  if (!import.meta.client) return;
+
+  const nextQuery = {
+    ...route.query,
+    tab: String(value),
+    section: TAB_TO_SECTION_QUERY[value] || undefined,
+  };
+
+  if (!nextQuery.section) {
+    delete nextQuery.section;
+  }
+
+  const currentTab = String(route.query.tab || "");
+  const currentSection = String(route.query.section || "");
+  const nextTab = String(nextQuery.tab || "");
+  const nextSection = String(nextQuery.section || "");
+  if (currentTab === nextTab && currentSection === nextSection) {
+    return;
+  }
+
+  const navTarget = {
+    path: route.path,
+    query: nextQuery,
+  };
+
+  if (replace) {
+    await router.replace(navTarget);
+    return;
+  }
+
+  await router.push(navTarget);
+};
+
+const selectTab = async (value) => {
   tab.value = value;
   drawer.value = false;
+  await syncRouteForTab(value);
 };
 
 const handleEscape = (event) => {
@@ -225,6 +295,11 @@ const handleEscape = (event) => {
 onMounted(async () => {
   window.addEventListener("keydown", handleEscape);
   await authStore.checkAuth();
+  const routeTab = resolveRouteTab();
+  if (routeTab != null) {
+    tab.value = routeTab;
+    await syncRouteForTab(routeTab);
+  }
   isLoading.value = false;
 });
 
@@ -232,6 +307,25 @@ watch(drawer, (isOpen) => {
   if (typeof document === "undefined") return;
   document.body.style.overflow = isOpen ? "hidden" : "";
 });
+
+watch(
+  () => [route.query.tab, route.query.section],
+  ([tabQuery, sectionQuery]) => {
+    if (!import.meta.client) return;
+
+    const routeTab = resolveRouteTab();
+    if (routeTab != null && routeTab !== tab.value) {
+      tab.value = routeTab;
+      drawer.value = false;
+      return;
+    }
+
+    if (!tabQuery && !sectionQuery) {
+      syncRouteForTab(tab.value);
+    }
+  },
+  { immediate: true }
+);
 
 onBeforeUnmount(() => {
   window.removeEventListener("keydown", handleEscape);

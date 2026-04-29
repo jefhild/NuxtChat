@@ -36,9 +36,10 @@
           <button
             type="button"
             class="ui-settings-icon-btn photo-control-btn"
-            :disabled="!editable || uploadLoading"
+            :class="{ 'photo-control-btn--disabled': !editable || uploadLoading }"
             :title="$t('components.profile-photo.upload-title')"
-            @click="triggerFilePicker"
+            :disabled="!editable || uploadLoading"
+            @click="openFilePicker"
           >
             <span v-if="uploadLoading" class="photo-control-btn__spinner" aria-hidden="true" />
             <i v-else class="mdi mdi-upload" aria-hidden="true" />
@@ -60,14 +61,15 @@
               aria-hidden="true"
             />
           </button>
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            class="sr-only"
-            @change="onFileChange"
-          >
         </div>
+        <input
+          ref="fileInput"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          class="photo-control-sr-input"
+          :disabled="!editable || uploadLoading"
+          @change="onFileChange"
+        >
         <div class="photo-hero-overlay">
           <div class="photo-line">
             <span class="photo-name">{{ userProfile?.displayname }}</span>
@@ -108,6 +110,7 @@
                   type="button"
                   class="photo-library-thumb"
                   :class="{ 'photo-library-thumb--active': item.url === heroImage }"
+                  :disabled="!editable"
                   @click="setHeroFromOption(item)"
                 >
                   <img :src="item.url" class="photo-library-thumb-image" alt="Photo option">
@@ -302,6 +305,7 @@ const onHeroImageLoad = (event: Event) => {
 const hasCarousel = computed(() => photoSlots.value.some((slot) => !!slot));
 
 const setHeroFromOption = (option: CarouselOption) => {
+  if (!props.editable) return;
   const url = option?.url || "";
   if (!url) return;
   selectedImage.value = url;
@@ -338,14 +342,13 @@ const loadGenderAvatarOptions = async () => {
     const avatars = Array.isArray((res as any)?.avatars) ? (res as any).avatars : [];
     genderAvatarOptions.value = avatars.filter(Boolean);
 
-    if (!previewAvatar.value && avatars.length) {
+    if (!previewAvatar.value && !selectedImage.value && avatars.length) {
       const randomChoice =
         (res as any)?.selectedAvatar ||
         avatars[Math.floor(Math.random() * avatars.length)] ||
         "";
       if (randomChoice) {
         selectedImage.value = randomChoice;
-        emit("updateAvatarUrl", randomChoice);
       }
     }
   } catch (err) {
@@ -383,18 +386,31 @@ onMounted(() => {
   loadGenderAvatarOptions();
 });
 
-const triggerFilePicker = () => {
-  if (fileInput.value) {
-    fileInput.value.value = "";
-    fileInput.value.click();
+const openFilePicker = () => {
+  if (!props.editable || props.uploadLoading) return;
+  const input = fileInput.value;
+  if (!input) return;
+  input.value = "";
+  try {
+    input.click();
+    return;
+  } catch (err) {
+    console.warn("[settings/photo] input.click failed, trying showPicker:", err);
+  }
+  try {
+    if (typeof input.showPicker === "function") {
+      input.showPicker();
+    }
+  } catch (err) {
+    console.warn("[settings/photo] input.showPicker also failed:", err);
   }
 };
 
 const onFileChange = async (e: Event) => {
-  const file = (e.target as HTMLInputElement).files?.[0];
-  if (file) {
-    emit("uploadAvatar", file);
-  }
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (file) emit("uploadAvatar", file);
+  input.value = "";
 };
 </script>
 
@@ -490,6 +506,23 @@ const onFileChange = async (e: Event) => {
 
 .photo-control-btn:disabled {
   background: rgb(var(--color-surface) / 0.2);
+}
+
+.photo-control-btn--disabled {
+  background: rgb(var(--color-surface) / 0.2);
+  cursor: default;
+}
+
+.photo-control-sr-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .photo-control-btn__spinner {
@@ -655,17 +688,6 @@ const onFileChange = async (e: Event) => {
   justify-content: center;
   min-width: 120px;
   filter: saturate(1.15);
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
 }
 
 :deep(.text-link-btn) {

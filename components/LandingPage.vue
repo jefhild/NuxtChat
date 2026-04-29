@@ -119,7 +119,7 @@
                 <div class="hero-actions away-agent-actions">
                   <template v-if="authStatus === 'authenticated'">
                     <NuxtLink
-                      :to="localPath('/settings') + '?tab=7'"
+                      :to="awayAgentSettingsHref"
                       class="landing-button landing-button--primary landing-button--lg hero-btn"
                     >
                       {{ awayAgentCopy.ctaSetup }}
@@ -331,6 +331,7 @@
     <AuthConvertAccountDialog
       v-model="awayAgentDialogVisible"
       context="away-agent"
+      @converted="handleAwayAgentConverted"
     />
 
     <section class="full-bleed mood-teaser-section">
@@ -639,6 +640,17 @@ watch(
 );
 
 const awayAgentDialogVisible = ref(false);
+const awayAgentSettingsHref = computed(() =>
+  localPath({
+    path: "/settings",
+    query: { section: "agent", tab: "8" },
+  })
+);
+
+function handleAwayAgentConverted() {
+  awayAgentDialogVisible.value = false;
+  navigateTo(awayAgentSettingsHref.value);
+}
 
 const awayAgentCopy = computed(() => ({
   kicker: t(homePageKey("awayAgent.kicker")),

@@ -23,7 +23,7 @@
           </span>
           <input
             :key="fileInputKey"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/webp"
             type="file"
             class="photo-library-upload__input"
             @change="handleFileChange($event.target.files)"
@@ -171,8 +171,15 @@ const deleteDialog = ref(false);
 const deleteTarget = ref(null);
 const deleting = ref(false);
 const isAdminContext = computed(() => props.adminMode && !!props.userId);
+const supportedMimeTypes = ["image/png", "image/jpeg", "image/webp"];
+const getErrorMessage = (err, fallbackKey) =>
+  err?.data?.error?.message ||
+  err?.data?.message ||
+  err?.statusMessage ||
+  t(fallbackKey);
 const isViewingOwnLibrary = computed(() => {
   if (isAdminContext.value) return true;
+  if (!authStore.authResolved) return false;
   return !!props.userId && !!authStore.user?.id && props.userId === authStore.user.id;
 });
 
@@ -187,6 +194,14 @@ const statusColor = (status) => {
 
 const handleFileChange = (fileList) => {
   const file = Array.isArray(fileList) ? fileList[0] : fileList?.[0];
+  if (file && !supportedMimeTypes.includes(String(file.type || "").toLowerCase())) {
+    selectedFile.value = null;
+    errorMessage.value = t("components.photo-library.upload-error");
+    successMessage.value = "";
+    fileInputKey.value += 1;
+    return;
+  }
+  errorMessage.value = "";
   selectedFile.value = file || null;
 };
 
@@ -201,6 +216,11 @@ const readFileAsDataUrl = (file) =>
 const loadPhotos = async () => {
   loading.value = true;
   errorMessage.value = "";
+  successMessage.value = "";
+  if (!isAdminContext.value && !authStore.authResolved) {
+    photos.value = [];
+    return;
+  }
   if (!isViewingOwnLibrary.value) {
     photos.value = [];
     loading.value = false;
@@ -215,7 +235,7 @@ const loadPhotos = async () => {
     photos.value = result?.photos || [];
   } catch (err) {
     console.error("[settings] load photos failed:", err);
-    errorMessage.value = t("components.photo-library.load-error");
+    errorMessage.value = getErrorMessage(err, "components.photo-library.load-error");
   } finally {
     loading.value = false;
   }
@@ -250,7 +270,7 @@ const uploadPhoto = async () => {
         });
 
     if (result?.photo) {
-      photos.value = [result.photo, ...photos.value];
+      await loadPhotos();
       successMessage.value = t("components.photo-library.upload-success");
       selectedFile.value = null;
       fileInputKey.value += 1;
@@ -259,7 +279,7 @@ const uploadPhoto = async () => {
     }
   } catch (err) {
     console.error("[settings] upload photo failed:", err);
-    errorMessage.value = t("components.photo-library.upload-error");
+    errorMessage.value = getErrorMessage(err, "components.photo-library.upload-error");
   } finally {
     uploading.value = false;
   }
@@ -295,7 +315,7 @@ const confirmDelete = async () => {
     closeDeleteDialog();
   } catch (err) {
     console.error("[settings] delete photo failed:", err);
-    errorMessage.value = t("components.photo-library.delete-error");
+    errorMessage.value = getErrorMessage(err, "components.photo-library.delete-error");
   } finally {
     deleting.value = false;
   }
@@ -304,7 +324,7 @@ const confirmDelete = async () => {
 onMounted(loadPhotos);
 
 watch(
-  () => [props.userId, props.adminMode, authStore.user?.id],
+  () => [props.userId, props.adminMode, authStore.user?.id, authStore.authResolved],
   () => {
     loadPhotos();
   }

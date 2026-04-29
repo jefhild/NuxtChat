@@ -14,7 +14,7 @@ export async function handleGoogleLoginRedirect() {
   return data.user;
 }
 
-export async function linkGoogleIdentity() {
+export async function linkGoogleIdentity(next = "/settings") {
   const { linkIdentity } = useDb();
   const origin =
     typeof window !== "undefined" && window.location?.origin
@@ -22,7 +22,7 @@ export async function linkGoogleIdentity() {
       : "https://imchatty.com";
   const { data, error } = await linkIdentity({
     provider: "google",
-    redirectTo: `${origin}/callback?next=${encodeURIComponent("/settings")}`,
+    redirectTo: `${origin}/callback?next=${encodeURIComponent(next)}`,
   });
 
   if (error) {

@@ -120,6 +120,10 @@ const description = computed(() =>
     : "Add your email to save your account. Your profile and chat history stay intact."
 );
 
+const postConvertPath = computed(() =>
+  props.context === "away-agent" ? "/settings?section=agent&tab=8" : "/settings"
+);
+
 function close() {
   if (submitting.value) return;
   form.email = "";
@@ -130,7 +134,7 @@ function close() {
 }
 
 async function handleGoogle() {
-  await linkGoogleIdentity();
+  await linkGoogleIdentity(postConvertPath.value);
 }
 
 async function handleEmail() {

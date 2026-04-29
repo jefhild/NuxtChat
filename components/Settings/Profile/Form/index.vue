@@ -545,6 +545,7 @@ const loadPhotoLibraryPreview = async (
   userId = editableProfile.value?.user_id
 ) => {
   if (
+    !authStore.authResolved ||
     !showPhotoLibrary.value ||
     isPhotoLibraryDisabled.value ||
     !isViewingOwnProfile.value
@@ -1132,7 +1133,7 @@ const pickRandomAvatar = async () => {
           body: buildRandomAvatarPayload(),
         });
     if (result?.avatarUrl) {
-      updateAvatarUrl(result.avatarUrl);
+      await updateAvatarUrl(result.avatarUrl);
       success = true;
     } else {
       avatarError.value = "Could not pick a photo. Please try again.";
@@ -1186,7 +1187,7 @@ const uploadAvatar = async (file) => {
           },
         });
     if (result?.avatarUrl) {
-      updateAvatarUrl(result.avatarUrl);
+      await updateAvatarUrl(result.avatarUrl);
     } else {
       avatarError.value = "Could not upload that image. Please try again.";
     }
@@ -1207,6 +1208,7 @@ const maybeAutoSelectAvatar = async () => {
   if (!import.meta.client) return;
   if (editableProfile.value?.avatar_url) return;
   if (!editableProfile.value?.user_id) return;
+  if (photoLibraryPreview.value.length) return;
   const key = autoAvatarStorageKey.value;
   if (localStorage.getItem(key)) return;
   const success = await pickRandomAvatar();
