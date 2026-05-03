@@ -24,6 +24,7 @@
         @uploadAvatar="$emit('uploadAvatar', $event)"
         @openDecorationPicker="$emit('openDecorationPicker')"
         @lookingForUpdated="$emit('refreshLookingForDisplay')"
+        @requestEditMode="$emit('requestEditMode')"
       />
     </div>
     <div
@@ -179,6 +180,7 @@ defineEmits([
   "openDecorationPicker",
   "openPhotoLibrary",
   "openLinkEmail",
+  "requestEditMode",
 ]);
 
 const photoSlots = computed(() => {

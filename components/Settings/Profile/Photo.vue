@@ -26,9 +26,11 @@
           <button
             type="button"
             class="ui-settings-icon-btn photo-control-btn"
-            :disabled="!editable || randomLoading"
+            :class="{ 'photo-control-btn--disabled': !editable || randomLoading }"
+            :disabled="randomLoading"
+            :aria-disabled="!editable ? 'true' : 'false'"
             :title="$t('components.profile-photo.random-title')"
-            @click="$emit('randomAvatar')"
+            @click="handleRandomClick"
           >
             <span v-if="randomLoading" class="photo-control-btn__spinner" aria-hidden="true" />
             <i v-else class="mdi mdi-dice-5-outline" aria-hidden="true" />
@@ -38,7 +40,8 @@
             class="ui-settings-icon-btn photo-control-btn"
             :class="{ 'photo-control-btn--disabled': !editable || uploadLoading }"
             :title="$t('components.profile-photo.upload-title')"
-            :disabled="!editable || uploadLoading"
+            :disabled="uploadLoading"
+            :aria-disabled="!editable ? 'true' : 'false'"
             @click="openFilePicker"
           >
             <span v-if="uploadLoading" class="photo-control-btn__spinner" aria-hidden="true" />
@@ -53,7 +56,7 @@
                 ? $t('components.profile-photo.decoration-locked-title')
                 : $t('components.profile-photo.decoration-title')
             "
-            @click="$emit('openDecorationPicker')"
+            @click="handleDecorationClick"
           >
             <i
               class="mdi"
@@ -145,6 +148,7 @@
           :refreshLookingForMenu="refreshLookingForMenu"
           :disabled="!editable"
           @lookingForUpdated="editable && $emit('lookingForUpdated')"
+          @requestEditMode="emit('requestEditMode')"
         />
         <div class="lookingfor-icons">
           <SettingsProfileLookingForDisplay
@@ -159,6 +163,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 
 const props = defineProps({
   userId: { type: String, required: true },
@@ -182,7 +187,10 @@ const emit = defineEmits([
   "uploadAvatar",
   "openDecorationPicker",
   "lookingForUpdated",
+  "requestEditMode",
 ]);
+const { t } = useI18n();
+const { showReminder } = useInteractionReminder();
 const fileInput = ref<HTMLInputElement | null>(null);
 type CarouselOption = {
   key: string;
@@ -387,7 +395,11 @@ onMounted(() => {
 });
 
 const openFilePicker = () => {
-  if (!props.editable || props.uploadLoading) return;
+  if (!props.editable) {
+    showReadonlyReminder();
+    return;
+  }
+  if (props.uploadLoading) return;
   const input = fileInput.value;
   if (!input) return;
   input.value = "";
@@ -411,6 +423,31 @@ const onFileChange = async (e: Event) => {
   const file = input.files?.[0];
   if (file) emit("uploadAvatar", file);
   input.value = "";
+};
+
+const showReadonlyReminder = () => {
+  showReminder({
+    message: t("components.profile-form.readonly-reminder"),
+    tone: "info",
+    actionLabel: t("components.profile-container.edit"),
+    onAction: () => emit("requestEditMode"),
+  });
+};
+
+const handleRandomClick = () => {
+  if (!props.editable) {
+    showReadonlyReminder();
+    return;
+  }
+  emit("randomAvatar");
+};
+
+const handleDecorationClick = () => {
+  if (!props.editable) {
+    showReadonlyReminder();
+    return;
+  }
+  emit("openDecorationPicker");
 };
 </script>
 

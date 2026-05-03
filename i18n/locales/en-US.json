@@ -1645,8 +1645,12 @@
     "profile-form": {
       "mode-editing": "Edit mode",
       "mode-readonly": "View mode",
+      "mode-saving": "Save changes",
       "mode-editing-copy": "Changes are live in the form until you save or cancel.",
+      "mode-editing-idle-copy": "Click to return to view mode.",
       "mode-readonly-copy": "Fields are locked until you enter edit mode.",
+      "mode-saving-copy": "Click to save your changes.",
+      "readonly-reminder": "Switch to edit mode to change these fields.",
       "decoration-locked-copy": "Link your email to unlock avatar decorations.",
       "ai-bio-title": "Generate a bio",
       "ai-bio-copy": "Enter at least 4 words that describe you. The AI will craft a short bio you can edit.",

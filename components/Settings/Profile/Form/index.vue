@@ -26,6 +26,7 @@
       @updateAvatarUrl="updateAvatarUrl"
       @randomAvatar="pickRandomAvatar"
       @uploadAvatar="uploadAvatar"
+      @requestEditMode="startEditing"
     />
     <div v-if="shouldOfferEmailLinkPrompt" class="mt-0">
       <div class="settings-inline-alert settings-inline-alert--info">
@@ -51,6 +52,7 @@
     <SettingsProfileFormContent
       :userProfile="editableProfile"
       :isEditable="isEditable"
+      :isDirty="isDirty"
       :isSiteEditable="isSiteEditable"
       :statuses="statuses"
       :genders="genders"
@@ -73,6 +75,7 @@
       :translateLoading="translateProfileLoading"
       :translateStatus="translateProfileStatus"
       :translateError="translateProfileError"
+      :modePillDisabled="saving"
       @update:country="onUpdateCountry"
       @update:state="onUpdateState"
       @update:city="onUpdateCity"
@@ -518,6 +521,25 @@ const normalizePresenceValue = (value) => {
   return "auto";
 };
 
+const profileSnapshot = (profile) => {
+  if (!profile) return null;
+  return {
+    displayname: String(profile.displayname || ""),
+    tagline: String(profile.tagline || ""),
+    preferred_locale: String(profile.preferred_locale || "en"),
+    status_id: profile.status_id ?? null,
+    gender_id: profile.gender_id ?? null,
+    age: profile.age ?? null,
+    country_id: profile.country_id ?? null,
+    state_id: profile.state_id ?? null,
+    city_id: profile.city_id ?? null,
+    site_url: String(profile.site_url || ""),
+    bio: String(profile.bio || ""),
+    avatar_url: String(profile.avatar_url || ""),
+    avatar_decoration_url: String(profile.avatar_decoration_url || ""),
+  };
+};
+
 const loadPresenceStatus = async (userId) => {
   if (!userId || presenceDisabled.value) return;
   try {
@@ -959,6 +981,11 @@ const syncEditableState = () => {
   isEditable.value = authStateUI.value.editable;
 };
 const deleteBusy = ref(false);
+
+const isDirty = computed(() => {
+  if (!isEditable.value) return false;
+  return JSON.stringify(profileSnapshot(props.userProfile)) !== JSON.stringify(profileSnapshot(editableProfile.value));
+});
 
 const bioText = computed(() => {
   return String(editableProfile.value?.bio || "").trim();

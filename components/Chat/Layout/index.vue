@@ -230,8 +230,11 @@
               :conversation-key="conversationKey"
               :blocked-user-ids="blockedUsers"
               :language-practice-mode="Boolean(languagePracticeSession)"
+              :consent-action-label="consentReminderActionLabel"
+              :allow-consent-action="isPreAuth"
               class="chat-composer"
               @send="onSend"
+              @request-consent="onConsentAction"
             />
           </div>
         </div>
@@ -396,8 +399,11 @@
               :conversation-key="conversationKey"
               :blocked-user-ids="blockedUsers"
               :language-practice-mode="Boolean(languagePracticeSession)"
+              :consent-action-label="consentReminderActionLabel"
+              :allow-consent-action="isPreAuth"
               class="chat-composer"
               @send="onSend"
+              @request-consent="onConsentAction"
             />
           </div>
         </div>
@@ -875,6 +881,9 @@ const consentPanelVisible = computed(() =>
   auth.authStatus === "authenticated" ? showConsentPanelAuth.value : true
 );
 const isMobileDrawer = computed(() => hasMounted.value && smAndDown.value);
+const consentReminderActionLabel = computed(() =>
+  isPreAuth.value ? t("onboarding.continue") : ""
+);
 
 function loadConsentPanelPref(userId) {
   if (!import.meta.client || !userId) return;

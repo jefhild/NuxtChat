@@ -2457,6 +2457,45 @@ const loadLookups = async () => {
   }
 };
 
+const findBotByProfileUserId = (profileUserId) =>
+  bots.value.find(
+    (bot) =>
+      String(bot?.profile_user_id || bot?.profile?.user_id || "") ===
+      String(profileUserId || "")
+  ) || null;
+
+const findBotByPersonaKey = (personaKey) => {
+  const normalized = String(personaKey || "").trim().toLowerCase();
+  if (!normalized) return null;
+  return (
+    bots.value.find(
+      (bot) => String(bot?.persona_key || "").trim().toLowerCase() === normalized
+    ) || null
+  );
+};
+
+const revealBotInList = async ({
+  personaKey = "",
+  profileUserId = "",
+  openEditor = false,
+} = {}) => {
+  capabilityFilter.value = "all";
+  search.value = "";
+  await loadBots();
+
+  const matchedBot =
+    findBotByProfileUserId(profileUserId) || findBotByPersonaKey(personaKey);
+
+  if (!matchedBot) {
+    if (personaKey) search.value = personaKey;
+    return null;
+  }
+
+  search.value = matchedBot.persona_key || "";
+  if (openEditor) openEditDialog(matchedBot);
+  return matchedBot;
+};
+
 const openCreateDialog = () => {
   editingId.value = null;
   resetForm();
@@ -2568,9 +2607,14 @@ const handleSubmit = async () => {
     selected.ai_persona_key &&
     String(selected.ai_persona_key).trim()
   ) {
+    await revealBotInList({
+      personaKey: selected.ai_persona_key,
+      profileUserId: selected.user_id,
+      openEditor: true,
+    });
     snackbar.show = true;
     snackbar.color = "red";
-    snackbar.message = "This profile already has an AI persona.";
+    snackbar.message = `This profile already has an AI persona: ${selected.ai_persona_key}.`;
     saving.value = false;
     return;
   }
@@ -2656,16 +2700,10 @@ const handleSubmit = async () => {
 
     if (res?.success === false) throw new Error(res.error);
 
-    if (res?.data) {
-      const idx = bots.value.findIndex((b) => b.id === res.data.id);
-      if (idx >= 0) {
-        bots.value[idx] = res.data;
-      } else {
-        bots.value.unshift(res.data);
-      }
-    } else {
-      await loadBots();
-    }
+    await revealBotInList({
+      personaKey: res?.data?.persona_key || payload.persona.persona_key,
+      profileUserId: payload.persona.profile_user_id,
+    });
 
     snackbar.show = true;
     snackbar.color = "primary";
@@ -2678,7 +2716,7 @@ const handleSubmit = async () => {
     console.error("[admin][ai-bots] save error", error);
     const message =
       error?.data?.error || error?.message || "Failed to save bot.";
-    await revealExistingPersonaFromError(message);
+    await revealExistingPersonaFromError(message, payload.persona.profile_user_id);
     snackbar.show = true;
     snackbar.color = "red";
     snackbar.message = message;
@@ -2687,13 +2725,15 @@ const handleSubmit = async () => {
   }
 };
 
-async function revealExistingPersonaFromError(message = "") {
+async function revealExistingPersonaFromError(message = "", profileUserId = "") {
   const match = String(message).match(/AI persona "([^"]+)"/i);
   const personaKey = match?.[1]?.trim();
-  if (!personaKey) return;
-  capabilityFilter.value = "all";
-  search.value = personaKey;
-  await loadBots();
+  if (!personaKey && !profileUserId) return;
+  await revealBotInList({
+    personaKey,
+    profileUserId,
+    openEditor: true,
+  });
 }
 
 const submitMoltbookPost = async () => {

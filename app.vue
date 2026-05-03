@@ -4,6 +4,7 @@
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
+    <AppInteractionReminder />
   </div>
 </template>
 

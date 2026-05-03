@@ -4,7 +4,8 @@
       ref="triggerRef"
       type="button"
       class="looking-for-menu__trigger"
-      :disabled="disabled"
+      :aria-disabled="disabled ? 'true' : 'false'"
+      :class="{ 'looking-for-menu__trigger--disabled': disabled }"
       @click="toggleMenu"
     >
       {{ $t("components.lookingFor.looking-for") }}
@@ -94,7 +95,7 @@ const triggerRef = ref(null);
 const panelRef = ref(null);
 const panelStyle = ref({});
 
-const emit = defineEmits(["lookingForUpdated"]);
+const emit = defineEmits(["lookingForUpdated", "requestEditMode"]);
 
 const props = defineProps({
   userProfile: {
@@ -105,6 +106,8 @@ const props = defineProps({
   refreshLookingForMenu: Boolean,
   disabled: { type: Boolean, default: false },
 });
+
+const { showReminder } = useInteractionReminder();
 
 const userId = computed(() => props.userProfile?.user_id);
 
@@ -169,7 +172,15 @@ const init = async () => {
 };
 
 const toggleMenu = async () => {
-  if (props.disabled) return;
+  if (props.disabled) {
+    showReminder({
+      message: t("components.profile-form.readonly-reminder"),
+      tone: "info",
+      actionLabel: t("components.profile-container.edit"),
+      onAction: () => emit("requestEditMode"),
+    });
+    return;
+  }
   menu.value = !menu.value;
   if (menu.value) {
     await updatePanelPosition();
@@ -216,9 +227,9 @@ const saveChanges = () => {
   font-weight: 600;
 }
 
-.looking-for-menu__trigger:disabled {
+.looking-for-menu__trigger--disabled {
   opacity: 0.8;
-  cursor: default;
+  cursor: pointer;
 }
 
 .looking-for-menu__trigger-icon {

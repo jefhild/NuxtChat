@@ -17,18 +17,24 @@
       </button>
     </div>
     <div class="chat-composer-row">
-      <input
-        v-model="localDraft"
-        :placeholder="placeholderText"
-        :class="[
-          'flex-1 border rounded px-3 py-2 chat-composer-input',
-          { 'chat-composer-input--language': languagePracticeMode },
-        ]"
-        :disabled="isDisabled || !peerId"
-        :title="isDisabled ? placeholderText : ''"
-        @input="onInput"
-        @keydown="onKey"
-      />
+      <div
+        class="chat-composer-input-shell"
+        :class="{ 'chat-composer-input-shell--locked': Boolean(disabledReminderMessage) }"
+        @click="handleDisabledInputClick"
+      >
+        <input
+          v-model="localDraft"
+          :placeholder="placeholderText"
+          :class="[
+            'flex-1 border rounded px-3 py-2 chat-composer-input',
+            { 'chat-composer-input--language': languagePracticeMode },
+          ]"
+          :disabled="isDisabled || !peerId"
+          :title="isDisabled ? placeholderText : ''"
+          @input="onInput"
+          @keydown="onKey"
+        />
+      </div>
       <button
         class="shrink-0 rounded ml-2 px-3 py-2 border chat-composer-send"
         :disabled="isDisabled || !peerId || !localDraft.trim()"
@@ -53,15 +59,18 @@ const props = defineProps({
   blockedUserIds: { type: Array, default: () => [] },
   helperActions: { type: Array, default: () => [] },
   languagePracticeMode: { type: Boolean, default: false },
+  consentActionLabel: { type: String, default: "" },
+  allowConsentAction: { type: Boolean, default: false },
 });
 
 const config = useRuntimeConfig();
 const imchattyPeerId = config.public.IMCHATTY_ID;
 
-const emit = defineEmits(["update:draft", "send", "apply-helper"]);
+const emit = defineEmits(["update:draft", "send", "apply-helper", "request-consent"]);
 const localDraft = ref(props.draft);
 
 const auth = useAuthStore();
+const { showReminder } = useInteractionReminder();
 const meId = computed(() => props.meId || auth.user?.id || null);
 const { t } = useI18n();
 const browserLocale = computed(() => {
@@ -150,6 +159,27 @@ const placeholderText = computed(() => {
   return t("components.message.composer.placeholder"); // normal
 });
 
+const disabledReminderMessage = computed(() => {
+  if (!props.peerId || !isDisabled.value) return "";
+  if (isBlocked.value) return "";
+  if (needsProfileCompletion.value) {
+    return t("components.message.composer.complete-profile");
+  }
+  if (
+    ["unauthenticated", "anonymous"].includes(auth.authStatus) ||
+    (["guest", "onboarding"].includes(auth.authStatus) &&
+      props.peerId === imchattyPeerId)
+  ) {
+    return props.allowConsentAction
+      ? t("onboarding.consentPrompt")
+      : t("components.message.composer.sign-in");
+  }
+  if (["guest", "onboarding"].includes(auth.authStatus)) {
+    return t("onboarding.finishProfileNotice");
+  }
+  return "";
+});
+
 const helperActionLabels = computed(() => ({
   ask_correction: t(
     "components.languagePracticeBanner.actions.askCorrection",
@@ -178,6 +208,20 @@ function onInput() {
 }
 function onKey() {
   if (props.peerId && meId.value) sendPing();
+}
+
+function handleDisabledInputClick() {
+  if (!disabledReminderMessage.value) return;
+  const showConsentAction =
+    props.allowConsentAction &&
+    Boolean(String(props.consentActionLabel || "").trim()) &&
+    disabledReminderMessage.value === t("onboarding.consentPrompt");
+  showReminder({
+    message: disabledReminderMessage.value,
+    tone: showConsentAction ? "warning" : "info",
+    actionLabel: showConsentAction ? props.consentActionLabel : "",
+    onAction: showConsentAction ? () => emit("request-consent") : null,
+  });
 }
 
 function handleSubmit() {
@@ -238,9 +282,24 @@ form {
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
+.chat-composer-input-shell {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+}
+
+.chat-composer-input-shell--locked {
+  cursor: pointer;
+}
+
+.chat-composer-input-shell--locked .chat-composer-input {
+  pointer-events: none;
+}
+
 input {
   flex: 1 1 auto;
   min-width: 0;
+  width: 100%;
 }
 button {
   flex: 0 0 auto;

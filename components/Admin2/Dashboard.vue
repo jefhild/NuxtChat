@@ -2774,6 +2774,7 @@ onBeforeUnmount(() => {
 
 .admin-dashboard-modal {
   position: relative;
+  z-index: 1;
   width: min(100%, 720px);
   max-height: calc(100vh - 48px);
 }
@@ -2798,6 +2799,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border: 1px solid rgba(var(--color-border), 0.88);
   border-radius: 24px;
+  background-color: rgb(var(--color-surface-elevated));
   background:
     linear-gradient(180deg, rgba(var(--color-surface-elevated), 0.98), rgba(var(--color-surface), 0.98));
   box-shadow: 0 24px 48px rgba(15, 23, 42, 0.24);

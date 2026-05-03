@@ -1624,8 +1624,12 @@
     "profile-form": {
       "mode-editing": "Mode édition",
       "mode-readonly": "Mode lecture",
+      "mode-saving": "Enregistrer les modifications",
       "mode-editing-copy": "Les changements sont actifs dans le formulaire jusqu’à l’enregistrement ou l’annulation.",
+      "mode-editing-idle-copy": "Cliquez pour revenir au mode lecture.",
       "mode-readonly-copy": "Les champs sont verrouillés jusqu’à l’activation du mode édition.",
+      "mode-saving-copy": "Cliquez pour enregistrer vos modifications.",
+      "readonly-reminder": "Passez en mode édition pour modifier ces champs.",
       "decoration-locked-copy": "Liez votre e-mail pour débloquer les décorations d’avatar.",
       "ai-bio-title": "Générer une bio",
       "ai-bio-copy": "Entrez au moins 4 mots qui vous décrivent. L’IA rédigera une courte bio que vous pourrez modifier.",

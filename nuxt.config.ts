@@ -2,6 +2,14 @@
 import { getAllDynamicRoutes } from "./composables/useDynamicRoutes";
 import { landingPageSlugs } from "./config/landingPageSlugs";
 
+const seoSsrCacheSeconds = 3600;
+const localizedLandingSeoRouteRules = Object.fromEntries(
+  landingPageSlugs.flatMap((slug) => [
+    [`/${slug}`, { swr: seoSsrCacheSeconds }],
+    [`/*/${slug}`, { swr: seoSsrCacheSeconds }],
+  ])
+);
+
 export default defineNuxtConfig({
   devtools: { enabled: false },
   ssr: true,
@@ -326,6 +334,21 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-03-13",
 
   routeRules: {
+    "/about": { swr: seoSsrCacheSeconds },
+    "/*/about": { swr: seoSsrCacheSeconds },
+    "/compare": { swr: seoSsrCacheSeconds },
+    "/*/compare": { swr: seoSsrCacheSeconds },
+    "/compare/**": { swr: seoSsrCacheSeconds },
+    "/*/compare/**": { swr: seoSsrCacheSeconds },
+    "/guides": { swr: seoSsrCacheSeconds },
+    "/*/guides": { swr: seoSsrCacheSeconds },
+    "/guides/**": { swr: seoSsrCacheSeconds },
+    "/*/guides/**": { swr: seoSsrCacheSeconds },
+    "/topics": { swr: seoSsrCacheSeconds },
+    "/*/topics": { swr: seoSsrCacheSeconds },
+    "/topics/**": { swr: seoSsrCacheSeconds },
+    "/*/topics/**": { swr: seoSsrCacheSeconds },
+    ...localizedLandingSeoRouteRules,
     "/chat": {
       robots: "noindex, follow",
     },
@@ -429,10 +452,20 @@ export default defineNuxtConfig({
       if (process.env.PRERENDER_DYNAMIC !== "true") return; // keep builds light by default
       let dynamicRoutes = await getAllDynamicRoutes().catch(() => []);
       dynamicRoutes = dynamicRoutes.filter((r) => !/\/settings$/.test(r));
+      const existingRoutes = new Set(nitroConfig.prerender?.routes || []);
+      const routesToInject = dynamicRoutes.filter((route) => !existingRoutes.has(route));
+
+      if (!nitroConfig.prerender) {
+        nitroConfig.prerender = {};
+      }
+      nitroConfig.prerender.routes = [
+        ...(nitroConfig.prerender.routes || []),
+        ...routesToInject,
+      ];
 
       console.info("prerender totals", {
         discovered: dynamicRoutes.length,
-        injected: 0,
+        injected: routesToInject.length,
       });
     },
   },

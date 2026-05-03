@@ -2,21 +2,25 @@
   <div
     class="settings-profile-form"
     :class="props.isEditable ? 'settings-profile-form--editing' : 'settings-profile-form--readonly'"
+    @click.capture="handleReadonlyFieldClick"
   >
     <div class="settings-mode-bar">
-      <div
+      <button
+        type="button"
         class="settings-mode-pill"
-        :class="props.isEditable ? 'settings-mode-pill--editing' : 'settings-mode-pill--readonly'"
+        :class="modePillClass"
+        :disabled="props.modePillDisabled"
+        @click="handleModePillClick"
       >
         <i
           class="mdi settings-mode-pill__icon"
-          :class="props.isEditable ? 'mdi-pencil' : 'mdi-eye-outline'"
+          :class="modePillIcon"
           aria-hidden="true"
         />
-        {{ props.isEditable ? t("components.profile-form.mode-editing") : t("components.profile-form.mode-readonly") }}
-      </div>
+        {{ modePillLabel }}
+      </button>
       <p class="settings-mode-copy">
-        {{ props.isEditable ? t("components.profile-form.mode-editing-copy") : t("components.profile-form.mode-readonly-copy") }}
+        {{ modePillCopy }}
       </p>
     </div>
     <section class="settings-zone-card settings-zone-card--data">
@@ -147,13 +151,6 @@
             <template v-if="props.isEditable">
               <button
                 type="button"
-                class="ui-settings-btn ui-settings-btn--primary"
-                @click="emit('save')"
-              >
-                Save
-              </button>
-              <button
-                type="button"
                 class="ui-settings-btn ui-settings-btn--secondary"
                 @click="emit('cancelEdit')"
               >
@@ -174,13 +171,6 @@
                   aria-hidden="true"
                 />
                 Translate profile text
-              </button>
-              <button
-                type="button"
-                class="ui-settings-btn ui-settings-btn--primary"
-                @click="emit('startEdit')"
-              >
-                Edit
               </button>
               <NuxtLink
                 to="/chat"
@@ -214,6 +204,10 @@ const props = defineProps({
   locationProps: Object,
   userProfile: Object,
   isEditable: Boolean,
+  isDirty: {
+    type: Boolean,
+    default: false,
+  },
   isSiteEditable: Boolean,
   statuses: Array,
   genders: Array,
@@ -286,6 +280,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  modePillDisabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits([
@@ -312,12 +310,65 @@ const emit = defineEmits([
 ]);
 
 const { t } = useI18n();
+const { showReminder } = useInteractionReminder();
+
+const modePillLabel = computed(() => {
+  if (!props.isEditable) return t("components.profile-form.mode-readonly");
+  if (props.isDirty) return t("components.profile-form.mode-saving");
+  return t("components.profile-form.mode-editing");
+});
+
+const modePillCopy = computed(() => {
+  if (!props.isEditable) return t("components.profile-form.mode-readonly-copy");
+  if (props.isDirty) return t("components.profile-form.mode-saving-copy");
+  return t("components.profile-form.mode-editing-idle-copy");
+});
+
+const modePillIcon = computed(() => {
+  if (!props.isEditable) return "mdi-eye-outline";
+  if (props.isDirty) return "mdi-content-save-outline";
+  return "mdi-pencil";
+});
+
+const modePillClass = computed(() => {
+  if (!props.isEditable) return "settings-mode-pill--readonly";
+  if (props.isDirty) return "settings-mode-pill--dirty";
+  return "settings-mode-pill--editing";
+});
 
 const presenceOptions = [
   { label: t("components.presence.auto"), value: "auto" },
   { label: t("components.presence.away"), value: "away" },
   { label: t("components.presence.offline"), value: "offline" },
 ];
+
+const handleReadonlyFieldClick = (event) => {
+  if (props.isEditable) return;
+  const target = event?.target;
+  if (!(target instanceof Element)) return;
+  if (target.closest(".ui-settings-btn, .bio-ai-btn, a, button")) return;
+  if (!target.closest(".ui-settings-field")) return;
+
+  showReminder({
+    message: t("components.profile-form.readonly-reminder"),
+    tone: "info",
+    actionLabel: t("components.profile-container.edit"),
+    onAction: () => emit("startEdit"),
+  });
+};
+
+const handleModePillClick = () => {
+  if (props.modePillDisabled) return;
+  if (!props.isEditable) {
+    emit("startEdit");
+    return;
+  }
+  if (props.isDirty) {
+    emit("save");
+    return;
+  }
+  emit("cancelEdit");
+};
 
 </script>
 
@@ -345,6 +396,15 @@ const presenceOptions = [
   margin-top: 6px;
 }
 
+.settings-profile-form--readonly :deep(.ui-settings-field) {
+  cursor: pointer;
+}
+
+.settings-profile-form--readonly :deep(.ui-settings-field__control),
+.settings-profile-form--readonly :deep(.ui-settings-field__control--textarea) {
+  pointer-events: none;
+}
+
 .settings-mode-bar {
   display: flex;
   flex-wrap: wrap;
@@ -354,6 +414,7 @@ const presenceOptions = [
 }
 
 .settings-mode-pill {
+  appearance: none;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -366,6 +427,13 @@ const presenceOptions = [
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0.01em;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+  cursor: pointer;
 }
 
 .settings-mode-pill--editing {
@@ -374,10 +442,26 @@ const presenceOptions = [
   color: rgb(var(--color-secondary));
 }
 
+.settings-mode-pill--dirty {
+  background: rgb(var(--color-primary));
+  border-color: rgb(var(--color-primary) / 0.58);
+  color: rgb(var(--color-primary-foreground));
+  box-shadow: 0 10px 24px rgb(var(--color-primary) / 0.22);
+}
+
 .settings-mode-pill--readonly {
   background: rgb(var(--color-surface-elevated) / 0.72);
   border-color: rgb(var(--color-border) / 0.7);
   color: rgb(var(--color-muted));
+}
+
+.settings-mode-pill:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.settings-mode-pill:disabled {
+  cursor: default;
+  opacity: 0.72;
 }
 
 .settings-mode-pill__icon {

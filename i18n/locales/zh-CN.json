@@ -1623,8 +1623,12 @@
     "profile-form": {
       "mode-editing": "编辑模式",
       "mode-readonly": "查看模式",
+      "mode-saving": "保存更改",
       "mode-editing-copy": "在保存或取消之前，表单中的更改会保持为当前编辑状态。",
+      "mode-editing-idle-copy": "点击可返回查看模式。",
       "mode-readonly-copy": "字段已锁定，进入编辑模式后才可修改。",
+      "mode-saving-copy": "点击即可保存你的更改。",
+      "readonly-reminder": "切换到编辑模式后才能修改这些字段。",
       "decoration-locked-copy": "绑定邮箱后即可解锁头像装饰。",
       "ai-bio-title": "生成简介",
       "ai-bio-copy": "请输入至少 4 个描述你的词语。AI 会生成一段可供你编辑的简短简介。",

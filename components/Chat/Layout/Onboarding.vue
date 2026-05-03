@@ -135,15 +135,6 @@
     </div>
 
     <div class="onboarding-footer">
-      <div v-if="!canSend" class="onboarding-caption">
-        {{
-          authStatus === "guest" || authStatus === "onboarding"
-            ? $t("onboarding.finishProfileNotice")
-            : authStatus === "unauthenticated"
-            ? $t("onboarding.consentNotice")
-            : $t("onboarding.messagingDisabled")
-        }}
-      </div>
     </div>
   </div>
 </template>
