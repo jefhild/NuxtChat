@@ -3,6 +3,7 @@ import { getAllDynamicRoutes } from "./composables/useDynamicRoutes";
 import { landingPageSlugs } from "./config/landingPageSlugs";
 
 const seoSsrCacheSeconds = 3600;
+const faqRoutePattern = /^\/(?:(?:en|fr|ru|zh)\/)?faq(?:\/|$)/;
 const localizedLandingSeoRouteRules = Object.fromEntries(
   landingPageSlugs.flatMap((slug) => [
     [`/${slug}`, { swr: seoSsrCacheSeconds }],
@@ -344,6 +345,10 @@ export default defineNuxtConfig({
     "/*/guides": { swr: seoSsrCacheSeconds },
     "/guides/**": { swr: seoSsrCacheSeconds },
     "/*/guides/**": { swr: seoSsrCacheSeconds },
+    "/faq": { prerender: false, swr: seoSsrCacheSeconds },
+    "/*/faq": { prerender: false, swr: seoSsrCacheSeconds },
+    "/faq/**": { prerender: false, swr: seoSsrCacheSeconds },
+    "/*/faq/**": { prerender: false, swr: seoSsrCacheSeconds },
     "/topics": { swr: seoSsrCacheSeconds },
     "/*/topics": { swr: seoSsrCacheSeconds },
     "/topics/**": { swr: seoSsrCacheSeconds },
@@ -452,6 +457,9 @@ export default defineNuxtConfig({
       if (process.env.PRERENDER_DYNAMIC !== "true") return; // keep builds light by default
       let dynamicRoutes = await getAllDynamicRoutes().catch(() => []);
       dynamicRoutes = dynamicRoutes.filter((r) => !/\/settings$/.test(r));
+      if (process.env.PRERENDER_FAQ !== "true") {
+        dynamicRoutes = dynamicRoutes.filter((route) => !faqRoutePattern.test(route));
+      }
       const existingRoutes = new Set(nitroConfig.prerender?.routes || []);
       const routesToInject = dynamicRoutes.filter((route) => !existingRoutes.has(route));
 
