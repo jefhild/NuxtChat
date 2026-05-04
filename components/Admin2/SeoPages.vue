@@ -74,11 +74,21 @@
               <td>
                 <div class="seo-admin-chip-list">
                   <span
-                    v-for="locale in page.availableLocales"
-                    :key="`${page.id}-${locale}`"
+                    v-for="localeStatus in page.localeStatuses"
+                    :key="`${page.id}-${localeStatus.code}`"
                     class="seo-admin-pill seo-admin-pill--locale"
+                    :class="
+                      localeStatus.isPublished
+                        ? 'seo-admin-pill--success'
+                        : 'seo-admin-pill--warning'
+                    "
+                    :title="
+                      localeStatus.isPublished
+                        ? `${localeStatus.code.toUpperCase()} published`
+                        : `${localeStatus.code.toUpperCase()} draft`
+                    "
                   >
-                    {{ locale }}
+                    {{ localeStatus.code }}
                   </span>
                 </div>
               </td>
@@ -231,6 +241,15 @@
                     @click="openImportDialog"
                   >
                     Import JSON
+                  </button>
+                  <button
+                    type="button"
+                    class="seo-admin-button"
+                    :disabled="!publishableLocaleCodes.length || bulkPublishLoading || translationLoading"
+                    @click="publishAllLocales"
+                  >
+                    <span v-if="bulkPublishLoading" class="seo-admin-button__spinner" aria-hidden="true" />
+                    Publish all locales
                   </button>
                   <button
                     type="button"
@@ -821,6 +840,7 @@ const localeOptions = ["en", "fr", "ru", "zh"];
 const loading = ref(true);
 const saving = ref(false);
 const publishToggling = ref(false);
+const bulkPublishLoading = ref(false);
 const dialog = ref(false);
 const editLocaleVariants = ref({});
 const translationDialog = ref(false);
@@ -935,14 +955,32 @@ const filteredPages = computed(() =>
   )
     .map((group) => {
       const primaryPage = pickPrimaryPage(group);
-      const locales = sortLocales(
-        group.map((page) => String(page.locale || "").trim().toLowerCase()).filter(Boolean)
+      const localeMap = group.reduce((map, page) => {
+        const locale = String(page.locale || "").trim().toLowerCase();
+        if (!locale) return map;
+        const current = map.get(locale);
+        if (!current || Boolean(page.isPublished)) {
+          map.set(locale, {
+            code: locale,
+            isPublished: Boolean(page.isPublished),
+          });
+        }
+        return map;
+      }, new Map());
+      const localeStatuses = sortLocales(Array.from(localeMap.keys())).map(
+        (locale) =>
+          localeMap.get(locale) || {
+            code: locale,
+            isPublished: false,
+          }
       );
+      const locales = localeStatuses.map((entry) => entry.code);
 
       return {
         ...primaryPage,
         localeSummary: locales.join(", "),
         availableLocales: locales,
+        localeStatuses,
         translationCount: locales.length,
       };
     })
@@ -977,6 +1015,14 @@ const activeLocaleOptions = computed(() =>
   Object.keys(editLocaleVariants.value).length
     ? editLocaleOptions.value
     : localeOptions.map((locale) => ({ title: locale.toUpperCase(), value: locale }))
+);
+const publishableLocaleCodes = computed(() =>
+  sortLocales(
+    Object.values(editLocaleVariants.value)
+      .filter((page) => page?.id && !page?.isPublished)
+      .map((page) => String(page.locale || "").trim().toLowerCase())
+      .filter(Boolean)
+  )
 );
 
 const availableFaqOptions = computed(() =>
@@ -1396,6 +1442,33 @@ const buildFormPayload = () => ({
   isPublished: form.value.isPublished,
 });
 
+const buildVariantPayload = (page, overrides = {}) => ({
+  id: page.id,
+  pageType: page.pageType,
+  locale: page.locale,
+  slug: page.slug,
+  title: page.title,
+  subtitle: page.subtitle || "",
+  metaTitle: page.metaTitle || "",
+  metaDescription: page.metaDescription || "",
+  heroTitle: page.heroTitle || "",
+  heroBody: page.heroBody || "",
+  heroImagePath: page.heroImagePath || "",
+  heroImageUrl: page.heroImageUrl || "",
+  photoCreditsUrl: page.photoCreditsUrl || "",
+  photoCreditsHtml: page.photoCreditsHtml || "",
+  body: page.body || "",
+  highlights: Array.isArray(page.highlights) ? [...page.highlights] : [],
+  faqEntryIds: Array.isArray(page.faqEntryIds) ? [...page.faqEntryIds] : [],
+  relatedLinks: Array.isArray(page.relatedLinks)
+    ? page.relatedLinks.map((link) => ({ ...link }))
+    : [],
+  ctaLabel: page.ctaLabel || "Start chatting",
+  ctaHref: page.ctaHref || "/chat",
+  isPublished: Boolean(page.isPublished),
+  ...overrides,
+});
+
 const applyPageSaveResponse = (saved) => {
   form.value.id = saved.id;
   editLocaleVariants.value = {
@@ -1452,6 +1525,57 @@ const onPublishedToggle = async (value) => {
     showMessage(error?.data?.error || error?.message || "Failed to update published state.", "error");
   } finally {
     publishToggling.value = false;
+  }
+};
+
+const publishAllLocales = async () => {
+  const variants = sortLocales(
+    Object.keys(editLocaleVariants.value).filter((locale) => {
+      const page = editLocaleVariants.value[locale];
+      return page?.id && !page?.isPublished;
+    })
+  )
+    .map((locale) => editLocaleVariants.value[locale])
+    .filter(Boolean);
+
+  if (!variants.length) {
+    showMessage("No saved draft locales to publish.");
+    return;
+  }
+
+  const currentLocaleWasPublished = variants.some(
+    (variant) => String(variant.locale || "").trim().toLowerCase() === form.value.locale
+  );
+
+  bulkPublishLoading.value = true;
+  try {
+    for (const variant of variants) {
+      const response = await $fetch("/api/admin/seo-pages/save", {
+        method: "POST",
+        body: buildVariantPayload(variant, { isPublished: true }),
+      });
+      if (!response?.success) {
+        throw new Error(response?.error || `Failed to publish ${variant.locale}.`);
+      }
+      applyPageSaveResponse(response.page);
+    }
+
+    if (currentLocaleWasPublished) {
+      form.value.isPublished = true;
+    }
+
+    showMessage(
+      `Published locales: ${variants
+        .map((variant) => String(variant.locale || "").toUpperCase())
+        .join(", ")}.`
+    );
+  } catch (error) {
+    showMessage(
+      error?.data?.error || error?.message || "Failed to publish all locales.",
+      "error"
+    );
+  } finally {
+    bulkPublishLoading.value = false;
   }
 };
 
