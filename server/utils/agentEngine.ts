@@ -29,6 +29,7 @@ export interface AgentConfig {
   prompt_preset_key: AgentPromptPreset;
   system_prompt_addition: string | null;
   greeting_template: string | null;
+  first_auto_reply_template: string | null;
   max_exchanges_per_conversation: number;
   max_conversations_per_session: number;
   target_gender_ids: number[] | null;
@@ -127,6 +128,14 @@ export async function generateAgentReply(
   runtimeConfig: any,
   languagePracticeContext: LanguagePracticeAgentContext | null = null
 ): Promise<string | null> {
+  const firstAutoReply = config.first_auto_reply_template?.trim();
+  const conversationStartedByOtherUser = !conversationHistory.some(
+    (message) => message.role === "assistant" && message.content?.trim()
+  );
+  if (firstAutoReply && conversationStartedByOtherUser) {
+    return firstAutoReply;
+  }
+
   const { client, model } = getOpenAIClient({ runtimeConfig });
   if (!client) return null;
 

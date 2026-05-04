@@ -45,6 +45,7 @@ export default defineEventHandler(async (event) => {
     prompt_preset_key: presetKey,
     system_prompt_addition: body?.system_prompt_addition?.trim() ?? null,
     greeting_template: body?.greeting_template?.trim() ?? null,
+    first_auto_reply_template: body?.first_auto_reply_template?.trim() ?? null,
     max_exchanges_per_conversation: maxExchanges,
     max_conversations_per_session: maxConvs,
     target_gender_ids: body?.target_gender_ids ?? null,

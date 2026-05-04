@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
     supabase
       .from("agent_configs")
       .select(
-        "profile_id, enabled, prompt_preset_key, system_prompt_addition, greeting_template, max_exchanges_per_conversation, max_conversations_per_session, target_gender_ids, target_mood_keys"
+        "profile_id, enabled, prompt_preset_key, system_prompt_addition, greeting_template, first_auto_reply_template, max_exchanges_per_conversation, max_conversations_per_session, target_gender_ids, target_mood_keys"
       )
       .eq("profile_id", agentProfile.id)
       .eq("enabled", true)

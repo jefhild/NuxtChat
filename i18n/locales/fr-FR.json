@@ -1807,7 +1807,7 @@
       "offline": "Hors ligne"
     },
     "away": {
-      "reply": "L’utilisateur {name} est absent et verra ce message à son retour.",
+      "reply": "{name} est absent. Son Agent Absent peut répondre pendant son absence.",
       "link-cta": "Associez votre e-mail pour ne pas manquer une réponse"
     },
     "users-ai": {

@@ -4,6 +4,12 @@ import { buildSeoPagePath } from "../../utils/seoPagePaths";
 export const SEO_PAGE_TYPES = ["compare", "guide", "topic", "landing"] as const;
 export const SEO_PAGE_IMAGE_BUCKET = "profile-avatars";
 export const SEO_PAGE_IMAGE_FOLDER = "seo-pages/heroes";
+export const SEO_PAGE_LOCALE_MAP: Record<string, string> = {
+  en: "en-US",
+  fr: "fr-FR",
+  ru: "ru-RU",
+  zh: "zh-CN",
+};
 
 export type SeoPageType = (typeof SEO_PAGE_TYPES)[number];
 
@@ -97,6 +103,27 @@ export const normalizeLocaleCode = (value: unknown, fallback = "en") => {
     .toLowerCase()
     .split("-")[0];
   return normalized || fallback;
+};
+
+export const buildSeoPageLocaleVariants = (
+  value: unknown,
+  fallback = "en"
+) => {
+  const raw = String(value || fallback).trim();
+  const normalized = normalizeLocaleCode(raw, fallback);
+  const fullLocale = SEO_PAGE_LOCALE_MAP[normalized];
+
+  return Array.from(
+    new Set(
+      [
+        raw,
+        raw.toLowerCase(),
+        normalized,
+        fullLocale,
+        fullLocale?.toLowerCase(),
+      ].filter(Boolean)
+    )
+  );
 };
 
 const sanitizeString = (value: unknown) => {

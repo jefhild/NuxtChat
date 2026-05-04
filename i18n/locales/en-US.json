@@ -1828,7 +1828,7 @@
       "offline": "Offline"
     },
     "away": {
-      "reply": "User {name} is away but will see this message when they return.",
+      "reply": "{name} is away. Their Away Agent may reply while they're offline.",
       "link-cta": "Link your email if you don't want to miss a response"
     },
     "users-ai": {

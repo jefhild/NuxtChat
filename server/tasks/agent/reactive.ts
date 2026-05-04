@@ -61,7 +61,7 @@ export default {
       // agent_configs has no direct FK to agent_conversation_log, so query separately
       const { data: configRow } = await supabase
         .from("agent_configs")
-        .select("prompt_preset_key, system_prompt_addition, max_exchanges_per_conversation, max_conversations_per_session")
+        .select("prompt_preset_key, system_prompt_addition, first_auto_reply_template, max_exchanges_per_conversation, max_conversations_per_session")
         .eq("profile_id", log.agent_profile_id)
         .eq("enabled", true)
         .maybeSingle();

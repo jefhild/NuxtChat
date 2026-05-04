@@ -66,18 +66,35 @@
 
         <div class="agent-field mb-5">
           <div class="text-body-2 font-weight-medium mb-2">
-            Opening message
+            Proactive opener
             <span class="agent-optional-chip">optional</span>
           </div>
           <textarea
             v-model="config.greeting_template"
             class="agent-textarea"
-            placeholder="Leave blank to let the agent generate a greeting based on your bio. Or write your own: e.g. 'Hey — I'm away right now but wanted to say hi. What's on your mind?'"
+            placeholder="Sent when your agent starts a new conversation. Leave blank to let it generate one from your bio."
             rows="2"
             maxlength="200"
           />
           <div class="agent-counter">
             {{ (config.greeting_template || '').length }}/200
+          </div>
+        </div>
+
+        <div class="agent-field mb-5">
+          <div class="text-body-2 font-weight-medium mb-2">
+            First auto-reply
+            <span class="agent-optional-chip">optional</span>
+          </div>
+          <textarea
+            v-model="config.first_auto_reply_template"
+            class="agent-textarea"
+            placeholder="Sent when someone messages you first while you're away. E.g. 'Hey, I'm away right now, but leave me a message and I'll get back to you when I'm back online.'"
+            rows="2"
+            maxlength="200"
+          />
+          <div class="agent-counter">
+            {{ (config.first_auto_reply_template || '').length }}/200
           </div>
         </div>
 
@@ -186,6 +203,7 @@ const config = ref({
   prompt_preset_key: "friendly",
   system_prompt_addition: null,
   greeting_template: null,
+  first_auto_reply_template: null,
   max_exchanges_per_conversation: 5,
   max_conversations_per_session: 5,
 });
@@ -250,6 +268,7 @@ async function fetchStatus() {
       prompt_preset_key: data.config.prompt_preset_key ?? "friendly",
       system_prompt_addition: data.config.system_prompt_addition ?? null,
       greeting_template: data.config.greeting_template ?? null,
+      first_auto_reply_template: data.config.first_auto_reply_template ?? null,
       max_exchanges_per_conversation: data.config.max_exchanges_per_conversation ?? 5,
       max_conversations_per_session: clampAwayAgentConversationLimit(
         data.config.max_conversations_per_session

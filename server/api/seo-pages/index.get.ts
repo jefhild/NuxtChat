@@ -1,5 +1,6 @@
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import {
+  buildSeoPageLocaleVariants,
   normalizeLocaleCode,
   normalizeSeoPageRecord,
   type SeoPageRow,
@@ -13,6 +14,12 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const type = normalizeSeoPageType(query.type);
     const locale = normalizeLocaleCode(query.locale || "en");
+    const localeVariants = Array.from(
+      new Set([
+        ...buildSeoPageLocaleVariants(query.locale || locale),
+        ...buildSeoPageLocaleVariants("en"),
+      ])
+    );
     const limit = Math.min(Math.max(Number(query.limit || 50), 1), 100);
 
     const supabase = await getServiceRoleClient(event);
@@ -21,7 +28,7 @@ export default defineEventHandler(async (event) => {
       .select(SEO_PAGE_SELECT)
       .eq("page_type", type)
       .eq("is_published", true)
-      .in("locale", [locale, "en"])
+      .in("locale", localeVariants)
       .order("updated_at", { ascending: false })
       .limit(limit);
 

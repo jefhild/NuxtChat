@@ -1,10 +1,5 @@
 <template>
-  <section
-    :class="[
-      'seo-index-shell mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8',
-      { 'seo-index-shell--dark': isDarkTheme },
-    ]"
-  >
+  <section class="seo-index-shell mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
     <div class="seo-index-header-shell">
       <PageHeader :text="title" :subtitle="description" />
     </div>
@@ -27,7 +22,7 @@
         </div>
       </div>
 
-      <div :class="['seo-index-summary p-5', { 'seo-index-card--dark': isDarkTheme }]">
+      <div class="seo-index-summary p-5">
         <div class="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/65">
           {{ uiCopy.sectionOverview }}
         </div>
@@ -54,7 +49,7 @@
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <div v-for="page in pages" :key="`${page.locale}-${page.slug}`">
         <NuxtLink :to="localPath(page.path)" class="seo-index-page-link">
-          <div :class="['seo-index-page-card h-full p-4', { 'seo-index-card--dark': isDarkTheme }]">
+          <div class="seo-index-page-card h-full p-4">
             <div class="seo-index-page-card__top mb-3">
               <div class="seo-index-page-card__meta">
                 <div class="mb-2 flex flex-wrap items-center gap-2">
@@ -121,8 +116,6 @@ const props = defineProps<{
 
 const localPath = useLocalePath();
 const { locale } = useI18n();
-const { resolvedTheme } = useAppTheme();
-const isDarkTheme = computed(() => resolvedTheme.value === "dark");
 const currentLocale = computed(() =>
   String(locale.value || "en")
     .split("-")[0]
@@ -240,7 +233,8 @@ const formatLocaleShort = (localeCode: string) =>
   padding: 12px 10px 32px;
 }
 
-.seo-index-shell--dark {
+:global(html.dark .seo-index-shell),
+:global(html[data-imchatty-theme="dark"] .seo-index-shell) {
   color: #e2e8f0;
 }
 
@@ -350,9 +344,12 @@ const formatLocaleShort = (localeCode: string) =>
   padding: 28px;
 }
 
-.seo-index-shell--dark .seo-index-hero__copy,
-.seo-index-shell--dark .seo-index-summary,
-.seo-index-card--dark {
+:global(html.dark .seo-index-hero__copy),
+:global(html.dark .seo-index-summary),
+:global(html.dark .seo-index-page-card),
+:global(html[data-imchatty-theme="dark"] .seo-index-hero__copy),
+:global(html[data-imchatty-theme="dark"] .seo-index-summary),
+:global(html[data-imchatty-theme="dark"] .seo-index-page-card) {
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94));
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -372,7 +369,8 @@ const formatLocaleShort = (localeCode: string) =>
   height: 100%;
 }
 
-.seo-index-shell--dark .seo-index-sibling {
+:global(html.dark .seo-index-sibling),
+:global(html[data-imchatty-theme="dark"] .seo-index-sibling) {
   color: #7dd3fc;
 }
 
@@ -443,26 +441,32 @@ const formatLocaleShort = (localeCode: string) =>
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
 }
 
-.seo-index-shell--dark .seo-index-page-link:hover .seo-index-page-card,
-.seo-index-shell--dark .seo-index-page-link:focus-visible .seo-index-page-card {
+:global(html.dark .seo-index-page-link:hover .seo-index-page-card),
+:global(html.dark .seo-index-page-link:focus-visible .seo-index-page-card),
+:global(html[data-imchatty-theme="dark"] .seo-index-page-link:hover .seo-index-page-card),
+:global(html[data-imchatty-theme="dark"] .seo-index-page-link:focus-visible .seo-index-page-card) {
   border-color: rgba(125, 211, 252, 0.32);
   box-shadow: 0 18px 42px rgba(2, 6, 23, 0.32);
 }
 
-.seo-index-shell--dark .seo-index-page-card__media {
+:global(html.dark .seo-index-page-card__media),
+:global(html[data-imchatty-theme="dark"] .seo-index-page-card__media) {
   border-color: rgba(148, 163, 184, 0.18);
 }
 
-.seo-index-shell--dark .seo-index-page-card__thumb {
+:global(html.dark .seo-index-page-card__thumb),
+:global(html[data-imchatty-theme="dark"] .seo-index-page-card__thumb) {
   border-color: rgba(148, 163, 184, 0.18);
 }
 
-.seo-index-shell--dark .seo-index-locale-chip {
+:global(html.dark .seo-index-locale-chip),
+:global(html[data-imchatty-theme="dark"] .seo-index-locale-chip) {
   border-color: rgba(148, 163, 184, 0.22);
   color: #cbd5e1;
 }
 
-.seo-index-shell--dark .seo-index-page-card__image-overlay {
+:global(html.dark .seo-index-page-card__image-overlay),
+:global(html[data-imchatty-theme="dark"] .seo-index-page-card__image-overlay) {
   background:
     linear-gradient(180deg, rgba(15, 23, 42, 0.08), rgba(15, 23, 42, 0.28));
 }
@@ -479,7 +483,8 @@ const formatLocaleShort = (localeCode: string) =>
   color: rgb(30 64 175);
 }
 
-.seo-index-shell--dark .seo-index-empty-state {
+:global(html.dark .seo-index-empty-state),
+:global(html[data-imchatty-theme="dark"] .seo-index-empty-state) {
   border-color: rgb(125 211 252 / 0.22);
   background: rgb(14 116 144 / 0.18);
   color: #dbeafe;
