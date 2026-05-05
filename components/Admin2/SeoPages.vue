@@ -178,7 +178,7 @@
 
             <form class="seo-admin-dialog__body seo-admin-form" @submit.prevent="savePage">
               <div class="seo-admin-form-grid seo-admin-form-grid--top">
-                <label class="seo-admin-field">
+                <label class="seo-admin-field seo-admin-field--panel">
                   <span class="seo-admin-field__label">Page type</span>
                   <select
                     v-model="form.pageType"
@@ -194,7 +194,7 @@
                   </span>
                 </label>
 
-                <label class="seo-admin-field">
+                <label class="seo-admin-field seo-admin-field--panel">
                   <span class="seo-admin-field__label">Locale</span>
                   <select
                     :value="form.locale"
@@ -215,8 +215,11 @@
                   </span>
                 </label>
 
-                <div class="seo-admin-field seo-admin-field--toggle">
-                  <span class="seo-admin-field__label">Published</span>
+                <div class="seo-admin-field seo-admin-field--toggle seo-admin-status-panel">
+                  <span class="seo-admin-field__label">Publication state</span>
+                  <div class="seo-admin-status-panel__value">
+                    {{ form.isPublished ? "Live on site" : "Saved as draft" }}
+                  </div>
                   <label class="seo-admin-switch seo-admin-switch--labeled">
                     <input
                       :checked="form.isPublished"
@@ -234,7 +237,8 @@
                   </label>
                 </div>
 
-                <div class="seo-admin-inline-actions">
+                <div class="seo-admin-inline-actions seo-admin-action-panel">
+                  <div class="seo-admin-action-panel__title">Actions</div>
                   <button
                     type="button"
                     class="seo-admin-button"
@@ -1845,7 +1849,7 @@ onBeforeUnmount(() => {
 .seo-admin-field {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.5rem;
 }
 
 .seo-admin-field--toolbar {
@@ -1853,26 +1857,34 @@ onBeforeUnmount(() => {
 }
 
 .seo-admin-field__label {
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: rgba(var(--color-text), 0.76);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.9);
 }
 
 .seo-admin-field__control {
   width: 100%;
-  min-height: 2.8rem;
-  border: 1px solid rgba(var(--color-border), 0.9);
+  min-height: 3rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 14px;
-  background: rgba(var(--color-surface), 0.96);
+  background: rgba(7, 12, 24, 0.72);
   color: rgb(var(--color-text));
-  padding: 0.8rem 0.95rem;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  padding: 0.88rem 1rem;
+  font-size: 0.98rem;
+  line-height: 1.4;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease,
+    transform 0.18s ease;
 }
 
 .seo-admin-field__control:focus {
   outline: none;
-  border-color: rgba(var(--color-primary), 0.7);
+  border-color: rgba(var(--color-primary), 0.68);
+  background: rgba(9, 16, 30, 0.9);
   box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.16);
+  transform: translateY(-1px);
 }
 
 .seo-admin-field__control.is-invalid {
@@ -1895,7 +1907,8 @@ onBeforeUnmount(() => {
 }
 
 .seo-admin-field__hint {
-  color: rgba(var(--color-text), 0.62);
+  color: rgba(148, 163, 184, 0.72);
+  line-height: 1.45;
 }
 
 .seo-admin-field__error {
@@ -1908,20 +1921,23 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  min-height: 2.7rem;
+  min-height: 2.9rem;
   border-radius: 14px;
-  border: 1px solid rgba(var(--color-border), 0.88);
-  background: rgba(var(--color-surface), 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.96));
   color: rgb(var(--color-text));
-  font-weight: 600;
-  padding: 0.75rem 1rem;
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  font-weight: 700;
+  padding: 0.78rem 1rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .seo-admin-button:hover,
 .seo-admin-icon-button:hover {
   transform: translateY(-1px);
   border-color: rgba(var(--color-primary), 0.45);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
 }
 
 .seo-admin-button:disabled,
@@ -1932,15 +1948,15 @@ onBeforeUnmount(() => {
 }
 
 .seo-admin-button--primary {
-  border-color: rgba(var(--color-primary), 0.42);
-  background: rgba(var(--color-primary), 0.14);
-  color: rgb(var(--color-primary));
+  border-color: rgba(var(--color-primary), 0.4);
+  background: linear-gradient(180deg, rgba(var(--color-primary), 0.28), rgba(var(--color-primary), 0.16));
+  color: rgb(226, 232, 240);
 }
 
 .seo-admin-button--danger {
-  border-color: rgba(220, 38, 38, 0.28);
-  background: rgba(220, 38, 38, 0.1);
-  color: #b91c1c;
+  border-color: rgba(248, 113, 113, 0.22);
+  background: linear-gradient(180deg, rgba(127, 29, 29, 0.4), rgba(69, 10, 10, 0.42));
+  color: #fecaca;
 }
 
 .seo-admin-button--small {
@@ -2028,6 +2044,19 @@ onBeforeUnmount(() => {
   gap: 0.55rem;
 }
 
+.seo-admin-inline-actions {
+  align-items: stretch;
+}
+
+.seo-admin-action-panel .seo-admin-button {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.seo-admin-action-panel .seo-admin-button + .seo-admin-button {
+  margin-top: 0.1rem;
+}
+
 .seo-admin-action-list {
   justify-content: flex-end;
 }
@@ -2072,8 +2101,8 @@ onBeforeUnmount(() => {
 
 .seo-admin-chip {
   padding: 0.4rem 0.8rem;
-  background: rgba(var(--color-primary), 0.1);
-  color: rgba(var(--color-text), 0.9);
+  background: rgba(var(--color-primary), 0.14);
+  color: rgba(226, 232, 240, 0.92);
 }
 
 .seo-admin-chip__remove {
@@ -2087,9 +2116,17 @@ onBeforeUnmount(() => {
 .seo-admin-path,
 .seo-admin-preview-card__value {
   padding: 0.4rem 0.7rem;
-  background: rgba(var(--color-text), 0.06);
-  color: rgba(var(--color-text), 0.86);
+  background: rgba(7, 12, 24, 0.72);
+  color: rgba(226, 232, 240, 0.92);
   white-space: nowrap;
+}
+
+.seo-admin-preview-card__label {
+  color: rgba(148, 163, 184, 0.82);
+}
+
+.seo-admin-preview-card__value {
+  margin-top: 0.35rem;
 }
 
 .seo-admin-empty-state {
@@ -2197,18 +2234,20 @@ onBeforeUnmount(() => {
 
 .seo-admin-dialog__body {
   overflow-y: auto;
-  background: rgb(var(--color-surface));
+  background:
+    linear-gradient(180deg, rgba(10, 18, 36, 0.98), rgba(12, 20, 39, 0.98));
 }
 
 .seo-admin-dialog__header,
 .seo-admin-dialog__actions {
-  background: rgb(var(--color-surface-elevated));
+  background:
+    linear-gradient(180deg, rgba(28, 42, 66, 0.98), rgba(26, 37, 58, 0.98));
 }
 
 .seo-admin-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.1rem;
 }
 
 .seo-admin-form-grid {
@@ -2237,6 +2276,26 @@ onBeforeUnmount(() => {
   justify-content: end;
 }
 
+.seo-admin-field--panel,
+.seo-admin-status-panel,
+.seo-admin-action-panel,
+.seo-admin-preview-card,
+.seo-admin-section,
+.seo-admin-upload-panel,
+.seo-admin-hero-fields {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.52);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.seo-admin-field--panel,
+.seo-admin-status-panel,
+.seo-admin-action-panel {
+  min-height: 100%;
+  border-radius: 18px;
+  padding: 1rem;
+}
+
 .seo-admin-preview-grid {
   gap: 0.75rem;
 }
@@ -2244,15 +2303,24 @@ onBeforeUnmount(() => {
 .seo-admin-preview-card {
   min-width: 0;
   flex: 1 1 15rem;
-  border: 1px solid rgba(var(--color-border), 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 18px;
-  background: rgba(var(--color-surface), 0.8);
+  background: rgba(15, 23, 42, 0.52);
   padding: 0.85rem 1rem;
 }
 
 .seo-admin-section {
-  border-top: 1px solid rgba(var(--color-border), 0.62);
-  padding-top: 1rem;
+  border-top: 0;
+  border-radius: 22px;
+  padding: 1.05rem 1.1rem 1.15rem;
+}
+
+.seo-admin-section__header {
+  margin-bottom: 0.95rem;
+}
+
+.seo-admin-section__title {
+  font-size: 1rem;
 }
 
 .seo-admin-switch {
@@ -2305,6 +2373,34 @@ onBeforeUnmount(() => {
   color: rgba(var(--color-text), 0.82);
 }
 
+.seo-admin-status-panel {
+  align-items: flex-start;
+}
+
+.seo-admin-status-panel__value,
+.seo-admin-action-panel__title,
+.seo-admin-preview-card__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.seo-admin-status-panel__value {
+  color: rgba(191, 219, 254, 0.82);
+}
+
+.seo-admin-action-panel {
+  align-content: start;
+  gap: 0.65rem;
+}
+
+.seo-admin-action-panel__title {
+  width: 100%;
+  margin-bottom: 0.15rem;
+  color: rgba(148, 163, 184, 0.88);
+}
+
 .seo-admin-hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
@@ -2312,12 +2408,20 @@ onBeforeUnmount(() => {
   align-items: start;
 }
 
+.seo-admin-hero-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  border-radius: 18px;
+  padding: 1rem;
+}
+
 .seo-admin-hero-preview__media {
   position: relative;
   overflow: hidden;
   border-radius: 18px;
-  border: 1px solid rgba(var(--color-border), 0.72);
-  background: rgba(var(--color-text), 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.72);
 }
 
 .seo-admin-hero-preview__image {
@@ -2366,6 +2470,11 @@ onBeforeUnmount(() => {
   gap: 0.75rem;
 }
 
+.seo-admin-selection-list,
+.seo-admin-highlight-list {
+  margin-top: 0.2rem;
+}
+
 .seo-admin-highlight-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -2385,10 +2494,16 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: start;
   gap: 0.7rem;
-  border: 1px solid rgba(var(--color-border), 0.62);
+  border: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 14px;
-  background: rgba(var(--color-surface), 0.84);
+  background: rgba(15, 23, 42, 0.38);
   padding: 0.75rem 0.85rem;
+}
+
+.seo-admin-upload-panel {
+  align-items: end;
+  border-radius: 18px;
+  padding: 1rem;
 }
 
 .seo-admin-selection-item--stacked .seo-admin-selection-item__title {

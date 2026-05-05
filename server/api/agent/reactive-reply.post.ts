@@ -10,7 +10,7 @@ import {
   loadLanguagePracticeAgentContext,
   sendAgentMessage,
 } from "~/server/utils/agentEngine";
-import { snapshotPresenceUserIds } from "~/server/utils/presenceSnapshot";
+import { isAgentOwnerAvailable } from "~/server/utils/agentAvailability";
 import { clampAwayAgentConversationLimit } from "~/constants/awayAgent";
 
 const REPLY_WINDOW_SECONDS = 5 * 60;
@@ -37,8 +37,7 @@ export default defineEventHandler(async (event) => {
 
   const supabase = await getServiceRoleClient(event);
   const runtimeConfig = useRuntimeConfig(event);
-  const onlineUserIds = await snapshotPresenceUserIds(supabase);
-  if (onlineUserIds.has(agentUserId)) {
+  if (await isAgentOwnerAvailable(supabase, agentUserId)) {
     return { ok: true, skipped: "agent_owner_online" };
   }
 
@@ -95,7 +94,7 @@ export default defineEventHandler(async (event) => {
     .eq("status", "active");
 
   if (
-    (sessionCount ?? 0) >
+    (sessionCount ?? 0) >=
     clampAwayAgentConversationLimit(config.max_conversations_per_session)
   ) {
     return { ok: true, skipped: "session_limit_reached" };

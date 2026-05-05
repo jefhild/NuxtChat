@@ -13,7 +13,7 @@ import {
   sendAgentMessage,
   incrementExchangeCount,
 } from "~/server/utils/agentEngine";
-import { snapshotPresenceUserIds } from "~/server/utils/presenceSnapshot";
+import { loadAgentAvailabilityMap } from "~/server/utils/agentAvailability";
 import { clampAwayAgentConversationLimit } from "~/constants/awayAgent";
 
 const REPLY_WINDOW_SECONDS = 300; // look back 5 minutes for unanswered messages
@@ -23,7 +23,7 @@ export default {
     const event = context?.event;
     const supabase = await getServiceRoleClient(event);
     const runtimeConfig = useRuntimeConfig(event);
-    const onlineUserIds = await snapshotPresenceUserIds(supabase);
+    const availabilityByUserId = await loadAgentAvailabilityMap(supabase);
 
     // 1. Find active agent conversations with an unanswered incoming message
     const since = new Date(Date.now() - REPLY_WINDOW_SECONDS * 1000).toISOString();
@@ -56,7 +56,7 @@ export default {
       const targetProfile = Array.isArray(log.target_profile) ? log.target_profile[0] : log.target_profile;
 
       if (!agentProfile?.agent_enabled) continue;
-      if (onlineUserIds.has(agentProfile.user_id)) continue;
+      if (availabilityByUserId.get(String(agentProfile.user_id)) === true) continue;
 
       // agent_configs has no direct FK to agent_conversation_log, so query separately
       const { data: configRow } = await supabase
@@ -76,7 +76,7 @@ export default {
         .eq("agent_profile_id", log.agent_profile_id)
         .eq("status", "active");
 
-      if ((sessionCount ?? 0) > clampAwayAgentConversationLimit(config.max_conversations_per_session)) continue;
+      if ((sessionCount ?? 0) >= clampAwayAgentConversationLimit(config.max_conversations_per_session)) continue;
 
       // Skip if this conversation has already hit its exchange limit
       if ((log.exchange_count ?? 0) >= (config.max_exchanges_per_conversation ?? 5)) continue;
