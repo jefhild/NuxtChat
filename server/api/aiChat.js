@@ -223,6 +223,11 @@ const describeExchangeMode = (value) => {
   return normalized || "practice only";
 };
 
+const describeReplyLocale = (value) => {
+  const normalized = normalizeLocale(value);
+  return normalized ? LANGUAGE_LABELS[normalized] || normalized : "English";
+};
+
 const supportsLanguagePracticeSession = (config, session) => {
   if (!config?.enabled || !session) return false;
 
@@ -527,6 +532,12 @@ export default defineEventHandler(async (event) => {
       if (style) {
         promptBase = `${promptBase}\nResponse style: ${style}`;
       }
+    }
+    if (locale && resolvedCapability !== "language_practice") {
+      promptBase = `${promptBase}\nLanguage requirements:
+- Reply in ${describeReplyLocale(locale)}.
+- Keep your full reply in ${describeReplyLocale(locale)} unless the user very clearly asks to switch languages.
+- If the user writes in a different language, you may briefly mirror it only when needed to stay helpful, but default back to ${describeReplyLocale(locale)}.`;
     }
     if (resolvedCapability === "language_practice" && languagePracticeSession) {
       const correctionPreference =

@@ -1966,6 +1966,7 @@
     "finalizingTitle": "Création de votre profil temporaire…",
     "finalizingBody": "Pendant que nous créons votre profil temporaire, nous cherchons aussi quelqu’un pour vous aider à démarrer le chat. Un instant…",
     "handoffFallbackMessage": "Hé {display}, bienvenue ! N’hésitez pas à commencer à discuter.",
+    "postSignupGeneralOpener": "Salut {name}, moi c’est {personaName}. Ton profil est prêt, donc tu peux commencer à parcourir et discuter tout de suite. Sinon, réponds à une petite question et je te trouverai des personnes qui collent vraiment à ton vibe. {moodPrompt}",
     "typing": "Saisie en cours…",
     "finishProfileNotice": "Terminez votre profil pour pouvoir envoyer des messages.",
     "consentNotice": "Veuillez accepter nos conditions pour commencer à discuter.",

@@ -1857,7 +1857,418 @@ const showLiveMoodClarifierQuickReplies = computed(
     liveMoodClarifierQuickReplies.value.length > 0
 );
 
-const MATCH_FILTER_PILLS = ["🟢 Online", "⭕ Offline", "🤖 AI", "🎲 Random"];
+const getLiveMoodLocaleCode = () => moodLocaleKey.value || "en";
+const getLocalizedEmotionLabel = (emotion) => {
+  const key = String(emotion || "").trim().toLowerCase();
+  const labels = {
+    en: {
+      calm: "calm",
+      sad: "sad",
+      lonely: "lonely",
+      annoyed: "annoyed",
+      bored: "bored",
+      playful: "playful",
+      curious: "curious",
+    },
+    fr: {
+      calm: "calme",
+      sad: "triste",
+      lonely: "seul",
+      annoyed: "agacé",
+      bored: "ennuyé",
+      playful: "joueur",
+      curious: "curieux",
+    },
+    ru: {
+      calm: "спокойное",
+      sad: "грустное",
+      lonely: "одинокое",
+      annoyed: "раздражённое",
+      bored: "скучающее",
+      playful: "игривое",
+      curious: "любопытное",
+    },
+    zh: {
+      calm: "平静",
+      sad: "难过",
+      lonely: "孤单",
+      annoyed: "烦闷",
+      bored: "无聊",
+      playful: "想轻松一点",
+      curious: "想聊点有意思的",
+    },
+  };
+  return labels[getLiveMoodLocaleCode()]?.[key] || labels.en[key] || key;
+};
+
+const getLiveMoodStaticCopy = () => {
+  const byLocale = {
+    en: {
+      directChoicePrompt: "No problem. Pick what sounds best right now.",
+      gotIt: "Got it.",
+      saveOk: "Perfect. I can help from here.",
+      saveFailed: "I couldn't save that just yet, but we can keep chatting.",
+      skip: "No problem. We can figure out your vibe later.",
+      resetPrompt: "Okay, give me your vibe again in your own words.",
+      confirmTemplate: (description) =>
+        `It sounds like you want ${description}. Is that right?`,
+      closerTemplate: (description) =>
+        `Maybe this is closer: ${description}. Does that fit better?`,
+      soundRightTemplate: (description) =>
+        `Does ${description} sound right?`,
+      autoMatch: {
+        be_heard: "Done. I've found some good listeners for you. Pick a filter to browse:",
+        distract_me: "Done. I've lined up some lighter options for you. Pick a filter to browse:",
+        deep_talk: "Done. I've found some people up for a deeper conversation. Pick a filter to browse:",
+        meet_someone_similar:
+          "Done. I've found some people with a similar vibe right now. Pick a filter to browse:",
+        emotionalListener:
+          "Done. I've found some good listeners for you. Pick a filter to browse:",
+        default:
+          "Done. I've found some calm chats that fit your mood. Pick a filter to browse:",
+      },
+      nextStepPrompt: {
+        distract_me:
+          "Want me to find something light, some quiet company, or just keep chatting with me?",
+        be_heard:
+          "Want me to find someone to listen, a calm chat, or just keep chatting with me?",
+        deep_talk:
+          "Want me to find a deeper chat, someone to listen, or just keep chatting with me?",
+        meet_someone_similar:
+          "Want me to find someone in a similar mood, or just keep chatting with me?",
+        playful:
+          "Want me to find something light, or just keep chatting with me?",
+        default:
+          "Want me to find a calm chat, someone who'll listen, or just keep chatting with me?",
+      },
+      nudges: {
+        addPhoto:
+          "When you want, add a photo in [settings]({url}). It helps people trust the profile faster.",
+        lookingFor:
+          "You can also set what you're looking for in [settings]({url}) so I can guide you better.",
+        linkEmail:
+          "And when you're ready, [link your email]({url}) so you can keep the account.",
+        openSettings:
+          "You can tweak the rest anytime in [settings]({url}).",
+      },
+      choiceLabels: {
+        resume_matching: "Find a match",
+        light_chat: "Find light chat",
+        quiet_company: "Find quiet company",
+        deep_chat: "Find deep chat",
+        similar: "Find someone similar",
+        calm_chat: "Find a calm chat",
+        listener: "Find someone to listen",
+        keep_chatting: "Keep chatting",
+        not_now: "Not now",
+      },
+      filterPills: {
+        online: "🟢 Online",
+        offline: "⭕ Offline",
+        ai: "🤖 AI",
+        random: "🎲 Random",
+      },
+      filterResponses: {
+        online:
+          "Showing online matches in your chat list — tap any name to start chatting. You can switch filters at the top of the list anytime.{emailLink}",
+        offline:
+          "Showing offline matches — they may take a little longer to reply, but sometimes that's a better fit. Tap any name to reach out. You can switch filters at the top of your list anytime.{emailLink}",
+        ai:
+          "Showing AI chat options — available anytime, no waiting. Tap any name to start. Switch filters at the top of your list anytime.",
+        random:
+          "Picked someone for you — check the top of your chat list and tap their name to say hi.{emailLink}",
+      },
+      matchedResponses: {
+        calm_chat:
+          "Done. I've pulled up calmer chats that fit your mood. Pick a filter to browse:",
+        light_chat:
+          "Done. I've lined up some lighter options for you. Pick a filter to browse:",
+        quiet_company:
+          "Done. I've found some quiet company that suits where you're at. Pick a filter to browse:",
+        listener:
+          "Done. I've found some good listeners for you. Pick a filter to browse:",
+        deep_chat:
+          "Done. I've found some people up for a deeper conversation. Pick a filter to browse:",
+        similar:
+          "Done. I've found some people with a similar vibe right now. Pick a filter to browse:",
+      },
+    },
+    fr: {
+      directChoicePrompt: "Pas de souci. Choisis ce qui te ressemble le plus maintenant.",
+      gotIt: "Compris.",
+      saveOk: "Parfait. Je peux t’aider à partir de là.",
+      saveFailed: "Je n’ai pas pu l’enregistrer tout de suite, mais on peut continuer à discuter.",
+      skip: "Pas de souci. On pourra cerner ton vibe plus tard.",
+      resetPrompt: "D’accord, redonne-moi ton vibe avec tes propres mots.",
+      confirmTemplate: (description) =>
+        `J’ai l’impression que tu veux ${description}. C’est bien ça ?`,
+      closerTemplate: (description) =>
+        `Peut-être que ceci est plus juste : ${description}. Ça te correspond mieux ?`,
+      soundRightTemplate: (description) =>
+        `Est-ce que ${description} te semble juste ?`,
+      autoMatch: {
+        be_heard:
+          "C’est fait. Je t’ai trouvé de bonnes personnes à l’écoute. Choisis un filtre pour parcourir :",
+        distract_me:
+          "C’est fait. Je t’ai préparé des options plus légères. Choisis un filtre pour parcourir :",
+        deep_talk:
+          "C’est fait. Je t’ai trouvé des personnes partantes pour une conversation plus profonde. Choisis un filtre pour parcourir :",
+        meet_someone_similar:
+          "C’est fait. Je t’ai trouvé des personnes avec un vibe similaire en ce moment. Choisis un filtre pour parcourir :",
+        emotionalListener:
+          "C’est fait. Je t’ai trouvé de bonnes personnes à l’écoute. Choisis un filtre pour parcourir :",
+        default:
+          "C’est fait. Je t’ai trouvé des chats calmes qui collent à ton humeur. Choisis un filtre pour parcourir :",
+      },
+      nextStepPrompt: {
+        distract_me:
+          "Tu veux que je te trouve quelque chose de léger, une présence tranquille, ou tu préfères continuer à discuter avec moi ?",
+        be_heard:
+          "Tu veux que je te trouve quelqu’un à l’écoute, un chat calme, ou tu préfères continuer à discuter avec moi ?",
+        deep_talk:
+          "Tu veux que je te trouve un échange plus profond, quelqu’un à l’écoute, ou tu préfères continuer à discuter avec moi ?",
+        meet_someone_similar:
+          "Tu veux que je te trouve quelqu’un dans une humeur proche, ou tu préfères continuer à discuter avec moi ?",
+        playful:
+          "Tu veux que je te trouve quelque chose de léger, ou tu préfères continuer à discuter avec moi ?",
+        default:
+          "Tu veux que je te trouve un chat calme, quelqu’un qui écoute, ou tu préfères continuer à discuter avec moi ?",
+      },
+      nudges: {
+        addPhoto:
+          "Quand tu veux, ajoute une photo dans les [réglages]({url}). Ça aide les gens à faire confiance au profil plus vite.",
+        lookingFor:
+          "Tu peux aussi préciser ce que tu recherches dans les [réglages]({url}) pour que je te guide mieux.",
+        linkEmail:
+          "Et quand tu veux, [lie ton e-mail]({url}) pour garder ton compte.",
+        openSettings:
+          "Tu peux ajuster le reste à tout moment dans les [réglages]({url}).",
+      },
+      choiceLabels: {
+        resume_matching: "Trouve-moi un match",
+        light_chat: "Trouver un chat léger",
+        quiet_company: "Trouver une présence tranquille",
+        deep_chat: "Trouver un échange profond",
+        similar: "Trouver quelqu’un de similaire",
+        calm_chat: "Trouver un chat calme",
+        listener: "Trouver quelqu’un à l’écoute",
+        keep_chatting: "Continuer ici",
+        not_now: "Pas maintenant",
+      },
+      filterPills: {
+        online: "🟢 En ligne",
+        offline: "⭕ Hors ligne",
+        ai: "🤖 IA",
+        random: "🎲 Aléatoire",
+      },
+      filterResponses: {
+        online:
+          "Je t’affiche les profils en ligne dans ta liste de chat — appuie sur un nom pour commencer à discuter. Tu peux changer de filtre en haut de la liste à tout moment.{emailLink}",
+        offline:
+          "Je t’affiche les profils hors ligne — ils mettent parfois un peu plus de temps à répondre, mais c’est parfois un meilleur fit. Appuie sur un nom pour tenter le contact. Tu peux changer de filtre en haut de la liste à tout moment.{emailLink}",
+        ai:
+          "Je t’affiche les options de chat IA — disponibles à tout moment, sans attente. Appuie sur un nom pour commencer. Tu peux changer de filtre en haut de la liste à tout moment.",
+        random:
+          "Je t’ai choisi quelqu’un — regarde en haut de ta liste de chat et appuie sur son nom pour lui dire bonjour.{emailLink}",
+      },
+      matchedResponses: {
+        calm_chat:
+          "C’est fait. Je t’ai affiché des chats plus calmes qui collent à ton humeur. Choisis un filtre pour parcourir :",
+        light_chat:
+          "C’est fait. Je t’ai préparé des options plus légères. Choisis un filtre pour parcourir :",
+        quiet_company:
+          "C’est fait. Je t’ai trouvé une présence tranquille qui colle à là où tu en es. Choisis un filtre pour parcourir :",
+        listener:
+          "C’est fait. Je t’ai trouvé de bonnes personnes à l’écoute. Choisis un filtre pour parcourir :",
+        deep_chat:
+          "C’est fait. Je t’ai trouvé des personnes partantes pour une conversation plus profonde. Choisis un filtre pour parcourir :",
+        similar:
+          "C’est fait. Je t’ai trouvé des personnes avec un vibe similaire en ce moment. Choisis un filtre pour parcourir :",
+      },
+    },
+    ru: {
+      directChoicePrompt: "Без проблем. Выберите то, что сейчас ближе всего.",
+      gotIt: "Понял.",
+      saveOk: "Отлично. Я могу помочь дальше.",
+      saveFailed: "Сейчас не удалось это сохранить, но мы можем продолжить общение.",
+      skip: "Без проблем. Мы сможем понять ваш вайб позже.",
+      resetPrompt: "Хорошо, опишите своё состояние ещё раз своими словами.",
+      confirmTemplate: (description) =>
+        `Похоже, вам нужно ${description}. Это так?`,
+      closerTemplate: (description) =>
+        `Может быть, это ближе: ${description}. Так точнее?`,
+      soundRightTemplate: (description) =>
+        `Это похоже на ${description}?`,
+      autoMatch: {
+        be_heard:
+          "Готово. Я нашёл вам хороших собеседников, которые умеют слушать. Выберите фильтр для просмотра:",
+        distract_me:
+          "Готово. Я подобрал вам более лёгкие варианты. Выберите фильтр для просмотра:",
+        deep_talk:
+          "Готово. Я нашёл людей, готовых к более глубокому разговору. Выберите фильтр для просмотра:",
+        meet_someone_similar:
+          "Готово. Я нашёл людей с похожим вайбом прямо сейчас. Выберите фильтр для просмотра:",
+        emotionalListener:
+          "Готово. Я нашёл вам хороших собеседников, которые умеют слушать. Выберите фильтр для просмотра:",
+        default:
+          "Готово. Я нашёл спокойные чаты под ваше настроение. Выберите фильтр для просмотра:",
+      },
+      nextStepPrompt: {
+        distract_me:
+          "Хотите, чтобы я нашёл что-то лёгкое, тихую компанию или просто продолжим общаться здесь?",
+        be_heard:
+          "Хотите, чтобы я нашёл того, кто выслушает, спокойный чат, или просто продолжим общаться здесь?",
+        deep_talk:
+          "Хотите, чтобы я нашёл более глубокий разговор, того, кто выслушает, или просто продолжим общаться здесь?",
+        meet_someone_similar:
+          "Хотите, чтобы я нашёл человека с похожим настроением, или просто продолжим общаться здесь?",
+        playful:
+          "Хотите, чтобы я нашёл что-то лёгкое, или просто продолжим общаться здесь?",
+        default:
+          "Хотите, чтобы я нашёл спокойный чат, того, кто выслушает, или просто продолжим общаться здесь?",
+      },
+      nudges: {
+        addPhoto:
+          "Когда захотите, добавьте фото в [настройках]({url}). Так люди быстрее доверяют профилю.",
+        lookingFor:
+          "Вы также можете указать, что ищете, в [настройках]({url}), чтобы я лучше вас направлял.",
+        linkEmail:
+          "И когда будете готовы, [привяжите e-mail]({url}), чтобы сохранить аккаунт.",
+        openSettings:
+          "Остальное можно в любой момент настроить в [настройках]({url}).",
+      },
+      choiceLabels: {
+        resume_matching: "Найди мне match",
+        light_chat: "Найти лёгкий чат",
+        quiet_company: "Найти тихую компанию",
+        deep_chat: "Найти глубокий разговор",
+        similar: "Найти похожего человека",
+        calm_chat: "Найти спокойный чат",
+        listener: "Найти того, кто выслушает",
+        keep_chatting: "Продолжить здесь",
+        not_now: "Не сейчас",
+      },
+      filterPills: {
+        online: "🟢 Онлайн",
+        offline: "⭕ Офлайн",
+        ai: "🤖 ИИ",
+        random: "🎲 Случайно",
+      },
+      filterResponses: {
+        online:
+          "Показываю онлайн-совпадения в вашем списке чатов — нажмите на имя, чтобы начать разговор. Вы можете менять фильтры вверху списка в любой момент.{emailLink}",
+        offline:
+          "Показываю офлайн-совпадения — они могут отвечать чуть дольше, но иногда это лучший вариант. Нажмите на имя, чтобы написать. Вы можете менять фильтры вверху списка в любой момент.{emailLink}",
+        ai:
+          "Показываю варианты AI-чата — они доступны всегда и без ожидания. Нажмите на имя, чтобы начать. Вы можете менять фильтры вверху списка в любой момент.",
+        random:
+          "Я уже выбрал кого-то для вас — посмотрите наверху списка чатов и нажмите на имя, чтобы поздороваться.{emailLink}",
+      },
+      matchedResponses: {
+        calm_chat:
+          "Готово. Я подобрал более спокойные чаты под ваше настроение. Выберите фильтр для просмотра:",
+        light_chat:
+          "Готово. Я подобрал более лёгкие варианты. Выберите фильтр для просмотра:",
+        quiet_company:
+          "Готово. Я нашёл тихую компанию, которая подходит вашему состоянию. Выберите фильтр для просмотра:",
+        listener:
+          "Готово. Я нашёл вам хороших собеседников, которые умеют слушать. Выберите фильтр для просмотра:",
+        deep_chat:
+          "Готово. Я нашёл людей, готовых к более глубокому разговору. Выберите фильтр для просмотра:",
+        similar:
+          "Готово. Я нашёл людей с похожим вайбом прямо сейчас. Выберите фильтр для просмотра:",
+      },
+    },
+    zh: {
+      directChoicePrompt: "没关系。选一个现在最贴近你的就好。",
+      gotIt: "明白了。",
+      saveOk: "好，我可以接着帮你。",
+      saveFailed: "这个我暂时还没保存上，不过我们可以继续聊。",
+      skip: "没关系。你的感觉我们之后再慢慢找也可以。",
+      resetPrompt: "好，那你再用自己的话说说你现在的感觉。",
+      confirmTemplate: (description) =>
+        `听起来你更想要的是${description}。是这样吗？`,
+      closerTemplate: (description) =>
+        `也许这个更接近：${description}。这样更对吗？`,
+      soundRightTemplate: (description) =>
+        `${description}这样说对吗？`,
+      autoMatch: {
+        be_heard: "好了。我给你找了一些很会倾听的人。选一个筛选方式看看：",
+        distract_me: "好了。我给你准备了一些更轻松的选项。选一个筛选方式看看：",
+        deep_talk: "好了。我给你找了一些愿意认真深聊的人。选一个筛选方式看看：",
+        meet_someone_similar: "好了。我给你找了一些现在感觉相近的人。选一个筛选方式看看：",
+        emotionalListener: "好了。我给你找了一些很会倾听的人。选一个筛选方式看看：",
+        default: "好了。我给你找了一些更平静、符合你当下心情的聊天。选一个筛选方式看看：",
+      },
+      nextStepPrompt: {
+        distract_me: "要我帮你找点轻松的聊天、安静陪伴，还是先继续跟我聊？",
+        be_heard: "要我帮你找一个愿意听你说的人、一个平静的聊天，还是先继续跟我聊？",
+        deep_talk: "要我帮你找一个更深入的聊天、一个愿意倾听的人，还是先继续跟我聊？",
+        meet_someone_similar: "要我帮你找一个现在感觉相近的人，还是先继续跟我聊？",
+        playful: "要我帮你找点轻松的聊天，还是先继续跟我聊？",
+        default: "要我帮你找一个平静的聊天、一个愿意听你说的人，还是先继续跟我聊？",
+      },
+      nudges: {
+        addPhoto: "你愿意的话，可以去[设置]({url})加一张照片。这样别人会更快信任这个资料。",
+        lookingFor: "你也可以去[设置]({url})补充你想找什么样的人，这样我会更好帮你引导。",
+        linkEmail: "准备好的话，也可以先[绑定邮箱]({url})，这样这个账号就能保留下来。",
+        openSettings: "其余内容你都可以随时去[设置]({url})慢慢调整。",
+      },
+      choiceLabels: {
+        resume_matching: "帮我找人",
+        light_chat: "找点轻松聊天",
+        quiet_company: "找安静陪伴",
+        deep_chat: "找深一点的聊天",
+        similar: "找感觉相近的人",
+        calm_chat: "找平静一点的聊天",
+        listener: "找愿意倾听的人",
+        keep_chatting: "继续在这里聊",
+        not_now: "暂时不用",
+      },
+      filterPills: {
+        online: "🟢 在线",
+        offline: "⭕ 离线",
+        ai: "🤖 AI",
+        random: "🎲 随机",
+      },
+      filterResponses: {
+        online:
+          "我已经把在线匹配显示在你的聊天列表里了，点一个名字就可以开始聊天。你随时都可以在列表顶部切换筛选方式。{emailLink}",
+        offline:
+          "我已经把离线匹配显示出来了，他们回复可能会慢一点，但有时候反而更适合你。点一个名字就可以先发消息。你随时都可以在列表顶部切换筛选方式。{emailLink}",
+        ai:
+          "我已经把 AI 聊天选项显示出来了，随时都能聊，不用等。点一个名字就可以开始。你随时都可以在列表顶部切换筛选方式。",
+        random:
+          "我已经替你挑了一个人，去聊天列表顶部看看，点他的名字就可以打招呼。{emailLink}",
+      },
+      matchedResponses: {
+        calm_chat: "好了。我已经给你调出更平静、符合你当下心情的聊天。选一个筛选方式看看：",
+        light_chat: "好了。我已经给你准备了一些更轻松的选项。选一个筛选方式看看：",
+        quiet_company: "好了。我已经给你找了一些适合你现在状态的安静陪伴。选一个筛选方式看看：",
+        listener: "好了。我已经给你找了一些愿意倾听的人。选一个筛选方式看看：",
+        deep_chat: "好了。我已经给你找了一些愿意认真深聊的人。选一个筛选方式看看：",
+        similar: "好了。我已经给你找了一些现在感觉相近的人。选一个筛选方式看看：",
+      },
+    },
+  };
+  return byLocale[getLiveMoodLocaleCode()] || byLocale.en;
+};
+const getLiveMoodChoiceLabel = (choice) =>
+  getLiveMoodStaticCopy().choiceLabels[String(choice || "").trim()] ||
+  String(choice || "").trim();
+const getLiveMoodFilterPillLabel = (pillId) =>
+  getLiveMoodStaticCopy().filterPills[String(pillId || "").trim()] ||
+  String(pillId || "").trim();
+const getLiveMoodEmailLinkSuffix = (url) => {
+  const variants = {
+    en: ` [Add your email](${url}) so you never miss a reply.`,
+    fr: ` [Ajoute ton e-mail](${url}) pour ne jamais manquer une réponse.`,
+    ru: ` [Добавьте e-mail](${url}), чтобы не пропустить ответы.`,
+    zh: ` [绑定邮箱](${url})，这样你就不会错过任何回复。`,
+  };
+  return variants[getLiveMoodLocaleCode()] || variants.en;
+};
+const MATCH_FILTER_PILL_IDS = ["online", "offline", "ai", "random"];
 const languagePracticePostOnboardingQuickReplies = computed(() => [
   t("onboarding.languagePractice.quickReplies.browsePartners"),
   t("onboarding.languagePractice.quickReplies.answerMoodQuestion"),
@@ -1876,10 +2287,10 @@ const liveMoodNextStepQuickReplies = computed(() => {
       return languagePracticePostOnboardingQuickReplies.value;
     }
     if (draftStore.liveMoodNextStepStage === "dormant") {
-      return ["Find a match"];
+      return [getLiveMoodChoiceLabel("resume_matching")];
     }
     if (draftStore.liveMoodNextStepStage === "matched") {
-      return MATCH_FILTER_PILLS;
+      return MATCH_FILTER_PILL_IDS.map(getLiveMoodFilterPillLabel);
     }
     return getLiveMoodNextStepChoices(draftStore.liveMoodCandidate);
   }
@@ -2110,7 +2521,9 @@ const LIVE_MOOD_DIRECT_HINTS = {
   },
 };
 
-const moodLocaleKey = computed(() => normalizeLocale(locale.value) || "en");
+const moodLocaleKey = computed(
+  () => normalizeLocale(locale.value) || mePreferredLocale.value || "en"
+);
 const canSeeHoneyBots = computed(() => auth.authStatus !== "authenticated");
 
 function normalizeText(value) {
@@ -3133,9 +3546,7 @@ async function onSend(
     selectedPeer &&
     !selectedPeer.is_ai &&
     !sendingToBot &&
-    (selectedPeer.presence === "away" ||
-      selectedPeer.presence === "agent" ||
-      selectedPeer.agent_enabled === true);
+    (selectedPeer.presence === "away" || selectedPeer.presence === "agent");
 
   if (
     isAwayAgentPeer
@@ -3325,10 +3736,60 @@ function capitalizeFirstLetter(value) {
 }
 
 function describeLiveMoodCandidate(candidate = {}) {
+  const copy = getLiveMoodStaticCopy();
+  const emotionLabel = getLocalizedEmotionLabel(candidate.emotion || "");
   const intent = formatChoiceLabel(candidate.intent || "");
   const emotion = formatChoiceLabel(candidate.emotion || "");
   const energy = String(candidate.energy || "").trim().toLowerCase();
 
+  if (getLiveMoodLocaleCode() === "fr") {
+    if (intent === "casual chat" && emotion === "calm") return "un chat calme et simple";
+    if (intent === "be heard" && emotion === "calm") {
+      return energy === "drained"
+        ? "quelqu’un de calme qui t’écoute sans pression"
+        : "quelqu’un de calme qui t’écoute";
+    }
+    if (intent === "be heard" && emotion) return `quelqu’un qui t’écoute pendant que tu te sens ${emotionLabel}`;
+    if (intent === "distract me") return "quelque chose de léger pour te changer les idées";
+    if (intent === "deep talk") return emotion ? `un échange plus profond et ${emotionLabel}` : "un échange plus profond";
+    if (intent === "meet someone similar") return emotion ? `quelqu’un dans une humeur ${emotionLabel} similaire` : "quelqu’un avec un vibe similaire";
+    if (intent === "casual chat") return emotion ? `un chat ${emotionLabel} et sans pression` : "un chat simple et sans pression";
+    if (emotion === "calm") return "un chat calme";
+    if (emotion) return `un échange ${emotionLabel}`;
+    return "quelque chose qui colle à ton vibe";
+  }
+  if (getLiveMoodLocaleCode() === "ru") {
+    if (intent === "casual chat" && emotion === "calm") return "спокойный, ненапряжный чат";
+    if (intent === "be heard" && emotion === "calm") {
+      return energy === "drained"
+        ? "спокойного человека, который выслушает вас без давления"
+        : "спокойного человека, который вас выслушает";
+    }
+    if (intent === "be heard" && emotion) return `того, кто выслушает вас, пока вам ${emotionLabel}`;
+    if (intent === "distract me") return "что-то лёгкое, чтобы отвлечься";
+    if (intent === "deep talk") return emotion ? `более глубокий ${emotionLabel} разговор` : "более глубокий разговор";
+    if (intent === "meet someone similar") return emotion ? `кого-то с похожим ${emotionLabel} настроением` : "кого-то с похожим вайбом";
+    if (intent === "casual chat") return emotion ? `${emotionLabel} лёгкий чат` : "лёгкий чат";
+    if (emotion === "calm") return "спокойный чат";
+    if (emotion) return `${emotionLabel} общение`;
+    return "что-то, что подходит вашему состоянию";
+  }
+  if (getLiveMoodLocaleCode() === "zh") {
+    if (intent === "casual chat" && emotion === "calm") return "一个平静、轻松的聊天";
+    if (intent === "be heard" && emotion === "calm") {
+      return energy === "drained"
+        ? "一个安静听你说、没有压力的人"
+        : "一个安静愿意听你说的人";
+    }
+    if (intent === "be heard" && emotion) return `一个在你觉得${emotionLabel}时愿意听你说的人`;
+    if (intent === "distract me") return "一些轻松的聊天，帮你转移一下注意力";
+    if (intent === "deep talk") return emotion ? `一次更深入、偏${emotionLabel}的聊天` : "一次更深入的聊天";
+    if (intent === "meet someone similar") return emotion ? `一个现在感觉也${emotionLabel}的人` : "一个现在感觉和你相近的人";
+    if (intent === "casual chat") return emotion ? `一个${emotionLabel}、轻松的聊天` : "一个轻松的聊天";
+    if (emotion === "calm") return "一个平静的聊天";
+    if (emotion) return `一个更${emotionLabel}一点的聊天`;
+    return "一种更适合你现在感觉的聊天";
+  }
   if (intent === "casual chat" && emotion === "calm") {
     return "a calm, casual chat";
   }
@@ -3358,9 +3819,40 @@ function describeLiveMoodCandidate(candidate = {}) {
 }
 
 function getLiveMoodAcknowledgment(candidate = {}) {
+  const copy = getLiveMoodStaticCopy();
   const intent = formatChoiceLabel(candidate.intent || "").toLowerCase();
   const emotion = formatChoiceLabel(candidate.emotion || "").toLowerCase();
 
+  if (getLiveMoodLocaleCode() === "fr") {
+    if (intent === "deep talk") return `${copy.gotIt} Tu veux quelque chose d’un peu plus profond.`;
+    if (intent === "be heard") return `${copy.gotIt} Tu veux quelqu’un qui sache vraiment écouter.`;
+    if (intent === "distract me") return `${copy.gotIt} Tu veux quelque chose de plus léger maintenant.`;
+    if (intent === "meet someone similar") return `${copy.gotIt} Tu veux quelqu’un dans une humeur proche.`;
+    if (intent === "casual chat" && emotion === "calm") return `${copy.gotIt} Tu veux quelque chose de calme et facile.`;
+    if (intent === "casual chat") return `${copy.gotIt} Tu veux quelque chose de simple et sans pression.`;
+    if (emotion === "calm") return `${copy.gotIt} Tu veux quelque chose de calme.`;
+    return `${copy.gotIt} ${capitalizeFirstLetter(describeLiveMoodCandidate(candidate))}.`;
+  }
+  if (getLiveMoodLocaleCode() === "ru") {
+    if (intent === "deep talk") return `${copy.gotIt} Вам хочется чего-то немного глубже.`;
+    if (intent === "be heard") return `${copy.gotIt} Вам нужен человек, который правда выслушает.`;
+    if (intent === "distract me") return `${copy.gotIt} Сейчас вам хочется чего-то полегче.`;
+    if (intent === "meet someone similar") return `${copy.gotIt} Вам нужен человек с похожим настроением.`;
+    if (intent === "casual chat" && emotion === "calm") return `${copy.gotIt} Вам нужно что-то спокойное и ненапряжное.`;
+    if (intent === "casual chat") return `${copy.gotIt} Вам нужно что-то лёгкое и без давления.`;
+    if (emotion === "calm") return `${copy.gotIt} Вам нужно что-то спокойное.`;
+    return `${copy.gotIt} ${capitalizeFirstLetter(describeLiveMoodCandidate(candidate))}.`;
+  }
+  if (getLiveMoodLocaleCode() === "zh") {
+    if (intent === "deep talk") return `${copy.gotIt} 你现在更想要一点更深入的聊天。`;
+    if (intent === "be heard") return `${copy.gotIt} 你现在更想要一个真正愿意听你说的人。`;
+    if (intent === "distract me") return `${copy.gotIt} 你现在更想来点轻松的。`;
+    if (intent === "meet someone similar") return `${copy.gotIt} 你想找一个现在感觉和你接近的人。`;
+    if (intent === "casual chat" && emotion === "calm") return `${copy.gotIt} 你想要一个平静、轻松的聊天。`;
+    if (intent === "casual chat") return `${copy.gotIt} 你想要一个轻松、没压力的聊天。`;
+    if (emotion === "calm") return `${copy.gotIt} 你想要一点平静。`;
+    return `${copy.gotIt} ${describeLiveMoodCandidate(candidate)}。`;
+  }
   if (intent === "deep talk") {
     return "Got it. You want something a little deeper.";
   }
@@ -3404,7 +3896,7 @@ async function pushLiveMoodDirectChoicePrompt(peer = null) {
     getClarifierLabel("deepChat"),
   ]);
   await pushLiveMoodBotMessage(
-    "No problem. Pick what sounds best right now.",
+    getLiveMoodStaticCopy().directChoicePrompt,
     peer
   );
 }
@@ -3629,6 +4121,17 @@ function normalizeLiveMoodNextStepChoice(text) {
     .replace(/[^\p{L}\p{N}\s]+/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
+  const labelMatches = (choice) =>
+    normalized ===
+    normalizeText(getLiveMoodChoiceLabel(choice));
+  const filterPillMatches = (pillId) =>
+    normalized ===
+    String(getLiveMoodFilterPillLabel(pillId))
+      .trim()
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]+/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
 
   if (normalized === browsePartnersLabel) {
     return "browse_language_partners";
@@ -3639,6 +4142,19 @@ function normalizeLiveMoodNextStepChoice(text) {
   if (normalized === keepChattingLabel) {
     return "keep_chatting";
   }
+  if (labelMatches("resume_matching")) return "resume_matching";
+  if (labelMatches("light_chat")) return "light_chat";
+  if (labelMatches("quiet_company")) return "quiet_company";
+  if (labelMatches("deep_chat")) return "deep_chat";
+  if (labelMatches("similar")) return "similar";
+  if (labelMatches("calm_chat")) return "calm_chat";
+  if (labelMatches("listener")) return "listener";
+  if (labelMatches("keep_chatting")) return "keep_chatting";
+  if (labelMatches("not_now")) return "not_now";
+  if (filterPillMatches("online")) return "filter_online";
+  if (filterPillMatches("offline")) return "filter_offline";
+  if (filterPillMatches("ai")) return "filter_ai";
+  if (filterPillMatches("random")) return "filter_random";
   if (
     normalized === "find a match" ||
     normalized === "find match" ||
@@ -3700,66 +4216,70 @@ function normalizeLiveMoodNextStepChoice(text) {
 }
 
 function getLiveMoodNextStepChoices(candidate = null) {
+  const label = (choice) => getLiveMoodChoiceLabel(choice);
   const intent = String(candidate?.intent || "").trim().toLowerCase();
   const emotion = String(candidate?.emotion || "").trim().toLowerCase();
-  const base = ["Keep chatting", "Not now"];
+  const base = [label("keep_chatting"), label("not_now")];
 
   if (intent === "distract_me") {
-    return ["Find light chat", "Find quiet company", ...base];
+    return [label("light_chat"), label("quiet_company"), ...base];
   }
   if (intent === "be_heard") {
-    return ["Find someone to listen", "Find a calm chat", ...base];
+    return [label("listener"), label("calm_chat"), ...base];
   }
   if (intent === "deep_talk") {
-    return ["Find deep chat", "Find someone to listen", ...base];
+    return [label("deep_chat"), label("listener"), ...base];
   }
   if (intent === "meet_someone_similar") {
-    return ["Find someone similar", "Keep chatting", "Not now"];
+    return [label("similar"), label("keep_chatting"), label("not_now")];
   }
   if (emotion === "bored" || emotion === "playful") {
-    return ["Find light chat", "Keep chatting", "Not now"];
+    return [label("light_chat"), label("keep_chatting"), label("not_now")];
   }
   if (emotion === "sad" || emotion === "lonely" || emotion === "annoyed") {
-    return ["Find someone to listen", "Find a calm chat", ...base];
+    return [label("listener"), label("calm_chat"), ...base];
   }
-  return ["Find a calm chat", "Find someone to listen", ...base];
+  return [label("calm_chat"), label("listener"), ...base];
 }
 
 function getAutoMatchMessage(candidate = null) {
+  const copy = getLiveMoodStaticCopy();
   const intent = String(candidate?.intent || "").trim().toLowerCase();
   const emotion = String(candidate?.emotion || "").trim().toLowerCase();
 
-  if (intent === "be_heard") return "Done. I've found some good listeners for you. Pick a filter to browse:";
-  if (intent === "distract_me" || emotion === "bored" || emotion === "playful") return "Done. I've lined up some lighter options for you. Pick a filter to browse:";
-  if (intent === "deep_talk") return "Done. I've found some people up for a deeper conversation. Pick a filter to browse:";
-  if (intent === "meet_someone_similar") return "Done. I've found some people with a similar vibe right now. Pick a filter to browse:";
-  if (emotion === "sad" || emotion === "lonely" || emotion === "annoyed") return "Done. I've found some good listeners for you. Pick a filter to browse:";
-  return "Done. I've found some calm chats that fit your mood. Pick a filter to browse:";
+  if (intent === "be_heard") return copy.autoMatch.be_heard;
+  if (intent === "distract_me" || emotion === "bored" || emotion === "playful") return copy.autoMatch.distract_me;
+  if (intent === "deep_talk") return copy.autoMatch.deep_talk;
+  if (intent === "meet_someone_similar") return copy.autoMatch.meet_someone_similar;
+  if (emotion === "sad" || emotion === "lonely" || emotion === "annoyed") return copy.autoMatch.emotionalListener;
+  return copy.autoMatch.default;
 }
 
 function getLiveMoodNextStepPrompt(candidate = null) {
+  const copy = getLiveMoodStaticCopy();
   const intent = String(candidate?.intent || "").trim().toLowerCase();
   const emotion = String(candidate?.emotion || "").trim().toLowerCase();
 
   if (intent === "distract_me") {
-    return "Want me to find something light, some quiet company, or just keep chatting with me?";
+    return copy.nextStepPrompt.distract_me;
   }
   if (intent === "be_heard") {
-    return "Want me to find someone to listen, a calm chat, or just keep chatting with me?";
+    return copy.nextStepPrompt.be_heard;
   }
   if (intent === "deep_talk") {
-    return "Want me to find a deeper chat, someone to listen, or just keep chatting with me?";
+    return copy.nextStepPrompt.deep_talk;
   }
   if (intent === "meet_someone_similar") {
-    return "Want me to find someone in a similar mood, or just keep chatting with me?";
+    return copy.nextStepPrompt.meet_someone_similar;
   }
   if (emotion === "bored" || emotion === "playful") {
-    return "Want me to find something light, or just keep chatting with me?";
+    return copy.nextStepPrompt.playful;
   }
-  return "Want me to find a calm chat, someone who'll listen, or just keep chatting with me?";
+  return copy.nextStepPrompt.default;
 }
 
 function consumeLiveMoodNudge() {
+  const copy = getLiveMoodStaticCopy();
   const nudges =
     draftStore.liveMoodNudges && typeof draftStore.liveMoodNudges === "object"
       ? { ...draftStore.liveMoodNudges }
@@ -3775,25 +4295,25 @@ function consumeLiveMoodNudge() {
   if (nudges.nudge_add_photo) {
     nudges.nudge_add_photo = false;
     draftStore.setField?.("liveMoodNudges", nudges);
-    return `When you want, add a photo in [settings](${settingsUrl}). It helps people trust the profile faster.`;
+    return copy.nudges.addPhoto.replace("{url}", settingsUrl);
   }
 
   if (nudges.nudge_set_looking_for) {
     nudges.nudge_set_looking_for = false;
     draftStore.setField?.("liveMoodNudges", nudges);
-    return `You can also set what you're looking for in [settings](${settingsUrl}) so I can guide you better.`;
+    return copy.nudges.lookingFor.replace("{url}", settingsUrl);
   }
 
   if (nudges.nudge_link_email) {
     nudges.nudge_link_email = false;
     draftStore.setField?.("liveMoodNudges", nudges);
-    return `And when you're ready, [link your email](${linkEmailUrl}) so you can keep the account.`;
+    return copy.nudges.linkEmail.replace("{url}", linkEmailUrl);
   }
 
   if (nudges.nudge_open_settings) {
     nudges.nudge_open_settings = false;
     draftStore.setField?.("liveMoodNudges", nudges);
-    return `You can tweak the rest anytime in [settings](${settingsUrl}).`;
+    return copy.nudges.openSettings.replace("{url}", settingsUrl);
   }
 
   return null;
@@ -3866,8 +4386,8 @@ async function finalizeLiveMoodChoice(candidate, peer = null, acknowledgment = n
   await pushLiveMoodBotMessage(
     acknowledgment ||
       (ok
-        ? "Perfect. I can help from here."
-        : "I couldn't save that just yet, but we can keep chatting."),
+        ? getLiveMoodStaticCopy().saveOk
+        : getLiveMoodStaticCopy().saveFailed),
     peer
   );
 
@@ -3906,7 +4426,7 @@ async function handleLiveMoodCaptureMessage(text, { peerId = null, peer = null }
     resetLiveMoodRefinementCount();
     draftStore.setField?.("liveMoodNextStepStage", "done");
     await pushLiveMoodBotMessage(
-      "No problem. We can figure out your vibe later.",
+      getLiveMoodStaticCopy().skip,
       peer
     );
     return true;
@@ -3919,7 +4439,9 @@ async function handleLiveMoodCaptureMessage(text, { peerId = null, peer = null }
     draftStore.setField?.("liveMoodStage", "confirm");
     resetLiveMoodRefinementCount();
     await pushLiveMoodBotMessage(
-      `It sounds like you want ${describeLiveMoodCandidate(candidate)}. Is that right?`,
+      getLiveMoodStaticCopy().confirmTemplate(
+        describeLiveMoodCandidate(candidate)
+      ),
       peer
     );
     return true;
@@ -3978,7 +4500,9 @@ async function handleLiveMoodCaptureMessage(text, { peerId = null, peer = null }
       draftStore.setField?.("liveMoodInput", String(text || "").trim());
       draftStore.setField?.("liveMoodCandidate", directCandidate);
       await pushLiveMoodBotMessage(
-        `Maybe this is closer: ${describeLiveMoodCandidate(directCandidate)}. Does that fit better?`,
+        getLiveMoodStaticCopy().closerTemplate(
+          describeLiveMoodCandidate(directCandidate)
+        ),
         peer
       );
       return true;
@@ -3997,7 +4521,9 @@ async function handleLiveMoodCaptureMessage(text, { peerId = null, peer = null }
     }
     draftStore.setField?.("liveMoodCandidate", candidate);
     await pushLiveMoodBotMessage(
-      `Maybe this is closer: ${describeLiveMoodCandidate(candidate)}. Does that fit better?`,
+      getLiveMoodStaticCopy().closerTemplate(
+        describeLiveMoodCandidate(candidate)
+      ),
       peer
     );
     return true;
@@ -4025,7 +4551,9 @@ async function handleLiveMoodCaptureMessage(text, { peerId = null, peer = null }
         draftStore.setField?.("liveMoodClarifierOptions", []);
         draftStore.setField?.("liveMoodStage", "confirm");
         await pushLiveMoodBotMessage(
-          `Does ${describeLiveMoodCandidate(directCandidate)} sound right?`,
+          getLiveMoodStaticCopy().soundRightTemplate(
+            describeLiveMoodCandidate(directCandidate)
+          ),
           peer
         );
         return true;
@@ -4034,7 +4562,9 @@ async function handleLiveMoodCaptureMessage(text, { peerId = null, peer = null }
       draftStore.setField?.("liveMoodClarifierOptions", []);
       draftStore.setField?.("liveMoodStage", "confirm");
       await pushLiveMoodBotMessage(
-        `Maybe this is closer: ${describeLiveMoodCandidate(directCandidate)}. Does that fit better?`,
+        getLiveMoodStaticCopy().closerTemplate(
+          describeLiveMoodCandidate(directCandidate)
+        ),
         peer
       );
       return true;
@@ -4045,7 +4575,7 @@ async function handleLiveMoodCaptureMessage(text, { peerId = null, peer = null }
     draftStore.setField?.("liveMoodCandidate", null);
     resetLiveMoodRefinementCount();
     await pushLiveMoodBotMessage(
-      "Okay, give me your vibe again in your own words.",
+      getLiveMoodStaticCopy().resetPrompt,
       peer
     );
     return true;
@@ -4130,33 +4660,44 @@ async function handleLiveMoodNextStepMessage(text, { peerId = null, peer = null 
 
     const isAnon = auth.authStatus === "anon_authenticated";
     const emailLink = isAnon
-      ? ` [Add your email](${localePath({ path: "/settings", query: { linkEmail: "1" } })}) so you never miss a reply.`
+      ? getLiveMoodEmailLinkSuffix(
+          localePath({ path: "/settings", query: { linkEmail: "1" } })
+        )
       : "";
 
-    if (pill === "🟢 Online") {
+    if (pill === getLiveMoodFilterPillLabel("online")) {
       setMatchFilter("online");
       await pushLiveMoodBotMessage(
-        `Showing online matches in your chat list — tap any name to start chatting. You can switch filters at the top of the list anytime.${emailLink}`,
+        getLiveMoodStaticCopy().filterResponses.online.replace(
+          "{emailLink}",
+          emailLink
+        ),
         peer
       );
-    } else if (pill === "⭕ Offline") {
+    } else if (pill === getLiveMoodFilterPillLabel("offline")) {
       setMatchFilter("offline");
       await pushLiveMoodBotMessage(
-        `Showing offline matches — they may take a little longer to reply, but sometimes that's a better fit. Tap any name to reach out. You can switch filters at the top of your list anytime.${emailLink}`,
+        getLiveMoodStaticCopy().filterResponses.offline.replace(
+          "{emailLink}",
+          emailLink
+        ),
         peer
       );
-    } else if (pill === "🤖 AI") {
+    } else if (pill === getLiveMoodFilterPillLabel("ai")) {
       setMatchFilter("ai");
       await pushLiveMoodBotMessage(
-        "Showing AI chat options — available anytime, no waiting. Tap any name to start. Switch filters at the top of your list anytime.",
+        getLiveMoodStaticCopy().filterResponses.ai,
         peer
       );
-    } else if (pill === "🎲 Random") {
+    } else if (pill === getLiveMoodFilterPillLabel("random")) {
       setMatchFilter("random");
       await new Promise((r) => setTimeout(r, 50));
       setMatchFilter(null);
       await pushLiveMoodBotMessage(
-        `Picked someone for you — check the top of your chat list and tap their name to say hi.${emailLink}`,
+        getLiveMoodStaticCopy().filterResponses.random.replace(
+          "{emailLink}",
+          emailLink
+        ),
         peer
       );
     }
@@ -4185,7 +4726,7 @@ async function handleLiveMoodNextStepMessage(text, { peerId = null, peer = null 
   // Concise confirmation for all "find someone" choices — pill quick replies appear automatically
   if (choice === "calm_chat") {
     await pushLiveMoodBotMessage(
-      "Done. I've pulled up calmer chats that fit your mood. Pick a filter to browse:",
+      getLiveMoodStaticCopy().matchedResponses.calm_chat,
       peer
     );
     return true;
@@ -4193,7 +4734,7 @@ async function handleLiveMoodNextStepMessage(text, { peerId = null, peer = null 
 
   if (choice === "light_chat") {
     await pushLiveMoodBotMessage(
-      "Done. I've lined up some lighter options for you. Pick a filter to browse:",
+      getLiveMoodStaticCopy().matchedResponses.light_chat,
       peer
     );
     return true;
@@ -4201,7 +4742,7 @@ async function handleLiveMoodNextStepMessage(text, { peerId = null, peer = null 
 
   if (choice === "quiet_company") {
     await pushLiveMoodBotMessage(
-      "Done. I've found some quiet company that suits where you're at. Pick a filter to browse:",
+      getLiveMoodStaticCopy().matchedResponses.quiet_company,
       peer
     );
     return true;
@@ -4209,7 +4750,7 @@ async function handleLiveMoodNextStepMessage(text, { peerId = null, peer = null 
 
   if (choice === "listener") {
     await pushLiveMoodBotMessage(
-      "Done. I've found some good listeners for you. Pick a filter to browse:",
+      getLiveMoodStaticCopy().matchedResponses.listener,
       peer
     );
     return true;
@@ -4217,7 +4758,7 @@ async function handleLiveMoodNextStepMessage(text, { peerId = null, peer = null 
 
   if (choice === "deep_chat") {
     await pushLiveMoodBotMessage(
-      "Done. I've found some people up for a deeper conversation. Pick a filter to browse:",
+      getLiveMoodStaticCopy().matchedResponses.deep_chat,
       peer
     );
     return true;
@@ -4225,7 +4766,7 @@ async function handleLiveMoodNextStepMessage(text, { peerId = null, peer = null 
 
   if (choice === "similar") {
     await pushLiveMoodBotMessage(
-      "Done. I've found some people with a similar vibe right now. Pick a filter to browse:",
+      getLiveMoodStaticCopy().matchedResponses.similar,
       peer
     );
     return true;
@@ -4498,7 +5039,9 @@ async function fetchAiResponse(
       userMessage: message,
       userGender: userProfile?.gender ?? null,
       userAge: userProfile?.age ?? null,
-      locale: browserLocale.value,
+      locale:
+        normalizeLocale(userProfile?.preferred_locale) ||
+        browserLocale.value,
       history: safeHistory, // ✅ no .value here
       replyTo: replyToStr ?? null, // ✅ string or null
       capability: capability ?? null,

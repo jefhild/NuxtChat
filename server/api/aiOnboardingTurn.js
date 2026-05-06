@@ -30,6 +30,21 @@ const nameTakenMessage = (locale) =>
     : locale.startsWith("zh")
     ? "这个显示名称已被占用，请换一个。"
     : "That display name is already taken. Try another.";
+const fallbackTurnMessage = (locale, variants) =>
+  locale.startsWith("fr")
+    ? variants.fr
+    : locale.startsWith("ru")
+    ? variants.ru
+    : locale.startsWith("zh")
+    ? variants.zh
+    : variants.en;
+const finishProfileQuickReply = (locale) =>
+  fallbackTurnMessage(locale, {
+    en: "Finish profile",
+    fr: "Terminer le profil",
+    ru: "Завершить профиль",
+    zh: "完成资料",
+  });
 
 async function isDisplayNameTaken(supa, value) {
   if (!supa) return false;
@@ -88,9 +103,12 @@ export default defineEventHandler(async (event) => {
   if (!lastMsg) {
     return {
       ok: true,
-      utterance: locale.startsWith("fr")
-        ? "Peux-tu m’en dire un peu plus pour compléter ton profil ?"
-        : "Could you share a bit more so we can complete your profile?",
+      utterance: fallbackTurnMessage(locale, {
+        en: "Could you share a bit more so we can complete your profile?",
+        fr: "Peux-tu m’en dire un peu plus pour compléter ton profil ?",
+        ru: "Можете рассказать чуть подробнее, чтобы мы завершили ваш профиль?",
+        zh: "可以再多说一点吗？这样我们就能完善你的资料。",
+      }),
       quickReplies: [],
       extracted: {},
     };
@@ -102,13 +120,19 @@ export default defineEventHandler(async (event) => {
       ok: true,
       utterance:
         stage === "final"
-          ? locale.startsWith("fr")
-            ? "Parfait. Dis-moi si tout est correct, puis termine ton profil."
-            : "Great. If everything looks good, you can finish your profile."
-          : locale.startsWith("fr")
-          ? "Merci ! Pouvons-nous compléter les infos manquantes ?"
-          : "Thanks! Let’s fill in the remaining details.",
-      quickReplies: stage === "final" ? ["Finish profile"] : [],
+          ? fallbackTurnMessage(locale, {
+              en: "Great. If everything looks good, you can finish your profile.",
+              fr: "Parfait. Dis-moi si tout est correct, puis termine ton profil.",
+              ru: "Отлично. Если всё выглядит правильно, можете завершить профиль.",
+              zh: "很好。如果一切看起来都没问题，你就可以完成资料了。",
+            })
+          : fallbackTurnMessage(locale, {
+              en: "Thanks! Let’s fill in the remaining details.",
+              fr: "Merci ! Pouvons-nous compléter les infos manquantes ?",
+              ru: "Спасибо! Давайте заполним оставшиеся данные.",
+              zh: "谢谢！我们把剩下的信息补完吧。",
+            }),
+      quickReplies: stage === "final" ? [finishProfileQuickReply(locale)] : [],
       extracted: {},
     };
   }
@@ -128,7 +152,7 @@ CONTEXT:
 STRICT RULES:
 1) Be short, warm, and ask ONE focused question per turn during "collect".
 2) Do NOT propose button options (quickReplies) during "collect". They must be empty [].
-3) During "final", you MAY provide exactly one quick reply: ["Finish profile"] and nothing else.
+3) During "final", you MAY provide exactly one localized quick reply that means "Finish profile".
 4) Never infer gender. Only set gender_id if the user's last message clearly states gender.
    Map: male→1, female→2, other/nonbinary→3.
 5) For age, ask for a single integer 18–120. Do not mention numeric ranges in the user-facing message. If extracting age, ensure it is an integer 18–120.
@@ -139,7 +163,7 @@ OUTPUT FORMAT:
 - "utterance": next assistant message (localized to ${locale}).
 - "quickReplies": 
      - [] for "collect"
-     - ["Finish profile"] for "final"
+     - one localized quick reply that means "Finish profile" for "final"
 - "extracted": any fields confidently parsed from the user's LAST message only.
 `;
 
@@ -167,7 +191,7 @@ OUTPUT FORMAT:
                 type: "array",
                 items: { type: "string" },
                 description:
-                  'Must be [] in "collect"; exactly ["Finish profile"] in "final".',
+                  'Must be [] in "collect"; in "final" provide one localized quick reply that means "Finish profile".',
               },
               extracted: {
                 type: "object",
@@ -204,13 +228,19 @@ OUTPUT FORMAT:
         ok: true,
         utterance:
           stage === "final"
-            ? locale.startsWith("fr")
-              ? "Parfait. Si tout est OK, termine ton profil."
-              : "Great. If everything looks good, you can finish your profile."
-            : locale.startsWith("fr")
-            ? "Peux-tu préciser pour que je complète ton profil ?"
-            : "Could you clarify so I can complete your profile?",
-        quickReplies: stage === "final" ? ["Finish profile"] : [],
+            ? fallbackTurnMessage(locale, {
+                en: "Great. If everything looks good, you can finish your profile.",
+                fr: "Parfait. Si tout est OK, termine ton profil.",
+                ru: "Отлично. Если всё в порядке, можете завершить профиль.",
+                zh: "很好。如果一切都没问题，你就可以完成资料了。",
+              })
+            : fallbackTurnMessage(locale, {
+                en: "Could you clarify so I can complete your profile?",
+                fr: "Peux-tu préciser pour que je complète ton profil ?",
+                ru: "Можете уточнить, чтобы я завершил ваш профиль?",
+                zh: "可以再具体一点吗？这样我就能帮你完成资料。",
+              }),
+        quickReplies: stage === "final" ? [finishProfileQuickReply(locale)] : [],
         extracted: {},
       };
     }
@@ -225,7 +255,7 @@ OUTPUT FORMAT:
     // Enforce quickReplies policy server-side too, just in case
     let qr = Array.isArray(args.quickReplies) ? args.quickReplies : [];
     if (stage === "collect") qr = [];
-    else if (stage === "final") qr = ["Finish profile"];
+    else if (stage === "final") qr = [finishProfileQuickReply(locale)];
 
     let extracted = args.extracted || {};
     if (extracted.displayname) {
@@ -251,8 +281,18 @@ OUTPUT FORMAT:
       utterance:
         args.utterance ||
         (stage === "final"
-          ? "Great. If everything looks good, you can finish your profile."
-          : "Thanks! Let’s fill in the remaining details."),
+          ? fallbackTurnMessage(locale, {
+              en: "Great. If everything looks good, you can finish your profile.",
+              fr: "Parfait. Si tout est OK, termine ton profil.",
+              ru: "Отлично. Если всё выглядит правильно, можете завершить профиль.",
+              zh: "很好。如果一切看起来都没问题，你就可以完成资料了。",
+            })
+          : fallbackTurnMessage(locale, {
+              en: "Thanks! Let’s fill in the remaining details.",
+              fr: "Merci ! Pouvons-nous compléter les infos manquantes ?",
+              ru: "Спасибо! Давайте заполним оставшиеся данные.",
+              zh: "谢谢！我们把剩下的信息补完吧。",
+            })),
       quickReplies: qr,
       extracted,
     };
@@ -261,9 +301,19 @@ OUTPUT FORMAT:
       ok: true,
       utterance:
         stage === "final"
-          ? "Great. If everything looks good, you can finish your profile."
-          : "Could you share a bit more so we can complete your profile?",
-      quickReplies: stage === "final" ? ["Finish profile"] : [],
+          ? fallbackTurnMessage(locale, {
+              en: "Great. If everything looks good, you can finish your profile.",
+              fr: "Parfait. Si tout est OK, termine ton profil.",
+              ru: "Отлично. Если всё выглядит правильно, можете завершить профиль.",
+              zh: "很好。如果一切看起来都没问题，你就可以完成资料了。",
+            })
+          : fallbackTurnMessage(locale, {
+              en: "Could you share a bit more so we can complete your profile?",
+              fr: "Peux-tu m’en dire un peu plus pour compléter ton profil ?",
+              ru: "Можете рассказать чуть подробнее, чтобы мы завершили ваш профиль?",
+              zh: "可以再多说一点吗？这样我们就能完善你的资料。",
+            }),
+      quickReplies: stage === "final" ? [finishProfileQuickReply(locale)] : [],
       extracted: {},
     };
   }

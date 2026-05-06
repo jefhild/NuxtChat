@@ -1987,6 +1987,7 @@
     "finalizingTitle": "Creating your temporary profile…",
     "finalizingBody": "While we create your temporary profile, we're also finding someone to help you get started with chat. Hold on…",
     "handoffFallbackMessage": "Hey {display}, welcome! Feel free to start chatting.",
+    "postSignupGeneralOpener": "Hey {name}, I'm {personaName}. Your profile is live, so you can start browsing and chatting right now. Or if you want, answer one quick question and I'll find people who actually match your vibe. {moodPrompt}",
     "typing": "Typing…",
     "finishProfileNotice": "Finish your profile to message people.",
     "consentNotice": "Please consent to our terms, and start chatting.",

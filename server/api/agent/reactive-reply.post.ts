@@ -20,6 +20,13 @@ const normalizeUserId = (value: unknown) => {
   return id || null;
 };
 
+const logReactiveReply = (
+  stage: string,
+  details: Record<string, unknown> = {}
+) => {
+  console.info("[agent/reactive-reply]", stage, details);
+};
+
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event);
   if (!user?.id) {
@@ -35,9 +42,25 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  logReactiveReply("received", {
+    senderUserId: user.id,
+    agentUserId,
+  });
+
   const supabase = await getServiceRoleClient(event);
   const runtimeConfig = useRuntimeConfig(event);
-  if (await isAgentOwnerAvailable(supabase, agentUserId)) {
+  const ownerAvailable = await isAgentOwnerAvailable(supabase, agentUserId);
+  logReactiveReply("availability_checked", {
+    senderUserId: user.id,
+    agentUserId,
+    ownerAvailable,
+  });
+  if (ownerAvailable) {
+    logReactiveReply("skipped", {
+      senderUserId: user.id,
+      agentUserId,
+      reason: "agent_owner_online",
+    });
     return { ok: true, skipped: "agent_owner_online" };
   }
 
@@ -52,6 +75,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: agentProfileError.message });
   }
   if (!agentProfile?.id) {
+    logReactiveReply("skipped", {
+      senderUserId: user.id,
+      agentUserId,
+      reason: "agent_disabled",
+    });
     return { ok: true, skipped: "agent_disabled" };
   }
 
@@ -72,11 +100,36 @@ export default defineEventHandler(async (event) => {
   ]);
 
   if (!config) {
+    logReactiveReply("skipped", {
+      senderUserId: user.id,
+      agentUserId,
+      agentProfileId: agentProfile.id,
+      reason: "agent_config_disabled",
+    });
     return { ok: true, skipped: "agent_config_disabled" };
   }
 
+  logReactiveReply("config_loaded", {
+    senderUserId: user.id,
+    agentUserId,
+    agentProfileId: agentProfile.id,
+    firstAutoReplyConfigured: Boolean(
+      config.first_auto_reply_template?.trim()
+    ),
+    maxExchangesPerConversation: config.max_exchanges_per_conversation ?? 5,
+    maxConversationsPerSession:
+      clampAwayAgentConversationLimit(config.max_conversations_per_session),
+    targetLocale: targetProfile?.preferred_locale ?? null,
+  });
+
   const log = await getOrCreateConversationLog(supabase, agentProfile.id, user.id);
   if (!log) {
+    logReactiveReply("skipped", {
+      senderUserId: user.id,
+      agentUserId,
+      agentProfileId: agentProfile.id,
+      reason: "conversation_log_unavailable",
+    });
     return { ok: false, skipped: "conversation_log_unavailable" };
   }
 
@@ -84,6 +137,14 @@ export default defineEventHandler(async (event) => {
     (log.exchange_count ?? 0) >=
     (config.max_exchanges_per_conversation ?? 5)
   ) {
+    logReactiveReply("skipped", {
+      senderUserId: user.id,
+      agentUserId,
+      agentProfileId: agentProfile.id,
+      conversationLogId: log.id,
+      exchangeCount: log.exchange_count ?? 0,
+      reason: "conversation_limit_reached",
+    });
     return { ok: true, skipped: "conversation_limit_reached" };
   }
 
@@ -97,6 +158,14 @@ export default defineEventHandler(async (event) => {
     (sessionCount ?? 0) >=
     clampAwayAgentConversationLimit(config.max_conversations_per_session)
   ) {
+    logReactiveReply("skipped", {
+      senderUserId: user.id,
+      agentUserId,
+      agentProfileId: agentProfile.id,
+      conversationLogId: log.id,
+      sessionCount: sessionCount ?? 0,
+      reason: "session_limit_reached",
+    });
     return { ok: true, skipped: "session_limit_reached" };
   }
 
@@ -112,9 +181,34 @@ export default defineEventHandler(async (event) => {
     .maybeSingle();
 
   if (!incoming) {
+    logReactiveReply("skipped", {
+      senderUserId: user.id,
+      agentUserId,
+      agentProfileId: agentProfile.id,
+      conversationLogId: log.id,
+      reason: "no_recent_message",
+      since,
+    });
     return { ok: true, skipped: "no_recent_message" };
   }
+  logReactiveReply("incoming_message_found", {
+    senderUserId: user.id,
+    agentUserId,
+    agentProfileId: agentProfile.id,
+    conversationLogId: log.id,
+    incomingMessageId: incoming.id,
+    incomingCreatedAt: incoming.created_at,
+  });
   if (log.last_replied_message_id && log.last_replied_message_id === incoming.id) {
+    logReactiveReply("skipped", {
+      senderUserId: user.id,
+      agentUserId,
+      agentProfileId: agentProfile.id,
+      conversationLogId: log.id,
+      incomingMessageId: incoming.id,
+      lastRepliedMessageId: log.last_replied_message_id,
+      reason: "already_replied_to_message",
+    });
     return { ok: true, skipped: "already_replied_to_message" };
   }
 
@@ -129,11 +223,27 @@ export default defineEventHandler(async (event) => {
     .maybeSingle();
 
   if (alreadyReplied) {
+    logReactiveReply("skipped", {
+      senderUserId: user.id,
+      agentUserId,
+      agentProfileId: agentProfile.id,
+      conversationLogId: log.id,
+      incomingMessageId: incoming.id,
+      existingReplyId: alreadyReplied.id,
+      reason: "already_replied",
+    });
     return { ok: true, skipped: "already_replied" };
   }
 
   const claimed = await claimAgentReplyLock(supabase, log.id);
   if (!claimed) {
+    logReactiveReply("skipped", {
+      senderUserId: user.id,
+      agentUserId,
+      agentProfileId: agentProfile.id,
+      conversationLogId: log.id,
+      reason: "reply_in_progress",
+    });
     return { ok: true, skipped: "reply_in_progress" };
   }
 
@@ -170,13 +280,36 @@ export default defineEventHandler(async (event) => {
       conversationHistory,
       incoming.content,
       runtimeConfig,
-      languagePracticeContext
+      languagePracticeContext,
+      targetProfile?.preferred_locale ?? null
     );
 
     if (!reply) {
       await clearAgentReplyLock(supabase, log.id);
+      logReactiveReply("skipped", {
+        senderUserId: user.id,
+        agentUserId,
+        agentProfileId: agentProfile.id,
+        conversationLogId: log.id,
+        incomingMessageId: incoming.id,
+        reason: "no_reply_generated",
+      });
       return { ok: true, skipped: "no_reply_generated" };
     }
+
+    logReactiveReply("reply_generated", {
+      senderUserId: user.id,
+      agentUserId,
+      agentProfileId: agentProfile.id,
+      conversationLogId: log.id,
+      incomingMessageId: incoming.id,
+      usedFirstAutoReplyTemplate:
+        Boolean(config.first_auto_reply_template?.trim()) &&
+        !conversationHistory.some(
+          (message) => message.role === "assistant" && message.content?.trim()
+        ),
+      replyPreview: reply.slice(0, 120),
+    });
 
     const sent = await sendAgentMessage(
       supabase,
@@ -192,6 +325,14 @@ export default defineEventHandler(async (event) => {
 
     if (!sent) {
       await clearAgentReplyLock(supabase, log.id);
+      logReactiveReply("skipped", {
+        senderUserId: user.id,
+        agentUserId,
+        agentProfileId: agentProfile.id,
+        conversationLogId: log.id,
+        incomingMessageId: incoming.id,
+        reason: "send_failed",
+      });
       return { ok: false, skipped: "send_failed" };
     }
 
@@ -202,9 +343,22 @@ export default defineEventHandler(async (event) => {
       incoming.id
     );
 
+    logReactiveReply("sent", {
+      senderUserId: user.id,
+      agentUserId,
+      agentProfileId: agentProfile.id,
+      conversationLogId: log.id,
+      incomingMessageId: incoming.id,
+    });
+
     return { ok: true, sent: true };
   } catch (error) {
     await clearAgentReplyLock(supabase, log.id);
+    console.error("[agent/reactive-reply] failed", {
+      senderUserId: user.id,
+      agentUserId,
+      error,
+    });
     throw error;
   }
 });

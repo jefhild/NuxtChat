@@ -801,7 +801,11 @@ if (!allowed) {
           personaName,
           language: targetLanguageName,
         })
-      : `Hey ${display || "there"}, I'm ${personaName}. Your profile is live — you can start browsing and chatting right now. Or if you want, answer one quick question and I'll find people who actually match your vibe. ${moodPrompt}`;
+      : t("onboarding.postSignupGeneralOpener", {
+          name: display || "there",
+          personaName,
+          moodPrompt,
+        });
 
     draft.setField?.("moodFeedStage", "done");
     draft.setField?.("liveMoodStage", hasLanguagePracticeIntent ? "done" : "prompt");

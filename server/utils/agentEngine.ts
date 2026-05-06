@@ -84,7 +84,8 @@ const PRESET_PROMPT_MAP: Record<AgentPromptPreset, string> = {
  */
 export function buildAgentSystemPrompt(
   agentProfile: AgentProfile,
-  config: AgentConfig
+  config: AgentConfig,
+  recipientLocale: string | null = null
 ): string {
   const presetText =
     config.prompt_preset_key === "custom"
@@ -94,6 +95,9 @@ export function buildAgentSystemPrompt(
   const customText = (config.system_prompt_addition || "").trim();
   const bio = (agentProfile.bio || "").trim();
   const name = agentProfile.displayname || "User";
+  const normalizedRecipientLocale = normalizeLocale(recipientLocale);
+  const recipientLanguage =
+    LOCALE_NAME[normalizedRecipientLocale ?? ""] ?? null;
 
   const parts = [
     `You are an away agent acting on behalf of ${name}, a real user who is currently offline.`,
@@ -107,7 +111,9 @@ export function buildAgentSystemPrompt(
     `- Do not discuss sensitive topics, politics, or anything that could be harmful.`,
     `- You are representing ${name}'s profile; stay consistent with their bio and interests.`,
     `- When the conversation hits its limit, end gracefully: "I'll let ${name} continue this when they're back online."`,
-    agentProfile.preferred_locale
+    recipientLanguage
+      ? `- Reply in ${recipientLanguage} so the recipient reads your message naturally.`
+      : agentProfile.preferred_locale
       ? `- Always reply in ${LOCALE_NAME[normalizeLocale(agentProfile.preferred_locale) ?? "en"] ?? "English"} — translation to the recipient's language is handled automatically.`
       : "",
   ]
@@ -126,7 +132,8 @@ export async function generateAgentReply(
   conversationHistory: { role: "user" | "assistant"; content: string }[],
   incomingMessage: string,
   runtimeConfig: any,
-  languagePracticeContext: LanguagePracticeAgentContext | null = null
+  languagePracticeContext: LanguagePracticeAgentContext | null = null,
+  recipientLocale: string | null = null
 ): Promise<string | null> {
   const firstAutoReply = config.first_auto_reply_template?.trim();
   const conversationStartedByOtherUser = !conversationHistory.some(
@@ -139,7 +146,11 @@ export async function generateAgentReply(
   const { client, model } = getOpenAIClient({ runtimeConfig });
   if (!client) return null;
 
-  let systemPrompt = buildAgentSystemPrompt(agentProfile, config);
+  let systemPrompt = buildAgentSystemPrompt(
+    agentProfile,
+    config,
+    recipientLocale
+  );
   if (languagePracticeContext?.target_language_code) {
     const targetLanguage =
       LOCALE_NAME[normalizeLocale(languagePracticeContext.target_language_code) ?? ""] ??
@@ -231,7 +242,7 @@ export async function loadLanguagePracticeAgentContext(
 export async function generateAgentGreeting(
   agentProfile: AgentProfile,
   config: AgentConfig,
-  targetProfile: { displayname: string; bio: string | null },
+  targetProfile: { displayname: string; bio: string | null; preferred_locale?: string | null },
   runtimeConfig: any
 ): Promise<string | null> {
   // Use the greeting template if set, otherwise generate one
@@ -242,7 +253,11 @@ export async function generateAgentGreeting(
   const { client, model } = getOpenAIClient({ runtimeConfig });
   if (!client) return null;
 
-  const systemPrompt = buildAgentSystemPrompt(agentProfile, config);
+  const systemPrompt = buildAgentSystemPrompt(
+    agentProfile,
+    config,
+    targetProfile.preferred_locale ?? null
+  );
   const targetBio = targetProfile.bio
     ? ` Their profile says: "${targetProfile.bio}"`
     : "";
@@ -510,7 +525,11 @@ export async function greetTargetUser(
   const greeting = await generateAgentGreeting(
     agentProfile,
     agent,
-    { displayname: targetProfile.displayname, bio: targetProfile.bio },
+    {
+      displayname: targetProfile.displayname,
+      bio: targetProfile.bio,
+      preferred_locale: targetProfile.preferred_locale ?? null,
+    },
     runtimeConfig
   );
   if (!greeting) return false;

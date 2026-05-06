@@ -158,7 +158,8 @@ export default {
           conversationHistory,
           incoming.content,
           runtimeConfig,
-          languagePracticeContext
+          languagePracticeContext,
+          targetProfile?.preferred_locale ?? null
         );
 
         if (!reply) {

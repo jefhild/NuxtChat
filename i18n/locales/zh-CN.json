@@ -1965,6 +1965,7 @@
     "finalizingTitle": "正在创建你的临时资料…",
     "finalizingBody": "在创建你的临时资料的同时，我们也在寻找一位能帮你开始聊天的人。请稍等…",
     "handoffFallbackMessage": "嗨 {display}，欢迎！随时可以开始聊天。",
+    "postSignupGeneralOpener": "嗨，{name}，我是 {personaName}。你的个人资料已经创建好了，现在就可以开始浏览和聊天。如果你愿意，也可以先回答一个简短问题，我会帮你找到更合你感觉的人。{moodPrompt}",
     "typing": "正在输入…",
     "finishProfileNotice": "完成资料后即可发送消息。",
     "consentNotice": "请同意条款，然后开始聊天。",

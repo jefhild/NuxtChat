@@ -151,10 +151,18 @@
             <template v-if="props.isEditable">
               <button
                 type="button"
+                class="ui-settings-btn ui-settings-btn--primary"
+                :disabled="!props.isDirty"
+                @click="emit('save')"
+              >
+                {{ t("components.profile-container.save") }}
+              </button>
+              <button
+                type="button"
                 class="ui-settings-btn ui-settings-btn--secondary"
                 @click="emit('cancelEdit')"
               >
-                Cancel
+                {{ t("components.profile-container.cancel") }}
               </button>
             </template>
             <template v-else>
