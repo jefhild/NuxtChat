@@ -54,6 +54,8 @@ export interface ConversationLog {
   room_id: string | null;
   exchange_count: number;
   status: string;
+  started_at?: string | null;
+  ended_at?: string | null;
   reply_lock_until?: string | null;
   last_replied_message_id?: string | null;
 }
@@ -64,6 +66,31 @@ export interface LanguagePracticeAgentContext {
   target_language_level: string | null;
   correction_preference: string | null;
   language_exchange_mode: string | null;
+}
+
+export const OPEN_AGENT_CONVERSATION_STATUSES = [
+  "active",
+  "pending_reply",
+] as const;
+
+const PENDING_REPLY_ANON_TTL_HOURS = 6;
+const PENDING_REPLY_REGISTERED_TTL_HOURS = 24;
+const ACTIVE_ANON_IDLE_TTL_HOURS = 24;
+const ACTIVE_REGISTERED_IDLE_TTL_HOURS = 72;
+
+function isAnonymousProvider(value: unknown): boolean {
+  return String(value || "").trim().toLowerCase() === "anonymous";
+}
+
+function hoursToMs(hours: number): number {
+  return hours * 60 * 60 * 1000;
+}
+
+function isExpiredIsoDate(value: unknown, ttlMs: number): boolean {
+  if (!value) return false;
+  const timestamp = Date.parse(String(value));
+  if (!Number.isFinite(timestamp)) return false;
+  return Date.now() - timestamp > ttlMs;
 }
 
 // Preset prompt additions injected into the system prompt
@@ -189,7 +216,7 @@ export async function claimAgentReplyLock(
     .from("agent_conversation_log")
     .update({ reply_lock_until: lockUntil })
     .eq("id", logId)
-    .eq("status", "active")
+    .in("status", [...OPEN_AGENT_CONVERSATION_STATUSES])
     .or(`reply_lock_until.is.null,reply_lock_until.lt.${now.toISOString()}`)
     .select("id")
     .maybeSingle();
@@ -342,17 +369,44 @@ export async function sendAgentMessage(
 export async function getOrCreateConversationLog(
   supabase: any,
   agentProfileId: string,
-  targetUserId: string
+  targetUserId: string,
+  options?: {
+    initialStatus?: "active" | "pending_reply";
+    promotePendingToActive?: boolean;
+  }
 ): Promise<ConversationLog | null> {
+  const initialStatus = options?.initialStatus || "active";
+  const promotePendingToActive = options?.promotePendingToActive !== false;
   const { data: existing } = await supabase
     .from("agent_conversation_log")
     .select("*")
     .eq("agent_profile_id", agentProfileId)
     .eq("target_user_id", targetUserId)
-    .eq("status", "active")
+    .in("status", [...OPEN_AGENT_CONVERSATION_STATUSES])
+    .order("started_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
-  if (existing) return existing;
+  if (existing) {
+    if (existing.status === "pending_reply" && promotePendingToActive && initialStatus === "active") {
+      const { data: promoted, error: promoteError } = await supabase
+        .from("agent_conversation_log")
+        .update({
+          status: "active",
+          ended_at: null,
+        })
+        .eq("id", existing.id)
+        .select("*")
+        .maybeSingle();
+
+      if (promoteError) {
+        console.error("[agentEngine] promoteConversationLog error:", promoteError.message);
+        return existing;
+      }
+      return promoted || existing;
+    }
+    return existing;
+  }
 
   const { data: created, error } = await supabase
     .from("agent_conversation_log")
@@ -360,7 +414,7 @@ export async function getOrCreateConversationLog(
       agent_profile_id: agentProfileId,
       target_user_id: targetUserId,
       exchange_count: 0,
-      status: "active",
+      status: initialStatus,
     })
     .select("*")
     .maybeSingle();
@@ -370,6 +424,116 @@ export async function getOrCreateConversationLog(
     return null;
   }
   return created;
+}
+
+export async function countOpenAgentConversations(
+  supabase: any,
+  agentProfileId: string
+): Promise<number> {
+  const { count } = await supabase
+    .from("agent_conversation_log")
+    .select("id", { count: "exact", head: true })
+    .eq("agent_profile_id", agentProfileId)
+    .in("status", [...OPEN_AGENT_CONVERSATION_STATUSES]);
+
+  return count ?? 0;
+}
+
+export async function expireStaleAgentConversations(
+  supabase: any,
+  agentProfileId?: string
+): Promise<number> {
+  let query = supabase
+    .from("agent_conversation_log")
+    .select(`
+      id,
+      agent_profile_id,
+      target_user_id,
+      status,
+      started_at,
+      agent_profile:profiles!agent_conversation_log_agent_profile_id_fkey (
+        user_id
+      ),
+      target_profile:profiles!agent_conversation_log_target_user_id_fkey (
+        provider
+      )
+    `)
+    .in("status", [...OPEN_AGENT_CONVERSATION_STATUSES]);
+
+  if (agentProfileId) {
+    query = query.eq("agent_profile_id", agentProfileId);
+  }
+
+  const { data: logs, error } = await query;
+  if (error) {
+    console.error("[agentEngine] expireStaleAgentConversations load failed:", error.message);
+    return 0;
+  }
+
+  let expired = 0;
+
+  for (const log of logs ?? []) {
+    const agentProfile = Array.isArray(log.agent_profile)
+      ? log.agent_profile[0]
+      : log.agent_profile;
+    const targetProfile = Array.isArray(log.target_profile)
+      ? log.target_profile[0]
+      : log.target_profile;
+    const isAnon = isAnonymousProvider(targetProfile?.provider);
+
+    if (log.status === "pending_reply") {
+      const ttlMs = hoursToMs(
+        isAnon
+          ? PENDING_REPLY_ANON_TTL_HOURS
+          : PENDING_REPLY_REGISTERED_TTL_HOURS
+      );
+      if (!isExpiredIsoDate(log.started_at, ttlMs)) continue;
+
+      await supabase
+        .from("agent_conversation_log")
+        .update({
+          status: "expired_no_reply",
+          ended_at: new Date().toISOString(),
+          reply_lock_until: null,
+        })
+        .eq("id", log.id)
+        .in("status", [...OPEN_AGENT_CONVERSATION_STATUSES]);
+      expired++;
+      continue;
+    }
+
+    if (!agentProfile?.user_id) continue;
+
+    const { data: lastMessage } = await supabase
+      .from("messages")
+      .select("created_at")
+      .or(
+        `and(sender_id.eq.${agentProfile?.user_id},receiver_id.eq.${log.target_user_id}),` +
+          `and(sender_id.eq.${log.target_user_id},receiver_id.eq.${agentProfile?.user_id})`
+      )
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const ttlMs = hoursToMs(
+      isAnon ? ACTIVE_ANON_IDLE_TTL_HOURS : ACTIVE_REGISTERED_IDLE_TTL_HOURS
+    );
+    const activityAt = lastMessage?.created_at || log.started_at;
+    if (!isExpiredIsoDate(activityAt, ttlMs)) continue;
+
+    await supabase
+      .from("agent_conversation_log")
+      .update({
+        status: "stale",
+        ended_at: new Date().toISOString(),
+        reply_lock_until: null,
+      })
+      .eq("id", log.id)
+      .eq("status", "active");
+    expired++;
+  }
+
+  return expired;
 }
 
 /**
@@ -417,7 +581,7 @@ export async function handOffAgentConversations(
     .from("agent_conversation_log")
     .update({ status: "owner_returned", ended_at: new Date().toISOString() })
     .eq("agent_profile_id", agentProfileId)
-    .eq("status", "active");
+    .in("status", [...OPEN_AGENT_CONVERSATION_STATUSES]);
 }
 
 // Shared constants — used by both the presence watcher plugin and the proactive task
@@ -436,6 +600,8 @@ export async function greetTargetUser(
   targetUserId: string, // profiles.user_id (auth UUID)
   runtimeConfig: any
 ): Promise<boolean> {
+  await expireStaleAgentConversations(supabase);
+
   // Fetch the target's profile
   const { data: targetProfile } = await supabase
     .from("profiles")
@@ -494,11 +660,10 @@ export async function greetTargetUser(
     if (agent.target_gender_ids?.length && !agent.target_gender_ids.includes(targetProfile.gender_id)) continue;
 
     // Session conversation cap
-    const { count: activeCount } = await supabase
-      .from("agent_conversation_log")
-      .select("id", { count: "exact", head: true })
-      .eq("agent_profile_id", agentProfile.id)
-      .eq("status", "active");
+    const activeCount = await countOpenAgentConversations(
+      supabase,
+      agentProfile.id
+    );
 
     if ((activeCount ?? 0) >= clampAwayAgentConversationLimit(agent.max_conversations_per_session)) continue;
 
@@ -547,7 +712,10 @@ export async function greetTargetUser(
   );
 
   if (sent) {
-    await getOrCreateConversationLog(supabase, agentProfile.id, targetUserId);
+    await getOrCreateConversationLog(supabase, agentProfile.id, targetUserId, {
+      initialStatus: "pending_reply",
+      promotePendingToActive: false,
+    });
     return true;
   }
 

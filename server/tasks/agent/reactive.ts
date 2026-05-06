@@ -7,11 +7,14 @@
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import {
   claimAgentReplyLock,
+  countOpenAgentConversations,
   clearAgentReplyLock,
+  expireStaleAgentConversations,
   generateAgentReply,
   loadLanguagePracticeAgentContext,
   sendAgentMessage,
   incrementExchangeCount,
+  OPEN_AGENT_CONVERSATION_STATUSES,
 } from "~/server/utils/agentEngine";
 import { loadAgentAvailabilityMap } from "~/server/utils/agentAvailability";
 import { clampAwayAgentConversationLimit } from "~/constants/awayAgent";
@@ -23,6 +26,7 @@ export default {
     const event = context?.event;
     const supabase = await getServiceRoleClient(event);
     const runtimeConfig = useRuntimeConfig(event);
+    await expireStaleAgentConversations(supabase);
     const availabilityByUserId = await loadAgentAvailabilityMap(supabase);
 
     // 1. Find active agent conversations with an unanswered incoming message
@@ -45,7 +49,7 @@ export default {
           preferred_locale
         )
       `)
-      .eq("status", "active");
+      .in("status", [...OPEN_AGENT_CONVERSATION_STATUSES]);
 
     if (!activeLogs?.length) return { result: "no active conversations" };
 
@@ -70,11 +74,10 @@ export default {
       const config = configRow;
 
       // Check per-session conversation limit
-      const { count: sessionCount } = await supabase
-        .from("agent_conversation_log")
-        .select("id", { count: "exact", head: true })
-        .eq("agent_profile_id", log.agent_profile_id)
-        .eq("status", "active");
+      const sessionCount = await countOpenAgentConversations(
+        supabase,
+        log.agent_profile_id
+      );
 
       if ((sessionCount ?? 0) >= clampAwayAgentConversationLimit(config.max_conversations_per_session)) continue;
 
@@ -107,6 +110,14 @@ export default {
 
       if (alreadyReplied) continue;
       if (log.last_replied_message_id && log.last_replied_message_id === incoming.id) continue;
+
+      if (log.status === "pending_reply") {
+        await supabase
+          .from("agent_conversation_log")
+          .update({ status: "active", ended_at: null })
+          .eq("id", log.id)
+          .eq("status", "pending_reply");
+      }
 
       const claimed = await claimAgentReplyLock(supabase, log.id);
       if (!claimed) continue;

@@ -3,7 +3,9 @@ import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import {
   claimAgentReplyLock,
+  countOpenAgentConversations,
   clearAgentReplyLock,
+  expireStaleAgentConversations,
   generateAgentReply,
   getOrCreateConversationLog,
   incrementExchangeCount,
@@ -109,6 +111,8 @@ export default defineEventHandler(async (event) => {
     return { ok: true, skipped: "agent_config_disabled" };
   }
 
+  await expireStaleAgentConversations(supabase, agentProfile.id);
+
   logReactiveReply("config_loaded", {
     senderUserId: user.id,
     agentUserId,
@@ -148,11 +152,10 @@ export default defineEventHandler(async (event) => {
     return { ok: true, skipped: "conversation_limit_reached" };
   }
 
-  const { count: sessionCount } = await supabase
-    .from("agent_conversation_log")
-    .select("id", { count: "exact", head: true })
-    .eq("agent_profile_id", agentProfile.id)
-    .eq("status", "active");
+  const sessionCount = await countOpenAgentConversations(
+    supabase,
+    agentProfile.id
+  );
 
   if (
     (sessionCount ?? 0) >=

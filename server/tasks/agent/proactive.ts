@@ -8,6 +8,8 @@
  */
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import {
+  countOpenAgentConversations,
+  expireStaleAgentConversations,
   generateAgentGreeting,
   sendAgentMessage,
   getOrCreateConversationLog,
@@ -65,12 +67,13 @@ export default {
       if (!agentProfile?.agent_enabled) continue;
       if (onlineUserIds.has(agentProfile.user_id)) continue;
 
+      await expireStaleAgentConversations(supabase, agentProfile.id);
+
       // Check current active conversation count vs session limit
-      const { count: activeCount } = await supabase
-        .from("agent_conversation_log")
-        .select("id", { count: "exact", head: true })
-        .eq("agent_profile_id", agentProfile.id)
-        .eq("status", "active");
+      const activeCount = await countOpenAgentConversations(
+        supabase,
+        agentProfile.id
+      );
 
       if ((activeCount ?? 0) >= clampAwayAgentConversationLimit(agent.max_conversations_per_session)) continue;
 
@@ -160,11 +163,14 @@ export default {
 
       if (sent) {
         contactsMade++;
-        await getOrCreateConversationLog(supabase, agentProfile.id, target.user_id);
+        await getOrCreateConversationLog(supabase, agentProfile.id, target.user_id, {
+          initialStatus: "pending_reply",
+          promotePendingToActive: false,
+        });
       }
 
       // Respect session limit — stop if we hit the cap
-      const newActiveCount = (activeCount ?? 0) + contactsMade;
+      const newActiveCount = (activeCount ?? 0) + (sent ? 1 : 0);
       if (newActiveCount >= clampAwayAgentConversationLimit(agent.max_conversations_per_session)) break;
     }
 

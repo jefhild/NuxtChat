@@ -6,6 +6,10 @@ import { defineEventHandler, setResponseStatus } from "h3";
 import { serverSupabaseUser } from "#supabase/server";
 import { getServiceRoleClient } from "~/server/utils/aiBots";
 import { isAgentOwnerAvailable } from "~/server/utils/agentAvailability";
+import {
+  countOpenAgentConversations,
+  expireStaleAgentConversations,
+} from "~/server/utils/agentEngine";
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event);
@@ -35,12 +39,11 @@ export default defineEventHandler(async (event) => {
     .eq("profile_id", profile.id)
     .maybeSingle();
 
-  // Count active conversations
-  const { count: activeConversations } = await supabase
-    .from("agent_conversation_log")
-    .select("id", { count: "exact", head: true })
-    .eq("agent_profile_id", profile.id)
-    .eq("status", "active");
+  await expireStaleAgentConversations(supabase, profile.id);
+  const activeConversations = await countOpenAgentConversations(
+    supabase,
+    profile.id
+  );
 
   return {
     enabled: config?.enabled ?? profile.agent_enabled ?? false,
