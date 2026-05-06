@@ -684,11 +684,28 @@ const selectLocale = (localeCode: string) => {
 
 .seo-hero__photo-credit :deep(a) {
   color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .seo-richtext :deep(h2) {
   margin-top: 1.8rem;
   margin-bottom: 0.7rem;
+}
+
+.seo-richtext :deep(a),
+.seo-faq-answer :deep(a) {
+  color: rgb(var(--color-primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1.5px;
+}
+
+.seo-richtext :deep(a:hover),
+.seo-richtext :deep(a:focus-visible),
+.seo-faq-answer :deep(a:hover),
+.seo-faq-answer :deep(a:focus-visible) {
+  text-decoration-thickness: 2px;
 }
 
 .seo-richtext :deep(p),
@@ -703,8 +720,10 @@ const selectLocale = (localeCode: string) => {
 }
 
 :global(html.dark .seo-richtext :deep(a)),
+:global(html.dark .seo-faq-answer :deep(a)),
 :global(html.dark .seo-related-link),
 :global(html[data-imchatty-theme="dark"] .seo-richtext :deep(a)),
+:global(html[data-imchatty-theme="dark"] .seo-faq-answer :deep(a)),
 :global(html[data-imchatty-theme="dark"] .seo-related-link) {
   color: #7dd3fc;
 }
