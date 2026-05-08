@@ -5118,6 +5118,9 @@ function toggleFilters() {
   flex: 0 0 16.6667%;
   max-width: 16.6667%;
   padding: 0 0.5rem;
+  position: relative;
+  z-index: 8;
+  overflow: visible;
 }
 
 .chat-thread-col {
@@ -5297,6 +5300,9 @@ function toggleFilters() {
 
 .active-panel-card {
   transition: opacity 0.2s ease, transform 0.25s ease;
+  position: relative;
+  z-index: 8;
+  overflow: visible;
 }
 
 .chat-mobile-controls {

@@ -53,12 +53,14 @@ import {
 } from "vue";
 import { useDb } from "@/composables/useDB";
 import { useMessagesStore } from "@/stores/messagesStore";
+import { useAuthStore } from "@/stores/authStore1";
 import { useMarkdown } from "~/composables/useMarkdown";
 import { useTypingStore } from "@/stores/typingStore";
 import { useI18n } from "vue-i18n";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
 const typingStore = useTypingStore();
+const auth = useAuthStore();
 
 const { init: initMd, render } = useMarkdown();
 
@@ -93,6 +95,15 @@ const peerAvatar = computed(
   () => props.peer?.avatar_url || props.peer?.avatar || ""
 );
 const meName = "me";
+const meDisplayName = computed(
+  () => auth.userProfile?.displayname || auth.user?.user_metadata?.displayname || ""
+);
+
+function formatAwayAgentLabel(name) {
+  const trimmed = String(name || "").trim();
+  if (!trimmed) return "Away Agent";
+  return `${trimmed}'s Away Agent`;
+}
 
 function formatDisplayTime(timestamp) {
   if (!timestamp) return "";
@@ -119,12 +130,18 @@ const items = computed(() => {
     const isReceiver = String(m.receiver_id) === String(props.meId);
     const hasTranslation = Boolean(m.translated_content) && isReceiver;
     const senderId = String(m.sender_id || "");
+    const isFromMe = senderId === String(props.meId);
+    const isAwayAgentMessage = Boolean(m.sent_by_agent) && isFromMe;
     let name =
       m._senderName ??
-      (senderId === String(props.meId) ? meName : peerName.value);
+      (isAwayAgentMessage
+        ? formatAwayAgentLabel(meDisplayName.value)
+        : isFromMe
+        ? meName
+        : peerName.value);
     let avatar =
       m._senderAvatar ??
-      (senderId === String(props.meId) ? "" : peerAvatar.value);
+      (isFromMe ? "" : peerAvatar.value);
     if (!m._senderName && senderId === IMCHATTY_ID) {
       name = "ImChatty";
       avatar = IMCHATTY_AVATAR;

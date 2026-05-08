@@ -12,9 +12,6 @@
       <h2 id="language-filter-heading" class="language-filter-panel__title type-card-title">
         {{ $t("pages.languagePractice.filtersTitle") }}
       </h2>
-      <p class="language-filter-panel__description">
-        {{ $t("pages.languagePractice.filtersExplanation") }}
-      </p>
       <div class="language-filter-panel__controls">
         <label class="language-filter-field">
           <span class="language-filter-field__label">{{ $t("pages.languagePractice.nativeLanguage") }}</span>
@@ -771,7 +768,7 @@ useHead({
 }
 
 .language-practice-header {
-  max-width: 640px;
+  max-width: 820px;
   margin: 0 auto;
 }
 
@@ -788,12 +785,12 @@ useHead({
 }
 
 .language-practice-title {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.75rem;
   color: rgb(var(--color-foreground));
 }
 
 .language-practice-subtitle {
-  margin: 0;
+  margin: 0 0 1.5rem;
   color: rgb(var(--color-foreground) / 0.72);
 }
 
@@ -1150,6 +1147,10 @@ useHead({
 }
 
 @media (max-width: 959px) {
+  .language-practice-header {
+    max-width: 640px;
+  }
+
   .language-filter-panel__controls {
     grid-template-columns: 1fr;
   }
@@ -1165,6 +1166,12 @@ useHead({
 
   .language-dialog-card__button {
     width: 100%;
+  }
+}
+
+@media (min-width: 960px) {
+  .language-practice-title {
+    white-space: nowrap;
   }
 }
 </style>

@@ -687,6 +687,38 @@ export async function greetTargetUser(
   // Pick ONE random eligible agent so messages are staggered and varied
   const { agent, agentProfile } = eligible[Math.floor(Math.random() * eligible.length)];
 
+  // Reserve the conversation before sending so duplicate presence join events
+  // do not race and send the same opener multiple times.
+  const { data: existingReservedLog } = await supabase
+    .from("agent_conversation_log")
+    .select("id")
+    .eq("agent_profile_id", agentProfile.id)
+    .eq("target_user_id", targetUserId)
+    .gte("started_at", dayAgo)
+    .limit(1)
+    .maybeSingle();
+
+  if (existingReservedLog?.id) return false;
+
+  const { data: reservedLog, error: reserveError } = await supabase
+    .from("agent_conversation_log")
+    .insert({
+      agent_profile_id: agentProfile.id,
+      target_user_id: targetUserId,
+      exchange_count: 0,
+      status: "pending_reply",
+    })
+    .select("id")
+    .maybeSingle();
+
+  if (reserveError || !reservedLog?.id) {
+    console.error(
+      "[agentEngine] greetTargetUser reserve conversation failed:",
+      reserveError?.message || "unknown error"
+    );
+    return false;
+  }
+
   const greeting = await generateAgentGreeting(
     agentProfile,
     agent,
@@ -697,7 +729,14 @@ export async function greetTargetUser(
     },
     runtimeConfig
   );
-  if (!greeting) return false;
+  if (!greeting) {
+    await supabase
+      .from("agent_conversation_log")
+      .delete()
+      .eq("id", reservedLog.id)
+      .eq("status", "pending_reply");
+    return false;
+  }
 
   const sent = await sendAgentMessage(
     supabase,
@@ -712,12 +751,14 @@ export async function greetTargetUser(
   );
 
   if (sent) {
-    await getOrCreateConversationLog(supabase, agentProfile.id, targetUserId, {
-      initialStatus: "pending_reply",
-      promotePendingToActive: false,
-    });
     return true;
   }
+
+  await supabase
+    .from("agent_conversation_log")
+    .delete()
+    .eq("id", reservedLog.id)
+    .eq("status", "pending_reply");
 
   return false;
 }
