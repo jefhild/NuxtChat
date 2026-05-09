@@ -118,7 +118,9 @@ export default defineNuxtConfig({
     },
   },
   image: {
-    domains: ["home.imchatty.com"],
+    // Keep both hosts allowed during the storage-domain migration so older
+    // persisted asset URLs continue to render until content is rewritten.
+    domains: ["home.imchatty.com", "api.imchatty.com"],
   },
   supabase: {
     redirectOptions: {
