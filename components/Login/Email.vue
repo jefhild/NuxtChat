@@ -44,15 +44,36 @@
       type="submit"
       class="ui-settings-btn ui-settings-btn--primary login-email-card__submit"
       :class="{ 'is-loading': loading }"
-      :disabled="loading || !isFormValid"
+      :disabled="loading || !isFormValid || cooldownActive"
     >
       <span v-if="loading" class="login-email-card__spinner" aria-hidden="true" />
       <span>{{ mode === "magic" ? $t("components.loginEmail.send-magic-link") : $t("components.loginEmail.send-code") }}</span>
     </button>
 
+    <div
+      v-if="captchaEnabled"
+      class="login-email-card__captcha"
+    >
+      <TurnstileWidget
+        :site-key="captchaSiteKey"
+        theme="auto"
+        size="flexible"
+        @verified="onCaptchaVerified"
+        @expired="onCaptchaExpired"
+        @error="onCaptchaError"
+      />
+      <div v-if="captchaError" class="login-email-card__notice login-email-card__notice--error">
+        {{ captchaError }}
+      </div>
+    </div>
+
     <div v-if="successMessage" class="login-email-card__notice login-email-card__notice--success">
       <strong>{{ $t("components.loginEmail.checkmail1") }}</strong>
       {{ $t("components.loginEmail.checkmail2") }}
+    </div>
+
+    <div v-if="cooldownActive" class="login-email-card__notice">
+      Please wait {{ cooldownSecondsRemaining }}s before requesting another email.
     </div>
 
     <template v-if="otpSent">
@@ -94,6 +115,7 @@
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
+const config = useRuntimeConfig();
 const localPath = useLocalePath();
 const router = useRouter();
 const { signInWithOtp, verifyEmailOtp } = useDb();
@@ -106,6 +128,10 @@ const otpCode = ref("");
 const errorMessage = ref("");
 const mode = ref("magic");
 const isAgeConfirmed = ref(false);
+const captchaToken = ref("");
+const captchaError = ref("");
+const resendCooldownUntil = ref(0);
+let resendCooldownTimer = null;
 
 const emailRule = (value) =>
   (!!value && /.+@.+\..+/.test(value)) || t("components.loginEmail.invalid-email");
@@ -115,9 +141,49 @@ const isFormValid = computed(() => {
 });
 
 const isOtpValid = computed(() => /^\d{6}$/.test(otpCode.value.trim()));
+const captchaSiteKey = computed(() => config.public?.TURNSTILE_SITE_KEY || "");
+const captchaEnabled = computed(() => !!captchaSiteKey.value);
+const cooldownSecondsRemaining = ref(0);
+const cooldownActive = computed(() => cooldownSecondsRemaining.value > 0);
+
+const updateCooldown = () => {
+  const remainingMs = Math.max(0, resendCooldownUntil.value - Date.now());
+  cooldownSecondsRemaining.value = Math.ceil(remainingMs / 1000);
+  if (!remainingMs && resendCooldownTimer) {
+    clearInterval(resendCooldownTimer);
+    resendCooldownTimer = null;
+  }
+};
+
+const startCooldown = (seconds = 30) => {
+  resendCooldownUntil.value = Date.now() + seconds * 1000;
+  updateCooldown();
+  if (resendCooldownTimer) clearInterval(resendCooldownTimer);
+  resendCooldownTimer = window.setInterval(updateCooldown, 1000);
+};
+
+const onCaptchaVerified = (token) => {
+  captchaToken.value = String(token || "");
+  captchaError.value = "";
+};
+
+const onCaptchaExpired = () => {
+  captchaToken.value = "";
+  captchaError.value = "CAPTCHA expired. Please try again.";
+};
+
+const onCaptchaError = () => {
+  captchaToken.value = "";
+  captchaError.value = "CAPTCHA failed. Please try again.";
+};
 
 const handleLogin = async () => {
   try {
+    if (cooldownActive.value) return;
+    if (captchaEnabled.value && !captchaToken.value) {
+      captchaError.value = "Please complete the CAPTCHA to continue.";
+      return;
+    }
     loading.value = true;
     errorMessage.value = "";
     successMessage.value = false;
@@ -126,14 +192,27 @@ const handleLogin = async () => {
       next: "/chat",
       redirectTo: "/callback",
       mode: mode.value,
+      captchaToken: captchaToken.value || null,
     });
+    startCooldown();
     if (mode.value === "magic") {
       successMessage.value = true;
     } else {
       otpSent.value = true;
     }
   } catch (error) {
-    errorMessage.value = error?.error_description || error?.message || t("components.loginEmail.login-failed");
+    const statusMessage = error?.data?.statusMessage || error?.statusMessage || error?.message || "";
+    if (statusMessage === "captcha_required") {
+      captchaError.value = "Please complete the CAPTCHA to continue.";
+      errorMessage.value = "";
+    } else if (statusMessage === "captcha_failed") {
+      captchaError.value = "CAPTCHA verification failed. Please try again.";
+      errorMessage.value = "";
+    } else if (statusMessage.includes("rate_limit")) {
+      errorMessage.value = "Please wait before requesting another email.";
+    } else {
+      errorMessage.value = error?.error_description || statusMessage || t("components.loginEmail.login-failed");
+    }
   } finally {
     loading.value = false;
   }
@@ -158,6 +237,13 @@ watch(mode, () => {
   otpSent.value = false;
   otpCode.value = "";
   errorMessage.value = "";
+});
+
+onBeforeUnmount(() => {
+  if (resendCooldownTimer) {
+    clearInterval(resendCooldownTimer);
+    resendCooldownTimer = null;
+  }
 });
 
 </script>
@@ -235,6 +321,12 @@ watch(mode, () => {
 .login-email-card__submit:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.login-email-card__captcha {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .login-email-card__spinner {

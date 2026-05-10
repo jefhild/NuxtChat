@@ -76,6 +76,8 @@ onMounted(async () => {
         !profile.bio
 
       if (needsOnboarding) {
+        const verifiedIntro =
+          "Your email is verified. You're signed in. Finish your profile with me to start messaging people."
         // Skip consent for OAuth users and jump straight into onboarding.
         draft.setConsent?.(true)
         draft.setStage?.('collecting')
@@ -86,6 +88,13 @@ onMounted(async () => {
         if (profile.country_id != null) draft.setField?.('countryId', profile.country_id)
         if (profile.state_id != null) draft.setField?.('stateId', profile.state_id)
         if (profile.city_id != null) draft.setField?.('cityId', profile.city_id)
+        const lastMessage = Array.isArray(draft.thread) ? draft.thread[draft.thread.length - 1] : null
+        if (lastMessage?.text !== verifiedIntro) {
+          draft.appendThreadMessage?.({
+            from: 'imchatty',
+            text: verifiedIntro,
+          })
+        }
 
         return router.replace(localPath('/chat'))
       }

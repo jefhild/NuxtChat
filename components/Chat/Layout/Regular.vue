@@ -349,6 +349,7 @@ defineExpose({
   setTyping, // 🔹 expose so parent/AI controller can toggle typing
   getLastMessages,
   getAssistantTurnCount,
+  hasInboundFromPeer,
 });
 
 // 🔹 NEW: toggler to show/hide typing chip (call when you start/stop AI)
@@ -431,6 +432,18 @@ function getAssistantTurnCount() {
     if (!senderId || senderId === meId) return count;
     return count + 1;
   }, 0);
+}
+
+function hasInboundFromPeer() {
+  const meId = String(props.meId || "");
+  const currentPeerId = String(peerId.value || "");
+  if (!meId || !currentPeerId) return false;
+
+  return (messages.value || []).some((m) => {
+    const senderId = String(m?.sender_id || "");
+    const receiverId = String(m?.receiver_id || "");
+    return senderId === currentPeerId && receiverId === meId;
+  });
 }
 
 watch(

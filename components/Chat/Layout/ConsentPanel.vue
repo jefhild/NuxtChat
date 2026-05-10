@@ -190,7 +190,15 @@ const genderFilled = computed(() => draft.genderId != null);
 const titleText = computed(() => {
   if (props.line1) return props.line1;
   if (state.value === "consent") return "";
-  if (state.value === "onboarding") return "";
+  if (state.value === "onboarding") {
+    if (draft.consented) {
+      return t(
+        "components.consentPanel.title.onboardingSignedIn",
+        "You're signed in"
+      );
+    }
+    return "";
+  }
   if (state.value === "linkEmail") return "";
   if (state.value === "ready") return displayName.value || stateLabel.value;
   return stateLabel.value;
@@ -231,6 +239,13 @@ const stepSubtitleFallback = {
 const subtitleText = computed(() => {
   if (props.line2) return props.line2;
   if (state.value === "consent" || state.value === "onboarding") {
+    if (state.value === "onboarding" && draft.consented) {
+      const fb = stepSubtitleFallback[currentStep.value] || "";
+      return t(
+        "components.consentPanel.subtitle.onboardingSignedIn",
+        `Finish your profile with ImChatty to start messaging people. ${fb}`.trim()
+      );
+    }
     const key = stepSubtitleKey.value;
     const fb = stepSubtitleFallback[currentStep.value] || "";
     if (key) return t(key, fb);
@@ -239,20 +254,24 @@ const subtitleText = computed(() => {
   return t(`components.chatheader.${props.authStatus}-line2`);
 });
 
-const ctaText = computed(() => stateMeta.value.ctaText);
+const ctaText = computed(() => {
+  if (state.value === "onboarding" && draft.consented) {
+    return t(
+      "components.consentPanel.cta.continueWithImChatty",
+      "Continue with ImChatty"
+    );
+  }
+  return stateMeta.value.ctaText;
+});
 const ctaTo = computed(() =>
   state.value === "ready" || state.value === "linkEmail" ? props.settingsTo : null
 );
 const showCta = computed(() => {
   if (state.value === "ready") return false;
-  // Hide "Resume onboarding" once consented so it doesn't show for post-consent onboarding state
-  if (state.value === "onboarding" && draft.consented) return false;
   return true;
 });
 const ctaDisabled = computed(() => {
   if (!props.clickable) return true;
-  // After consent, let the chat composer drive onboarding; keep this button inert.
-  if (state.value === "onboarding" && draft.consented) return true;
   return false;
 });
 

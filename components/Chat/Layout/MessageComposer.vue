@@ -61,12 +61,20 @@ const props = defineProps({
   languagePracticeMode: { type: Boolean, default: false },
   consentActionLabel: { type: String, default: "" },
   allowConsentAction: { type: Boolean, default: false },
+  resumeOnboardingActionLabel: { type: String, default: "" },
+  allowResumeOnboardingAction: { type: Boolean, default: false },
 });
 
 const config = useRuntimeConfig();
 const imchattyPeerId = config.public.IMCHATTY_ID;
 
-const emit = defineEmits(["update:draft", "send", "apply-helper", "request-consent"]);
+const emit = defineEmits([
+  "update:draft",
+  "send",
+  "apply-helper",
+  "request-consent",
+  "request-onboarding",
+]);
 const localDraft = ref(props.draft);
 
 const auth = useAuthStore();
@@ -216,11 +224,25 @@ function handleDisabledInputClick() {
     props.allowConsentAction &&
     Boolean(String(props.consentActionLabel || "").trim()) &&
     disabledReminderMessage.value === t("onboarding.consentPrompt");
+  const showResumeOnboardingAction =
+    !showConsentAction &&
+    props.allowResumeOnboardingAction &&
+    Boolean(String(props.resumeOnboardingActionLabel || "").trim()) &&
+    ["guest", "onboarding"].includes(auth.authStatus) &&
+    props.peerId !== imchattyPeerId;
   showReminder({
     message: disabledReminderMessage.value,
-    tone: showConsentAction ? "warning" : "info",
-    actionLabel: showConsentAction ? props.consentActionLabel : "",
-    onAction: showConsentAction ? () => emit("request-consent") : null,
+    tone: showConsentAction || showResumeOnboardingAction ? "warning" : "info",
+    actionLabel: showConsentAction
+      ? props.consentActionLabel
+      : showResumeOnboardingAction
+      ? props.resumeOnboardingActionLabel
+      : "",
+    onAction: showConsentAction
+      ? () => emit("request-consent")
+      : showResumeOnboardingAction
+      ? () => emit("request-onboarding")
+      : null,
   });
 }
 

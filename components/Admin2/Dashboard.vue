@@ -1824,6 +1824,10 @@ onBeforeUnmount(() => {
   max-width: 100%;
 }
 
+.admin-dashboard-card--report {
+  margin-bottom: 18px;
+}
+
 .admin-dashboard-card {
   border: 1px solid rgba(var(--color-border), 0.88);
   border-radius: 24px;
@@ -1875,6 +1879,87 @@ onBeforeUnmount(() => {
 
 .admin-dashboard-card__body {
   padding: 20px 22px 22px;
+}
+
+.admin-dashboard-report {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-dashboard-report__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-dashboard-report-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 112px;
+  border: 1px solid rgba(var(--color-border), 0.76);
+  border-radius: 18px;
+  background: rgba(var(--color-surface), 0.78);
+  padding: 16px;
+}
+
+.admin-dashboard-report-stat strong {
+  color: rgb(var(--color-heading));
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.admin-dashboard-report__grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.admin-dashboard-inline-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-dashboard-report-ip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-dashboard-report-ip-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-dashboard-report-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-dashboard-report-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+}
+
+.admin-dashboard-report-table th,
+.admin-dashboard-report-table td {
+  padding: 10px 0;
+  text-align: left;
+  border-bottom: 1px solid rgba(var(--color-border), 0.5);
+  vertical-align: top;
+}
+
+.admin-dashboard-report-table th {
+  color: rgba(var(--color-text), 0.64);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .admin-dashboard-toolbar {
@@ -2881,6 +2966,10 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 1260px) {
+  .admin-dashboard-report__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .admin-dashboard-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2891,6 +2980,7 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 980px) {
+  .admin-dashboard-report__grid,
   .admin-dashboard-expanded__supplemental,
   .admin-dashboard-detail-grid,
   .admin-dashboard-stat-grid,
@@ -2910,6 +3000,7 @@ onBeforeUnmount(() => {
   }
 
   .admin-dashboard-detail-grid,
+  .admin-dashboard-report__stats,
   .admin-dashboard-expanded__supplemental,
   .admin-dashboard-stat-grid,
   .admin-dashboard-toggle-row,

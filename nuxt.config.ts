@@ -4,6 +4,8 @@ import { landingPageSlugs } from "./config/landingPageSlugs";
 
 const seoSsrCacheSeconds = 3600;
 const faqRoutePattern = /^\/(?:(?:en|fr|ru|zh)\/)?faq(?:\/|$)/;
+const supabaseUrl =
+  process.env.NUXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
 const localizedLandingSeoRouteRules = Object.fromEntries(
   landingPageSlugs.flatMap((slug) => [
     [`/${slug}`, { swr: seoSsrCacheSeconds }],
@@ -214,9 +216,9 @@ export default defineNuxtConfig({
         autoRefreshToken: true,
         detectSessionInUrl: true, // <-- AUTO exchange on first load of /callback
         // Derive a stable storageKey from SUPABASE_URL (no hard-coding)
-        storageKey: process.env.SUPABASE_URL?.split("//")[1]?.split(".")[0] // project ref
+        storageKey: supabaseUrl.split("//")[1]?.split(".")[0] // project ref
           ? `sb-${
-              process.env.SUPABASE_URL.split("//")[1].split(".")[0]
+              supabaseUrl.split("//")[1].split(".")[0]
             }-auth-token`
           : "sb-auth-token",
       },
@@ -308,7 +310,7 @@ export default defineNuxtConfig({
     public: {
       // Non-sensitive keys (accessible on both server and client)
       SUPABASE_BUCKET: process.env.NUXT_PUBLIC_SUPABASE_BUCKET,
-      SUPABASE_URL: process.env.SUPABASE_URL,
+      SUPABASE_URL: supabaseUrl,
       SUPABASE_REDIRECT: process.env.SUPABASE_REDIRECT,
       GOOGLE_ANALYTICS_ID: process.env.GOOGLE_ANALYTICS_ID,
       TERMLY_ID: process.env.TERMLY_ID,

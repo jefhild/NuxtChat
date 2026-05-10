@@ -232,9 +232,12 @@
               :language-practice-mode="Boolean(languagePracticeSession)"
               :consent-action-label="consentReminderActionLabel"
               :allow-consent-action="isPreAuth"
+              :resume-onboarding-action-label="resumeOnboardingActionLabel"
+              :allow-resume-onboarding-action="isPreAuth"
               class="chat-composer"
               @send="onSend"
               @request-consent="onConsentAction"
+              @request-onboarding="focusOnboarding"
             />
           </div>
         </div>
@@ -401,9 +404,12 @@
               :language-practice-mode="Boolean(languagePracticeSession)"
               :consent-action-label="consentReminderActionLabel"
               :allow-consent-action="isPreAuth"
+              :resume-onboarding-action-label="resumeOnboardingActionLabel"
+              :allow-resume-onboarding-action="isPreAuth"
               class="chat-composer"
               @send="onSend"
               @request-consent="onConsentAction"
+              @request-onboarding="focusOnboarding"
             />
           </div>
         </div>
@@ -688,6 +694,7 @@ import { useOnboardingAi } from "~/composables/useOnboardingAi";
 import { useBlockedUsers } from "@/composables/useBlockedUsers";
 import { useDb } from "@/composables/useDB";
 import { useResponsiveDisplay } from "@/composables/useResponsiveDisplay";
+import { useInteractionReminder } from "@/composables/useInteractionReminder";
 import { useLocalePath, useRoute } from "#imports";
 import { useAiQuota } from "~/composables/useAiQuota";
 import { useTabFilters } from "@/composables/useTabFilters";
@@ -721,8 +728,6 @@ const recentActiveLoading = ref(false);
 let recentActiveTimer = null;
 const RECENT_ACTIVE_MINUTES = 10;
 const RECENT_ACTIVE_POLL_MS = 5 * 60 * 1000;
-const AWAY_NOTICE_COOLDOWN_MS = 15 * 60 * 1000;
-const AWAY_NOTICE_STORAGE_KEY = "awayNoticeCooldown:v1";
 
 const route = useRoute();
 const router = useRouter();
@@ -782,7 +787,6 @@ const translationPref = ref(null);
 const translationPrefLoading = ref(false);
 const pendingSendText = ref("");
 const pendingTranslatePeerId = ref(null);
-const awayNoticeMap = ref(null);
 const languagePracticeSession = ref(null);
 const languagePracticeSessionUserIds = ref([]);
 const isLanguagePracticeModeRequested = computed(() => {
@@ -792,6 +796,7 @@ const isLanguagePracticeModeRequested = computed(() => {
 
 const localePath = useLocalePath();
 const { tryConsume, limitReachedMessage } = useAiQuota();
+const { showReminder } = useInteractionReminder();
 
 const openProfileDialog = (user) => {
   profileDialogUserId.value = user?.user_id || user?.id || null;
@@ -823,48 +828,6 @@ const { fetchCandidates: refreshMatchCandidates } = useMatchCandidates();
 
 const { tabFilters, canShow, setMany } = useTabFilters();
 
-function loadAwayNoticeMap() {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(AWAY_NOTICE_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : {};
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveAwayNoticeMap(map) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(
-      AWAY_NOTICE_STORAGE_KEY,
-      JSON.stringify(map || {})
-    );
-  } catch {}
-}
-
-function getAwayNoticeMap() {
-  if (!awayNoticeMap.value) awayNoticeMap.value = loadAwayNoticeMap();
-  return awayNoticeMap.value;
-}
-
-function canShowAwayNotice(userId) {
-  if (!userId) return false;
-  const map = getAwayNoticeMap();
-  const last = Number(map[userId] || 0);
-  if (!Number.isFinite(last) || last <= 0) return true;
-  return Date.now() - last > AWAY_NOTICE_COOLDOWN_MS;
-}
-
-function markAwayNoticeShown(userId) {
-  if (!userId) return;
-  const map = getAwayNoticeMap();
-  map[userId] = Date.now();
-  awayNoticeMap.value = map;
-  saveAwayNoticeMap(map);
-}
-
 // v-model proxy: allows the child to "assign" a new object,
 // but we merge it into the existing reactive state.
 const tabFiltersModel = computed({
@@ -883,6 +846,12 @@ const consentPanelVisible = computed(() =>
 const isMobileDrawer = computed(() => hasMounted.value && smAndDown.value);
 const consentReminderActionLabel = computed(() =>
   isPreAuth.value ? t("onboarding.continue") : ""
+);
+const resumeOnboardingActionLabel = computed(() =>
+  t(
+    "components.consentPanel.cta.continueWithImChatty",
+    "Continue with ImChatty"
+  )
 );
 
 function loadConsentPanelPref(userId) {
@@ -944,7 +913,6 @@ const onMobileTouchMove = (event) => {
 
 onMounted(() => {
   hasMounted.value = true;
-  awayNoticeMap.value = loadAwayNoticeMap();
   // ensure drawers don't render mobile server-side then stay off on desktop
   if (!smAndDown.value) {
     leftOpen.value = false;
@@ -2888,10 +2856,50 @@ const translationPromptBody = computed(() => {
   return t("components.chatTranslation.promptBody", { name, language });
 });
 
+const resolveSelectedUserAvatar = async (userId) => {
+  const normalizedUserId = String(userId || "").trim();
+  const currentAvatarUrl = String(selectedUser.value?.avatar_url || "").trim();
+  if (!normalizedUserId || !currentAvatarUrl) return;
+
+  try {
+    const result = await $fetch("/api/profile/avatar-resolve", {
+      query: { userId: normalizedUserId },
+    });
+    const resolvedAvatarUrl = String(result?.avatarUrl || "").trim();
+    if (!resolvedAvatarUrl || resolvedAvatarUrl === currentAvatarUrl) return;
+
+    if (chat.selectedUser) {
+      chat.selectedUser = {
+        ...chat.selectedUser,
+        avatar_url: resolvedAvatarUrl,
+      };
+    }
+
+    const userIndex = Array.isArray(chat.users)
+      ? chat.users.findIndex((user) => {
+          const candidateId = user?.user_id ?? user?.id;
+          return String(candidateId || "") === normalizedUserId;
+        })
+      : -1;
+
+    if (userIndex >= 0) {
+      const copy = chat.users.slice();
+      copy[userIndex] = {
+        ...copy[userIndex],
+        avatar_url: resolvedAvatarUrl,
+      };
+      chat.users = copy;
+    }
+  } catch (error) {
+    console.warn("[chat] selected-user avatar resolve error:", error);
+  }
+};
+
 watch(
   () => selectedUser.value?.user_id || selectedUser.value?.id,
   (userId) => {
     loadSelectedUserTranslations(userId);
+    resolveSelectedUserAvatar(userId);
   },
   { immediate: true }
 );
@@ -2917,6 +2925,10 @@ function promotePeerToActive(peerId) {
 }
 
 function selectUser(u) {
+  if (isPreAuth.value && u && !isImchattyUser(u)) {
+    focusOnboarding({ showNudge: true });
+    return;
+  }
   chat.setSelectedUser(u);
   const peerId = chatUserId(u);
   if (peerId && isKnownLanguagePracticePeer(u)) {
@@ -2978,11 +2990,31 @@ function selectImChatty() {
   }
 }
 
-async function onConsentAction() {
+function focusOnboarding({ showNudge = false } = {}) {
   selectImChatty();
+  if (smAndDown.value) {
+    leftOpen.value = false;
+    rightOpen.value = false;
+  }
+  if (!showNudge) return;
+  showReminder({
+    message: t(
+      "onboarding.finishProfileNotice",
+      "Finish your profile with ImChatty to start messaging people."
+    ),
+    tone: "warning",
+    actionLabel: resumeOnboardingActionLabel.value,
+    onAction: () => selectImChatty(),
+    duration: 4200,
+  });
+}
+
+async function onConsentAction() {
+  focusOnboarding();
 
   // If we're in the pre-auth onboarding flow, treat this as a "Yes" to consent
   if (!isPreAuth.value) return;
+  if (draftStore?.consented) return;
 
   try {
     if (onbRef.value?.acceptConsent) {
@@ -3548,33 +3580,14 @@ async function onSend(
     !sendingToBot &&
     (selectedPeer.presence === "away" || selectedPeer.presence === "agent");
 
-  if (
-    isAwayAgentPeer
-  ) {
-    const toKey = String(toId || "").trim().toLowerCase();
-    const isRecentlyActive = recentActiveNormalized.value.includes(toKey);
-    if (!isRecentlyActive && canShowAwayNotice(toId)) {
-      const name = selectedUserLocalized.value?.displayname || "User";
-      let msg = t("components.away.reply", { name });
-      if (auth.authStatus === "anon_authenticated") {
-        const link = localePath({
-          path: "/settings",
-          query: { linkEmail: "1" },
-        });
-        msg += ` [${t("components.away.link-cta")}](${link}).`;
-      }
-      regRef.value?.setTyping?.(true);
-      regRef.value?.appendPeerLocal?.(msg, {
-        senderId: IMCHATTY_ID,
-        senderName: "ImChatty",
-        senderAvatar: "/images/robot.png",
-      });
-      setTimeout(() => regRef.value?.setTyping?.(false), 700);
-      markAwayNoticeShown(toId);
-    }
+  if (isAwayAgentPeer) {
+    const hasInboundFromPeer =
+      regRef.value?.hasInboundFromPeer?.() === true;
 
-    await sentMessagePromise;
-    triggerAwayAgentReply(toId);
+    if (hasInboundFromPeer) {
+      await sentMessagePromise;
+      triggerAwayAgentReply(toId);
+    }
   }
 
   // BOT path only

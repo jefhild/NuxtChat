@@ -3,10 +3,13 @@ import { createError, defineEventHandler, getQuery } from "h3";
 
 const LIBRARY_BUCKET = "profile-image-library";
 const AVATAR_BUCKET = "profile-images";
+const RANDOM_AVATAR_BUCKET = "profile-avatars";
 const SIGNED_LIBRARY_MARKER = "/storage/v1/object/sign/profile-image-library/";
 const PUBLIC_LIBRARY_MARKER = "/storage/v1/object/public/profile-image-library/";
 const SIGNED_AVATAR_MARKER = "/storage/v1/object/sign/profile-images/";
 const PUBLIC_AVATAR_MARKER = "/storage/v1/object/public/profile-images/";
+const SIGNED_RANDOM_AVATAR_MARKER = "/storage/v1/object/sign/profile-avatars/";
+const PUBLIC_RANDOM_AVATAR_MARKER = "/storage/v1/object/public/profile-avatars/";
 
 const extractPathFromMarker = (avatarUrl, marker) => {
   const raw = String(avatarUrl || "").trim();
@@ -23,6 +26,22 @@ const extractPathFromMarker = (avatarUrl, marker) => {
   } catch {
     return pathPart;
   }
+};
+
+const signStorageUrl = async (supabase, bucket, path, resolvedFrom) => {
+  if (!path) return null;
+  const { data: signedData, error: signedError } = await supabase.storage
+    .from(bucket)
+    .createSignedUrl(path, 60 * 60);
+
+  if (signedError || !signedData?.signedUrl) {
+    return null;
+  }
+
+  return {
+    avatarUrl: signedData.signedUrl,
+    resolvedFrom,
+  };
 };
 
 export default defineEventHandler(async (event) => {
@@ -60,24 +79,45 @@ export default defineEventHandler(async (event) => {
     extractPathFromMarker(avatarUrl, SIGNED_LIBRARY_MARKER) ||
     extractPathFromMarker(avatarUrl, PUBLIC_LIBRARY_MARKER);
   if (libraryPath) {
-    const { data: signedData, error: signedError } = await supabase.storage
-      .from(LIBRARY_BUCKET)
-      .createSignedUrl(libraryPath, 60 * 60);
-    if (signedError || !signedData?.signedUrl) {
+    const resolved = await signStorageUrl(
+      supabase,
+      LIBRARY_BUCKET,
+      libraryPath,
+      "library_signed"
+    );
+    if (!resolved) {
       return { avatarUrl: "", resolvedFrom: "broken_library_url" };
     }
-    return { avatarUrl: signedData.signedUrl, resolvedFrom: "library_signed" };
+    return resolved;
   }
 
   const profileAvatarPath =
     extractPathFromMarker(avatarUrl, SIGNED_AVATAR_MARKER) ||
     extractPathFromMarker(avatarUrl, PUBLIC_AVATAR_MARKER);
   if (profileAvatarPath) {
-    const { data: signedData, error: signedError } = await supabase.storage
-      .from(AVATAR_BUCKET)
-      .createSignedUrl(profileAvatarPath, 60 * 60);
-    if (!signedError && signedData?.signedUrl) {
-      return { avatarUrl: signedData.signedUrl, resolvedFrom: "avatar_signed" };
+    const resolved = await signStorageUrl(
+      supabase,
+      AVATAR_BUCKET,
+      profileAvatarPath,
+      "avatar_signed"
+    );
+    if (resolved) {
+      return resolved;
+    }
+  }
+
+  const randomAvatarPath =
+    extractPathFromMarker(avatarUrl, SIGNED_RANDOM_AVATAR_MARKER) ||
+    extractPathFromMarker(avatarUrl, PUBLIC_RANDOM_AVATAR_MARKER);
+  if (randomAvatarPath) {
+    const resolved = await signStorageUrl(
+      supabase,
+      RANDOM_AVATAR_BUCKET,
+      randomAvatarPath,
+      "random_avatar_signed"
+    );
+    if (resolved) {
+      return resolved;
     }
   }
 

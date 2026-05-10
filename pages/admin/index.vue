@@ -62,6 +62,7 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import AdminDashboard from "~/components/Admin2/Dashboard.vue";
+import AdminAuthEmailActivity from "~/components/Admin2/AuthEmailActivity.vue";
 import AdminReports from "~/components/Admin2/Reports.vue";
 import AdminAiBots from "~/components/Admin2/AiBots.vue";
 import AdminFaqs from "~/components/Admin2/Faqs.vue";
@@ -89,6 +90,11 @@ const items = computed(() => [
     text: t("pages.admin.sections.dashboard"),
     icon: "mdi-view-dashboard",
     value: "dashboard",
+  },
+  {
+    text: "Auth Email Activity",
+    icon: "mdi-email-fast-outline",
+    value: "authEmailActivity",
   },
   {
     text: "SEO Pages",
@@ -175,6 +181,8 @@ watch(
 
 const getSectionComponent = (section) => {
   switch (section) {
+    case "authEmailActivity":
+      return AdminAuthEmailActivity;
     case "seoPages":
       return AdminSeoPages;
     case "seoIntelligence":

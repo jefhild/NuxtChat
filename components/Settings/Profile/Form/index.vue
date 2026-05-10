@@ -394,6 +394,7 @@ watch(
     ensurePreferredLocale();
     syncEditableState();
     loadPhotoLibraryPreview(newProfile?.user_id);
+    refreshAvatarDisplayUrl(newProfile);
   }
 );
 
@@ -1066,6 +1067,24 @@ const buildAvatarDisplayUrl = (url) => {
   return `${clean}?v=${Date.now()}`;
 };
 
+const refreshAvatarDisplayUrl = async (profileLike) => {
+  const userId = String(profileLike?.user_id || "").trim();
+  const storedUrl = String(profileLike?.avatar_url || "").trim();
+  if (!userId || !storedUrl) return;
+
+  try {
+    const result = await $fetch("/api/profile/avatar-resolve", {
+      query: { userId },
+    });
+    const resolvedUrl = String(result?.avatarUrl || "").trim();
+    if (resolvedUrl) {
+      localAvatar.value = resolvedUrl;
+    }
+  } catch (err) {
+    console.warn("[settings] avatar resolve failed:", err);
+  }
+};
+
 const localAvatar = ref(buildAvatarDisplayUrl(props.userProfile.avatar_url));
 
 const applyAvatarUrl = (cleanUrl) => {
@@ -1312,6 +1331,7 @@ onMounted(async () => {
       await refreshLinkedEmailState();
     }
     await loadPhotoLibraryPreview();
+    await refreshAvatarDisplayUrl(editableProfile.value);
 
 
 

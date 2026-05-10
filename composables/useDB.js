@@ -2666,59 +2666,31 @@ export const useDb = () => {
 
 const signInWithOtp = async (
   email,
-  { next = "/chat", redirectTo, mode = "magic" } = {}
+  { next = "/chat", redirectTo, mode = "magic", captchaToken = null } = {}
 ) => {
   const supabase = getClient();
-  const config = getConfig();
-
-  const origin =
-    typeof window !== "undefined" && window.location && window.location.origin
-      ? window.location.origin
-      : config.public.SITE_URL || "https://imchatty.com";
-
-  const normalizeRedirect = (value) => {
-    if (!value) return null;
-    if (/^https?:\/\//i.test(value)) return value;
-    const leadingSlash = value.startsWith("/") ? "" : "/";
-    return `${origin}${leadingSlash}${value}`;
-  };
-
-  const envRedirect = normalizeRedirect(
-    (config.public.SUPABASE_REDIRECT || "").trim()
-  );
-  const defaultRedirect = `${origin}/callback?next=${encodeURIComponent(next)}`;
-  const emailRedirectTo =
-    mode === "magic"
-      ? normalizeRedirect(redirectTo) || envRedirect || defaultRedirect
-      : null;
-
-  if (emailRedirectTo) {
-    console.info("[auth] emailRedirectTo:", emailRedirectTo);
-  } else {
-    console.info("[auth] emailRedirectTo: <none> (OTP mode)");
-  }
-
-  const options = { shouldCreateUser: true };
-  if (emailRedirectTo) options.emailRedirectTo = emailRedirectTo;
-
-  const attemptSignIn = async (requestOptions) =>
-    supabase.auth.signInWithOtp({
+  const response = await $fetch("/api/auth/email-auth-start", {
+    method: "POST",
+    body: {
       email,
-      options: requestOptions,
-    });
+      next,
+      redirectTo,
+      mode,
+      captchaToken,
+    },
+  });
 
-  let { error } = await attemptSignIn(options);
-
-  // Some GoTrue setups fail with a 500 when redirect_to is not accepted.
-  // Retry once without emailRedirectTo so the mail can still be sent.
-  if (error && options.emailRedirectTo) {
-    console.warn(
-      "[auth] signInWithOtp failed with emailRedirectTo; retrying without redirect_to",
-      { status: error.status, message: error.message }
-    );
-    const fallbackOptions = { shouldCreateUser: true };
-    ({ error } = await attemptSignIn(fallbackOptions));
+  const options = {
+    shouldCreateUser: response?.shouldCreateUser !== false,
+  };
+  if (response?.emailRedirectTo && mode !== "otp") {
+    options.emailRedirectTo = response.emailRedirectTo;
   }
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options,
+  });
 
   if (error) throw error;
 };
@@ -2775,36 +2747,20 @@ const verifyEmailOtp = async (email, token) => {
     mappedEmail,
     { next = "/settings", redirectTo } = {}
   ) => {
-    const supabase = getClient();
-    const config = getConfig();
-    const origin =
-      typeof window !== "undefined" && window.location?.origin
-        ? window.location.origin
-        : config.public.SITE_URL || "https://imchatty.com";
-    const normalizeRedirect = (value) => {
-      if (!value) return null;
-      if (/^https?:\/\//i.test(value)) return value;
-      const leadingSlash = value.startsWith("/") ? "" : "/";
-      return `${origin}${leadingSlash}${value}`;
-    };
-    const emailRedirectTo =
-      normalizeRedirect(redirectTo) ||
-      `${origin}/callback?next=${encodeURIComponent(next)}`;
-
-    const { data, error } = await supabase.auth.updateUser(
-      {
-        email: mappedEmail,
-      },
-      {
-        emailRedirectTo,
-      }
-    );
-
-    if (error) {
+    try {
+      const data = await $fetch("/api/auth/link-email-start", {
+        method: "POST",
+        body: {
+          email: mappedEmail,
+          next,
+          redirectTo,
+        },
+      });
+      return { data, error: null };
+    } catch (error) {
       console.error("Error updating email:", error);
+      return { data: null, error };
     }
-
-    return { data, error };
   };
 
   const authMarkUserAsAnonymous = async () => {
