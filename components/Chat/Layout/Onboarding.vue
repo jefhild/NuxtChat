@@ -8,6 +8,8 @@
         <div
           v-if="isFinalizing"
           class="onboarding-finalizing"
+          role="status"
+          aria-live="polite"
         >
           <span class="onboarding-spinner" aria-hidden="true" />
           <div class="onboarding-finalizing__title">
@@ -546,25 +548,29 @@ function onCaptchaError() {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  padding: 1rem 0.9rem 0.85rem;
+  min-height: 14rem;
+  padding: 1.2rem 0.9rem 1rem;
   text-align: center;
 }
 
 .onboarding-spinner {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 2.65rem;
+  height: 2.65rem;
+  display: block;
   border-radius: 999px;
-  border: 2px solid rgba(var(--color-secondary), 0.24);
-  border-top-color: rgb(var(--color-secondary));
-  animation: onboarding-spin 0.85s linear infinite;
-  margin-bottom: 0.6rem;
+  border: 3px solid rgba(var(--color-secondary), 0.16);
+  border-top-color: rgb(var(--color-primary));
+  border-right-color: rgba(var(--color-secondary), 0.92);
+  box-shadow: 0 0 0 6px rgba(var(--color-primary), 0.08);
+  animation: onboarding-spin 0.8s linear infinite;
+  margin-bottom: 0.95rem;
 }
 
 .onboarding-finalizing__title,
 .handoff-reveal__name {
   color: rgb(var(--color-heading));
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -577,8 +583,8 @@ function onCaptchaError() {
 }
 
 .onboarding-finalizing__body {
-  margin-top: 0.2rem;
-  max-width: 20rem;
+  margin-top: 0.25rem;
+  max-width: 21rem;
 }
 
 .handoff-reveal__label {

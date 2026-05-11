@@ -61,6 +61,7 @@
             @user-selected="selectUser"
             @filter-changed="updateFilters"
             @activate-language-practice="activateLanguagePracticeChat"
+            @return-language-practice="returnToLanguagePractice"
             @update:show-ai="showAIUsers = $event"
             @update:show-language-practice-ai="showLanguagePracticeAIUsers = $event"
           />
@@ -464,6 +465,7 @@
               @user-selected="selectUser"
               @filter-changed="updateFilters"
               @activate-language-practice="activateLanguagePracticeChat"
+              @return-language-practice="returnToLanguagePractice"
               @update:show-ai="showAIUsers = $event"
               @update:show-language-practice-ai="showLanguagePracticeAIUsers = $event"
             />
@@ -2237,10 +2239,15 @@ const getLiveMoodEmailLinkSuffix = (url) => {
   return variants[getLiveMoodLocaleCode()] || variants.en;
 };
 const MATCH_FILTER_PILL_IDS = ["online", "offline", "ai", "random"];
+const getLanguagePracticeReturnLabel = () =>
+  t("onboarding.languagePractice.quickReplies.backToPractice");
+const getLanguagePracticeReturnContext = () =>
+  draftStore.postOnboardingLanguagePracticeContext ||
+  draftStore.languagePracticeIntent ||
+  null;
 const languagePracticePostOnboardingQuickReplies = computed(() => [
   t("onboarding.languagePractice.quickReplies.browsePartners"),
   t("onboarding.languagePractice.quickReplies.answerMoodQuestion"),
-  t("onboarding.languagePractice.quickReplies.keepChatting"),
 ]);
 
 const liveMoodNextStepQuickReplies = computed(() => {
@@ -2258,7 +2265,12 @@ const liveMoodNextStepQuickReplies = computed(() => {
       return [getLiveMoodChoiceLabel("resume_matching")];
     }
     if (draftStore.liveMoodNextStepStage === "matched") {
-      return MATCH_FILTER_PILL_IDS.map(getLiveMoodFilterPillLabel);
+      return [
+        ...MATCH_FILTER_PILL_IDS.map(getLiveMoodFilterPillLabel),
+        ...(getLanguagePracticeReturnContext()
+          ? [getLanguagePracticeReturnLabel()]
+          : []),
+      ];
     }
     return getLiveMoodNextStepChoices(draftStore.liveMoodCandidate);
   }
@@ -2536,7 +2548,36 @@ function isDuplicateBotSubmission(text) {
 
 function onThreadQuickReply(label) {
   if (!label) return;
+  if (
+    label === getLanguagePracticeReturnLabel() &&
+    getLanguagePracticeReturnContext()
+  ) {
+    returnToLanguagePractice();
+    return;
+  }
   onSend(label, { bypassTranslationPrompt: true });
+}
+
+async function returnToLanguagePractice() {
+  const languageContext = getLanguagePracticeReturnContext();
+  if (!languageContext) return;
+
+  await navigateTo(
+    localePath({
+      path: "/language-practice",
+      query: {
+        ...(languageContext.native_language_code
+          ? { nativeLanguage: languageContext.native_language_code }
+          : {}),
+        ...(languageContext.target_language_code
+          ? { targetLanguage: languageContext.target_language_code }
+          : {}),
+        ...(languageContext.target_language_level
+          ? { targetLevel: languageContext.target_language_level }
+          : {}),
+      },
+    })
+  );
 }
 
 function buildUsersWithPresence({ includeLanguagePracticeAi = false } = {}) {
@@ -4645,12 +4686,14 @@ async function handleLiveMoodNextStepMessage(text, { peerId = null, peer = null 
     }
 
     if (choice === "answer_mood_question") {
-      draftStore.setField?.("postOnboardingLanguagePracticeContext", null);
-      draftStore.setField?.("liveMoodNextStepStage", "choose");
+      draftStore.setField?.("liveMoodNextStepStage", "done");
+      draftStore.setField?.("liveMoodStage", "prompt");
+      draftStore.setField?.("liveMoodCandidate", null);
+      draftStore.setField?.("liveMoodClarifierOptions", []);
+      draftStore.setField?.("liveMoodInput", "");
       await pushLiveMoodBotMessage(
-        t("onboarding.languagePractice.moodQuestionPrompt", {
-          prompt: getLiveMoodNextStepPrompt(draftStore.liveMoodCandidate),
-        }),
+        String(draftStore.liveMoodPrompt || "").trim() ||
+          "How are you feeling right now?",
         peer
       );
       return true;

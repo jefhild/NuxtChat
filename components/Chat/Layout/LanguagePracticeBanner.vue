@@ -6,9 +6,6 @@
     />
     <div class="language-practice-banner__content">
       <div class="language-practice-banner__title">{{ title }}</div>
-      <div class="language-practice-banner__meta">
-        {{ metaLine }}
-      </div>
     </div>
     <button
       type="button"
@@ -43,30 +40,6 @@ const languageLabel = computed(() => {
 
 const title = computed(() =>
   t("components.languagePracticeBanner.title", { language: languageLabel.value })
-);
-
-const levelLabel = computed(() => {
-  const level = props.session?.target_language_level || "unsure";
-  return t(`pages.languagePractice.levels.${level}`);
-});
-
-const correctionLabel = computed(() => {
-  const preference =
-    props.session?.correction_preference || "light_corrections";
-  return t(`match.language.correctionPreferences.${preference}`);
-});
-
-const modeLabel = computed(() => {
-  const mode = props.session?.language_exchange_mode || "practice_only";
-  return t(`pages.languagePractice.exchangeModes.${mode}`);
-});
-
-const metaLine = computed(() =>
-  [
-    `${t("components.languagePracticeBanner.level")}: ${levelLabel.value}`,
-    `${t("components.languagePracticeBanner.corrections")}: ${correctionLabel.value}`,
-    `${t("components.languagePracticeBanner.mode")}: ${modeLabel.value}`,
-  ].join(" • ")
 );
 </script>
 
@@ -103,13 +76,6 @@ const metaLine = computed(() =>
   font-size: 0.92rem;
   font-weight: 600;
   line-height: 1.25;
-}
-
-.language-practice-banner__meta {
-  margin-top: 2px;
-  color: rgb(var(--color-muted));
-  font-size: 0.82rem;
-  line-height: 1.45;
 }
 
 .language-practice-banner__action {

@@ -26,9 +26,14 @@ const STRINGS = {
     genderMale: "Male",
     genderFemale: "Female",
     genderOther: "Other",
+    answerYes: "Yes",
+    answerNo: "No",
+    askLanguagePracticeInterest: "Are you interested in practicing a language?",
+    askLanguagePracticeLanguage: "Which language would you like to practice?",
+    askLanguagePracticeRetry: "Choose the language you'd like to practice.",
     askBioShort: "Almost done! Tell us something about yourself.",
     askBio: "Tell us something about yourself.",
-    askBioAlt: "Please tell us a real detail about yourself.",
+    askBioAlt: "Please tell us something about yourself.",
     askBioShorter: "Please keep your bio under 300 characters.",
     askNameValidation: "Please choose a longer display name.",
     askNameTaken: "That display name is already taken. Try another.",
@@ -49,9 +54,15 @@ const STRINGS = {
     genderMale: "Homme",
     genderFemale: "Femme",
     genderOther: "Autre",
+    answerYes: "Oui",
+    answerNo: "Non",
+    askLanguagePracticeInterest:
+      "Souhaitez-vous pratiquer une langue ?",
+    askLanguagePracticeLanguage: "Quelle langue voulez-vous pratiquer ?",
+    askLanguagePracticeRetry: "Choisissez la langue que vous voulez pratiquer.",
     askBioShort: "Presque terminé ! Parlez-nous un peu de vous.",
     askBio: "Parlez-nous un peu de vous.",
-    askBioAlt: "Veuillez partager un vrai détail sur vous.",
+    askBioAlt: "Veuillez nous dire quelque chose sur vous.",
     askBioShorter: "Veuillez garder votre bio sous 300 caractères.",
     askNameValidation: "Veuillez choisir un nom d’affichage plus long.",
     askNameTaken: "Ce nom d’affichage est déjà utilisé. Essayez-en un autre.",
@@ -72,9 +83,14 @@ const STRINGS = {
     genderMale: "Мужской",
     genderFemale: "Женский",
     genderOther: "Другое",
+    answerYes: "Да",
+    answerNo: "Нет",
+    askLanguagePracticeInterest: "Хотите практиковать язык?",
+    askLanguagePracticeLanguage: "Какой язык вы хотите практиковать?",
+    askLanguagePracticeRetry: "Выберите язык, который хотите практиковать.",
     askBioShort: "Почти готово! Расскажите немного о себе.",
     askBio: "Расскажите немного о себе.",
-    askBioAlt: "Пожалуйста, расскажите реальную деталь о себе.",
+    askBioAlt: "Пожалуйста, расскажите что-нибудь о себе.",
     askBioShorter: "Пожалуйста, держите био короче 300 символов.",
     askNameValidation: "Пожалуйста, выберите более длинное отображаемое имя.",
     askNameTaken: "Это отображаемое имя уже занято. Попробуйте другое.",
@@ -93,9 +109,14 @@ const STRINGS = {
     genderMale: "男",
     genderFemale: "女",
     genderOther: "其他",
+    answerYes: "是",
+    answerNo: "不",
+    askLanguagePracticeInterest: "你想练习一门语言吗？",
+    askLanguagePracticeLanguage: "你想练习哪种语言？",
+    askLanguagePracticeRetry: "请选择你想练习的语言。",
     askBioShort: "快好了！告诉我们一些关于你的事。",
     askBio: "告诉我们一些关于你的事。",
-    askBioAlt: "请分享一个真实的个人细节。",
+    askBioAlt: "请告诉我们一些关于你的事。",
     askBioShorter: "简介请控制在300字符以内。",
     askNameValidation: "请使用更长的显示名称。",
     askNameTaken: "这个显示名称已被占用，请换一个。",
@@ -110,10 +131,26 @@ const YES_REGEX = {
   zh: /^(是|好的|好|行|ok|yes)$/i,
 };
 
+const NO_REGEX = {
+  en: /^(n|no|nope|nah)$/i,
+  fr: /^(n|non)$/i,
+  ru: /^(нет|не)$/i,
+  zh: /^(不|不是|不行|不可以)$/i,
+};
+
+const LANGUAGE_PRACTICE_LANGUAGE_LABELS = {
+  en: { en: "English", fr: "French", ru: "Russian", zh: "Chinese" },
+  fr: { en: "Anglais", fr: "Français", ru: "Russe", zh: "Chinois" },
+  ru: { en: "Английский", fr: "Французский", ru: "Русский", zh: "Китайский" },
+  zh: { en: "英语", fr: "法语", ru: "俄语", zh: "中文" },
+};
+
 const pickLang = (locale = "en") => String(locale || "en").split("-")[0];
 const pickStrings = (locale = "en") => STRINGS[pickLang(locale)] || STRINGS.en;
 const pickYesRegex = (locale = "en") =>
   YES_REGEX[pickLang(locale)] || YES_REGEX.en;
+const pickNoRegex = (locale = "en") =>
+  NO_REGEX[pickLang(locale)] || NO_REGEX.en;
 const genderQuickReplies = (locale = "en") => {
   const strings = pickStrings(locale);
   return [
@@ -132,6 +169,44 @@ const pickVariant = (locale = "en", variants = {}) => {
     variants.en
   );
 };
+
+const languagePracticeInterestQuickReplies = (locale = "en") => {
+  const strings = pickStrings(locale);
+  return [strings.answerYes, strings.answerNo].filter(Boolean);
+};
+
+const languagePracticeLanguageQuickReplies = (locale = "en") => {
+  const lang = pickLang(locale);
+  const labels =
+    LANGUAGE_PRACTICE_LANGUAGE_LABELS[lang] ||
+    LANGUAGE_PRACTICE_LANGUAGE_LABELS.en;
+  return ["en", "fr", "ru", "zh"].map((code) => labels[code]);
+};
+
+function normalizePracticeLanguageSelection(input, locale = "en") {
+  const raw = String(input || "").trim().toLowerCase();
+  if (!raw) return null;
+  const lang = pickLang(locale);
+  const localizedLabels =
+    LANGUAGE_PRACTICE_LANGUAGE_LABELS[lang] ||
+    LANGUAGE_PRACTICE_LANGUAGE_LABELS.en;
+  const matches = {
+    en: [localizedLabels.en, "english", "anglais", "английский", "英语", "en"],
+    fr: [localizedLabels.fr, "french", "français", "francais", "французский", "法语", "fr"],
+    ru: [localizedLabels.ru, "russian", "russe", "русский", "俄语", "ru"],
+    zh: [localizedLabels.zh, "chinese", "中文", "mandarin", "chinois", "китайский", "zh"],
+  };
+  return (
+    Object.entries(matches).find(([, values]) =>
+      values.some((value) => raw === String(value || "").trim().toLowerCase())
+    )?.[0] || null
+  );
+}
+
+function normalizePracticeNativeLanguage(locale = "en") {
+  const lang = pickLang(locale);
+  return ["en", "fr", "ru", "zh"].includes(lang) ? lang : "en";
+}
 
 function parseKeywords(input) {
   if (!input || typeof input !== "string") return [];
@@ -456,6 +531,7 @@ export default defineEventHandler(async (event) => {
     messages = [],
     draftSummary,
     missingFields,
+    languagePracticeIntent,
     consented,
     isComplete,
     resume,
@@ -467,11 +543,25 @@ export default defineEventHandler(async (event) => {
   const strings = pickStrings(localeCode);
   const L = (key) => strings[key] || STRINGS.en[key] || "";
   const yesRegex = pickYesRegex(localeCode);
+  const noRegex = pickNoRegex(localeCode);
   const genderReplies = genderQuickReplies(localeCode);
+  const languagePracticeReplies = languagePracticeInterestQuickReplies(localeCode);
+  const languagePracticeLanguageReplies =
+    languagePracticeLanguageQuickReplies(localeCode);
   const genderPromptAction = (text) => ({
     type: "bot_message",
     text,
     quickReplies: genderReplies,
+  });
+  const languagePracticePromptAction = (text) => ({
+    type: "bot_message",
+    text,
+    quickReplies: languagePracticeReplies,
+  });
+  const languagePracticeLanguagePromptAction = (text) => ({
+    type: "bot_message",
+    text,
+    quickReplies: languagePracticeLanguageReplies,
   });
   const cfg = useRuntimeConfig(event);
   const { getServerClientFrom } = useDb();
@@ -587,22 +677,39 @@ export default defineEventHandler(async (event) => {
       genderId: null,
       bio: null,
       tagline: null,
+      languagePracticeInterest: null,
     },
+    languagePracticeIntent:
+      languagePracticeIntent && typeof languagePracticeIntent === "object"
+        ? languagePracticeIntent
+        : null,
     missingFields: Array.isArray(missingFields) ? missingFields : [],
     isComplete: !!isComplete,
   };
 
+  const hasLanguagePracticeInterest =
+    typeof state.draftSummary.languagePracticeInterest === "boolean";
+  const wantsLanguagePractice = state.draftSummary.languagePracticeInterest === true;
+  const hasLanguagePracticeTarget = !!String(
+    state.languagePracticeIntent?.target_language_code || ""
+  ).trim();
+
+  const getNextOnboardingField = () => {
+    if (!state.draftSummary.displayName) return "displayName";
+    if (state.draftSummary.age == null) return "age";
+    if (state.draftSummary.genderId == null) return "genderId";
+    if (!hasLanguagePracticeInterest) return "languagePracticeInterest";
+    if (wantsLanguagePractice && !hasLanguagePracticeTarget) {
+      return "languagePracticeTarget";
+    }
+    if (!state.draftSummary.bio || !String(state.draftSummary.bio).trim()) {
+      return "bio";
+    }
+    return "done";
+  };
+
   // compute once, near where you already have REQUIRED / state / latestUtter:
-  const nextRequired = (
-    state.missingFields?.length
-      ? state.missingFields
-      : REQUIRED.filter(
-          (k) =>
-            !state.draftSummary[k] ||
-      (typeof state.draftSummary[k] === "string" &&
-        !state.draftSummary[k].trim())
-    )
-).find((f) => REQUIRED.includes(f));
+  const nextRequired = getNextOnboardingField();
 
   const questionForField = (field) => {
     switch (field) {
@@ -612,6 +719,10 @@ export default defineEventHandler(async (event) => {
         return L("askAge");
       case "genderId":
         return L("askGenderOpen");
+      case "languagePracticeInterest":
+        return L("askLanguagePracticeInterest");
+      case "languagePracticeTarget":
+        return L("askLanguagePracticeLanguage");
       case "bio":
         return L("askBio");
       default:
@@ -683,16 +794,22 @@ export default defineEventHandler(async (event) => {
       .find((m) => m?.role === "user" && typeof m.content === "string")
       ?.content?.trim() || "";
 
-  const nextField = (
-    state.missingFields?.length
-      ? state.missingFields
-      : REQUIRED.filter(
-          (k) =>
-            !state.draftSummary[k] ||
-            (typeof state.draftSummary[k] === "string" &&
-              !state.draftSummary[k].trim())
-        )
-  ).find((f) => REQUIRED.includes(f));
+  const nextField = getNextOnboardingField();
+
+  if (!latestUtter) {
+    if (nextField === "languagePracticeInterest") {
+      return {
+        actions: [languagePracticePromptAction(L("askLanguagePracticeInterest"))],
+      };
+    }
+    if (nextField === "languagePracticeTarget") {
+      return {
+        actions: [
+          languagePracticeLanguagePromptAction(L("askLanguagePracticeLanguage")),
+        ],
+      };
+    }
+  }
 
   if (nextField === "bio" && latestUtter) {
     const seed = normalizeBioSeed(latestUtter);
@@ -711,6 +828,56 @@ export default defineEventHandler(async (event) => {
           type: "bot_message",
           text: L(seed.length > 280 ? "askBioShorter" : "askBioAlt"),
         },
+      ],
+    };
+  }
+
+  if (nextField === "languagePracticeInterest" && latestUtter) {
+    if (yesRegex.test(latestUtter.trim())) {
+      return {
+        actions: [
+          { type: "set_field", key: "languagePracticeInterest", value: true },
+          languagePracticeLanguagePromptAction(L("askLanguagePracticeLanguage")),
+        ],
+      };
+    }
+    if (noRegex.test(latestUtter.trim())) {
+      return {
+        actions: [
+          { type: "set_field", key: "languagePracticeInterest", value: false },
+          { type: "set_language_practice_intent", value: null },
+          { type: "bot_message", text: L("askBioShort") },
+        ],
+      };
+    }
+    return {
+      actions: [languagePracticePromptAction(L("askLanguagePracticeInterest"))],
+    };
+  }
+
+  if (nextField === "languagePracticeTarget" && latestUtter) {
+    const targetLanguageCode = normalizePracticeLanguageSelection(
+      latestUtter,
+      localeCode
+    );
+    if (targetLanguageCode) {
+      return {
+        actions: [
+          {
+            type: "set_language_practice_intent",
+            value: {
+              is_active: true,
+              native_language_code: normalizePracticeNativeLanguage(localeCode),
+              target_language_code: targetLanguageCode,
+            },
+          },
+          { type: "bot_message", text: L("askBioShort") },
+        ],
+      };
+    }
+    return {
+      actions: [
+        languagePracticeLanguagePromptAction(L("askLanguagePracticeRetry")),
       ],
     };
   }
@@ -750,8 +917,47 @@ export default defineEventHandler(async (event) => {
     };
   }
 
+  if (nextField === "age" && latestUtter) {
+    const n = parseInt(latestUtter, 10);
+    if (!Number.isNaN(n) && n >= 18 && n <= 120) {
+      return {
+        actions: [
+          { type: "set_field", key: "age", value: n },
+          {
+            ...genderPromptAction(L("askGenderShort")),
+          },
+        ],
+      };
+    }
+    return {
+      actions: [
+        {
+          type: "bot_message",
+          text: L("askAgeSimple"),
+        },
+      ],
+    };
+  }
+
+  if (nextField === "genderId" && latestUtter) {
+    const g = normalizeGender(latestUtter);
+    if (g) {
+      return {
+        actions: [
+          { type: "set_field", key: "genderId", value: g },
+          languagePracticePromptAction(L("askLanguagePracticeInterest")),
+        ],
+      };
+    }
+    return {
+      actions: [
+        genderPromptAction(L("askGenderOpen")),
+      ],
+    };
+  }
+
   // ---- Deterministic pre-parse (ONLY if AI is off/unavailable) ----
-  if ((!preferAI || !canUseAI) && latestUtter && nextField) {
+  if ((!preferAI || !canUseAI) && latestUtter && nextField !== "done") {
     // displayName
     if (nextField === "displayName") {
       const v = latestUtter;
@@ -804,16 +1010,63 @@ export default defineEventHandler(async (event) => {
         return {
           actions: [
             { type: "set_field", key: "genderId", value: g },
-            {
-              type: "bot_message",
-              text: L("askBioShort"),
-            },
+            languagePracticePromptAction(L("askLanguagePracticeInterest")),
           ],
         };
       }
       return {
         actions: [
           genderPromptAction(L("askGenderOpen")),
+        ],
+      };
+    }
+
+    if (nextField === "languagePracticeInterest") {
+      if (yesRegex.test(latestUtter.trim())) {
+        return {
+          actions: [
+            { type: "set_field", key: "languagePracticeInterest", value: true },
+            languagePracticeLanguagePromptAction(L("askLanguagePracticeLanguage")),
+          ],
+        };
+      }
+      if (noRegex.test(latestUtter.trim())) {
+        return {
+          actions: [
+            { type: "set_field", key: "languagePracticeInterest", value: false },
+            { type: "set_language_practice_intent", value: null },
+            { type: "bot_message", text: L("askBioShort") },
+          ],
+        };
+      }
+      return {
+        actions: [languagePracticePromptAction(L("askLanguagePracticeInterest"))],
+      };
+    }
+
+    if (nextField === "languagePracticeTarget") {
+      const targetLanguageCode = normalizePracticeLanguageSelection(
+        latestUtter,
+        localeCode
+      );
+      if (targetLanguageCode) {
+        return {
+          actions: [
+            {
+              type: "set_language_practice_intent",
+              value: {
+                is_active: true,
+                native_language_code: normalizePracticeNativeLanguage(localeCode),
+                target_language_code: targetLanguageCode,
+              },
+            },
+            { type: "bot_message", text: L("askBioShort") },
+          ],
+        };
+      }
+      return {
+        actions: [
+          languagePracticeLanguagePromptAction(L("askLanguagePracticeRetry")),
         ],
       };
     }
@@ -869,13 +1122,9 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const next = (
-    state.missingFields.length
-      ? state.missingFields
-      : REQUIRED.filter((k) => !state.draftSummary[k])
-  ).find((f) => REQUIRED.includes(f));
+  const next = getNextOnboardingField();
 
-  if (utter && next && (!preferAI || !canUseAI)) {
+  if (utter && next !== "done" && (!preferAI || !canUseAI)) {
     // displayName
     if (next === "displayName") {
       const nameCheck = await validateDisplayName(supa, utter);
@@ -933,16 +1182,63 @@ export default defineEventHandler(async (event) => {
         return {
           actions: [
             { type: "set_field", key: "genderId", value: g },
-            {
-              type: "bot_message",
-              text: L("askBioShort"),
-            },
+            languagePracticePromptAction(L("askLanguagePracticeInterest")),
           ],
         };
       }
       return {
         actions: [
           genderPromptAction(L("askGenderOpen")),
+        ],
+      };
+    }
+
+    if (next === "languagePracticeInterest") {
+      if (yesRegex.test(utter.trim())) {
+        return {
+          actions: [
+            { type: "set_field", key: "languagePracticeInterest", value: true },
+            languagePracticeLanguagePromptAction(L("askLanguagePracticeLanguage")),
+          ],
+        };
+      }
+      if (noRegex.test(utter.trim())) {
+        return {
+          actions: [
+            { type: "set_field", key: "languagePracticeInterest", value: false },
+            { type: "set_language_practice_intent", value: null },
+            { type: "bot_message", text: L("askBioShort") },
+          ],
+        };
+      }
+      return {
+        actions: [languagePracticePromptAction(L("askLanguagePracticeInterest"))],
+      };
+    }
+
+    if (next === "languagePracticeTarget") {
+      const targetLanguageCode = normalizePracticeLanguageSelection(
+        utter,
+        localeCode
+      );
+      if (targetLanguageCode) {
+        return {
+          actions: [
+            {
+              type: "set_language_practice_intent",
+              value: {
+                is_active: true,
+                native_language_code: normalizePracticeNativeLanguage(localeCode),
+                target_language_code: targetLanguageCode,
+              },
+            },
+            { type: "bot_message", text: L("askBioShort") },
+          ],
+        };
+      }
+      return {
+        actions: [
+          languagePracticeLanguagePromptAction(L("askLanguagePracticeRetry")),
         ],
       };
     }
@@ -991,7 +1287,7 @@ export default defineEventHandler(async (event) => {
   //  );
 
   if (!canUseAI) {
-    const next = state.missingFields[0];
+    const next = getNextOnboardingField();
 
     // If we're offline but the latest user message looks like keywords for a bio, generate a localized fallback bio.
     if (next === "bio" && latestUtter) {
@@ -1026,11 +1322,15 @@ export default defineEventHandler(async (event) => {
     }
 
     const question = questionForField(next);
-    const actions = state.isComplete
+    const actions = next === "done"
       ? [{ type: "finalize" }]
       : [
           next === "genderId"
             ? genderPromptAction(question)
+            : next === "languagePracticeInterest"
+            ? languagePracticePromptAction(question)
+            : next === "languagePracticeTarget"
+            ? languagePracticeLanguagePromptAction(question)
             : { type: "bot_message", text: question },
         ];
     return { actions };
@@ -1164,9 +1464,7 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
     const calls = msg?.tool_calls || [];
 
     if (!calls.length) {
-      const next = (state.missingFields || []).find((f) =>
-        REQUIRED.includes(f)
-      );
+      const next = getNextOnboardingField();
       const question =
         next === "displayName"
           ? L("consentAskName")
@@ -1174,11 +1472,21 @@ Persona & tone: helpful, concise, upbeat. 1–2 sentences per question.
           ? L("askAge")
           : next === "genderId"
           ? L("askGenderShort")
+          : next === "languagePracticeInterest"
+          ? L("askLanguagePracticeInterest")
+          : next === "languagePracticeTarget"
+          ? L("askLanguagePracticeLanguage")
           : next === "bio"
           ? L("askBio")
           : L("finalizePrompt");
       if (next === "genderId") {
         return { actions: [genderPromptAction(question)] };
+      }
+      if (next === "languagePracticeInterest") {
+        return { actions: [languagePracticePromptAction(question)] };
+      }
+      if (next === "languagePracticeTarget") {
+        return { actions: [languagePracticeLanguagePromptAction(question)] };
       }
       return { actions: [{ type: "bot_message", text: question }] };
     }

@@ -420,6 +420,42 @@ export async function getOrCreateConversationLog(
     .maybeSingle();
 
   if (error) {
+    const message = String(error.message || "");
+    const isDuplicateOpenConversation =
+      error.code === "23505" || message.includes("uq_agent_target_active");
+
+    if (isDuplicateOpenConversation) {
+      const { data: racedExisting } = await supabase
+        .from("agent_conversation_log")
+        .select("*")
+        .eq("agent_profile_id", agentProfileId)
+        .eq("target_user_id", targetUserId)
+        .in("status", [...OPEN_AGENT_CONVERSATION_STATUSES])
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (racedExisting) {
+        if (
+          racedExisting.status === "pending_reply" &&
+          promotePendingToActive &&
+          initialStatus === "active"
+        ) {
+          const { data: promoted } = await supabase
+            .from("agent_conversation_log")
+            .update({
+              status: "active",
+              ended_at: null,
+            })
+            .eq("id", racedExisting.id)
+            .select("*")
+            .maybeSingle();
+          return promoted || racedExisting;
+        }
+        return racedExisting;
+      }
+    }
+
     console.error("[agentEngine] getOrCreateConversationLog error:", error.message);
     return null;
   }

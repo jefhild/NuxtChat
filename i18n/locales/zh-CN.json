@@ -1097,7 +1097,7 @@
       "subtitle": "更新您的账户偏好和个人信息。",
       "languagePractice": {
         "title": "语言练习",
-        "subtitle": "保存你能帮助的语言、想练习的语言，以及你希望获得多少纠错。",
+        "subtitle": "选择你能帮助的语言，以及你想练习的语言。",
         "enabledLabel": "在语言练习中显示我",
         "localeHint": "网站语言仍然单独设置。这里的内容只用于语言练习聊天的匹配和引导。",
         "useSiteLanguage": "使用我的站点语言",
@@ -1106,6 +1106,7 @@
         "targetLanguageHint": "这里选择一个主要练习语言；如果你愿意接受任何受支持的语言，可以留空。",
         "levelUnset": "未设置",
         "inactiveHint": "当你希望出现在语言练习匹配中时，请开启此项。",
+        "registerHint": "绑定邮箱后，你可以保留语言练习联系人并在之后继续。",
         "loadError": "无法加载语言练习设置。",
         "saveError": "无法保存语言练习设置。",
         "saveSuccess": "语言练习设置已保存。"
@@ -1207,13 +1208,14 @@
     "languagePractice": {
       "kicker": "语言交换",
       "title": "寻找语言练习伙伴",
-      "subtitle": "选择你能帮助的语言、想练习的语言，以及你偏好的反馈方式。",
+      "subtitle": "选择你能帮助的语言，以及你想练习的语言。",
       "seoTitle": "语言练习聊天 | ImChatty",
-      "seoDescription": "按目标语言、水平和纠错偏好寻找真人或 AI 语言练习伙伴。",
+      "seoDescription": "按你能帮助的语言和你想练习的语言寻找真人或 AI 语言练习伙伴。",
       "filtersTitle": "语言筛选",
       "filtersExplanation": "“我可以帮助”会匹配想练习该语言的人；“我想练习”会匹配能够帮助你练习该语言的人。",
       "saveSettings": "保存为我的语言设置",
       "saveHint": "保存这些筛选项，以便在设置和匹配中再次使用。",
+      "registerHint": "绑定邮箱后，你可以保留语言练习对话并在之后继续。",
       "saveSuccess": "已保存到你的语言练习设置。",
       "saveError": "无法保存你的语言练习设置。",
       "chatStartError": "无法开始这段语言练习聊天。",
@@ -1404,11 +1406,13 @@
       "settings-aria-label": "打开设置窗口以更新您的账户偏好和个人信息"
     },
     "onboardingSteps": {
-      "consent": "第 1/5 步：接受条款以开始。",
-      "displayName": "第 2/5 步：选择你的显示名称。",
-      "age": "第 3/5 步：填写你的年龄。",
-      "gender": "第 4/5 步：填写你的性别。",
-      "bio": "第 5/5 步：添加一句简介。",
+      "consent": "第 1/7 步：接受条款以开始。",
+      "displayName": "第 2/7 步：选择你的显示名称。",
+      "age": "第 3/7 步：填写你的年龄。",
+      "gender": "第 4/7 步：填写你的性别。",
+      "languagePracticeInterest": "第 5/7 步：选择你是否想练习语言。",
+      "languagePracticeTarget": "第 6/7 步：选择你想练习的语言。",
+      "bio": "第 7/7 步：添加一句简介。",
       "done": "档案已完成。"
     },
     "loginAi": {
@@ -1857,7 +1861,8 @@
       "offline": "离线匹配",
       "ai": "AI匹配",
       "random": "随机",
-      "refresh": "刷新匹配"
+      "refresh": "刷新匹配",
+      "backToLanguagePractice": "返回语言练习"
     },
     "candidateCard": {
       "anonymous": "匿名",
@@ -1865,6 +1870,7 @@
       "chat": "聊天",
       "chatAi": "与AI聊天",
       "chatWith": "与{name}聊天",
+      "registeredBadge": "已注册",
       "practicingLanguage": "正在练习{language}",
       "nativeLanguage": "母语{language}",
       "aiHelpingLanguage": "可帮助练习{language}",
@@ -1985,7 +1991,8 @@
       "quickReplies": {
         "browsePartners": "查看语言伙伴",
         "answerMoodQuestion": "回答一个心情问题",
-        "keepChatting": "继续在这里聊天"
+        "keepChatting": "继续在这里聊天",
+        "backToPractice": "返回语言练习"
       }
     },
     "moodFeed": {

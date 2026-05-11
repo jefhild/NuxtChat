@@ -4,6 +4,16 @@
 
     <div class="strip-pills">
       <button
+        v-if="showLanguagePracticeReturn"
+        class="pill pill-language-practice"
+        :title="$t('components.matchStrip.backToLanguagePractice')"
+        :aria-label="$t('components.matchStrip.backToLanguagePractice')"
+        @click="$emit('return-language-practice')"
+      >
+        <i class="mdi mdi-translate pill-language-practice__icon" aria-hidden="true" />
+      </button>
+
+      <button
         class="pill pill-online"
         :class="{ active: activeFilter === 'online', empty: counts.online === 0 }"
         :disabled="counts.online === 0"
@@ -61,9 +71,10 @@ const props = defineProps({
   data:         { type: Object,  default: null  },
   loading:      { type: Boolean, default: false },
   activeFilter: { type: String,  default: null  },
+  showLanguagePracticeReturn: { type: Boolean, default: false },
 });
 
-defineEmits(["refresh", "filter-change", "random-pick"]);
+defineEmits(["refresh", "filter-change", "random-pick", "return-language-practice"]);
 
 const counts = computed(() => props.data?.counts ?? { online: 0, offline: 0, ai: 0 });
 const hasIntake = computed(() => !!props.data?.intake);
@@ -144,6 +155,27 @@ const showStrip = computed(() => props.data !== null && hasIntake.value);
 .dot-offline { background: #94a3b8; }
 
 .pill-random { font-size: 12px; padding: 0 4px; }
+
+.pill-language-practice {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.28);
+  color: #86efac;
+  width: 22px;
+  min-width: 22px;
+  justify-content: center;
+  padding: 0;
+}
+
+.pill-language-practice:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(74, 222, 128, 0.45);
+  color: #dcfce7;
+}
+
+.pill-language-practice__icon {
+  font-size: 12px;
+  line-height: 1;
+}
 
 .refresh-btn {
   display: inline-flex;

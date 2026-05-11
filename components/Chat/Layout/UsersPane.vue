@@ -32,6 +32,7 @@
         @delete-chat="$emit('delete-chat', $event)"
         @activate-language-practice="$emit('activate-language-practice', $event)"
         @end-language-practice="$emit('end-language-practice', $event)"
+        @return-language-practice="$emit('return-language-practice')"
         @view-profile="$emit('view-profile', $event)"
         @update:show-ai="$emit('update:show-ai', $event)"
         @update:show-language-practice-ai="$emit('update:show-language-practice-ai', $event)"
@@ -68,6 +69,7 @@ defineEmits([
   "delete-chat",
   "activate-language-practice",
   "end-language-practice",
+  "return-language-practice",
   "view-profile",
   "update:show-ai",
   "update:show-language-practice-ai",

@@ -12,67 +12,39 @@
       <h2 id="language-filter-heading" class="language-filter-panel__title type-card-title">
         {{ $t("pages.languagePractice.filtersTitle") }}
       </h2>
-      <div class="language-filter-panel__controls">
-        <label class="language-filter-field">
-          <span class="language-filter-field__label">{{ $t("pages.languagePractice.nativeLanguage") }}</span>
-          <select v-model="languageFilters.native_language_code" class="language-filter-field__control">
-            <option :value="null">{{ $t("components.filter-menu.all") }}</option>
-            <option v-for="option in languageOptions" :key="option.value" :value="option.value">
-              {{ option.title }}
-            </option>
-          </select>
-        </label>
-        <label class="language-filter-field">
-          <span class="language-filter-field__label">{{ $t("pages.languagePractice.targetLanguage") }}</span>
-          <select v-model="languageFilters.target_language_code" class="language-filter-field__control">
-            <option :value="null">{{ $t("components.filter-menu.all") }}</option>
-            <option v-for="option in languageOptions" :key="`target-${option.value}`" :value="option.value">
-              {{ option.title }}
-            </option>
-          </select>
-        </label>
-        <label class="language-filter-field">
-          <span class="language-filter-field__label">{{ $t("pages.languagePractice.level") }}</span>
-          <select v-model="languageFilters.target_language_level" class="language-filter-field__control">
-            <option :value="null">{{ $t("components.filter-menu.all") }}</option>
-            <option v-for="option in levelOptions" :key="option.value" :value="option.value">
-              {{ option.title }}
-            </option>
-          </select>
-        </label>
-        <label class="language-filter-field">
-          <span class="language-filter-field__label">{{ $t("pages.languagePractice.corrections") }}</span>
-          <select v-model="languageFilters.correction_preference" class="language-filter-field__control">
-            <option :value="null">{{ $t("components.filter-menu.all") }}</option>
-            <option v-for="option in correctionOptions" :key="option.value" :value="option.value">
-              {{ option.title }}
-            </option>
-          </select>
-        </label>
-        <label class="language-filter-field">
-          <span class="language-filter-field__label">{{ $t("pages.languagePractice.mode") }}</span>
-          <select v-model="languageFilters.language_exchange_mode" class="language-filter-field__control">
-            <option :value="null">{{ $t("components.filter-menu.all") }}</option>
-            <option v-for="option in exchangeModeOptions" :key="option.value" :value="option.value">
-              {{ option.title }}
-            </option>
-          </select>
-        </label>
-      </div>
+      <div class="language-filter-panel__toolbar">
+        <div class="language-filter-panel__controls">
+          <label class="language-filter-field">
+            <span class="language-filter-field__label">{{ $t("pages.languagePractice.nativeLanguage") }}</span>
+            <select v-model="languageFilters.native_language_code" class="language-filter-field__control">
+              <option :value="null">{{ $t("components.filter-menu.all") }}</option>
+              <option v-for="option in languageOptions" :key="option.value" :value="option.value">
+                {{ option.title }}
+              </option>
+            </select>
+          </label>
+          <label class="language-filter-field">
+            <span class="language-filter-field__label">{{ $t("pages.languagePractice.targetLanguage") }}</span>
+            <select v-model="languageFilters.target_language_code" class="language-filter-field__control">
+              <option :value="null">{{ $t("components.filter-menu.all") }}</option>
+              <option v-for="option in languageOptions" :key="`target-${option.value}`" :value="option.value">
+                {{ option.title }}
+              </option>
+            </select>
+          </label>
+        </div>
 
-      <div v-if="isAuthenticated" class="language-filter-panel__actions">
-        <button
-          type="button"
-          class="language-filter-panel__save-button"
-          :disabled="savingPreferences || !hasSavableLanguageFilters"
-          @click="saveCurrentFilters"
-        >
-          <span v-if="savingPreferences" class="language-filter-panel__save-spinner" aria-hidden="true" />
-          {{ $t("pages.languagePractice.saveSettings") }}
-        </button>
-        <p class="language-filter-panel__save-hint">
-          {{ $t("pages.languagePractice.saveHint") }}
-        </p>
+        <div v-if="canManageLanguagePractice" class="language-filter-panel__actions">
+          <button
+            type="button"
+            class="language-filter-panel__save-button"
+            :disabled="savingPreferences || !hasSavableLanguageFilters"
+            @click="saveCurrentFilters"
+          >
+            <span v-if="savingPreferences" class="language-filter-panel__save-spinner" aria-hidden="true" />
+            {{ $t("pages.languagePractice.saveSettings") }}
+          </button>
+        </div>
       </div>
 
       <div
@@ -97,6 +69,27 @@
         role="alert"
       >
         {{ chatStartError }}
+      </div>
+
+      <div
+        v-if="auth.authStatus === 'anon_authenticated'"
+        class="language-feedback language-feedback--info mt-4"
+      >
+        <span>
+          {{
+            $t(
+              "pages.languagePractice.registerHint",
+              "Add your email to keep your language-practice conversations and reconnect later."
+            )
+          }}
+        </span>
+        <button
+          type="button"
+          class="language-filter-panel__register-link"
+          @click="showConvertDialog = true"
+        >
+          {{ $t("components.consentPanel.cta.linkEmail", "Add email") }}
+        </button>
       </div>
     </section>
 
@@ -276,6 +269,11 @@
       v-model="profileDialogOpen"
       :user-id="profileDialogUserId"
     />
+
+    <AuthConvertAccountDialog
+      v-model="showConvertDialog"
+      context="general"
+    />
   </div>
 </template>
 
@@ -305,9 +303,6 @@ const { createOrResumeLanguagePracticeSession } = useLanguagePracticeSession();
 const languageFilters = ref({
   native_language_code: null,
   target_language_code: null,
-  target_language_level: null,
-  correction_preference: null,
-  language_exchange_mode: null,
 });
 
 const candidateData = ref({ online: [], offline: [], ai: [] });
@@ -323,11 +318,17 @@ const profileDialogUserId = ref(null);
 const defaultOpenSections = ["online", "offline", "ai"];
 const openSections = ref([...defaultOpenSections]);
 const savingPreferences = ref(false);
+const showConvertDialog = ref(false);
 const saveError = ref("");
 const saveSuccess = ref("");
 const chatStartError = ref("");
 
-const isAuthenticated = computed(() => auth.authStatus !== "unauthenticated");
+const canManageLanguagePractice = computed(() =>
+  ["authenticated", "anon_authenticated"].includes(auth.authStatus)
+);
+const shouldUsePrivateLanguagePracticeData = computed(() =>
+  ["authenticated", "anon_authenticated"].includes(auth.authStatus)
+);
 const authResolved = computed(() => auth.authResolved === true);
 const isLoading = computed(
   () => !authResolved.value || loadingCandidates.value || publicLoading.value
@@ -347,28 +348,6 @@ const languageOptions = computed(() => [
   { title: t("match.language.languages.zh"), value: "zh" },
 ]);
 
-const levelOptions = computed(() => [
-  { title: t("pages.languagePractice.levels.unsure"), value: "unsure" },
-  { title: t("pages.languagePractice.levels.a1"), value: "a1" },
-  { title: t("pages.languagePractice.levels.a2"), value: "a2" },
-  { title: t("pages.languagePractice.levels.b1"), value: "b1" },
-  { title: t("pages.languagePractice.levels.b2"), value: "b2" },
-  { title: t("pages.languagePractice.levels.c1"), value: "c1" },
-  { title: t("pages.languagePractice.levels.c2"), value: "c2" },
-]);
-
-const correctionOptions = computed(() => [
-  { title: t("match.language.correctionPreferences.no_corrections"), value: "no_corrections" },
-  { title: t("match.language.correctionPreferences.light_corrections"), value: "light_corrections" },
-  { title: t("match.language.correctionPreferences.active_corrections"), value: "active_corrections" },
-]);
-
-const exchangeModeOptions = computed(() => [
-  { title: t("pages.languagePractice.exchangeModes.practice_only"), value: "practice_only" },
-  { title: t("pages.languagePractice.exchangeModes.reciprocal_exchange"), value: "reciprocal_exchange" },
-  { title: t("pages.languagePractice.exchangeModes.native_helper"), value: "native_helper" },
-]);
-
 const normalizeLanguageCode = (value) => {
   const code = String(value || "").trim().toLowerCase();
   if (code.startsWith("zh")) return "zh";
@@ -376,11 +355,6 @@ const normalizeLanguageCode = (value) => {
   if (code.startsWith("ru")) return "ru";
   if (code.startsWith("en")) return "en";
   return null;
-};
-
-const normalizeChoice = (value, allowed) => {
-  const normalized = String(value || "").trim().toLowerCase().replace(/[\s-]+/g, "_");
-  return allowed.includes(normalized) ? normalized : null;
 };
 
 const normalizeLocale = (value) => {
@@ -395,9 +369,6 @@ function hydrateLanguageFiltersFromQuery() {
   languageFilters.value = {
     native_language_code: normalizeLanguageCode(route.query.nativeLanguage || route.query.native_language),
     target_language_code: normalizeLanguageCode(route.query.targetLanguage || route.query.target_language),
-    target_language_level: normalizeChoice(route.query.level || route.query.targetLevel, ["a1", "a2", "b1", "b2", "c1", "c2", "unsure"]),
-    correction_preference: normalizeChoice(route.query.correction, ["no_corrections", "light_corrections", "active_corrections"]),
-    language_exchange_mode: normalizeChoice(route.query.exchangeMode || route.query.mode, ["practice_only", "reciprocal_exchange", "native_helper"]),
   };
 }
 
@@ -405,25 +376,6 @@ function applyLanguageFilters(filters = {}) {
   languageFilters.value = {
     native_language_code: normalizeLanguageCode(filters.native_language_code),
     target_language_code: normalizeLanguageCode(filters.target_language_code),
-    target_language_level: normalizeChoice(filters.target_language_level, [
-      "a1",
-      "a2",
-      "b1",
-      "b2",
-      "c1",
-      "c2",
-      "unsure",
-    ]),
-    correction_preference: normalizeChoice(filters.correction_preference, [
-      "no_corrections",
-      "light_corrections",
-      "active_corrections",
-    ]),
-    language_exchange_mode: normalizeChoice(filters.language_exchange_mode, [
-      "practice_only",
-      "reciprocal_exchange",
-      "native_helper",
-    ]),
   };
 }
 
@@ -443,9 +395,6 @@ function matchesLanguageFilters(candidate) {
   const {
     native_language_code: nativeLanguage,
     target_language_code: targetLanguage,
-    target_language_level: targetLevel,
-    correction_preference: correctionPreference,
-    language_exchange_mode: exchangeMode,
   } = languageFilters.value;
   const candidateNativeLanguages = Array.isArray(candidate.supported_native_languages)
     ? candidate.supported_native_languages
@@ -453,24 +402,11 @@ function matchesLanguageFilters(candidate) {
   const candidateTargetLanguages = Array.isArray(candidate.supported_target_languages)
     ? candidate.supported_target_languages
     : [];
-  const candidateSupportedLevels = Array.isArray(candidate.supported_levels)
-    ? candidate.supported_levels
-    : [];
   const isAiCandidate = Boolean(candidate?.is_ai);
   const matchesCandidateNativeLanguage = (value) =>
     candidate.native_language_code === value || candidateNativeLanguages.includes(value);
   const matchesCandidateTargetLanguage = (value) =>
     candidate.target_language_code === value || candidateTargetLanguages.includes(value);
-  const matchesCandidateLevel = (value) => {
-    if (!value || value === "unsure") return true;
-    if (!candidateSupportedLevels.length) {
-      return candidate.target_language_level === value;
-    }
-    return (
-      candidate.target_language_level === value ||
-      candidateSupportedLevels.includes(value)
-    );
-  };
 
   if (targetLanguage) {
     const matchesRequestedTargetLanguage = isAiCandidate
@@ -490,35 +426,29 @@ function matchesLanguageFilters(candidate) {
     }
   }
 
-  if (!matchesCandidateLevel(targetLevel)) {
-    return false;
-  }
-
-  if (correctionPreference && candidate.correction_preference !== correctionPreference) {
-    return false;
-  }
-
-  if (exchangeMode && candidate.language_exchange_mode !== exchangeMode) {
-    return false;
-  }
-
   return true;
 }
 
 const onlineCandidates = computed(() =>
-  (isAuthenticated.value ? (candidateData.value.online ?? []) : publicOnline.value)
+  (shouldUsePrivateLanguagePracticeData.value
+    ? (candidateData.value.online ?? [])
+    : publicOnline.value)
     .filter(matchesLanguageFilters)
     .filter((candidate) => String(candidate?.user_id || "").trim() !== String(auth.user?.id || "").trim())
 );
 
 const offlineCandidates = computed(() =>
-  (isAuthenticated.value ? (candidateData.value.offline ?? []) : publicOffline.value)
+  (shouldUsePrivateLanguagePracticeData.value
+    ? (candidateData.value.offline ?? [])
+    : publicOffline.value)
     .filter(matchesLanguageFilters)
     .filter((candidate) => String(candidate?.user_id || "").trim() !== String(auth.user?.id || "").trim())
 );
 
 const displayAiCandidates = computed(() =>
-  (isAuthenticated.value ? (candidateData.value.ai ?? []) : publicPersonas.value)
+  (shouldUsePrivateLanguagePracticeData.value
+    ? (candidateData.value.ai ?? [])
+    : publicPersonas.value)
     .filter(matchesLanguageFilters)
     .filter((candidate) => String(candidate?.user_id || "").trim() !== String(auth.user?.id || "").trim())
 );
@@ -548,7 +478,7 @@ function openProfileDialog(candidate) {
 }
 
 async function onChatRequest(candidate) {
-  if (!isAuthenticated.value) {
+  if (!canManageLanguagePractice.value) {
     pendingOnboardingCandidate.value = candidate;
     onboardingDialogOpen.value = true;
     return;
@@ -583,64 +513,13 @@ async function onChatRequest(candidate) {
   }
 }
 
-function buildOnboardingLanguageIntent(candidate) {
-  const nativeLanguage =
-    normalizeLanguageCode(languageFilters.value.native_language_code) || null;
-  const targetLanguage =
-    normalizeLanguageCode(languageFilters.value.target_language_code) ||
-    normalizeLanguageCode(candidate?.native_language_code) ||
-    null;
-  const targetLevel =
-    normalizeChoice(languageFilters.value.target_language_level, [
-      "a1",
-      "a2",
-      "b1",
-      "b2",
-      "c1",
-      "c2",
-      "unsure",
-    ]) || (targetLanguage ? "unsure" : null);
-  const correctionPreference =
-    normalizeChoice(languageFilters.value.correction_preference, [
-      "no_corrections",
-      "light_corrections",
-      "active_corrections",
-    ]) || "light_corrections";
-
-  let exchangeMode =
-    normalizeChoice(languageFilters.value.language_exchange_mode, [
-      "practice_only",
-      "reciprocal_exchange",
-      "native_helper",
-    ]) || null;
-
-  if (!exchangeMode) {
-    if (nativeLanguage && targetLanguage) {
-      exchangeMode = "reciprocal_exchange";
-    } else if (targetLanguage) {
-      exchangeMode = "practice_only";
-    } else if (nativeLanguage) {
-      exchangeMode = "native_helper";
-    }
-  }
-
-  if (!nativeLanguage && !targetLanguage) {
-    return null;
-  }
-
-  return {
-    is_active: true,
-    native_language_code: nativeLanguage,
-    target_language_code: targetLanguage,
-    target_language_level: targetLevel,
-    correction_preference: correctionPreference,
-    language_exchange_mode: exchangeMode,
-  };
+function buildOnboardingLanguageIntent() {
+  return null;
 }
 
 function goToOnboarding() {
   onboardingDialogOpen.value = false;
-  const intent = buildOnboardingLanguageIntent(pendingOnboardingCandidate.value);
+  const intent = buildOnboardingLanguageIntent();
   if (intent) {
     onboardingDraft.setLanguagePracticeIntent(intent);
   } else {
@@ -703,7 +582,7 @@ async function loadPublicCandidates() {
 }
 
 async function loadCandidates() {
-  if (isAuthenticated.value) {
+  if (shouldUsePrivateLanguagePracticeData.value) {
     await loadAuthenticatedCandidates();
     return;
   }
@@ -711,7 +590,7 @@ async function loadCandidates() {
 }
 
 async function saveCurrentFilters() {
-  if (!hasSavableLanguageFilters.value) return;
+  if (!canManageLanguagePractice.value || !hasSavableLanguageFilters.value) return;
 
   savingPreferences.value = true;
   saveError.value = "";
@@ -739,15 +618,18 @@ onMounted(async () => {
   if (!authResolved.value) {
     await auth.checkAuth();
   }
-  if (isAuthenticated.value) {
+  if (canManageLanguagePractice.value) {
     await hydrateAuthenticatedLanguageFilters();
   }
   await loadCandidates();
 });
 
-watch(isAuthenticated, () => {
+watch(canManageLanguagePractice, async () => {
   if (!authResolved.value) return;
-  loadCandidates();
+  if (canManageLanguagePractice.value) {
+    await hydrateAuthenticatedLanguageFilters();
+  }
+  await loadCandidates();
 });
 watch(locale, () => {
   if (!authResolved.value) return;
@@ -814,10 +696,18 @@ useHead({
   color: rgb(var(--color-foreground) / 0.72);
 }
 
+.language-filter-panel__toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
 .language-filter-panel__controls {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(5, minmax(140px, 1fr));
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  flex: 1 1 520px;
 }
 
 .language-filter-field {
@@ -850,9 +740,7 @@ useHead({
 .language-filter-panel__actions {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
+  flex: 0 0 auto;
 }
 
 .language-filter-panel__save-button {
@@ -893,18 +781,22 @@ useHead({
   animation: language-spin 0.8s linear infinite;
 }
 
-.language-filter-panel__save-hint {
-  margin: 0;
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: rgb(var(--color-foreground) / 0.62);
-}
-
 .language-feedback {
   padding: 0.85rem 0.95rem;
   border-radius: 12px;
   font-size: 0.9rem;
   line-height: 1.5;
+}
+
+.language-filter-panel__register-link {
+  margin-left: 0.6rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--color-primary));
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .language-feedback--error {
@@ -917,6 +809,12 @@ useHead({
   border: 1px solid rgb(34 197 94 / 0.22);
   background: rgb(34 197 94 / 0.1);
   color: rgb(74 222 128);
+}
+
+.language-feedback--info {
+  border: 1px solid rgb(var(--color-primary) / 0.18);
+  background: rgb(var(--color-primary) / 0.08);
+  color: rgb(var(--color-foreground) / 0.86);
 }
 
 .language-section-header {
@@ -1151,13 +1049,21 @@ useHead({
     max-width: 640px;
   }
 
+  .language-filter-panel__toolbar {
+    align-items: stretch;
+  }
+
   .language-filter-panel__controls {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-basis: 100%;
   }
 
   .language-filter-panel__actions {
-    align-items: flex-start;
-    flex-direction: column;
+    width: 100%;
+  }
+
+  .language-filter-panel__save-button {
+    width: 100%;
   }
 
   .language-dialog-card__actions {
@@ -1166,6 +1072,18 @@ useHead({
 
   .language-dialog-card__button {
     width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .language-filter-panel__controls {
+    gap: 10px;
+  }
+
+  .language-filter-field__control {
+    min-height: 40px;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.9rem;
   }
 }
 

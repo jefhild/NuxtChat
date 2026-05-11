@@ -28,9 +28,11 @@
       :data="matchData"
       :loading="matchLoading"
       :active-filter="matchFilter"
+      :show-language-practice-return="showLanguagePracticeReturn"
       @refresh="handleRefresh"
       @filter-change="setMatchFilter($event)"
       @random-pick="handleRandomPick"
+      @return-language-practice="emit('return-language-practice')"
     />
 
     <div class="users-section flex-grow-1 overflow-hidden min-h-0">
@@ -216,6 +218,7 @@ import { useVirtualizer } from "@tanstack/vue-virtual";
 import { useI18n } from "vue-i18n";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useMatchCandidates, setMatchFilter } from "@/composables/useMatchCandidates";
+import { useOnboardingDraftStore } from "@/stores/onboardingDraftStore";
 import ChatLayoutFilterMenu from "./FilterMenu.vue";
 import { resolveProfileLocalization } from "@/composables/useProfileLocalization";
 
@@ -256,9 +259,11 @@ const emit = defineEmits([
   "view-profile",
   "activate-language-practice",
   "end-language-practice",
+  "return-language-practice",
 ]);
 
 const msgs = useMessagesStore();
+const onboardingDraft = useOnboardingDraftStore();
 const { t, locale } = useI18n();
 const USER_ROW_HEIGHT = 32;
 const USERS_OVERSCAN = 10;
@@ -276,6 +281,12 @@ const showMatchStrip = computed(
   () => shouldFetchMatches.value &&
     !props.suppressMatchStrip &&
     (!!matchData.value?.intake || matchRefreshPending.value || !!matchFilter.value)
+);
+const showLanguagePracticeReturn = computed(() =>
+  Boolean(
+    onboardingDraft.postOnboardingLanguagePracticeContext?.target_language_code ||
+      onboardingDraft.languagePracticeIntent?.target_language_code
+  )
 );
 
 watch(shouldFetchMatches, (val) => { if (val) fetchCandidates(); }, { immediate: true });

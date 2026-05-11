@@ -5,7 +5,12 @@
         {{ $t("pages.settings.languagePractice.title") }}
       </h2>
       <p class="language-practice-settings__subtitle">
-        {{ $t("pages.settings.languagePractice.subtitle") }}
+        {{
+          $t(
+            "pages.settings.languagePractice.subtitle",
+            "Choose the language you can help with and the language you want to practice."
+          )
+        }}
       </p>
     </header>
 
@@ -90,70 +95,32 @@
           </span>
         </label>
 
-        <label class="language-practice-settings__field">
-          <span class="language-practice-settings__field-label">
-            {{ $t("pages.languagePractice.level") }}
-          </span>
-          <select
-            v-model="form.target_language_level"
-            class="language-practice-settings__select"
-            :disabled="loading || saving || !form.is_active"
-          >
-            <option value="">
-              {{ $t("pages.settings.languagePractice.levelUnset", "Not set") }}
-            </option>
-            <option
-              v-for="option in levelOptions"
-              :key="`level-${option.value}`"
-              :value="option.value"
-            >
-              {{ option.title }}
-            </option>
-          </select>
-        </label>
-
-        <label class="language-practice-settings__field">
-          <span class="language-practice-settings__field-label">
-            {{ $t("pages.languagePractice.corrections") }}
-          </span>
-          <select
-            v-model="form.correction_preference"
-            class="language-practice-settings__select"
-            :disabled="loading || saving || !form.is_active"
-          >
-            <option
-              v-for="option in correctionOptions"
-              :key="`correction-${option.value}`"
-              :value="option.value"
-            >
-              {{ option.title }}
-            </option>
-          </select>
-        </label>
-
-        <label class="language-practice-settings__field">
-          <span class="language-practice-settings__field-label">
-            {{ $t("pages.languagePractice.mode") }}
-          </span>
-          <select
-            v-model="form.language_exchange_mode"
-            class="language-practice-settings__select"
-            :disabled="loading || saving || !form.is_active"
-          >
-            <option
-              v-for="option in exchangeModeOptions"
-              :key="`mode-${option.value}`"
-              :value="option.value"
-            >
-              {{ option.title }}
-            </option>
-          </select>
-        </label>
       </div>
 
       <p v-if="!form.is_active" class="language-practice-settings__hint">
         {{ $t("pages.settings.languagePractice.inactiveHint") }}
       </p>
+
+      <div
+        v-if="authStore.authStatus === 'anon_authenticated'"
+        class="language-practice-settings__feedback language-practice-settings__feedback--info"
+      >
+        <span>
+          {{
+            $t(
+              "pages.settings.languagePractice.registerHint",
+              "Add your email to keep your language-practice connections and come back to them later."
+            )
+          }}
+        </span>
+        <button
+          type="button"
+          class="language-practice-settings__inline-action"
+          @click="showConvertDialog = true"
+        >
+          {{ $t("components.consentPanel.cta.linkEmail", "Add email") }}
+        </button>
+      </div>
 
       <div
         v-if="saveError"
@@ -194,6 +161,11 @@
     >
       {{ $t("components.settings-container.loading") }}
     </div>
+
+    <AuthConvertAccountDialog
+      v-model="showConvertDialog"
+      context="general"
+    />
   </section>
 </template>
 
@@ -213,6 +185,7 @@ const {
 
 const loading = ref(true);
 const saving = ref(false);
+const showConvertDialog = ref(false);
 const loadError = ref("");
 const saveError = ref("");
 const saveSuccess = ref("");
@@ -224,28 +197,6 @@ const languageOptions = computed(() => [
   { title: t("match.language.languages.fr"), value: "fr" },
   { title: t("match.language.languages.ru"), value: "ru" },
   { title: t("match.language.languages.zh"), value: "zh" },
-]);
-
-const levelOptions = computed(() => [
-  { title: t("pages.languagePractice.levels.unsure"), value: "unsure" },
-  { title: t("pages.languagePractice.levels.a1"), value: "a1" },
-  { title: t("pages.languagePractice.levels.a2"), value: "a2" },
-  { title: t("pages.languagePractice.levels.b1"), value: "b1" },
-  { title: t("pages.languagePractice.levels.b2"), value: "b2" },
-  { title: t("pages.languagePractice.levels.c1"), value: "c1" },
-  { title: t("pages.languagePractice.levels.c2"), value: "c2" },
-]);
-
-const correctionOptions = computed(() => [
-  { title: t("match.language.correctionPreferences.no_corrections"), value: "no_corrections" },
-  { title: t("match.language.correctionPreferences.light_corrections"), value: "light_corrections" },
-  { title: t("match.language.correctionPreferences.active_corrections"), value: "active_corrections" },
-]);
-
-const exchangeModeOptions = computed(() => [
-  { title: t("pages.languagePractice.exchangeModes.practice_only"), value: "practice_only" },
-  { title: t("pages.languagePractice.exchangeModes.reciprocal_exchange"), value: "reciprocal_exchange" },
-  { title: t("pages.languagePractice.exchangeModes.native_helper"), value: "native_helper" },
 ]);
 
 const isDirty = computed(
@@ -346,6 +297,17 @@ onMounted(loadPreferences);
 .language-practice-settings__content {
   display: grid;
   gap: 1rem;
+}
+
+.language-practice-settings__inline-action {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--color-primary));
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .language-practice-settings__toggle {

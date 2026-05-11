@@ -1097,7 +1097,7 @@
       "subtitle": "Mettez à jour les préférences de votre compte et vos informations personnelles.",
       "languagePractice": {
         "title": "Pratique linguistique",
-        "subtitle": "Enregistrez les langues avec lesquelles vous pouvez aider, celle que vous voulez pratiquer et le niveau de correction souhaité.",
+        "subtitle": "Choisissez la langue avec laquelle vous pouvez aider et celle que vous voulez pratiquer.",
         "enabledLabel": "Me montrer dans la pratique linguistique",
         "localeHint": "La langue du site reste séparée. Ces réglages servent seulement au matching et au guidage des chats de pratique linguistique.",
         "useSiteLanguage": "Utiliser la langue de mon site",
@@ -1106,6 +1106,7 @@
         "targetLanguageHint": "Choisissez ici une langue principale à pratiquer, ou laissez vide si vous êtes ouvert à n'importe quelle langue prise en charge.",
         "levelUnset": "Non défini",
         "inactiveHint": "Activez cette option quand vous voulez apparaître comme partenaire de pratique linguistique.",
+        "registerHint": "Ajoutez votre e-mail pour conserver vos contacts de pratique linguistique et y revenir plus tard.",
         "loadError": "Impossible de charger les paramètres de pratique linguistique.",
         "saveError": "Impossible d'enregistrer les paramètres de pratique linguistique.",
         "saveSuccess": "Paramètres de pratique linguistique enregistrés."
@@ -1207,13 +1208,14 @@
     "languagePractice": {
       "kicker": "Échange linguistique",
       "title": "Trouvez un partenaire de pratique linguistique",
-      "subtitle": "Choisissez ce que vous parlez, ce que vous voulez pratiquer et le type de retour souhaité.",
+      "subtitle": "Choisissez la langue avec laquelle vous pouvez aider et celle que vous voulez pratiquer.",
       "seoTitle": "Chat de pratique linguistique | ImChatty",
-      "seoDescription": "Trouvez des personnes réelles et des personnages IA pour pratiquer une langue selon la langue cible, le niveau et les préférences de correction.",
+      "seoDescription": "Trouvez des personnes réelles et des personnages IA pour pratiquer une langue selon la langue avec laquelle vous pouvez aider et celle que vous voulez pratiquer.",
       "filtersTitle": "Filtres linguistiques",
       "filtersExplanation": "\"Je peux aider en\" correspond aux personnes qui veulent pratiquer cette langue. \"Je veux pratiquer\" correspond aux personnes qui peuvent vous aider dans cette langue.",
       "saveSettings": "Enregistrer comme mes paramètres linguistiques",
       "saveHint": "Enregistrez ces filtres pour les réutiliser dans les paramètres et le matching.",
+      "registerHint": "Ajoutez votre e-mail pour conserver vos conversations de pratique linguistique et reprendre plus tard.",
       "saveSuccess": "Enregistré dans vos paramètres de pratique linguistique.",
       "saveError": "Impossible d'enregistrer vos paramètres de pratique linguistique.",
       "chatStartError": "Impossible de démarrer ce chat de pratique linguistique.",
@@ -1404,11 +1406,13 @@
       "settings-aria-label": "Ouvrir la fenêtre des paramètres pour mettre à jour vos préférences de compte et vos informations personnelles"
     },
     "onboardingSteps": {
-      "consent": "Étape 1 sur 5 : Acceptez les conditions pour commencer.",
-      "displayName": "Étape 2 sur 5 : Choisissez votre nom d'affichage.",
-      "age": "Étape 3 sur 5 : Indiquez votre âge.",
-      "gender": "Étape 4 sur 5 : Indiquez votre genre.",
-      "bio": "Étape 5 sur 5 : Ajoutez une courte bio.",
+      "consent": "Étape 1 sur 7 : Acceptez les conditions pour commencer.",
+      "displayName": "Étape 2 sur 7 : Choisissez votre nom d'affichage.",
+      "age": "Étape 3 sur 7 : Indiquez votre âge.",
+      "gender": "Étape 4 sur 7 : Indiquez votre genre.",
+      "languagePracticeInterest": "Étape 5 sur 7 : Dites si vous voulez pratiquer une langue.",
+      "languagePracticeTarget": "Étape 6 sur 7 : Choisissez une langue à pratiquer.",
+      "bio": "Étape 7 sur 7 : Ajoutez une courte bio.",
       "done": "Profil complété."
     },
     "loginAi": {
@@ -1858,7 +1862,8 @@
       "offline": "Hors ligne",
       "ai": "IA",
       "random": "Aléatoire",
-      "refresh": "Rafraîchir"
+      "refresh": "Rafraîchir",
+      "backToLanguagePractice": "Retour à la pratique des langues"
     },
     "candidateCard": {
       "anonymous": "Anonyme",
@@ -1866,6 +1871,7 @@
       "chat": "Discuter",
       "chatAi": "Discuter avec l'IA",
       "chatWith": "Discuter avec {name}",
+      "registeredBadge": "Inscrit",
       "practicingLanguage": "Pratique {language}",
       "nativeLanguage": "{language} natif",
       "aiHelpingLanguage": "Aide en {language}",
@@ -1986,7 +1992,8 @@
       "quickReplies": {
         "browsePartners": "Voir les partenaires de langue",
         "answerMoodQuestion": "Répondre à une question d’humeur",
-        "keepChatting": "Continuer ici"
+        "keepChatting": "Continuer ici",
+        "backToPractice": "Retour à la pratique des langues"
       }
     },
     "moodFeed": {

@@ -111,6 +111,7 @@ export function useOnboardingAi() {
         case "genderId":
         case "bio":
         case "tagline":
+        case "languagePracticeInterest":
           return k;
         default:
           return k; // let unknowns pass through (harmless with setField guard)
@@ -167,6 +168,12 @@ export function useOnboardingAi() {
           draft[key] = val;
         }
         // console.log("[onboarding][set_field]", { key, value: val });
+        sawSet = true;
+        continue;
+      }
+
+      if (a.type === "set_language_practice_intent") {
+        draft.setLanguagePracticeIntent?.(a.value || null);
         sawSet = true;
         continue;
       }
@@ -559,6 +566,10 @@ export function useOnboardingAi() {
       genderId: draft.genderId ?? null,
       bio: typeof draft.bio === "string" ? draft.bio : "",
       tagline: typeof draft.tagline === "string" ? draft.tagline : "",
+      languagePracticeInterest:
+        typeof draft.languagePracticeInterest === "boolean"
+          ? draft.languagePracticeInterest
+          : null,
     };
 
     const missing = required.filter((k) => {
@@ -575,6 +586,7 @@ export function useOnboardingAi() {
       consented: consentFlag,
       draftSummary: summary, // camelCase, as your server expects
       missingFields: missing, // camelCase list
+      languagePracticeIntent: draft.languagePracticeIntent ?? null,
       isComplete: missing.length === 0,
     };
 
@@ -703,6 +715,10 @@ if (!allowed) {
       genderId: draft.genderId ?? null,
       bio: typeof draft.bio === "string" ? draft.bio : "",
       tagline: typeof draft.tagline === "string" ? draft.tagline : "",
+      languagePracticeInterest:
+        typeof draft.languagePracticeInterest === "boolean"
+          ? draft.languagePracticeInterest
+          : null,
     };
     const missing = required.filter((k) => {
       const v = summary[k];
@@ -719,6 +735,7 @@ if (!allowed) {
       consented: !!draft.consented, // <-- don’t gate on auth status
       draftSummary: summary,
       missingFields: missing,
+      languagePracticeIntent: draft.languagePracticeIntent ?? null,
       isComplete: missing.length === 0,
       ...(captchaToken ? { captchaToken } : {}),
       // resume: false  // <-- do NOT include resume on a send

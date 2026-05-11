@@ -1112,7 +1112,7 @@
       "subtitle": "Update your account preferences and personal information.",
       "languagePractice": {
         "title": "Language Practice",
-        "subtitle": "Save the languages you can help with, what you want to practice, and how much correction you want.",
+        "subtitle": "Choose the language you can help with and the language you want to practice.",
         "enabledLabel": "Show me in language practice",
         "localeHint": "Your site language stays separate. We only use this to match and guide language-practice chats.",
         "useSiteLanguage": "Use my site language",
@@ -1121,6 +1121,7 @@
         "targetLanguageHint": "Choose one main practice language here, or leave it blank if you're open to any supported language.",
         "levelUnset": "Not set",
         "inactiveHint": "Turn this on when you want to appear as a language-practice match.",
+        "registerHint": "Add your email to keep your language-practice connections and come back to them later.",
         "loadError": "Failed to load language practice settings.",
         "saveError": "Failed to save language practice settings.",
         "saveSuccess": "Language practice settings saved."
@@ -1222,13 +1223,14 @@
     "languagePractice": {
       "kicker": "Language exchange",
       "title": "Find a language practice partner",
-      "subtitle": "Choose what you speak, what you want to practice, and how you like feedback.",
+      "subtitle": "Choose the language you can help with and the language you want to practice.",
       "seoTitle": "Language Practice Chat | ImChatty",
-      "seoDescription": "Find real people and AI personas for language practice by target language, level, and correction preference.",
+      "seoDescription": "Find real people and AI personas for language practice by the language you can help with and the language you want to practice.",
       "filtersTitle": "Language filters",
       "filtersExplanation": "\"I can help with\" matches people who want to practice that language. \"I want to practice\" matches people who can help you with that language.",
       "saveSettings": "Save as my language settings",
       "saveHint": "Save these filters to use them again in settings and matching.",
+      "registerHint": "Add your email to keep your language-practice conversations and reconnect later.",
       "saveSuccess": "Saved to your language practice settings.",
       "saveError": "Could not save your language practice settings.",
       "chatStartError": "Could not start that language-practice chat.",
@@ -1419,11 +1421,13 @@
       "settings-aria-label": "Open settings modal to update your account preferences and personal information"
     },
     "onboardingSteps": {
-      "consent": "Step 1 of 5: Accept terms to get started.",
-      "displayName": "Step 2 of 5: Choose your display name.",
-      "age": "Step 3 of 5: Share your age.",
-      "gender": "Step 4 of 5: Share your gender.",
-      "bio": "Step 5 of 5: Add a short bio.",
+      "consent": "Step 1 of 7: Accept terms to get started.",
+      "displayName": "Step 2 of 7: Choose your display name.",
+      "age": "Step 3 of 7: Share your age.",
+      "gender": "Step 4 of 7: Share your gender.",
+      "languagePracticeInterest": "Step 5 of 7: Choose whether you want language practice.",
+      "languagePracticeTarget": "Step 6 of 7: Choose a language to practice.",
+      "bio": "Step 7 of 7: Add a short bio.",
       "done": "Profile complete."
     },
     "loginAi": {
@@ -1879,7 +1883,8 @@
       "offline": "Offline matches",
       "ai": "AI matches",
       "random": "Random match",
-      "refresh": "Refresh matches"
+      "refresh": "Refresh matches",
+      "backToLanguagePractice": "Back to language practice"
     },
     "candidateCard": {
       "anonymous": "Anonymous",
@@ -1887,6 +1892,7 @@
       "chat": "Chat",
       "chatAi": "Chat with AI",
       "chatWith": "Chat with {name}",
+      "registeredBadge": "Registered",
       "practicingLanguage": "Practicing {language}",
       "nativeLanguage": "Native {language}",
       "aiHelpingLanguage": "Helps with {language}",
@@ -2007,7 +2013,8 @@
       "quickReplies": {
         "browsePartners": "Browse language partners",
         "answerMoodQuestion": "Answer one mood question",
-        "keepChatting": "Keep chatting here"
+        "keepChatting": "Keep chatting here",
+        "backToPractice": "Back to language practice"
       }
     },
     "moodFeed": {

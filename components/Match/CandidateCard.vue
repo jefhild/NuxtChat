@@ -33,6 +33,12 @@
           >
             {{ candidate.displayname || $t("components.candidateCard.anonymous") }}
           </button>
+          <span
+            v-if="showRegisteredBadge"
+            class="candidate-registered-badge"
+          >
+            {{ $t("components.candidateCard.registeredBadge", "Registered") }}
+          </span>
           <p
             v-if="candidate.tagline"
             class="candidate-card__tagline"
@@ -106,18 +112,6 @@
               {
                 language: nativeLanguageLabel,
               }
-            )
-          }}
-        </span>
-        <span
-          v-if="candidate.correction_preference"
-          class="candidate-chip language-chip language-chip--correction"
-        >
-          <i class="mdi mdi-pencil-outline candidate-chip__icon" aria-hidden="true" />
-          {{
-            $t(
-              `match.language.correctionPreferences.${candidate.correction_preference}`,
-              candidate.correction_preference
             )
           }}
         </span>
@@ -199,6 +193,13 @@ const targetLanguageLabel = computed(() =>
   formatLanguageLabel(candidateTargetLanguages.value)
 );
 
+const showRegisteredBadge = computed(
+  () =>
+    !props.isAi &&
+    props.context === "language" &&
+    (props.candidate.has_email === true || props.candidate.is_registered === true)
+);
+
 const statusDotClass = computed(() => {
   if (props.isOnline) return "status-dot--online";
   if (props.candidate.agent_enabled) return "status-dot--agent";
@@ -219,8 +220,7 @@ const scoreToneClass = computed(() => {
 const hasLanguageBadges = computed(
   () =>
     candidateTargetLanguages.value.length > 0 ||
-    candidateNativeLanguages.value.length > 0 ||
-    !!props.candidate.correction_preference
+    candidateNativeLanguages.value.length > 0
 );
 
 const showMoodBadges = computed(
@@ -387,6 +387,19 @@ function onChat() {
   cursor: pointer;
 }
 
+.candidate-registered-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.35rem;
+  padding: 0.18rem 0.48rem;
+  border-radius: 999px;
+  background: rgb(217 119 6 / 0.12);
+  color: #d97706;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .candidate-card__tagline {
   margin: 0.1rem 0 0;
   overflow: hidden;
@@ -488,12 +501,6 @@ function onChat() {
   --chip-bg: rgba(56, 189, 248, 0.14);
   --chip-border: rgba(56, 189, 248, 0.34);
   --chip-icon: #38bdf8;
-}
-
-.language-chip--correction {
-  --chip-bg: rgba(129, 140, 248, 0.16);
-  --chip-border: rgba(129, 140, 248, 0.36);
-  --chip-icon: #a5b4fc;
 }
 
 .candidate-card__actions {

@@ -144,8 +144,20 @@ const stateMeta = computed(() => {
   }
 });
 
+const hasLanguagePracticeInterest = computed(
+  () => typeof draft.languagePracticeInterest === "boolean"
+);
+const needsLanguagePracticeTarget = computed(
+  () => draft.languagePracticeInterest === true
+);
+
+const totalSteps = computed(() => {
+  const base = 6;
+  return needsLanguagePracticeTarget.value ? base + 1 : base;
+});
+
 const stageProgress = computed(() => {
-  const total = 5;
+  const total = totalSteps.value || 1;
   const pct = Math.round((completedSteps.value / total) * 100);
   return Math.max(0, Math.min(100, pct));
 });
@@ -204,13 +216,19 @@ const titleText = computed(() => {
   return stateLabel.value;
 });
 
-const totalSteps = 5; // consent + displayName + age + gender + bio
 const completedSteps = computed(() => {
   let n = 0;
   if (draft.consented) n += 1;
   if (displayNameFilled.value) n += 1;
   if (draft.age != null) n += 1;
   if (genderFilled.value) n += 1;
+  if (hasLanguagePracticeInterest.value) n += 1;
+  if (
+    needsLanguagePracticeTarget.value &&
+    String(draft.languagePracticeIntent?.target_language_code || "").trim()
+  ) {
+    n += 1;
+  }
   if (bioFilled.value) n += 1;
   return n;
 });
@@ -220,6 +238,13 @@ const currentStep = computed(() => {
   if (!displayNameFilled.value) return "displayName";
   if (draft.age == null) return "age";
   if (!genderFilled.value) return "gender";
+  if (!hasLanguagePracticeInterest.value) return "languagePracticeInterest";
+  if (
+    needsLanguagePracticeTarget.value &&
+    !String(draft.languagePracticeIntent?.target_language_code || "").trim()
+  ) {
+    return "languagePracticeTarget";
+  }
   if (!bioFilled.value) return "bio";
   return "done";
 });
@@ -228,11 +253,13 @@ const stepSubtitleKey = computed(() =>
   currentStep.value ? `components.onboardingSteps.${currentStep.value}` : null
 );
 const stepSubtitleFallback = {
-  consent: "Step 1 of 5: Accept terms to get started.",
-  displayName: "Step 2 of 5: Choose your display name.",
-  age: "Step 3 of 5: Share your age.",
-  gender: "Step 4 of 5: Share your gender.",
-  bio: "Step 5 of 5: Add a short bio.",
+  consent: "Step 1 of 7: Accept terms to get started.",
+  displayName: "Step 2 of 7: Choose your display name.",
+  age: "Step 3 of 7: Share your age.",
+  gender: "Step 4 of 7: Share your gender.",
+  languagePracticeInterest: "Step 5 of 7: Choose whether you want language practice.",
+  languagePracticeTarget: "Step 6 of 7: Choose a language to practice.",
+  bio: "Step 7 of 7: Add a short bio.",
   done: "Profile complete.",
 };
 
@@ -256,10 +283,7 @@ const subtitleText = computed(() => {
 
 const ctaText = computed(() => {
   if (state.value === "onboarding" && draft.consented) {
-    return t(
-      "components.consentPanel.cta.continueWithImChatty",
-      "Continue with ImChatty"
-    );
+    return t("components.consentPanel.cta.resume", "Resume onboarding");
   }
   return stateMeta.value.ctaText;
 });

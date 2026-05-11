@@ -38,6 +38,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
     liveMoodNudges: null,
     liveMoodNextStepStage: "idle", // 'idle' | 'choose' | 'dormant' | 'done'
     handoffPending: false,
+    languagePracticeInterest: null,
     languagePracticeIntent: null,
     postOnboardingLanguagePracticeContext: null,
   }),
@@ -125,6 +126,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
         "liveMoodNudges",
         "liveMoodNextStepStage",
         "handoffPending",
+        "languagePracticeInterest",
         "postOnboardingLanguagePracticeContext",
       ]);
 
@@ -179,6 +181,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
       this.liveMoodNudges = null;
       this.liveMoodNextStepStage = "idle";
       this.handoffPending = false;
+      this.languagePracticeInterest = null;
       this.languagePracticeIntent = null;
       this.postOnboardingLanguagePracticeContext = null;
       this.stage = "idle";
@@ -228,6 +231,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
             "liveMoodNudges",
             "liveMoodNextStepStage",
             "handoffPending",
+            "languagePracticeInterest",
             "languagePracticeIntent",
             "postOnboardingLanguagePracticeContext",
           ]) {
@@ -279,6 +283,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           liveMoodNudges,
           liveMoodNextStepStage,
           handoffPending,
+          languagePracticeInterest,
           languagePracticeIntent,
           postOnboardingLanguagePracticeContext,
         } = this;
@@ -317,6 +322,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
           liveMoodNudges,
           liveMoodNextStepStage,
           handoffPending,
+          languagePracticeInterest,
           languagePracticeIntent,
           postOnboardingLanguagePracticeContext,
         }));
@@ -342,6 +348,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
         language_exchange_mode: intent.language_exchange_mode || null,
       };
 
+      this.languagePracticeInterest = !!payload.target_language_code;
       this.languagePracticeIntent =
         payload.native_language_code || payload.target_language_code
           ? payload
@@ -351,6 +358,7 @@ export const useOnboardingDraftStore = defineStore("onboardingDraft", {
     },
 
     clearLanguagePracticeIntent() {
+      this.languagePracticeInterest = null;
       this.languagePracticeIntent = null;
       this.updatedAt = new Date().toISOString();
       this.saveLocal();

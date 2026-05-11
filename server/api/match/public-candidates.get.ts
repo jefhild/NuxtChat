@@ -71,6 +71,7 @@ export default defineEventHandler(async (event) => {
             displayname,
             avatar_url,
             tagline,
+            provider,
             preferred_locale,
             gender_id,
             profile_translations(locale, displayname, tagline),
@@ -89,7 +90,7 @@ export default defineEventHandler(async (event) => {
   const [presenceRes, lastActiveRes] = await Promise.all([
     supabase.from("presence").select("user_id").gte("last_seen_at", onlineCutoff),
     supabase.from("profiles")
-      .select("user_id, displayname, avatar_url, tagline, preferred_locale, gender_id, agent_enabled, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
+      .select("user_id, displayname, avatar_url, tagline, provider, preferred_locale, gender_id, agent_enabled, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
       .eq("is_ai", false)
       .eq("is_private", false)
       .gte("last_active", onlineCutoff),
@@ -107,7 +108,7 @@ export default defineEventHandler(async (event) => {
   // 3. Recently-active real users for offline bucket (exclude online users)
   const { data: recentProfiles } = await supabase
     .from("profiles")
-    .select("user_id, displayname, avatar_url, tagline, preferred_locale, gender_id, agent_enabled, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
+    .select("user_id, displayname, avatar_url, tagline, provider, preferred_locale, gender_id, agent_enabled, profile_translations(locale, displayname, tagline), countries:country_id (emoji)")
     .eq("is_ai", false)
     .eq("is_private", false)
     .gte("last_active", recentCutoff)
@@ -165,6 +166,7 @@ export default defineEventHandler(async (event) => {
       displayname: resolvedField(p, "displayname", locale),
       avatar_url: p.avatar_url,
       tagline: resolvedField(p, "tagline", locale),
+      has_email: Boolean(p.provider && p.provider !== "anonymous"),
       country_emoji: p.countries?.emoji ?? null,
       gender_id: p.gender_id ?? null,
       agent_enabled: p.agent_enabled ?? false,
