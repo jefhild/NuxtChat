@@ -4,6 +4,8 @@
     :title="copy.title"
     :description="copy.description"
     :intro="copy.intro"
+    :support-text="copy.supportText"
+    :browse-label="copy.browseLabel"
     :sibling-hubs="copy.siblingHubs"
     :summary-title-formatter="copy.summaryTitle"
     :pages="pages"
@@ -33,7 +35,10 @@ const copy = computed(() => {
       description:
         "Parcourez des pages autour de la rencontre en ligne, de l'amitié et des raisons qui poussent à commencer une conversation.",
       intro:
-        "Parfois, on a juste besoin de quelqu'un à qui parler — et ces sujets sont là pour vous aider à trouver ce que ça veut dire pour vous. Explorez par humeur, objectif, ou ce qui vous passe par la tête, et trouvez votre entrée.",
+        "Explorez des sujets autour du chat anonyme, des nouvelles rencontres et des échanges linguistiques pour trouver le type de conversation qui correspond à votre humeur ou à votre objectif.",
+      supportText:
+        "Des articles de fond qui explorent les humeurs, la pratique des langues, les situations et les idées autour du chat en ligne.",
+      browseLabel: "Parcourir les sujets",
       summaryTitle: (count) => `${count} sujets pour explorer avant de discuter`,
       siblingHubs: [
         { label: "Voir les comparaisons", href: "/compare" },
@@ -53,7 +58,10 @@ const copy = computed(() => {
       description:
         "Изучайте страницы о знакомстве онлайн, дружбе и причинах, по которым люди начинают разговор.",
       intro:
-        "Иногда просто нужен кто-то, с кем поговорить — и эти темы помогут вам разобраться, что именно вам нужно. Просматривайте по настроению, цели или тому, что сейчас на уме, и найдите свой путь.",
+        "Изучайте темы об анонимном чате, знакомстве с новыми людьми и языковом обмене, чтобы найти формат разговора, который подходит вашему настроению или цели.",
+      supportText:
+        "Содержательные материалы о настроениях, языковой практике, ситуациях и идеях, которые стоят за онлайн-чатом.",
+      browseLabel: "Смотреть темы",
       summaryTitle: (count) => `${count} темы, которые стоит изучить до начала чата`,
       siblingHubs: [
         { label: "Смотреть сравнения", href: "/compare" },
@@ -73,7 +81,10 @@ const copy = computed(() => {
       description:
         "浏览围绕在线认识人、交朋友以及人们为什么想开始一段对话的主题页面。",
       intro:
-        "有时候，你只是需要一个可以倾诉的人——这些主题就是帮你弄清楚那对你意味着什么。按心情、目标，或者脑海中任何想法去浏览，找到属于你的入口。",
+        "探索与匿名聊天、结识新朋友和语言交换相关的话题，找到符合你当下心情或目标的对话方式。",
+      supportText:
+        "更深入的内容，围绕在线聊天背后的情绪、语言练习、具体情境和想法展开。",
+      browseLabel: "浏览话题",
       summaryTitle: (count) => `${count} 个主题，帮你在聊天前先了解方向`,
       siblingHubs: [
         { label: "查看对比", href: "/compare" },
@@ -92,7 +103,10 @@ const copy = computed(() => {
     description:
       "Browse topic pages around meeting people online, making friends, and the reasons people start new conversations.",
     intro:
-      "Sometimes you just need someone to talk to — and these topics are here to help you figure out what that looks like for you. Browse by mood, goal, or whatever's on your mind, and find your way in.",
+      "Explore topics around anonymous chat, meeting new people, and language exchange to find the kind of conversation that matches your mood or goal.",
+    supportText:
+      "Thoughtful pieces that explore the moods, language practice, situations, and ideas behind online chat.",
+    browseLabel: "Browse topics",
     summaryTitle: (count) => `${count} topics to explore`,
     siblingHubs: [
       { label: "Browse comparisons", href: "/compare" },

@@ -4,6 +4,8 @@
     :title="copy.title"
     :description="copy.description"
     :intro="copy.intro"
+    :support-text="copy.supportText"
+    :browse-label="copy.browseLabel"
     :sibling-hubs="copy.siblingHubs"
     :summary-title-formatter="copy.summaryTitle"
     :pages="pages"
@@ -33,7 +35,10 @@ const copy = computed(() => {
       description:
         "Parcourez des guides pratiques sur le chat anonyme, la confidentialité et la meilleure façon de commencer sur ImChatty.",
       intro:
-        "C'est normal d'avoir des questions avant de se lancer dans quelque chose de nouveau. Ces guides sont là pour vous donner des réponses honnêtes et claires — sur la confidentialité, ce à quoi vous attendre, et comment commencer en toute confiance.",
+        "Obtenez des réponses claires sur la confidentialité, la sécurité, le chat anonyme et l'apprentissage des langues pour savoir à quoi vous attendre avant de commencer.",
+      supportText:
+        "Des réponses utiles et des explications simples aux questions que la plupart des gens se posent avant de se lancer.",
+      browseLabel: "Parcourir les guides",
       summaryTitle: (count) => `${count} guides pour commencer plus sereinement`,
       siblingHubs: [
         { label: "Voir les comparaisons", href: "/compare" },
@@ -53,7 +58,10 @@ const copy = computed(() => {
       description:
         "Изучайте практические гайды об анонимном чате, приватности и о том, как проще начать пользоваться ImChatty.",
       intro:
-        "Задавать вопросы перед чем-то новым — это нормально. Эти гайды дают честные и понятные ответы — о приватности, чего ожидать и как начать уверенно.",
+        "Получите понятные ответы о приватности, безопасности, анонимном чате и изучении языков, чтобы заранее понимать, чего ожидать перед началом.",
+      supportText:
+        "Полезные ответы и простые объяснения на вопросы, которые у людей обычно возникают перед началом.",
+      browseLabel: "Смотреть гайды",
       summaryTitle: (count) => `${count} гайда, чтобы начать увереннее`,
       siblingHubs: [
         { label: "Смотреть сравнения", href: "/compare" },
@@ -73,7 +81,10 @@ const copy = computed(() => {
       description:
         "浏览关于匿名聊天、隐私以及如何更顺畅开始使用 ImChatty 的实用指南。",
       intro:
-        "在尝试新事物之前有疑问是很正常的。这些指南提供诚实、直接的解答——关于隐私、该期待什么，以及如何自信地开始。",
+        "围绕隐私、安全、匿名聊天和语言学习提供直接明了的解答，让你在开始之前先知道可以期待什么。",
+      supportText:
+        "用清楚易懂的方式回答人们在开始之前最常见的问题。",
+      browseLabel: "浏览指南",
       summaryTitle: (count) => `${count} 篇指南，帮你更从容地开始`,
       siblingHubs: [
         { label: "查看对比", href: "/compare" },
@@ -92,7 +103,10 @@ const copy = computed(() => {
     description:
       "Browse practical guides covering anonymous chat, privacy, and the easiest ways to get started on ImChatty.",
     intro:
-      "It's normal to have questions before jumping into something new. These guides are here to give you honest, straightforward answers — on privacy, what to expect, and how to get started confidently.",
+      "Get straightforward answers about privacy, safety, anonymous chat, and language learning so you know what to expect before you start.",
+    supportText:
+      "Helpful answers and simple explanations for the questions people usually have before they start.",
+    browseLabel: "Browse guides",
     summaryTitle: (count) => `${count} guides to help you get started`,
     siblingHubs: [
       { label: "Browse comparisons", href: "/compare" },

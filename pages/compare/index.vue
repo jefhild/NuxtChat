@@ -4,6 +4,8 @@
     :title="copy.title"
     :description="copy.description"
     :intro="copy.intro"
+    :support-text="copy.supportText"
+    :browse-label="copy.browseLabel"
     :sibling-hubs="copy.siblingHubs"
     :summary-title-formatter="copy.summaryTitle"
     :pages="pages"
@@ -31,10 +33,13 @@ const copy = computed(() => {
       kicker: "Comparer",
       title: "Comparaisons de chat",
       description:
-        "Parcourez des comparaisons conçues pour aider chacun à choisir le format de chat qui lui convient le mieux.",
+        "Parcourez des comparaisons de chat conçues pour aider chacun à choisir le format qui lui convient le mieux.",
       intro:
-        "Ces comparaisons sont là pour vous aider à trouver ce qui vous convient vraiment — pas seulement l'option la plus populaire. Parcourez les différences, voyez ce qui vous parle, et lancez-vous quand vous êtes prêt.",
-      summaryTitle: (count) => `${count} pages pour vous aider à comparer`,
+        "Comparez différents types de chat anonyme, de chat en ligne et de chat pour pratiquer une langue afin de voir ce qui vous convient le mieux et de commencer en confiance.",
+      supportText:
+        "Des comparaisons claires, côte à côte, pour vous aider à comprendre les différences et à choisir la voie qui vous convient.",
+      browseLabel: "Parcourir les comparaisons",
+      summaryTitle: (count) => `${count} comparaisons pour vous aider à choisir`,
       siblingHubs: [
         { label: "Voir les guides", href: "/guides" },
         { label: "Voir les sujets", href: "/topics" },
@@ -51,10 +56,13 @@ const copy = computed(() => {
       kicker: "Сравнение",
       title: "Сравнения чатов",
       description:
-        "Изучайте сравнения, которые помогают выбрать формат чата, подходящий именно вам.",
+        "Изучайте сравнения чатов, которые помогают выбрать формат, подходящий именно вам.",
       intro:
-        "Эти сравнения помогут найти то, что подходит именно вам — а не просто самый популярный вариант. Просматривайте различия, выбирайте то, что откликается, и начинайте, когда будете готовы.",
-      summaryTitle: (count) => `${count} страницы, чтобы помочь вам сравнить`,
+        "Сравнивайте разные форматы анонимного чата, онлайн-чата и языковой практики в чате, чтобы понять, что подходит вам лучше всего, и начать уверенно.",
+      supportText:
+        "Понятные сравнения бок о бок, которые помогают увидеть различия и выбрать подходящий для вас путь.",
+      browseLabel: "Смотреть сравнения",
+      summaryTitle: (count) => `${count} сравнений, которые помогут вам выбрать`,
       siblingHubs: [
         { label: "Смотреть гайды", href: "/guides" },
         { label: "Смотреть темы", href: "/topics" },
@@ -71,10 +79,13 @@ const copy = computed(() => {
       kicker: "对比",
       title: "聊天对比",
       description:
-        "浏览帮助用户判断哪种聊天形式更适合自己的对比页面。",
+        "浏览聊天对比内容，帮助你判断哪种形式更适合自己。",
       intro:
-        "这些对比页面帮助你找到真正适合自己的选择——而不只是最热门的那个。浏览差异，看看哪个更符合你的感觉，准备好了就直接开始。",
-      summaryTitle: (count) => `${count} 个页面帮助你比较选择`,
+        "比较不同类型的匿名聊天、在线聊天和语言练习聊天，看看哪一种最适合你，并更有把握地开始。",
+      supportText:
+        "清晰的并列对比，帮助你看懂差异，并选出更适合自己的方向。",
+      browseLabel: "浏览对比",
+      summaryTitle: (count) => `${count} 个对比内容，帮你做出选择`,
       siblingHubs: [
         { label: "查看指南", href: "/guides" },
         { label: "查看主题", href: "/topics" },
@@ -90,10 +101,13 @@ const copy = computed(() => {
     kicker: "Compare",
     title: "Chat comparisons",
     description:
-      "Browse comparison pages built to help people choose the chat format that fits them best.",
+      "Browse chat comparisons built to help people choose the format that fits them best.",
     intro:
-      "These comparisons are here to help you find what actually fits you — not just the most popular option. Browse the differences, see what feels right, and jump in when you're ready.",
-    summaryTitle: (count) => `${count} pages to help you compare`,
+      "Compare different kinds of anonymous chat, online chat, and language practice chat so you can see what fits you best and start with confidence.",
+    supportText:
+      "Clear side-by-side comparisons to help you understand differences and choose the right path for you.",
+    browseLabel: "Browse comparisons",
+    summaryTitle: (count) => `${count} comparisons to help you choose`,
     siblingHubs: [
       { label: "Browse guides", href: "/guides" },
       { label: "Browse topics", href: "/topics" },

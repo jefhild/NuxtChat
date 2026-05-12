@@ -28,7 +28,7 @@
         </div>
         <div class="type-section-title seo-index-summary-title mb-2 text-foreground">{{ summaryTitle(pages.length) }}</div>
         <p class="mb-4 text-sm text-foreground/70">
-          {{ uiCopy.supportText }}
+          {{ summarySupportText }}
         </p>
         <div class="flex flex-col gap-2">
           <NuxtLink
@@ -44,7 +44,7 @@
     </div>
 
     <div class="mb-3 mt-6 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/65">
-      {{ uiCopy.browsePages }}
+      {{ browseSectionLabel }}
     </div>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <div v-for="page in pages" :key="`${page.locale}-${page.slug}`">
@@ -109,6 +109,8 @@ const props = defineProps<{
   description: string;
   kicker: string;
   intro: string;
+  supportText?: string;
+  browseLabel?: string;
   siblingHubs: { label: string; href: string }[];
   pages: SeoIndexPage[];
   summaryTitleFormatter?: (count: number) => string;
@@ -189,6 +191,8 @@ const copyByLocale: Record<
 const uiCopy = computed(
   () => copyByLocale[currentLocale.value] || copyByLocale.en
 );
+const summarySupportText = computed(() => props.supportText || uiCopy.value.supportText);
+const browseSectionLabel = computed(() => props.browseLabel || uiCopy.value.browsePages);
 const summaryTitle = (count: number) =>
   props.summaryTitleFormatter?.(count) || uiCopy.value.publishedPages(count);
 

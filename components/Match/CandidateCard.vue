@@ -1,5 +1,13 @@
 <template>
   <article class="candidate-card">
+    <span
+      v-if="showRegisteredBadge"
+      class="registered-star"
+      :title="$t('components.candidateCard.registeredBadge', 'Registered')"
+      :aria-label="$t('components.candidateCard.registeredBadge', 'Registered')"
+    >
+      <i class="mdi mdi-star" aria-hidden="true" />
+    </span>
     <span class="status-dot" :class="statusDotClass" />
 
     <div class="candidate-card__body">
@@ -33,12 +41,6 @@
           >
             {{ candidate.displayname || $t("components.candidateCard.anonymous") }}
           </button>
-          <span
-            v-if="showRegisteredBadge"
-            class="candidate-registered-badge"
-          >
-            {{ $t("components.candidateCard.registeredBadge", "Registered") }}
-          </span>
           <p
             v-if="candidate.tagline"
             class="candidate-card__tagline"
@@ -309,6 +311,25 @@ function onChat() {
 .status-dot--agent { background-color: #7c3aed; }
 .status-dot--offline { background-color: #90a4ae; }
 
+.registered-star {
+  position: absolute;
+  top: 6px;
+  right: 22px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: #f5c542;
+  filter: drop-shadow(0 1px 3px rgba(15, 23, 42, 0.55));
+}
+
+.registered-star :deep(.mdi) {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
 .avatar-stack {
   position: relative;
   display: inline-flex;
@@ -385,19 +406,6 @@ function onChat() {
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
-}
-
-.candidate-registered-badge {
-  display: inline-flex;
-  align-items: center;
-  margin-top: 0.35rem;
-  padding: 0.18rem 0.48rem;
-  border-radius: 999px;
-  background: rgb(217 119 6 / 0.12);
-  color: #d97706;
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1;
 }
 
 .candidate-card__tagline {
